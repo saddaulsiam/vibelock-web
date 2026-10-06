@@ -5,8 +5,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().url(),
 
-  // Authentication placeholders
-  AUTH_SECRET: z.string().optional(),
+  // Authentication
+  AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required"),
 
   // Cloudinary placeholders
   CLOUDINARY_API_KEY: z.string().optional(),

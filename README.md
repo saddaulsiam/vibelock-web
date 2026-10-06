@@ -32,6 +32,13 @@ The CI pipeline runs:
 - `npm run typecheck` (TypeScript)
 - `npm run build` (Next.js Build)
 
+## Authentication
+
+Auth.js is configured with the Prisma Adapter and Database sessions.
+You must provide a valid `AUTH_SECRET` in your `.env.local` to start the application.
+
+> Note: Actual authentication providers (OAuth, Credentials), login pages, and RBAC are intentionally omitted from this Phase 2A scaffold and will be implemented in subsequent phases.
+
 ## Database Migrations
 
 **Development**:
