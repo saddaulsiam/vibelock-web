@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/shared/submit-button";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -88,9 +89,9 @@ export default function LoginPage() {
           </div>
         </div>
         <form action={googleSignInAction} className="w-full">
-          <Button variant="outline" type="submit" className="w-full">
+          <SubmitButton variant="outline" className="w-full" pendingText="Redirecting...">
             Google
-          </Button>
+          </SubmitButton>
         </form>
         <div className="text-center text-sm text-muted-foreground pt-2">
           Don&apos;t have an account?{" "}
