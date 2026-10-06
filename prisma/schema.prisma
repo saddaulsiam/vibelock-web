@@ -103,6 +103,8 @@ model User {
   cart      Cart?
   reviews   Review[]
   auditLogs AuditLog[]
+
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Address {
@@ -159,6 +161,20 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
 }
 
 model Category {
