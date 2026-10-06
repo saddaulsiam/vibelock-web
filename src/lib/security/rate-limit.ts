@@ -35,6 +35,12 @@ const resendVerificationLimiter = redis
 const verifyEmailLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
   : null;
+const sessionManagementLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  : null;
+const accountDeletionLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  : null;
 
 // Helper to get client IP
 async function getIp() {
@@ -69,7 +75,9 @@ export async function checkRateLimit(
     | "resetPassword"
     | "changePassword"
     | "resendVerification"
-    | "verifyEmail",
+    | "verifyEmail"
+    | "sessionManagement"
+    | "accountDeletion",
   identityModifier?: string
 ) {
   // We prefer fail-closed for Auth if Redis is not configured, but wait:
@@ -116,6 +124,12 @@ export async function checkRateLimit(
         break;
       case "verifyEmail":
         limiter = verifyEmailLimiter;
+        break;
+      case "sessionManagement":
+        limiter = sessionManagementLimiter;
+        break;
+      case "accountDeletion":
+        limiter = accountDeletionLimiter;
         break;
     }
 
