@@ -16,6 +16,14 @@ const envSchema = z.object({
   SSLCOMMERZ_STORE_ID: z.string().optional(),
   SSLCOMMERZ_STORE_PASSWORD: z.string().optional(),
   SSLCOMMERZ_SANDBOX: z.coerce.boolean().default(true),
+
+  // Email Configuration
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.com.bd>"),
+
+  // Upstash Redis (Rate Limiting)
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 });
 
 const _env = envSchema.safeParse(process.env);

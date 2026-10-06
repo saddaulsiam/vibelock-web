@@ -12,18 +12,24 @@ import {
 } from "@/lib/validations/account";
 import { hash, compare } from "bcryptjs";
 import crypto from "crypto";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+import { sendPasswordResetEmail } from "@/lib/email/client";
 
 // ----------------------------------------------------------------------
 // RATE LIMITING GAP DOCUMENTATION
-// Currently, there is no production-ready Redis/Upstash rate limiting
-// infrastructure available in this project.
-// Abusive endpoints (Change Password, Forgot Password, Reset Password)
-// should have rate-limiting integrated here in a future phase.
+// Rate limiting is now integrated via Upstash Redis.
 // ----------------------------------------------------------------------
 
 export async function changePasswordAction(data: ChangePasswordInput) {
   try {
     const user = await requireUser();
+
+    try {
+      await checkRateLimit("changePassword", user.id);
+    } catch {
+      return { error: "Too many attempts. Please try again later." };
+    }
+
     const parsed = changePasswordSchema.parse(data);
 
     const dbUser = await prisma.user.findUnique({
@@ -69,6 +75,13 @@ export async function forgotPasswordAction(data: ForgotPasswordInput) {
     const parsed = forgotPasswordSchema.parse(data);
     const email = parsed.email.toLowerCase();
 
+    try {
+      // Rate limit based on IP and email
+      await checkRateLimit("forgotPassword", email);
+    } catch {
+      return { error: "Too many requests. Please try again later." };
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
       select: { id: true, passwordHash: true },
@@ -95,10 +108,16 @@ export async function forgotPasswordAction(data: ForgotPasswordInput) {
       },
     });
 
-    // TODO: Phase X - Integrate real Email Provider
-    // For now, in a real app this would send the `rawToken` to the user's email.
-    // Because we have no email provider yet, we do nothing.
-    // In local dev, we could log it for testing, but prompt says: "no token exposure in server logs"
+    // Send email safely
+    const emailSent = await sendPasswordResetEmail(email, rawToken);
+
+    if (!emailSent) {
+      // Revert the token creation so it doesn't linger unusable
+      await prisma.passwordResetToken.delete({
+        where: { tokenHash },
+      });
+      console.error("Failed to deliver reset email. Token invalidated.");
+    }
 
     return { success: true };
   } catch (error) {
@@ -111,8 +130,16 @@ export async function resetPasswordAction(data: ResetPasswordInput) {
   try {
     const parsed = resetPasswordSchema.parse(data);
 
-    // Hash the raw token to look it up in the database
+    // Hash the raw token to look it up in the database, and use it as part of the rate-limit identity
+    // so IP changes cannot bypass protection on a single token.
     const tokenHash = crypto.createHash("sha256").update(parsed.token).digest("hex");
+
+    try {
+      // Basic rate limiting to prevent brute force hash attacks (by IP + Token Hash)
+      await checkRateLimit("resetPassword", tokenHash);
+    } catch {
+      return { error: "Too many requests. Please try again later." };
+    }
 
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { tokenHash },

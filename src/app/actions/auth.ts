@@ -11,10 +11,18 @@ import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export async function registerAction(data: RegisterInput) {
   try {
     const parsed = registerSchema.parse(data);
+
+    try {
+      await checkRateLimit("register");
+    } catch {
+      return { error: "Too many attempts. Please try again later." };
+    }
+
     const email = parsed.email.toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
@@ -56,6 +64,12 @@ export async function loginAction(data: LoginInput) {
   try {
     const parsed = loginSchema.parse(data);
     const email = parsed.email.toLowerCase();
+
+    try {
+      await checkRateLimit("login", email);
+    } catch {
+      return { error: "Too many attempts. Please try again later." };
+    }
 
     await signIn("credentials", {
       email,
