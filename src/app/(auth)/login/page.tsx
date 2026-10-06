@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { loginAction } from "@/app/actions/auth";
+import { loginAction, googleSignInAction } from "@/app/actions/auth";
 import {
   Card,
   CardContent,
@@ -45,8 +45,8 @@ export default function LoginPage() {
         <CardTitle className="text-2xl font-bold">Welcome back</CardTitle>
         <CardDescription>Enter your email and password to sign in</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -73,19 +73,32 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/register" className="font-semibold text-primary hover:underline">
-              Sign up
-            </Link>
+        </form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="relative w-full">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-        </CardFooter>
-      </form>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
+        <form action={googleSignInAction} className="w-full">
+          <Button variant="outline" type="submit" className="w-full">
+            Google
+          </Button>
+        </form>
+        <div className="text-center text-sm text-muted-foreground pt-2">
+          Don&apos;t have an account?{" "}
+          <Link href="/register" className="font-semibold text-primary hover:underline">
+            Sign up
+          </Link>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

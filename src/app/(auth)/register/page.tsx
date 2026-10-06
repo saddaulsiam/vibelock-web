@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { registerAction } from "@/app/actions/auth";
+import { registerAction, googleSignInAction } from "@/app/actions/auth";
 import {
   Card,
   CardContent,
@@ -72,8 +72,8 @@ export default function RegisterPage() {
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
         <CardDescription>Enter your details to create your account</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -132,19 +132,32 @@ export default function RegisterPage() {
               <p className="text-xs text-destructive">{fieldErrors.confirmPassword}</p>
             )}
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Creating account..." : "Sign up"}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
-              Sign in
-            </Link>
+        </form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <div className="relative w-full">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
           </div>
-        </CardFooter>
-      </form>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+          </div>
+        </div>
+        <form action={googleSignInAction} className="w-full">
+          <Button variant="outline" type="submit" className="w-full">
+            Google
+          </Button>
+        </form>
+        <div className="text-center text-sm text-muted-foreground pt-2">
+          Already have an account?{" "}
+          <Link href="/login" className="font-semibold text-primary hover:underline">
+            Sign in
+          </Link>
+        </div>
+      </CardFooter>
     </Card>
   );
 }

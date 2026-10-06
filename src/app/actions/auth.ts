@@ -120,3 +120,7 @@ export async function loginAction(data: LoginInput) {
 export async function logoutAction() {
   await signOut({ redirect: false });
 }
+
+export async function googleSignInAction() {
+  await signIn("google", { redirectTo: "/" });
+}

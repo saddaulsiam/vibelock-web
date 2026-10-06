@@ -7,6 +7,8 @@ const envSchema = z.object({
 
   // Authentication
   AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required"),
+  AUTH_GOOGLE_ID: z.string().min(1, "AUTH_GOOGLE_ID is required"),
+  AUTH_GOOGLE_SECRET: z.string().min(1, "AUTH_GOOGLE_SECRET is required"),
 
   // Cloudinary placeholders
   CLOUDINARY_API_KEY: z.string().optional(),

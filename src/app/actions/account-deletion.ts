@@ -41,10 +41,13 @@ export async function deleteAccountAction(data: { password?: string }) {
         return { error: "Incorrect password." };
       }
     } else {
-      // For OAuth users without a password, we might need a different confirmation flow.
-      // But for Phase 2G, we are strictly focused on Credentials accounts.
-      // If they somehow have no password, we could let them delete it directly or require an email confirmation.
-      // We will allow it directly here since they authenticated, but in a real app, an OAuth user might need to re-authenticate with their provider.
+      // Phase 2H: Do not invent a weak workaround for passwordless accounts.
+      // The current UI relies entirely on password confirmation. We must identify a design change
+      // (e.g., OAuth re-authentication or Email OTP) rather than skipping confirmation.
+      return {
+        error:
+          "Account deletion for OAuth-only accounts requires re-authentication (Design pending).",
+      };
     }
 
     // Account Deletion Transaction

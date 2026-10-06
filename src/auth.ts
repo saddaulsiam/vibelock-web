@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
 import { Role } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 
 // Augment the default session and user types
 declare module "next-auth" {
@@ -29,6 +30,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "database", // Database sessions are preferred when using the Prisma Adapter
   },
   callbacks: {
+    async signIn() {
+      // The default behavior (allowDangerousEmailAccountLinking = false) prevents
+      // Google logins from automatically hijacking an existing Credentials account.
+      // If a user has a credentials account with the same email, they will be rejected with OAuthAccountNotLinked.
+      return true;
+    },
     session({ session, user }) {
       if (session.user) {
         session.user.id = user.id;
@@ -39,6 +46,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   providers: [
+    Google({
+      clientId: env.AUTH_GOOGLE_ID,
+      clientSecret: env.AUTH_GOOGLE_SECRET,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          // Trust Google's verified status safely from server side
+          emailVerified: profile.email_verified ? new Date() : null,
+          // Explicitly assign CUSTOMER role for OAuth accounts
+          role: "CUSTOMER",
+        };
+      },
+      // Do not allow dangerous email account linking.
+      allowDangerousEmailAccountLinking: false,
+    }),
     Credentials({
       name: "Credentials",
       credentials: {
