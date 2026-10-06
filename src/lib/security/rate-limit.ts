@@ -29,6 +29,12 @@ const resetPasswordLimiter = redis
 const changePasswordLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
   : null;
+const resendVerificationLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  : null;
+const verifyEmailLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
+  : null;
 
 // Helper to get client IP
 async function getIp() {
@@ -37,7 +43,7 @@ async function getIp() {
   // We take the first IP which is the client IP.
   const forwardedFor = headersList.get("x-forwarded-for");
   const realIp = headersList.get("x-real-ip");
-  
+
   let ip = "unknown";
   if (forwardedFor) {
     ip = forwardedFor.split(",")[0].trim();
@@ -56,7 +62,14 @@ async function getIp() {
 
 // Check if rate limited (Throws generic safe error if limit exceeded, or if Redis is down for critical endpoints)
 export async function checkRateLimit(
-  endpoint: "login" | "register" | "forgotPassword" | "resetPassword" | "changePassword",
+  endpoint:
+    | "login"
+    | "register"
+    | "forgotPassword"
+    | "resetPassword"
+    | "changePassword"
+    | "resendVerification"
+    | "verifyEmail",
   identityModifier?: string
 ) {
   // We prefer fail-closed for Auth if Redis is not configured, but wait:
@@ -97,6 +110,12 @@ export async function checkRateLimit(
         break;
       case "changePassword":
         limiter = changePasswordLimiter;
+        break;
+      case "resendVerification":
+        limiter = resendVerificationLimiter;
+        break;
+      case "verifyEmail":
+        limiter = verifyEmailLimiter;
         break;
     }
 

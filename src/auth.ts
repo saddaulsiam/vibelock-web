@@ -12,11 +12,13 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      emailVerified: Date | null;
     } & DefaultSession["user"];
   }
 
   interface User {
     role: Role;
+    emailVerified: Date | null;
   }
 }
 
@@ -31,6 +33,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = user.id;
         session.user.role = user.role;
+        session.user.emailVerified = user.emailVerified;
       }
       return session;
     },
@@ -72,6 +75,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           image: user.image,
           role: user.role,
+          emailVerified: user.emailVerified,
         };
       },
     }),
