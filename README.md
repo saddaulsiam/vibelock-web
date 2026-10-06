@@ -13,31 +13,44 @@ Production E-Commerce Platform for VibeLock.
 - Zustand
 - Lucide React & Framer Motion
 
-## Setup
+## Development
 
 1. Copy `.env.example` to `.env.local` (or `.env`) and fill in your local credentials.
-2. Run `npm install` to install dependencies.
+2. Run `npm install` (or `npm ci` in CI) to install dependencies.
 3. Run `npx prisma generate` to generate the Prisma client.
 4. Run `npm run dev` to start the development server.
 
-## Environment Variables Configuration
+## CI
 
-The application strictly separates **server-only** secrets from **public** variables.
+GitHub Actions automatically validates code quality on Pull Requests and pushes to `main`.
+The CI pipeline runs:
 
-- **Server-Only Variables**: Handled securely via `src/lib/config/env.ts` (e.g. `DATABASE_URL`, `AUTH_SECRET`). If a server variable is missing in production, the application will fail fast during startup to protect against misconfiguration. These can NEVER be imported into Client Components.
-- **Public Variables**: Handled via `src/lib/config/public-env.ts` (e.g. `NEXT_PUBLIC_APP_URL`). These variables are prefixed with `NEXT_PUBLIC_` and are safe to be exposed to the browser.
-- **Static App Config**: General application configuration (name, currency, locale, timezone) is managed centrally in `src/lib/config/app.ts`.
+- `npm run db:validate` (Prisma schema validation)
+- `npm run db:generate` (Prisma client generation)
+- `npm run format:check` (Prettier)
+- `npm run lint` (ESLint)
+- `npm run typecheck` (TypeScript)
+- `npm run build` (Next.js Build)
 
-> Note: `.env.example` contains only safe placeholders and structure. Never commit real secrets to the repository. Your local `.env` and `.env.*.local` files are ignored by git automatically.
+## Database Migrations
 
-## Scripts
+**Development**:
+Run `npx prisma migrate dev` **ONLY** when a real development PostgreSQL database is configured.
 
-- `npm run dev`: Start development server
-- `npm run build`: Build for production
-- `npm run lint`: Run ESLint
-- `npm run typecheck`: Run TypeScript type checking
-- `npm run format`: Format code with Prettier
+**Production**:
+Database migrations are automatically applied during CI/CD via GitHub Actions.
+If manual execution is ever required, use:
+`npx prisma migrate deploy`
 
-## Phase 1A Scaffold
+> **WARNING:** Never use `npx prisma db push` for production.
 
-This project has been scaffolded according to the Phase 1A requirements.
+## Deployment
+
+The intended production architecture is:
+`PR → CI → merge → production migration → Vercel deployment`
+
+Currently, the GitHub Actions workflows handle CI and the Production Migration step.
+You must manually configure the following to complete the pipeline:
+
+1. **GitHub Environment Secrets**: Add your production `DATABASE_URL` to a GitHub Environment named `production`.
+2. **Vercel Integration**: Ensure Vercel is connected to the GitHub repository. Vercel deployment should ideally be gated or triggered after the migration succeeds. (Note: Vercel standard behavior deploys on push to `main` concurrently with the migration workflow. Advanced Vercel project settings or Vercel CLI steps in Actions may be required to enforce strict ordering).

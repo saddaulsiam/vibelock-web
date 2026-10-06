@@ -1,7 +1,7 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const publicEnvSchema = z.object({
-  NEXT_PUBLIC_APP_URL: z.string().url().default('http://localhost:3000'),
+  NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().optional(),
 });
 
@@ -11,8 +11,8 @@ const _publicEnv = publicEnvSchema.safeParse({
 });
 
 if (!_publicEnv.success) {
-  console.error('❌ Invalid environment variables (Client):', _publicEnv.error.format());
-  throw new Error('Invalid public environment variables');
+  console.error("❌ Invalid environment variables (Client):", _publicEnv.error.format());
+  throw new Error("Invalid public environment variables");
 }
 
 export const publicEnv = _publicEnv.data;

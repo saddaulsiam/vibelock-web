@@ -1,8 +1,8 @@
-import 'server-only';
-import { z } from 'zod';
+import "server-only";
+import { z } from "zod";
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().url(),
 
   // Authentication placeholders
@@ -21,8 +21,8 @@ const envSchema = z.object({
 const _env = envSchema.safeParse(process.env);
 
 if (!_env.success) {
-  console.error('❌ Invalid environment variables (Server):', _env.error.format());
-  throw new Error('Invalid server environment variables');
+  console.error("❌ Invalid environment variables (Server):", _env.error.format());
+  throw new Error("Invalid server environment variables");
 }
 
 export const env = _env.data;
