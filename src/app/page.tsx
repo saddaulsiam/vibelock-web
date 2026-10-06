@@ -1,69 +1,199 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import * as React from "react";
+import { Container } from "@/components/shared/container";
+import { Section } from "@/components/shared/section";
+import { SectionHeading } from "@/components/storefront/section-heading";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ProductCard } from "@/components/storefront/product-card";
+import { Separator } from "@/components/ui/separator";
+
+const MOCK_PRODUCTS = [
+  {
+    id: "1",
+    name: "Classic Charcoal Hoodie",
+    slug: "classic-charcoal-hoodie",
+    price: 2490,
+    image: "/placeholder.jpg",
+    badge: { label: "New", variant: "new" as const },
+  },
+  {
+    id: "2",
+    name: "Urban Oversized Tee",
+    slug: "urban-oversized-tee",
+    price: 1290,
+    originalPrice: 1590,
+    image: "/placeholder.jpg",
+    badge: { label: "Sale", variant: "sale" as const },
+  },
+  {
+    id: "3",
+    name: "Minimalist Cargo Pants",
+    slug: "minimalist-cargo-pants",
+    price: 3200,
+    image: "/placeholder.jpg",
+  },
+];
+
+export default function DesignSystemShowcase() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="flex-1">
+      <Section className="bg-primary text-primary-foreground py-16 md:py-24">
+        <Container>
+          <div className="max-w-2xl space-y-4">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+              VibeLock Design System
+            </h1>
+            <p className="text-lg opacity-80">
+              Phase 1B: Visual foundation for modern Dhaka youth streetwear.
+            </p>
+          </div>
+        </Container>
+      </Section>
+
+      <Container className="space-y-24 py-12">
+        {/* Colors */}
+        <section>
+          <SectionHeading
+            title="Brand Colors"
+            description="Core palette mapped to semantic tailwind tokens."
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <div className="h-24 rounded-md bg-brand-charcoal border shadow-sm"></div>
+              <p className="text-sm font-medium">Deep Charcoal</p>
+              <p className="text-xs text-muted-foreground">#101114</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-24 rounded-md bg-brand-offwhite border shadow-sm"></div>
+              <p className="text-sm font-medium">Warm Off-White</p>
+              <p className="text-xs text-muted-foreground">#F3F0E8</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-24 rounded-md bg-brand-cyan border shadow-sm"></div>
+              <p className="text-sm font-medium">Accent Cyan</p>
+              <p className="text-xs text-muted-foreground">#00D9FF</p>
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* Typography */}
+        <section>
+          <SectionHeading
+            title="Typography"
+            description="Clean, modern hierarchy using Inter font."
+          />
+          <div className="space-y-6 max-w-2xl">
+            <div>
+              <h1 className="text-5xl font-bold tracking-tight">Display Heading</h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                text-5xl font-bold tracking-tight
+              </p>
+            </div>
+            <div>
+              <h2 className="text-3xl font-semibold tracking-tight">Section Heading</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                text-3xl font-semibold tracking-tight
+              </p>
+            </div>
+            <div>
+              <h3 className="text-xl font-medium tracking-tight">Component Heading</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                text-xl font-medium tracking-tight
+              </p>
+            </div>
+            <div>
+              <p className="text-base leading-7">
+                Body text. The quick brown fox jumps over the lazy dog. Designed for excellent
+                readability across all devices, maintaining a premium feel.
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">text-base leading-7</p>
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* Components */}
+        <section>
+          <SectionHeading title="UI Primitives" description="Core interactive elements." />
+
+          <div className="grid md:grid-cols-2 gap-12">
+            {/* Buttons */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">Buttons</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button variant="default">Primary</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="outline">Outline</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button variant="destructive">Destructive</Button>
+              </div>
+            </div>
+
+            {/* Inputs & Forms */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">Inputs & Forms</h3>
+              <div className="space-y-4 max-w-sm">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email address</Label>
+                  <Input id="email" type="email" placeholder="hello@vibelock.com" />
+                </div>
+              </div>
+            </div>
+
+            {/* Badges */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">Badges</h3>
+              <div className="flex flex-wrap gap-4">
+                <Badge variant="default">Default</Badge>
+                <Badge variant="secondary">Secondary</Badge>
+                <Badge variant="destructive">Destructive</Badge>
+                <Badge variant="outline">Outline</Badge>
+              </div>
+            </div>
+
+            {/* Cards */}
+            <div className="space-y-4">
+              <h3 className="font-semibold text-lg border-b pb-2">Cards</h3>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Premium Fit</CardTitle>
+                  <CardDescription>Designed for the urban landscape.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    Content goes here. Card component abstracts away background, border, and
+                    shadows.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        <Separator />
+
+        {/* Storefront Previews */}
+        <section>
+          <SectionHeading
+            title="Storefront Components"
+            description="Presentational e-commerce components."
+          />
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {MOCK_PRODUCTS.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      </Container>
+    </main>
   );
 }
