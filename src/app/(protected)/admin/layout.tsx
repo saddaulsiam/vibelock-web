@@ -1,8 +1,44 @@
 import { requireRole } from "@/lib/auth/authorization";
+import { logoutAction } from "@/app/actions/auth";
+import { AdminMobileNavigation, AdminSidebar } from "@/components/admin/admin-navigation";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Enforce ADMIN role
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-screen bg-[#F3F0E8] text-[#101114]">
+      <AdminSidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="border-b border-[#101114]/10 bg-white">
+          <div className="flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+            <AdminMobileNavigation />
+            <div className="min-w-0">
+              <p className="truncate text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                VibeLock / Admin
+              </p>
+              <h1 className="truncate text-base font-semibold tracking-tight sm:text-lg">Dashboard</h1>
+            </div>
+            <div className="ml-auto flex min-w-0 items-center gap-3 sm:gap-4">
+              <div className="hidden min-w-0 text-right sm:block">
+                <p className="max-w-48 truncate text-sm font-medium">
+                  {admin.name || admin.email || "Administrator"}
+                </p>
+                <p className="text-xs text-muted-foreground">Administrator</p>
+              </div>
+              <form action={logoutAction}>
+                <button
+                  type="submit"
+                  className="inline-flex min-h-11 items-center border border-[#101114]/15 px-3 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:px-4"
+                >
+                  Sign out
+                </button>
+              </form>
+            </div>
+          </div>
+        </header>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+      </div>
+    </div>
+  );
 }
