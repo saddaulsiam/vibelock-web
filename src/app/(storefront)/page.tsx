@@ -3,8 +3,15 @@ import { Section } from "@/components/shared/section";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
+import { ProductCard } from "@/components/storefront/product-card";
 
-export default function StorefrontHomePage() {
+export default async function StorefrontHomePage() {
+  const [categories, latestProducts] = await Promise.all([
+    getCategories(),
+    getPublishedProducts({ take: 4 }),
+  ]);
+
   return (
     <>
       {/* Hero Section */}
@@ -42,7 +49,7 @@ export default function StorefrontHomePage() {
         </Container>
       </section>
 
-      {/* Featured Categories (Placeholder architecture) */}
+      {/* Featured Categories */}
       <Section className="py-20 bg-background">
         <Container>
           <div className="flex items-center justify-between mb-10">
@@ -54,29 +61,30 @@ export default function StorefrontHomePage() {
               View all &rarr;
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Category Placeholders */}
-            {[
-              { title: "Outerwear", href: "/collections/outerwear" },
-              { title: "Tees & Polos", href: "/collections/tees" },
-              { title: "Bottoms", href: "/collections/bottoms" },
-            ].map((cat, i) => (
-              <Link
-                key={i}
-                href={cat.href}
-                className="group relative block aspect-[4/5] bg-muted rounded-xl overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors z-10" />
-                <div className="absolute inset-0 flex items-center justify-center z-20">
-                  <h3 className="text-white text-2xl font-bold tracking-tight">{cat.title}</h3>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {categories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.slice(0, 3).map((cat) => (
+                <Link
+                  key={cat.id}
+                  href={`/collections/${cat.slug}`}
+                  className="group relative block aspect-[4/5] bg-muted rounded-xl overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors z-10" />
+                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <h3 className="text-white text-2xl font-bold tracking-tight">{cat.name}</h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border-2 border-dashed rounded-xl">
+              <p className="text-muted-foreground">No categories available yet.</p>
+            </div>
+          )}
         </Container>
       </Section>
 
-      {/* New Arrivals Framework (No real data yet) */}
+      {/* New Arrivals Framework */}
       <Section className="py-20 bg-brand-offwhite/50">
         <Container>
           <div className="flex flex-col items-center text-center space-y-4 mb-12">
@@ -84,21 +92,28 @@ export default function StorefrontHomePage() {
             <p className="text-muted-foreground max-w-2xl">Fresh drops. Built for the streets.</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {/* Product Card Placeholders for Phase 3B */}
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="group flex flex-col space-y-3">
-                <div className="aspect-[3/4] bg-muted rounded-lg overflow-hidden relative">
-                  {/* Image placeholder slot */}
-                  <div className="absolute inset-0 bg-gray-200 animate-pulse" />
-                </div>
-                <div className="space-y-1">
-                  <div className="h-4 bg-gray-200 rounded w-2/3 animate-pulse" />
-                  <div className="h-4 bg-gray-200 rounded w-1/3 animate-pulse" />
-                </div>
-              </div>
-            ))}
-          </div>
+          {latestProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {latestProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: product.minPrice,
+                    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
+                    image: product.primaryImage?.url || "/placeholder.jpg",
+                    badge: product.hasDiscount ? { label: "Sale", variant: "sale" } : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border-2 border-dashed rounded-xl">
+              <p className="text-muted-foreground">No products available yet.</p>
+            </div>
+          )}
 
           <div className="mt-12 flex justify-center">
             <Link href="/collections/new-arrivals">
