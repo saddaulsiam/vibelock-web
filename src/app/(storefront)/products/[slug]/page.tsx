@@ -1,51 +1,48 @@
-import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
-import { getProductBySlug } from "@/lib/catalog/queries";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { getProductBySlug } from "@/lib/catalog/queries";
 import { SITE_URL } from "@/lib/seo/site";
-import { headers } from "next/headers";
+import { notFound } from "next/navigation";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const p = await params;
-  const product = await getProductBySlug(p.slug);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) return {};
 
-  const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
-  const ogImage = primaryImage ? { url: primaryImage.url } : undefined;
+  const primaryImage = product.images.find((image) => image.isPrimary) || product.images[0];
+  const description = product.description || `Shop ${product.name} at VibeLock.`;
 
   return {
     title: product.name,
-    description: product.description || `Buy ${product.name} at VibeLock.`,
+    description,
     alternates: { canonical: `${SITE_URL}/products/${product.slug}` },
     openGraph: {
       title: `${product.name} | VibeLock`,
-      description: product.description || `Buy ${product.name} at VibeLock.`,
+      description,
       url: `${SITE_URL}/products/${product.slug}`,
-      images: ogImage ? [ogImage] : [],
+      images: primaryImage ? [{ url: primaryImage.url }] : [],
     },
   };
 }
 
 export default async function ProductDetailPage({ params }: ProductPageProps) {
-  const p = await params;
-  const product = await getProductBySlug(p.slug);
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+
+  if (!product) notFound();
+
   const nonce = (await headers()).get("x-nonce") ?? undefined;
-
-  if (!product) {
-    notFound();
-  }
-
-  // Breadcrumbs
   const mainCategory = product.categories[0];
 
   const offers =
@@ -69,89 +66,83 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             : "https://schema.org/OutOfStock",
         };
 
-  // Structured Data (JSON-LD)
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: product.name,
     description: product.description || undefined,
-    image: product.images.map((img) => img.url),
+    image: product.images.map((image) => image.url),
     offers,
   };
 
   return (
-    <Section className="py-8 bg-background min-h-screen">
+    <Section className="min-h-screen bg-white py-6 sm:py-8 lg:py-10">
       <script
         nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Container>
-        {/* Breadcrumbs */}
-        <nav
-          className="flex items-center text-sm text-muted-foreground mb-8"
-          aria-label="Breadcrumb"
-        >
-          <Link href="/" className="hover:text-foreground transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="h-4 w-4 mx-2" />
-          <Link href="/products" className="hover:text-foreground transition-colors">
-            Products
-          </Link>
-          <ChevronRight className="h-4 w-4 mx-2" />
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:mb-8">
+          <Link href="/" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">Home</Link>
+          <ChevronRight className="size-4" aria-hidden="true" />
+          <Link href="/products" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">Products</Link>
           {mainCategory && (
             <>
-              <Link
-                href={`/category/${mainCategory.slug}`}
-                className="hover:text-foreground transition-colors"
-              >
+              <ChevronRight className="size-4" aria-hidden="true" />
+              <Link href={`/category/${mainCategory.slug}`} className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
                 {mainCategory.name}
               </Link>
-              <ChevronRight className="h-4 w-4 mx-2" />
             </>
           )}
-          <span className="text-foreground font-medium" aria-current="page">
+          <ChevronRight className="size-4" aria-hidden="true" />
+          <span className="max-w-full break-words font-medium text-foreground" aria-current="page">
             {product.name}
           </span>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-          {/* Left Column: Image Gallery */}
-          <div className="w-full">
+        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] lg:gap-12 xl:gap-16">
+          <div className="min-w-0">
             <ImageGallery images={product.images} productName={product.name} />
           </div>
 
-          {/* Right Column: Details & Variants */}
-          <div className="w-full flex flex-col pt-2 lg:pt-6">
-            <div className="mb-6">
+          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+            <div className="mb-6 border-b border-border pb-5 sm:mb-7">
               {mainCategory && (
-                <p className="text-brand-cyan font-bold tracking-widest uppercase text-sm mb-2">
+                <Link
+                  href={`/category/${mainCategory.slug}`}
+                  className="mb-3 inline-flex min-h-8 items-center text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                >
                   {mainCategory.name}
-                </p>
+                </Link>
               )}
-              <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-brand-charcoal mb-4">
+              <h1 className="text-3xl font-semibold leading-tight tracking-tight text-[#101114] sm:text-4xl lg:text-[2.75rem]">
                 {product.name}
               </h1>
             </div>
 
-            <VariantSelector
-              variants={product.variants}
-              defaultPrice={product.minPrice}
-              defaultHasDiscount={product.hasDiscount}
-              defaultOriginalPrice={product.maxPrice} // Conceptual fallback if variant logic isn't matched
-            />
+            <VariantSelector variants={product.variants} productAvailable={product.available} />
 
             {product.description && (
-              <div className="mt-12 pt-8 border-t">
-                <h2 className="text-lg font-semibold mb-4">Product Details</h2>
-                <div className="prose prose-sm text-muted-foreground max-w-none">
-                  {/* Using standard line-breaks for plain text description */}
-                  {product.description.split("\n").map((line, i) => (
-                    <p key={i}>{line}</p>
+              <section className="mt-8 border-t border-border pt-6 sm:mt-10" aria-labelledby="product-details-heading">
+                <h2 id="product-details-heading" className="text-base font-semibold tracking-tight">
+                  Product details
+                </h2>
+                <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">
+                  {product.description.split("\n").filter(Boolean).map((line, index) => (
+                    <p key={`${index}-${line}`}>{line}</p>
                   ))}
                 </div>
-              </div>
+              </section>
+            )}
+
+            {mainCategory && (
+              <Link
+                href={`/category/${mainCategory.slug}`}
+                className="mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              >
+                Explore {mainCategory.name} <ChevronRight className="size-4" aria-hidden="true" />
+              </Link>
             )}
           </div>
         </div>

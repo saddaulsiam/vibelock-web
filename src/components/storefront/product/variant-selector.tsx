@@ -1,169 +1,219 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { ProductVariantSummary } from "@/lib/catalog/types";
-import { cn } from "@/lib/utils";
 import { useMemo, useState } from "react";
+import { Minus, Plus } from "lucide-react";
+import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
 
 interface VariantSelectorProps {
   variants: ProductVariantSummary[];
-  defaultPrice: number;
-  defaultHasDiscount: boolean;
-  defaultOriginalPrice: number | null;
+  productAvailable: boolean;
 }
 
-export function VariantSelector({
-  variants,
-  defaultPrice,
-  defaultHasDiscount,
-  defaultOriginalPrice,
-}: VariantSelectorProps) {
-  // Extract unique sizes and colors
-  const sizes = useMemo(() => {
-    const s = new Set<string>();
-    variants.forEach((v) => v.size && s.add(v.size));
-    return Array.from(s);
-  }, [variants]);
+const MAX_QUANTITY = 10;
 
-  const colors = useMemo(() => {
-    const c = new Set<string>();
-    variants.forEach((v) => v.color && c.add(v.color));
-    return Array.from(c);
-  }, [variants]);
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat("en-BD", {
+    style: "currency",
+    currency: "BDT",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
 
-  const [selectedSize, setSelectedSize] = useState<string | null>(
-    sizes.length > 0 ? sizes[0] : null
+export function VariantSelector({ variants, productAvailable }: VariantSelectorProps) {
+  const sizes = useMemo(
+    () => Array.from(new Set(variants.flatMap((variant) => (variant.size ? [variant.size] : [])))),
+    [variants]
   );
-  const [selectedColor, setSelectedColor] = useState<string | null>(
-    colors.length > 0 ? colors[0] : null
+  const colors = useMemo(
+    () => Array.from(new Set(variants.flatMap((variant) => (variant.color ? [variant.color] : [])))),
+    [variants]
   );
+  const initialVariant = variants.find((variant) => variant.available) ?? variants[0] ?? null;
+  const [selectedSize, setSelectedSize] = useState<string | null>(initialVariant?.size ?? null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(initialVariant?.color ?? null);
+  const [quantity, setQuantity] = useState(1);
 
-  // Find the matching variant based on selections
-  const matchingVariant = useMemo(() => {
-    if (variants.length === 0) return null;
+  const findVariant = (size: string | null, color: string | null) =>
+    variants.find(
+      (variant) =>
+        variant.available &&
+        (sizes.length === 0 || variant.size === size) &&
+        (colors.length === 0 || variant.color === color)
+    ) ??
+    variants.find(
+      (variant) =>
+        (sizes.length === 0 || variant.size === size) &&
+        (colors.length === 0 || variant.color === color)
+    ) ??
+    null;
 
-    // If product has no size/color, return the first variant
-    if (sizes.length === 0 && colors.length === 0) return variants[0];
+  const matchingVariant = findVariant(selectedSize, selectedColor);
+  const isAvailable = Boolean(matchingVariant?.available);
 
-    return (
-      variants.find(
-        (v) =>
-          (sizes.length === 0 || v.size === selectedSize) &&
-          (colors.length === 0 || v.color === selectedColor)
-      ) || null
+  const hasAvailableVariant = (size: string | null, color: string | null) =>
+    variants.some(
+      (variant) =>
+        variant.available &&
+        (sizes.length === 0 || variant.size === size) &&
+        (colors.length === 0 || variant.color === color)
     );
-  }, [variants, sizes, colors, selectedSize, selectedColor]);
 
-  // Determine what prices to show
-  const displayPrice = matchingVariant ? matchingVariant.effectivePrice : defaultPrice;
-  const isDiscounted = matchingVariant
-    ? matchingVariant.discountPrice !== null
-    : defaultHasDiscount;
-  const originalPrice = matchingVariant ? matchingVariant.sellingPrice : defaultOriginalPrice;
-
-  // Determine availability
-  const isAvailable = matchingVariant ? matchingVariant.available : false;
-  // If no matching variant (impossible combination), it's unavailable
-  const showAvailability = matchingVariant !== null;
-
-  // Helper to check if a size/color combination actually exists
-  const isCombinationAvailable = (size: string | null, color: string | null) => {
-    return variants.some(
-      (v) => (size === null || v.size === size) && (color === null || v.color === color)
-    );
+  const selectSize = (size: string) => {
+    setSelectedSize(size);
+    const selectedColorAvailable = hasAvailableVariant(size, selectedColor);
+    const availableVariant = variants.find((variant) => variant.available && variant.size === size);
+    if (colors.length > 0 && !selectedColorAvailable && availableVariant) {
+      setSelectedColor(availableVariant.color);
+    }
   };
 
-  return (
-    <div className="space-y-8">
-      {/* Price Display */}
-      <div className="flex flex-col gap-2">
-        <div className="flex items-end gap-3">
-          <span className="text-3xl font-bold tracking-tight">
-            ৳{displayPrice.toLocaleString()}
-          </span>
-          {isDiscounted && originalPrice && (
-            <span className="text-xl text-muted-foreground line-through mb-1">
-              ৳{originalPrice.toLocaleString()}
-            </span>
-          )}
-        </div>
+  const selectColor = (color: string) => {
+    setSelectedColor(color);
+    const selectedSizeAvailable = hasAvailableVariant(selectedSize, color);
+    const availableVariant = variants.find((variant) => variant.available && variant.color === color);
+    if (sizes.length > 0 && !selectedSizeAvailable && availableVariant) {
+      setSelectedSize(availableVariant.size);
+    }
+  };
 
-        {showAvailability && (
-          <div>
-            {isAvailable ? (
-              <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">
-                In Stock
-              </Badge>
-            ) : (
-              <Badge variant="destructive">Out of Stock</Badge>
+  const discount =
+    matchingVariant?.discountPrice !== null && matchingVariant?.discountPrice !== undefined;
+  const discountPercent = discount && matchingVariant
+    ? Math.round((1 - matchingVariant.effectivePrice / matchingVariant.sellingPrice) * 100)
+    : 0;
+
+  return (
+    <div className="space-y-7">
+      <div aria-live="polite" className="space-y-2">
+        {matchingVariant ? (
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+              {formatPrice(matchingVariant.effectivePrice)}
+            </span>
+            {discount && (
+              <>
+                <span className="text-lg text-muted-foreground line-through">
+                  {formatPrice(matchingVariant.sellingPrice)}
+                </span>
+                <span className="bg-[#00D9FF] px-2 py-1 text-xs font-semibold text-[#101114]">
+                  {discountPercent}% off
+                </span>
+              </>
             )}
           </div>
+        ) : (
+          <p className="text-lg font-medium text-muted-foreground">Price unavailable</p>
         )}
+
+        <p className={`text-sm font-medium ${isAvailable ? "text-emerald-700" : "text-muted-foreground"}`}>
+          {isAvailable
+            ? "In stock"
+            : productAvailable
+              ? "Choose an available option"
+              : "Currently unavailable"}
+        </p>
       </div>
 
-      {/* Selectors */}
-      <div className="space-y-6">
-        {colors.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider">Color</h3>
-            <div className="flex flex-wrap gap-2">
-              {colors.map((color) => {
-                const exists = isCombinationAvailable(selectedSize, color);
-                return (
-                  <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    disabled={!exists}
-                    className={cn(
-                      "px-4 py-2 border rounded-md text-sm font-medium transition-colors",
-                      selectedColor === color
-                        ? "border-brand-charcoal bg-brand-charcoal text-white"
-                        : "border-gray-200 hover:border-gray-400 bg-white",
-                      !exists &&
-                        "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
-                    )}
-                  >
-                    {color}
-                  </button>
-                );
-              })}
-            </div>
+      {colors.length > 0 && (
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold">Color</legend>
+          <div className="flex flex-wrap gap-2">
+            {colors.map((color) => {
+              const available = variants.some((variant) => variant.available && variant.color === color);
+              const selected = selectedColor === color;
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => selectColor(color)}
+                  disabled={!available}
+                  aria-pressed={selected}
+                  className={`min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 ${
+                    selected
+                      ? "border-[#101114] bg-[#101114] text-white"
+                      : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
+                  } disabled:cursor-not-allowed disabled:border-border disabled:bg-[#F3F0E8] disabled:text-muted-foreground disabled:opacity-60`}
+                >
+                  {color}
+                  {!available && <span className="sr-only">, unavailable</span>}
+                </button>
+              );
+            })}
           </div>
-        )}
+        </fieldset>
+      )}
 
-        {sizes.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold uppercase tracking-wider">Size</h3>
-            <div className="flex flex-wrap gap-2">
-              {sizes.map((size) => {
-                const exists = isCombinationAvailable(size, selectedColor);
-                return (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    disabled={!exists}
-                    className={cn(
-                      "min-w-[3rem] px-4 py-2 border rounded-md text-sm font-medium transition-colors",
-                      selectedSize === size
-                        ? "border-brand-charcoal bg-brand-charcoal text-white"
-                        : "border-gray-200 hover:border-gray-400 bg-white",
-                      !exists &&
-                        "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
-                    )}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
-            </div>
+      {sizes.length > 0 && (
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold">Size</legend>
+          <div className="flex flex-wrap gap-2">
+            {sizes.map((size) => {
+              const available = variants.some((variant) => variant.available && variant.size === size);
+              const selected = selectedSize === size;
+              return (
+                <button
+                  key={size}
+                  type="button"
+                  onClick={() => selectSize(size)}
+                  disabled={!available}
+                  aria-pressed={selected}
+                  className={`min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 ${
+                    selected
+                      ? "border-[#101114] bg-[#101114] text-white"
+                      : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
+                  } disabled:cursor-not-allowed disabled:border-border disabled:bg-[#F3F0E8] disabled:text-muted-foreground disabled:opacity-60`}
+                >
+                  {size}
+                  {!available && <span className="sr-only">, unavailable</span>}
+                </button>
+              );
+            })}
           </div>
-        )}
-      </div>
+        </fieldset>
+      )}
 
-      {/* Phase 3E Add to Cart */}
-      <div className="pt-4 border-t">
-        <AddToCartButton variantId={matchingVariant?.id || null} isAvailable={isAvailable} />
+      <div className="space-y-3 border-t border-border pt-5">
+        <label htmlFor="product-quantity" className="block text-sm font-semibold">Quantity</label>
+        <div className="flex h-12 w-36 items-center border border-[#101114]/20">
+          <button
+            type="button"
+            onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+            disabled={quantity <= 1}
+            aria-label="Decrease quantity"
+            className="inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+          >
+            <Minus className="size-4" aria-hidden="true" />
+          </button>
+          <input
+            id="product-quantity"
+            type="number"
+            min={1}
+            max={MAX_QUANTITY}
+            value={quantity}
+            onChange={(event) => {
+              const value = Number(event.target.value);
+              if (Number.isInteger(value) && value >= 1 && value <= MAX_QUANTITY) {
+                setQuantity(value);
+              }
+            }}
+            className="h-full w-12 border-0 bg-transparent p-0 text-center text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+          />
+          <button
+            type="button"
+            onClick={() => setQuantity((current) => Math.min(MAX_QUANTITY, current + 1))}
+            disabled={quantity >= MAX_QUANTITY}
+            aria-label="Increase quantity"
+            className="inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+          </button>
+        </div>
+        <AddToCartButton
+          variantId={matchingVariant?.id ?? null}
+          quantity={quantity}
+          isAvailable={isAvailable}
+        />
       </div>
     </div>
   );

@@ -1,39 +1,49 @@
 "use client";
 
 import { useTransition } from "react";
-import { addVariantToCartAction } from "@/lib/cart/actions";
+import { LoaderCircle, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { addVariantToCartAction } from "@/lib/cart/actions";
 
 interface AddToCartButtonProps {
   variantId: string | null;
+  quantity: number;
   isAvailable: boolean;
 }
 
-export function AddToCartButton({ variantId, isAvailable }: AddToCartButtonProps) {
+export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleAddToCart = () => {
-    if (!variantId || !isAvailable) return;
+    if (!variantId || !isAvailable || isPending) return;
 
     startTransition(async () => {
-      const res = await addVariantToCartAction(variantId, 1);
-      if (res.success) {
-        toast.success("Item has been successfully added to your cart.");
-      } else {
-        toast.error(res.error || "An unexpected error occurred.");
+      try {
+        const result = await addVariantToCartAction(variantId, quantity);
+        if (result.success) {
+          toast.success("Added to your cart");
+        } else {
+          toast.error(result.error || "Could not add this item to your cart.");
+        }
+      } catch {
+        toast.error("Could not add this item to your cart. Please try again.");
       }
     });
   };
 
   return (
     <button
+      type="button"
       onClick={handleAddToCart}
       disabled={!variantId || !isAvailable || isPending}
-      className="w-full py-4 rounded-xl font-bold uppercase tracking-wider bg-brand-charcoal text-white hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="flex min-h-12 w-full items-center justify-center gap-2 rounded-sm bg-[#101114] px-5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {isPending && <Loader2 className="h-5 w-5 animate-spin" />}
-      {!isAvailable ? "Out of Stock" : isPending ? "Adding..." : "Add to Cart"}
+      {isPending ? (
+        <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+      ) : (
+        <ShoppingBag className="size-4" aria-hidden="true" />
+      )}
+      {isPending ? "Adding to cart" : !isAvailable ? "Unavailable" : "Add to cart"}
     </button>
   );
 }
