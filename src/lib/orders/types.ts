@@ -68,4 +68,12 @@ export type OrderDetail = {
     createdAt: Date;
   }[];
   isReturnable: boolean;
+  shipment: {
+    id: string;
+    status: string;
+    provider: string;
+    trackingNumber: string | null;
+    shippedAt: Date | null;
+    deliveredAt: Date | null;
+  } | null;
 };

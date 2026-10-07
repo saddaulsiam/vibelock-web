@@ -235,6 +235,37 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
               </CardContent>
             </Card>
 
+            {order.shipment && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5 text-zinc-500" />
+                    Shipment Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <p className="text-sm text-zinc-500 mb-1">Status</p>
+                    <Badge variant="outline" className={getStatusColor(order.shipment.status)}>
+                      {order.shipment.status}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-zinc-500 mb-1">Provider</p>
+                    <p className="font-medium capitalize">{order.shipment.provider}</p>
+                  </div>
+                  {order.shipment.trackingNumber && (
+                    <div>
+                      <p className="text-sm text-zinc-500 mb-1">Tracking Number</p>
+                      <p className="font-medium font-mono bg-zinc-100 px-2 py-1 rounded inline-block">
+                        {order.shipment.trackingNumber}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

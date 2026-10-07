@@ -144,9 +144,8 @@ export async function createOrderAction(
         };
       });
 
-      // Fixed shipping rules (assuming 0 for phase 3, or we can make it a fixed 100 Taka)
-      // The prompt didn't specify strict shipping business rules, setting 0.
-      const shippingCost = 0;
+      const { calculateShippingCharge } = await import("@/lib/shipping/pricing");
+      const shippingCost = Number(calculateShippingCharge(shippingCity));
       const total = orderSubtotal + shippingCost;
 
       // Create Order

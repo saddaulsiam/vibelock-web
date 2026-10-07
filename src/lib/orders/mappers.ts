@@ -1,10 +1,19 @@
-import { Order, OrderItem, Payment, Refund, ReturnRequest, ReturnItem } from "@prisma/client";
+import {
+  Order,
+  OrderItem,
+  Payment,
+  Refund,
+  ReturnRequest,
+  ReturnItem,
+  Shipment,
+} from "@prisma/client";
 import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
   payments?: (Payment & { refunds: Refund[] })[];
   returns?: (ReturnRequest & { items: ReturnItem[] })[];
+  shipment?: Shipment | null;
 };
 
 export function mapOrderItem(item: OrderItem): OrderItemSummary {
@@ -83,5 +92,15 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
     // it to true for testing if required by the system, but the prompt said:
     // "use statuses that actually exist... if shipping is Phase 3K... make it configurable/disabled"
     isReturnable: order.status === "DELIVERED",
+    shipment: order.shipment
+      ? {
+          id: order.shipment.id,
+          status: order.shipment.status,
+          provider: order.shipment.provider,
+          trackingNumber: order.shipment.trackingNumber,
+          shippedAt: order.shipment.shippedAt,
+          deliveredAt: order.shipment.deliveredAt,
+        }
+      : null,
   };
 }
