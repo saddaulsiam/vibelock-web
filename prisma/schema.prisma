@@ -318,13 +318,23 @@ model InventoryReservation {
   @@index([orderId])
 }
 
+enum PaymentMethod {
+  COD
+  ONLINE
+}
+
 model Order {
-  id           String       @id @default(uuid())
-  orderNumber  String       @unique
-  userId       String?
-  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  status       OrderStatus  @default(PENDING)
-  salesChannel SalesChannel @default(WEBSITE)
+  id             String        @id @default(uuid())
+  orderNumber    String        @unique
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  status         OrderStatus   @default(PENDING)
+  paymentStatus  PaymentStatus @default(PENDING)
+  paymentMethod  PaymentMethod @default(COD)
+  salesChannel   SalesChannel  @default(WEBSITE)
+
+  // Checkout idempotency
+  checkoutIdempotencyKey String? @unique
 
   // Snapshots for Guest/Customer Info
   customerEmail String

@@ -75,7 +75,7 @@ export async function getOrCreateCartId(): Promise<string> {
         c.delete(GUEST_CART_COOKIE);
       }
     }
-    
+
     return authCart.id;
   }
 
@@ -109,7 +109,10 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
     include: {
       product: true,
       inventoryTransactions: { select: { quantity: true } },
-      inventoryReservations: { select: { quantity: true, expiresAt: true }, where: { status: "RESERVED" } },
+      inventoryReservations: {
+        select: { quantity: true, expiresAt: true },
+        where: { status: "RESERVED" },
+      },
     },
   });
 
@@ -120,7 +123,10 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
   // Check physical availability
   const totalStock = variant.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
   const now = new Date();
-  const reserved = variant.inventoryReservations.reduce((sum, r) => (r.expiresAt > now ? sum + r.quantity : sum), 0);
+  const reserved = variant.inventoryReservations.reduce(
+    (sum, r) => (r.expiresAt > now ? sum + r.quantity : sum),
+    0
+  );
   const availableStock = totalStock - reserved;
 
   const cartId = await getOrCreateCartId();
@@ -132,7 +138,7 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
     });
 
     const newQuantity = Math.min((existingItem?.quantity || 0) + quantity, MAX_QUANTITY);
-    
+
     if (newQuantity > availableStock) {
       throw new Error("Insufficient stock available");
     }
@@ -152,7 +158,10 @@ export async function addToCart(variantId: string, quantity: number): Promise<Ca
   return mapCart(updatedCart);
 }
 
-export async function updateCartItemQuantity(cartItemId: string, quantity: number): Promise<CartDTO> {
+export async function updateCartItemQuantity(
+  cartItemId: string,
+  quantity: number
+): Promise<CartDTO> {
   if (quantity < 1 || quantity > MAX_QUANTITY) {
     throw new Error("Invalid quantity");
   }
@@ -166,7 +175,10 @@ export async function updateCartItemQuantity(cartItemId: string, quantity: numbe
         variant: {
           include: {
             inventoryTransactions: { select: { quantity: true } },
-            inventoryReservations: { select: { quantity: true, expiresAt: true }, where: { status: "RESERVED" } },
+            inventoryReservations: {
+              select: { quantity: true, expiresAt: true },
+              where: { status: "RESERVED" },
+            },
           },
         },
       },
@@ -176,9 +188,15 @@ export async function updateCartItemQuantity(cartItemId: string, quantity: numbe
       throw new Error("Cart item not found");
     }
 
-    const totalStock = existingItem.variant.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
+    const totalStock = existingItem.variant.inventoryTransactions.reduce(
+      (sum, tx) => sum + tx.quantity,
+      0
+    );
     const now = new Date();
-    const reserved = existingItem.variant.inventoryReservations.reduce((sum, r) => (r.expiresAt > now ? sum + r.quantity : sum), 0);
+    const reserved = existingItem.variant.inventoryReservations.reduce(
+      (sum, r) => (r.expiresAt > now ? sum + r.quantity : sum),
+      0
+    );
     const availableStock = totalStock - reserved;
 
     if (quantity > availableStock) {

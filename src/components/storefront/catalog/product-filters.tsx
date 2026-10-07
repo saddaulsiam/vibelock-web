@@ -4,7 +4,13 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SlidersHorizontal } from "lucide-react";
 import { SortOptionType } from "@/lib/catalog/validation";
@@ -47,14 +53,14 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
   const toggleArrayFilter = (name: string, value: string) => {
     const current = searchParams.get(name);
     const items = current ? current.split(",") : [];
-    
+
     let newItems;
     if (items.includes(value)) {
       newItems = items.filter((i) => i !== value);
     } else {
       newItems = [...items, value];
     }
-    
+
     router.push(`${pathname || ""}?${createQueryString(name, newItems.join(","))}`);
   };
 
@@ -62,10 +68,10 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
     const params = new URLSearchParams(searchParams.toString());
     if (minPrice) params.set("minPrice", minPrice);
     else params.delete("minPrice");
-    
+
     if (maxPrice) params.set("maxPrice", maxPrice);
     else params.delete("maxPrice");
-    
+
     params.delete("page");
     router.push(`${pathname || ""}?${params.toString()}`);
   };
@@ -85,21 +91,25 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
       <div className="space-y-3">
         <h3 className="font-semibold text-sm">Search</h3>
         <form onSubmit={handleApplySearch} className="flex gap-2">
-          <Input 
-            placeholder="Search products..." 
+          <Input
+            placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button type="submit" variant="secondary">Go</Button>
+          <Button type="submit" variant="secondary">
+            Go
+          </Button>
         </form>
       </div>
 
       {/* Sort */}
       <div className="space-y-3">
         <h3 className="font-semibold text-sm">Sort By</h3>
-        <Select 
-          value={currentSort} 
-          onValueChange={(val) => router.push(`${pathname || ""}?${createQueryString("sort", val as string)}`)}
+        <Select
+          value={currentSort}
+          onValueChange={(val) =>
+            router.push(`${pathname || ""}?${createQueryString("sort", val as string)}`)
+          }
         >
           <SelectTrigger>
             <SelectValue placeholder="Sort by" />
@@ -142,7 +152,9 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
                   key={s}
                   onClick={() => toggleArrayFilter("size", s)}
                   className={`px-3 py-1 text-sm border rounded-sm transition-colors ${
-                    isActive ? "bg-brand-charcoal text-white border-brand-charcoal" : "hover:border-gray-400"
+                    isActive
+                      ? "bg-brand-charcoal text-white border-brand-charcoal"
+                      : "hover:border-gray-400"
                   }`}
                 >
                   {s}
@@ -157,16 +169,16 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
       <div className="space-y-3">
         <h3 className="font-semibold text-sm">Price Range</h3>
         <div className="flex items-center gap-2">
-          <Input 
-            type="number" 
-            placeholder="Min" 
+          <Input
+            type="number"
+            placeholder="Min"
             value={minPrice}
             onChange={(e) => setMinPrice(e.target.value)}
           />
           <span>-</span>
-          <Input 
-            type="number" 
-            placeholder="Max" 
+          <Input
+            type="number"
+            placeholder="Max"
             value={maxPrice}
             onChange={(e) => setMaxPrice(e.target.value)}
           />
@@ -199,9 +211,7 @@ export function ProductFilters({ options, isMobile = false }: ProductFiltersProp
 
   return (
     <div className="hidden lg:block w-64 shrink-0">
-      <div className="sticky top-24">
-        {FilterContent}
-      </div>
+      <div className="sticky top-24">{FilterContent}</div>
     </div>
   );
 }

@@ -10,7 +10,10 @@ export async function addVariantToCartAction(variantId: string, quantity: number
     revalidatePath("/cart");
     return { success: true, cart };
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to add to cart" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add to cart",
+    };
   }
 }
 
@@ -20,7 +23,10 @@ export async function updateCartItemAction(cartItemId: string, quantity: number)
     revalidatePath("/cart");
     return { success: true, cart };
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to update quantity" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update quantity",
+    };
   }
 }
 
@@ -30,7 +36,10 @@ export async function removeCartItemAction(cartItemId: string) {
     revalidatePath("/cart");
     return { success: true, cart };
   } catch (error: unknown) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to remove item" };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to remove item",
+    };
   }
 }
 

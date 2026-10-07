@@ -18,16 +18,24 @@ export type PrismaCartWithIncludes = Cart & {
 export function mapCart(cart: PrismaCartWithIncludes): CartDTO {
   const items: CartItemDTO[] = cart.items.map((item) => {
     // Cast explicitly to whatever mapVariant accepts, since Prisma matches our schema
-    const variantSummary = mapVariant(item.variant as unknown as PrismaCartWithIncludes["items"][number]["variant"]);
-    const primaryImage = item.variant.product.images.find(img => img.isPrimary) || item.variant.product.images[0] || null;
+    const variantSummary = mapVariant(
+      item.variant as unknown as PrismaCartWithIncludes["items"][number]["variant"]
+    );
+    const primaryImage =
+      item.variant.product.images.find((img) => img.isPrimary) ||
+      item.variant.product.images[0] ||
+      null;
 
     // Check if the requested quantity exceeds the currently available quantity
-    // But mapVariant doesn't return exact quantity, it returns boolean available. 
+    // But mapVariant doesn't return exact quantity, it returns boolean available.
     // Wait, the prompt states we should evaluate exact quantity if needed, but we can just use the bool for now or recalculate.
     // Let's recalculate the exact available stock safely.
     let availableQuantity = 0;
     if (item.variant.inventoryTransactions && item.variant.inventoryReservations) {
-      const totalStock = item.variant.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
+      const totalStock = item.variant.inventoryTransactions.reduce(
+        (sum, tx) => sum + tx.quantity,
+        0
+      );
       const now = new Date();
       const reserved = item.variant.inventoryReservations.reduce((sum, r) => {
         if (r.expiresAt > now) {
@@ -43,7 +51,7 @@ export function mapCart(cart: PrismaCartWithIncludes): CartDTO {
     // The prompt says: "Prefer returning deterministic state... UI can ask the user to adjust."
     // Actually, we'll just map the existing quantity, and the UI will evaluate it against `variantSummary.available` (boolean for now, but really needs exact stock if quantity > 1).
     // Let's add availableQuantity to the DTO locally.
-    
+
     return {
       id: item.id,
       variantId: item.variant.id,

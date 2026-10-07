@@ -23,7 +23,7 @@ export function ActiveFilters() {
 
   const removeFilter = (key: string, valueToRemove?: string) => {
     const params = new URLSearchParams(searchParams.toString());
-    
+
     if (valueToRemove && (key === "category" || key === "size" || key === "color")) {
       const current = params.get(key);
       if (current) {
@@ -37,7 +37,7 @@ export function ActiveFilters() {
     } else {
       params.delete(key);
     }
-    
+
     params.delete("page"); // Reset pagination
     router.push(`${pathname || ""}?${params.toString()}`);
   };
@@ -58,9 +58,12 @@ export function ActiveFilters() {
   return (
     <div className="flex flex-wrap items-center gap-2 mb-6">
       <span className="text-sm text-muted-foreground mr-2">Active Filters:</span>
-      
+
       {q && (
-        <Badge variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1">
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+        >
           Search: {q}
           <button onClick={() => removeFilter("q")} className="ml-1 hover:text-red-500">
             <X className="h-3 w-3" />
@@ -68,43 +71,67 @@ export function ActiveFilters() {
         </Badge>
       )}
 
-      {category && category.split(",").map((c) => (
-        <Badge key={`cat-${c}`} variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1">
-          Category: {c}
-          <button onClick={() => removeFilter("category", c)} className="ml-1 hover:text-red-500">
-            <X className="h-3 w-3" />
-          </button>
-        </Badge>
-      ))}
+      {category &&
+        category.split(",").map((c) => (
+          <Badge
+            key={`cat-${c}`}
+            variant="secondary"
+            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+          >
+            Category: {c}
+            <button onClick={() => removeFilter("category", c)} className="ml-1 hover:text-red-500">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
 
-      {size && size.split(",").map((s) => (
-        <Badge key={`size-${s}`} variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1">
-          Size: {s}
-          <button onClick={() => removeFilter("size", s)} className="ml-1 hover:text-red-500">
-            <X className="h-3 w-3" />
-          </button>
-        </Badge>
-      ))}
+      {size &&
+        size.split(",").map((s) => (
+          <Badge
+            key={`size-${s}`}
+            variant="secondary"
+            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+          >
+            Size: {s}
+            <button onClick={() => removeFilter("size", s)} className="ml-1 hover:text-red-500">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
 
-      {color && color.split(",").map((c) => (
-        <Badge key={`color-${c}`} variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1">
-          Color: {c}
-          <button onClick={() => removeFilter("color", c)} className="ml-1 hover:text-red-500">
-            <X className="h-3 w-3" />
-          </button>
-        </Badge>
-      ))}
+      {color &&
+        color.split(",").map((c) => (
+          <Badge
+            key={`color-${c}`}
+            variant="secondary"
+            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+          >
+            Color: {c}
+            <button onClick={() => removeFilter("color", c)} className="ml-1 hover:text-red-500">
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
 
       {(minPrice || maxPrice) && (
-        <Badge variant="secondary" className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1">
+        <Badge
+          variant="secondary"
+          className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+        >
           Price: {minPrice ? `৳${minPrice}` : "0"} - {maxPrice ? `৳${maxPrice}` : "Any"}
-          <button onClick={() => { removeFilter("minPrice"); removeFilter("maxPrice"); }} className="ml-1 hover:text-red-500">
+          <button
+            onClick={() => {
+              removeFilter("minPrice");
+              removeFilter("maxPrice");
+            }}
+            className="ml-1 hover:text-red-500"
+          >
             <X className="h-3 w-3" />
           </button>
         </Badge>
       )}
 
-      <button 
+      <button
         onClick={clearAll}
         className="text-sm underline text-muted-foreground hover:text-foreground ml-2"
       >

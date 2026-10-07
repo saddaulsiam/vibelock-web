@@ -21,7 +21,7 @@ export default async function ProductsPage({
 }) {
   const params = await searchParams;
   const parsedParams = parseDiscoverySearchParams(params);
-  
+
   // Fetch data in parallel
   const [discoveryResult, categories] = await Promise.all([
     getDiscoveredProducts(parsedParams),
@@ -31,7 +31,7 @@ export default async function ProductsPage({
   // Aggregate filter options - categories come from DB, sizes/colors could be hardcoded or extracted from variants.
   // For Phase 3C, we'll provide common sizing and color options. Ideally, these would also be aggregated from DB.
   const filterOptions = {
-    categories: categories.map(c => ({ name: c.name, slug: c.slug })),
+    categories: categories.map((c) => ({ name: c.name, slug: c.slug })),
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black", "White", "Grey", "Navy", "Red", "Olive"],
   };
@@ -60,9 +60,9 @@ export default async function ProductsPage({
 
             <ProductGrid products={discoveryResult.products} />
 
-            <DiscoveryPagination 
-              currentPage={discoveryResult.currentPage} 
-              totalPages={discoveryResult.totalPages} 
+            <DiscoveryPagination
+              currentPage={discoveryResult.currentPage}
+              totalPages={discoveryResult.totalPages}
             />
           </div>
         </div>

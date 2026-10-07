@@ -10,15 +10,20 @@ import { DiscoveryPagination } from "@/components/storefront/catalog/pagination"
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const p = await params;
   const category = await getCategoryBySlug(p.slug);
-  
+
   if (!category) return {};
 
   return {
     title: `${category.name} - VibeLock`,
-    description: category.description || `Browse the latest ${category.name} collection at VibeLock.`,
+    description:
+      category.description || `Browse the latest ${category.name} collection at VibeLock.`,
   };
 }
 
@@ -31,7 +36,7 @@ export default async function CategoryPage({
 }) {
   const p = await params;
   const sParams = await searchParams;
-  
+
   const category = await getCategoryBySlug(p.slug);
   if (!category) {
     notFound();
@@ -39,15 +44,13 @@ export default async function CategoryPage({
 
   // Inject category slug into the parsed params
   const parsedParams = parseDiscoverySearchParams(sParams);
-  
+
   // If the user already selected some categories via filters, we need to respect them,
   // but conceptually a category page filters by its own slug first.
   // A robust approach is to force the current category slug into the filters.
   // If the filter has 'category=shirts,pants', we might override or intersect.
   // We'll override the base category here.
-  parsedParams.category = parsedParams.category 
-    ? `${p.slug},${parsedParams.category}`
-    : p.slug;
+  parsedParams.category = parsedParams.category ? `${p.slug},${parsedParams.category}` : p.slug;
 
   const [discoveryResult, allCategories] = await Promise.all([
     getDiscoveredProducts(parsedParams),
@@ -55,7 +58,7 @@ export default async function CategoryPage({
   ]);
 
   const filterOptions = {
-    categories: allCategories.map(c => ({ name: c.name, slug: c.slug })),
+    categories: allCategories.map((c) => ({ name: c.name, slug: c.slug })),
     sizes: ["S", "M", "L", "XL", "XXL"],
     colors: ["Black", "White", "Grey", "Navy", "Red", "Olive"],
   };
@@ -85,9 +88,9 @@ export default async function CategoryPage({
 
             <ProductGrid products={discoveryResult.products} />
 
-            <DiscoveryPagination 
-              currentPage={discoveryResult.currentPage} 
-              totalPages={discoveryResult.totalPages} 
+            <DiscoveryPagination
+              currentPage={discoveryResult.currentPage}
+              totalPages={discoveryResult.totalPages}
             />
           </div>
         </div>

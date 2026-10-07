@@ -26,6 +26,9 @@ const envSchema = z.object({
   // Upstash Redis (Rate Limiting)
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+
+  // Inventory
+  INVENTORY_RESERVATION_TTL_SECONDS: z.coerce.number().default(900),
 });
 
 const _env = envSchema.safeParse(process.env);

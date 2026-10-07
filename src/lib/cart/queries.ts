@@ -65,7 +65,7 @@ export async function getCart(): Promise<CartDTO | null> {
           data: { userId: session.user.id },
           include: CART_INCLUDES,
         });
-        
+
         // Remove the cookie as it's now attached to the user account
         c.delete(GUEST_CART_COOKIE);
         return mapCart(claimedCart);

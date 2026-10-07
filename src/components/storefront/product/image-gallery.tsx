@@ -14,9 +14,8 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   // If no images, provide a fallback
-  const displayImages = images.length > 0 
-    ? images 
-    : [{ url: "/placeholder.jpg", alt: productName, isPrimary: true }];
+  const displayImages =
+    images.length > 0 ? images : [{ url: "/placeholder.jpg", alt: productName, isPrimary: true }];
 
   const selectedImage = displayImages[selectedIndex];
 
@@ -31,7 +30,9 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
               onClick={() => setSelectedIndex(idx)}
               className={cn(
                 "relative w-20 h-24 sm:w-24 sm:h-32 rounded-lg overflow-hidden shrink-0 border-2 transition-colors",
-                selectedIndex === idx ? "border-brand-charcoal" : "border-transparent hover:border-gray-300"
+                selectedIndex === idx
+                  ? "border-brand-charcoal"
+                  : "border-transparent hover:border-gray-300"
               )}
               aria-label={`View image ${idx + 1}`}
               aria-pressed={selectedIndex === idx}

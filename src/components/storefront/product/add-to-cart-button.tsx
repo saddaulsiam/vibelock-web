@@ -15,7 +15,7 @@ export function AddToCartButton({ variantId, isAvailable }: AddToCartButtonProps
 
   const handleAddToCart = () => {
     if (!variantId || !isAvailable) return;
-    
+
     startTransition(async () => {
       const res = await addVariantToCartAction(variantId, 1);
       if (res.success) {
@@ -33,11 +33,7 @@ export function AddToCartButton({ variantId, isAvailable }: AddToCartButtonProps
       className="w-full py-4 rounded-xl font-bold uppercase tracking-wider bg-brand-charcoal text-white hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
       {isPending && <Loader2 className="h-5 w-5 animate-spin" />}
-      {!isAvailable 
-        ? "Out of Stock" 
-        : isPending 
-          ? "Adding..." 
-          : "Add to Cart"}
+      {!isAvailable ? "Out of Stock" : isPending ? "Adding..." : "Add to Cart"}
     </button>
   );
 }

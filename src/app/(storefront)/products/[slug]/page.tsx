@@ -15,10 +15,10 @@ interface ProductPageProps {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const p = await params;
   const product = await getProductBySlug(p.slug);
-  
+
   if (!product) return {};
 
-  const primaryImage = product.images.find(img => img.isPrimary) || product.images[0];
+  const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0];
   const ogImage = primaryImage ? { url: primaryImage.url } : undefined;
 
   return {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const p = await params;
   const product = await getProductBySlug(p.slug);
-  
+
   if (!product) {
     notFound();
   }
@@ -43,25 +43,26 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   // Breadcrumbs
   const mainCategory = product.categories[0];
 
-  const offers = product.minPrice === product.maxPrice 
-    ? {
-        "@type": "Offer",
-        priceCurrency: "BDT",
-        price: product.minPrice,
-        availability: product.available 
-          ? "https://schema.org/InStock" 
-          : "https://schema.org/OutOfStock",
-      }
-    : {
-        "@type": "AggregateOffer",
-        priceCurrency: "BDT",
-        lowPrice: product.minPrice,
-        highPrice: product.maxPrice,
-        offerCount: product.variants.length || 1,
-        availability: product.available 
-          ? "https://schema.org/InStock" 
-          : "https://schema.org/OutOfStock",
-      };
+  const offers =
+    product.minPrice === product.maxPrice
+      ? {
+          "@type": "Offer",
+          priceCurrency: "BDT",
+          price: product.minPrice,
+          availability: product.available
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        }
+      : {
+          "@type": "AggregateOffer",
+          priceCurrency: "BDT",
+          lowPrice: product.minPrice,
+          highPrice: product.maxPrice,
+          offerCount: product.variants.length || 1,
+          availability: product.available
+            ? "https://schema.org/InStock"
+            : "https://schema.org/OutOfStock",
+        };
 
   // Structured Data (JSON-LD)
   const jsonLd = {
@@ -69,7 +70,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     "@type": "Product",
     name: product.name,
     description: product.description || undefined,
-    image: product.images.map(img => img.url),
+    image: product.images.map((img) => img.url),
     offers,
   };
 
@@ -81,14 +82,24 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       />
       <Container>
         {/* Breadcrumbs */}
-        <nav className="flex items-center text-sm text-muted-foreground mb-8" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+        <nav
+          className="flex items-center text-sm text-muted-foreground mb-8"
+          aria-label="Breadcrumb"
+        >
+          <Link href="/" className="hover:text-foreground transition-colors">
+            Home
+          </Link>
           <ChevronRight className="h-4 w-4 mx-2" />
-          <Link href="/products" className="hover:text-foreground transition-colors">Products</Link>
+          <Link href="/products" className="hover:text-foreground transition-colors">
+            Products
+          </Link>
           <ChevronRight className="h-4 w-4 mx-2" />
           {mainCategory && (
             <>
-              <Link href={`/category/${mainCategory.slug}`} className="hover:text-foreground transition-colors">
+              <Link
+                href={`/category/${mainCategory.slug}`}
+                className="hover:text-foreground transition-colors"
+              >
                 {mainCategory.name}
               </Link>
               <ChevronRight className="h-4 w-4 mx-2" />
@@ -118,7 +129,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </h1>
             </div>
 
-            <VariantSelector 
+            <VariantSelector
               variants={product.variants}
               defaultPrice={product.minPrice}
               defaultHasDiscount={product.hasDiscount}
@@ -130,7 +141,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 <h2 className="text-lg font-semibold mb-4">Product Details</h2>
                 <div className="prose prose-sm text-muted-foreground max-w-none">
                   {/* Using standard line-breaks for plain text description */}
-                  {product.description.split('\n').map((line, i) => (
+                  {product.description.split("\n").map((line, i) => (
                     <p key={i}>{line}</p>
                   ))}
                 </div>

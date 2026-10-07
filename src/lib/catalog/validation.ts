@@ -16,7 +16,9 @@ export const DiscoverySearchParamsSchema = z.object({
 
 export type DiscoverySearchParams = z.infer<typeof DiscoverySearchParamsSchema>;
 
-export function parseDiscoverySearchParams(searchParams: Record<string, string | string[] | undefined>): DiscoverySearchParams {
+export function parseDiscoverySearchParams(
+  searchParams: Record<string, string | string[] | undefined>
+): DiscoverySearchParams {
   const normalizedParams: Record<string, string | undefined> = {};
 
   for (const key in searchParams) {
@@ -30,7 +32,11 @@ export function parseDiscoverySearchParams(searchParams: Record<string, string |
 
   const parsed = DiscoverySearchParamsSchema.parse(normalizedParams);
 
-  if (parsed.minPrice !== undefined && parsed.maxPrice !== undefined && parsed.minPrice > parsed.maxPrice) {
+  if (
+    parsed.minPrice !== undefined &&
+    parsed.maxPrice !== undefined &&
+    parsed.minPrice > parsed.maxPrice
+  ) {
     const temp = parsed.minPrice;
     parsed.minPrice = parsed.maxPrice;
     parsed.maxPrice = temp;

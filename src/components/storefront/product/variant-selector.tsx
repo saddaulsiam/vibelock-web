@@ -22,18 +22,22 @@ export function VariantSelector({
   // Extract unique sizes and colors
   const sizes = useMemo(() => {
     const s = new Set<string>();
-    variants.forEach(v => v.size && s.add(v.size));
+    variants.forEach((v) => v.size && s.add(v.size));
     return Array.from(s);
   }, [variants]);
 
   const colors = useMemo(() => {
     const c = new Set<string>();
-    variants.forEach(v => v.color && c.add(v.color));
+    variants.forEach((v) => v.color && c.add(v.color));
     return Array.from(c);
   }, [variants]);
 
-  const [selectedSize, setSelectedSize] = useState<string | null>(sizes.length > 0 ? sizes[0] : null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(colors.length > 0 ? colors[0] : null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    sizes.length > 0 ? sizes[0] : null
+  );
+  const [selectedColor, setSelectedColor] = useState<string | null>(
+    colors.length > 0 ? colors[0] : null
+  );
 
   // Find the matching variant based on selections
   const matchingVariant = useMemo(() => {
@@ -42,11 +46,13 @@ export function VariantSelector({
     // If product has no size/color, return the first variant
     if (sizes.length === 0 && colors.length === 0) return variants[0];
 
-    return variants.find(
-      (v) =>
-        (sizes.length === 0 || v.size === selectedSize) &&
-        (colors.length === 0 || v.color === selectedColor)
-    ) || null;
+    return (
+      variants.find(
+        (v) =>
+          (sizes.length === 0 || v.size === selectedSize) &&
+          (colors.length === 0 || v.color === selectedColor)
+      ) || null
+    );
   }, [variants, sizes, colors, selectedSize, selectedColor]);
 
   // Determine what prices to show
@@ -54,9 +60,7 @@ export function VariantSelector({
   const isDiscounted = matchingVariant
     ? matchingVariant.discountPrice !== null
     : defaultHasDiscount;
-  const originalPrice = matchingVariant
-    ? matchingVariant.sellingPrice
-    : defaultOriginalPrice;
+  const originalPrice = matchingVariant ? matchingVariant.sellingPrice : defaultOriginalPrice;
 
   // Determine availability
   const isAvailable = matchingVariant ? matchingVariant.available : false;
@@ -66,9 +70,7 @@ export function VariantSelector({
   // Helper to check if a size/color combination actually exists
   const isCombinationAvailable = (size: string | null, color: string | null) => {
     return variants.some(
-      (v) =>
-        (size === null || v.size === size) &&
-        (color === null || v.color === color)
+      (v) => (size === null || v.size === size) && (color === null || v.color === color)
     );
   };
 
@@ -77,7 +79,9 @@ export function VariantSelector({
       {/* Price Display */}
       <div className="flex flex-col gap-2">
         <div className="flex items-end gap-3">
-          <span className="text-3xl font-bold tracking-tight">৳{displayPrice.toLocaleString()}</span>
+          <span className="text-3xl font-bold tracking-tight">
+            ৳{displayPrice.toLocaleString()}
+          </span>
           {isDiscounted && originalPrice && (
             <span className="text-xl text-muted-foreground line-through mb-1">
               ৳{originalPrice.toLocaleString()}
@@ -92,9 +96,7 @@ export function VariantSelector({
                 In Stock
               </Badge>
             ) : (
-              <Badge variant="destructive">
-                Out of Stock
-              </Badge>
+              <Badge variant="destructive">Out of Stock</Badge>
             )}
           </div>
         )}
@@ -118,7 +120,8 @@ export function VariantSelector({
                       selectedColor === color
                         ? "border-brand-charcoal bg-brand-charcoal text-white"
                         : "border-gray-200 hover:border-gray-400 bg-white",
-                      !exists && "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
+                      !exists &&
+                        "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
                     )}
                   >
                     {color}
@@ -145,7 +148,8 @@ export function VariantSelector({
                       selectedSize === size
                         ? "border-brand-charcoal bg-brand-charcoal text-white"
                         : "border-gray-200 hover:border-gray-400 bg-white",
-                      !exists && "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
+                      !exists &&
+                        "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
                     )}
                   >
                     {size}
@@ -159,10 +163,7 @@ export function VariantSelector({
 
       {/* Phase 3E Add to Cart */}
       <div className="pt-4 border-t">
-        <AddToCartButton
-          variantId={matchingVariant?.id || null}
-          isAvailable={isAvailable}
-        />
+        <AddToCartButton variantId={matchingVariant?.id || null} isAvailable={isAvailable} />
       </div>
     </div>
   );

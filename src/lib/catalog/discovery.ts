@@ -51,7 +51,10 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
 
   // Category
   if (params.category) {
-    const slugs = params.category.split(",").map((s) => s.trim()).filter(Boolean);
+    const slugs = params.category
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (slugs.length > 0) {
       andConditions.push({
         categories: { some: { slug: { in: slugs } } },
@@ -63,14 +66,20 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
   const variantConditions: Prisma.ProductVariantWhereInput = {};
 
   if (params.size) {
-    const sizes = params.size.split(",").map((s) => s.trim()).filter(Boolean);
+    const sizes = params.size
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (sizes.length > 0) {
       variantConditions.size = { in: sizes };
     }
   }
 
   if (params.color) {
-    const colors = params.color.split(",").map((s) => s.trim()).filter(Boolean);
+    const colors = params.color
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     if (colors.length > 0) {
       variantConditions.color = { in: colors };
     }
@@ -79,15 +88,15 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
   if (params.minPrice !== undefined || params.maxPrice !== undefined) {
     const min = params.minPrice !== undefined ? params.minPrice : 0;
     const max = params.maxPrice !== undefined ? params.maxPrice : 999999999;
-    
+
     // Effective price rule: if discount is valid (< sellingPrice), use it, otherwise use sellingPrice.
     // In database filtering, we can check cases.
     variantConditions.OR = [
       {
         // Discount is active and strictly less than selling price, AND falls in range
         discountPrice: { not: null, gte: min, lte: max },
-        // Prisma cannot natively compare two columns easily (discountPrice < sellingPrice) without raw SQL in older versions, 
-        // but VibeLock domain rules specify we only apply discount if it's strictly less than selling. 
+        // Prisma cannot natively compare two columns easily (discountPrice < sellingPrice) without raw SQL in older versions,
+        // but VibeLock domain rules specify we only apply discount if it's strictly less than selling.
         // To approximate this cleanly in Prisma ORM, we rely on the DB having valid state.
       },
       {
@@ -95,13 +104,13 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
         // Here we just say if discountPrice is null, selling price must be in range.
         discountPrice: null,
         sellingPrice: { gte: min, lte: max },
-      }
+      },
     ];
   }
 
   if (Object.keys(variantConditions).length > 0) {
     andConditions.push({
-      variants: { some: variantConditions }
+      variants: { some: variantConditions },
     });
   }
 
@@ -115,7 +124,9 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
 /**
  * Map SortOption to Prisma orderBy
  */
-function buildDiscoveryOrderBy(sortOption: DiscoverySearchParams["sort"]): Prisma.ProductOrderByWithRelationInput {
+function buildDiscoveryOrderBy(
+  sortOption: DiscoverySearchParams["sort"]
+): Prisma.ProductOrderByWithRelationInput {
   switch (sortOption) {
     case "newest":
     default:
@@ -152,7 +163,7 @@ export const getDiscoveredProducts = async (
     async () => {
       const where = buildDiscoveryWhere(params);
       const orderBy = buildDiscoveryOrderBy(params.sort);
-      
+
       const skip = (params.page - 1) * PAGE_SIZE;
 
       const [totalCount, products] = await prisma.$transaction([

@@ -18,7 +18,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
 
   const handleUpdateQuantity = (newQuantity: number) => {
     if (newQuantity < 1) return;
-    
+
     startTransition(async () => {
       const res = await updateCartItemAction(item.id, newQuantity);
       if (!res.success) {
@@ -53,7 +53,9 @@ export function CartItemCard({ item }: CartItemCardProps) {
             sizes="(max-width: 768px) 96px, 128px"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
+          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+            No Image
+          </div>
         )}
       </div>
 
@@ -61,14 +63,17 @@ export function CartItemCard({ item }: CartItemCardProps) {
       <div className="flex flex-1 flex-col justify-between">
         <div className="flex justify-between items-start">
           <div>
-            <Link href={`/products/${item.productSlug}`} className="font-semibold text-brand-charcoal hover:underline">
+            <Link
+              href={`/products/${item.productSlug}`}
+              className="font-semibold text-brand-charcoal hover:underline"
+            >
               {item.productName}
             </Link>
             <div className="text-sm text-muted-foreground mt-1 space-x-2">
               {item.variant.size && <span>Size: {item.variant.size}</span>}
               {item.variant.color && <span>Color: {item.variant.color}</span>}
             </div>
-            
+
             {/* Stale inventory feedback */}
             {isInsufficient && (
               <p className="text-sm font-medium text-destructive mt-2">
@@ -112,7 +117,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
               <Plus className="h-3 w-3" />
             </button>
           </div>
-          
+
           <Button
             variant="ghost"
             size="sm"
