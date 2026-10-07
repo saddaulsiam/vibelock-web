@@ -71,8 +71,8 @@ export class SSLCommerzProvider implements PaymentProvider {
         success: false,
         error: result.failedreason || "Failed to initiate payment with SSLCommerz",
       };
-    } catch (error) {
-      console.error("[SSLCommerz] Error initiating payment:", error);
+    } catch {
+      console.error("[SSLCommerz] Payment initiation request failed");
       return { success: false, error: "Internal payment initiation error" };
     }
   }
@@ -142,8 +142,8 @@ export class SSLCommerzProvider implements PaymentProvider {
           rawPayload: result,
         };
       }
-    } catch (error) {
-      console.error("[SSLCommerz] Error verifying payment:", error);
+    } catch {
+      console.error("[SSLCommerz] Payment verification request failed");
       return { success: false, status: "FAILED", error: "Verification request failed" };
     }
   }
@@ -154,7 +154,12 @@ export class SSLCommerzProvider implements PaymentProvider {
     gatewayTransactionId: string;
     amount: number;
     reason?: string;
-  }): Promise<{ success: boolean; gatewayRefundRef?: string; error?: string }> {
+  }): Promise<{
+    success: boolean;
+    gatewayRefundRef?: string;
+    error?: string;
+    unknownResult?: boolean;
+  }> {
     if (!this.storeId || !this.storePassword) {
       return { success: false, error: "SSLCommerz configuration missing" };
     }
@@ -174,6 +179,14 @@ export class SSLCommerzProvider implements PaymentProvider {
         method: "GET",
       });
 
+      if (!response.ok) {
+        return {
+          success: false,
+          error: "Refund provider returned an HTTP error",
+          unknownResult: true,
+        };
+      }
+
       const result = await response.json();
 
       if (result.APIConnect === "DONE" && result.status === "success") {
@@ -181,15 +194,25 @@ export class SSLCommerzProvider implements PaymentProvider {
           success: true,
           gatewayRefundRef: result.refund_ref_id || result.trans_id || request.refundId,
         };
+      } else if (result.APIConnect === "DONE" && result.status === "failed") {
+        return {
+          success: false,
+          error: "Refund failed on SSLCommerz server",
+        };
       } else {
         return {
           success: false,
-          error: result.errorReason || "Refund failed on SSLCommerz server",
+          error: "Refund provider returned an unknown result",
+          unknownResult: true,
         };
       }
-    } catch (error) {
-      console.error("[SSLCommerz] Error refunding payment:", error);
-      return { success: false, error: "Refund request failed due to network or timeout" };
+    } catch {
+      console.error("[SSLCommerz] Refund request failed");
+      return {
+        success: false,
+        error: "Refund request failed due to network or timeout",
+        unknownResult: true,
+      };
     }
   }
 }

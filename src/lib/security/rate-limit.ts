@@ -145,7 +145,7 @@ export async function checkRateLimit(
       throw error; // Let caller catch it and return generic message
     }
     // If Redis itself throws a network error, we fail closed for these sensitive endpoints
-    console.error("Rate Limiter Network Error:", error);
+    console.error("Rate limiter backend request failed");
     throw new Error("RATE_LIMIT_ERROR");
   }
 }

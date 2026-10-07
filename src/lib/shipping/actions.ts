@@ -34,9 +34,22 @@ export async function adminCreateShipmentAction(orderId: string) {
     const shipment = await service.createShipmentForOrder(orderId);
     return { success: true, shipmentId: shipment.id };
   } catch (error) {
+    console.error("[adminCreateShipmentAction] Shipment creation failed", error);
+    const safeMessages = new Set([
+      "Order not found",
+      "Cannot ship a cancelled order",
+      "Shipment already exists for this order",
+      "Online orders must be fully paid before shipping",
+      "Provider timeout or error creating shipment",
+      "Provider rejected shipment",
+      "Order was cancelled while shipment creation was in progress",
+    ]);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Shipment creation failed",
+      error:
+        error instanceof Error && safeMessages.has(error.message)
+          ? error.message
+          : "Shipment creation failed. Please try again later.",
     };
   }
 }

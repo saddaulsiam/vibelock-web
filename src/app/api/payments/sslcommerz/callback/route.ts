@@ -49,8 +49,8 @@ export async function POST(req: NextRequest) {
 
     // Default fallback
     return NextResponse.redirect(`${baseUrl}/products`, 303);
-  } catch (error) {
-    console.error("[SSLCommerz Callback Error]", error);
+  } catch {
+    console.error("[SSLCommerz Callback Error] Payment callback processing failed");
     return NextResponse.redirect(
       `${req.nextUrl.origin}/cart?error=payment_verification_failed`,
       303

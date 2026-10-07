@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma/client";
-import { Prisma } from "@prisma/client";
+import { Prisma, Refund } from "@prisma/client";
 
 export class RefundService {
   /**
@@ -16,10 +16,12 @@ export class RefundService {
     });
 
     if (!payment) throw new Error("Payment not found");
-    if (payment.status !== "SUCCESS") return new Prisma.Decimal(0); // Only successful payments can be refunded
+    if (payment.status !== "SUCCESS" && payment.status !== "PARTIALLY_REFUNDED") {
+      return new Prisma.Decimal(0);
+    }
 
     const totalRefunded = payment.refunds
-      .filter((r) => r.status === "SUCCESS")
+      .filter((r) => r.status === "SUCCESS" || r.status === "PENDING" || r.status === "PROCESSING")
       .reduce((sum, r) => sum.add(r.amount), new Prisma.Decimal(0));
 
     return payment.amount.sub(totalRefunded);
@@ -30,7 +32,11 @@ export class RefundService {
    */
   async initiateRefund(paymentId: string, amount: Prisma.Decimal, reason?: string) {
     return await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Payment" WHERE id = ${paymentId} FOR UPDATE`;
       const refundable = await this.getRefundableAmount(paymentId, tx);
+      if (amount.lte(0)) {
+        throw new Error("Refund amount must be greater than zero");
+      }
       if (amount.gt(refundable)) {
         throw new Error("Refund amount exceeds remaining refundable amount");
       }
@@ -51,8 +57,21 @@ export class RefundService {
   /**
    * Marks a refund as successful and updates the parent payment status.
    */
-  async markRefundSuccess(refundId: string, gatewayRefId: string, tx?: Prisma.TransactionClient) {
-    const db = tx || prisma;
+  async markRefundSuccess(
+    refundId: string,
+    gatewayRefId: string,
+    tx?: Prisma.TransactionClient
+  ): Promise<Refund> {
+    if (!tx) {
+      return prisma.$transaction((transaction) =>
+        this.markRefundSuccess(refundId, gatewayRefId, transaction)
+      );
+    }
+    const db = tx;
+
+    const linkedRefund = await db.refund.findUnique({ where: { id: refundId } });
+    if (!linkedRefund) throw new Error("Refund not found");
+    await db.$queryRaw`SELECT id FROM "Payment" WHERE id = ${linkedRefund.paymentId} FOR UPDATE`;
 
     const refund = await db.refund.findUnique({ where: { id: refundId } });
     if (!refund) throw new Error("Refund not found");
@@ -66,17 +85,16 @@ export class RefundService {
 
     // Update parent Payment status to PARTIALLY_REFUNDED or REFUNDED
     const refundableRemaining = await this.getRefundableAmount(updatedRefund.paymentId, db);
-    if (refundableRemaining.lte(0)) {
-      await db.payment.update({
-        where: { id: updatedRefund.paymentId },
-        data: { status: "REFUNDED" },
-      });
-    } else {
-      await db.payment.update({
-        where: { id: updatedRefund.paymentId },
-        data: { status: "PARTIALLY_REFUNDED" },
-      });
-    }
+    const paymentStatus = refundableRemaining.lte(0) ? "REFUNDED" : "PARTIALLY_REFUNDED";
+    const payment = await db.payment.update({
+      where: { id: updatedRefund.paymentId },
+      data: { status: paymentStatus },
+      select: { orderId: true },
+    });
+    await db.order.update({
+      where: { id: payment.orderId },
+      data: { paymentStatus },
+    });
 
     return updatedRefund;
   }
@@ -113,13 +131,24 @@ export class RefundService {
     if (refund.status === "FAILED") throw new Error("Refund has permanently failed");
 
     // Change status to PROCESSING (Idempotency lock)
-    await prisma.refund.update({
-      where: { id: refundId },
+    const update = await prisma.refund.updateMany({
+      where: { id: refundId, status: "PENDING" },
       data: { status: "PROCESSING" },
     });
+    if (update.count === 0) {
+      const current = await prisma.refund.findUnique({ where: { id: refundId } });
+      if (current?.status === "SUCCESS")
+        return { success: true, message: "Refund is already processed" };
+      return { success: false, error: "Refund is already being processed" };
+    }
 
     // 2. Determine provider and call external API
-    let providerRes: { success: boolean; gatewayRefundRef?: string; error?: string } = {
+    let providerRes: {
+      success: boolean;
+      gatewayRefundRef?: string;
+      error?: string;
+      unknownResult?: boolean;
+    } = {
       success: false,
       error: "Unsupported gateway",
     };
@@ -147,8 +176,11 @@ export class RefundService {
       await this.markRefundSuccess(refund.id, providerRes.gatewayRefundRef || refund.id);
       return { success: true };
     } else {
+      if (providerRes.unknownResult) {
+        return { success: false, error: "Refund result is unknown and requires reconciliation" };
+      }
       await this.markRefundFailed(refund.id);
-      return { success: false, error: providerRes.error || "Provider failed" };
+      return { success: false, error: "Refund provider rejected the request" };
     }
   }
 }

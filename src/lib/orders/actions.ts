@@ -4,7 +4,11 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
 
-export async function cancelOrderAction(orderNumber: string) {
+export async function cancelOrderAction(orderNumber: string): Promise<{
+  success: boolean;
+  message?: string;
+  error?: string;
+}> {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
@@ -13,64 +17,66 @@ export async function cancelOrderAction(orderNumber: string) {
   const userId = session.user.id;
 
   try {
-    // Determine if cancellation is allowed
-    // We only allow cancellation if:
-    // 1. Order belongs to user
-    // 2. status is PENDING
-    // 3. payment is NOT successful
-    // 4. inventory is NOT already COMMITTED (since restocking is out of scope)
-    const order = await prisma.order.findUnique({
-      where: { orderNumber, userId },
-      include: { inventoryReservations: true },
-    });
+    const result = await prisma.$transaction(async (tx) => {
+      const orderIdentity = await tx.order.findUnique({
+        where: { orderNumber, userId },
+        select: { id: true },
+      });
+      if (!orderIdentity)
+        return { success: false as const, error: "Order not found or access denied." };
 
-    if (!order) {
-      return { success: false, error: "Order not found or access denied." };
-    }
+      // Serialize cancellation with shipment intent creation, which takes the same row lock.
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderIdentity.id} FOR UPDATE`;
+      const order = await tx.order.findUnique({
+        where: { id: orderIdentity.id },
+        include: { inventoryReservations: true, shipment: true },
+      });
+      if (!order) return { success: false as const, error: "Order not found or access denied." };
+      if (order.status === "CANCELLED") {
+        return { success: true as const, message: "Order is already cancelled." };
+      }
+      if (order.shipment) {
+        return {
+          success: false as const,
+          error: "Orders cannot be cancelled after shipment processing has started.",
+        };
+      }
+      if (order.status !== "PENDING") {
+        return { success: false as const, error: "Only pending orders can be cancelled." };
+      }
+      if (
+        order.paymentStatus === "SUCCESS" ||
+        order.paymentStatus === "REFUNDED" ||
+        order.paymentStatus === "PARTIALLY_REFUNDED"
+      ) {
+        return {
+          success: false as const,
+          error: "Paid orders cannot be cancelled online at this time.",
+        };
+      }
+      if (order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")) {
+        return {
+          success: false as const,
+          error: "Order has already committed stock and cannot be safely cancelled.",
+        };
+      }
 
-    if (order.status === "CANCELLED") {
-      return { success: true, message: "Order is already cancelled." };
-    }
-
-    if (order.status !== "PENDING") {
-      return { success: false, error: "Only pending orders can be cancelled." };
-    }
-
-    if (
-      order.paymentStatus === "SUCCESS" ||
-      order.paymentStatus === "REFUNDED" ||
-      order.paymentStatus === "PARTIALLY_REFUNDED"
-    ) {
-      return { success: false, error: "Paid orders cannot be cancelled online at this time." };
-    }
-
-    const hasCommittedInventory = order.inventoryReservations.some((r) => r.status === "COMMITTED");
-    if (hasCommittedInventory) {
-      return {
-        success: false,
-        error: "Order has already committed stock and cannot be safely cancelled.",
-      };
-    }
-
-    // Atomic update
-    await prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
-        data: {
-          status: "CANCELLED",
-          paymentStatus: "CANCELLED",
-        },
+        data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
       });
-
-      // Release reserved inventory
       const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
       await inventoryService.releaseReservation(order.id, tx);
+      return { success: true as const, message: "Order successfully cancelled." };
     });
+
+    if (!result.success) return result;
+    if (result.message === "Order is already cancelled.") return result;
 
     revalidatePath("/account/orders");
     revalidatePath(`/account/orders/${orderNumber}`);
 
-    return { success: true, message: "Order successfully cancelled." };
+    return result;
   } catch (error) {
     console.error("[cancelOrderAction] Error:", error);
     return { success: false, error: "Failed to cancel the order. Please try again later." };

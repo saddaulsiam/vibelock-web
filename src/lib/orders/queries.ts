@@ -8,6 +8,8 @@ export async function getCustomerOrders(
   page = 1,
   pageSize = 10
 ): Promise<{ orders: OrderSummary[]; total: number }> {
+  const safePage = Number.isSafeInteger(page) && page > 0 ? page : 1;
+  const safePageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? pageSize : 10;
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
@@ -19,9 +21,9 @@ export async function getCustomerOrders(
     prisma.order.findMany({
       where: { userId },
       include: { items: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: (safePage - 1) * safePageSize,
+      take: safePageSize,
     }),
     prisma.order.count({ where: { userId } }),
   ]);
