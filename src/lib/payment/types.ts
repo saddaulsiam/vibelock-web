@@ -29,7 +29,22 @@ export interface PaymentVerificationResult {
   error?: string;
 }
 
+export interface RefundInitiationRequest {
+  refundId: string;
+  paymentId: string;
+  gatewayTransactionId: string;
+  amount: number;
+  reason?: string;
+}
+
+export interface RefundInitiationResponse {
+  success: boolean;
+  gatewayRefundRef?: string;
+  error?: string;
+}
+
 export interface PaymentProvider {
   initiatePayment(request: PaymentInitiationRequest): Promise<PaymentInitiationResponse>;
   verifyPayment(callbackPayload: Record<string, unknown>): Promise<PaymentVerificationResult>;
+  refundPayment?(request: RefundInitiationRequest): Promise<RefundInitiationResponse>;
 }

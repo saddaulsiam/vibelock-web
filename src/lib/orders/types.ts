@@ -50,4 +50,22 @@ export type OrderDetail = {
   shippingMethodName: string;
 
   items: OrderItemSummary[];
+
+  // Return & Refund Info
+  returnRequests: {
+    id: string;
+    status: string;
+    createdAt: Date;
+    items: {
+      orderItemId: string;
+      quantity: number;
+    }[];
+  }[];
+  refunds: {
+    id: string;
+    status: string;
+    amount: number;
+    createdAt: Date;
+  }[];
+  isReturnable: boolean;
 };

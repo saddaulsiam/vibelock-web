@@ -6,6 +6,7 @@ import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Price } from "@/components/storefront/price";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, CreditCard, MapPin, Package, User } from "lucide-react";
@@ -88,11 +89,18 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           {/* Main Content (Items) */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
                 <CardTitle className="flex items-center gap-2">
                   <Package className="w-5 h-5 text-zinc-500" />
                   Order Items
                 </CardTitle>
+                {order.isReturnable && (
+                  <Link href={`/account/orders/${order.orderNumber}/return`}>
+                    <Button variant="outline" size="sm">
+                      Request Return
+                    </Button>
+                  </Link>
+                )}
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y border-t border-b">
@@ -147,6 +155,59 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                 </div>
               </CardFooter>
             </Card>
+
+            {order.returnRequests.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Returns & Refunds</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {order.returnRequests.map((req) => (
+                    <div key={req.id} className="p-4 border rounded-lg bg-zinc-50">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-semibold text-sm">Return Request</span>
+                        <Badge variant="outline" className={getStatusColor(req.status)}>
+                          {req.status}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-zinc-500">
+                        Requested on {new Date(req.createdAt).toLocaleDateString()}
+                      </p>
+                      <div className="mt-3 text-sm">
+                        {req.items.map((i) => {
+                          const originalItem = order.items.find((oi) => oi.id === i.orderItemId);
+                          return (
+                            <div
+                              key={i.orderItemId}
+                              className="flex justify-between py-1 border-b last:border-0"
+                            >
+                              <span>{originalItem?.productName || "Unknown Item"}</span>
+                              <span className="text-zinc-500">Qty: {i.quantity}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  {order.refunds.map((ref) => (
+                    <div key={ref.id} className="p-4 border rounded-lg bg-green-50/50">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="font-semibold text-sm text-green-900">Refund</span>
+                        <Badge variant="outline" className={getStatusColor(ref.status)}>
+                          {ref.status}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-zinc-500">
+                          {new Date(ref.createdAt).toLocaleDateString()}
+                        </p>
+                        <Price amount={ref.amount} className="font-bold text-green-700" />
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Sidebar (Payment & Shipping) */}

@@ -45,7 +45,15 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       orderNumber,
       userId, // CRITICAL: Only fetch if it belongs to the authenticated user
     },
-    include: { items: true },
+    include: {
+      items: true,
+      returns: {
+        include: { items: true },
+      },
+      payments: {
+        include: { refunds: true },
+      },
+    },
   });
 
   if (!order) {

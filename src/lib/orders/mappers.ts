@@ -1,8 +1,10 @@
-import { Order, OrderItem } from "@prisma/client";
+import { Order, OrderItem, Payment, Refund, ReturnRequest, ReturnItem } from "@prisma/client";
 import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
+  payments?: (Payment & { refunds: Refund[] })[];
+  returns?: (ReturnRequest & { items: ReturnItem[] })[];
 };
 
 export function mapOrderItem(item: OrderItem): OrderItemSummary {
@@ -58,5 +60,28 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
     shippingMethodName: order.shippingMethodName,
 
     items: order.items.map(mapOrderItem),
+
+    returnRequests:
+      order.returns?.map((r) => ({
+        id: r.id,
+        status: r.status,
+        createdAt: r.createdAt,
+        items: r.items.map((i) => ({ orderItemId: i.orderItemId, quantity: i.quantity })),
+      })) || [],
+
+    refunds:
+      order.payments?.flatMap((p) =>
+        p.refunds.map((r) => ({
+          id: r.id,
+          status: r.status,
+          amount: Number(r.amount),
+          createdAt: r.createdAt,
+        }))
+      ) || [],
+
+    // Only DELIVERED orders are eligible for return (if they exist). Or you can set
+    // it to true for testing if required by the system, but the prompt said:
+    // "use statuses that actually exist... if shipping is Phase 3K... make it configurable/disabled"
+    isReturnable: order.status === "DELIVERED",
   };
 }

@@ -147,4 +147,49 @@ export class SSLCommerzProvider implements PaymentProvider {
       return { success: false, status: "FAILED", error: "Verification request failed" };
     }
   }
+
+  async refundPayment(request: {
+    refundId: string;
+    paymentId: string;
+    gatewayTransactionId: string;
+    amount: number;
+    reason?: string;
+  }): Promise<{ success: boolean; gatewayRefundRef?: string; error?: string }> {
+    if (!this.storeId || !this.storePassword) {
+      return { success: false, error: "SSLCommerz configuration missing" };
+    }
+
+    try {
+      const url = new URL(`${this.baseUrl}/validator/api/merchantTransIDvalidationAPI.php`);
+      url.searchParams.append("refund_amount", request.amount.toString());
+      url.searchParams.append("refund_remarks", request.reason || "Refund requested");
+      url.searchParams.append("bank_tran_id", request.gatewayTransactionId);
+      url.searchParams.append("refe_id", request.refundId);
+      url.searchParams.append("store_id", this.storeId);
+      url.searchParams.append("store_passwd", this.storePassword);
+      url.searchParams.append("v", "1");
+      url.searchParams.append("format", "json");
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+      });
+
+      const result = await response.json();
+
+      if (result.APIConnect === "DONE" && result.status === "success") {
+        return {
+          success: true,
+          gatewayRefundRef: result.refund_ref_id || result.trans_id || request.refundId,
+        };
+      } else {
+        return {
+          success: false,
+          error: result.errorReason || "Refund failed on SSLCommerz server",
+        };
+      }
+    } catch (error) {
+      console.error("[SSLCommerz] Error refunding payment:", error);
+      return { success: false, error: "Refund request failed due to network or timeout" };
+    }
+  }
 }

@@ -291,6 +291,7 @@ model InventoryTransaction {
 
   @@index([variantId])
   @@index([createdAt])
+  @@unique([type, referenceId, variantId])
 }
 
 model InventoryReservation {
