@@ -7,14 +7,22 @@ import prisma from "../../src/lib/prisma/client";
 import { createTestProduct, createTestVariant } from "../factories";
 import robots from "../../src/app/robots";
 import sitemap from "../../src/app/sitemap";
+import { NextRequest } from "next/server";
+import { metadata as rootMetadata } from "../../src/app/layout";
+import { metadata as productsMetadata } from "../../src/app/(storefront)/products/page";
+import { generateMetadata as generateCategoryMetadata } from "../../src/app/(storefront)/category/[slug]/page";
+import { proxy } from "../../src/proxy";
 import {
   default as ProductDetailPage,
   generateMetadata as generateProductMetadata,
 } from "../../src/app/(storefront)/products/[slug]/page";
 
 vi.mock("../../src/auth", () => ({ auth: vi.fn() }));
+vi.mock("next/font/google", () => ({ Inter: () => ({ variable: "test-font" }) }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
 const productIds: string[] = [];
+const categoryIds: string[] = [];
 
 async function makeSeoProduct(status: "PUBLISHED" | "DRAFT" = "PUBLISHED") {
   const product = await createTestProduct({
@@ -59,6 +67,10 @@ describe("Phase 3L - Launch Hardening", () => {
       await prisma.product.deleteMany({ where: { id: { in: productIds } } });
       productIds.length = 0;
     }
+    if (categoryIds.length) {
+      await prisma.category.deleteMany({ where: { id: { in: categoryIds } } });
+      categoryIds.length = 0;
+    }
   });
 
   test("configured security headers match the existing launch policy", async () => {
@@ -75,6 +87,48 @@ describe("Phase 3L - Launch Hardening", () => {
       "max-age=31536000; includeSubDomains; preload"
     );
     expect(headers.has("content-security-policy")).toBe(false);
+  });
+
+  test("production proxy returns a nonce-based CSP without unsafe-eval", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    try {
+      const request = () => new NextRequest("https://vibelock.com.bd/products");
+      const response = proxy(request());
+      const repeatedResponse = proxy(request());
+      const policy = response.headers.get("content-security-policy") ?? "";
+      const repeatedPolicy = repeatedResponse.headers.get("content-security-policy") ?? "";
+      const nonce = policy.match(/'nonce-([^']+)'/)?.[1];
+      const repeatedNonce = repeatedPolicy.match(/'nonce-([^']+)'/)?.[1];
+
+      expect(nonce).toBeTruthy();
+      expect(repeatedNonce).toBeTruthy();
+      expect(repeatedNonce).not.toBe(nonce);
+      expect(policy).toContain("'strict-dynamic'");
+      expect(policy).toContain("style-src-attr 'unsafe-inline'");
+      expect(policy).toContain("https://res.cloudinary.com");
+      expect(policy).toContain("https://sandbox.sslcommerz.com");
+      expect(policy).not.toContain("'unsafe-eval'");
+      expect(policy).not.toContain("default-src *");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  test("production canonical metadata uses the public host for storefront routes", async () => {
+    expect(rootMetadata.metadataBase?.toString()).toBe("https://vibelock.com.bd/");
+    expect(rootMetadata.alternates?.canonical).toBe("https://vibelock.com.bd");
+    expect(productsMetadata.alternates?.canonical).toBe("https://vibelock.com.bd/products");
+
+    const category = await prisma.category.create({
+      data: { name: "Launch QA Category", slug: `launch-qa-${crypto.randomUUID()}` },
+    });
+    categoryIds.push(category.id);
+    const metadata = await generateCategoryMetadata({
+      params: Promise.resolve({ slug: category.slug }),
+    });
+    expect(metadata.alternates?.canonical).toBe(
+      `https://vibelock.com.bd/category/${category.slug}`
+    );
   });
 
   test("server environment validation rejects missing secrets and malformed configuration safely", async () => {
@@ -129,9 +183,10 @@ describe("Phase 3L - Launch Hardening", () => {
     const metadata = await generateProductMetadata({
       params: Promise.resolve({ slug: product.slug }),
     });
-    expect(metadata.title).toBe(`${product.name} | VibeLock`);
+    expect(metadata.title).toBe(product.name);
     expect(metadata.description).toBe("SEO fixture description");
     expect(metadata.openGraph).toMatchObject({ title: `${product.name} | VibeLock` });
+    expect(metadata.alternates?.canonical).toBe(`https://vibelock.com.bd/products/${product.slug}`);
 
     const page = await ProductDetailPage({ params: Promise.resolve({ slug: product.slug }) });
     const jsonLdText = findJsonLd(page);

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
@@ -34,10 +35,13 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
         href={`/product/${product.slug}`}
         className="block relative aspect-[3/4] overflow-hidden bg-secondary/50 rounded-sm"
       >
-        {/* Placeholder for real images. Using a colored div to simulate image loading/structure */}
-        <div className="absolute inset-0 bg-muted flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-          <span className="text-muted-foreground/50 font-medium text-sm">Image Placeholder</span>
-        </div>
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          sizes="(min-width: 768px) 25vw, 50vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+        />
 
         {product.badge && (
           <div className="absolute top-2 left-2 z-10">

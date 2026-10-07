@@ -7,6 +7,8 @@ import { Section } from "@/components/shared/section";
 import { getProductBySlug } from "@/lib/catalog/queries";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { SITE_URL } from "@/lib/seo/site";
+import { headers } from "next/headers";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -22,11 +24,13 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const ogImage = primaryImage ? { url: primaryImage.url } : undefined;
 
   return {
-    title: `${product.name} | VibeLock`,
+    title: product.name,
     description: product.description || `Buy ${product.name} at VibeLock.`,
+    alternates: { canonical: `${SITE_URL}/products/${product.slug}` },
     openGraph: {
       title: `${product.name} | VibeLock`,
       description: product.description || `Buy ${product.name} at VibeLock.`,
+      url: `${SITE_URL}/products/${product.slug}`,
       images: ogImage ? [ogImage] : [],
     },
   };
@@ -35,6 +39,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const p = await params;
   const product = await getProductBySlug(p.slug);
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   if (!product) {
     notFound();
@@ -77,6 +82,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   return (
     <Section className="py-8 bg-background min-h-screen">
       <script
+        nonce={nonce}
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />

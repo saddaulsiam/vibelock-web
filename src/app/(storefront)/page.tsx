@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/storefront/product-card";
 export default async function StorefrontHomePage() {
   const [categories, latestProducts] = await Promise.all([
     getCategories(),
-    getPublishedProducts({ take: 4 }),
+    getPublishedProducts(),
   ]);
 
   return (

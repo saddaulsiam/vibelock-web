@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { publicEnv } from "@/lib/config/public-env";
+import { SITE_URL } from "@/lib/seo/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/account/", "/checkout/", "/cart/", "/api/", "/admin/", "/manager/", "/staff/"],
     },
-    sitemap: `${publicEnv.NEXT_PUBLIC_APP_URL}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

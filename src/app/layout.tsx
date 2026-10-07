@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { connection } from "next/server";
 import "./globals.css";
+import { SITE_URL } from "@/lib/seo/site";
 
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-sans",
 });
-
-import { publicEnv } from "@/lib/config/public-env";
 
 export const metadata: Metadata = {
   title: {
@@ -17,22 +17,25 @@ export const metadata: Metadata = {
   },
   description:
     "Bangladesh men's streetwear brand for modern Dhaka youth. Minimal, confident, and premium.",
-  metadataBase: new URL(publicEnv.NEXT_PUBLIC_APP_URL),
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: SITE_URL },
   openGraph: {
     title: "VibeLock | Modern Dhaka Streetwear",
     description: "Bangladesh men's streetwear brand for modern Dhaka youth.",
-    url: publicEnv.NEXT_PUBLIC_APP_URL,
+    url: SITE_URL,
     siteName: "VibeLock",
     locale: "en_BD",
     type: "website",
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (process.env.NODE_ENV === "production") await connection();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body

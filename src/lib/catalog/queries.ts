@@ -5,6 +5,8 @@ import { ProductSummary, ProductDetail, CategorySummary } from "./types";
 import { unstable_cache } from "next/cache";
 import { ProductStatus } from "@prisma/client";
 
+class EmptyPublishedProductsError extends Error {}
+
 // Reusable standard includes
 const PUBLIC_PRODUCT_INCLUDES = {
   images: true,
@@ -30,7 +32,7 @@ export const getPublishedProducts = async (options?: {
   take?: number;
 }): Promise<ProductSummary[]> => {
   const cacheKey = [
-    "published-products",
+    "published-products-v2",
     options?.categorySlug || "all",
     options?.take ? options.take.toString() : "all",
   ];
@@ -49,13 +51,25 @@ export const getPublishedProducts = async (options?: {
         take: options?.take,
       });
 
+      // Do not persist an empty catalog snapshot. Products can be added by the
+      // seed/admin workflow without running inside a Next.js request that can
+      // invalidate this tag. A later request should see the newly published data.
+      if (products.length === 0) {
+        throw new EmptyPublishedProductsError();
+      }
+
       return products.map(mapProductSummary);
     },
     cacheKey,
     { tags: ["products"], revalidate: 3600 }
   );
 
-  return queryFn();
+  try {
+    return await queryFn();
+  } catch (error) {
+    if (error instanceof EmptyPublishedProductsError) return [];
+    throw error;
+  }
 };
 
 /**

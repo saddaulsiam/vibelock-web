@@ -9,6 +9,7 @@ import { ProductGrid } from "@/components/storefront/catalog/product-grid";
 import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
+import { SITE_URL } from "@/lib/seo/site";
 
 export async function generateMetadata({
   params,
@@ -21,9 +22,16 @@ export async function generateMetadata({
   if (!category) return {};
 
   return {
-    title: `${category.name} - VibeLock`,
+    title: category.name,
     description:
       category.description || `Browse the latest ${category.name} collection at VibeLock.`,
+    alternates: { canonical: `${SITE_URL}/category/${category.slug}` },
+    openGraph: {
+      title: `${category.name} | VibeLock`,
+      description:
+        category.description || `Browse the latest ${category.name} collection at VibeLock.`,
+      url: `${SITE_URL}/category/${category.slug}`,
+    },
   };
 }
 

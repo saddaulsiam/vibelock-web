@@ -8,10 +8,12 @@ import { ProductGrid } from "@/components/storefront/catalog/product-grid";
 import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
+import { SITE_URL } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
-  title: "All Products - VibeLock",
+  title: "All Products",
   description: "Browse our complete collection of premium urban streetwear.",
+  alternates: { canonical: `${SITE_URL}/products` },
 };
 
 export default async function ProductsPage({
