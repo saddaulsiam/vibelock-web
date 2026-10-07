@@ -223,7 +223,10 @@ export async function createOrderAction(
 
       return {
         success: false,
-        error: invError instanceof Error ? invError.message : "Some items are no longer available in the requested quantity.",
+        error:
+          invError instanceof Error
+            ? invError.message
+            : "Some items are no longer available in the requested quantity.",
       };
     }
 
@@ -249,6 +252,14 @@ export async function createOrderAction(
             error: "Payment initiation failed. You can retry from your orders page.",
           };
         }
+      }
+    } else if (paymentMethod === "COD") {
+      // Phase 3H: COD checkout immediately commits stock
+      try {
+        const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
+        await inventoryService.consumeReservation(finalOrderId);
+      } catch (err) {
+        console.error("[Checkout] Failed to consume inventory for COD order:", err);
       }
     }
 

@@ -14,7 +14,10 @@ export class InventoryService {
    * Calculates the currently available stock for a variant.
    * This logic matches the read-only catalog mappers but uses a locked transaction context if needed.
    */
-  static async calculateAvailableQuantity(tx: Prisma.TransactionClient, variantId: string): Promise<number> {
+  static async calculateAvailableQuantity(
+    tx: Prisma.TransactionClient,
+    variantId: string
+  ): Promise<number> {
     const variant = await tx.productVariant.findUnique({
       where: { id: variantId },
       include: {
@@ -68,7 +71,9 @@ export class InventoryService {
         select: { id: true, sku: true },
       });
 
-      const skuToVariantId = new Map(variants.map((v: { sku: string; id: string }) => [v.sku, v.id]));
+      const skuToVariantId = new Map(
+        variants.map((v: { sku: string; id: string }) => [v.sku, v.id])
+      );
 
       // 3. Lock variant rows to prevent concurrent oversell
       const variantIds = Array.from(skuToVariantId.values()).sort();
@@ -120,7 +125,10 @@ export class InventoryService {
    * Finalize the inventory when the order is paid (or confirmed for COD).
    * This consumes the reservation and creates a permanent inventory transaction.
    */
-  static async consumeReservation(orderId: string, customTx?: Prisma.TransactionClient): Promise<void> {
+  static async consumeReservation(
+    orderId: string,
+    customTx?: Prisma.TransactionClient
+  ): Promise<void> {
     const run = async (tx: Prisma.TransactionClient) => {
       // 1. Find all active reservations for this order
       const reservations = await tx.inventoryReservation.findMany({
@@ -169,7 +177,10 @@ export class InventoryService {
   /**
    * Release an inventory reservation (e.g. failed payment, cancelled order).
    */
-  static async releaseReservation(orderId: string, customTx?: Prisma.TransactionClient): Promise<void> {
+  static async releaseReservation(
+    orderId: string,
+    customTx?: Prisma.TransactionClient
+  ): Promise<void> {
     const tx = customTx || prisma;
     await tx.inventoryReservation.updateMany({
       where: {
