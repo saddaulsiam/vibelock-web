@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
@@ -23,6 +24,9 @@ interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function ProductCard({ product, className, ...props }: ProductCardProps) {
+  const [failedImage, setFailedImage] = React.useState<string | null>(null);
+  const hasImage = Boolean(product.image) && failedImage !== product.image;
+
   return (
     <div
       className={cn(
@@ -33,15 +37,24 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
     >
       <Link
         href={`/product/${product.slug}`}
-        className="block relative aspect-[3/4] overflow-hidden bg-secondary/50 rounded-sm"
+        aria-label={`View ${product.name}`}
+        className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-secondary/50"
       >
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="(min-width: 768px) 25vw, 50vw"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {hasImage ? (
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={() => setFailedImage(product.image)}
+          />
+        ) : (
+          <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#F3F0E8] text-muted-foreground">
+            <ImageOff className="h-6 w-6" aria-hidden="true" />
+            <span className="text-xs">Image unavailable</span>
+          </span>
+        )}
 
         {product.badge && (
           <div className="absolute top-2 left-2 z-10">

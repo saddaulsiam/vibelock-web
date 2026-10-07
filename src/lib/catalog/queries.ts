@@ -6,6 +6,7 @@ import { unstable_cache } from "next/cache";
 import { ProductStatus } from "@prisma/client";
 
 class EmptyPublishedProductsError extends Error {}
+class EmptyCategoriesError extends Error {}
 
 // Reusable standard includes
 const PUBLIC_PRODUCT_INCLUDES = {
@@ -97,17 +98,32 @@ export const getProductBySlug = unstable_cache(
  * Currently, there is no "status" on Category, so we assume all categories are public.
  * If a category should be hidden when empty, we can filter it.
  */
-export const getCategories = unstable_cache(
-  async (): Promise<CategorySummary[]> => {
-    const categories = await prisma.category.findMany({
-      orderBy: { name: "asc" },
-    });
+export const getCategories = async (): Promise<CategorySummary[]> => {
+  const queryFn = unstable_cache(
+    async (): Promise<CategorySummary[]> => {
+      const categories = await prisma.category.findMany({
+        orderBy: { name: "asc" },
+      });
 
-    return categories.map(mapCategory);
-  },
-  ["all-categories"],
-  { tags: ["categories"], revalidate: 3600 }
-);
+      // As with the published catalog, an empty result may predate data being
+      // seeded. Avoid persisting that negative result across requests.
+      if (categories.length === 0) {
+        throw new EmptyCategoriesError();
+      }
+
+      return categories.map(mapCategory);
+    },
+    ["all-categories-v2"],
+    { tags: ["categories"], revalidate: 3600 }
+  );
+
+  try {
+    return await queryFn();
+  } catch (error) {
+    if (error instanceof EmptyCategoriesError) return [];
+    throw error;
+  }
+};
 
 /**
  * Get a specific category by slug
