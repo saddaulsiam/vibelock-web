@@ -11,6 +11,7 @@ export interface CreateShipmentRequest {
   zip?: string;
   country: string;
   amount: number;
+  referenceId: string;
 }
 
 export interface CreateShipmentResponse {

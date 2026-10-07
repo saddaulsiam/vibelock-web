@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { ShippingService } from "@/lib/shipping/service";
 import { MockCourierProvider } from "@/lib/shipping/providers/mock/client";
 
@@ -10,15 +11,35 @@ export async function POST(req: NextRequest) {
     const secret = process.env.COURIER_WEBHOOK_SECRET;
     const signature = req.headers.get("x-courier-signature");
 
-    // Simplistic check for mock provider
-    if (secret && signature !== secret) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+    if (!secret || !signature) {
+      return NextResponse.json({ error: "Missing signature or secret" }, { status: 401 });
+    }
+
+    try {
+      const secretBuffer = Buffer.from(secret);
+      const signatureBuffer = Buffer.from(signature);
+
+      if (
+        secretBuffer.length !== signatureBuffer.length ||
+        !crypto.timingSafeEqual(secretBuffer, signatureBuffer)
+      ) {
+        return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+      }
+    } catch {
+      return NextResponse.json({ error: "Invalid signature format" }, { status: 401 });
     }
 
     const { providerShipmentId, status } = payload;
 
     if (!providerShipmentId || !status) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
+    }
+
+    if (process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { error: "Shipping provider unavailable / configuration error" },
+        { status: 501 }
+      );
     }
 
     const provider = new MockCourierProvider();

@@ -12,22 +12,27 @@ export class ShippingService {
     });
 
     if (!order) throw new Error("Order not found");
-    if (order.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
-    if (order.shipment) throw new Error("Shipment already exists for this order");
+    // 1. Transactional validation and local intent creation
+    const localShipment = await prisma.$transaction(async (tx) => {
+      const currentOrder = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { shipment: true },
+      });
+      if (!currentOrder) throw new Error("Order not found");
+      if (currentOrder.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
+      if (currentOrder.shipment) throw new Error("Shipment already exists for this order");
+      if (currentOrder.paymentMethod === "ONLINE" && currentOrder.paymentStatus !== "SUCCESS") {
+        throw new Error("Online orders must be fully paid before shipping");
+      }
 
-    // Enforce Payment Rules
-    if (order.paymentMethod === "ONLINE" && order.paymentStatus !== "SUCCESS") {
-      throw new Error("Online orders must be fully paid before shipping");
-    }
-
-    // 1. Create local shipment intent
-    const localShipment = await prisma.shipment.create({
-      data: {
-        orderId: order.id,
-        provider: "mock-courier",
-        status: "PENDING",
-        shippingAmount: order.shippingCost,
-      },
+      return tx.shipment.create({
+        data: {
+          orderId: currentOrder.id,
+          provider: "mock-courier",
+          status: "PENDING",
+          shippingAmount: currentOrder.shippingCost,
+        },
+      });
     });
 
     // 2. Call external provider
@@ -44,13 +49,15 @@ export class ShippingService {
         zip: order.shippingZip || undefined,
         country: order.shippingCountry,
         amount: Number(order.total),
+        referenceId: localShipment.id,
       });
     } catch (error) {
       console.error("[ShippingService] Provider error during shipment creation", error);
-      // Fallback update to FAILED, but keep the record
+      // DO NOT update to FAILED on unknown result. Keep it as PENDING to avoid duplicate creation.
+      // If we mark it failed and retry, we might create a duplicate shipment on the provider.
       await prisma.shipment.update({
         where: { id: localShipment.id },
-        data: { status: "FAILED", failureReason: "Network timeout or unknown result" },
+        data: { failureReason: "Network timeout or unknown result" },
       });
       throw new Error("Provider timeout or error creating shipment");
     }
@@ -117,16 +124,28 @@ export class ShippingService {
 
     if (!shipment) throw new Error("Shipment not found");
 
-    // Prevent invalid regression
-    if (shipment.status === "DELIVERED") {
-      // Delivered is terminal from a shipping perspective.
+    // Prevent invalid regression and concurrent state updates
+    const terminalStatuses: ShipmentStatus[] = ["DELIVERED", "CANCELLED", "RETURNED"];
+
+    // Using updateMany for atomic check-and-set
+    const updateResult = await prisma.shipment.updateMany({
+      where: {
+        id: shipmentId,
+        status: { notIn: terminalStatuses },
+      },
+      data: { status: newStatus },
+    });
+
+    if (updateResult.count === 0) {
+      // If 0, it means it was already in a terminal state or not found.
       return shipment;
     }
 
-    const updated = await prisma.shipment.update({
+    // Refresh the updated shipment
+    const updated = await prisma.shipment.findUnique({
       where: { id: shipmentId },
-      data: { status: newStatus },
     });
+    if (!updated) return shipment;
 
     // Synchronize parent Order status
     if (newStatus === "DELIVERED") {

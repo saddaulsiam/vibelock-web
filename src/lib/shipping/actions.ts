@@ -22,6 +22,11 @@ export async function adminCreateShipmentAction(orderId: string) {
     return { success: false, error: "Forbidden: Admin only" };
   }
 
+  if (process.env.NODE_ENV === "production") {
+    // In production, we MUST have a real courier. Since one isn't integrated yet:
+    return { success: false, error: "Shipping provider unavailable / configuration error" };
+  }
+
   const provider = new MockCourierProvider();
   const service = new ShippingService(provider);
 
