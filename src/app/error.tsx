@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Container } from "@/components/shared/container";
+import { Section } from "@/components/shared/section";
 
 export default function Error({
   error,
@@ -16,16 +19,31 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-8 space-y-6">
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Something went wrong!</h2>
-        <p className="text-muted-foreground">
-          We apologize for the inconvenience. Our team has been notified.
-        </p>
-      </div>
-      <Button onClick={() => reset()} variant="default">
-        Try again
-      </Button>
-    </div>
+    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-[#F3F0E8] py-16">
+      <Container>
+        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">VibeLock / Error</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">Something went wrong</h1>
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground sm:text-base">
+            We couldn&apos;t load this page. Please try again.
+          </p>
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button
+              onClick={reset}
+              size="lg"
+              className="min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
+            >
+              Try again
+            </Button>
+            <Link
+              href="/products"
+              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            >
+              Browse products
+            </Link>
+          </div>
+        </div>
+      </Container>
+    </Section>
   );
 }

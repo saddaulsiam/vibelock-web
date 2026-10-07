@@ -3,6 +3,7 @@ import { Search, ShoppingBag } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { logoutAction } from "@/app/actions/auth";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { MobileNav } from "./mobile-nav";
@@ -103,12 +104,31 @@ export async function Header() {
               </div>
             </details>
 
-            <Link
-              href={user ? "/account" : "/login"}
-              className="hidden min-h-11 items-center rounded-full px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:inline-flex"
-            >
-              {user ? "Account" : "Sign in"}
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href="/account"
+                  className="hidden min-h-11 items-center rounded-full px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:inline-flex"
+                >
+                  Account
+                </Link>
+                <form action={logoutAction} className="hidden xl:block">
+                  <button
+                    type="submit"
+                    className="inline-flex min-h-11 items-center rounded-full px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2"
+                  >
+                    Sign out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden min-h-11 items-center rounded-full px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:inline-flex"
+              >
+                Sign in
+              </Link>
+            )}
 
             <Link
               href="/cart"

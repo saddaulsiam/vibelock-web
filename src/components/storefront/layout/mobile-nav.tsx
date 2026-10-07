@@ -1,9 +1,10 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { Menu } from "lucide-react";
+import { logoutAction } from "@/app/actions/auth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
+import Link from "next/link";
+import * as React from "react";
 import { storefrontShopLinks } from "./navigation";
 
 interface MobileNavProps {
@@ -58,6 +59,16 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
             >
               Create account
             </Link>
+          )}
+          {isAuthenticated && (
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="inline-flex min-h-11 w-full items-center rounded-md border border-border px-4 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2"
+              >
+                Sign out
+              </button>
+            </form>
           )}
         </div>
       </SheetContent>

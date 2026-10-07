@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductDetailLoading() {
   return (
-    <Section className="py-8 bg-background min-h-screen">
+    <Section role="status" aria-label="Loading product details" className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
       <Container>
         {/* Breadcrumbs Skeleton */}
         <div className="flex items-center gap-2 mb-8">
@@ -15,25 +15,25 @@ export default function ProductDetailLoading() {
           <Skeleton className="h-4 w-32" />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Left Column: Image Gallery Skeleton */}
-          <div className="w-full flex flex-col-reverse md:flex-row gap-4 md:gap-6">
-            <div className="flex md:flex-col gap-4 shrink-0">
-              <Skeleton className="w-20 h-24 sm:w-24 sm:h-32 rounded-lg" />
-              <Skeleton className="w-20 h-24 sm:w-24 sm:h-32 rounded-lg hidden md:block" />
-              <Skeleton className="w-20 h-24 sm:w-24 sm:h-32 rounded-lg hidden md:block" />
+          <div className="w-full min-w-0">
+            <Skeleton className="aspect-[3/4] w-full rounded-sm bg-white" />
+            <div className="mt-3 flex gap-3 overflow-hidden">
+              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
+              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
+              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
             </div>
-            <Skeleton className="w-full aspect-[3/4] md:aspect-auto md:h-[600px] rounded-xl flex-1" />
           </div>
 
           {/* Right Column: Details Skeleton */}
-          <div className="w-full flex flex-col pt-2 lg:pt-6">
-            <Skeleton className="h-4 w-24 mb-4" />
-            <Skeleton className="h-10 w-3/4 mb-8" />
+          <div className="w-full min-w-0 pt-2 lg:pt-6">
+            <Skeleton className="mb-4 h-4 w-24 bg-[#101114]/10" />
+            <Skeleton className="mb-8 h-10 w-3/4 bg-[#101114]/10" />
 
             <div className="space-y-4 mb-8">
-              <Skeleton className="h-8 w-32" />
-              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-8 w-32 bg-[#101114]/10" />
+              <Skeleton className="h-6 w-24 bg-[#101114]/10" />
             </div>
 
             <div className="space-y-6">

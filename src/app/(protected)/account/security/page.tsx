@@ -113,8 +113,16 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="p-8 max-w-2xl mx-auto space-y-8">
-      <h1 className="text-3xl font-bold">Account Security</h1>
+    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
+      <header className="border-b border-[#101114]/15 pb-6">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          Customer area
+        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">Account security</h1>
+        <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+          Update your password and manage the sessions connected to your account.
+        </p>
+      </header>
 
       <Card>
         <CardHeader>
@@ -185,7 +193,11 @@ export default function SecurityPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {sessionLoading ? (
-            <div className="text-sm text-muted-foreground">Loading sessions...</div>
+            <p role="status" className="text-sm text-muted-foreground">Loading sessions...</p>
+          ) : sessions.length === 0 ? (
+            <p className="border border-dashed border-[#101114]/15 bg-[#F3F0E8]/60 px-4 py-6 text-sm text-muted-foreground">
+              No active sessions are available to display.
+            </p>
           ) : (
             <div className="space-y-4">
               {sessions.map((s) => (

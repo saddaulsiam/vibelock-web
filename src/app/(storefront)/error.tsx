@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
+import { Section } from "@/components/shared/section";
 
 export default function StorefrontError({
   error,
@@ -19,26 +20,34 @@ export default function StorefrontError({
   }, [error]);
 
   return (
-    <Container className="py-32 flex flex-col items-center justify-center text-center min-h-[60vh]">
-      <div className="space-y-6 max-w-md">
-        <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto mb-8">
-          <AlertCircle className="h-8 w-8 text-destructive" />
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight">Something went wrong!</h1>
-        <p className="text-muted-foreground text-lg">
-          We encountered an unexpected error while loading this page. Please try again.
-        </p>
-        <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center">
-          <Button onClick={reset} size="lg" className="w-full sm:w-auto">
-            Try again
-          </Button>
-          <Link href="/">
-            <Button variant="outline" size="lg" className="w-full sm:w-auto">
-              Return Home
+    <Section className="flex min-h-[65vh] items-center justify-center bg-[#F3F0E8] py-16">
+      <Container>
+        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+          <div className="mx-auto mb-6 flex size-14 items-center justify-center bg-[#F3F0E8] text-[#101114]">
+            <AlertCircle className="size-7" aria-hidden="true" />
+          </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">VibeLock / Storefront</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">Something went wrong</h1>
+          <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-muted-foreground sm:text-base">
+            We couldn&apos;t load this page. Please try again.
+          </p>
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <Button
+              onClick={reset}
+              size="lg"
+              className="min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
+            >
+              Try again
             </Button>
-          </Link>
+            <Link
+              href="/products"
+              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            >
+              Browse products
+            </Link>
+          </div>
         </div>
-      </div>
-    </Container>
+      </Container>
+    </Section>
   );
 }
