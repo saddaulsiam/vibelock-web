@@ -46,24 +46,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   providers: [
-    Google({
-      clientId: env.AUTH_GOOGLE_ID,
-      clientSecret: env.AUTH_GOOGLE_SECRET,
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          // Trust Google's verified status safely from server side
-          emailVerified: profile.email_verified ? new Date() : null,
-          // Explicitly assign CUSTOMER role for OAuth accounts
-          role: "CUSTOMER",
-        };
-      },
-      // Do not allow dangerous email account linking.
-      allowDangerousEmailAccountLinking: false,
-    }),
+    ...(env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
+      ? [
+          Google({
+            clientId: env.AUTH_GOOGLE_ID,
+            clientSecret: env.AUTH_GOOGLE_SECRET,
+            profile(profile) {
+              return {
+                id: profile.sub,
+                name: profile.name,
+                email: profile.email,
+                image: profile.picture,
+                // Trust Google's verified status safely from server side
+                emailVerified: profile.email_verified ? new Date() : null,
+                // Explicitly assign CUSTOMER role for OAuth accounts
+                role: "CUSTOMER",
+              };
+            },
+            // Do not allow dangerous email account linking.
+            allowDangerousEmailAccountLinking: false,
+          }),
+        ]
+      : []),
     Credentials({
       name: "Credentials",
       credentials: {
