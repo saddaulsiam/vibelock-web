@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { env } from "@/lib/config/env";
 import { ShippingService } from "@/lib/shipping/service";
 import { MockCourierProvider } from "@/lib/shipping/providers/mock/client";
 
@@ -8,7 +9,7 @@ export async function POST(req: NextRequest) {
     const payload = await req.json();
 
     // 1. Authenticate / Verify webhook signature here
-    const secret = process.env.COURIER_WEBHOOK_SECRET;
+    const secret = env.COURIER_WEBHOOK_SECRET;
     const signature = req.headers.get("x-courier-signature");
 
     if (!secret || !signature) {

@@ -19,6 +19,9 @@ const envSchema = z.object({
   SSLCOMMERZ_STORE_PASSWORD: z.string().optional(),
   SSLCOMMERZ_SANDBOX: z.coerce.boolean().default(true),
 
+  // Shipping
+  COURIER_WEBHOOK_SECRET: z.string().optional(),
+
   // Email Configuration
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.com.bd>"),

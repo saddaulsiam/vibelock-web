@@ -8,6 +8,8 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
+import { publicEnv } from "@/lib/config/public-env";
+
 export const metadata: Metadata = {
   title: {
     template: "%s | VibeLock",
@@ -15,11 +17,11 @@ export const metadata: Metadata = {
   },
   description:
     "Bangladesh men's streetwear brand for modern Dhaka youth. Minimal, confident, and premium.",
-  metadataBase: new URL("https://vibelock.com.bd"),
+  metadataBase: new URL(publicEnv.NEXT_PUBLIC_APP_URL),
   openGraph: {
     title: "VibeLock | Modern Dhaka Streetwear",
     description: "Bangladesh men's streetwear brand for modern Dhaka youth.",
-    url: "https://vibelock.com.bd",
+    url: publicEnv.NEXT_PUBLIC_APP_URL,
     siteName: "VibeLock",
     locale: "en_BD",
     type: "website",
