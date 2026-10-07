@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cancelOrderAction } from "@/lib/orders/actions";
 import { toast } from "sonner";
@@ -11,6 +12,7 @@ interface CancelOrderButtonProps {
 }
 
 export function CancelOrderButton({ orderNumber }: CancelOrderButtonProps) {
+  const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
 
   async function handleCancel() {
@@ -25,6 +27,7 @@ export function CancelOrderButton({ orderNumber }: CancelOrderButtonProps) {
       const result = await cancelOrderAction(orderNumber);
       if (result.success) {
         toast.success(result.message);
+        router.refresh();
       } else {
         toast.error(result.error);
       }
@@ -39,8 +42,9 @@ export function CancelOrderButton({ orderNumber }: CancelOrderButtonProps) {
     <Button
       variant="destructive"
       onClick={handleCancel}
+      type="button"
       disabled={isCancelling}
-      className="w-full sm:w-auto"
+      className="w-full focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:w-auto"
     >
       {isCancelling ? (
         <>

@@ -1,164 +1,150 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowLeft, ArrowRight, PackageOpen } from "lucide-react";
 import { getCustomerOrders } from "@/lib/orders/queries";
 import { Section } from "@/components/shared/section";
 import { Container } from "@/components/shared/container";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Price } from "@/components/storefront/price";
-import { PackageOpen, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "My Orders | VibeLock",
-  description: "View your order history.",
+  description: "View your VibeLock order history.",
   robots: { index: false, follow: false },
 };
 
-function getStatusColor(status: string) {
-  switch (status) {
-    case "PENDING":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "CONFIRMED":
-    case "PROCESSING":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "SHIPPED":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "DELIVERED":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "CANCELLED":
-    case "RETURNED":
-    case "REFUNDED":
-      return "bg-red-100 text-red-800 border-red-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
-}
+const pageSize = 10;
 
-export default async function OrdersPage(props: { searchParams: Promise<{ page?: string }> }) {
+export default async function OrdersPage(props: {
+  searchParams: Promise<{ page?: string }>;
+}) {
   const searchParams = await props.searchParams;
-  const page = parseInt(searchParams.page || "1", 10);
-  const pageSize = 10;
-
+  const requestedPage = Number.parseInt(searchParams.page ?? "1", 10);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const { orders, total } = await getCustomerOrders(page, pageSize);
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <Section className="py-12 bg-zinc-50 min-h-screen">
-      <Container className="max-w-4xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Order History</h1>
-            <p className="text-zinc-500 mt-2">View and manage your recent orders.</p>
-          </div>
-          <Link href="/account">
-            <Button variant="outline">Back to Account</Button>
+    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
+      <Container className="max-w-5xl">
+        <header className="mb-8 border-b border-[#101114]/15 pb-6 sm:mb-10">
+          <Link
+            href="/account"
+            className="mb-5 inline-flex min-h-9 items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" /> Back to account
           </Link>
-        </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            VibeLock / Account
+          </p>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">Your orders</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Review order status and details.</p>
+            </div>
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {total} {total === 1 ? "order" : "orders"}
+            </p>
+          </div>
+        </header>
 
         {orders.length === 0 ? (
-          <Card className="border-dashed border-2">
-            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <PackageOpen className="h-12 w-12 text-zinc-300 mb-4" />
-              <h3 className="text-lg font-medium text-zinc-900">No orders yet</h3>
-              <p className="text-sm text-zinc-500 mt-1 mb-6">
-                When you place orders, they will appear here.
-              </p>
-              <Link href="/products">
-                <Button>Start Shopping</Button>
-              </Link>
-            </CardContent>
-          </Card>
+          <div className="flex flex-col items-center border border-dashed border-[#101114]/20 bg-white/65 px-5 py-16 text-center">
+            <PackageOpen className="mb-4 size-9 text-muted-foreground" aria-hidden="true" />
+            <h2 className="text-xl font-semibold tracking-tight">No orders yet</h2>
+            <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+              Once you place an order, its status and details will appear here.
+            </p>
+            <Link
+              href="/products"
+              className="mt-6 inline-flex min-h-11 items-center gap-2 bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+            >
+              Shop products <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4">
             {orders.map((order) => (
-              <Card key={order.id} className="overflow-hidden">
-                <CardHeader className="bg-zinc-50 border-b pb-4">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                        Order {order.orderNumber}
-                      </CardTitle>
-                      <CardDescription className="flex items-center gap-1 mt-1.5">
-                        <Clock className="w-3.5 h-3.5" />
-                        Placed on {new Date(order.createdAt).toLocaleString()}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={getStatusColor(order.status)}>
-                        {order.status}
-                      </Badge>
-                      <Badge variant="outline" className="capitalize bg-zinc-100">
-                        {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
-                      </Badge>
-                    </div>
+              <article key={order.id} className="border border-[#101114]/10 bg-white">
+                <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                  <div className="min-w-0">
+                    <Link
+                      href={`/account/orders/${order.orderNumber}`}
+                      className="break-words text-base font-semibold tracking-tight text-[#101114] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    >
+                      Order {order.orderNumber}
+                    </Link>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Placed {new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(order.createdAt)}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="divide-y">
-                    {order.previewItems.map((item) => (
-                      <div key={item.id} className="p-4 flex items-center justify-between">
-                        <div className="flex flex-col">
-                          <span className="font-medium text-zinc-900 text-sm line-clamp-1">
-                            {item.productName}
-                          </span>
-                          <span className="text-xs text-zinc-500 mt-0.5">
-                            Qty: {item.quantity} • {item.sku}
-                            {item.size && ` • Size: ${item.size}`}
-                            {item.color && ` • Color: ${item.color}`}
-                          </span>
-                        </div>
-                        <Price amount={item.lineTotal} className="text-sm font-medium" />
-                      </div>
-                    ))}
-                    {order.itemCount > order.previewItems.length && (
-                      <div className="p-4 text-sm text-zinc-500 text-center bg-zinc-50/50">
-                        + {order.itemCount - order.previewItems.length} more item(s)
-                      </div>
-                    )}
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <OrderStatusBadge status={order.status} />
+                    <OrderStatusBadge status={order.paymentStatus} />
                   </div>
-                </CardContent>
-                <CardFooter className="bg-zinc-50 border-t p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-sm text-zinc-500">Order Total</span>
-                    <Price amount={order.total} className="text-lg font-bold text-zinc-900" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-[#101114]/10 bg-[#F3F0E8]/55 px-4 py-4 sm:grid-cols-3 sm:px-5">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Payment</p>
+                    <p className="mt-1 text-sm font-medium text-[#101114]">
+                      {order.paymentMethod === "COD" ? "Cash on delivery" : "Online payment"}
+                    </p>
                   </div>
-                  <Link href={`/account/orders/${order.orderNumber}`} className="w-full sm:w-auto">
-                    <Button variant="default" className="w-full sm:w-auto">
-                      View Order Details
-                    </Button>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Items</p>
+                    <p className="mt-1 text-sm font-medium text-[#101114]">
+                      {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
+                    </p>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1 sm:text-right">
+                    <p className="text-xs text-muted-foreground">Order total</p>
+                    <Price amount={order.total} className="mt-1 text-base font-semibold text-[#101114]" />
+                  </div>
+                </div>
+
+                <div className="flex justify-end border-t border-[#101114]/10 p-4 sm:px-5">
+                  <Link
+                    href={`/account/orders/${order.orderNumber}`}
+                    className="inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-semibold text-[#101114] transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  >
+                    View order <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
-                </CardFooter>
-              </Card>
+                </div>
+              </article>
             ))}
 
             {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-8">
-                {page > 1 && (
-                  <Link href={`/account/orders?page=${page - 1}`}>
-                    <Button variant="outline" size="sm">
-                      Previous
-                    </Button>
+              <nav aria-label="Order history pages" className="flex items-center justify-center gap-3 pt-5">
+                {page > 1 ? (
+                  <Link
+                    href={`/account/orders?page=${page - 1}`}
+                    className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  >
+                    <ArrowLeft className="size-4" aria-hidden="true" /> Previous
                   </Link>
+                ) : (
+                  <span className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60" aria-disabled="true">
+                    <ArrowLeft className="size-4" aria-hidden="true" /> Previous
+                  </span>
                 )}
-                <span className="flex items-center px-4 text-sm text-zinc-500">
+                <span className="min-w-24 text-center text-sm text-muted-foreground">
                   Page {page} of {totalPages}
                 </span>
-                {page < totalPages && (
-                  <Link href={`/account/orders?page=${page + 1}`}>
-                    <Button variant="outline" size="sm">
-                      Next
-                    </Button>
+                {page < totalPages ? (
+                  <Link
+                    href={`/account/orders?page=${page + 1}`}
+                    className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  >
+                    Next <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
+                ) : (
+                  <span className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60" aria-disabled="true">
+                    Next <ArrowRight className="size-4" aria-hidden="true" />
+                  </span>
                 )}
-              </div>
+              </nav>
             )}
           </div>
         )}

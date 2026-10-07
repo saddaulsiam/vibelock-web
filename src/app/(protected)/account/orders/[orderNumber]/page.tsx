@@ -1,309 +1,265 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCustomerOrder } from "@/lib/orders/queries";
-import { Section } from "@/components/shared/section";
+import { ArrowLeft, CreditCard, ImageOff, MapPin, Package, UserRound } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Section } from "@/components/shared/section";
+import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Price } from "@/components/storefront/price";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, CreditCard, MapPin, Package, User } from "lucide-react";
-import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { getCustomerOrder } from "@/lib/orders/queries";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
 }): Promise<Metadata> {
-  const params = await props.params;
+  const { orderNumber } = await props.params;
   return {
-    title: `Order ${params.orderNumber} | VibeLock`,
-    description: "Order details",
+    title: `Order ${orderNumber} | VibeLock`,
+    description: "View your VibeLock order details.",
     robots: { index: false, follow: false },
   };
 }
 
-function getStatusColor(status: string) {
-  switch (status) {
-    case "PENDING":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "CONFIRMED":
-    case "PROCESSING":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "SHIPPED":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "DELIVERED":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "CANCELLED":
-    case "RETURNED":
-    case "REFUNDED":
-      return "bg-red-100 text-red-800 border-red-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
+function formatDate(date: Date) {
+  return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
-export default async function OrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
-  const params = await props.params;
-  const order = await getCustomerOrder(params.orderNumber);
+export default async function OrderDetailPage(props: {
+  params: Promise<{ orderNumber: string }>;
+}) {
+  const { orderNumber } = await props.params;
+  const order = await getCustomerOrder(orderNumber);
+  if (!order) notFound();
 
-  if (!order) {
-    notFound();
-  }
-
+  // Preserve the existing customer-facing cancellation eligibility rule.
   const canCancel =
     order.status === "PENDING" &&
     (order.paymentStatus === "PENDING" || order.paymentStatus === "INITIATED") &&
     order.paymentMethod === "ONLINE";
 
   return (
-    <Section className="py-12 bg-zinc-50 min-h-screen">
-      <Container className="max-w-5xl">
-        <div className="mb-8">
+    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
+      <Container className="max-w-6xl">
+        <header className="mb-7 border-b border-[#101114]/15 pb-6 sm:mb-9">
           <Link
             href="/account/orders"
-            className="inline-flex items-center text-sm text-zinc-500 hover:text-zinc-900 transition-colors mb-4"
+            className="mb-5 inline-flex min-h-9 items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Orders
+            <ArrowLeft className="size-4" aria-hidden="true" /> Back to orders
           </Link>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight text-zinc-900">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            VibeLock / Account / Orders
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="break-words text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
                 Order {order.orderNumber}
               </h1>
-              <p className="text-zinc-500 mt-1">
-                Placed on {new Date(order.createdAt).toLocaleString()}
-              </p>
+              <p className="mt-2 text-sm text-muted-foreground">Placed {formatDate(order.createdAt)}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <OrderStatusBadge status={order.status} />
+                <OrderStatusBadge status={order.paymentStatus} />
+              </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className={getStatusColor(order.status)}>
-                {order.status}
-              </Badge>
-              {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
-            </div>
+            {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
           </div>
-        </div>
+        </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content (Items) */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5 text-zinc-500" />
-                  Order Items
-                </CardTitle>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(17rem,0.8fr)] lg:gap-8">
+          <div className="min-w-0 space-y-6">
+            <section className="border border-[#101114]/10 bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4 sm:px-6">
+                <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-[#101114]">
+                  <Package className="size-5" aria-hidden="true" /> Items
+                </h2>
                 {order.isReturnable && (
-                  <Link href={`/account/orders/${order.orderNumber}/return`}>
-                    <Button variant="outline" size="sm">
-                      Request Return
-                    </Button>
+                  <Link
+                    href={`/account/orders/${order.orderNumber}/return`}
+                    className="inline-flex min-h-9 items-center justify-center border border-[#101114]/20 px-3 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  >
+                    Request return
                   </Link>
                 )}
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y border-t border-b">
-                  {order.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="p-6 flex flex-col sm:flex-row gap-4 justify-between"
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-zinc-900">{item.productName}</span>
-                        <div className="text-sm text-zinc-500 mt-1 space-y-0.5">
-                          <p>SKU: {item.sku}</p>
-                          {item.size && <p>Size: {item.size}</p>}
-                          {item.color && <p>Color: {item.color}</p>}
-                          <p className="font-medium text-zinc-700 mt-2">
-                            <Price amount={item.unitPrice} /> × {item.quantity}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex flex-col sm:items-end justify-start">
-                        <Price amount={item.lineTotal} className="font-bold text-zinc-900" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-              <CardFooter className="bg-zinc-50 flex flex-col gap-3 p-6 rounded-b-lg">
-                <div className="flex justify-between w-full text-sm text-zinc-500">
-                  <span>Subtotal</span>
-                  <Price amount={order.subtotal} />
-                </div>
-                {order.discount > 0 && (
-                  <div className="flex justify-between w-full text-sm text-zinc-500">
-                    <span>Discount</span>
-                    <Price amount={-order.discount} className="text-red-600" />
-                  </div>
-                )}
-                <div className="flex justify-between w-full text-sm text-zinc-500">
-                  <span>Shipping ({order.shippingMethodName})</span>
-                  <Price amount={order.shippingCost} />
-                </div>
-                {order.taxAmount > 0 && (
-                  <div className="flex justify-between w-full text-sm text-zinc-500">
-                    <span>Tax</span>
-                    <Price amount={order.taxAmount} />
-                  </div>
-                )}
-                <Separator className="my-2" />
-                <div className="flex justify-between w-full text-lg font-bold text-zinc-900">
-                  <span>Total</span>
-                  <Price amount={order.total} />
-                </div>
-              </CardFooter>
-            </Card>
+              </div>
 
-            {order.returnRequests.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Returns & Refunds</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {order.returnRequests.map((req) => (
-                    <div key={req.id} className="p-4 border rounded-lg bg-zinc-50">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-semibold text-sm">Return Request</span>
-                        <Badge variant="outline" className={getStatusColor(req.status)}>
-                          {req.status}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-zinc-500">
-                        Requested on {new Date(req.createdAt).toLocaleDateString()}
+              <ul className="divide-y divide-[#101114]/10 px-4 sm:px-6">
+                {order.items.map((item) => (
+                  <li key={item.id} className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 py-4 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:gap-4">
+                    <span role="img" aria-label="Product image unavailable" className="flex aspect-square items-center justify-center bg-[#F3F0E8] text-muted-foreground">
+                      <ImageOff className="size-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="break-words text-sm font-semibold text-[#101114]">{item.productName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {[item.size, item.color].filter(Boolean).join(" · ") || "Standard option"}
                       </p>
-                      <div className="mt-3 text-sm">
-                        {req.items.map((i) => {
-                          const originalItem = order.items.find((oi) => oi.id === i.orderItemId);
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        <span className="font-medium text-[#101114]">
+                          {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 0 }).format(item.unitPrice)}
+                        </span>{" "}× {item.quantity}
+                      </p>
+                    </div>
+                    <Price amount={item.lineTotal} className="text-sm font-semibold text-[#101114]" />
+                  </li>
+                ))}
+              </ul>
+
+              <div className="border-t border-[#101114]/10 bg-[#F3F0E8]/55 px-4 py-5 sm:px-6">
+                <dl className="ml-auto max-w-sm space-y-3 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Subtotal</dt>
+                    <dd><Price amount={order.subtotal} className="font-medium text-[#101114]" /></dd>
+                  </div>
+                  {order.discount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">Discount</dt>
+                      <dd><Price amount={-order.discount} className="font-medium text-[#101114]" /></dd>
+                    </div>
+                  )}
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-muted-foreground">Shipping · {order.shippingMethodName}</dt>
+                    <dd><Price amount={order.shippingCost} className="font-medium text-[#101114]" /></dd>
+                  </div>
+                  {order.taxAmount > 0 && (
+                    <div className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">Tax</dt>
+                      <dd><Price amount={order.taxAmount} className="font-medium text-[#101114]" /></dd>
+                    </div>
+                  )}
+                  <Separator className="!my-4 bg-[#101114]/15" />
+                  <div className="flex justify-between gap-4 text-base font-semibold text-[#101114]">
+                    <dt>Total</dt>
+                    <dd><Price amount={order.total} /></dd>
+                  </div>
+                </dl>
+              </div>
+            </section>
+
+            {(order.returnRequests.length > 0 || order.refunds.length > 0) && (
+              <section className="border border-[#101114]/10 bg-white">
+                <div className="border-b border-[#101114]/10 px-4 py-4 sm:px-6">
+                  <h2 className="text-lg font-semibold tracking-tight text-[#101114]">Returns & refunds</h2>
+                </div>
+                <div className="space-y-4 p-4 sm:p-6">
+                  {order.returnRequests.map((request) => (
+                    <article key={request.id} className="border border-[#101114]/10 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <h3 className="text-sm font-semibold text-[#101114]">Return request</h3>
+                        <OrderStatusBadge status={request.status} />
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">Requested {formatDate(request.createdAt)}</p>
+                      <ul className="mt-3 space-y-2 text-sm">
+                        {request.items.map((requestItem) => {
+                          const orderItem = order.items.find((item) => item.id === requestItem.orderItemId);
                           return (
-                            <div
-                              key={i.orderItemId}
-                              className="flex justify-between py-1 border-b last:border-0"
-                            >
-                              <span>{originalItem?.productName || "Unknown Item"}</span>
-                              <span className="text-zinc-500">Qty: {i.quantity}</span>
-                            </div>
+                            <li key={requestItem.orderItemId} className="flex justify-between gap-3">
+                              <span>{orderItem?.productName ?? "Order item"}</span>
+                              <span className="text-muted-foreground">Qty {requestItem.quantity}</span>
+                            </li>
                           );
                         })}
-                      </div>
-                    </div>
+                      </ul>
+                    </article>
                   ))}
-                  {order.refunds.map((ref) => (
-                    <div key={ref.id} className="p-4 border rounded-lg bg-green-50/50">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-semibold text-sm text-green-900">Refund</span>
-                        <Badge variant="outline" className={getStatusColor(ref.status)}>
-                          {ref.status}
-                        </Badge>
+                  {order.refunds.map((refund) => (
+                    <article key={`${refund.createdAt.toISOString()}-${refund.amount}`} className="flex flex-wrap items-center justify-between gap-3 border border-[#101114]/10 p-4">
+                      <div>
+                        <h3 className="text-sm font-semibold text-[#101114]">Refund</h3>
+                        <p className="mt-1 text-xs text-muted-foreground">{formatDate(refund.createdAt)}</p>
                       </div>
-                      <div className="flex justify-between items-center">
-                        <p className="text-xs text-zinc-500">
-                          {new Date(ref.createdAt).toLocaleDateString()}
-                        </p>
-                        <Price amount={ref.amount} className="font-bold text-green-700" />
+                      <div className="flex items-center gap-3">
+                        <OrderStatusBadge status={refund.status} />
+                        <Price amount={refund.amount} className="font-semibold text-[#101114]" />
                       </div>
-                    </div>
+                    </article>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </section>
             )}
           </div>
 
-          {/* Sidebar (Payment & Shipping) */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-zinc-500" />
-                  Payment Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+          <aside className="space-y-6">
+            <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
+                <CreditCard className="size-4" aria-hidden="true" /> Payment
+              </h2>
+              <dl className="mt-4 space-y-4 text-sm">
                 <div>
-                  <p className="text-sm text-zinc-500 mb-1">Method</p>
-                  <p className="font-medium capitalize">
-                    {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
-                  </p>
+                  <dt className="text-xs text-muted-foreground">Method</dt>
+                  <dd className="mt-1 font-medium text-[#101114]">
+                    {order.paymentMethod === "COD" ? "Cash on delivery" : "Online payment"}
+                  </dd>
                 </div>
                 <div>
-                  <p className="text-sm text-zinc-500 mb-1">Payment Status</p>
-                  <Badge variant="outline" className={getStatusColor(order.paymentStatus)}>
-                    {order.paymentStatus}
-                  </Badge>
+                  <dt className="mb-1 text-xs text-muted-foreground">Payment status</dt>
+                  <dd><OrderStatusBadge status={order.paymentStatus} /></dd>
                 </div>
-              </CardContent>
-            </Card>
+              </dl>
+            </section>
 
             {order.shipment && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-zinc-500" />
-                    Shipment Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
+                <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
+                  <Package className="size-4" aria-hidden="true" /> Shipment
+                </h2>
+                <dl className="mt-4 space-y-4 text-sm">
                   <div>
-                    <p className="text-sm text-zinc-500 mb-1">Status</p>
-                    <Badge variant="outline" className={getStatusColor(order.shipment.status)}>
-                      {order.shipment.status}
-                    </Badge>
+                    <dt className="mb-1 text-xs text-muted-foreground">Status</dt>
+                    <dd><OrderStatusBadge status={order.shipment.status} /></dd>
                   </div>
                   <div>
-                    <p className="text-sm text-zinc-500 mb-1">Provider</p>
-                    <p className="font-medium capitalize">{order.shipment.provider}</p>
+                    <dt className="text-xs text-muted-foreground">Carrier</dt>
+                    <dd className="mt-1 font-medium capitalize text-[#101114]">{order.shipment.provider}</dd>
                   </div>
                   {order.shipment.trackingNumber && (
                     <div>
-                      <p className="text-sm text-zinc-500 mb-1">Tracking Number</p>
-                      <p className="font-medium font-mono bg-zinc-100 px-2 py-1 rounded inline-block">
-                        {order.shipment.trackingNumber}
-                      </p>
+                      <dt className="text-xs text-muted-foreground">Tracking number</dt>
+                      <dd className="mt-1 break-all font-medium text-[#101114]">{order.shipment.trackingNumber}</dd>
                     </div>
                   )}
-                </CardContent>
-              </Card>
+                  {order.shipment.shippedAt && (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Shipped</dt>
+                      <dd className="mt-1 text-[#101114]">{formatDate(order.shipment.shippedAt)}</dd>
+                    </div>
+                  )}
+                  {order.shipment.deliveredAt && (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Delivered</dt>
+                      <dd className="mt-1 text-[#101114]">{formatDate(order.shipment.deliveredAt)}</dd>
+                    </div>
+                  )}
+                </dl>
+              </section>
             )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-zinc-500" />
-                  Customer Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
+            <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
+                <UserRound className="size-4" aria-hidden="true" /> Customer & delivery
+              </h2>
+              <div className="mt-4 space-y-5 text-sm">
                 <div>
-                  <p className="text-zinc-500 mb-1">Contact</p>
-                  <p className="font-medium">{order.customerName || "N/A"}</p>
-                  <p>{order.customerEmail}</p>
-                  {order.customerPhone && <p>{order.customerPhone}</p>}
+                  <p className="text-xs text-muted-foreground">Contact</p>
+                  <p className="mt-1 font-medium text-[#101114]">{order.customerName || "Customer"}</p>
+                  <p className="break-all text-muted-foreground">{order.customerEmail}</p>
+                  {order.customerPhone && <p className="text-muted-foreground">{order.customerPhone}</p>}
                 </div>
                 <Separator />
                 <div>
-                  <p className="flex items-center gap-2 text-zinc-500 mb-2">
-                    <MapPin className="w-4 h-4" />
-                    Delivery Address
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <MapPin className="size-4" aria-hidden="true" /> Delivery address
                   </p>
-                  <address className="not-italic leading-relaxed text-zinc-700">
-                    {order.shippingStreet}
-                    <br />
-                    {order.shippingCity}
-                    {order.shippingState ? `, ${order.shippingState}` : ""}
-                    <br />
-                    {order.shippingZip && (
-                      <>
-                        {order.shippingZip}
-                        <br />
-                      </>
-                    )}
+                  <address className="mt-2 break-words not-italic leading-6 text-[#101114]">
+                    {order.shippingStreet}<br />
+                    {order.shippingCity}{order.shippingState ? `, ${order.shippingState}` : ""}<br />
+                    {order.shippingZip ? <>{order.shippingZip}<br /></> : null}
                     {order.shippingCountry}
                   </address>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+              </div>
+            </section>
+          </aside>
         </div>
       </Container>
     </Section>

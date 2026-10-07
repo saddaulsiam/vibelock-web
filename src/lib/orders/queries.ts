@@ -2,7 +2,7 @@ import "server-only";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { mapOrderSummary, mapOrderDetail } from "./mappers";
-import { OrderSummary, OrderDetail } from "./types";
+import { OrderSummary, OrderDetail, OrderConfirmation } from "./types";
 
 export async function getCustomerOrders(
   page = 1,
@@ -55,7 +55,6 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       payments: {
         include: { refunds: true },
       },
-      shipment: true,
     },
   });
 
@@ -64,4 +63,70 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
   }
 
   return mapOrderDetail(order);
+}
+
+/**
+ * Read only the order and item snapshot needed by the public confirmation page.
+ * This avoids coupling that page to optional order relations such as shipment,
+ * returns, and payments while retaining the same authenticated ownership check.
+ */
+export async function getCustomerOrderConfirmation(
+  orderNumber: string
+): Promise<OrderConfirmation | null> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+
+  const order = await prisma.order.findFirst({
+    where: {
+      orderNumber,
+      userId: session.user.id,
+    },
+    select: {
+      orderNumber: true,
+      createdAt: true,
+      status: true,
+      paymentStatus: true,
+      paymentMethod: true,
+      subtotal: true,
+      shippingCost: true,
+      taxAmount: true,
+      discount: true,
+      total: true,
+      items: {
+        select: {
+          productName: true,
+          size: true,
+          color: true,
+          unitPrice: true,
+          quantity: true,
+          lineTotal: true,
+        },
+      },
+    },
+  });
+
+  if (!order) return null;
+
+  return {
+    orderNumber: order.orderNumber,
+    createdAt: order.createdAt,
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    paymentMethod: order.paymentMethod,
+    subtotal: Number(order.subtotal),
+    shippingCost: Number(order.shippingCost),
+    taxAmount: Number(order.taxAmount),
+    discount: Number(order.discount),
+    total: Number(order.total),
+    items: order.items.map((item) => ({
+      productName: item.productName,
+      size: item.size,
+      color: item.color,
+      unitPrice: Number(item.unitPrice),
+      quantity: item.quantity,
+      lineTotal: Number(item.lineTotal),
+    })),
+  };
 }

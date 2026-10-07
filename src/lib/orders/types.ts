@@ -23,6 +23,21 @@ export type OrderSummary = {
   previewItems: OrderItemSummary[];
 };
 
+export type OrderConfirmation = Pick<
+  OrderSummary,
+  "orderNumber" | "createdAt" | "status" | "paymentStatus" | "paymentMethod"
+> & {
+  subtotal: number;
+  shippingCost: number;
+  taxAmount: number;
+  discount: number;
+  total: number;
+  items: Pick<
+    OrderItemSummary,
+    "productName" | "size" | "color" | "unitPrice" | "quantity" | "lineTotal"
+  >[];
+};
+
 export type OrderDetail = {
   id: string;
   orderNumber: string;
