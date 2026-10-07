@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
@@ -9,6 +10,18 @@ import { getCategories } from "@/lib/catalog/queries";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
+
+function getClearSearchHref(params: ReturnType<typeof parseDiscoverySearchParams>) {
+  const retained = new URLSearchParams();
+  if (params.category) retained.set("category", params.category);
+  if (params.size) retained.set("size", params.size);
+  if (params.color) retained.set("color", params.color);
+  if (params.minPrice !== undefined) retained.set("minPrice", String(params.minPrice));
+  if (params.maxPrice !== undefined) retained.set("maxPrice", String(params.maxPrice));
+  if (params.sort !== "newest") retained.set("sort", params.sort);
+  const query = retained.toString();
+  return query ? `/products?${query}` : "/products";
+}
 
 export const metadata: Metadata = {
   title: "All Products",
@@ -28,6 +41,9 @@ export default async function ProductsPage({
     getDiscoveredProducts(parsedParams),
     getCategories(),
   ]);
+  const hasSearch = Boolean(parsedParams.q?.trim());
+  const searchTerm = parsedParams.q?.trim() ?? "";
+  const clearSearchHref = getClearSearchHref(parsedParams);
 
   const filterOptions = {
     categories: categories.map((category) => ({ name: category.name, slug: category.slug })),
@@ -40,17 +56,33 @@ export default async function ProductsPage({
       <Container>
         <header className="mb-8 border-b border-border pb-7 sm:mb-10 sm:pb-8">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            VibeLock / Shop
+            {hasSearch ? "VibeLock / Search" : "VibeLock / Shop"}
           </p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">All products</h1>
+          <h1 className="break-words text-4xl font-semibold tracking-tight sm:text-5xl">
+            {hasSearch ? "Search results" : "All products"}
+          </h1>
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Everyday pieces and easy layers for your city rotation.
-            </p>
+            {hasSearch ? (
+              <p className="max-w-2xl break-words text-sm leading-6 text-muted-foreground sm:text-base">
+                Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
+              </p>
+            ) : (
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+                Everyday pieces and easy layers for your city rotation.
+              </p>
+            )}
             <p className="text-sm font-medium text-foreground" aria-live="polite">
               {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
           </div>
+          {hasSearch && (
+            <Link
+              href={clearSearchHref}
+              className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            >
+              Clear search
+            </Link>
+          )}
         </header>
 
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
@@ -63,7 +95,11 @@ export default async function ProductsPage({
               </span>
             </div>
             <ActiveFilters />
-            <ProductGrid products={discoveryResult.products} />
+            <ProductGrid
+              products={discoveryResult.products}
+              searchTerm={hasSearch ? searchTerm : undefined}
+              clearSearchHref={clearSearchHref}
+            />
             <DiscoveryPagination
               currentPage={discoveryResult.currentPage}
               totalPages={discoveryResult.totalPages}

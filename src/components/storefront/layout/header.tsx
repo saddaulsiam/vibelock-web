@@ -48,7 +48,8 @@ export async function Header() {
               action="/products"
               method="get"
               role="search"
-              className="hidden w-44 items-center gap-1 rounded-full border border-border bg-white/70 pl-3 pr-1 xl:flex 2xl:w-52"
+              aria-label="Search the VibeLock catalog"
+              className="hidden w-44 items-center gap-1 rounded-full border border-border bg-white/70 pl-3 pr-1 transition-colors focus-within:border-[#101114]/40 focus-within:ring-2 focus-within:ring-[#00D9FF]/50 xl:flex 2xl:w-52"
             >
               <Input
                 type="search"
@@ -62,19 +63,45 @@ export async function Header() {
                 variant="ghost"
                 size="icon"
                 aria-label="Submit product search"
-                className="rounded-full focus-visible:ring-brand-cyan"
+                className="size-9 rounded-full focus-visible:ring-[#00D9FF]"
               >
                 <Search aria-hidden="true" />
               </Button>
             </form>
 
-            <Link
-              href="/products"
-              aria-label="Search products"
-              className="inline-flex size-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:hidden"
-            >
-              <Search className="size-5" aria-hidden="true" />
-            </Link>
+            <details className="group relative xl:hidden">
+              <summary
+                aria-label="Open product search"
+                className="flex size-11 cursor-pointer list-none items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 [&::-webkit-details-marker]:hidden"
+              >
+                <Search className="size-5" aria-hidden="true" />
+              </summary>
+              <div className="absolute right-0 top-full z-50 mt-2 w-[min(88vw,24rem)] border border-[#101114]/15 bg-white p-3">
+                <form
+                  action="/products"
+                  method="get"
+                  role="search"
+                  aria-label="Search the VibeLock catalog"
+                  className="flex items-center gap-2"
+                >
+                  <Input
+                    type="search"
+                    name="q"
+                    aria-label="Search products"
+                    placeholder="Search products"
+                    className="h-11 rounded-sm border-[#101114]/20 bg-white focus-visible:border-[#101114] focus-visible:ring-[#00D9FF]/50"
+                  />
+                  <Button
+                    type="submit"
+                    size="icon"
+                    aria-label="Submit product search"
+                    className="size-11 rounded-sm bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
+                  >
+                    <Search aria-hidden="true" />
+                  </Button>
+                </form>
+              </div>
+            </details>
 
             <Link
               href={user ? "/account" : "/login"}
