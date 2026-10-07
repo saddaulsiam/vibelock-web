@@ -1,135 +1,163 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, Trash2, Loader2 } from "lucide-react";
-import { CartItemDTO } from "@/lib/cart/types";
-import { updateCartItemAction, removeCartItemAction } from "@/lib/cart/actions";
+import { ImageOff, LoaderCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import type { CartItemDTO } from "@/lib/cart/types";
+import { removeCartItemAction, updateCartItemAction } from "@/lib/cart/actions";
 
 interface CartItemCardProps {
   item: CartItemDTO;
 }
 
+function formatPrice(amount: number) {
+  return new Intl.NumberFormat("en-BD", {
+    style: "currency",
+    currency: "BDT",
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 export function CartItemCard({ item }: CartItemCardProps) {
   const [isPending, startTransition] = useTransition();
+  const [imageFailed, setImageFailed] = useState(false);
 
   const handleUpdateQuantity = (newQuantity: number) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 1 || isPending) return;
 
     startTransition(async () => {
-      const res = await updateCartItemAction(item.id, newQuantity);
-      if (!res.success) {
-        toast.error(res.error);
+      const result = await updateCartItemAction(item.id, newQuantity);
+      if (result.success) {
+        toast.success("Cart quantity updated");
+      } else {
+        toast.error(result.error || "Could not update this quantity.");
       }
     });
   };
 
   const handleRemove = () => {
+    if (isPending) return;
+
     startTransition(async () => {
-      const res = await removeCartItemAction(item.id);
-      if (!res.success) {
-        toast.error(res.error);
+      const result = await removeCartItemAction(item.id);
+      if (result.success) {
+        toast.success("Item removed from your cart");
       } else {
-        toast.success("Item has been removed from your cart.");
+        toast.error(result.error || "Could not remove this item.");
       }
     });
   };
 
   const isInsufficient = item.quantity > item.availableQuantity;
+  const isUnavailable = !item.variant.available;
 
   return (
-    <div className="flex gap-4 py-6 border-b">
-      {/* Image */}
-      <div className="relative w-24 h-32 md:w-32 md:h-40 shrink-0 bg-gray-100 rounded-lg overflow-hidden">
-        {item.productImage ? (
+    <article className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 border-b border-border py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5 sm:py-6">
+      <Link
+        href={`/products/${item.productSlug}`}
+        aria-label={`View ${item.productName}`}
+        className="relative aspect-[3/4] overflow-hidden bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+      >
+        {item.productImage && !imageFailed ? (
           <Image
             src={item.productImage}
             alt={item.productName}
             fill
+            sizes="(max-width: 640px) 88px, 112px"
             className="object-cover"
-            sizes="(max-width: 768px) 96px, 128px"
+            onError={() => setImageFailed(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
-            No Image
-          </div>
+          <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+            <ImageOff className="size-5" aria-hidden="true" />
+            <span className="text-[10px]">Image unavailable</span>
+          </span>
         )}
-      </div>
+      </Link>
 
-      {/* Info */}
-      <div className="flex flex-1 flex-col justify-between">
-        <div className="flex justify-between items-start">
-          <div>
+      <div className="flex min-w-0 flex-col justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:justify-between sm:gap-5">
+          <div className="min-w-0">
             <Link
               href={`/products/${item.productSlug}`}
-              className="font-semibold text-brand-charcoal hover:underline"
+              className="break-words text-base font-semibold tracking-tight text-[#101114] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
             >
               {item.productName}
             </Link>
-            <div className="text-sm text-muted-foreground mt-1 space-x-2">
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
               {item.variant.size && <span>Size: {item.variant.size}</span>}
               {item.variant.color && <span>Color: {item.variant.color}</span>}
             </div>
-
-            {/* Stale inventory feedback */}
-            {isInsufficient && (
-              <p className="text-sm font-medium text-destructive mt-2">
-                Only {item.availableQuantity} available in stock. Please adjust quantity.
-              </p>
-            )}
-            {!item.variant.available && !isInsufficient && (
-              <p className="text-sm font-medium text-destructive mt-2">
-                This item is out of stock.
+            {(isInsufficient || isUnavailable) && (
+              <p className="mt-2 text-sm font-medium text-destructive" role="status">
+                {isInsufficient
+                  ? item.availableQuantity > 0
+                    ? `Only ${item.availableQuantity} available. Reduce the quantity to continue.`
+                    : "This item is currently unavailable. Remove it to continue."
+                  : "This item is out of stock. Remove it to continue."}
               </p>
             )}
           </div>
-          <div className="text-right">
-            <span className="font-bold">৳{item.lineTotal.toLocaleString()}</span>
-            <div className="text-sm text-muted-foreground">
-              ৳{item.variant.effectivePrice.toLocaleString()} each
+
+          <div className="flex shrink-0 flex-row items-baseline justify-between gap-4 sm:flex-col sm:items-end sm:gap-1">
+            <span className="text-base font-semibold text-[#101114]" aria-label={`Line total ${formatPrice(item.lineTotal)}`}>
+              {formatPrice(item.lineTotal)}
+            </span>
+            <div className="flex items-baseline gap-2 text-sm">
+              <span className="text-muted-foreground">{formatPrice(item.variant.effectivePrice)} each</span>
+              {item.variant.discountPrice !== null && (
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPrice(item.variant.sellingPrice)}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Controls */}
-        <div className="flex justify-between items-end mt-4">
-          <div className="flex items-center border rounded-md h-9">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex h-10 items-center border border-[#101114]/20" aria-label={`Quantity for ${item.productName}`}>
             <button
+              type="button"
               onClick={() => handleUpdateQuantity(item.quantity - 1)}
               disabled={item.quantity <= 1 || isPending}
-              className="px-3 h-full hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center"
-              aria-label="Decrease quantity"
+              aria-label={`Decrease ${item.productName} quantity`}
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Minus className="h-3 w-3" />
+              <Minus className="size-4" aria-hidden="true" />
             </button>
-            <span className="w-10 text-center text-sm font-medium">
-              {isPending ? <Loader2 className="h-3 w-3 animate-spin mx-auto" /> : item.quantity}
+            <span className="min-w-10 text-center text-sm font-medium" aria-live="polite">
+              {isPending ? <LoaderCircle className="mx-auto size-4 animate-spin" aria-label="Updating cart" /> : item.quantity}
             </span>
             <button
+              type="button"
               onClick={() => handleUpdateQuantity(item.quantity + 1)}
-              disabled={isPending || item.quantity >= 10 || item.quantity >= item.availableQuantity}
-              className="px-3 h-full hover:bg-gray-50 disabled:opacity-50 transition-colors flex items-center justify-center"
-              aria-label="Increase quantity"
+              disabled={
+                isPending ||
+                item.quantity >= 10 ||
+                item.quantity >= item.availableQuantity ||
+                isUnavailable
+              }
+              aria-label={`Increase ${item.productName} quantity`}
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="size-4" aria-hidden="true" />
             </button>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
+          <button
+            type="button"
             onClick={handleRemove}
             disabled={isPending}
-            className="text-muted-foreground hover:text-destructive"
+            className="inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={`Remove ${item.productName} from cart`}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
+            {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Trash2 className="size-4" aria-hidden="true" />}
             Remove
-          </Button>
+          </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
