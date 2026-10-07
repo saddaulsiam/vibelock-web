@@ -1,13 +1,15 @@
-import * as React from "react";
-import Link from "next/link";
-import { ShoppingBag } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { MobileNav } from "./mobile-nav";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { Button } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getCart } from "@/lib/cart/queries";
+import { ShoppingBag } from "lucide-react";
+import Link from "next/link";
+import { MobileNav } from "./mobile-nav";
 
 export async function Header() {
   const user = await getCurrentUser();
+  const cart = await getCart();
+  const itemCount = cart?.totalQuantity || 0;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -80,8 +82,13 @@ export async function Header() {
             </div>
 
             <Link href="/cart">
-              <Button variant="ghost" size="icon" aria-label="Shopping Cart">
+              <Button variant="ghost" size="icon" aria-label="Shopping Cart" className="relative">
                 <ShoppingBag className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-cyan text-[10px] font-bold text-brand-charcoal">
+                    {itemCount}
+                  </span>
+                )}
                 <span className="sr-only">Cart</span>
               </Button>
             </Link>

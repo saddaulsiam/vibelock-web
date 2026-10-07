@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { Badge } from "@/components/ui/badge";
 import { ProductVariantSummary } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { useMemo, useState } from "react";
+import { AddToCartButton } from "./add-to-cart-button";
 
 interface VariantSelectorProps {
   variants: ProductVariantSummary[];
@@ -37,24 +38,24 @@ export function VariantSelector({
   // Find the matching variant based on selections
   const matchingVariant = useMemo(() => {
     if (variants.length === 0) return null;
-    
+
     // If product has no size/color, return the first variant
     if (sizes.length === 0 && colors.length === 0) return variants[0];
 
     return variants.find(
-      (v) => 
-        (sizes.length === 0 || v.size === selectedSize) && 
+      (v) =>
+        (sizes.length === 0 || v.size === selectedSize) &&
         (colors.length === 0 || v.color === selectedColor)
     ) || null;
   }, [variants, sizes, colors, selectedSize, selectedColor]);
 
   // Determine what prices to show
   const displayPrice = matchingVariant ? matchingVariant.effectivePrice : defaultPrice;
-  const isDiscounted = matchingVariant 
-    ? matchingVariant.discountPrice !== null 
+  const isDiscounted = matchingVariant
+    ? matchingVariant.discountPrice !== null
     : defaultHasDiscount;
-  const originalPrice = matchingVariant 
-    ? matchingVariant.sellingPrice 
+  const originalPrice = matchingVariant
+    ? matchingVariant.sellingPrice
     : defaultOriginalPrice;
 
   // Determine availability
@@ -65,8 +66,8 @@ export function VariantSelector({
   // Helper to check if a size/color combination actually exists
   const isCombinationAvailable = (size: string | null, color: string | null) => {
     return variants.some(
-      (v) => 
-        (size === null || v.size === size) && 
+      (v) =>
+        (size === null || v.size === size) &&
         (color === null || v.color === color)
     );
   };
@@ -83,7 +84,7 @@ export function VariantSelector({
             </span>
           )}
         </div>
-        
+
         {showAvailability && (
           <div>
             {isAvailable ? (
@@ -114,8 +115,8 @@ export function VariantSelector({
                     disabled={!exists}
                     className={cn(
                       "px-4 py-2 border rounded-md text-sm font-medium transition-colors",
-                      selectedColor === color 
-                        ? "border-brand-charcoal bg-brand-charcoal text-white" 
+                      selectedColor === color
+                        ? "border-brand-charcoal bg-brand-charcoal text-white"
                         : "border-gray-200 hover:border-gray-400 bg-white",
                       !exists && "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
                     )}
@@ -141,8 +142,8 @@ export function VariantSelector({
                     disabled={!exists}
                     className={cn(
                       "min-w-[3rem] px-4 py-2 border rounded-md text-sm font-medium transition-colors",
-                      selectedSize === size 
-                        ? "border-brand-charcoal bg-brand-charcoal text-white" 
+                      selectedSize === size
+                        ? "border-brand-charcoal bg-brand-charcoal text-white"
                         : "border-gray-200 hover:border-gray-400 bg-white",
                       !exists && "opacity-50 cursor-not-allowed bg-gray-50 text-gray-400 hover:border-gray-200"
                     )}
@@ -156,14 +157,12 @@ export function VariantSelector({
         )}
       </div>
 
-      {/* Phase 3D Cart Placeholder */}
+      {/* Phase 3E Add to Cart */}
       <div className="pt-4 border-t">
-        <button 
-          disabled
-          className="w-full py-4 rounded-xl font-bold uppercase tracking-wider bg-brand-charcoal text-white opacity-50 cursor-not-allowed"
-        >
-          {isAvailable ? "Add to Cart (Coming Soon)" : "Out of Stock"}
-        </button>
+        <AddToCartButton
+          variantId={matchingVariant?.id || null}
+          isAvailable={isAvailable}
+        />
       </div>
     </div>
   );

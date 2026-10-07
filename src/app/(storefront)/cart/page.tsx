@@ -1,32 +1,26 @@
+import { Metadata } from "next";
+import { getCart } from "@/lib/cart/queries";
+import { CartPageContent } from "@/components/storefront/cart/cart-page-content";
 import { Container } from "@/components/shared/container";
-import { Button } from "@/components/ui/button";
-import { ShoppingBag } from "lucide-react";
-import Link from "next/link";
-import type { Metadata } from "next";
+import { Section } from "@/components/shared/section";
 
 export const metadata: Metadata = {
-  title: "Shopping Cart",
-  description: "View items in your VibeLock shopping cart.",
+  title: "Shopping Cart | VibeLock",
+  description: "View and manage items in your VibeLock shopping cart.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
-export default function CartPage() {
+export default async function CartPage() {
+  const cart = await getCart();
+
   return (
-    <Container className="py-24 md:py-32 flex flex-col items-center justify-center text-center">
-      <div className="max-w-md space-y-6">
-        <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-          <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-        </div>
-        <h1 className="text-3xl font-bold tracking-tight">Your Cart</h1>
-        <p className="text-muted-foreground">
-          Your shopping cart is currently empty. Explore our latest streetwear collections to find
-          pieces crafted for you.
-        </p>
-        <div className="pt-4">
-          <Link href="/">
-            <Button size="lg">Explore VibeLock</Button>
-          </Link>
-        </div>
-      </div>
-    </Container>
+    <Section className="py-8 bg-background min-h-screen">
+      <Container>
+        <CartPageContent cart={cart} />
+      </Container>
+    </Section>
   );
 }
