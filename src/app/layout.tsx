@@ -9,8 +9,21 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "VibeLock | Design System",
-  description: "Phase 1B Design System Scaffold",
+  title: {
+    template: "%s | VibeLock",
+    default: "VibeLock | Modern Dhaka Streetwear",
+  },
+  description:
+    "Bangladesh men's streetwear brand for modern Dhaka youth. Minimal, confident, and premium.",
+  metadataBase: new URL("https://vibelock.com.bd"),
+  openGraph: {
+    title: "VibeLock | Modern Dhaka Streetwear",
+    description: "Bangladesh men's streetwear brand for modern Dhaka youth.",
+    url: "https://vibelock.com.bd",
+    siteName: "VibeLock",
+    locale: "en_BD",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
