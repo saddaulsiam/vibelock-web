@@ -1,0 +1,53 @@
+import { OrderStatus, PaymentStatus, PaymentMethod } from "@prisma/client";
+
+export type OrderItemSummary = {
+  id: string;
+  productName: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  unitPrice: number;
+  quantity: number;
+  lineTotal: number;
+};
+
+export type OrderSummary = {
+  id: string;
+  orderNumber: string;
+  createdAt: Date;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
+  total: number;
+  itemCount: number;
+  previewItems: OrderItemSummary[];
+};
+
+export type OrderDetail = {
+  id: string;
+  orderNumber: string;
+  createdAt: Date;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  paymentMethod: PaymentMethod;
+
+  // Financials
+  subtotal: number;
+  shippingCost: number;
+  taxAmount: number;
+  discount: number;
+  total: number;
+
+  // Customer & Shipping
+  customerName: string | null;
+  customerEmail: string;
+  customerPhone: string | null;
+  shippingStreet: string;
+  shippingCity: string;
+  shippingState: string | null;
+  shippingZip: string | null;
+  shippingCountry: string;
+  shippingMethodName: string;
+
+  items: OrderItemSummary[];
+};

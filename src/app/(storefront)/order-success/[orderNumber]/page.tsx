@@ -123,7 +123,16 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
             </div>
           </div>
 
-          <div className="pt-6">
+          <div className="pt-6 flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href={`/account/orders/${order.orderNumber}`}>
+              <Button
+                size="lg"
+                variant="outline"
+                className="font-semibold uppercase tracking-wider w-full sm:w-auto"
+              >
+                View Order
+              </Button>
+            </Link>
             <Link href="/products">
               <Button
                 size="lg"
