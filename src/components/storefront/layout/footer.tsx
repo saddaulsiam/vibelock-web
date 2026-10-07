@@ -1,89 +1,76 @@
 import Link from "next/link";
 import { Container } from "@/components/shared/container";
+import { storefrontShopLinks } from "./navigation";
+
+const customerLinks = [
+  { label: "Account", href: "/account" },
+  { label: "Order history", href: "/account/orders" },
+  { label: "Sign in", href: "/login" },
+] as const;
+
+const linkClassName =
+  "inline-flex min-h-10 items-center rounded-sm text-sm text-brand-offwhite/70 transition-colors hover:text-brand-offwhite focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-background border-t">
+    <footer className="border-t border-white/10 bg-brand-charcoal text-brand-offwhite">
       <Container>
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4 py-12">
-          {/* Brand & Info */}
-          <div className="flex flex-col space-y-4">
-            <Link href="/" className="font-bold text-xl tracking-tight">
-              VibeLock
+        <div className="grid grid-cols-2 gap-x-8 gap-y-10 py-12 sm:grid-cols-4 sm:gap-8 sm:py-14">
+          <div className="col-span-2 flex flex-col items-start gap-4 sm:col-span-1">
+            <Link
+              href="/"
+              className="rounded-sm text-2xl font-extrabold tracking-[-0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-brand-charcoal"
+            >
+              VibeLock<span className="text-brand-cyan">.</span>
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              Bangladesh men&apos;s streetwear brand for modern Dhaka youth. Minimal, confident, and
-              premium.
+            <p className="max-w-xs text-sm leading-6 text-brand-offwhite/65">
+              Modern Dhaka streetwear. Minimal, confident, and made for everyday movement.
             </p>
           </div>
 
-          {/* Shop */}
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-semibold text-sm">Shop</h4>
-            <nav className="flex flex-col space-y-2 text-sm text-muted-foreground">
-              <Link href="/collections/men" className="hover:text-foreground transition-colors">
-                Men
+          <div className="flex flex-col items-start gap-2">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-offwhite">
+              Shop
+            </h2>
+            {storefrontShopLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={linkClassName}>
+                {link.label}
               </Link>
-              <Link
-                href="/collections/new-arrivals"
-                className="hover:text-foreground transition-colors"
-              >
-                New Arrivals
-              </Link>
-              <Link
-                href="/collections/clothing"
-                className="hover:text-foreground transition-colors"
-              >
-                Clothing
-              </Link>
-              <Link
-                href="/collections/footwear"
-                className="hover:text-foreground transition-colors"
-              >
-                Footwear
-              </Link>
-            </nav>
+            ))}
           </div>
 
-          {/* Support */}
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-semibold text-sm">Support</h4>
-            <nav className="flex flex-col space-y-2 text-sm text-muted-foreground">
-              <Link href="/faq" className="hover:text-foreground transition-colors">
-                FAQ
+          <div className="flex flex-col items-start gap-2">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-offwhite">
+              Customer
+            </h2>
+            {customerLinks.map((link) => (
+              <Link key={link.href} href={link.href} className={linkClassName}>
+                {link.label}
               </Link>
-              <Link href="/shipping" className="hover:text-foreground transition-colors">
-                Shipping & Returns
-              </Link>
-              <Link href="/contact" className="hover:text-foreground transition-colors">
-                Contact Us
-              </Link>
-            </nav>
+            ))}
           </div>
 
-          {/* Contact */}
-          <div className="flex flex-col space-y-4">
-            <h4 className="font-semibold text-sm">Contact</h4>
-            <div className="flex flex-col space-y-2 text-sm text-muted-foreground">
-              <p>Website: vibelock.com.bd</p>
-              <p>Mobile: 01311333277</p>
-              <p>Address: Thana More, Chatmohar, Pabna</p>
-            </div>
+          <div className="col-span-2 flex flex-col items-start gap-2 sm:col-span-1">
+            <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand-offwhite">
+              Contact
+            </h2>
+            <a href="https://vibelock.com.bd" className={linkClassName}>
+              vibelock.com.bd
+            </a>
+            <a href="tel:01311333277" className={linkClassName}>
+              01311333277
+            </a>
+            <p className="max-w-48 py-2 text-sm leading-6 text-brand-offwhite/70">
+              Thana More, Chatmohar, Pabna
+            </p>
           </div>
         </div>
 
-        <div className="border-t py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-2 border-t border-white/10 py-5 text-xs text-brand-offwhite/55 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {currentYear} VibeLock. All rights reserved.</p>
-          <div className="flex space-x-4">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
-              Terms of Service
-            </Link>
-          </div>
+          <p>Made for the streets of Dhaka.</p>
         </div>
       </Container>
     </footer>

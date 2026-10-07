@@ -1,96 +1,99 @@
+import Link from "next/link";
+import { Search, ShoppingBag } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
-import { ShoppingBag } from "lucide-react";
-import Link from "next/link";
 import { MobileNav } from "./mobile-nav";
+import { storefrontShopLinks } from "./navigation";
 
 export async function Header() {
   const user = await getCurrentUser();
   const cart = await getCart();
-  const itemCount = cart?.totalQuantity || 0;
+  const itemCount = cart?.totalQuantity ?? 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/95 supports-[backdrop-filter]:backdrop-blur">
       <Container>
-        <div className="flex h-16 items-center justify-between">
-          {/* Left: Mobile Nav & Brand */}
-          <div className="flex items-center gap-4">
+        <div className="flex min-h-16 items-center gap-3 py-2.5 xl:gap-8">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <MobileNav isAuthenticated={Boolean(user)} />
-            <Link href="/" className="font-bold text-2xl tracking-tight hidden md:block">
-              VibeLock
+            <Link
+              href="/"
+              className="rounded-sm text-xl font-extrabold tracking-[-0.06em] text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 sm:text-2xl"
+              aria-label="VibeLock home"
+            >
+              VibeLock<span className="text-brand-cyan">.</span>
             </Link>
           </div>
 
-          {/* Center: Brand (Mobile) & Desktop Nav */}
-          <div className="flex flex-1 items-center justify-center">
-            <Link href="/" className="font-bold text-xl tracking-tight md:hidden">
-              VibeLock
-            </Link>
+          <nav
+            aria-label="Shop navigation"
+            className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-xs font-semibold uppercase tracking-wide xl:flex 2xl:gap-6"
+          >
+            {storefrontShopLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-4"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-            <nav className="hidden md:flex items-center space-x-8 text-sm font-medium">
-              <Link
-                href="/collections/men"
-                className="transition-colors hover:text-primary text-muted-foreground"
+          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+            <form
+              action="/products"
+              method="get"
+              role="search"
+              className="hidden w-44 items-center gap-1 rounded-full border border-border bg-white/70 pl-3 pr-1 xl:flex 2xl:w-52"
+            >
+              <Input
+                type="search"
+                name="q"
+                aria-label="Search products"
+                placeholder="Search products"
+                className="h-9 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                aria-label="Submit product search"
+                className="rounded-full focus-visible:ring-brand-cyan"
               >
-                MEN
-              </Link>
-              <Link
-                href="/collections/new-arrivals"
-                className="transition-colors hover:text-primary text-muted-foreground"
-              >
-                NEW ARRIVALS
-              </Link>
-              <Link
-                href="/collections/clothing"
-                className="transition-colors hover:text-primary text-muted-foreground"
-              >
-                CLOTHING
-              </Link>
-              <Link
-                href="/collections/footwear"
-                className="transition-colors hover:text-primary text-muted-foreground"
-              >
-                FOOTWEAR
-              </Link>
-              <Link
-                href="/about"
-                className="transition-colors hover:text-primary text-muted-foreground"
-              >
-                ABOUT
-              </Link>
-            </nav>
-          </div>
-
-          {/* Right: Actions */}
-          <div className="flex items-center gap-2 md:gap-4">
-            <div className="hidden md:block">
-              {user ? (
-                <Link href="/account">
-                  <Button variant="ghost" className="text-sm font-medium">
-                    Account
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/login">
-                  <Button variant="ghost" className="text-sm font-medium">
-                    Account / Login
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            <Link href="/cart">
-              <Button variant="ghost" size="icon" aria-label="Shopping Cart" className="relative">
-                <ShoppingBag className="h-5 w-5" />
-                {itemCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-cyan text-[10px] font-bold text-brand-charcoal">
-                    {itemCount}
-                  </span>
-                )}
-                <span className="sr-only">Cart</span>
+                <Search aria-hidden="true" />
               </Button>
+            </form>
+
+            <Link
+              href="/products"
+              aria-label="Search products"
+              className="inline-flex size-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:hidden"
+            >
+              <Search className="size-5" aria-hidden="true" />
+            </Link>
+
+            <Link
+              href={user ? "/account" : "/login"}
+              className="hidden min-h-11 items-center rounded-full px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:inline-flex"
+            >
+              {user ? "Account" : "Sign in"}
+            </Link>
+
+            <Link
+              href="/cart"
+              aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
+              className="relative inline-flex size-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2"
+            >
+              <ShoppingBag className="size-5" aria-hidden="true" />
+              {itemCount > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-brand-cyan px-1 text-[10px] font-bold leading-none text-brand-charcoal">
+                  {itemCount}
+                </span>
+              )}
             </Link>
           </div>
         </div>

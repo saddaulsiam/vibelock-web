@@ -3,62 +3,60 @@
 import * as React from "react";
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { storefrontShopLinks } from "./navigation";
 
 interface MobileNavProps {
-  isAuthenticated?: boolean;
+  isAuthenticated: boolean;
 }
 
-export function MobileNav({ isAuthenticated = false }: MobileNavProps) {
+export function MobileNav({ isAuthenticated }: MobileNavProps) {
   const [open, setOpen] = React.useState(false);
-
   const closeNav = () => setOpen(false);
-
-  const navLinks = [
-    { href: "/collections/men", label: "Men" },
-    { href: "/collections/new-arrivals", label: "New Arrivals" },
-    { href: "/collections/clothing", label: "Clothing" },
-    { href: "/collections/footwear", label: "Footwear" },
-    { href: "/about", label: "About" },
-  ];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
-        aria-label="Open Mobile Menu"
-        className="inline-flex items-center justify-center rounded-md p-2 text-foreground hover:bg-muted md:hidden"
+        aria-label="Open navigation menu"
+        className="inline-flex size-11 items-center justify-center rounded-full text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2 xl:hidden"
       >
-        <Menu className="h-5 w-5" />
+        <Menu className="size-5" aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="left" className="flex flex-col">
-        <SheetHeader>
-          <SheetTitle className="text-left font-bold tracking-tight">VibeLock</SheetTitle>
+      <SheetContent side="left" className="w-[min(88vw,24rem)] overflow-y-auto bg-background p-5">
+        <SheetHeader className="border-b border-border px-0 pb-5 pt-1">
+          <SheetTitle className="text-left text-xl font-extrabold tracking-[-0.06em]">
+            VibeLock<span className="text-brand-cyan">.</span>
+          </SheetTitle>
         </SheetHeader>
-        <nav className="flex flex-col space-y-4 mt-8 flex-1">
-          {navLinks.map((link) => (
+
+        <nav aria-label="Mobile shop navigation" className="mt-5 flex flex-col">
+          {storefrontShopLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={closeNav}
-              className="text-lg font-medium hover:text-primary transition-colors"
+              className="border-b border-border/70 py-3.5 text-sm font-semibold uppercase tracking-wide text-foreground transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan"
             >
               {link.label}
             </Link>
           ))}
         </nav>
-        <div className="flex flex-col space-y-4 border-t pt-4">
-          {isAuthenticated ? (
-            <Link href="/account" onClick={closeNav}>
-              <Button className="w-full" variant="outline">
-                Account
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/login" onClick={closeNav}>
-              <Button className="w-full" variant="outline">
-                Account / Login
-              </Button>
+
+        <div className="mt-6 grid gap-3 border-t border-border pt-5">
+          <Link
+            href={isAuthenticated ? "/account" : "/login"}
+            onClick={closeNav}
+            className="inline-flex min-h-11 items-center rounded-md border border-border px-4 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2"
+          >
+            {isAuthenticated ? "My account" : "Sign in"}
+          </Link>
+          {!isAuthenticated && (
+            <Link
+              href="/register"
+              onClick={closeNav}
+              className="inline-flex min-h-11 items-center rounded-md px-4 text-sm font-medium transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-cyan focus-visible:ring-offset-2"
+            >
+              Create account
             </Link>
           )}
         </div>
