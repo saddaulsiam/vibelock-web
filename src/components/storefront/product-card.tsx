@@ -36,7 +36,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       {...props}
     >
       <Link
-        href={`/product/${product.slug}`}
+        href={`/products/${product.slug}`}
         aria-label={`View ${product.name}`}
         className="relative block aspect-[3/4] overflow-hidden rounded-sm bg-secondary/50"
       >
@@ -65,7 +65,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
 
       <div className="flex flex-col gap-1">
         <Link
-          href={`/product/${product.slug}`}
+          href={`/products/${product.slug}`}
           className="font-medium truncate hover:underline underline-offset-4"
         >
           {product.name}

@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useState, type FormEvent } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,8 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { SlidersHorizontal } from "lucide-react";
-import { SortOptionType } from "@/lib/catalog/validation";
 
 interface FilterOptions {
   categories: { name: string; slug: string }[];
@@ -24,194 +23,226 @@ interface FilterOptions {
 interface ProductFiltersProps {
   options: FilterOptions;
   isMobile?: boolean;
+  lockedCategorySlug?: string;
 }
 
-export function ProductFilters({ options, isMobile = false }: ProductFiltersProps) {
+export function ProductFilters({ options, isMobile = false, lockedCategorySlug }: ProductFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [open, setOpen] = useState(false);
 
-  // Local state for immediate input feedback before submitting
-  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
-  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("q") || "");
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value) {
-        params.set(name, value);
-      } else {
-        params.delete(name);
-      }
-      params.delete("page"); // Reset pagination on filter change
-      return params.toString();
+  const navigateWithParams = useCallback(
+    (params: URLSearchParams) => {
+      params.delete("page");
+      const query = params.toString();
+      router.push(query ? `${pathname}?${query}` : pathname);
+      if (isMobile) setOpen(false);
     },
-    [searchParams]
+    [isMobile, pathname, router]
   );
 
-  const toggleArrayFilter = (name: string, value: string) => {
-    const current = searchParams.get(name);
-    const items = current ? current.split(",") : [];
+  const toggleArrayFilter = (name: "category" | "size" | "color", value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const items = params.get(name)?.split(",").filter(Boolean) ?? [];
+    const nextItems = items.includes(value)
+      ? items.filter((item) => item !== value)
+      : [...items, value];
 
-    let newItems;
-    if (items.includes(value)) {
-      newItems = items.filter((i) => i !== value);
-    } else {
-      newItems = [...items, value];
-    }
-
-    router.push(`${pathname || ""}?${createQueryString(name, newItems.join(","))}`);
+    if (nextItems.length) params.set(name, nextItems.join(","));
+    else params.delete(name);
+    navigateWithParams(params);
   };
 
-  const handleApplyPrice = () => {
+  const applyPrice = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const minPrice = String(formData.get("minPrice") ?? "").trim();
+    const maxPrice = String(formData.get("maxPrice") ?? "").trim();
     const params = new URLSearchParams(searchParams.toString());
     if (minPrice) params.set("minPrice", minPrice);
     else params.delete("minPrice");
-
     if (maxPrice) params.set("maxPrice", maxPrice);
     else params.delete("maxPrice");
-
-    params.delete("page");
-    router.push(`${pathname || ""}?${params.toString()}`);
+    navigateWithParams(params);
   };
 
-  const handleApplySearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    router.push(`${pathname || ""}?${createQueryString("q", searchQuery)}`);
+  const applySearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const searchQuery = String(formData.get("q") ?? "").trim();
+    const params = new URLSearchParams(searchParams.toString());
+    if (searchQuery) params.set("q", searchQuery);
+    else params.delete("q");
+    navigateWithParams(params);
   };
 
-  const currentCategories = searchParams.get("category")?.split(",") || [];
-  const currentSizes = searchParams.get("size")?.split(",") || [];
-  const currentSort = (searchParams.get("sort") as SortOptionType) || "newest";
+  const selectedCategories = searchParams.get("category")?.split(",") ?? [];
+  const selectedSizes = searchParams.get("size")?.split(",") ?? [];
+  const selectedColors = searchParams.get("color")?.split(",") ?? [];
+  const sort = searchParams.get("sort") === "newest" ? "newest" : "newest";
 
-  const FilterContent = (
-    <div className="space-y-8">
-      {/* Search */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm">Search</h3>
-        <form onSubmit={handleApplySearch} className="flex gap-2">
+  const filterContent = (
+    <div className="space-y-7">
+      <section className="space-y-3" aria-labelledby="catalog-search-label">
+        <h3 id="catalog-search-label" className="text-sm font-semibold">Search</h3>
+        <form key={`search-${searchParams.toString()}`} onSubmit={applySearch} className="flex gap-2">
+          <label className="sr-only" htmlFor={isMobile ? "mobile-catalog-search" : "catalog-search"}>
+            Search products
+          </label>
           <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            id={isMobile ? "mobile-catalog-search" : "catalog-search"}
+            placeholder="Search products"
+            name="q"
+            defaultValue={searchParams.get("q") ?? ""}
           />
-          <Button type="submit" variant="secondary">
-            Go
+          <Button type="submit" size="icon" aria-label="Search products" className="h-9 w-10 bg-[#101114] text-white hover:bg-[#101114]/85">
+            <Search aria-hidden="true" />
           </Button>
         </form>
-      </div>
+      </section>
 
-      {/* Sort */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm">Sort By</h3>
+      <section className="space-y-3" aria-labelledby="catalog-sort-label">
+        <h3 id="catalog-sort-label" className="text-sm font-semibold">Sort by</h3>
         <Select
-          value={currentSort}
-          onValueChange={(val) =>
-            router.push(`${pathname || ""}?${createQueryString("sort", val as string)}`)
-          }
+          value={sort}
+          onValueChange={(value) => {
+            const params = new URLSearchParams(searchParams.toString());
+            if (value) params.set("sort", value);
+            else params.delete("sort");
+            navigateWithParams(params);
+          }}
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Sort by" />
+          <SelectTrigger aria-label="Sort products" className="h-10 w-full rounded-sm border-[#101114]/20">
+            <SelectValue placeholder="Sort products" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="newest">Newest Arrivals</SelectItem>
+            <SelectItem value="newest">Newest first</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </section>
 
-      {/* Categories */}
       {options.categories.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-semibold text-sm">Category</h3>
-          <div className="space-y-2">
-            {options.categories.map((c) => (
-              <label key={c.slug} className="flex items-center gap-2 cursor-pointer">
+        <section className="space-y-3" aria-labelledby="catalog-category-label">
+          <h3 id="catalog-category-label" className="text-sm font-semibold">Category</h3>
+          <div className="space-y-2.5">
+            {options.categories.map((category) => (
+              <label key={category.slug} className="flex min-h-6 cursor-pointer items-center gap-3 text-sm text-foreground">
                 <input
                   type="checkbox"
-                  className="rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan"
-                  checked={currentCategories.includes(c.slug)}
-                  onChange={() => toggleArrayFilter("category", c.slug)}
+                  className="size-4 rounded border-border accent-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+                  checked={selectedCategories.includes(category.slug) || category.slug === lockedCategorySlug}
+                  disabled={category.slug === lockedCategorySlug}
+                  onChange={() => toggleArrayFilter("category", category.slug)}
                 />
-                <span className="text-sm">{c.name}</span>
+                {category.name}
               </label>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Sizes */}
       {options.sizes.length > 0 && (
-        <div className="space-y-3">
-          <h3 className="font-semibold text-sm">Size</h3>
+        <section className="space-y-3" aria-labelledby="catalog-size-label">
+          <h3 id="catalog-size-label" className="text-sm font-semibold">Size</h3>
           <div className="flex flex-wrap gap-2">
-            {options.sizes.map((s) => {
-              const isActive = currentSizes.includes(s);
+            {options.sizes.map((size) => {
+              const selected = selectedSizes.includes(size);
               return (
                 <button
-                  key={s}
-                  onClick={() => toggleArrayFilter("size", s)}
-                  className={`px-3 py-1 text-sm border rounded-sm transition-colors ${
-                    isActive
-                      ? "bg-brand-charcoal text-white border-brand-charcoal"
-                      : "hover:border-gray-400"
+                  key={size}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => toggleArrayFilter("size", size)}
+                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
+                    selected
+                      ? "border-[#101114] bg-[#101114] text-white"
+                      : "border-border bg-white hover:border-[#101114]"
                   }`}
                 >
-                  {s}
+                  {size}
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Price */}
-      <div className="space-y-3">
-        <h3 className="font-semibold text-sm">Price Range</h3>
-        <div className="flex items-center gap-2">
+      {options.colors.length > 0 && (
+        <section className="space-y-3" aria-labelledby="catalog-color-label">
+          <h3 id="catalog-color-label" className="text-sm font-semibold">Color</h3>
+          <div className="space-y-2.5">
+            {options.colors.map((color) => (
+              <label key={color} className="flex min-h-6 cursor-pointer items-center gap-3 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="size-4 rounded border-border accent-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+                  checked={selectedColors.includes(color)}
+                  onChange={() => toggleArrayFilter("color", color)}
+                />
+                {color}
+              </label>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <section className="space-y-3" aria-labelledby="catalog-price-label">
+        <h3 id="catalog-price-label" className="text-sm font-semibold">Price range</h3>
+        <form key={`price-${searchParams.toString()}`} onSubmit={applyPrice} className="space-y-3">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+          <label className="sr-only" htmlFor={isMobile ? "mobile-min-price" : "min-price"}>Minimum price</label>
           <Input
+            id={isMobile ? "mobile-min-price" : "min-price"}
             type="number"
+            min="0"
+            inputMode="numeric"
             placeholder="Min"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
+            name="minPrice"
+            defaultValue={searchParams.get("minPrice") ?? ""}
           />
-          <span>-</span>
+          <span aria-hidden="true" className="text-muted-foreground">–</span>
+          <label className="sr-only" htmlFor={isMobile ? "mobile-max-price" : "max-price"}>Maximum price</label>
           <Input
+            id={isMobile ? "mobile-max-price" : "max-price"}
             type="number"
+            min="0"
+            inputMode="numeric"
             placeholder="Max"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
+            name="maxPrice"
+            defaultValue={searchParams.get("maxPrice") ?? ""}
           />
-        </div>
-        <Button onClick={handleApplyPrice} variant="secondary" className="w-full text-xs">
-          Apply Price
-        </Button>
-      </div>
+          </div>
+          <Button type="submit" variant="outline" className="h-10 w-full rounded-sm border-[#101114]/20">
+            Apply price
+          </Button>
+        </form>
+      </section>
     </div>
   );
 
   if (isMobile) {
     return (
-      <Sheet>
-        <SheetTrigger>
-          <Button variant="outline" className="w-full sm:w-auto">
-            <SlidersHorizontal className="mr-2 h-4 w-4" />
-            Filters & Sort
-          </Button>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+          <SlidersHorizontal className="size-4" aria-hidden="true" />
+          Filters
         </SheetTrigger>
-        <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle>Filters</SheetTitle>
+        <SheetContent side="left" className="w-[min(88vw,24rem)] overflow-y-auto bg-white p-5">
+          <SheetHeader className="mb-5 border-b border-border px-0 pb-4 pt-1">
+            <SheetTitle className="text-left text-xl font-semibold">Filters & sort</SheetTitle>
           </SheetHeader>
-          {FilterContent}
+          {filterContent}
         </SheetContent>
       </Sheet>
     );
   }
 
   return (
-    <div className="hidden lg:block w-64 shrink-0">
-      <div className="sticky top-24">{FilterContent}</div>
-    </div>
+    <aside aria-label="Product filters" className="hidden w-60 shrink-0 lg:block">
+      <div className="sticky top-24 border-r border-border pr-6">
+        {filterContent}
+      </div>
+    </aside>
   );
 }

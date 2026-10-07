@@ -39,7 +39,8 @@ export function ActiveFilters() {
     }
 
     params.delete("page"); // Reset pagination
-    router.push(`${pathname || ""}?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `${pathname || ""}?${query}` : pathname || "");
   };
 
   const clearAll = () => {
@@ -52,21 +53,31 @@ export function ActiveFilters() {
     params.delete("maxPrice");
     params.delete("q");
     params.delete("page");
-    router.push(`${pathname || ""}?${params.toString()}`);
+    const query = params.toString();
+    router.push(query ? `${pathname || ""}?${query}` : pathname || "");
+  };
+
+  const clearPrice = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("minPrice");
+    params.delete("maxPrice");
+    params.delete("page");
+    const query = params.toString();
+    router.push(query ? `${pathname || ""}?${query}` : pathname || "");
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 mb-6">
-      <span className="text-sm text-muted-foreground mr-2">Active Filters:</span>
+    <div className="mb-6 flex flex-wrap items-center gap-2" aria-label="Active filters">
+      <span className="mr-1 text-sm text-muted-foreground">Active filters</span>
 
       {q && (
         <Badge
           variant="secondary"
-          className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+          className="flex items-center gap-1 py-1 text-sm"
         >
           Search: {q}
-          <button onClick={() => removeFilter("q")} className="ml-1 hover:text-red-500">
-            <X className="h-3 w-3" />
+          <button type="button" onClick={() => removeFilter("q")} aria-label="Remove search filter" className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+            <X className="size-3" aria-hidden="true" />
           </button>
         </Badge>
       )}
@@ -79,8 +90,8 @@ export function ActiveFilters() {
             className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
           >
             Category: {c}
-            <button onClick={() => removeFilter("category", c)} className="ml-1 hover:text-red-500">
-              <X className="h-3 w-3" />
+            <button type="button" onClick={() => removeFilter("category", c)} aria-label={`Remove ${c} category filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+              <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -93,8 +104,8 @@ export function ActiveFilters() {
             className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
           >
             Size: {s}
-            <button onClick={() => removeFilter("size", s)} className="ml-1 hover:text-red-500">
-              <X className="h-3 w-3" />
+            <button type="button" onClick={() => removeFilter("size", s)} aria-label={`Remove ${s} size filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+              <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -107,8 +118,8 @@ export function ActiveFilters() {
             className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
           >
             Color: {c}
-            <button onClick={() => removeFilter("color", c)} className="ml-1 hover:text-red-500">
-              <X className="h-3 w-3" />
+            <button type="button" onClick={() => removeFilter("color", c)} aria-label={`Remove ${c} color filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+              <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
         ))}
@@ -116,24 +127,19 @@ export function ActiveFilters() {
       {(minPrice || maxPrice) && (
         <Badge
           variant="secondary"
-          className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+          className="flex items-center gap-1 py-1 text-sm"
         >
           Price: {minPrice ? `৳${minPrice}` : "0"} - {maxPrice ? `৳${maxPrice}` : "Any"}
-          <button
-            onClick={() => {
-              removeFilter("minPrice");
-              removeFilter("maxPrice");
-            }}
-            className="ml-1 hover:text-red-500"
-          >
-            <X className="h-3 w-3" />
+          <button type="button" onClick={clearPrice} aria-label="Remove price filter" className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+            <X className="size-3" aria-hidden="true" />
           </button>
         </Badge>
       )}
 
       <button
         onClick={clearAll}
-        className="text-sm underline text-muted-foreground hover:text-foreground ml-2"
+        type="button"
+        className="ml-2 min-h-9 rounded-sm px-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
       >
         Clear all
       </button>

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
@@ -23,34 +22,38 @@ export function DiscoveryPagination({ currentPage, totalPages }: PaginationProps
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-12">
+    <nav aria-label="Product pages" className="mt-12 flex items-center justify-center gap-3">
       {currentPage > 1 ? (
-        <Link href={createPageUrl(currentPage - 1)}>
-          <Button variant="outline" size="icon">
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
+        <Link
+          href={createPageUrl(currentPage - 1)}
+          aria-label="Previous page"
+          className="inline-flex size-10 items-center justify-center rounded-sm border border-border transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        >
+          <ChevronLeft className="size-4" aria-hidden="true" />
         </Link>
       ) : (
-        <Button variant="outline" size="icon" disabled>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
+        <span aria-hidden="true" className="inline-flex size-10 items-center justify-center rounded-sm border border-border text-muted-foreground/50">
+          <ChevronLeft className="size-4" />
+        </span>
       )}
 
-      <span className="text-sm font-medium mx-4">
+      <span className="min-w-28 text-center text-sm font-medium">
         Page {currentPage} of {totalPages}
       </span>
 
       {currentPage < totalPages ? (
-        <Link href={createPageUrl(currentPage + 1)}>
-          <Button variant="outline" size="icon">
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <Link
+          href={createPageUrl(currentPage + 1)}
+          aria-label="Next page"
+          className="inline-flex size-10 items-center justify-center rounded-sm border border-border transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        >
+          <ChevronRight className="size-4" aria-hidden="true" />
         </Link>
       ) : (
-        <Button variant="outline" size="icon" disabled>
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <span aria-hidden="true" className="inline-flex size-10 items-center justify-center rounded-sm border border-border text-muted-foreground/50">
+          <ChevronRight className="size-4" />
+        </span>
       )}
-    </div>
+    </nav>
   );
 }
