@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 async function OrdersTable({
   searchParams
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const status = (searchParams.status as OrderStatus) || undefined;
-  const search = (searchParams.q as string) || undefined;
-  const page = Number(searchParams.page) || 1;
+  const resolvedSearchParams = await searchParams;
+  const status = (resolvedSearchParams.status as OrderStatus) || undefined;
+  const search = (resolvedSearchParams.q as string) || undefined;
+  const page = Number(resolvedSearchParams.page) || 1;
 
   const { orders, totalPages } = await getAdminOrders({
     status,
@@ -134,7 +135,7 @@ async function OrdersTable({
 export default async function AdminOrdersPage({
   searchParams
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   return (
     <div className="p-6 space-y-6">

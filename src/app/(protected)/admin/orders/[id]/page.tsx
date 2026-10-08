@@ -1,13 +1,10 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
-  updateOrderPaymentStatusAction,
-  updateOrderStatusAction,
-  type AdminActionState,
-} from "@/lib/admin/order-actions";
+  OrderPaymentForm,
+  OrderStatusForm,
+} from "@/components/admin/order-action-forms";
 import { getAdminOrderById } from "@/lib/admin/order-queries";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { notFound } from "next/navigation";
@@ -24,104 +21,6 @@ function formatDate(date: Date) {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-async function OrderStatusForm({
-  orderId,
-  currentStatus,
-}: {
-  orderId: string;
-  currentStatus: OrderStatus;
-}) {
-  return (
-    <form
-      action={async (formData) => {
-        await updateOrderStatusAction({} as AdminActionState, formData);
-      }}
-      className="space-y-4"
-    >
-      <input type="hidden" name="id" value={orderId} />
-
-      <div className="space-y-2">
-        <Label htmlFor="status">Order Status</Label>
-
-        <select
-          id="status"
-          name="status"
-          defaultValue={currentStatus}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          {Object.values(OrderStatus).map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="order-notes">Change Notes</Label>
-
-        <textarea
-          id="order-notes"
-          name="notes"
-          placeholder="Reason for status change..."
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-      </div>
-
-      <Button type="submit">Update Status</Button>
-    </form>
-  );
-}
-
-async function OrderPaymentForm({
-  orderId,
-  currentPaymentStatus,
-}: {
-  orderId: string;
-  currentPaymentStatus: PaymentStatus;
-}) {
-  return (
-    <form
-      action={async (formData) => {
-        await updateOrderPaymentStatusAction({} as AdminActionState, formData);
-      }}
-      className="space-y-4"
-    >
-      <input type="hidden" name="id" value={orderId} />
-
-      <div className="space-y-2">
-        <Label htmlFor="payment-status">Payment Status</Label>
-
-        <select
-          id="payment-status"
-          name="paymentStatus"
-          defaultValue={currentPaymentStatus}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        >
-          {Object.values(PaymentStatus).map((status) => (
-            <option key={status} value={status}>
-              {status}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="payment-notes">Payment Notes</Label>
-
-        <textarea
-          id="payment-notes"
-          name="notes"
-          placeholder="Payment reference or notes..."
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-        />
-      </div>
-
-      <Button type="submit">Update Payment</Button>
-    </form>
-  );
 }
 
 export default async function AdminOrderPage({ params }: { params: Promise<{ id: string }> }) {
@@ -314,11 +213,19 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
             </CardHeader>
 
             <CardContent className="space-y-6">
-              <OrderStatusForm orderId={order.id} currentStatus={order.status} />
+              <OrderStatusForm
+                orderId={order.id}
+                currentStatus={order.status}
+                statuses={Object.values(OrderStatus)}
+              />
 
               <Separator />
 
-              <OrderPaymentForm orderId={order.id} currentPaymentStatus={order.paymentStatus} />
+              <OrderPaymentForm
+                orderId={order.id}
+                currentPaymentStatus={order.paymentStatus}
+                statuses={Object.values(PaymentStatus)}
+              />
             </CardContent>
           </Card>
 

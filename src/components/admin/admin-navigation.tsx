@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Boxes, FolderTree, LayoutDashboard, Menu, ShoppingBag } from "lucide-react";
+import { Boxes, FolderTree, LayoutDashboard, Menu, RotateCcw, ShoppingBag } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -15,6 +15,7 @@ import {
 const navigation = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+  { label: "Returns", href: "/admin/returns", icon: RotateCcw },
   { label: "Products", href: "/admin/products", icon: Boxes },
   { label: "Categories", href: "/admin/categories", icon: FolderTree },
 ] as const;
