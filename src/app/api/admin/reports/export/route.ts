@@ -28,8 +28,11 @@ export async function GET(request: NextRequest) {
     else if (type === "products") rows = [["Product", "SKU", "Units Sold", "Gross Sales", "Discounts", "Net Sales", "Returned Units", "COGS", "Gross Profit", "Margin"], ...report.products.map((row) => [row.productName, row.sku, row.units, row.grossSales, row.discounts, row.netSales, row.returnedUnits, row.cogs, row.profit, row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`])];
     else if (type === "orders") {
       const firstPage = await getAdminOrderProfitability({ ...currentFilters, page: 1 });
-      const pages = await Promise.all(Array.from({ length: Math.max(firstPage.totalPages, 1) - 1 }, (_, index) => getAdminOrderProfitability({ ...currentFilters, page: index + 2 })));
-      const allOrders = [firstPage, ...pages].flatMap((page) => page.orders);
+      const allOrders = [...firstPage.orders];
+      for (let page = 2; page <= firstPage.totalPages; page += 1) {
+        const nextPage = await getAdminOrderProfitability({ ...currentFilters, page });
+        allOrders.push(...nextPage.orders);
+      }
       rows = [["Order Number", "Date", "Customer", "Status", "Payment Method", "Gross Sales", "Discount", "Net Sales", "Refund", "COGS", "Gross Profit", "Margin"], ...allOrders.map((row) => [row.orderNumber, date(row.createdAt), row.customerName ?? "Guest", row.status, row.paymentMethod, row.grossSales, row.discount, row.grossSales - row.discount - row.refunds, row.refunds, row.cogs, row.profit, row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`])];
     } else return NextResponse.json({ error: "Invalid export type" }, { status: 400 });
     return new NextResponse(csv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${filename(type, report.start, report.end)}"` } });

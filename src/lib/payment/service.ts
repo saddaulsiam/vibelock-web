@@ -108,6 +108,10 @@ export class PaymentService {
       }
     }
 
+    if (!verification.success) {
+      throw new Error("Payment verification failed");
+    }
+
     // Wrap the final update in a transaction
     await prisma.$transaction(async (tx) => {
       // Clean payload

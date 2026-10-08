@@ -41,6 +41,9 @@ function getSafeCheckoutError(error: string | undefined) {
   if (error?.toLowerCase().includes("payment initiation failed")) {
     return "Your order was created, but online payment could not be started. You can retry from your orders page.";
   }
+  if (error?.toLowerCase().includes("online payment is currently unavailable")) {
+    return "Online payment is currently unavailable. Please choose cash on delivery.";
+  }
   return "We could not place your order. Please review your details and try again.";
 }
 

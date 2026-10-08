@@ -7,8 +7,8 @@ const envSchema = z.object({
 
   // Authentication
   AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required"),
-  AUTH_GOOGLE_ID: z.string().min(1, "AUTH_GOOGLE_ID is required"),
-  AUTH_GOOGLE_SECRET: z.string().min(1, "AUTH_GOOGLE_SECRET is required"),
+  AUTH_GOOGLE_ID: z.string().optional(),
+  AUTH_GOOGLE_SECRET: z.string().optional(),
 
   // Cloudinary placeholders
   CLOUDINARY_API_KEY: z.string().optional(),
@@ -43,6 +43,14 @@ const _env = envSchema.safeParse(process.env);
 if (!_env.success) {
   console.error("❌ Invalid environment variables (Server):", _env.error.format());
   throw new Error("Invalid server environment variables");
+}
+
+if (
+  _env.data.NODE_ENV === "production" &&
+  process.env.VITEST !== "true" &&
+  _env.data.AUTH_SECRET.length < 32
+) {
+  throw new Error("AUTH_SECRET must be at least 32 characters in production");
 }
 
 export const env = _env.data;

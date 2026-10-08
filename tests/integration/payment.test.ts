@@ -309,25 +309,28 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
       where: { order: { orderNumber: res.orderNumber as string } },
     });
 
-    // Client callback sends status=FAILED
-    // The SSLCommerz provider verifyPayment handles status=FAILED without calling validation API
-    const paymentService = new PaymentService();
-    await paymentService.verifyCallback("SSLCOMMERZ", {
-      tran_id: payment?.merchantReferenceId,
-      status: "FAILED",
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({ status: "INVALID_TRANSACTION" }),
     });
+    const paymentService = new PaymentService();
+    await expect(
+      paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: payment?.merchantReferenceId,
+        status: "FAILED",
+        val_id: "VAL123",
+      })
+    ).rejects.toThrow("Payment verification failed");
 
     const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
-    expect(updatedPayment?.status).toBe("FAILED");
+    expect(updatedPayment?.status).toBe("INITIATED");
 
     const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
-    expect(updatedOrder?.paymentStatus).toBe("FAILED");
+    expect(updatedOrder?.paymentStatus).toBe("PENDING");
 
-    // Reservation should be released
     const finalReservations = await prisma.inventoryReservation.findMany({
       where: { variantId: variant.id, status: "RESERVED" },
     });
-    expect(finalReservations.length).toBe(0);
+    expect(finalReservations.length).toBe(1);
   });
 
   test("13. CANCELLED callback", async () => {
@@ -350,13 +353,19 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     });
 
     const paymentService = new PaymentService();
-    await paymentService.verifyCallback("SSLCOMMERZ", {
-      tran_id: payment?.merchantReferenceId,
-      status: "CANCELLED",
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({ status: "INVALID_TRANSACTION" }),
     });
+    await expect(
+      paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: payment?.merchantReferenceId,
+        status: "CANCELLED",
+        val_id: "VAL123",
+      })
+    ).rejects.toThrow("Payment verification failed");
 
     const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
-    expect(updatedPayment?.status).toBe("CANCELLED");
+    expect(updatedPayment?.status).toBe("INITIATED");
   });
 
   test("14. Duplicate callback / Idempotency & 21. Concurrency", async () => {

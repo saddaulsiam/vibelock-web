@@ -54,8 +54,67 @@ export async function updateOrderStatusAction(
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${id} FOR UPDATE`;
-      const order = await tx.order.findUnique({ where: { id } });
+      const order = await tx.order.findUnique({
+        where: { id },
+        include: {
+          inventoryReservations: true,
+          shipment: true,
+          payments: { select: { status: true } },
+        },
+      });
       if (!order) throw new Error("Order not found.");
+
+      if (status === "CANCELLED") {
+        if (order.status === "CANCELLED") {
+          throw new Error("Cancelled orders cannot be changed.");
+        }
+        if (order.status !== "PENDING") {
+          throw new Error("Only pending orders can be cancelled.");
+        }
+        if (order.shipment) {
+          throw new Error("Orders cannot be cancelled after shipment processing has started.");
+        }
+        if (
+          order.paymentStatus === "SUCCESS" ||
+          order.paymentStatus === "REFUNDED" ||
+          order.paymentStatus === "PARTIALLY_REFUNDED" ||
+          order.payments.some((payment) =>
+            ["SUCCESS", "REFUNDED", "PARTIALLY_REFUNDED"].includes(payment.status)
+          )
+        ) {
+          throw new Error("Paid orders cannot be cancelled online at this time.");
+        }
+        if (order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")) {
+          throw new Error("Order has already committed stock and cannot be safely cancelled.");
+        }
+
+        await tx.order.update({
+          where: { id },
+          data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
+        });
+        await tx.inventoryReservation.updateMany({
+          where: { orderId: id, status: "RESERVED" },
+          data: { status: "RELEASED", releasedAt: new Date() },
+        });
+        await tx.orderHistory.create({
+          data: {
+            orderId: id,
+            status: "CANCELLED",
+            notes,
+          },
+        });
+        await tx.auditLog.create({
+          data: {
+            actorId: admin.id,
+            action: "ORDER_CANCELLED",
+            entityType: "Order",
+            entityId: id,
+            metadata: { from: order.status, to: "CANCELLED", notes: notes ?? null },
+          },
+        });
+        return;
+      }
+
       const transitionError = getOrderStatusTransitionError(order.status, status);
       if (transitionError) throw new Error(transitionError);
       if (order.status === status) return;
@@ -88,6 +147,13 @@ export async function updateOrderStatusAction(
       error:
         message === "Order not found." || message.startsWith("Order cannot transition") || message.endsWith("orders cannot be changed.")
           ? message
+          : [
+                "Only pending orders can be cancelled.",
+                "Orders cannot be cancelled after shipment processing has started.",
+                "Paid orders cannot be cancelled online at this time.",
+                "Order has already committed stock and cannot be safely cancelled.",
+              ].includes(message)
+            ? message
           : "Failed to update order status.",
     };
   }

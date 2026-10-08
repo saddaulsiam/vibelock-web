@@ -364,6 +364,74 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     ).rejects.toThrow("Forbidden");
   });
 
+  test("admin cancellation releases reservations and records history/audit", async () => {
+    const user = await makeUser();
+    const { order, variants } = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    const result = await updateOrderStatusAction(
+      { error: null },
+      formData({ id: order.id, status: "CANCELLED", notes: "Customer request" })
+    );
+
+    expect(result).toEqual({ error: null, message: "Order updated successfully." });
+    const after = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+      include: { inventoryReservations: true, payments: true },
+    });
+    expect(after.status).toBe("CANCELLED");
+    expect(after.paymentStatus).toBe("CANCELLED");
+    expect(after.payments[0].status).toBe("INITIATED");
+    expect(after.inventoryReservations[0].status).toBe("RELEASED");
+    expect(after.inventoryReservations[0].releasedAt).not.toBeNull();
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(1);
+    expect(
+      await prisma.inventoryTransaction.count({
+        where: { variantId: variants[0].variant.id, referenceId: order.id },
+      })
+    ).toBe(0);
+
+    const second = await updateOrderStatusAction(
+      { error: null },
+      formData({ id: order.id, status: "CANCELLED" })
+    );
+    expect(second.error).toBe("Cancelled orders cannot be changed.");
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(1);
+  });
+
+  test("admin cancellation rejects shipped, delivered, and paid orders without changes", async () => {
+    const user = await makeUser();
+    const shipped = await createCustomerOrder(user);
+    const delivered = await createCustomerOrder(user);
+    const paid = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
+    await prisma.order.update({ where: { id: shipped.order.id }, data: { status: "SHIPPED" } });
+    await prisma.order.update({ where: { id: delivered.order.id }, data: { status: "DELIVERED" } });
+    await validateOnlinePayment(paid.order.id, paid.order.total.toString());
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    for (const [order, expectedError] of [
+      [shipped.order, "Only pending orders can be cancelled."],
+      [delivered.order, "Only pending orders can be cancelled."],
+      [paid.order, "Paid orders cannot be cancelled online at this time."],
+    ] as const) {
+      const result = await updateOrderStatusAction(
+        { error: null },
+        formData({ id: order.id, status: "CANCELLED" })
+      );
+      expect(result.error).toBe(expectedError);
+      const unchanged = await prisma.order.findUniqueOrThrow({
+        where: { id: order.id },
+        include: { inventoryReservations: true },
+      });
+      expect(unchanged.status).not.toBe("CANCELLED");
+      expect(unchanged.inventoryReservations.some((reservation) => reservation.status === "RELEASED")).toBe(false);
+      expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(0);
+      expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(0);
+    }
+  });
+
   test("order detail returns financial and order-time item snapshots without internal fields", async () => {
     const user = await makeUser();
     const { order, variants } = await createCustomerOrder(user, {
@@ -499,23 +567,35 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     await validateOnlinePayment(succeeded.order.id, succeeded.order.total.toString());
 
     const failed = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
-    await new PaymentService().verifyCallback("SSLCOMMERZ", {
-      tran_id: failed.order.payments[0].merchantReferenceId,
-      status: "FAILED",
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({ status: "INVALID_TRANSACTION" }),
     });
+    await expect(
+      new PaymentService().verifyCallback("SSLCOMMERZ", {
+        tran_id: failed.order.payments[0].merchantReferenceId,
+        status: "FAILED",
+        val_id: crypto.randomUUID(),
+      })
+    ).rejects.toThrow("Payment verification failed");
 
     const cancelled = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
-    await new PaymentService().verifyCallback("SSLCOMMERZ", {
-      tran_id: cancelled.order.payments[0].merchantReferenceId,
-      status: "CANCELLED",
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({ status: "INVALID_TRANSACTION" }),
     });
+    await expect(
+      new PaymentService().verifyCallback("SSLCOMMERZ", {
+        tran_id: cancelled.order.payments[0].merchantReferenceId,
+        status: "CANCELLED",
+        val_id: crypto.randomUUID(),
+      })
+    ).rejects.toThrow("Payment verification failed");
 
     mockSession = { user: { id: user.id } };
     const expected = [
       [cod.order, "PENDING"],
       [pending.order, "PENDING"],
       [succeeded.order, "SUCCESS"],
-      [failed.order, "FAILED"],
+      [failed.order, "PENDING"],
       [cancelled.order, "PENDING"],
     ] as const;
     for (const [order, expectedStatus] of expected) {
@@ -527,11 +607,11 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       (await prisma.payment.findFirst({ where: { orderId: succeeded.order.id } }))?.status
     ).toBe("SUCCESS");
     expect((await prisma.payment.findFirst({ where: { orderId: failed.order.id } }))?.status).toBe(
-      "FAILED"
+      "INITIATED"
     );
     expect(
       (await prisma.payment.findFirst({ where: { orderId: cancelled.order.id } }))?.status
-    ).toBe("CANCELLED");
+    ).toBe("INITIATED");
   });
 
   test("eligible online cancellation releases reservations and is reflected in later reads", async () => {

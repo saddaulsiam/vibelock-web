@@ -15,4 +15,11 @@ if (!_publicEnv.success) {
   throw new Error("Invalid public environment variables");
 }
 
+if (
+  process.env.NODE_ENV === "production" &&
+  !/^https:\/\//i.test(_publicEnv.data.NEXT_PUBLIC_APP_URL)
+) {
+  throw new Error("NEXT_PUBLIC_APP_URL must use HTTPS in production");
+}
+
 export const publicEnv = _publicEnv.data;

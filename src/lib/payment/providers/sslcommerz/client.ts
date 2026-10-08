@@ -86,27 +86,11 @@ export class SSLCommerzProvider implements PaymentProvider {
 
     const { val_id, status } = callbackPayload as { val_id?: string; status?: string };
 
-    if (status === "CANCELLED" || status === "UNATTEMPTED") {
-      return {
-        success: true,
-        status: "CANCELLED",
-        rawPayload: callbackPayload,
-      };
-    }
-
-    if (status === "FAILED") {
-      return {
-        success: true,
-        status: "FAILED",
-        rawPayload: callbackPayload,
-      };
-    }
-
     if (!val_id) {
       return {
         success: false,
         status: "FAILED",
-        error: "Missing val_id for verification",
+        error: "Missing val_id for server-side verification",
         rawPayload: callbackPayload,
       };
     }

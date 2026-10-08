@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { checkoutSchema } from "./validation";
 import { getCart } from "@/lib/cart/queries";
+import { env } from "@/lib/config/env";
 import crypto from "crypto";
 
 export async function createOrderAction(
@@ -47,6 +48,16 @@ export async function createOrderAction(
     shippingCountry,
     paymentMethod,
   } = parsed.data;
+
+  if (
+    paymentMethod === "ONLINE" &&
+    (!env.SSLCOMMERZ_STORE_ID || !env.SSLCOMMERZ_STORE_PASSWORD)
+  ) {
+    return {
+      success: false,
+      error: "Online payment is currently unavailable. Please choose cash on delivery.",
+    };
+  }
 
   // Verify Cart
   const cart = await getCart();
