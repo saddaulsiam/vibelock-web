@@ -106,7 +106,7 @@ export async function updateOrderPaymentStatusAction(
         data: {
           orderId: id,
           status: OrderStatus.PENDING, // Placeholder since OrderHistory requires an OrderStatus
-          notes: `Payment status updated to ${paymentStatus}. ${notes}`,
+          notes: `[PAYMENT UPDATE] Payment status updated to ${paymentStatus}. ${notes}`,
         },
       });
     });

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
@@ -17,7 +17,7 @@ export async function getAdminOrders({
 }) {
   await requireRole("ADMIN");
 
-  const where: any = {};
+  const where: Prisma.OrderWhereInput = {};
 
   if (status) {
     where.status = status;
