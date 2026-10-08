@@ -5,6 +5,10 @@ import { createOrderAction } from "../../src/lib/checkout/actions";
 import { addToCart } from "../../src/lib/cart/mutations";
 import { getCustomerOrder, getCustomerOrders } from "../../src/lib/orders/queries";
 import { cancelOrderAction } from "../../src/lib/orders/actions";
+import {
+  updateOrderPaymentStatusAction,
+  updateOrderStatusAction,
+} from "../../src/lib/admin/order-actions";
 import { PaymentService } from "../../src/lib/payment/service";
 import { createTestInventory, createTestProduct, createTestVariant } from "../factories";
 import { createTestUser } from "../factories/user";
@@ -23,6 +27,11 @@ vi.mock("next/headers", () => ({
 
 vi.mock("../../src/auth", () => ({
   auth: vi.fn(() => Promise.resolve(mockSession)),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  updateTag: vi.fn(),
 }));
 
 vi.mock("../../src/lib/config/env", () => ({
@@ -53,6 +62,12 @@ const checkoutData = {
 };
 
 type TestUser = Awaited<ReturnType<typeof createTestUser>>;
+
+function formData(values: Record<string, string>) {
+  const data = new FormData();
+  for (const [key, value] of Object.entries(values)) data.set(key, value);
+  return data;
+}
 
 async function makeUser(): Promise<TestUser> {
   const user = await createTestUser({
@@ -161,6 +176,7 @@ describe("Phase 3I - Orders & Customer Order History", () => {
 
     await prisma.$transaction(async (tx) => {
       if (testOrderIds.length) {
+        await tx.auditLog.deleteMany({ where: { entityId: { in: testOrderIds } } });
         await tx.refund.deleteMany({ where: { payment: { orderId: { in: testOrderIds } } } });
         await tx.payment.deleteMany({ where: { orderId: { in: testOrderIds } } });
         await tx.inventoryReservation.deleteMany({ where: { orderId: { in: testOrderIds } } });
@@ -197,6 +213,7 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       const created = await createCustomerOrder(userA, {
         items: [{ sellingPrice: `${100 + index}.00`, quantity: 1 }],
       });
+
       userAOrders.push(created.order.orderNumber);
     }
     const userBOrder = await createCustomerOrder(userB);
@@ -253,6 +270,98 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     const emptyUser = await makeUser();
     mockSession = { user: { id: emptyUser.id } };
     expect(await getCustomerOrders()).toEqual({ orders: [], total: 0 });
+  });
+
+  test("admin order status transitions are forward-only and audited", async () => {
+    const user = await makeUser();
+    const { order } = await createCustomerOrder(user);
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    const valid = await updateOrderStatusAction(
+      { error: null },
+      formData({ id: order.id, status: "PROCESSING", notes: "Packed" })
+    );
+    expect(valid).toEqual({ error: null, message: "Order updated successfully." });
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe("PROCESSING");
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "PROCESSING" } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_STATUS_CHANGED" } })).toBe(1);
+
+    const invalid = await updateOrderStatusAction(
+      { error: null },
+      formData({ id: order.id, status: "PENDING" })
+    );
+    expect(invalid.error).toBe("Order cannot transition from PROCESSING to PENDING.");
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe("PROCESSING");
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(1);
+  });
+
+  test("delivered and cancelled orders cannot be changed", async () => {
+    const user = await makeUser();
+    const delivered = await createCustomerOrder(user);
+    const cancelled = await createCustomerOrder(user);
+    await prisma.order.update({ where: { id: delivered.order.id }, data: { status: "DELIVERED" } });
+    await prisma.order.update({ where: { id: cancelled.order.id }, data: { status: "CANCELLED" } });
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    for (const [id, status, message] of [
+      [delivered.order.id, "PROCESSING", "Delivered orders cannot be changed."],
+      [cancelled.order.id, "PENDING", "Cancelled orders cannot be changed."],
+    ] as const) {
+      const result = await updateOrderStatusAction({ error: null }, formData({ id, status }));
+      expect(result.error).toBe(message);
+      expect(await prisma.orderHistory.count({ where: { orderId: id } })).toBe(0);
+      expect(await prisma.auditLog.count({ where: { entityId: id, action: "ORDER_STATUS_CHANGED" } })).toBe(0);
+    }
+  });
+
+  test("payment status updates must match recorded payment state", async () => {
+    const user = await makeUser();
+    const { order } = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    const valid = await updateOrderPaymentStatusAction(
+      { error: null },
+      formData({ id: order.id, paymentStatus: "INITIATED" })
+    );
+    expect(valid).toEqual({ error: null, message: "Order updated successfully." });
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).paymentStatus).toBe("INITIATED");
+
+    const invalid = await updateOrderPaymentStatusAction(
+      { error: null },
+      formData({ id: order.id, paymentStatus: "SUCCESS" })
+    );
+    expect(invalid.error).toBe("Payment status must match the recorded payment state.");
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(1);
+    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "PAYMENT_STATUS_CHANGED" } })).toBe(1);
+
+    await prisma.payment.updateMany({ where: { orderId: order.id }, data: { status: "REFUNDED" } });
+    await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: "REFUNDED" } });
+    const refundedToPending = await updateOrderPaymentStatusAction(
+      { error: null },
+      formData({ id: order.id, paymentStatus: "PENDING" })
+    );
+    expect(refundedToPending.error).toBe("Payment cannot transition from REFUNDED to PENDING.");
+    const refundedToPaid = await updateOrderPaymentStatusAction(
+      { error: null },
+      formData({ id: order.id, paymentStatus: "SUCCESS" })
+    );
+    expect(refundedToPaid.error).toBe("Payment cannot transition from REFUNDED to SUCCESS.");
+    expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(1);
+  });
+
+  test("admin status actions reject unauthenticated and non-admin callers", async () => {
+    const user = await makeUser();
+    const { order } = await createCustomerOrder(user);
+
+    mockSession = null;
+    await expect(
+      updateOrderStatusAction({ error: null }, formData({ id: order.id, status: "PROCESSING" }))
+    ).rejects.toThrow("Unauthorized");
+
+    mockSession = { user: { id: user.id, role: "CUSTOMER" } };
+    await expect(
+      updateOrderPaymentStatusAction({ error: null }, formData({ id: order.id, paymentStatus: "PENDING" }))
+    ).rejects.toThrow("Forbidden");
   });
 
   test("order detail returns financial and order-time item snapshots without internal fields", async () => {

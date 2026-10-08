@@ -182,6 +182,6 @@ describe("admin reports", () => {
   test("escapes CSV values and preserves UTF-8 text", () => {
     expect(csvCell("ঢাকা, \"Main\"\nStreet")).toBe('"ঢাকা, ""Main""\nStreet"');
     expect(csv([["Product", "Customer"], ["শার্ট", "A, B"]])).toContain('শার্ট,"A, B"');
-    expect(csvCell("=HYPERLINK(\"https://attacker.example\")")).toBe("'=HYPERLINK(\"\"https://attacker.example\"\")\"");
+    expect(csvCell("=HYPERLINK(\"https://attacker.example\")")).toBe("\"'=HYPERLINK(\"\"https://attacker.example\"\")\"");
   });
 });

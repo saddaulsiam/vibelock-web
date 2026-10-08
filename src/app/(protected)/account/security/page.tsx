@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -115,10 +117,20 @@ export default function SecurityPage() {
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
       <header className="border-b border-[#101114]/15 pb-6">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          Customer area
-        </p>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">Account security</h1>
+        <div className="flex justify-between items-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Customer area
+          </p>
+          <Link
+            href="/account"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-[#101114]"
+          >
+            <ArrowLeft className="size-4" /> Back to account
+          </Link>
+        </div>
+        <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+          Account security
+        </h1>
         <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
           Update your password and manage the sessions connected to your account.
         </p>
@@ -193,7 +205,9 @@ export default function SecurityPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {sessionLoading ? (
-            <p role="status" className="text-sm text-muted-foreground">Loading sessions...</p>
+            <p role="status" className="text-sm text-muted-foreground">
+              Loading sessions...
+            </p>
           ) : sessions.length === 0 ? (
             <p className="border border-dashed border-[#101114]/15 bg-[#F3F0E8]/60 px-4 py-6 text-sm text-muted-foreground">
               No active sessions are available to display.

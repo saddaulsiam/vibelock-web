@@ -15,9 +15,7 @@ export const metadata: Metadata = {
 
 const pageSize = 10;
 
-export default async function OrdersPage(props: {
-  searchParams: Promise<{ page?: string }>;
-}) {
+export default async function OrdersPage(props: { searchParams: Promise<{ page?: string }> }) {
   const searchParams = await props.searchParams;
   const requestedPage = Number.parseInt(searchParams.page ?? "1", 10);
   const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
@@ -28,18 +26,23 @@ export default async function OrdersPage(props: {
     <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
       <Container className="max-w-5xl">
         <header className="mb-8 border-b border-[#101114]/15 pb-6 sm:mb-10">
-          <Link
-            href="/account"
-            className="mb-5 inline-flex min-h-9 items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-          >
-            <ArrowLeft className="size-4" aria-hidden="true" /> Back to account
-          </Link>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            VibeLock / Account
-          </p>
+          <div className="flex justify-between items-center">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              VibeLock / Account
+            </p>
+            <Link
+              href="/account"
+              className="inline-flex min-h-9 items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            >
+              <ArrowLeft className="size-4" aria-hidden="true" /> Back to account
+            </Link>
+          </div>
+
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">Your orders</h1>
+              <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+                Your orders
+              </h1>
               <p className="mt-2 text-sm text-muted-foreground">Review order status and details.</p>
             </div>
             <p className="text-sm text-muted-foreground" aria-live="polite">
@@ -75,7 +78,10 @@ export default async function OrdersPage(props: {
                       Order {order.orderNumber}
                     </Link>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      Placed {new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(order.createdAt)}
+                      Placed{" "}
+                      {new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(
+                        order.createdAt
+                      )}
                     </p>
                   </div>
 
@@ -100,13 +106,23 @@ export default async function OrdersPage(props: {
                   </div>
                   <div className="col-span-2 sm:col-span-1 sm:text-right">
                     <p className="text-xs text-muted-foreground">Order total</p>
-                    <Price amount={order.total} className="mt-1 text-base font-semibold text-[#101114]" />
+                    <Price
+                      amount={order.total}
+                      className="mt-1 text-base font-semibold text-[#101114]"
+                    />
                   </div>
                 </div>
                 {order.shipment ? (
                   <div className="flex flex-wrap items-center gap-2 border-t border-[#101114]/10 px-4 py-3 text-xs text-muted-foreground sm:px-5">
-                    <span>Shipment: <span className="font-semibold uppercase text-[#101114]">{order.shipment.status}</span></span>
-                    {order.shipment.trackingNumber ? <span>· Tracking {order.shipment.trackingNumber}</span> : null}
+                    <span>
+                      Shipment:{" "}
+                      <span className="font-semibold uppercase text-[#101114]">
+                        {order.shipment.status}
+                      </span>
+                    </span>
+                    {order.shipment.trackingNumber ? (
+                      <span>· Tracking {order.shipment.trackingNumber}</span>
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -122,7 +138,10 @@ export default async function OrdersPage(props: {
             ))}
 
             {totalPages > 1 && (
-              <nav aria-label="Order history pages" className="flex items-center justify-center gap-3 pt-5">
+              <nav
+                aria-label="Order history pages"
+                className="flex items-center justify-center gap-3 pt-5"
+              >
                 {page > 1 ? (
                   <Link
                     href={`/account/orders?page=${page - 1}`}
@@ -131,7 +150,10 @@ export default async function OrdersPage(props: {
                     <ArrowLeft className="size-4" aria-hidden="true" /> Previous
                   </Link>
                 ) : (
-                  <span className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60" aria-disabled="true">
+                  <span
+                    className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60"
+                    aria-disabled="true"
+                  >
                     <ArrowLeft className="size-4" aria-hidden="true" /> Previous
                   </span>
                 )}
@@ -146,7 +168,10 @@ export default async function OrdersPage(props: {
                     Next <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
                 ) : (
-                  <span className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60" aria-disabled="true">
+                  <span
+                    className="inline-flex min-h-10 items-center gap-2 border border-[#101114]/10 px-4 text-sm text-muted-foreground/60"
+                    aria-disabled="true"
+                  >
                     Next <ArrowRight className="size-4" aria-hidden="true" />
                   </span>
                 )}
