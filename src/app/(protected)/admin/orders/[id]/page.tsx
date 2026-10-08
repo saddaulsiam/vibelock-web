@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
+  CreateShipmentForm,
   OrderPaymentForm,
   OrderStatusForm,
 } from "@/components/admin/order-action-forms";
@@ -127,6 +128,26 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                 <p>
                   <strong>Country:</strong> {order.shippingCountry}
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipment</CardTitle>
+                <CardDescription>
+                  {order.shipment ? "Shipment already exists for this order." : "No shipment has been created yet."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {order.shipment ? (
+                  <div className="space-y-1 text-sm">
+                    <p><strong>Status:</strong> {order.shipment.status}</p>
+                    <p><strong>Provider:</strong> {order.shipment.provider}</p>
+                    <p><strong>Tracking:</strong> {order.shipment.trackingNumber || "Not assigned"}</p>
+                  </div>
+                ) : (
+                  <CreateShipmentForm orderId={order.id} />
+                )}
               </CardContent>
             </Card>
 

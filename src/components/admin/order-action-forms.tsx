@@ -9,6 +9,7 @@ import {
   updateOrderPaymentStatusAction,
   updateOrderStatusAction,
 } from "@/lib/admin/order-actions";
+import { createShipmentAction } from "@/lib/admin/shipping-actions";
 import type { OrderStatus, PaymentStatus } from "@prisma/client";
 
 const initialState: AdminActionState = { error: null };
@@ -122,6 +123,22 @@ export function OrderPaymentForm({
       {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
       {state.message ? <p className="text-sm text-green-600">{state.message}</p> : null}
       <SubmitButton label="Update Payment" />
+    </form>
+  );
+}
+
+export function CreateShipmentForm({ orderId }: { orderId: string }) {
+  const [state, formAction] = useActionState(createShipmentAction, initialState);
+
+  return (
+    <form action={formAction} className="space-y-3">
+      <input type="hidden" name="id" value={orderId} />
+      <p className="text-sm text-muted-foreground">
+        Create a shipment after the order is ready and, for online orders, payment is successful.
+      </p>
+      {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+      {state.message ? <p className="text-sm text-green-600">{state.message}</p> : null}
+      <SubmitButton label="Create Shipment" />
     </form>
   );
 }
