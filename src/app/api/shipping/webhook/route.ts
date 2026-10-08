@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
+  if (env.SHIPPING_PROVIDER === "steadfast") {
+    return NextResponse.json(
+      { error: "Steadfast status synchronization uses the authenticated admin refresh action." },
+      { status: 501 }
+    );
+  }
+
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json(
       { error: "Shipping provider unavailable / configuration error" },

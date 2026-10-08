@@ -9,8 +9,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       'server-only': path.resolve(__dirname, './tests/empty.js'),
-      'next/cache': path.resolve(__dirname, './tests/mocks/next-cache.js'),
-      'next/server': path.resolve(__dirname, './tests/empty.js')
+      'next/cache': path.resolve(__dirname, './tests/mocks/next-cache.js')
     }
   }
 });

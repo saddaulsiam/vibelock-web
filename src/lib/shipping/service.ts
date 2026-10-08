@@ -86,17 +86,21 @@ export class ShippingService {
       if (!currentOrder || currentOrder.status === "CANCELLED") {
         throw new Error("Order was cancelled while shipment creation was in progress");
       }
+      const providerStatus = providerRes.status || "CREATED";
       const updated = await tx.shipment.update({
         where: { id: localShipment.id },
         data: {
-          status: providerRes.status || "CREATED",
+          status: providerStatus,
           providerShipmentId: providerRes.providerShipmentId,
           trackingNumber: providerRes.trackingNumber,
+          ...(providerStatus === "DELIVERED"
+            ? { shippedAt: new Date(), deliveredAt: new Date() }
+            : { shippedAt: new Date() }),
         },
       });
       await tx.order.update({
         where: { id: orderId },
-        data: { status: "SHIPPED" },
+        data: { status: providerStatus === "DELIVERED" ? "DELIVERED" : "SHIPPED" },
       });
       return updated;
     });
@@ -164,7 +168,16 @@ export class ShippingService {
 
       const updateResult = await tx.shipment.updateMany({
         where: { id: shipmentId, status: shipment.status },
-        data: { status: newStatus },
+        data: {
+          status: newStatus,
+          ...(newStatus === "PICKED_UP" ||
+          newStatus === "IN_TRANSIT" ||
+          newStatus === "OUT_FOR_DELIVERY"
+            ? { shippedAt: shipment.shippedAt ?? new Date() }
+            : {}),
+          ...(newStatus === "DELIVERED" ? { deliveredAt: new Date() } : {}),
+          ...(newStatus === "CANCELLED" ? { cancelledAt: new Date() } : {}),
+        },
       });
       if (updateResult.count === 0) {
         return (await tx.shipment.findUnique({ where: { id: shipmentId } })) ?? shipment;

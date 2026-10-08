@@ -55,6 +55,7 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       payments: {
         include: { refunds: true },
       },
+      shipment: true,
       history: {
         orderBy: { createdAt: "desc" },
       },

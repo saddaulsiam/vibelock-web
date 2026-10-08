@@ -198,6 +198,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "150.00",
         bank_tran_id: bankTranId,
+        tran_id: payment?.merchantReferenceId,
+        currency: "BDT",
       }),
     });
 
@@ -252,6 +254,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "1.00", // Wrong amount
         bank_tran_id: crypto.randomUUID(),
+        tran_id: payment?.merchantReferenceId,
+        currency: "BDT",
       }),
     });
 
@@ -274,6 +278,70 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
       where: { variantId: variant.id, type: "SALE", referenceId: payment!.orderId },
     });
     expect(inventoryTx.length).toBe(0);
+  });
+
+  test("10.1 Currency and provider-reference mismatches are rejected", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const product = await createTestProduct();
+    const variant = await createTestVariant({ productId: product.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const checkout = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: checkout.orderNumber as string } },
+    });
+    expect(payment).not.toBeNull();
+
+    const paymentService = new PaymentService();
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        currency: "USD",
+        tran_id: payment!.merchantReferenceId,
+        bank_tran_id: crypto.randomUUID(),
+      }),
+    });
+    await expect(
+      paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: payment!.merchantReferenceId,
+        val_id: "VAL-CURRENCY",
+      })
+    ).rejects.toThrow("Currency Mismatch");
+
+    const afterCurrencyMismatch = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(afterCurrencyMismatch?.status).toBe("INITIATED");
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        currency: "BDT",
+        tran_id: "DIFFERENT-TRANSACTION",
+        bank_tran_id: crypto.randomUUID(),
+      }),
+    });
+    await expect(
+      paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: payment!.merchantReferenceId,
+        val_id: "VAL-MAPPING",
+      })
+    ).rejects.toThrow("Transaction or Currency Mismatch");
+
+    const afterMappingMismatch = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(afterMappingMismatch?.status).toBe("INITIATED");
+    const activeReservations = await prisma.inventoryReservation.count({
+      where: { orderId: payment!.orderId, status: "RESERVED" },
+    });
+    expect(activeReservations).toBe(1);
   });
 
   test("11. Invalid / Unknown Transaction", async () => {
@@ -390,7 +458,13 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     // First Validation API fetch
     const bankTranId = crypto.randomUUID();
     (global.fetch as import("vitest").Mock).mockResolvedValue({
-      json: async () => ({ status: "VALID", amount: "150.00", bank_tran_id: bankTranId }),
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: bankTranId,
+        tran_id: payment?.merchantReferenceId,
+        currency: "BDT",
+      }),
     });
 
     const paymentService = new PaymentService();
@@ -440,7 +514,13 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     });
 
     (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
-      json: async () => ({ status: "VALID", amount: "150.00", bank_tran_id: crypto.randomUUID() }),
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: crypto.randomUUID(),
+        tran_id: payment?.merchantReferenceId,
+        currency: "BDT",
+      }),
     });
     const paymentService = new PaymentService();
 
@@ -495,6 +575,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "150.00",
         bank_tran_id: crypto.randomUUID(),
+        tran_id: payment?.merchantReferenceId,
+        currency: "BDT",
         store_passwd: "SUPER_SECRET_PASSWORD",
         store_id: "MY_STORE_ID",
       }),
@@ -566,6 +648,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "150.00",
         bank_tran_id: callbackBankTransactionId,
+        tran_id: payment.merchantReferenceId,
+        currency: "BDT",
       }),
     });
     const response = await paymentCallback(
@@ -652,7 +736,10 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     );
     expect(invalidCallback.status).toBe(303);
     expect(invalidCallback.headers.get("location")).toBe(
-      "http://localhost/cart?error=payment_verification_failed"
+      new URL(
+        "/cart?error=payment_verification_failed",
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      ).toString()
     );
 
     const exposed = JSON.stringify([
@@ -718,6 +805,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "50.90",
         bank_tran_id: decimalBankTransactionId,
+        tran_id: order!.payments[0].merchantReferenceId,
+        currency: "BDT",
       }),
     });
     const gatewayValidation = await new SSLCommerzProvider().verifyPayment({
@@ -732,6 +821,8 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
         status: "VALID",
         amount: "50.90",
         bank_tran_id: callbackBankTransactionId,
+        tran_id: order!.payments[0].merchantReferenceId,
+        currency: "BDT",
       }),
     });
     await new PaymentService().verifyCallback("SSLCOMMERZ", {

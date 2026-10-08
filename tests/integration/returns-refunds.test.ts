@@ -571,6 +571,8 @@ describe("Phase 3J - Returns, Refunds & Reconciliation", () => {
         status: "VALID",
         amount: fixture.payment!.amount.toFixed(2),
         bank_tran_id: "LATE-BANK-TX",
+        tran_id: fixture.payment!.merchantReferenceId,
+        currency: "BDT",
       }),
     } as Response);
     await new PaymentService().verifyCallback("SSLCOMMERZ", {

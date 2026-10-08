@@ -35,6 +35,7 @@ export class SSLCommerzProvider implements PaymentProvider {
     data.append("success_url", `${appUrl}/api/payments/sslcommerz/callback?status=success`);
     data.append("fail_url", `${appUrl}/api/payments/sslcommerz/callback?status=fail`);
     data.append("cancel_url", `${appUrl}/api/payments/sslcommerz/callback?status=cancel`);
+    data.append("ipn_url", `${appUrl}/api/payments/sslcommerz/callback?status=ipn`);
     data.append("emi_option", "0");
     data.append("cus_name", request.customerName);
     data.append("cus_email", request.customerEmail);
@@ -84,7 +85,7 @@ export class SSLCommerzProvider implements PaymentProvider {
       return { success: false, status: "FAILED", error: "SSLCommerz configuration missing" };
     }
 
-    const { val_id, status } = callbackPayload as { val_id?: string; status?: string };
+    const { val_id } = callbackPayload as { val_id?: string };
 
     if (!val_id) {
       return {
@@ -111,11 +112,25 @@ export class SSLCommerzProvider implements PaymentProvider {
       const result = await response.json();
 
       if (result.status === "VALID" || result.status === "VALIDATED") {
+        const amount = Number(result.amount);
+        const currency = typeof result.currency === "string" ? result.currency.toUpperCase() : undefined;
+
+        if (!Number.isFinite(amount) || !currency || !result.tran_id) {
+          return {
+            success: false,
+            status: "FAILED",
+            error: "Incomplete validation response from SSLCommerz",
+            rawPayload: result,
+          };
+        }
+
         return {
           success: true,
           status: "SUCCESS",
           providerTransactionId: result.bank_tran_id,
-          verifiedAmount: parseFloat(result.amount),
+          verifiedMerchantReferenceId: result.tran_id,
+          verifiedAmount: amount,
+          verifiedCurrency: currency,
           rawPayload: result,
         };
       } else {

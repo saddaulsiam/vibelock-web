@@ -7,6 +7,7 @@ import {
   ShipmentStatusResult,
   ShippingProvider,
 } from "../types";
+import { env } from "@/lib/config/env";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -14,6 +15,10 @@ const statusMap: Record<string, ShipmentStatus> = {
   pending: "CREATED",
   in_review: "CREATED",
   hold: "CREATED",
+  picked_up: "IN_TRANSIT",
+  picked: "IN_TRANSIT",
+  in_transit: "IN_TRANSIT",
+  out_for_delivery: "OUT_FOR_DELIVERY",
   delivered: "DELIVERED",
   delivered_approval_pending: "DELIVERED",
   partial_delivered: "IN_TRANSIT",
@@ -22,6 +27,7 @@ const statusMap: Record<string, ShipmentStatus> = {
   cancelled_approval_pending: "CANCELLED",
   unknown: "CREATED",
   unknown_approval_pending: "CREATED",
+  returned: "RETURNED",
 };
 
 function record(value: unknown): JsonRecord | null {
@@ -45,9 +51,9 @@ export class SteadfastCourierProvider implements ShippingProvider {
   private readonly baseUrl: string;
 
   constructor(
-    private readonly apiKey = process.env.STEADFAST_API_KEY,
-    private readonly secretKey = process.env.STEADFAST_SECRET_KEY,
-    baseUrl = process.env.STEADFAST_BASE_URL ?? "https://portal.steadfast.com.bd/api/v1"
+    private readonly apiKey = env.STEADFAST_API_KEY,
+    private readonly secretKey = env.STEADFAST_SECRET_KEY,
+    baseUrl = env.STEADFAST_BASE_URL ?? "https://portal.steadfast.com.bd/api/v1"
   ) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
   }

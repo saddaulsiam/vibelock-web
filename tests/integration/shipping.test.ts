@@ -5,6 +5,7 @@ import crypto from "crypto";
 import prisma from "../../src/lib/prisma/client";
 import { ShippingService } from "../../src/lib/shipping/service";
 import { MockCourierProvider } from "../../src/lib/shipping/providers/mock/client";
+import { SteadfastCourierProvider } from "../../src/lib/shipping/providers/steadfast";
 import type { CreateShipmentRequest, ShippingProvider } from "../../src/lib/shipping/types";
 import { adminCreateShipmentAction } from "../../src/lib/shipping/actions";
 import { getCustomerOrder } from "../../src/lib/orders/queries";
@@ -341,6 +342,7 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
       amount: 1059.99,
       referenceId: "shipment-fixture",
     });
+
     expect(response.success).toBe(true);
     expect(response.providerShipmentId).toMatch(/^MOCK-SHP-VLF-MOCK-1-/);
     expect(response.trackingNumber).toMatch(/^TRK-/);
@@ -362,9 +364,168 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     }
   });
 
+  test("Steadfast provider creates orders using the verified API contract", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: 200,
+        consignment: {
+          consignment_id: 123456,
+          tracking_code: "STEAD-TRACK-1",
+          status: "pending",
+        },
+      }),
+    } as Response);
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    const result = await provider.createShipment({
+      orderId: "order-1",
+      orderNumber: "VLF-100",
+      recipientName: "Test Recipient",
+      recipientPhone: "01700000000",
+      street: "1 Test Street",
+      city: "Dhaka",
+      state: "Dhaka",
+      zip: "1200",
+      country: "BD",
+      amount: 1059.99,
+      codAmount: 1059.99,
+      referenceId: "shipment-1",
+      note: "VibeLock order VLF-100",
+    });
+
+    expect(result).toEqual({
+      success: true,
+      providerShipmentId: "123456",
+      trackingNumber: "STEAD-TRACK-1",
+      status: "CREATED",
+    });
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://steadfast.test/api/v1/create_order",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          "Api-Key": "test-api-key",
+          "Secret-Key": "test-secret-key",
+          "Content-Type": "application/json",
+        }),
+      })
+    );
+    const request = fetchSpy.mock.calls[0][1];
+    expect(JSON.parse(String(request?.body))).toEqual({
+      invoice: "VLF-100",
+      recipient_name: "Test Recipient",
+      recipient_phone: "01700000000",
+      recipient_address: "1 Test Street, Dhaka, Dhaka, 1200, BD",
+      cod_amount: 1059.99,
+      note: "VibeLock order VLF-100",
+    });
+  });
+
+  test("Steadfast provider handles malformed, rejected, network, and missing configuration safely", async () => {
+    const malformedFetch = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, consignment: { consignment_id: 1 } }),
+    } as Response);
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    await expect(
+      provider.createShipment({
+        orderId: "order-1",
+        orderNumber: "VLF-100",
+        recipientName: "Test Recipient",
+        recipientPhone: "01700000000",
+        street: "1 Test Street",
+        city: "Dhaka",
+        country: "BD",
+        amount: 100,
+        referenceId: "shipment-1",
+      })
+    ).resolves.toEqual({ success: false, error: "Steadfast returned an incomplete shipment." });
+    malformedFetch.mockRestore();
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ status: 401, message: "unauthorized" }),
+    } as Response);
+    await expect(
+      provider.createShipment({
+        orderId: "order-1",
+        orderNumber: "VLF-100",
+        recipientName: "Test Recipient",
+        recipientPhone: "01700000000",
+        street: "1 Test Street",
+        city: "Dhaka",
+        country: "BD",
+        amount: 100,
+        referenceId: "shipment-1",
+      })
+    ).resolves.toEqual({ success: false, error: "Steadfast rejected the shipment." });
+    vi.restoreAllMocks();
+
+    const missing = new SteadfastCourierProvider(undefined, undefined, "https://steadfast.test/api/v1");
+    await expect(
+      missing.createShipment({
+        orderId: "order-1",
+        orderNumber: "VLF-100",
+        recipientName: "Test Recipient",
+        recipientPhone: "01700000000",
+        street: "1 Test Street",
+        city: "Dhaka",
+        country: "BD",
+        amount: 100,
+        referenceId: "shipment-1",
+      })
+    ).rejects.toThrow("Steadfast shipping provider is not configured.");
+
+    const networkProvider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("socket timeout"));
+    await expect(networkProvider.getShipmentStatus("123456")).rejects.toThrow(
+      "Steadfast request failed."
+    );
+  });
+
+  test("Steadfast provider looks up and normalizes statuses without exposing credentials", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "in_transit" }),
+    } as Response);
+    const provider = new SteadfastCourierProvider(
+      "secret-api-key",
+      "secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    await expect(provider.getShipmentStatus("123456")).resolves.toEqual({
+      success: true,
+      status: "IN_TRANSIT",
+      providerStatus: "in_transit",
+    });
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://steadfast.test/api/v1/status_by_cid/123456",
+      expect.objectContaining({ method: "GET" })
+    );
+    const response = await provider.getShipmentStatus("123456");
+    expect(JSON.stringify(response)).not.toContain("secret-api-key");
+    expect(JSON.stringify(response)).not.toContain("secret-key");
+  });
+
   test("shipment action requires an internal role and customer order detail exposes only safe shipment fields", async () => {
     const customer = await makeUser();
-    const staff = await makeUser("STAFF");
+    const admin = await makeUser("ADMIN");
     const ownerOrder = await makeOrder(customer);
     const otherCustomer = await makeUser();
     const otherOrder = await makeOrder(otherCustomer);
@@ -379,10 +540,7 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     });
 
     mockSession = { user: { id: customer.id, role: "CUSTOMER" } };
-    expect(await adminCreateShipmentAction(ownerOrder.order.id)).toEqual({
-      success: false,
-      error: "Forbidden: Admin only",
-    });
+    await expect(adminCreateShipmentAction(ownerOrder.order.id)).rejects.toThrow("NEXT_REDIRECT");
     expect(await getCustomerOrder(ownerOrder.order.orderNumber)).toMatchObject({
       shipment: {
         status: "IN_TRANSIT",
@@ -396,8 +554,8 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     expect(JSON.stringify(detail)).not.toContain("providerShipmentId");
     expect(JSON.stringify(detail)).not.toContain("gatewayPayload");
 
-    mockSession = { user: { id: staff.id, role: "STAFF" } };
-    const authorized = await adminCreateShipmentAction((await makeOrder(staff)).order.id);
+    mockSession = { user: { id: admin.id, role: "ADMIN" } };
+    const authorized = await adminCreateShipmentAction((await makeOrder(admin)).order.id);
     expect(authorized.success).toBe(true);
     if (authorized.success && authorized.shipmentId) shipmentIds.push(authorized.shipmentId);
     shipmentIds.push(otherShipment.id);

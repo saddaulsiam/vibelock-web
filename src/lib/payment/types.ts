@@ -24,7 +24,9 @@ export interface PaymentVerificationResult {
   success: boolean;
   status: PaymentStatus;
   providerTransactionId?: string;
+  verifiedMerchantReferenceId?: string;
   verifiedAmount?: number;
+  verifiedCurrency?: string;
   rawPayload?: unknown;
   error?: string;
 }

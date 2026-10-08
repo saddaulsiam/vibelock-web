@@ -155,6 +155,8 @@ async function validateOnlinePayment(orderId: string, amount: string) {
       status: "VALID",
       amount,
       bank_tran_id: crypto.randomUUID(),
+      tran_id: payment.merchantReferenceId,
+      currency: "BDT",
     }),
   });
   await new PaymentService().verifyCallback("SSLCOMMERZ", {
@@ -750,6 +752,8 @@ describe("Phase 3I - Orders & Customer Order History", () => {
                 status: "VALID",
                 amount: order.total.toFixed(2),
                 bank_tran_id: crypto.randomUUID(),
+                tran_id: order.payments[0].merchantReferenceId,
+                currency: "BDT",
               }),
             });
           markValidationStarted?.();

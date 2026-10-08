@@ -47,7 +47,10 @@ export class PaymentService {
     return response;
   }
 
-  async verifyCallback(gateway: string, payload: Record<string, unknown>): Promise<void> {
+  async verifyCallback(
+    gateway: string,
+    payload: Record<string, unknown>
+  ): Promise<{ orderNumber: string; verification: Awaited<ReturnType<PaymentProvider["verifyPayment"]>> }> {
     const provider = this.getProvider(gateway);
 
     // Most providers pass the reference ID back
@@ -68,12 +71,20 @@ export class PaymentService {
       throw new Error("Payment record not found");
     }
 
-    // If it's already successful or failed, idempotency applies
+    // A successful payment is terminal. Do not make a duplicate provider request.
     if (payment.status === "SUCCESS") {
       console.log(
         `[PaymentService] Payment ${merchantReferenceId} already verified successful. Ignoring callback.`
       );
-      return;
+      const order = await prisma.order.findUnique({
+        where: { id: payment.orderId },
+        select: { orderNumber: true },
+      });
+      if (!order) throw new Error("Order not found");
+      return {
+        orderNumber: order.orderNumber,
+        verification: { success: true, status: "SUCCESS" },
+      };
     }
 
     if (payment.status === "FAILED" || payment.status === "CANCELLED") {
@@ -87,7 +98,17 @@ export class PaymentService {
 
     // If verification was successful but the verified amount does not match, log error and fail securely.
     if (verification.success && verification.status === "SUCCESS") {
-      if (verification.verifiedAmount && verification.verifiedAmount !== Number(payment.amount)) {
+      if (
+        verification.verifiedMerchantReferenceId !== merchantReferenceId ||
+        verification.verifiedCurrency !== "BDT"
+      ) {
+        throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+      }
+
+      if (
+        verification.verifiedAmount === undefined ||
+        Math.abs(verification.verifiedAmount - Number(payment.amount)) > 0.01
+      ) {
         console.error(
           `[PaymentService] Amount mismatch for ${merchantReferenceId}. Expected ${payment.amount}, got ${verification.verifiedAmount}`
         );
@@ -158,5 +179,12 @@ export class PaymentService {
         await inventoryService.releaseReservation(payment.orderId, tx);
       }
     });
+
+    const order = await prisma.order.findUnique({
+      where: { id: payment.orderId },
+      select: { orderNumber: true },
+    });
+    if (!order) throw new Error("Order not found");
+    return { orderNumber: order.orderNumber, verification };
   }
 }
