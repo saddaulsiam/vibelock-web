@@ -14,6 +14,7 @@ type PrismaOrderWithItems = Order & {
   payments?: (Payment & { refunds: Refund[] })[];
   returns?: (ReturnRequest & { items: ReturnItem[] })[];
   shipment?: Shipment | null;
+  history?: { status: Order["status"]; notes: string | null; createdAt: Date }[];
 };
 
 export function mapOrderItem(item: OrderItem): OrderItemSummary {
@@ -40,6 +41,12 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
     total: Number(order.total),
     itemCount: order.items.reduce((acc, item) => acc + item.quantity, 0),
     previewItems: order.items.slice(0, 3).map(mapOrderItem),
+    shipment: order.shipment
+      ? {
+          status: order.shipment.status,
+          trackingNumber: order.shipment.trackingNumber,
+        }
+      : null,
   };
 }
 
@@ -102,5 +109,10 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
           deliveredAt: order.shipment.deliveredAt,
         }
       : null,
+    history: order.history?.map((entry) => ({
+      status: entry.status,
+      notes: entry.notes,
+      createdAt: entry.createdAt,
+    })) || [],
   };
 }

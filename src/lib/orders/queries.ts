@@ -20,7 +20,7 @@ export async function getCustomerOrders(
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where: { userId },
-      include: { items: true },
+      include: { items: true, shipment: true },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       skip: (safePage - 1) * safePageSize,
       take: safePageSize,
@@ -54,6 +54,9 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       },
       payments: {
         include: { refunds: true },
+      },
+      history: {
+        orderBy: { createdAt: "desc" },
       },
     },
   });

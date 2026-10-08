@@ -103,6 +103,12 @@ export default async function OrdersPage(props: {
                     <Price amount={order.total} className="mt-1 text-base font-semibold text-[#101114]" />
                   </div>
                 </div>
+                {order.shipment ? (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-[#101114]/10 px-4 py-3 text-xs text-muted-foreground sm:px-5">
+                    <span>Shipment: <span className="font-semibold uppercase text-[#101114]">{order.shipment.status}</span></span>
+                    {order.shipment.trackingNumber ? <span>· Tracking {order.shipment.trackingNumber}</span> : null}
+                  </div>
+                ) : null}
 
                 <div className="flex justify-end border-t border-[#101114]/10 p-4 sm:px-5">
                   <Link

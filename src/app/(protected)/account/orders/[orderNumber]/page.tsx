@@ -234,6 +234,22 @@ export default async function OrderDetailPage(props: {
               </section>
             )}
 
+            {order.history.length > 0 && (
+              <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
+                <h2 className="text-base font-semibold text-[#101114]">Order history</h2>
+                <ol className="mt-4 space-y-4 border-l border-[#101114]/15 pl-4">
+                  {order.history.map((entry, index) => (
+                    <li key={`${entry.createdAt.toISOString()}-${index}`} className="relative">
+                      <span className="absolute -left-[1.3rem] top-1 size-2 rounded-full bg-[#101114]" />
+                      <p className="text-sm font-medium text-[#101114]">{entry.status.replaceAll("_", " ")}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{formatDate(entry.createdAt)}</p>
+                      {entry.notes && !entry.notes.startsWith("[RETURN UPDATE]") ? <p className="mt-1 text-sm text-muted-foreground">{entry.notes}</p> : null}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
             <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
               <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
                 <UserRound className="size-4" aria-hidden="true" /> Customer & delivery

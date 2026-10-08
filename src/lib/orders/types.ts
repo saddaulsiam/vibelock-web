@@ -21,6 +21,10 @@ export type OrderSummary = {
   total: number;
   itemCount: number;
   previewItems: OrderItemSummary[];
+  shipment: {
+    status: string;
+    trackingNumber: string | null;
+  } | null;
 };
 
 export type OrderConfirmation = Pick<
@@ -91,4 +95,9 @@ export type OrderDetail = {
     shippedAt: Date | null;
     deliveredAt: Date | null;
   } | null;
+  history: {
+    status: OrderStatus;
+    notes: string | null;
+    createdAt: Date;
+  }[];
 };
