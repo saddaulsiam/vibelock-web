@@ -7,6 +7,7 @@ import {
   saveShippingMethodAction,
   saveShippingZoneAction,
   toggleShippingMethodAction,
+  refreshShipmentStatusAction,
   updateShipmentStatusAction,
   type ShippingActionState,
 } from "@/lib/admin/shipping-actions";
@@ -41,4 +42,10 @@ export function ToggleShippingMethodForm({ id, active }: { id: string; active: b
 export function ShipmentStatusForm({ id, current, statuses }: { id: string; current: ShipmentStatus; statuses: ShipmentStatus[] }) {
   const [state, action] = useActionState(updateShipmentStatusAction, initialState);
   return <form action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end"><input type="hidden" name="id" value={id} /><label className="text-sm font-medium">Update status<select name="status" defaultValue={current} className={inputClass}>{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</select></label><Submit label="Update status" /><State state={state} /></form>;
+}
+
+export function RefreshShipmentStatusForm({ id }: { id: string }) {
+  const [state, action] = useActionState(refreshShipmentStatusAction, initialState);
+  const { pending } = useFormStatus();
+  return <form action={action} className="space-y-2"><input type="hidden" name="id" value={id} /><button type="submit" disabled={pending} className="border px-4 py-2 text-sm font-semibold disabled:opacity-60">{pending ? "Refreshing..." : "Refresh from Steadfast"}</button><State state={state} /></form>;
 }

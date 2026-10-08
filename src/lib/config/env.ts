@@ -21,6 +21,10 @@ const envSchema = z.object({
 
   // Shipping
   COURIER_WEBHOOK_SECRET: z.string().optional(),
+  SHIPPING_PROVIDER: z.enum(["mock", "steadfast"]).optional(),
+  STEADFAST_API_KEY: z.string().optional(),
+  STEADFAST_SECRET_KEY: z.string().optional(),
+  STEADFAST_BASE_URL: z.string().url().optional(),
 
   // Email Configuration
   RESEND_API_KEY: z.string().optional(),

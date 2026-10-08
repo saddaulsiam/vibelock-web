@@ -12,6 +12,8 @@ import {
  * Used for standardizing the abstraction layer before live integration.
  */
 export class MockCourierProvider implements ShippingProvider {
+  readonly name = "mock-courier";
+
   async createShipment(request: CreateShipmentRequest): Promise<CreateShipmentResponse> {
     // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 500));

@@ -8,6 +8,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { ShippingService } from "@/lib/shipping/service";
 import { adminCreateShipmentAction } from "@/lib/shipping/actions";
+import { getShippingProvider } from "@/lib/shipping/provider";
 
 export type ShippingActionState = { error: string | null; message?: string };
 
@@ -129,18 +130,56 @@ export async function updateShipmentStatusAction(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {
     const updated = await new ShippingService({
+      name: "internal",
       createShipment: async () => ({ success: false }),
       getShipmentStatus: async () => ({ success: false }),
     }).updateShipmentStatus(parsed.data.id, parsed.data.status);
     if (updated.status !== parsed.data.status) {
       return { error: "That shipment status transition is not allowed." };
     }
+
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Shipment status could not be updated." };
   }
   refreshShipping();
   revalidatePath("/admin/orders");
   return { error: null, message: "Shipment status updated." };
+}
+
+export async function refreshShipmentStatusAction(
+  _previous: ShippingActionState,
+  formData: FormData
+): Promise<ShippingActionState> {
+  await requireRole("ADMIN");
+  const parsed = id.safeParse(formData.get("id"));
+  if (!parsed.success) return { error: "Choose a valid shipment." };
+
+  try {
+    const shipment = await prisma.shipment.findUnique({
+      where: { id: parsed.data },
+      select: { provider: true, providerShipmentId: true },
+    });
+    if (!shipment) return { error: "Shipment not found." };
+    if (!shipment.providerShipmentId) return { error: "This shipment has no provider reference." };
+
+    const provider = getShippingProvider();
+    if (shipment.provider !== provider.name) {
+      return { error: "The configured shipping provider does not match this shipment." };
+    }
+    await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error && error.message.includes("not found")
+          ? "Shipment not found."
+          : "Unable to refresh shipment status.",
+    };
+  }
+
+  refreshShipping();
+  revalidatePath(`/admin/shipping/shipments/${parsed.data}`);
+  revalidatePath("/admin/orders");
+  return { error: null, message: "Shipment status refreshed." };
 }
 
 export async function createShipmentAction(

@@ -11,7 +11,9 @@ export interface CreateShipmentRequest {
   zip?: string;
   country: string;
   amount: number;
+  codAmount?: number;
   referenceId: string;
+  note?: string;
 }
 
 export interface CreateShipmentResponse {
@@ -41,6 +43,7 @@ export interface ShipmentStatusResult {
 }
 
 export interface ShippingProvider {
+  readonly name?: string;
   createShipment(request: CreateShipmentRequest): Promise<CreateShipmentResponse>;
   getShipmentStatus(providerShipmentId: string): Promise<ShipmentStatusResult>;
   cancelShipment?(request: CancelShipmentRequest): Promise<CancelShipmentResponse>;

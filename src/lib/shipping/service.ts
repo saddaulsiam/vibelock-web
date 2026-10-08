@@ -29,7 +29,7 @@ export class ShippingService {
       return tx.shipment.create({
         data: {
           orderId: currentOrder.id,
-          provider: "mock-courier",
+          provider: this.provider.name ?? "unknown",
           status: "PENDING",
           shippingAmount: currentOrder.shippingCost,
         },
@@ -50,7 +50,9 @@ export class ShippingService {
         zip: order.shippingZip || undefined,
         country: order.shippingCountry,
         amount: Number(order.total),
+        codAmount: order.paymentMethod === "COD" ? Number(order.total) : 0,
         referenceId: localShipment.id,
+        note: `VibeLock order ${order.orderNumber}`,
       });
     } catch {
       console.error("[ShippingService] Provider shipment creation request failed");

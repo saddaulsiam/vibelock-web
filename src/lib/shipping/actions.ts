@@ -2,17 +2,17 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import { ShippingService } from "./service";
-import { MockCourierProvider } from "./providers/mock/client";
+import { getShippingProvider } from "./provider";
 
 export async function adminCreateShipmentAction(orderId: string) {
   await requireRole("ADMIN");
 
-  if (process.env.NODE_ENV === "production") {
-    // In production, we MUST have a real courier. Since one isn't integrated yet:
-    return { success: false, error: "Shipping provider unavailable / configuration error" };
+  let provider;
+  try {
+    provider = getShippingProvider();
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "Shipping provider configuration error." };
   }
-
-  const provider = new MockCourierProvider();
   const service = new ShippingService(provider);
 
   try {
@@ -27,6 +27,10 @@ export async function adminCreateShipmentAction(orderId: string) {
       "Online orders must be fully paid before shipping",
       "Provider timeout or error creating shipment",
       "Provider rejected shipment",
+      "Steadfast shipping provider is not configured.",
+      "Steadfast request failed.",
+      "Steadfast returned an invalid response.",
+      "Steadfast returned an incomplete shipment.",
       "Order was cancelled while shipment creation was in progress",
     ]);
     return {
