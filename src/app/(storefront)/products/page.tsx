@@ -6,7 +6,7 @@ import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
 import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ProductGrid } from "@/components/storefront/catalog/product-grid";
-import { getCategories } from "@/lib/catalog/queries";
+import { getCategories, getCatalogFilterOptions } from "@/lib/catalog/queries";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
@@ -37,9 +37,10 @@ export default async function ProductsPage({
   const params = await searchParams;
   const parsedParams = parseDiscoverySearchParams(params);
 
-  const [discoveryResult, categories] = await Promise.all([
+  const [discoveryResult, categories, filterOptionsData] = await Promise.all([
     getDiscoveredProducts(parsedParams),
     getCategories(),
+    getCatalogFilterOptions(),
   ]);
   const hasSearch = Boolean(parsedParams.q?.trim());
   const searchTerm = parsedParams.q?.trim() ?? "";
@@ -47,8 +48,7 @@ export default async function ProductsPage({
 
   const filterOptions = {
     categories: categories.map((category) => ({ name: category.name, slug: category.slug })),
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Black", "White", "Grey", "Navy", "Red", "Olive"],
+    ...filterOptionsData,
   };
 
   return (

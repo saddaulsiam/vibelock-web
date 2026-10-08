@@ -80,7 +80,8 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
   const selectedCategories = searchParams.get("category")?.split(",") ?? [];
   const selectedSizes = searchParams.get("size")?.split(",") ?? [];
   const selectedColors = searchParams.get("color")?.split(",") ?? [];
-  const sort = searchParams.get("sort") === "newest" ? "newest" : "newest";
+  const sortValue = searchParams.get("sort");
+  const sort = sortValue === "name-asc" || sortValue === "name-desc" ? sortValue : "newest";
 
   const filterContent = (
     <div className="space-y-7">
@@ -118,6 +119,8 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="newest">Newest first</SelectItem>
+            <SelectItem value="name-asc">Name: A to Z</SelectItem>
+            <SelectItem value="name-desc">Name: Z to A</SelectItem>
           </SelectContent>
         </Select>
       </section>

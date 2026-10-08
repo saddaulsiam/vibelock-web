@@ -1,10 +1,24 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ArrowDownRight, ArrowRight } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ProductCard } from "@/components/storefront/product-card";
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
+import { SITE_URL } from "@/lib/seo/site";
+
+export const metadata: Metadata = {
+  title: "Modern Dhaka Streetwear",
+  description:
+    "Shop VibeLock's modern men's streetwear, everyday essentials, and new arrivals in Bangladesh.",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    title: "VibeLock | Modern Dhaka Streetwear",
+    description: "Minimal, confident, and made for everyday movement.",
+    url: SITE_URL,
+  },
+};
 
 function toCardProduct(product: ProductSummary) {
   return {

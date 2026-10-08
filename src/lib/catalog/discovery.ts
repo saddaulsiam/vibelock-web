@@ -128,6 +128,10 @@ function buildDiscoveryOrderBy(
   sortOption: DiscoverySearchParams["sort"]
 ): Prisma.ProductOrderByWithRelationInput {
   switch (sortOption) {
+    case "name-asc":
+      return { name: "asc" };
+    case "name-desc":
+      return { name: "desc" };
     case "newest":
     default:
       return { createdAt: "desc" };

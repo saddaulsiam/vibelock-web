@@ -7,7 +7,7 @@ import { DiscoveryPagination } from "@/components/storefront/catalog/pagination"
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ProductGrid } from "@/components/storefront/catalog/product-grid";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
-import { getCategories, getCategoryBySlug } from "@/lib/catalog/queries";
+import { getCategories, getCatalogFilterOptions, getCategoryBySlug } from "@/lib/catalog/queries";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
 
@@ -44,7 +44,11 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ slug }, rawSearchParams] = await Promise.all([params, searchParams]);
-  const [category, categories] = await Promise.all([getCategoryBySlug(slug), getCategories()]);
+  const [category, categories, filterOptionsData] = await Promise.all([
+    getCategoryBySlug(slug),
+    getCategories(),
+    getCatalogFilterOptions(),
+  ]);
 
   if (!category) notFound();
 
@@ -58,8 +62,7 @@ export default async function CategoryPage({
   const discoveryResult = await getDiscoveredProducts(parsedParams);
   const filterOptions = {
     categories: categories.map((item) => ({ name: item.name, slug: item.slug })),
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    colors: ["Black", "White", "Grey", "Navy", "Red", "Olive"],
+    ...filterOptionsData,
   };
 
   return (

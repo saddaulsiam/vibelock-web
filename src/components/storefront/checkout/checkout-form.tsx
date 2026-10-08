@@ -90,6 +90,7 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isSubmitting = useRef(false);
+  const idempotencyKey = useRef(crypto.randomUUID());
   const [formData, setFormData] = useState<Partial<CheckoutFormValues>>({
     customerEmail: defaultEmail,
     customerName: defaultName,
@@ -130,7 +131,7 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
     isSubmitting.current = true;
     startTransition(async () => {
       try {
-        const result = await createOrderAction(parsed.data, crypto.randomUUID());
+        const result = await createOrderAction(parsed.data, idempotencyKey.current);
         if (result.success && result.orderNumber) {
           if (result.error) toast.error(getSafeCheckoutError(result.error));
           if (result.redirectUrl) {

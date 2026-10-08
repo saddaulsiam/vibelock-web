@@ -49,11 +49,14 @@ export class InventoryService {
   /**
    * Attempt to atomically reserve inventory for an order.
    */
-  static async reserveInventoryForOrder(orderId: string): Promise<void> {
+  static async reserveInventoryForOrder(
+    orderId: string,
+    customTx?: Prisma.TransactionClient
+  ): Promise<void> {
     const ttlSeconds = env.INVENTORY_RESERVATION_TTL_SECONDS;
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
 
-    await prisma.$transaction(async (tx) => {
+    const run = async (tx: Prisma.TransactionClient) => {
       // 1. Load the order and items
       const order = await tx.order.findUnique({
         where: { id: orderId },
@@ -117,8 +120,16 @@ export class InventoryService {
             expiresAt,
           },
         });
+
       }
-    });
+
+    };
+
+    if (customTx) {
+      await run(customTx);
+    } else {
+      await prisma.$transaction(run);
+    }
   }
 
   /**

@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
@@ -195,7 +196,14 @@ export async function createOrderAction(
         },
       });
 
-      // Clear the Cart
+      const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
+      await inventoryService.reserveInventoryForOrder(newOrder.id, tx);
+
+      if (paymentMethod === "COD") {
+        await inventoryService.consumeReservation(newOrder.id, tx);
+      }
+
+      // Clear the Cart only after authoritative order and inventory work succeeds.
       await tx.cartItem.deleteMany({
         where: { cartId: dbCart.id },
       });
@@ -205,29 +213,11 @@ export async function createOrderAction(
     });
 
     const finalOrderNumber = orderResult.orderNumber;
-    const finalOrderId = orderResult.id;
 
-    // Phase 3H: Reserve Inventory for the created Order
-    try {
-      const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-      await inventoryService.reserveInventoryForOrder(finalOrderId);
-    } catch (invError: unknown) {
-      console.error("[Checkout] Inventory reservation failed:", invError);
-
-      // Attempt to recover by cancelling the order so it doesn't stay PENDING indefinitely
-      await prisma.order.update({
-        where: { id: finalOrderId },
-        data: { status: "CANCELLED" },
-      });
-
-      return {
-        success: false,
-        error:
-          invError instanceof Error
-            ? invError.message
-            : "Some items are no longer available in the requested quantity.",
-      };
-    }
+    revalidatePath("/cart");
+    revalidatePath("/products");
+    revalidatePath("/admin/orders");
+    revalidatePath("/admin/inventory");
 
     if (paymentMethod === "ONLINE") {
       const orderRecord = await prisma.order.findUnique({
@@ -251,14 +241,6 @@ export async function createOrderAction(
             error: "Payment initiation failed. You can retry from your orders page.",
           };
         }
-      }
-    } else if (paymentMethod === "COD") {
-      // Phase 3H: COD checkout immediately commits stock
-      try {
-        const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-        await inventoryService.consumeReservation(finalOrderId);
-      } catch (err) {
-        console.error("[Checkout] Failed to consume inventory for COD order:", err);
       }
     }
 

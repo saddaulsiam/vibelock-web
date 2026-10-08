@@ -125,6 +125,36 @@ export const getCategories = async (): Promise<CategorySummary[]> => {
   }
 };
 
+export const getCatalogFilterOptions = async (): Promise<{ sizes: string[]; colors: string[] }> => {
+  const queryFn = unstable_cache(
+    async () => {
+      const [sizes, colors] = await Promise.all([
+        prisma.productVariant.findMany({
+          where: { product: { status: ProductStatus.PUBLISHED }, size: { not: null } },
+          select: { size: true },
+          distinct: ["size"],
+          orderBy: { size: "asc" },
+        }),
+        prisma.productVariant.findMany({
+          where: { product: { status: ProductStatus.PUBLISHED }, color: { not: null } },
+          select: { color: true },
+          distinct: ["color"],
+          orderBy: { color: "asc" },
+        }),
+      ]);
+
+      return {
+        sizes: sizes.flatMap((variant) => (variant.size ? [variant.size] : [])),
+        colors: colors.flatMap((variant) => (variant.color ? [variant.color] : [])),
+      };
+    },
+    ["catalog-filter-options"],
+    { tags: ["products"], revalidate: 3600 }
+  );
+
+  return queryFn();
+};
+
 /**
  * Get a specific category by slug
  */
