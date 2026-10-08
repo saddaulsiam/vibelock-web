@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Menu } from "lucide-react";
+import { Boxes, FolderTree, LayoutDashboard, Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -12,7 +12,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const navigation = [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }] as const;
+const navigation = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Products", href: "/admin/products", icon: Boxes },
+  { label: "Categories", href: "/admin/categories", icon: FolderTree },
+] as const;
 
 function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -20,7 +24,7 @@ function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav aria-label="Admin navigation" className="grid gap-1">
       {navigation.map(({ label, href, icon: Icon }) => {
-        const active = pathname === href;
+        const active = href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}
