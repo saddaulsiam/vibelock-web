@@ -3,7 +3,7 @@ import { CategoryForm } from "@/components/admin/category-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminCategoryFormData } from "@/lib/admin/catalog-queries";
 
-export default async function EditAdminCategoryPage({ params }: PageProps<"/admin/categories/[id]/edit">) {
+export default async function EditAdminCategoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { category, categories } = await getAdminCategoryFormData(id);
   if (!category) notFound();

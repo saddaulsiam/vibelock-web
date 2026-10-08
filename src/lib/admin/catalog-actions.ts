@@ -90,7 +90,10 @@ export async function saveCategoryAction(
         if (ancestorId === id) return { error: "A category cannot be moved beneath one of its descendants." };
         if (visited.has(ancestorId)) return { error: "The selected category hierarchy is invalid." };
         visited.add(ancestorId);
-        const ancestor = await prisma.category.findUnique({ where: { id: ancestorId }, select: { parentId: true } });
+        const ancestor: { parentId: string | null } | null = await prisma.category.findUnique({
+          where: { id: ancestorId },
+          select: { parentId: true },
+        });
         ancestorId = ancestor?.parentId ?? null;
       }
     }
@@ -188,9 +191,9 @@ function parseProduct(formData: FormData) {
     data: {
       ...parsed.data,
       slug: slug.data,
-      costPrice: costPrice.data,
-      sellingPrice: sellingPrice.data,
-      discountPrice: discountPrice.data,
+      costPrice: costPrice.data ?? "0.00",
+      sellingPrice: sellingPrice.data ?? "0.01",
+      discountPrice: discountPrice.data ?? null,
     } satisfies ProductValues,
   } as const;
 }
@@ -207,7 +210,7 @@ export async function saveProductAction(
 ): Promise<AdminActionState> {
   await requireRole("ADMIN");
   const parsed = parseProduct(formData);
-  if ("error" in parsed) return { error: parsed.error };
+  if ("error" in parsed) return { error: parsed.error ?? null };
   const product = parsed.data;
   if (!(await validateCategories(product.categoryIds))) return { error: "One or more selected categories are unavailable." };
 
@@ -218,29 +221,29 @@ export async function saveProductAction(
         select: { id: true, _count: { select: { variants: true } } },
       });
       if (!existing) return { error: "This product no longer exists." };
-      const mutations = [
-        prisma.product.update({
+      await prisma.$transaction(async (tx) => {
+        await tx.product.update({
           where: { id: product.id },
-          data: {
+        data: {
             name: product.name,
             slug: product.slug,
             description: product.description || null,
             status: product.status,
             categories: { set: product.categoryIds.map((id) => ({ id })) },
           },
-        }),
-        prisma.productVariant.updateMany({
+        });
+
+        await tx.productVariant.updateMany({
           where: { productId: product.id },
           data: {
             costPrice: new Prisma.Decimal(product.costPrice),
             sellingPrice: new Prisma.Decimal(product.sellingPrice),
             discountPrice: product.discountPrice === null ? null : new Prisma.Decimal(product.discountPrice),
           },
-        }),
-      ];
-      if (existing._count.variants === 0) {
-        mutations.push(
-          prisma.productVariant.create({
+        });
+
+        if (existing._count.variants === 0 && product.id) {
+          await tx.productVariant.create({
             data: {
               productId: product.id,
               sku: `VL-${slugify(product.slug).slice(0, 24).toUpperCase()}-${randomUUID().slice(0, 8).toUpperCase()}`,
@@ -248,10 +251,9 @@ export async function saveProductAction(
               sellingPrice: new Prisma.Decimal(product.sellingPrice),
               discountPrice: product.discountPrice === null ? null : new Prisma.Decimal(product.discountPrice),
             },
-          })
-        );
-      }
-      await prisma.$transaction(mutations);
+          });
+        }
+      });
     } else {
       const base = await prisma.product.create({
         data: {

@@ -3,7 +3,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminProductFormData } from "@/lib/admin/catalog-queries";
 
-export default async function EditAdminProductPage({ params }: PageProps<"/admin/products/[id]/edit">) {
+export default async function EditAdminProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { product, categories } = await getAdminProductFormData(id);
   if (!product) notFound();
