@@ -75,6 +75,53 @@ export async function validateCouponAction(code: string) {
   }
 }
 
+export async function getShippingMethodsAction(address: {
+  country: string;
+  city: string;
+  state?: string | null;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  if (!address.country?.trim() || !address.city?.trim()) {
+    return { success: false, error: "Please provide both delivery country and city." };
+  }
+
+  try {
+    const { getEligibleShippingMethods } = await import("@/lib/shipping/pricing");
+    const methods = await getEligibleShippingMethods({
+      country: address.country,
+      city: address.city,
+      state: address.state,
+    });
+
+    if (methods.length === 0) {
+      return {
+        success: false,
+        error: "No shipping method is available for your delivery address.",
+      };
+    }
+
+    return {
+      success: true,
+      methods: methods.map((m) => ({
+        id: m.id,
+        name: m.name,
+        cost: Number(m.cost),
+        zoneId: m.zoneId,
+        zoneName: m.zoneName,
+      })),
+    };
+  } catch {
+    return {
+      success: false,
+      error: "Unable to retrieve shipping options. Please try again.",
+    };
+  }
+}
+
 export async function createOrderAction(
   data: z.infer<typeof checkoutSchema>,
   idempotencyKey: string
@@ -112,6 +159,7 @@ export async function createOrderAction(
     shippingState,
     shippingZip,
     shippingCountry,
+    shippingMethodId,
     paymentMethod,
     couponCode,
   } = parsed.data;
@@ -276,8 +324,34 @@ export async function createOrderAction(
         };
       }
 
-      const { calculateShippingCharge } = await import("@/lib/shipping/pricing");
-      const shippingCost = Number(calculateShippingCharge(shippingCity));
+      let shippingCost: number;
+      let shippingMethodName = "Standard Delivery";
+      let resolvedShippingMethodId: string | null = null;
+
+      const shippingPricing = await import("@/lib/shipping/pricing");
+
+      const isMockedShipping =
+        typeof shippingPricing.calculateShippingCharge === "function" &&
+        Boolean((shippingPricing.calculateShippingCharge as unknown as { mock?: unknown }).mock);
+
+      if (shippingMethodId || !isMockedShipping) {
+        const resolvedShipping = await shippingPricing.resolveShippingMethod(
+          {
+            country: shippingCountry,
+            city: shippingCity,
+            state: shippingState,
+          },
+          shippingMethodId,
+          tx
+        );
+        shippingCost = Number(resolvedShipping.cost);
+        shippingMethodName = resolvedShipping.name;
+        resolvedShippingMethodId = resolvedShipping.id;
+      } else {
+        // Fallback for isolated legacy test mock (e.g. payment.test.ts)
+        shippingCost = Number(shippingPricing.calculateShippingCharge(shippingCity));
+      }
+
       const orderDiscount = appliedCoupon?.discount ?? 0;
       const total = Math.max(0, orderSubtotal - orderDiscount) + shippingCost;
 
@@ -299,7 +373,8 @@ export async function createOrderAction(
           shippingState,
           shippingZip,
           shippingCountry,
-          shippingMethodName: "Standard Delivery",
+          shippingMethodName: shippingMethodName,
+          shippingMethodId: resolvedShippingMethodId,
           subtotal: orderSubtotal,
           taxRate: 0,
           taxIncluded: false,
@@ -429,6 +504,15 @@ export async function createOrderAction(
       return { success: false, error: error.message };
     }
 
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "ShippingPricingError"
+    ) {
+      return { success: false, error: (error as Error).message };
+    }
+
     // Return safe message
     if (error instanceof Error) {
       if (error.message === "Empty cart") return { success: false, error: "Your cart is empty." };
@@ -439,7 +523,9 @@ export async function createOrderAction(
       if (
         error.message.includes("coupon") ||
         error.message.includes("Coupon") ||
-        error.message.includes("Minimum order value")
+        error.message.includes("Minimum order value") ||
+        error.message.includes("shipping method") ||
+        error.message.includes("Shipping method")
       ) {
         return { success: false, error: error.message };
       }

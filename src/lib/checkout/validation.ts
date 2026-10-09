@@ -15,6 +15,7 @@ export const checkoutSchema = z.object({
     required_error: "Please select a payment method",
   }),
   couponCode: z.string().trim().max(50).optional().nullable(),
+  shippingMethodId: z.string().uuid().optional().nullable(),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;

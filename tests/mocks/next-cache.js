@@ -4,3 +4,4 @@ import { vi } from "vitest";
 export const unstable_cache = (cb) => cb;
 export const revalidatePath = vi.fn();
 export const revalidateTag = vi.fn();
+export const updateTag = vi.fn();

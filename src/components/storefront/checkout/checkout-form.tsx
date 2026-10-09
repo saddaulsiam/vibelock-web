@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ImageOff, LoaderCircle, Tag } from "lucide-react";
 import { toast } from "sonner";
 import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
-import { createOrderAction, validateCouponAction } from "@/lib/checkout/actions";
+import { createOrderAction, getShippingMethodsAction, validateCouponAction } from "@/lib/checkout/actions";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout/validation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +45,8 @@ function getSafeCheckoutError(error: string | undefined) {
     return "Online payment is currently unavailable. Please choose cash on delivery.";
   }
   if (
+    error?.toLowerCase().includes("shipping") ||
+    error?.toLowerCase().includes("delivery") ||
     error?.toLowerCase().includes("coupon") ||
     error?.toLowerCase().includes("minimum order")
   ) {
@@ -118,6 +120,73 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
     discountAmount: number;
   } | null>(null);
 
+  const [shippingMethods, setShippingMethods] = useState<
+    Array<{ id: string; name: string; cost: number; zoneId: string; zoneName: string }>
+  >([]);
+  const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string | null>(null);
+  const [isLoadingShipping, setIsLoadingShipping] = useState(false);
+  const [shippingLookupError, setShippingLookupError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const city = formData.shippingCity?.trim();
+    const country = formData.shippingCountry?.trim();
+    let cancelled = false;
+
+    const timer = setTimeout(async () => {
+      if (!city || !country) {
+        if (!cancelled) {
+          setShippingMethods([]);
+          setSelectedShippingMethodId(null);
+          setShippingLookupError(null);
+        }
+        return;
+      }
+
+      setIsLoadingShipping(true);
+      setShippingLookupError(null);
+
+      try {
+        const res = await getShippingMethodsAction({
+          country,
+          city,
+          state: formData.shippingState?.trim() || null,
+        });
+
+        if (cancelled) return;
+
+        if (res.success && res.methods && res.methods.length > 0) {
+          setShippingMethods(res.methods);
+          setShippingLookupError(null);
+          setSelectedShippingMethodId((prev) => {
+            if (prev && res.methods.some((m) => m.id === prev)) {
+              return prev;
+            }
+            return res.methods[0].id;
+          });
+        } else {
+          setShippingMethods([]);
+          setSelectedShippingMethodId(null);
+          setShippingLookupError(res.error || "No shipping methods available for this address.");
+        }
+      } catch {
+        if (!cancelled) {
+          setShippingMethods([]);
+          setSelectedShippingMethodId(null);
+          setShippingLookupError("Failed to load shipping methods for this address.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingShipping(false);
+        }
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [formData.shippingCity, formData.shippingCountry, formData.shippingState]);
+
   const handleInputChange = (field: keyof CheckoutFormValues, value: string | null) => {
     setFormData((current) => ({ ...current, [field]: value ?? "" }));
     setSubmissionError(null);
@@ -166,6 +235,7 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
 
     const submissionData = {
       ...formData,
+      shippingMethodId: selectedShippingMethodId || undefined,
       couponCode: appliedCoupon?.code || (couponInput.trim() || undefined),
     };
 
@@ -223,6 +293,10 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
     return total + (item.variant.sellingPrice - item.variant.effectivePrice) * item.quantity;
   }, 0);
   const subtotalBeforeDiscount = cart.subtotal + discountTotal;
+  const selectedMethod = shippingMethods.find((m) => m.id === selectedShippingMethodId);
+  const shippingCost = selectedMethod ? selectedMethod.cost : 0;
+  const itemsTotal = Math.max(0, cart.subtotal - (appliedCoupon?.discountAmount ?? 0));
+  const grandTotal = selectedMethod ? itemsTotal + shippingCost : null;
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-12">
@@ -363,6 +437,72 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
                 />
                 {fieldError("shippingCountry")}
               </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <Label className="text-sm font-semibold">Shipping method</Label>
+              {isLoadingShipping && (
+                <div className="flex items-center gap-2 rounded-sm border border-border bg-[#F3F0E8]/40 p-3 text-sm text-muted-foreground">
+                  <LoaderCircle className="size-4 animate-spin text-[#101114]" />
+                  <span>Calculating shipping options for your address...</span>
+                </div>
+              )}
+
+              {!isLoadingShipping && shippingLookupError && (
+                <div className="rounded-sm border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive" role="alert">
+                  {shippingLookupError}
+                </div>
+              )}
+
+              {!isLoadingShipping && !shippingLookupError && shippingMethods.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Enter your delivery city and country to view available shipping options and rates.
+                </p>
+              )}
+
+              {!isLoadingShipping && shippingMethods.length > 0 && (
+                <div className="space-y-2">
+                  {shippingMethods.map((method) => {
+                    const isSelected = selectedShippingMethodId === method.id;
+                    return (
+                      <label
+                        key={method.id}
+                        className={`flex cursor-pointer items-center justify-between border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
+                          isSelected
+                            ? "border-[#101114] bg-[#F3F0E8]/60"
+                            : "border-border bg-white hover:border-[#101114]/40"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="shippingMethodSelection"
+                            value={method.id}
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedShippingMethodId(method.id);
+                              handleInputChange("shippingMethodId", method.id);
+                            }}
+                            className="size-4 accent-[#101114]"
+                          />
+                          <div>
+                            <span className="block text-sm font-semibold text-[#101114]">
+                              {method.name}
+                            </span>
+                            <span className="block text-xs text-muted-foreground">
+                              {method.zoneName}
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-sm font-semibold text-[#101114]">
+                          {formatPrice(method.cost)}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+              {fieldError("shippingMethodId")}
             </div>
           </section>
 
@@ -520,22 +660,45 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
             )}
             <div className="flex items-start justify-between gap-3">
               <dt className="text-muted-foreground">Shipping</dt>
-              <dd className="max-w-36 text-right text-muted-foreground">Calculated from delivery city</dd>
+              <dd className="max-w-44 text-right font-medium text-[#101114]">
+                {isLoadingShipping ? (
+                  <span className="text-muted-foreground">Calculating...</span>
+                ) : selectedMethod ? (
+                  <span>
+                    {formatPrice(shippingCost)}
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {selectedMethod.name}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">Select delivery address</span>
+                )}
+              </dd>
             </div>
           </dl>
 
           <div className="flex items-center justify-between gap-3 border-t border-[#101114]/15 pt-4">
             <span className="font-semibold">Items total</span>
             <span className="text-xl font-semibold tracking-tight">
-              {formatPrice(Math.max(0, cart.subtotal - (appliedCoupon?.discountAmount ?? 0)))}
+              {formatPrice(itemsTotal)}
             </span>
           </div>
           <div className="mt-4 flex items-start justify-between gap-3 text-sm">
             <span className="font-semibold">Grand total</span>
-            <span className="max-w-36 text-right font-medium text-muted-foreground">Calculated after delivery city</span>
+            <span className="max-w-44 text-right text-lg font-bold text-[#101114]">
+              {grandTotal !== null ? (
+                formatPrice(grandTotal)
+              ) : (
+                <span className="text-sm font-medium text-muted-foreground">
+                  Calculated after shipping selection
+                </span>
+              )}
+            </span>
           </div>
           <p className="mt-2 text-xs leading-5 text-muted-foreground">
-            Final order total includes the delivery charge calculated from your city and is confirmed after you place the order.
+            {selectedMethod
+              ? `Final order total includes ${formatPrice(shippingCost)} delivery fee.`
+              : "Final order total includes the delivery charge calculated from your selected shipping method."}
           </p>
 
           <button

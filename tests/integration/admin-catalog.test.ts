@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest";
+import { expect, test, describe, vi } from "vitest";
 import prisma from "../../src/lib/prisma/client";
 import {
   saveCategoryAction,
@@ -10,25 +10,31 @@ import {
 import { createTestProduct, createTestCategory } from "../factories";
 import { Prisma } from "@prisma/client";
 
+const mockSession = { user: { id: "admin-test-id", role: "ADMIN", email: "admin@test.com" } };
+vi.mock("../../src/auth", () => ({
+  auth: vi.fn(() => Promise.resolve(mockSession)),
+}));
+
 describe("Admin Catalog Management", () => {
 
   describe("Categories", () => {
     test("should create a category", async () => {
+      const slug = `new-category-${Date.now()}`;
       const formData = new FormData();
       formData.append("name", "New Category");
-      formData.append("slug", "new-category");
+      formData.append("slug", slug);
       formData.append("description", "A test category");
 
       const result = await saveCategoryAction({ error: null }, formData);
       expect(result.error).toBeNull();
 
-      const category = await prisma.category.findUnique({ where: { slug: "new-category" } });
+      const category = await prisma.category.findUnique({ where: { slug } });
       expect(category).toBeDefined();
       expect(category?.name).toBe("New Category");
     });
 
     test("should fail to create category with duplicate slug", async () => {
-      const slug = "duplicate-slug";
+      const slug = `duplicate-slug-${Date.now()}`;
       await prisma.category.create({ data: { name: "Existing", slug } });
 
       const formData = new FormData();
@@ -81,9 +87,10 @@ describe("Admin Catalog Management", () => {
 
   describe("Products", () => {
     test("should create a product and a default variant", async () => {
+      const slug = `test-prod-${Date.now()}`;
       const formData = new FormData();
       formData.append("name", "Test Product");
-      formData.append("slug", "test-product");
+      formData.append("slug", slug);
       formData.append("costPrice", "500");
       formData.append("sellingPrice", "1000");
       formData.append("status", "PUBLISHED");
@@ -92,22 +99,23 @@ describe("Admin Catalog Management", () => {
       expect(result.error).toBeNull();
 
       const product = await prisma.product.findUnique({
-        where: { slug: "test-product" },
+        where: { slug },
         include: { variants: true }
       });
 
       expect(product).toBeDefined();
       expect(product?.variants).toHaveLength(1);
       expect(product?.variants[0].sellingPrice).toEqual(new Prisma.Decimal("1000"));
-      expect(product?.variants[0].sku).toMatch(/^VL-TEST-PRODUCT-.+/);
+      expect(product?.variants[0].sku).toMatch(/^VL-TEST-PROD-.+/);
     });
 
     test("should update pricing across all variants", async () => {
       const prod = await createTestProduct();
+      const ts = Date.now();
       await prisma.productVariant.create({
         data: {
           productId: prod.id,
-          sku: "VAR-1",
+          sku: `VAR-1-${ts}`,
           costPrice: new Prisma.Decimal("100"),
           sellingPrice: new Prisma.Decimal("200")
         }
@@ -115,7 +123,7 @@ describe("Admin Catalog Management", () => {
       await prisma.productVariant.create({
         data: {
           productId: prod.id,
-          sku: "VAR-2",
+          sku: `VAR-2-${ts}`,
           costPrice: new Prisma.Decimal("100"),
           sellingPrice: new Prisma.Decimal("200")
         }
@@ -165,10 +173,11 @@ describe("Admin Catalog Management", () => {
 
     test("should block deletion of product with inventory history", async () => {
       const prod = await createTestProduct();
+      const ts = Date.now();
       const variant = await prisma.productVariant.create({
         data: {
           productId: prod.id,
-          sku: "INV-TEST",
+          sku: `INV-TEST-${ts}`,
           costPrice: new Prisma.Decimal("10"),
           sellingPrice: new Prisma.Decimal("20")
         }

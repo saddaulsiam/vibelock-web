@@ -33,10 +33,14 @@ vi.mock("../../src/auth", () => ({
   })
 }));
 
-// Mock shipping pricing so it's deterministic and isolated
-vi.mock("../../src/lib/shipping/pricing", () => ({
-  calculateShippingCharge: vi.fn(() => 50)
-}));
+// Mock fallback shipping pricing so legacy tests remain deterministic and isolated
+vi.mock("../../src/lib/shipping/pricing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../../src/lib/shipping/pricing")>();
+  return {
+    ...actual,
+    calculateShippingCharge: vi.fn(() => 50),
+  };
+});
 
 describe("Phase 3F - Checkout", () => {
   beforeEach(() => {

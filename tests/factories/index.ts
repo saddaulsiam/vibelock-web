@@ -62,3 +62,29 @@ export async function createTestCoupon(overrides: Partial<Prisma.CouponUnchecked
   });
 }
 
+export async function createTestShippingZone(overrides: Partial<Prisma.ShippingZoneUncheckedCreateInput> = {}) {
+  const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
+  return prisma.shippingZone.create({
+    data: {
+      name: `Zone-${ts}`,
+      countries: ["BD"],
+      ...overrides,
+    },
+  });
+}
+
+export async function createTestShippingMethod(
+  overrides: Partial<Prisma.ShippingMethodUncheckedCreateInput> & { zoneId: string }
+) {
+  const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
+  return prisma.shippingMethod.create({
+    data: {
+      name: `Method-${ts}`,
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+      ...overrides,
+    },
+  });
+}
+
+
