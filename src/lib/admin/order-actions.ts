@@ -84,7 +84,10 @@ export async function updateOrderStatusAction(
         ) {
           throw new Error("Paid orders cannot be cancelled online at this time.");
         }
-        if (order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")) {
+        if (
+          order.paymentMethod !== "COD" &&
+          order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")
+        ) {
           throw new Error("Order has already committed stock and cannot be safely cancelled.");
         }
 
@@ -92,10 +95,8 @@ export async function updateOrderStatusAction(
           where: { id },
           data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
         });
-        await tx.inventoryReservation.updateMany({
-          where: { orderId: id, status: "RESERVED" },
-          data: { status: "RELEASED", releasedAt: new Date() },
-        });
+        const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
+        await inventoryService.cancelOrderInventory(id, tx);
         await tx.orderHistory.create({
           data: {
             orderId: id,

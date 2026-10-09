@@ -8,6 +8,72 @@ import { checkoutSchema } from "./validation";
 import { getCart } from "@/lib/cart/queries";
 import { env } from "@/lib/config/env";
 import crypto from "crypto";
+import {
+  CouponError,
+  calculateCouponDiscount,
+  validateCouponRules,
+} from "./coupons";
+import type { DiscountType } from "@prisma/client";
+
+export async function validateCouponAction(code: string) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  if (!code || typeof code !== "string" || !code.trim()) {
+    return { success: false, error: "Please enter a coupon code." };
+  }
+
+  const normalizedCode = code.trim().toUpperCase();
+
+  // Get user's cart to recalculate eligible subtotal
+  const cart = await getCart();
+  if (!cart || cart.items.length === 0) {
+    return { success: false, error: "Your cart is empty." };
+  }
+
+  // Calculate cart subtotal from current available items
+  let cartSubtotal = 0;
+  for (const item of cart.items) {
+    if (!item.variant.available || item.quantity > item.availableQuantity) {
+      return {
+        success: false,
+        error: "Some items in your cart are no longer available. Please review your cart.",
+      };
+    }
+    cartSubtotal += item.variant.effectivePrice * item.quantity;
+  }
+
+  const coupon = await prisma.coupon.findUnique({
+    where: { code: normalizedCode },
+  });
+
+  if (!coupon) {
+    return { success: false, error: "Invalid coupon code." };
+  }
+
+  try {
+    validateCouponRules(coupon, cartSubtotal);
+    const discountAmount = calculateCouponDiscount(coupon, cartSubtotal);
+
+    return {
+      success: true,
+      coupon: {
+        code: coupon.code,
+        discountType: coupon.discountType,
+        discountValue: Number(coupon.discountValue),
+        discountAmount,
+        minOrderValue: coupon.minOrderValue ? Number(coupon.minOrderValue) : null,
+      },
+    };
+  } catch (err) {
+    if (err instanceof CouponError) {
+      return { success: false, error: err.message };
+    }
+    return { success: false, error: "Unable to apply coupon. Please try again." };
+  }
+}
 
 export async function createOrderAction(
   data: z.infer<typeof checkoutSchema>,
@@ -47,6 +113,7 @@ export async function createOrderAction(
     shippingZip,
     shippingCountry,
     paymentMethod,
+    couponCode,
   } = parsed.data;
 
   if (
@@ -88,6 +155,7 @@ export async function createOrderAction(
         where: { userId: session.user.id },
         include: {
           items: {
+            orderBy: { createdAt: "asc" },
             include: {
               variant: {
                 include: {
@@ -156,9 +224,62 @@ export async function createOrderAction(
         };
       });
 
+      let appliedCoupon: {
+        id: string;
+        code: string;
+        discount: number;
+      } | null = null;
+
+      if (couponCode && couponCode.trim()) {
+        const normalizedCode = couponCode.trim().toUpperCase();
+
+        const lockedCoupons = await tx.$queryRaw<Array<{
+          id: string;
+          code: string;
+          discountType: DiscountType;
+          discountValue: import("@prisma/client").Prisma.Decimal;
+          minOrderValue: import("@prisma/client").Prisma.Decimal | null;
+          usageLimit: number | null;
+          usageCount: number;
+          isActive: boolean;
+          startDate: Date | null;
+          endDate: Date | null;
+        }>>`
+          SELECT "id", "code", "discountType", "discountValue", "minOrderValue",
+                 "usageLimit", "usageCount", "isActive", "startDate", "endDate"
+          FROM "Coupon"
+          WHERE UPPER("code") = ${normalizedCode}
+          FOR UPDATE
+        `;
+
+        if (lockedCoupons.length === 0) {
+          throw new CouponError("Invalid coupon code.");
+        }
+
+        const coupon = lockedCoupons[0];
+        validateCouponRules(coupon, orderSubtotal);
+        const discountAmount = calculateCouponDiscount(coupon, orderSubtotal);
+
+        await tx.coupon.update({
+          where: { id: coupon.id },
+          data: {
+            usageCount: {
+              increment: 1,
+            },
+          },
+        });
+
+        appliedCoupon = {
+          id: coupon.id,
+          code: coupon.code,
+          discount: discountAmount,
+        };
+      }
+
       const { calculateShippingCharge } = await import("@/lib/shipping/pricing");
       const shippingCost = Number(calculateShippingCharge(shippingCity));
-      const total = orderSubtotal + shippingCost;
+      const orderDiscount = appliedCoupon?.discount ?? 0;
+      const total = Math.max(0, orderSubtotal - orderDiscount) + shippingCost;
 
       // Create Order
       const newOrder = await tx.order.create({
@@ -184,7 +305,7 @@ export async function createOrderAction(
           taxIncluded: false,
           shippingCost: shippingCost,
           taxAmount: 0,
-          discount: 0,
+          discount: orderDiscount,
           total: total,
           items: {
             create: orderItemsToCreate.map((item) => ({
@@ -206,6 +327,31 @@ export async function createOrderAction(
           },
         },
       });
+
+      if (appliedCoupon) {
+        await tx.orderHistory.create({
+          data: {
+            orderId: newOrder.id,
+            status: "PENDING",
+            notes: `Order created. Coupon applied: ${appliedCoupon.code} (Discount: ${appliedCoupon.discount.toFixed(2)} BDT)`,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            actorId: session.user.id,
+            action: "COUPON_REDEEMED",
+            entityType: "Order",
+            entityId: newOrder.id,
+            metadata: {
+              couponCode: appliedCoupon.code,
+              couponId: appliedCoupon.id,
+              discountAmount: appliedCoupon.discount,
+              orderNumber: newOrder.orderNumber,
+            },
+          },
+        });
+      }
 
       const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
       await inventoryService.reserveInventoryForOrder(newOrder.id, tx);
@@ -229,6 +375,9 @@ export async function createOrderAction(
     revalidatePath("/products");
     revalidatePath("/admin/orders");
     revalidatePath("/admin/inventory");
+    if (couponCode) {
+      revalidatePath("/admin/coupons");
+    }
 
     if (paymentMethod === "ONLINE") {
       const orderRecord = await prisma.order.findUnique({
@@ -276,6 +425,10 @@ export async function createOrderAction(
       }
     }
 
+    if (error instanceof CouponError) {
+      return { success: false, error: error.message };
+    }
+
     // Return safe message
     if (error instanceof Error) {
       if (error.message === "Empty cart") return { success: false, error: "Your cart is empty." };
@@ -283,6 +436,13 @@ export async function createOrderAction(
         return { success: false, error: "Some items no longer have enough stock." };
       if (error.message === "Item unavailable")
         return { success: false, error: "One or more items are no longer available." };
+      if (
+        error.message.includes("coupon") ||
+        error.message.includes("Coupon") ||
+        error.message.includes("Minimum order value")
+      ) {
+        return { success: false, error: error.message };
+      }
     }
     return { success: false, error: "An unexpected error occurred during order creation." };
   }

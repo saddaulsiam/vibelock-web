@@ -181,6 +181,7 @@ describe("Phase 3I - Orders & Customer Order History", () => {
         await tx.auditLog.deleteMany({ where: { entityId: { in: testOrderIds } } });
         await tx.refund.deleteMany({ where: { payment: { orderId: { in: testOrderIds } } } });
         await tx.payment.deleteMany({ where: { orderId: { in: testOrderIds } } });
+        await tx.shipment.deleteMany({ where: { orderId: { in: testOrderIds } } });
         await tx.inventoryReservation.deleteMany({ where: { orderId: { in: testOrderIds } } });
         await tx.order.deleteMany({ where: { id: { in: testOrderIds } } });
         await tx.inventoryTransaction.deleteMany({ where: { referenceId: { in: testOrderIds } } });
@@ -648,34 +649,11 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     });
   });
 
-  test("cancellation rejects non-pending, paid, and already-committed orders without inventory reversal", async () => {
+  test("cancellation rejects non-pending, paid, and already-committed non-COD orders without inventory reversal", async () => {
     const user = await makeUser();
-    const cod = await createCustomerOrder(user);
-    const codBefore = await prisma.inventoryTransaction.findMany({
-      where: { referenceId: cod.order.id, type: "SALE" },
-    });
-    expect(codBefore).toHaveLength(1);
-    expect(cod.order.inventoryReservations[0].status).toBe("COMMITTED");
-
-    mockSession = { user: { id: user.id } };
-    const committedRejection = await cancelOrderAction(cod.order.orderNumber);
-    expect(committedRejection.success).toBe(false);
-    expect(committedRejection.error).toContain("already committed stock");
-    const codAfter = await prisma.order.findUniqueOrThrow({
-      where: { id: cod.order.id },
-      include: { inventoryReservations: true },
-    });
-    expect(codAfter.status).toBe("PENDING");
-    expect(codAfter.paymentStatus).toBe("PENDING");
-    expect(codAfter.inventoryReservations[0].status).toBe("COMMITTED");
-    expect(
-      await prisma.inventoryTransaction.count({
-        where: { referenceId: cod.order.id, type: "SALE" },
-      })
-    ).toBe(1);
-
     const paid = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
     await validateOnlinePayment(paid.order.id, paid.order.total.toString());
+    mockSession = { user: { id: user.id } };
     const paidRejection = await cancelOrderAction(paid.order.orderNumber);
     expect(paidRejection.success).toBe(false);
     expect(paidRejection.error).toContain("Paid orders cannot be cancelled");
@@ -686,6 +664,15 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     expect(paidAfter.paymentStatus).toBe("SUCCESS");
     expect(paidAfter.payments[0].status).toBe("SUCCESS");
     expect(paidAfter.inventoryReservations[0].status).toBe("COMMITTED");
+
+    const committedOnline = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
+    await prisma.inventoryReservation.updateMany({
+      where: { orderId: committedOnline.order.id },
+      data: { status: "COMMITTED" },
+    });
+    const committedOnlineRejection = await cancelOrderAction(committedOnline.order.orderNumber);
+    expect(committedOnlineRejection.success).toBe(false);
+    expect(committedOnlineRejection.error).toContain("already committed stock");
 
     const processing = await createCustomerOrder(user, { paymentMethod: "ONLINE" });
     await prisma.order.update({
@@ -704,6 +691,150 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     expect(processingAfter.status).toBe("PROCESSING");
     expect(processingAfter.payments[0].status).toBe("INITIATED");
     expect(processingAfter.inventoryReservations[0].status).toBe("RESERVED");
+  });
+
+  test("customer cancels their own eligible COD order and inventory is safely restored", async () => {
+    const user = await makeUser();
+    const { order, variants } = await createCustomerOrder(user, { paymentMethod: "COD" });
+    const variantId = variants[0].variant.id;
+
+    // Verify initial COD state: SALE transaction created, reservation COMMITTED
+    const salesBefore = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: order.id, type: "SALE" },
+    });
+    expect(salesBefore).toHaveLength(1);
+    expect(salesBefore[0].quantity).toBe(-1);
+    expect(order.inventoryReservations[0].status).toBe("COMMITTED");
+
+    // Check current stock before cancellation
+    const txBefore = await prisma.inventoryTransaction.findMany({ where: { variantId } });
+    const currentStockBefore = txBefore.reduce((acc, t) => acc + t.quantity, 0);
+
+    mockSession = { user: { id: user.id } };
+    const cancellation = await cancelOrderAction(order.orderNumber);
+    expect(cancellation.success).toBe(true);
+    expect(cancellation.message).toBe("Order successfully cancelled.");
+
+    // Order state
+    const orderAfter = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+      include: { inventoryReservations: true, history: true },
+    });
+    expect(orderAfter.status).toBe("CANCELLED");
+    expect(orderAfter.paymentStatus).toBe("CANCELLED");
+    expect(orderAfter.inventoryReservations[0].status).toBe("RELEASED");
+
+    // History and audit log
+    expect(orderAfter.history.some((h) => h.status === "CANCELLED")).toBe(true);
+    const auditLog = await prisma.auditLog.findFirst({
+      where: { entityId: order.id, action: "ORDER_CANCELLED" },
+    });
+    expect(auditLog).toBeDefined();
+    expect(auditLog?.actorId).toBe(user.id);
+
+    // Ledger inspection: SALE (-1) + RESTOCK (+1)
+    const restocks = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: order.id, type: "RESTOCK" },
+    });
+    expect(restocks).toHaveLength(1);
+    expect(restocks[0].quantity).toBe(1);
+    expect(restocks[0].variantId).toBe(variantId);
+
+    // Final stock has been restored by +1
+    const txAfter = await prisma.inventoryTransaction.findMany({ where: { variantId } });
+    const currentStockAfter = txAfter.reduce((acc, t) => acc + t.quantity, 0);
+    expect(currentStockAfter).toBe(currentStockBefore + 1);
+  });
+
+  test("customer cannot cancel another customer's COD order", async () => {
+    const owner = await makeUser();
+    const otherUser = await makeUser();
+    const { order } = await createCustomerOrder(owner, { paymentMethod: "COD" });
+
+    // Try cancelling as otherUser
+    mockSession = { user: { id: otherUser.id } };
+    const result = await cancelOrderAction(order.orderNumber);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Order not found or access denied.");
+
+    // Ensure order and inventory remain unchanged
+    const orderAfter = await prisma.order.findUniqueOrThrow({
+      where: { id: order.id },
+      include: { inventoryReservations: true },
+    });
+    expect(orderAfter.status).toBe("PENDING");
+    expect(orderAfter.inventoryReservations[0].status).toBe("COMMITTED");
+    expect(
+      await prisma.inventoryTransaction.count({
+        where: { referenceId: order.id, type: "RESTOCK" },
+      })
+    ).toBe(0);
+  });
+
+  test("repeated cancellation requests for COD order are idempotent and do not restore stock twice", async () => {
+    const user = await makeUser();
+    const { order } = await createCustomerOrder(user, { paymentMethod: "COD" });
+
+    mockSession = { user: { id: user.id } };
+    const firstResult = await cancelOrderAction(order.orderNumber);
+    expect(firstResult.success).toBe(true);
+
+    const secondResult = await cancelOrderAction(order.orderNumber);
+    expect(secondResult.success).toBe(true);
+    expect(secondResult.message).toBe("Order is already cancelled.");
+
+    // Exactly one RESTOCK transaction must exist
+    const restocks = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: order.id, type: "RESTOCK" },
+    });
+    expect(restocks).toHaveLength(1);
+    expect(restocks[0].quantity).toBe(1);
+
+    // Concurrent duplicate cancellation also idempotent
+    const user2 = await makeUser();
+    const concurrentOrder = await createCustomerOrder(user2, { paymentMethod: "COD" });
+    mockSession = { user: { id: user2.id } };
+    const [c1, c2] = await Promise.all([
+      cancelOrderAction(concurrentOrder.order.orderNumber),
+      cancelOrderAction(concurrentOrder.order.orderNumber),
+    ]);
+    expect(c1.success).toBe(true);
+    expect(c2.success).toBe(true);
+    expect(
+      await prisma.inventoryTransaction.count({
+        where: { referenceId: concurrentOrder.order.id, type: "RESTOCK" },
+      })
+    ).toBe(1);
+  });
+
+  test("ineligible or already fulfilled orders cannot be cancelled", async () => {
+    const user = await makeUser();
+    const cod = await createCustomerOrder(user, { paymentMethod: "COD" });
+
+    // Attach shipment to order
+    await prisma.shipment.create({
+      data: {
+        orderId: cod.order.id,
+        provider: "steadfast",
+        status: "CREATED",
+        shippingAmount: cod.order.shippingCost,
+      },
+    });
+
+    mockSession = { user: { id: user.id } };
+    const shipmentRejection = await cancelOrderAction(cod.order.orderNumber);
+    expect(shipmentRejection.success).toBe(false);
+    expect(shipmentRejection.error).toContain("after shipment processing has started");
+
+    // Delivered COD order cannot be cancelled
+    const deliveredCod = await createCustomerOrder(user, { paymentMethod: "COD" });
+    await prisma.order.update({
+      where: { id: deliveredCod.order.id },
+      data: { status: "DELIVERED" },
+    });
+    const deliveredRejection = await cancelOrderAction(deliveredCod.order.orderNumber);
+    expect(deliveredRejection.success).toBe(false);
+    expect(deliveredRejection.error).toBe("Only pending orders can be cancelled.");
   });
 
   test("concurrent cancellation attempts release an eligible reservation once", async () => {

@@ -2,10 +2,11 @@ import prisma from "@/lib/prisma/client";
 import { PaymentInitiationResponse, PaymentProvider } from "./types";
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { Order, Prisma } from "@prisma/client";
+import { isSSLCommerzGateway, normalizePaymentGateway } from "./constants";
 
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
-    if (gateway === "SSLCOMMERZ") {
+    if (isSSLCommerzGateway(gateway)) {
       return new SSLCommerzProvider();
     }
     throw new Error(`Unsupported payment gateway: ${gateway}`);
@@ -36,7 +37,7 @@ export class PaymentService {
           orderId: order.id,
           amount: request.amount,
           status: "INITIATED",
-          gateway,
+          gateway: normalizePaymentGateway(gateway),
           merchantReferenceId: response.merchantReferenceId,
         },
       });

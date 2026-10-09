@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma/client";
 import { Prisma, Refund } from "@prisma/client";
+import { isSSLCommerzGateway } from "@/lib/payment/constants";
 
 export class RefundService {
   /**
@@ -153,7 +154,7 @@ export class RefundService {
       error: "Unsupported gateway",
     };
 
-    if (refund.payment.gateway === "sslcommerz") {
+    if (isSSLCommerzGateway(refund.payment.gateway)) {
       // Import dynamically or inject provider to avoid circular dependencies
       const { SSLCommerzProvider } = await import("@/lib/payment/providers/sslcommerz/client");
       const provider = new SSLCommerzProvider();

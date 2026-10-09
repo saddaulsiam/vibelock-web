@@ -204,4 +204,74 @@ export class InventoryService {
       },
     });
   }
+
+  /**
+   * Release reservations and restock committed inventory for a cancelled order.
+   * Handles both unpaid reservations and already-committed SALE ledger entries.
+   * Safe and idempotent.
+   */
+  static async cancelOrderInventory(
+    orderId: string,
+    customTx?: Prisma.TransactionClient
+  ): Promise<void> {
+    const run = async (tx: Prisma.TransactionClient) => {
+      // 1. Release all active or committed reservations for this order
+      await tx.inventoryReservation.updateMany({
+        where: {
+          orderId,
+          status: { in: ["RESERVED", "COMMITTED"] },
+        },
+        data: {
+          status: "RELEASED",
+          releasedAt: new Date(),
+        },
+      });
+
+      // 2. Find any SALE transactions committed for this order
+      const sales = await tx.inventoryTransaction.findMany({
+        where: {
+          referenceId: orderId,
+          type: "SALE",
+        },
+      });
+
+      if (sales.length === 0) {
+        return;
+      }
+
+      // 3. Find any existing RESTOCK transactions for idempotency
+      const existingRestocks = await tx.inventoryTransaction.findMany({
+        where: {
+          referenceId: orderId,
+          type: "RESTOCK",
+        },
+      });
+
+      const restockedVariantIds = new Set(existingRestocks.map((r) => r.variantId));
+
+      // 4. Create compensating positive RESTOCK transaction for each variant not yet restocked
+      for (const sale of sales) {
+        if (restockedVariantIds.has(sale.variantId)) {
+          continue;
+        }
+
+        await tx.inventoryTransaction.create({
+          data: {
+            variantId: sale.variantId,
+            type: "RESTOCK",
+            quantity: Math.abs(sale.quantity),
+            salesChannel: sale.salesChannel,
+            referenceId: orderId,
+            notes: `Restock from cancelled order ${orderId}`,
+          },
+        });
+      }
+    };
+
+    if (customTx) {
+      await run(customTx);
+    } else {
+      await prisma.$transaction(run);
+    }
+  }
 }

@@ -45,6 +45,7 @@ async function createFixture(
     paymentStatus?: "PENDING" | "INITIATED" | "SUCCESS" | "FAILED";
     quantity?: number;
     prices?: string[];
+    gateway?: string;
   } = {}
 ): Promise<Fixture> {
   const user = await createTestUser({ email: `phase3j-${crypto.randomUUID()}@example.com` });
@@ -131,7 +132,7 @@ async function createFixture(
         orderId: order.id,
         amount: subtotal,
         status: options.paymentStatus ?? "SUCCESS",
-        gateway: "sslcommerz",
+        gateway: options.gateway ?? "SSLCOMMERZ",
         merchantReferenceId: `MERCHANT-${crypto.randomUUID()}`,
         gatewayTransactionId:
           isSuccessful || options.paymentStatus === undefined
@@ -607,5 +608,94 @@ describe("Phase 3J - Returns, Refunds & Reconciliation", () => {
         where: { referenceId: fixture.order.id, type: "SALE" },
       })
     ).toBe(0);
+  });
+
+  test("regression: persisted uppercase SSLCOMMERZ gateway successfully dispatches to refund provider", async () => {
+    const fixture = await createFixture({
+      quantity: 1,
+      prices: ["300.00"],
+      gateway: "SSLCOMMERZ",
+    });
+    expect(fixture.payment!.gateway).toBe("SSLCOMMERZ");
+
+    const refundService = new RefundService();
+    const refund = await refundService.initiateRefund(
+      fixture.payment!.id,
+      new Prisma.Decimal("300.00"),
+      "Return approved for SSLCOMMERZ payment"
+    );
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ APIConnect: "DONE", status: "success", refund_ref_id: "UPPER-REF-1" }),
+    } as Response);
+
+    const result = await refundService.processRefundWithProvider(refund.id);
+    expect(result.success).toBe(true);
+
+    const [url] = vi.mocked(global.fetch).mock.calls[0];
+    const requestUrl = new URL(String(url));
+    expect(requestUrl.searchParams.get("refund_amount")).toBe("300");
+    expect(requestUrl.searchParams.get("bank_tran_id")).toBe(fixture.payment!.gatewayTransactionId);
+    expect(requestUrl.searchParams.get("refe_id")).toBe(refund.id);
+
+    const persisted = await prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
+    expect(persisted.status).toBe("SUCCESS");
+    expect(persisted.gatewayRefId).toBe("UPPER-REF-1");
+
+    const updatedPayment = await prisma.payment.findUniqueOrThrow({
+      where: { id: fixture.payment!.id },
+    });
+    expect(updatedPayment.status).toBe("REFUNDED");
+  });
+
+  test("regression: legacy lowercase sslcommerz gateway also dispatches to refund provider", async () => {
+    const fixture = await createFixture({
+      quantity: 1,
+      prices: ["150.00"],
+      gateway: "sslcommerz",
+    });
+    expect(fixture.payment!.gateway).toBe("sslcommerz");
+
+    const refundService = new RefundService();
+    const refund = await refundService.initiateRefund(
+      fixture.payment!.id,
+      new Prisma.Decimal("150.00"),
+      "Return approved for legacy lowercase payment"
+    );
+
+    vi.mocked(global.fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ APIConnect: "DONE", status: "success", refund_ref_id: "LOWER-REF-1" }),
+    } as Response);
+
+    const result = await refundService.processRefundWithProvider(refund.id);
+    expect(result.success).toBe(true);
+
+    const persisted = await prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
+    expect(persisted.status).toBe("SUCCESS");
+    expect(persisted.gatewayRefId).toBe("LOWER-REF-1");
+  });
+
+  test("regression: unsupported gateway fails safely without dispatching to SSLCommerz", async () => {
+    const fixture = await createFixture({
+      quantity: 1,
+      prices: ["100.00"],
+      gateway: "UNSUPPORTED_GATEWAY",
+    });
+
+    const refundService = new RefundService();
+    const refund = await refundService.initiateRefund(
+      fixture.payment!.id,
+      new Prisma.Decimal("100.00")
+    );
+
+    const result = await refundService.processRefundWithProvider(refund.id);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Refund provider rejected the request");
+    expect(global.fetch).not.toHaveBeenCalled();
+
+    const persisted = await prisma.refund.findUniqueOrThrow({ where: { id: refund.id } });
+    expect(persisted.status).toBe("FAILED");
   });
 });

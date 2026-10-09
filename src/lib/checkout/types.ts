@@ -14,4 +14,5 @@ export interface CheckoutShippingInfo {
 
 export interface CheckoutInput extends CheckoutCustomerInfo, CheckoutShippingInfo {
   paymentMethod: "COD" | "ONLINE";
+  couponCode?: string | null;
 }

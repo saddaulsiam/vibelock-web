@@ -48,3 +48,17 @@ export async function createTestInventory(variantId: string, quantity: number) {
     }
   });
 }
+
+export async function createTestCoupon(overrides: Partial<Prisma.CouponUncheckedCreateInput> = {}) {
+  const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
+  return prisma.coupon.create({
+    data: {
+      code: `COUPON-${ts}`,
+      discountType: "FIXED",
+      discountValue: new Prisma.Decimal("10.00"),
+      isActive: true,
+      ...overrides,
+    },
+  });
+}
+

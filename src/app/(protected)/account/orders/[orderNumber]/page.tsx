@@ -32,11 +32,10 @@ export default async function OrderDetailPage(props: {
   const order = await getCustomerOrder(orderNumber);
   if (!order) notFound();
 
-  // Preserve the existing customer-facing cancellation eligibility rule.
   const canCancel =
     order.status === "PENDING" &&
     (order.paymentStatus === "PENDING" || order.paymentStatus === "INITIATED") &&
-    order.paymentMethod === "ONLINE";
+    !order.shipment;
 
   return (
     <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">

@@ -48,7 +48,9 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       userId, // CRITICAL: Only fetch if it belongs to the authenticated user
     },
     include: {
-      items: true,
+      items: {
+        orderBy: { createdAt: "asc" },
+      },
       returns: {
         include: { items: true },
       },

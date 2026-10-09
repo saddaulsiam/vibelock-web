@@ -54,7 +54,10 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
           error: "Paid orders cannot be cancelled online at this time.",
         };
       }
-      if (order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")) {
+      if (
+        order.paymentMethod !== "COD" &&
+        order.inventoryReservations.some((reservation) => reservation.status === "COMMITTED")
+      ) {
         return {
           success: false as const,
           error: "Order has already committed stock and cannot be safely cancelled.",
@@ -65,8 +68,32 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
         where: { id: order.id },
         data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
       });
+
+      await tx.orderHistory.create({
+        data: {
+          orderId: order.id,
+          status: "CANCELLED",
+          notes: "Order cancelled by customer.",
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: userId,
+          action: "ORDER_CANCELLED",
+          entityType: "Order",
+          entityId: order.id,
+          metadata: {
+            from: order.status,
+            to: "CANCELLED",
+            paymentMethod: order.paymentMethod,
+            source: "customer_self_service",
+          },
+        },
+      });
+
       const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-      await inventoryService.releaseReservation(order.id, tx);
+      await inventoryService.cancelOrderInventory(order.id, tx);
       return { success: true as const, message: "Order successfully cancelled." };
     });
 
