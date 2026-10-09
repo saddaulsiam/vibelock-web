@@ -51,6 +51,7 @@ describe("Database-Configured Shipping Zones and Methods in Checkout", () => {
         await tx.order.deleteMany({ where: { id: { in: createdOrderIds } } });
       }
       if (createdVariantIds.length) {
+        await tx.inventoryReservation.deleteMany({ where: { variantId: { in: createdVariantIds } } });
         await tx.inventoryTransaction.deleteMany({ where: { variantId: { in: createdVariantIds } } });
         await tx.cartItem.deleteMany({ where: { variantId: { in: createdVariantIds } } });
         await tx.productVariant.deleteMany({ where: { id: { in: createdVariantIds } } });
@@ -620,5 +621,92 @@ describe("Database-Configured Shipping Zones and Methods in Checkout", () => {
       include: { items: true },
     });
     expect(cart?.items).toHaveLength(0);
+  });
+
+  test("Returns correlation ID and safe message on unhandled unexpected exception", async () => {
+    const { user } = await setupTestUserAndCart("100.00", 1);
+
+    const zone = await createTestShippingZone({
+      name: "Inside Dhaka Error Test",
+      countries: ["BD"],
+    });
+    createdZoneIds.push(zone.id);
+
+    const method = await createTestShippingMethod({
+      zoneId: zone.id,
+      name: "Standard Delivery",
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+    });
+
+    const payload = {
+      customerName: "Crash User",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Error Street",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: method.id,
+    };
+
+    // Force an unexpected unhandled exception inside the transaction
+    const txSpy = vi.spyOn(prisma, "$transaction").mockRejectedValueOnce(new Error("Unexpected low-level failure"));
+
+    try {
+      const result = await createOrderAction(payload, crypto.randomUUID());
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("An unexpected error occurred during order creation.");
+      expect(result.correlationId).toMatch(/^req_[a-z0-9]+_[a-f0-9]+$/);
+    } finally {
+      txSpy.mockRestore();
+    }
+  });
+
+  test("Handles database foreign key constraint error safely with correlation ID", async () => {
+    const { user } = await setupTestUserAndCart("100.00", 1);
+
+    const zone = await createTestShippingZone({
+      name: "Inside Dhaka FK Test",
+      countries: ["BD"],
+    });
+    createdZoneIds.push(zone.id);
+
+    const method = await createTestShippingMethod({
+      zoneId: zone.id,
+      name: "Standard Delivery",
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+    });
+
+    const payload = {
+      customerName: "FK Error User",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Street",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: method.id,
+    };
+
+    // Simulate Prisma P2003 Foreign Key constraint error
+    const fakePrismaError = new Prisma.PrismaClientKnownRequestError(
+      "Foreign key constraint failed on the field: userId",
+      {
+        code: "P2003",
+        clientVersion: "5.22.0",
+      }
+    );
+    const txSpy = vi.spyOn(prisma, "$transaction").mockRejectedValueOnce(fakePrismaError);
+
+    try {
+      const result = await createOrderAction(payload, crypto.randomUUID());
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/account or checkout reference is invalid/i);
+      expect(result.correlationId).toMatch(/^req_[a-z0-9]+_[a-f0-9]+$/);
+    } finally {
+      txSpy.mockRestore();
+    }
   });
 });

@@ -278,8 +278,13 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
         }
 
         const safeMessage = getSafeCheckoutError(result.error);
-        setSubmissionError(safeMessage);
-        toast.error(safeMessage);
+        const displayMessage =
+          result.correlationId &&
+          safeMessage === "We could not place your order. Please review your details and try again."
+            ? `${safeMessage} (Ref: ${result.correlationId})`
+            : safeMessage;
+        setSubmissionError(displayMessage);
+        toast.error(displayMessage);
         isSubmitting.current = false;
       } catch {
         const safeMessage = getSafeCheckoutError(undefined);

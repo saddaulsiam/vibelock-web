@@ -481,6 +481,8 @@ export async function createOrderAction(
 
     return { success: true, orderNumber: finalOrderNumber };
   } catch (error: unknown) {
+    const correlationId = `req_${Date.now().toString(36)}_${crypto.randomBytes(3).toString("hex")}`;
+
     const isInsufficientStock =
       (typeof error === "object" &&
         error !== null &&
@@ -498,14 +500,33 @@ export async function createOrderAction(
 
     const isCouponError = error instanceof CouponError;
 
-    const isIdempotencyConflict =
+    const prismaCode =
       typeof error === "object" &&
       error !== null &&
       "code" in error &&
-      (error as { code: string }).code === "P2002" &&
+      typeof (error as { code: unknown }).code === "string"
+        ? (error as { code: string }).code
+        : undefined;
+
+    const isIdempotencyConflict =
+      prismaCode === "P2002" &&
+      typeof error === "object" &&
+      error !== null &&
       "meta" in error &&
       typeof (error as { meta: Record<string, unknown> }).meta === "object" &&
       (error as { meta: { target?: string[] } }).meta?.target?.includes("checkoutIdempotencyKey");
+
+    const isOrderNumberConflict =
+      prismaCode === "P2002" &&
+      typeof error === "object" &&
+      error !== null &&
+      "meta" in error &&
+      typeof (error as { meta: Record<string, unknown> }).meta === "object" &&
+      (error as { meta: { target?: string[] } }).meta?.target?.includes("orderNumber");
+
+    const isForeignConstraintViolation = prismaCode === "P2003";
+    const isTransactionTimeout = prismaCode === "P2028";
+    const isPrismaError = Boolean(prismaCode);
 
     // Structured server-side diagnostic logging (sanitized, non-sensitive)
     const errorCategory = isIdempotencyConflict
@@ -516,13 +537,17 @@ export async function createOrderAction(
           ? "SHIPPING_ERROR"
           : isInsufficientStock
             ? "INVENTORY_ERROR"
-            : "ORDER_CREATION_FAILED";
+            : isPrismaError
+              ? "PRISMA_DATABASE_ERROR"
+              : "ORDER_CREATION_FAILED";
 
     const errorName = error instanceof Error ? error.name : "UnknownError";
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     console.error("[Checkout] Order creation failed:", {
+      correlationId,
       category: errorCategory,
+      code: prismaCode ?? null,
       errorName,
       errorMessage,
       userId: session.user.id,
@@ -561,6 +586,30 @@ export async function createOrderAction(
       };
     }
 
+    if (isForeignConstraintViolation) {
+      return {
+        success: false,
+        error: "Account or checkout reference is invalid. Please refresh and try again.",
+        correlationId,
+      };
+    }
+
+    if (isTransactionTimeout) {
+      return {
+        success: false,
+        error: "Checkout timed out while securing items. Please try again.",
+        correlationId,
+      };
+    }
+
+    if (isOrderNumberConflict) {
+      return {
+        success: false,
+        error: "A temporary order reference conflict occurred. Please retry placing your order.",
+        correlationId,
+      };
+    }
+
     // Return safe message
     if (error instanceof Error) {
       if (error.message === "Empty cart") return { success: false, error: "Your cart is empty." };
@@ -576,6 +625,11 @@ export async function createOrderAction(
         return { success: false, error: error.message };
       }
     }
-    return { success: false, error: "An unexpected error occurred during order creation." };
+
+    return {
+      success: false,
+      error: "An unexpected error occurred during order creation.",
+      correlationId,
+    };
   }
 }
