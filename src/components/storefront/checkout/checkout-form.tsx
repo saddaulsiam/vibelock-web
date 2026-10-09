@@ -52,6 +52,9 @@ function getSafeCheckoutError(error: string | undefined) {
   ) {
     return error;
   }
+  if (error?.toLowerCase().includes("timed out") || error?.toLowerCase().includes("timeout")) {
+    return "Checkout timed out while securing items. Please try again.";
+  }
   return "We could not place your order. Please review your details and try again.";
 }
 

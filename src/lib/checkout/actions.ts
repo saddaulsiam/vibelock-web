@@ -14,6 +14,8 @@ import {
   validateCouponRules,
 } from "./coupons";
 import type { DiscountType } from "@prisma/client";
+import * as shippingPricing from "@/lib/shipping/pricing";
+import { InventoryService } from "@/lib/inventory/service";
 
 export async function validateCouponAction(code: string) {
   const session = await auth();
@@ -90,8 +92,7 @@ export async function getShippingMethodsAction(address: {
   }
 
   try {
-    const { getEligibleShippingMethods } = await import("@/lib/shipping/pricing");
-    const methods = await getEligibleShippingMethods({
+    const methods = await shippingPricing.getEligibleShippingMethods({
       country: address.country,
       city: address.city,
       state: address.state,
@@ -328,8 +329,6 @@ export async function createOrderAction(
       let shippingMethodName = "Standard Delivery";
       let resolvedShippingMethodId: string | null = null;
 
-      const shippingPricing = await import("@/lib/shipping/pricing");
-
       const isMockedShipping =
         typeof shippingPricing.calculateShippingCharge === "function" &&
         Boolean((shippingPricing.calculateShippingCharge as unknown as { mock?: unknown }).mock);
@@ -428,11 +427,10 @@ export async function createOrderAction(
         });
       }
 
-      const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-      await inventoryService.reserveInventoryForOrder(newOrder.id, tx);
+      await InventoryService.reserveInventoryForOrder(newOrder.id, tx);
 
       if (paymentMethod === "COD") {
-        await inventoryService.consumeReservation(newOrder.id, tx);
+        await InventoryService.consumeReservation(newOrder.id, tx);
       }
 
       // Clear the Cart only after authoritative order and inventory work succeeds.
@@ -442,6 +440,10 @@ export async function createOrderAction(
       // Assuming we keep the cart instance alive but empty for the user.
 
       return newOrder;
+    },
+    {
+      maxWait: 5000,
+      timeout: 15000,
     });
 
     const finalOrderNumber = orderResult.orderNumber;

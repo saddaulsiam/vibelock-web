@@ -78,11 +78,10 @@ export class InventoryService {
         variants.map((v: { sku: string; id: string }) => [v.sku, v.id])
       );
 
-      // 3. Lock variant rows to prevent concurrent oversell
+      // 3. Lock variant rows atomically to prevent concurrent oversell
       const variantIds = Array.from(skuToVariantId.values()).sort();
-      for (const vId of variantIds) {
-        // Postgres row-level lock
-        await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id = ${vId} FOR UPDATE`;
+      if (variantIds.length > 0) {
+        await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
       }
 
       // 4. Clear any existing active reservations for this order (idempotency)
@@ -97,18 +96,44 @@ export class InventoryService {
         },
       });
 
-      // 5. Validate and reserve each item
+      // 5. Pre-load real-time stock under row lock for all required variants in a single batched query
+      const lockedVariants = await tx.productVariant.findMany({
+        where: { id: { in: variantIds } },
+        include: {
+          inventoryTransactions: { select: { quantity: true } },
+          inventoryReservations: {
+            where: {
+              status: "RESERVED",
+              expiresAt: { gt: new Date() },
+            },
+            select: { quantity: true },
+          },
+        },
+      });
+
+      const variantStockMap = new Map<string, number>(
+        lockedVariants.map((v) => {
+          const totalStock = v.inventoryTransactions.reduce((sum, t) => sum + t.quantity, 0);
+          const reservedStock = v.inventoryReservations.reduce((sum, r) => sum + r.quantity, 0);
+          return [v.id, totalStock - reservedStock];
+        })
+      );
+
+      // 6. Validate and reserve each item
       for (const item of order.items) {
         const variantId = skuToVariantId.get(item.sku);
         if (!variantId) {
           throw new Error(`Variant with SKU ${item.sku} not found`);
         }
 
-        const available = await this.calculateAvailableQuantity(tx, variantId);
+        const available = variantStockMap.get(variantId) ?? 0;
 
         if (available < item.quantity) {
           throw new InsufficientInventoryError(`Variant ${item.sku} has insufficient stock.`);
         }
+
+        // Deduct from in-memory pool for any subsequent items sharing this variant
+        variantStockMap.set(variantId, available - item.quantity);
 
         // Create the reservation
         await tx.inventoryReservation.create({
@@ -120,9 +145,7 @@ export class InventoryService {
             expiresAt,
           },
         });
-
       }
-
     };
 
     if (customTx) {
@@ -155,27 +178,35 @@ export class InventoryService {
 
       const now = new Date();
 
-      for (const res of reservations) {
-        // 2. Mark reservation as COMMITTED
-        await tx.inventoryReservation.update({
-          where: { id: res.id },
-          data: {
-            status: "COMMITTED",
-            committedAt: now,
-          },
-        });
+      // 2. Mark reservations as COMMITTED in one batch
+      await tx.inventoryReservation.updateMany({
+        where: { id: { in: reservations.map((r) => r.id) } },
+        data: {
+          status: "COMMITTED",
+          committedAt: now,
+        },
+      });
 
-        // 3. Create negative InventoryTransaction
-        await tx.inventoryTransaction.create({
-          data: {
-            variantId: res.variantId,
-            type: "SALE",
-            quantity: -res.quantity,
-            referenceId: orderId,
-            notes: `Order ${orderId} fulfillment`,
-          },
-        });
+      // 3. Aggregate quantities per variant to respect @@unique([type, referenceId, variantId])
+      const quantityByVariant = new Map<string, number>();
+      for (const res of reservations) {
+        quantityByVariant.set(
+          res.variantId,
+          (quantityByVariant.get(res.variantId) ?? 0) + res.quantity
+        );
       }
+
+      // 4. Create negative InventoryTransactions in one batch
+      await tx.inventoryTransaction.createMany({
+        data: Array.from(quantityByVariant.entries()).map(([variantId, qty]) => ({
+          variantId,
+          type: "SALE",
+          quantity: -qty,
+          referenceId: orderId,
+          notes: `Order ${orderId} fulfillment`,
+        })),
+        skipDuplicates: true,
+      });
     };
 
     if (customTx) {
