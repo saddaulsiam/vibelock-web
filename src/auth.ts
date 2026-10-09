@@ -1,13 +1,15 @@
 import "server-only";
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth, { type DefaultSession, type NextAuthConfig } from "next-auth";
+import "next-auth/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
 import { Role } from "@prisma/client";
+import { compare } from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
-// Augment the default session and user types
+// Augment the default session, user, and token types
 declare module "next-auth" {
   interface Session {
     user: {
@@ -23,11 +25,19 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    role?: Role;
+    emailVerified?: Date | null;
+  }
+}
+
+export const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   secret: env.AUTH_SECRET,
   session: {
-    strategy: "database", // Database sessions are preferred when using the Prisma Adapter
+    strategy: "jwt",
   },
   callbacks: {
     async signIn() {
@@ -36,11 +46,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // If a user has a credentials account with the same email, they will be rejected with OAuthAccountNotLinked.
       return true;
     },
-    session({ session, user }) {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+        token.emailVerified = user.emailVerified;
+      }
+      return token;
+    },
+    async session({ session, token, user }) {
       if (session.user) {
-        session.user.id = user.id;
-        session.user.role = user.role;
-        session.user.emailVerified = user.emailVerified;
+        if (token) {
+          session.user.id = (token.id as string) || (token.sub as string);
+          session.user.role = (token.role as Role) || "CUSTOMER";
+          session.user.emailVerified = (token.emailVerified as Date | null) ?? null;
+        } else if (user) {
+          session.user.id = user.id;
+          session.user.role = user.role;
+          session.user.emailVerified = user.emailVerified;
+        }
       }
       return session;
     },
@@ -91,7 +115,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Compare password safely
-        const { compare } = await import("bcryptjs");
         const passwordsMatch = await compare(password, user.passwordHash);
 
         if (!passwordsMatch) {
@@ -109,4 +132,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-});
+};
+
+export const { handlers, signIn, signOut, auth } = NextAuth(authConfig);

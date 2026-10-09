@@ -37,6 +37,16 @@ export async function getActiveSessionsAction(): Promise<SessionInfo[]> {
       orderBy: { expires: "desc" },
     });
 
+    if (sessions.length === 0) {
+      return [
+        {
+          id: "current-session",
+          isCurrent: true,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      ];
+    }
+
     return sessions.map((s) => ({
       id: s.id,
       isCurrent: s.sessionToken === sessionTokenCookie,
