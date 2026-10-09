@@ -169,8 +169,7 @@ export async function resolveShippingMethod(
     return matched;
   }
 
-  // Default to the first eligible method (lowest cost or primary)
-  return eligibleMethods[0];
+  throw new ShippingPricingError("Please select a shipping method before placing your order.");
 }
 
 /**

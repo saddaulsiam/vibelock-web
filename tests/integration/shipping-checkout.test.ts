@@ -413,4 +413,212 @@ describe("Database-Configured Shipping Zones and Methods in Checkout", () => {
     createdOrderIds.push(order.id);
     expect(order.shippingCost.equals(new Prisma.Decimal("60.00"))).toBe(true);
   });
+
+  test("Rejects checkout when shipping method is omitted or empty (missing shipping selection)", async () => {
+    const { user, variant } = await setupTestUserAndCart("100.00", 1);
+
+    const zone = await createTestShippingZone({
+      name: "Inside Dhaka Standard",
+      countries: ["BD"],
+    });
+    createdZoneIds.push(zone.id);
+
+    await createTestShippingMethod({
+      zoneId: zone.id,
+      name: "Standard Delivery",
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+    });
+
+    const ordersCountBefore = await prisma.order.count();
+    const inventoryBefore = await prisma.inventoryTransaction.findMany({
+      where: { variantId: variant.id },
+    });
+
+    const payload = {
+      customerName: "No Method User",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Street",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: undefined, // Missing shipping selection
+    };
+
+    const result = await createOrderAction(payload, crypto.randomUUID());
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Please select a shipping method before placing your order.");
+
+    // Atomicity check: no order created, inventory untouched, cart intact
+    const ordersCountAfter = await prisma.order.count();
+    expect(ordersCountAfter).toBe(ordersCountBefore);
+
+    const inventoryAfter = await prisma.inventoryTransaction.findMany({
+      where: { variantId: variant.id },
+    });
+    expect(inventoryAfter).toHaveLength(inventoryBefore.length);
+
+    const cart = await prisma.cart.findUnique({
+      where: { userId: user.id },
+      include: { items: true },
+    });
+    expect(cart?.items).toHaveLength(1);
+  });
+
+  test("Rejects checkout when selected shipping method ID does not exist in the database", async () => {
+    const { user } = await setupTestUserAndCart("200.00", 1);
+
+    const nonExistentMethodId = crypto.randomUUID();
+    const payload = {
+      customerName: "Invalid Method User",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Street",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: nonExistentMethodId,
+    };
+
+    const result = await createOrderAction(payload, crypto.randomUUID());
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Selected shipping method does not exist.");
+
+    const orderCount = await prisma.order.count({
+      where: { customerEmail: user.email },
+    });
+    expect(orderCount).toBe(0);
+  });
+
+  test("Rejects checkout and preserves consistency when variant has insufficient stock", async () => {
+    const { user, variant } = await setupTestUserAndCart("150.00", 1);
+
+    const zone = await createTestShippingZone({
+      name: "Inside Dhaka Out-Of-Stock",
+      countries: ["BD"],
+    });
+    createdZoneIds.push(zone.id);
+
+    const method = await createTestShippingMethod({
+      zoneId: zone.id,
+      name: "Standard Delivery",
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+    });
+
+    // Artificially deplete stock right before checkout
+    await prisma.inventoryTransaction.create({
+      data: {
+        variantId: variant.id,
+        type: "ADJUSTMENT",
+        quantity: -10, // Deplete all available stock
+        referenceId: "stock-depletion-test",
+      },
+    });
+
+    const payload = {
+      customerName: "Stock Test User",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Street",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: method.id,
+    };
+
+    const result = await createOrderAction(payload, crypto.randomUUID());
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/some items no longer have enough stock/i);
+
+    // Atomicity check: no partial order created, no SALE transactions created
+    const orderCount = await prisma.order.count({
+      where: { customerEmail: user.email },
+    });
+    expect(orderCount).toBe(0);
+
+    const saleTxCount = await prisma.inventoryTransaction.count({
+      where: { variantId: variant.id, type: "SALE" },
+    });
+    expect(saleTxCount).toBe(0);
+  });
+
+  test("Successfully creates COD order with verified inventory deduction and cart clearance", async () => {
+    const { user, variant } = await setupTestUserAndCart("300.00", 2);
+
+    const zone = await createTestShippingZone({
+      name: "Inside Dhaka Successful COD",
+      countries: ["BD"],
+    });
+    createdZoneIds.push(zone.id);
+
+    const method = await createTestShippingMethod({
+      zoneId: zone.id,
+      name: "Standard Delivery",
+      cost: new Prisma.Decimal("60.00"),
+      isActive: true,
+    });
+
+    const initialStock = 10;
+    const purchasedQuantity = 2;
+
+    const payload = {
+      customerName: "Happy Customer",
+      customerEmail: user.email,
+      customerPhone: "01711112222",
+      shippingStreet: "123 Success Way",
+      shippingCity: "Dhaka",
+      shippingCountry: "BD",
+      paymentMethod: "COD" as const,
+      shippingMethodId: method.id,
+    };
+
+    const result = await createOrderAction(payload, crypto.randomUUID());
+    expect(result.success).toBe(true);
+    expect(result.orderNumber).toBeDefined();
+
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { orderNumber: result.orderNumber! },
+      include: { items: true },
+    });
+    createdOrderIds.push(order.id);
+
+    // Verify order fields
+    expect(order.status).toBe("PENDING");
+    expect(order.paymentStatus).toBe("PENDING");
+    expect(order.paymentMethod).toBe("COD");
+    expect(order.shippingMethodName).toBe("Standard Delivery");
+    expect(order.shippingMethodId).toBe(method.id);
+    expect(order.shippingCost.equals(new Prisma.Decimal("60.00"))).toBe(true);
+    expect(order.subtotal.equals(new Prisma.Decimal("600.00"))).toBe(true);
+    expect(order.total.equals(new Prisma.Decimal("660.00"))).toBe(true);
+    expect(order.items).toHaveLength(1);
+    expect(order.items[0].quantity).toBe(purchasedQuantity);
+
+    // Verify inventory SALE transaction
+    const saleTx = await prisma.inventoryTransaction.findFirst({
+      where: {
+        variantId: variant.id,
+        referenceId: order.id,
+        type: "SALE",
+      },
+    });
+    expect(saleTx).not.toBeNull();
+    expect(saleTx!.quantity).toBe(-purchasedQuantity);
+
+    // Verify available stock decreased by purchased quantity
+    const remainingTransactions = await prisma.inventoryTransaction.findMany({
+      where: { variantId: variant.id },
+    });
+    const currentTotalStock = remainingTransactions.reduce((acc, t) => acc + t.quantity, 0);
+    expect(currentTotalStock).toBe(initialStock - purchasedQuantity);
+
+    // Verify cart cleared
+    const cart = await prisma.cart.findUnique({
+      where: { userId: user.id },
+      include: { items: true },
+    });
+    expect(cart?.items).toHaveLength(0);
+  });
 });

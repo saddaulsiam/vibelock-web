@@ -481,16 +481,62 @@ export async function createOrderAction(
 
     return { success: true, orderNumber: finalOrderNumber };
   } catch (error: unknown) {
-    // Check for Prisma's unique constraint violation error (P2002)
-    if (
+    const isInsufficientStock =
+      (typeof error === "object" &&
+        error !== null &&
+        "name" in error &&
+        (error as { name: string }).name === "InsufficientInventoryError") ||
+      (error instanceof Error &&
+        (error.message === "Insufficient stock" ||
+          error.message.toLowerCase().includes("insufficient stock")));
+
+    const isShippingError =
+      typeof error === "object" &&
+      error !== null &&
+      "name" in error &&
+      (error as { name: string }).name === "ShippingPricingError";
+
+    const isCouponError = error instanceof CouponError;
+
+    const isIdempotencyConflict =
       typeof error === "object" &&
       error !== null &&
       "code" in error &&
       (error as { code: string }).code === "P2002" &&
       "meta" in error &&
       typeof (error as { meta: Record<string, unknown> }).meta === "object" &&
-      (error as { meta: { target?: string[] } }).meta?.target?.includes("checkoutIdempotencyKey")
-    ) {
+      (error as { meta: { target?: string[] } }).meta?.target?.includes("checkoutIdempotencyKey");
+
+    // Structured server-side diagnostic logging (sanitized, non-sensitive)
+    const errorCategory = isIdempotencyConflict
+      ? "IDEMPOTENCY_CONFLICT"
+      : isCouponError
+        ? "COUPON_ERROR"
+        : isShippingError
+          ? "SHIPPING_ERROR"
+          : isInsufficientStock
+            ? "INVENTORY_ERROR"
+            : "ORDER_CREATION_FAILED";
+
+    const errorName = error instanceof Error ? error.name : "UnknownError";
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    console.error("[Checkout] Order creation failed:", {
+      category: errorCategory,
+      errorName,
+      errorMessage,
+      userId: session.user.id,
+      orderNumber,
+      paymentMethod,
+      hasCoupon: Boolean(couponCode),
+      shippingMethodId: shippingMethodId ?? null,
+      shippingCity,
+      shippingCountry,
+      cartItemCount: cart.items.length,
+    });
+
+    // Check for Prisma's unique constraint violation error (P2002)
+    if (isIdempotencyConflict) {
       // Hit unique constraint -> race condition won -> order already exists
       const existingOrder = await prisma.order.findUnique({
         where: { checkoutIdempotencyKey: idempotencyKey },
@@ -500,24 +546,24 @@ export async function createOrderAction(
       }
     }
 
-    if (error instanceof CouponError) {
-      return { success: false, error: error.message };
+    if (isCouponError) {
+      return { success: false, error: (error as Error).message };
     }
 
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "name" in error &&
-      (error as { name: string }).name === "ShippingPricingError"
-    ) {
+    if (isShippingError) {
       return { success: false, error: (error as Error).message };
+    }
+
+    if (isInsufficientStock) {
+      return {
+        success: false,
+        error: "Some items no longer have enough stock. Please adjust your cart.",
+      };
     }
 
     // Return safe message
     if (error instanceof Error) {
       if (error.message === "Empty cart") return { success: false, error: "Your cart is empty." };
-      if (error.message === "Insufficient stock")
-        return { success: false, error: "Some items no longer have enough stock." };
       if (error.message === "Item unavailable")
         return { success: false, error: "One or more items are no longer available." };
       if (

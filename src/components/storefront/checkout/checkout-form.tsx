@@ -233,6 +233,15 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
     if (isSubmitting.current) return;
     setSubmissionError(null);
 
+    if (!selectedShippingMethodId || shippingMethods.length === 0) {
+      const msg =
+        shippingLookupError || "Please select an eligible shipping method before placing your order.";
+      setErrors((prev) => ({ ...prev, shippingMethodId: msg }));
+      setSubmissionError(msg);
+      toast.error(msg);
+      return;
+    }
+
     const submissionData = {
       ...formData,
       shippingMethodId: selectedShippingMethodId || undefined,
@@ -704,12 +713,23 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
           <button
             type="submit"
             form="checkout-form"
-            disabled={isPending}
+            disabled={isPending || isLoadingShipping || !selectedShippingMethodId || shippingMethods.length === 0}
             className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
-            {isPending ? "Placing order" : "Place order"}
+            {isPending
+              ? "Placing order"
+              : isLoadingShipping
+                ? "Calculating shipping..."
+                : !selectedShippingMethodId
+                  ? "Select a shipping method"
+                  : "Place order"}
           </button>
+          {!selectedShippingMethodId && !isLoadingShipping && (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Please enter your delivery city and select a shipping method above to place your order.
+            </p>
+          )}
         </div>
       </aside>
     </div>
