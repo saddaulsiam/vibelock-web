@@ -34,6 +34,10 @@ vi.mock("next/cache", () => ({
   updateTag: vi.fn(),
 }));
 
+vi.mock("../../src/lib/shipping/pricing", () => ({
+  calculateShippingCharge: vi.fn(() => 50),
+}));
+
 vi.mock("../../src/lib/config/env", () => ({
   env: {
     SSLCOMMERZ_STORE_ID: "test_store",
