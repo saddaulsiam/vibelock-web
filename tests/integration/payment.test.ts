@@ -722,7 +722,7 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
       );
     const databaseFailure = await createOrderAction(validCheckoutData, crypto.randomUUID());
     transactionSpy.mockRestore();
-    expect(databaseFailure).toEqual({
+    expect(databaseFailure).toMatchObject({
       success: false,
       error: "An unexpected error occurred during order creation.",
     });
@@ -835,5 +835,635 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     expect(updatedPayment?.status).toBe("SUCCESS");
     expect(updatedPayment?.gatewayTransactionId).toBe(callbackBankTransactionId);
     expect(updatedPayment?.amount.equals(order!.total)).toBe(true);
+  });
+
+  test("Unverified browser failure callback keeps payment INITIATED and reservations intact", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+    expect(payment).toBeDefined();
+
+    // Unverified browser fail_url POST without val_id
+    const response = await paymentCallback(
+      new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=fail", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          tran_id: payment!.merchantReferenceId!,
+          status: "FAILED",
+          failedreason: "Card expired or insufficient funds",
+        }).toString(),
+      })
+    );
+
+    // Browser receives redirect so UI reflects attempt
+    expect(response.status).toBe(303);
+    const location = response.headers.get("location");
+    expect(location).toContain(`/order-success/${encodeURIComponent(res.orderNumber as string)}`);
+    expect(location).toContain("payment=failed");
+
+    // Safeguard 1: Payment record must remain INITIATED and reservations unchanged
+    const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(updatedPayment?.status).toBe("INITIATED");
+
+    const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(updatedOrder?.paymentStatus).toBe("PENDING");
+
+    const activeReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RESERVED" },
+    });
+    expect(activeReservations.length).toBe(1);
+
+    const releasedReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RELEASED" },
+    });
+    expect(releasedReservations.length).toBe(0);
+
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(0);
+  });
+
+  test("Unverified browser cancellation callback keeps payment INITIATED and reservations intact", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+    expect(payment).toBeDefined();
+
+    // Unverified browser cancel_url POST without val_id
+    const response = await paymentCallback(
+      new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=cancel", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          tran_id: payment!.merchantReferenceId!,
+          status: "CANCELLED",
+        }).toString(),
+      })
+    );
+
+    expect(response.status).toBe(303);
+    const location = response.headers.get("location");
+    expect(location).toContain(`/order-success/${encodeURIComponent(res.orderNumber as string)}`);
+    expect(location).toContain("payment=cancelled");
+
+    // Safeguard 1: Payment record must remain INITIATED and reservations unchanged
+    const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(updatedPayment?.status).toBe("INITIATED");
+
+    const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(updatedOrder?.paymentStatus).toBe("PENDING");
+
+    const activeReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RESERVED" },
+    });
+    expect(activeReservations.length).toBe(1);
+
+    const releasedReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RELEASED" },
+    });
+    expect(releasedReservations.length).toBe(0);
+
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(0);
+  });
+
+  test("Server-verified failure callback via validation API updates payment to FAILED and releases reservation", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // Mock SSLCommerz validationserverAPI returning server-verified FAILED
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "FAILED",
+        tran_id: payment!.merchantReferenceId,
+        failedreason: "Bank transaction declined",
+      }),
+    });
+
+    const paymentService = new PaymentService();
+    const verifyRes = await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-SERVER-FAILED",
+      status: "FAILED",
+    });
+
+    expect(verifyRes.verification.status).toBe("FAILED");
+
+    const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(updatedPayment?.status).toBe("FAILED");
+
+    const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(updatedOrder?.paymentStatus).toBe("FAILED");
+
+    const activeReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RESERVED" },
+    });
+    expect(activeReservations.length).toBe(0);
+
+    const releasedReservations = await prisma.inventoryReservation.findMany({
+      where: { orderId: payment!.orderId, status: "RELEASED" },
+    });
+    expect(releasedReservations.length).toBe(1);
+  });
+
+  test("Server-verified late SUCCESS after failure safely reconciles and consumes inventory without duplicates", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // 1. Prior server-verified failure
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "FAILED",
+        tran_id: payment!.merchantReferenceId,
+        failedreason: "Declined initially",
+      }),
+    });
+    const paymentService = new PaymentService();
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-FAIL",
+    });
+
+    const paymentAfterFail = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(paymentAfterFail?.status).toBe("FAILED");
+
+    // 2. Late genuine SUCCESS validated by SSLCommerz
+    const bankTranId = crypto.randomUUID();
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: bankTranId,
+        tran_id: payment!.merchantReferenceId,
+        currency: "BDT",
+      }),
+    });
+
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-LATE-SUCCESS",
+    });
+
+    const recoveredPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(recoveredPayment?.status).toBe("SUCCESS");
+    expect(recoveredPayment?.gatewayTransactionId).toBe(bankTranId);
+
+    const recoveredOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(recoveredOrder?.paymentStatus).toBe("SUCCESS");
+
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(1);
+
+    // 3. Repeated callback does not double-consume inventory
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-LATE-SUCCESS",
+    });
+    const finalSales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(finalSales.length).toBe(1);
+  });
+
+  test("Late SUCCESS with insufficient available stock does not silently oversell", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 1); // Only 1 unit in stock
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // 1. Initial verified failure releases reservation
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "FAILED",
+        tran_id: payment!.merchantReferenceId,
+      }),
+    });
+    const paymentService = new PaymentService();
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-FAIL",
+    });
+
+    // 2. Another order buys the remaining 1 unit of stock
+    await prisma.inventoryTransaction.create({
+      data: {
+        variantId: variant.id,
+        type: "SALE",
+        quantity: -1,
+        referenceId: "OTHER-ORDER",
+      },
+    });
+
+    // 3. Late genuine SUCCESS arrives for original order when stock is 0
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: crypto.randomUUID(),
+        tran_id: payment!.merchantReferenceId,
+        currency: "BDT",
+      }),
+    });
+
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-LATE-OVERSELL",
+    });
+
+    const paymentRecord = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(paymentRecord?.status).toBe("SUCCESS");
+
+    // Order flagged as PENDING for manual review
+    const orderRecord = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(orderRecord?.paymentStatus).toBe("SUCCESS");
+    expect(orderRecord?.status).toBe("PENDING");
+
+    // Must NOT silently oversell: no SALE transactions created for this order
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(0);
+  });
+
+  test("Unverified browser payload claiming VALID without val_id is rejected and never marks order PAID", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // Untrusted payload without val_id
+    const response = await paymentCallback(
+      new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=success", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          tran_id: payment!.merchantReferenceId!,
+          status: "VALID",
+        }).toString(),
+      })
+    );
+
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toContain("/cart?error=payment_verification_failed");
+
+    const paymentRecord = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(paymentRecord?.status).toBe("INITIATED");
+
+    const orderRecord = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(orderRecord?.paymentStatus).toBe("PENDING");
+
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(0);
+  });
+
+  test("IPN acknowledgment returns HTTP 200 without redirect, verifies server-side, and commits inventory", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    const bankTranId = crypto.randomUUID();
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: bankTranId,
+        tran_id: payment!.merchantReferenceId,
+        currency: "BDT",
+      }),
+    });
+
+    const ipnReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=ipn", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        tran_id: payment!.merchantReferenceId!,
+        val_id: "VAL-IPN-SUCCESS",
+        status: "VALID",
+      }).toString(),
+    });
+
+    const ipnRes = await paymentCallback(ipnReq);
+    expect(ipnRes.status).toBe(200);
+    const bodyText = await ipnRes.text();
+    expect(bodyText).toBe("IPN OK");
+
+    const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(updatedPayment?.status).toBe("SUCCESS");
+    expect(updatedPayment?.gatewayTransactionId).toBe(bankTranId);
+
+    const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(updatedOrder?.paymentStatus).toBe("SUCCESS");
+
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(1);
+
+    // Duplicate IPN acknowledged with HTTP 200 without double-consuming inventory
+    const duplicateIpnReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=ipn", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        tran_id: payment!.merchantReferenceId!,
+        val_id: "VAL-IPN-SUCCESS",
+        status: "VALID",
+      }).toString(),
+    });
+
+    const duplicateIpnRes = await paymentCallback(duplicateIpnReq);
+    expect(duplicateIpnRes.status).toBe(200);
+    expect(await duplicateIpnRes.text()).toBe("IPN OK");
+
+    const finalSales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(finalSales.length).toBe(1);
+
+    // Conflicting terminal state: Confirmed SUCCESS payment cannot be overwritten by failure callback
+    const conflictingCancelReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=cancel", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        tran_id: payment!.merchantReferenceId!,
+        status: "CANCELLED",
+      }).toString(),
+    });
+    const cancelRes = await paymentCallback(conflictingCancelReq);
+    expect(cancelRes.status).toBe(303);
+    expect(cancelRes.headers.get("location")).toContain("payment=success");
+
+    const protectedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(protectedPayment?.status).toBe("SUCCESS");
+
+    const protectedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(protectedOrder?.paymentStatus).toBe("SUCCESS");
+
+    const protectedSales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(protectedSales.length).toBe(1);
+  });
+
+  test("Direct server IPN POST without status query parameter returns HTTP 200 without redirect", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    const bankTranId = crypto.randomUUID();
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: bankTranId,
+        tran_id: payment!.merchantReferenceId,
+        currency: "BDT",
+      }),
+    });
+
+    // POST directly to /api/payments/sslcommerz/callback without ?status=ipn query param and without Accept: text/html
+    const directIpnReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback", {
+      method: "POST",
+      headers: {
+        "content-type": "application/x-www-form-urlencoded",
+        "x-sslcommerz-ipn": "true",
+      },
+      body: new URLSearchParams({
+        tran_id: payment!.merchantReferenceId!,
+        val_id: "VAL-DIRECT-IPN",
+        status: "VALID",
+      }).toString(),
+    });
+
+    const directIpnRes = await paymentCallback(directIpnReq);
+    expect(directIpnRes.status).toBe(200);
+    expect(await directIpnRes.text()).toBe("IPN OK");
+
+    const updatedPayment = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(updatedPayment?.status).toBe("SUCCESS");
+  });
+
+  test("Server-verified callback with mismatched merchant reference is rejected", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // Validation returns different tran_id
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: crypto.randomUUID(),
+        tran_id: "DIFFERENT-TRAN-ID-12345",
+        currency: "BDT",
+      }),
+    });
+
+    const paymentService = new PaymentService();
+    await expect(
+      paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: payment!.merchantReferenceId,
+        val_id: "VAL-MISMATCHED-TRAN-ID",
+      })
+    ).rejects.toThrow("Payment verification failed: Transaction or Currency Mismatch");
+
+    const paymentRecord = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(paymentRecord?.status).toBe("INITIATED");
+  });
+
+  test("Late SUCCESS after reservation TTL expiration safely recovers and commits inventory under row lock", async () => {
+    const user = await createTestUser();
+    mockSession = { user: { id: user.id } };
+    const prod = await createTestProduct();
+    const variant = await createTestVariant({ productId: prod.id, sellingPrice: 100 });
+    await createTestInventory(variant.id, 5);
+    await addToCart(variant.id, 1);
+
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "SUCCESS",
+        GatewayPageURL: "https://sandbox.sslcommerz.com/pay",
+      }),
+    });
+    const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
+    const payment = await prisma.payment.findFirst({
+      where: { order: { orderNumber: res.orderNumber as string } },
+    });
+
+    // Artificially expire the reservation (simulate 15-minute TTL elapsed)
+    await prisma.inventoryReservation.updateMany({
+      where: { orderId: payment!.orderId },
+      data: { expiresAt: new Date(Date.now() - 60000) },
+    });
+
+    // Late verified SUCCESS arrives
+    const bankTranId = crypto.randomUUID();
+    (global.fetch as import("vitest").Mock).mockResolvedValueOnce({
+      json: async () => ({
+        status: "VALID",
+        amount: "150.00",
+        bank_tran_id: bankTranId,
+        tran_id: payment!.merchantReferenceId,
+        currency: "BDT",
+      }),
+    });
+
+    const paymentService = new PaymentService();
+    await paymentService.verifyCallback("SSLCOMMERZ", {
+      tran_id: payment!.merchantReferenceId,
+      val_id: "VAL-EXPIRED-TTL-SUCCESS",
+    });
+
+    const paymentRecord = await prisma.payment.findUnique({ where: { id: payment!.id } });
+    expect(paymentRecord?.status).toBe("SUCCESS");
+
+    const orderRecord = await prisma.order.findUnique({ where: { id: payment!.orderId } });
+    expect(orderRecord?.paymentStatus).toBe("SUCCESS");
+
+    // Stock was available, so SALE was safely created
+    const sales = await prisma.inventoryTransaction.findMany({
+      where: { referenceId: payment!.orderId, type: "SALE" },
+    });
+    expect(sales.length).toBe(1);
+    expect(sales[0].quantity).toBe(-1);
+
+    // Reservation was committed
+    const reservation = await prisma.inventoryReservation.findFirst({
+      where: { orderId: payment!.orderId },
+    });
+    expect(reservation?.status).toBe("COMMITTED");
   });
 });

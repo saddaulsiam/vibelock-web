@@ -31,6 +31,7 @@ export interface PaymentVerificationResult {
   verifiedCurrency?: string;
   rawPayload?: unknown;
   error?: string;
+  isUnverified?: boolean;
 }
 
 export interface RefundInitiationRequest {

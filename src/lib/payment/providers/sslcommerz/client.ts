@@ -86,17 +86,46 @@ export class SSLCommerzProvider implements PaymentProvider {
     }
 
     const { val_id } = callbackPayload as { val_id?: string };
+    const rawStatus = typeof callbackPayload.status === "string" ? callbackPayload.status.toUpperCase() : "";
 
+    // 1. Explicit cancellation reported by gateway without val_id (browser cancel_url callback)
+    // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
+    if (!val_id && (rawStatus === "CANCELLED" || rawStatus === "CANCEL")) {
+      return {
+        success: false,
+        status: "CANCELLED",
+        isUnverified: true,
+        verifiedMerchantReferenceId: typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
+        error: "Unverified browser cancellation callback",
+        rawPayload: callbackPayload,
+      };
+    }
+
+    // 2. Explicit failure reported by gateway without val_id (browser fail_url callback)
+    // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
+    if (!val_id && (rawStatus === "FAILED" || rawStatus === "FAIL" || rawStatus === "UNATTEMPTED" || rawStatus === "EXPIRED")) {
+      return {
+        success: false,
+        status: "FAILED",
+        isUnverified: true,
+        verifiedMerchantReferenceId: typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
+        error: (callbackPayload.failedreason as string) || (callbackPayload.error as string) || "Unverified browser failure callback",
+        rawPayload: callbackPayload,
+      };
+    }
+
+    // 3. For any transaction claiming success / validation, val_id is strictly required
     if (!val_id) {
       return {
         success: false,
         status: "FAILED",
+        isUnverified: false,
         error: "Missing val_id for server-side verification",
         rawPayload: callbackPayload,
       };
     }
 
-    // Verify with validation API
+    // Verify with SSLCommerz server-side validation API
     try {
       const url = new URL(`${this.baseUrl}/validator/api/validationserverAPI.php`);
       url.searchParams.append("val_id", val_id);
@@ -119,6 +148,7 @@ export class SSLCommerzProvider implements PaymentProvider {
           return {
             success: false,
             status: "FAILED",
+            isUnverified: false,
             error: "Incomplete validation response from SSLCommerz",
             rawPayload: result,
           };
@@ -132,6 +162,24 @@ export class SSLCommerzProvider implements PaymentProvider {
           verifiedAmount: amount,
           verifiedCurrency: currency,
           rawPayload: result,
+          isUnverified: false,
+        };
+      } else if (result.status === "FAILED") {
+        return {
+          success: true,
+          status: "FAILED",
+          verifiedMerchantReferenceId: result.tran_id,
+          error: (result.failedreason as string) || "Payment failed on SSLCommerz server",
+          rawPayload: result,
+          isUnverified: false,
+        };
+      } else if (result.status === "CANCELLED") {
+        return {
+          success: true,
+          status: "CANCELLED",
+          verifiedMerchantReferenceId: result.tran_id,
+          rawPayload: result,
+          isUnverified: false,
         };
       } else {
         return {
@@ -139,11 +187,12 @@ export class SSLCommerzProvider implements PaymentProvider {
           status: "FAILED",
           error: "Verification failed on SSLCommerz server",
           rawPayload: result,
+          isUnverified: false,
         };
       }
     } catch {
       console.error("[SSLCommerz] Payment verification request failed");
-      return { success: false, status: "FAILED", error: "Verification request failed" };
+      return { success: false, status: "FAILED", isUnverified: false, error: "Verification request failed" };
     }
   }
 
