@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BarChart3, RefreshCw } from "lucide-react";
+import { BarChart3, CreditCard, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ReportCharts } from "@/components/admin/report-charts";
@@ -55,7 +55,7 @@ export default async function AdminReportsPage({
           <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight"><BarChart3 className="size-7 text-[#00a8c6]" /> Reports &amp; Profitability</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Track sales, returns, inventory cost and profitability.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2"><Badge variant="outline">Data: {dateLabel(report.start)} – {dateLabel(new Date(report.end.getTime() - 1))}</Badge><a href={buildHref({})} className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:bg-muted"><RefreshCw className="size-4" /> Refresh</a><ReportExportMenu query={new URLSearchParams({ range, ...(from ? { from } : {}), ...(to ? { to } : {}), ...(value("sort") ? { sort: value("sort")! } : {}), ...(value("q") ? { q: value("q")! } : {}) }).toString()} /></div>
+        <div className="flex flex-wrap items-center gap-2"><Link href={`/admin/reports/reconciliation?${new URLSearchParams({ range, ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`} className="inline-flex h-10 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium hover:bg-muted text-[#101114]"><CreditCard className="size-4 text-[#00a8c6]" /> Cash Reconciliation</Link><Badge variant="outline">Data: {dateLabel(report.start)} – {dateLabel(new Date(report.end.getTime() - 1))}</Badge><a href={buildHref({})} className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:bg-muted"><RefreshCw className="size-4" /> Refresh</a><ReportExportMenu query={new URLSearchParams({ range, ...(from ? { from } : {}), ...(to ? { to } : {}), ...(value("sort") ? { sort: value("sort")! } : {}), ...(value("q") ? { q: value("q")! } : {}) }).toString()} /></div>
       </header>
 
       <form className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto]">
