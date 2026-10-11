@@ -25,7 +25,25 @@ export async function GET(request: NextRequest) {
     const currentFilters = filters(request);
     let rows: unknown[][] = [];
     if (type === "sales") rows = [["Date", "Orders", "Gross Sales", "Discounts", "Net Sales", "Refunds", "COGS", "Gross Profit"], ...report.trend.map((row) => [date(row.date), row.orders, row.grossSales, row.discounts, row.netSales, row.refunds, row.cogs, row.grossProfit])];
-    else if (type === "products") rows = [["Product", "SKU", "Units Sold", "Gross Sales", "Discounts", "Net Sales", "Returned Units", "COGS", "Gross Profit", "Margin"], ...report.products.map((row) => [row.productName, row.sku, row.units, row.grossSales, row.discounts, row.netSales, row.returnedUnits, row.cogs, row.profit, row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`])];
+    else if (type === "products") {
+      rows = [
+        ["Product", "SKU", "Sold Units", "Returned Units", "Net Units", "Return Rate", "Gross Sales", "Discounts", "Net Sales", "COGS", "Gross Profit", "Margin"],
+        ...report.products.map((row) => [
+          row.productName,
+          row.sku,
+          row.soldUnits,
+          row.returnedUnits,
+          row.netUnits,
+          row.returnRate === null ? "—" : `${row.returnRate.toFixed(2)}%`,
+          row.grossSales,
+          row.discounts,
+          row.netSales,
+          row.cogs,
+          row.profit,
+          row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`,
+        ]),
+      ];
+    }
     else if (type === "orders") {
       const firstPage = await getAdminOrderProfitability({ ...currentFilters, page: 1 });
       const allOrders = [...firstPage.orders];
