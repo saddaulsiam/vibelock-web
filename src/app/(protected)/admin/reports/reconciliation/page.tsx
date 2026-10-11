@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Form from "next/form";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -114,7 +115,10 @@ export default async function AdminReconciliationPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
-  const value = (key: string) => (typeof params[key] === "string" ? params[key] : undefined);
+  const value = (key: string) => {
+    const val = params[key];
+    return typeof val === "string" && val.trim() !== "" ? val.trim() : undefined;
+  };
   const range = value("range") ?? "30d";
   const from = value("from");
   const to = value("to");
@@ -131,7 +135,7 @@ export default async function AdminReconciliationPage({
       range,
       from,
       to,
-      classification: value("classification"),
+      classification,
       q: search,
       page: value("page"),
       ...updates,
@@ -189,7 +193,10 @@ export default async function AdminReconciliationPage({
       </header>
 
       {/* Filter Form */}
-      <form className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]">
+      <Form
+        action="/admin/reports/reconciliation"
+        className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]"
+      >
         <label className="text-sm font-medium">
           Cohort Period
           <select
@@ -216,7 +223,7 @@ export default async function AdminReconciliationPage({
           Classification
           <select
             name="classification"
-            defaultValue={value("classification") ?? "all"}
+            defaultValue={classification ?? "all"}
             className="mt-2 h-10 w-full border border-input bg-background px-3 text-sm lg:w-56"
           >
             {classificationOptions.map(([k, label]) => (
@@ -226,6 +233,7 @@ export default async function AdminReconciliationPage({
             ))}
           </select>
         </label>
+        {search ? <input type="hidden" name="q" value={search} /> : null}
         <button
           className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85"
           type="submit"
@@ -235,7 +243,7 @@ export default async function AdminReconciliationPage({
         <p className="text-xs text-muted-foreground col-span-full">
           Date filters select orders placed within the window to reconcile their complete lifecycle (gateway captures, refunds, and courier deliveries).
         </p>
-      </form>
+      </Form>
 
       {/* Primary Settlement Status Cards */}
       <section className="space-y-3">
@@ -415,18 +423,18 @@ export default async function AdminReconciliationPage({
               Showing {orders.length} of {totalOrders} orders matching active filters.
             </p>
           </div>
-          <form className="flex gap-2">
+          <Form action="/admin/reports/reconciliation" className="flex gap-2">
             <Input
               name="q"
               defaultValue={search}
               placeholder="Search order #, customer, or email"
               className="w-64"
             />
-            <input type="hidden" name="range" value={range} />
-            <input type="hidden" name="from" value={from ?? ""} />
-            <input type="hidden" name="to" value={to ?? ""} />
-            {value("classification") ? (
-              <input type="hidden" name="classification" value={value("classification")!} />
+            {range ? <input type="hidden" name="range" value={range} /> : null}
+            {from ? <input type="hidden" name="from" value={from} /> : null}
+            {to ? <input type="hidden" name="to" value={to} /> : null}
+            {classification ? (
+              <input type="hidden" name="classification" value={classification} />
             ) : null}
             <button
               className="border border-input px-3 text-sm font-medium hover:bg-muted"
@@ -434,7 +442,7 @@ export default async function AdminReconciliationPage({
             >
               Search
             </button>
-          </form>
+          </Form>
         </div>
 
         <div className="overflow-x-auto">
