@@ -153,6 +153,76 @@ describe("admin reconciliation", () => {
     });
     expect(c8.classification).toBe("ANOMALY");
     expect(c8.anomalyReason).toContain("marked SUCCESS in status without recorded payment");
+
+    // 9. Online Anomaly (marked SUCCESS in status without recorded payment)
+    const c9 = classifyOrder({
+      paymentMethod: "ONLINE",
+      orderStatus: "PROCESSING",
+      paymentStatus: "SUCCESS",
+      successfulPaymentTotal: 0,
+      successfulRefundTotal: 0,
+      shipmentStatus: null,
+      shipmentId: null,
+    });
+    expect(c9.classification).toBe("ANOMALY");
+    expect(c9.anomalyReason).toContain(
+      "Online order is marked SUCCESS in status without recorded payment transaction"
+    );
+
+    // 10. Online Anomaly (Delivered and marked SUCCESS in status, but no payment record)
+    const c10 = classifyOrder({
+      paymentMethod: "ONLINE",
+      orderStatus: "DELIVERED",
+      paymentStatus: "SUCCESS",
+      successfulPaymentTotal: 0,
+      successfulRefundTotal: 0,
+      shipmentStatus: "DELIVERED",
+      shipmentId: "ship-7",
+    });
+    expect(c10.classification).toBe("ANOMALY");
+
+    // 11. COD Anomaly (COD order with recorded online payment)
+    const c11 = classifyOrder({
+      paymentMethod: "COD",
+      orderStatus: "DELIVERED",
+      paymentStatus: "SUCCESS",
+      successfulPaymentTotal: 1000,
+      successfulRefundTotal: 0,
+      shipmentStatus: "DELIVERED",
+      shipmentId: "ship-8",
+    });
+    expect(c11.classification).toBe("ANOMALY");
+    expect(c11.anomalyReason).toContain(
+      "Order paymentMethod is COD but has recorded successful online payment"
+    );
+
+    // 12. Online Overpayment Anomaly (successful payment exceeds billed total by > ৳0.01)
+    const c12 = classifyOrder({
+      paymentMethod: "ONLINE",
+      orderStatus: "PROCESSING",
+      paymentStatus: "SUCCESS",
+      successfulPaymentTotal: 1050,
+      successfulRefundTotal: 0,
+      shipmentStatus: null,
+      shipmentId: null,
+      billedTotal: 1000,
+    });
+    expect(c12.classification).toBe("ANOMALY");
+    expect(c12.label).toBe("Gateway Overpayment Captured");
+    expect(c12.anomalyReason).toContain("Captured payments");
+
+    // 13. Online Payment within ৳0.01 tolerance (not an anomaly)
+    const c13 = classifyOrder({
+      paymentMethod: "ONLINE",
+      orderStatus: "PROCESSING",
+      paymentStatus: "SUCCESS",
+      successfulPaymentTotal: 1000.01,
+      successfulRefundTotal: 0,
+      shipmentStatus: null,
+      shipmentId: null,
+      billedTotal: 1000,
+    });
+    expect(c13.classification).toBe("ONLINE_SETTLED");
   });
 
   test("aggregates mutually exclusive buckets and preserves order conservation without Cartesian multiplication", async () => {
@@ -573,4 +643,190 @@ describe("admin reconciliation", () => {
     expect(page2.orders.length).toBe(1);
     expect(page2.orders[0].id).not.toBe(page1.orders[0].id);
   }, 25000);
+
+  test("identifies anomalies for online marked SUCCESS without payments, COD with online payments, and overpayments", async () => {
+    const adminUser = await prisma.user.create({
+      data: { email: `admin-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(adminUser.id);
+    mockSession = { user: { id: adminUser.id, role: "ADMIN" } };
+
+    const futureDate = new Date("2099-05-20T10:00:00.000Z");
+
+    // 1. Online order marked SUCCESS without payment transaction (Anomaly)
+    const oOnlineNoPay = await prisma.order.create({
+      data: {
+        orderNumber: `REC-NOPAY-${crypto.randomUUID()}`,
+        createdAt: futureDate,
+        userId: adminUser.id,
+        status: "PROCESSING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: "nopay@example.com",
+        taxRate: new Prisma.Decimal(0),
+        taxAmount: new Prisma.Decimal(0),
+        shippingCost: new Prisma.Decimal(100),
+        subtotal: new Prisma.Decimal(900),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(1000),
+        shippingStreet: "Street 7",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+      },
+    });
+    orderIds.push(oOnlineNoPay.id);
+
+    // 2. COD order with online payment transaction (Anomaly - must not double count in gateway)
+    const oCodWithPay = await prisma.order.create({
+      data: {
+        orderNumber: `REC-CODPAY-${crypto.randomUUID()}`,
+        createdAt: futureDate,
+        userId: adminUser.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: "codpay@example.com",
+        taxRate: new Prisma.Decimal(0),
+        taxAmount: new Prisma.Decimal(0),
+        shippingCost: new Prisma.Decimal(100),
+        subtotal: new Prisma.Decimal(1400),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(1500),
+        shippingStreet: "Street 8",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+      },
+    });
+    orderIds.push(oCodWithPay.id);
+
+    const sCod = await prisma.shipment.create({
+      data: {
+        orderId: oCodWithPay.id,
+        provider: "steadfast",
+        status: "DELIVERED",
+        shippingAmount: new Prisma.Decimal(100),
+        deliveredAt: futureDate,
+      },
+    });
+    shipmentIds.push(sCod.id);
+
+    const pCod = await prisma.payment.create({
+      data: {
+        orderId: oCodWithPay.id,
+        amount: new Prisma.Decimal(1500),
+        status: "SUCCESS",
+        gateway: "SSLCOMMERZ",
+        gatewayTransactionId: `GW-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(pCod.id);
+
+    // 3. Online order with overpayment capture (Anomaly)
+    const oOverpaid = await prisma.order.create({
+      data: {
+        orderNumber: `REC-OVER-${crypto.randomUUID()}`,
+        createdAt: futureDate,
+        userId: adminUser.id,
+        status: "PROCESSING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: "overpaid@example.com",
+        taxRate: new Prisma.Decimal(0),
+        taxAmount: new Prisma.Decimal(0),
+        shippingCost: new Prisma.Decimal(100),
+        subtotal: new Prisma.Decimal(900),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(1000),
+        shippingStreet: "Street 9",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+      },
+    });
+    orderIds.push(oOverpaid.id);
+
+    const pOverpaid = await prisma.payment.create({
+      data: {
+        orderId: oOverpaid.id,
+        amount: new Prisma.Decimal(1200), // Paid 1200 on 1000 billed order
+        status: "SUCCESS",
+        gateway: "SSLCOMMERZ",
+        gatewayTransactionId: `GW-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(pOverpaid.id);
+
+    // 4. Valid Online Paid order (Control)
+    const oValidOnline = await prisma.order.create({
+      data: {
+        orderNumber: `REC-VALID-${crypto.randomUUID()}`,
+        createdAt: futureDate,
+        userId: adminUser.id,
+        status: "PROCESSING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: "valid@example.com",
+        taxRate: new Prisma.Decimal(0),
+        taxAmount: new Prisma.Decimal(0),
+        shippingCost: new Prisma.Decimal(100),
+        subtotal: new Prisma.Decimal(700),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(800),
+        shippingStreet: "Street 10",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+      },
+    });
+    orderIds.push(oValidOnline.id);
+
+    const pValid = await prisma.payment.create({
+      data: {
+        orderId: oValidOnline.id,
+        amount: new Prisma.Decimal(800),
+        status: "SUCCESS",
+        gateway: "SSLCOMMERZ",
+        gatewayTransactionId: `GW-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(pValid.id);
+
+    const result = await getAdminReconciliation({
+      range: "custom",
+      from: "2099-05-20",
+      to: "2099-05-20",
+    });
+
+    expect(result.summary.totalOrders).toBe(4);
+    // Orders 1, 2, and 3 must all be flagged as anomalies
+    expect(result.summary.anomaliesCount).toBe(3);
+    expect(result.summary.anomaliesBilledTotal).toBe(3500); // 1000 + 1500 + 1000
+
+    // COD order's payment must NOT be included in grossCapturedOnline (only oOverpaid: 1200 + oValidOnline: 800 = 2000)
+    expect(result.summary.gateway.grossCapturedOnline).toBe(2000);
+    expect(result.summary.gateway.capturedOnlineTransactionsCount).toBe(2);
+
+    // COD summary must NOT count the anomalous COD order as delivered unremitted
+    expect(result.summary.cod.deliveredUnremittedOrderCount).toBe(0);
+    expect(result.summary.cod.deliveredUnremittedBilledTotal).toBe(0);
+
+    // Verify individual anomaly reasons
+    const nopayItem = result.orders.find((o) => o.orderNumber === oOnlineNoPay.orderNumber);
+    expect(nopayItem?.classification).toBe("ANOMALY");
+    expect(nopayItem?.anomalyReason).toContain(
+      "Online order is marked SUCCESS in status without recorded payment"
+    );
+
+    const codItem = result.orders.find((o) => o.orderNumber === oCodWithPay.orderNumber);
+    expect(codItem?.classification).toBe("ANOMALY");
+    expect(codItem?.anomalyReason).toContain(
+      "Order paymentMethod is COD but has recorded successful online payment"
+    );
+
+    const overpaidItem = result.orders.find((o) => o.orderNumber === oOverpaid.orderNumber);
+    expect(overpaidItem?.classification).toBe("ANOMALY");
+    expect(overpaidItem?.anomalyReason).toContain("Captured payments");
+  }, 30000);
 });
