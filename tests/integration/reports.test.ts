@@ -1075,4 +1075,485 @@ describe("admin reports", () => {
     expect(csv([["Product", "Customer"], ["শার্ট", "A, B"]])).toContain('শার্ট,"A, B"');
     expect(csvCell("=HYPERLINK(\"https://attacker.example\")")).toBe("\"'=HYPERLINK(\"\"https://attacker.example\"\")\"");
   });
+
+  test("handles multiple return requests on the same product SKU and calculates separate sold, returned, net units, and return rate", async () => {
+    const user = await prisma.user.create({
+      data: { email: `multi-return-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const sku = `SKU-MULTI-${crypto.randomUUID()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-MULTI-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-01T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(500),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(500),
+        items: {
+          create: [{
+            productName: "Multi Return Item",
+            sku,
+            quantity: 5,
+            unitPrice: new Prisma.Decimal(100),
+            costPrice: new Prisma.Decimal(40),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(500),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(500),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    const ret1 = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(ret1.id);
+
+    const ret2 = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "APPROVED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 2 }] },
+      },
+    });
+    returnIds.push(ret2.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-09-01", to: "2099-09-01" });
+    const product = report.products.find((p) => p.sku === sku);
+
+    expect(product).toBeDefined();
+    expect(product?.soldUnits).toBe(5);
+    expect(product?.returnedUnits).toBe(3);
+    expect(product?.netUnits).toBe(2);
+    expect(product?.units).toBe(2);
+    expect(product?.returnRate).toBe(60);
+    expect(product?.isAnomaly).toBe(false);
+    expect(product?.grossSales).toBe(500);
+    expect(product?.netSales).toBe(200);
+    expect(product?.cogs).toBe(80);
+    expect(product?.profit).toBe(120);
+    expect(product?.margin).toBe(60);
+  });
+
+  test("detects and flags over-return anomalies without hiding them or producing negative net units", async () => {
+    const user = await prisma.user.create({
+      data: { email: `anomaly-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const sku = `SKU-ANOMALY-${crypto.randomUUID()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-ANOMALY-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-02T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(300),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(300),
+        items: {
+          create: [{
+            productName: "Anomaly Item",
+            sku,
+            quantity: 2,
+            unitPrice: new Prisma.Decimal(150),
+            costPrice: new Prisma.Decimal(50),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(300),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(300),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    const ret = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 3 }] },
+      },
+    });
+    returnIds.push(ret.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-09-02", to: "2099-09-02" });
+    const product = report.products.find((p) => p.sku === sku);
+
+    expect(product).toBeDefined();
+    expect(product?.soldUnits).toBe(2);
+    expect(product?.returnedUnits).toBe(3);
+    expect(product?.netUnits).toBe(0);
+    expect(product?.units).toBe(0);
+    expect(product?.isAnomaly).toBe(true);
+    expect(product?.returnRate).toBe(150);
+    expect(product?.cogs).toBe(0);
+  });
+
+  test("filters both product and order tables when searching by product name or SKU without modifying report summary", async () => {
+    const user = await prisma.user.create({
+      data: { email: `search-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const skuA = `SKU-SEARCH-A-${crypto.randomUUID()}`;
+    const skuB = `SKU-SEARCH-B-${crypto.randomUUID()}`;
+
+    const order1 = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-SEARCH-1-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-03T10:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(100),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(100),
+        items: {
+          create: [{
+            productName: "Alpha Search Gadget",
+            sku: skuA,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(100),
+            costPrice: new Prisma.Decimal(40),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(100),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(100),
+          }],
+        },
+      },
+    });
+    orderIds.push(order1.id);
+
+    const order2 = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-SEARCH-2-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-03T11:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(200),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(200),
+        items: {
+          create: [{
+            productName: "Beta Search Widget",
+            sku: skuB,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(200),
+            costPrice: new Prisma.Decimal(80),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(200),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(200),
+          }],
+        },
+      },
+    });
+    orderIds.push(order2.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    // Search by Alpha SKU
+    const reportA = await getAdminReport({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: skuA });
+    const orderProfA = await getAdminOrderProfitability({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: skuA });
+
+    expect(reportA.products).toHaveLength(1);
+    expect(reportA.products[0].sku).toBe(skuA);
+    expect(orderProfA.orders).toHaveLength(1);
+    expect(orderProfA.orders[0].orderNumber).toBe(order1.orderNumber);
+    // Crucial check: Report summary remains unfiltered for the entire date range
+    expect(reportA.summary.orders).toBe(2);
+    expect(reportA.summary.grossSales).toBe(300);
+
+    // Search by product name "Beta Search"
+    const reportB = await getAdminReport({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: "Beta Search" });
+    const orderProfB = await getAdminOrderProfitability({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: "Beta Search" });
+
+    expect(reportB.products).toHaveLength(1);
+    expect(reportB.products[0].sku).toBe(skuB);
+    expect(orderProfB.orders).toHaveLength(1);
+    expect(orderProfB.orders[0].orderNumber).toBe(order2.orderNumber);
+    expect(reportB.summary.orders).toBe(2);
+  });
+
+  test("sorts products by revenue, profit, units, margin, and returns", async () => {
+    const user = await prisma.user.create({
+      data: { email: `sort-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const skuX = `SKU-SORT-X-${crypto.randomUUID()}`;
+    const skuY = `SKU-SORT-Y-${crypto.randomUUID()}`;
+
+    // Item X: 10 units @ 100 = 1000 gross/net, cost 90 = 900 cogs -> profit 100, margin 10%, 0 returns
+    const orderX = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-SORT-X-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-04T10:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(1000),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(1000),
+        items: {
+          create: [{
+            productName: "Sort Product X",
+            sku: skuX,
+            quantity: 10,
+            unitPrice: new Prisma.Decimal(100),
+            costPrice: new Prisma.Decimal(90),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(1000),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(1000),
+          }],
+        },
+      },
+    });
+    orderIds.push(orderX.id);
+
+    // Item Y: 2 units @ 300 = 600 gross. 1 returned -> netSales 300, cogs 50 -> profit 250, margin 83.33%, 1 return
+    const orderY = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-SORT-Y-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-04T11:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(600),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(600),
+        items: {
+          create: [{
+            productName: "Sort Product Y",
+            sku: skuY,
+            quantity: 2,
+            unitPrice: new Prisma.Decimal(300),
+            costPrice: new Prisma.Decimal(50),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(600),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(600),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(orderY.id);
+
+    const retY = await prisma.returnRequest.create({
+      data: {
+        orderId: orderY.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: orderY.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(retY.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+
+    // Sort by revenue: X (1000) > Y (300)
+    const reportRev = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "revenue" });
+    const skusRev = reportRev.products.map((p) => p.sku);
+    expect(skusRev.indexOf(skuX)).toBeLessThan(skusRev.indexOf(skuY));
+
+    // Sort by profit: Y (250) > X (100)
+    const reportProf = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "profit" });
+    const skusProf = reportProf.products.map((p) => p.sku);
+    expect(skusProf.indexOf(skuY)).toBeLessThan(skusProf.indexOf(skuX));
+
+    // Sort by units: X (10) > Y (2)
+    const reportUnits = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "units" });
+    const skusUnits = reportUnits.products.map((p) => p.sku);
+    expect(skusUnits.indexOf(skuX)).toBeLessThan(skusUnits.indexOf(skuY));
+
+    // Sort by margin: Y (83.33%) > X (10%)
+    const reportMargin = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "margin" });
+    const skusMargin = reportMargin.products.map((p) => p.sku);
+    expect(skusMargin.indexOf(skuY)).toBeLessThan(skusMargin.indexOf(skuX));
+
+    // Sort by returns: Y (1) > X (0)
+    const reportReturns = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "returns" });
+    const skusReturns = reportReturns.products.map((p) => p.sku);
+    expect(skusReturns.indexOf(skuY)).toBeLessThan(skusReturns.indexOf(skuX));
+  });
+
+  test("maintains CSV export headers and data parity with product report definitions", async () => {
+    const user = await prisma.user.create({
+      data: { email: `csv-prod-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const sku = `SKU-CSV-${crypto.randomUUID()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: `ORD-CSV-PROD-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-09-05T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        shippingStreet: "123 Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        subtotal: new Prisma.Decimal(400),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(400),
+        items: {
+          create: [{
+            productName: "CSV Parity Product",
+            sku,
+            quantity: 4,
+            unitPrice: new Prisma.Decimal(100),
+            costPrice: new Prisma.Decimal(30),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(400),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(400),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    const ret = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(ret.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-09-05", to: "2099-09-05", search: sku });
+    const product = report.products[0];
+
+    const expectedHeaders = ["Product", "SKU", "Sold Units", "Returned Units", "Net Units", "Return Rate", "Gross Sales", "Discounts", "Net Sales", "COGS", "Gross Profit", "Margin"];
+    const productRows = [
+      expectedHeaders,
+      [
+        product.productName,
+        product.sku,
+        product.soldUnits,
+        product.returnedUnits,
+        product.netUnits,
+        product.returnRate === null ? "—" : `${product.returnRate.toFixed(2)}%`,
+        product.grossSales,
+        product.discounts,
+        product.netSales,
+        product.cogs,
+        product.profit,
+        product.margin === null ? "Unavailable" : `${product.margin.toFixed(2)}%`,
+      ],
+    ];
+
+    const csvContent = csv(productRows);
+    expect(csvContent).toContain("Product,SKU,Sold Units,Returned Units,Net Units,Return Rate,Gross Sales,Discounts,Net Sales,COGS,Gross Profit,Margin");
+    expect(csvContent).toContain(`CSV Parity Product,${sku},4,1,3,25.00%,400,0,300,90,210,70.00%`);
+  });
 });

@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
 export type ReportRange = "today" | "yesterday" | "7d" | "30d" | "this-month" | "last-month" | "custom";
-export type ReportSort = "revenue" | "profit" | "units";
+export type ReportSort = "revenue" | "profit" | "units" | "margin" | "returns";
 
 export type ReportFilters = {
   range?: string;
@@ -14,6 +14,7 @@ export type ReportFilters = {
   sort?: string;
   page?: number;
   search?: string;
+  limit?: number;
 };
 
 const validRanges = new Set<ReportRange>([
@@ -139,6 +140,25 @@ export async function getAdminReport(filters: ReportFilters = {}) {
   const { start, end, range } = resolveReportRange(filters);
   const ctes = financialCtes(start, end);
 
+  const productSearch = filters.search?.trim();
+  const productSearchSql = productSearch
+    ? Prisma.sql`WHERE (so."productName" ILIKE ${`%${productSearch}%`} OR so.sku ILIKE ${`%${productSearch}%`})`
+    : Prisma.empty;
+
+  const productSort = filters.sort;
+  const productSortSql =
+    productSort === "profit"
+      ? Prisma.sql`p.profit DESC`
+      : productSort === "units"
+        ? Prisma.sql`p."soldUnits" DESC`
+        : productSort === "margin"
+          ? Prisma.sql`CASE WHEN p."netSales" > 0 THEN (p.profit / p."netSales") ELSE -999999 END DESC`
+          : productSort === "returns"
+            ? Prisma.sql`p."returnedUnits" DESC`
+            : Prisma.sql`p."netSales" DESC`;
+
+  const productLimit = filters.limit && Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 100;
+
   const [summary, trend, products, payments, returns] = await Promise.all([
     prisma.$queryRaw<
       [{ orders: bigint; grossSales: number; discounts: number; netSales: number; refunds: number; cogs: number; soldUnits: bigint; returnedUnits: bigint; returnedValue: number; returnCount: bigint; shippingCharged: number }]
@@ -173,22 +193,27 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
       GROUP BY DATE_TRUNC('day', o."createdAt")
       ORDER BY date ASC`),
+
     prisma.$queryRaw<
-      { productName: string; sku: string; units: bigint; grossSales: number; discounts: number; netSales: number; returnedUnits: bigint; cogs: number; profit: number }[]
+      { productName: string; sku: string; soldUnits: bigint; returnedUnits: bigint; grossSales: number; discounts: number; netSales: number; cogs: number; profit: number }[]
     >(Prisma.sql`${ctes}
-      SELECT so."productName", so.sku,
-        SUM(so.quantity - COALESCE(ri.quantity, 0))::bigint AS units,
-        COALESCE(SUM(so."lineTotal" + so."discountAmount"), 0)::float8 AS "grossSales",
-        COALESCE(SUM(so."discountAmount"), 0)::float8 AS discounts,
-        COALESCE(SUM(so."lineTotal" - (so."lineTotal" / NULLIF(so.quantity, 0)) * COALESCE(ri.quantity, 0)), 0)::float8 AS "netSales",
-        COALESCE(SUM(ri.quantity), 0)::bigint AS "returnedUnits",
-        COALESCE(SUM(so."costPrice" * (so.quantity - COALESCE(ri.quantity, 0))), 0)::float8 AS cogs,
-        COALESCE(SUM(so."lineTotal" - (so."lineTotal" / NULLIF(so.quantity, 0)) * COALESCE(ri.quantity, 0) - so."costPrice" * (so.quantity - COALESCE(ri.quantity, 0))), 0)::float8 AS profit
-      FROM sold_items so
-      LEFT JOIN returned_items ri ON ri."orderItemId" = so.id
-      GROUP BY so."productName", so.sku
-      ORDER BY ${filters.sort === "units" ? Prisma.sql`units DESC` : filters.sort === "profit" ? Prisma.sql`profit DESC` : Prisma.sql`"netSales" DESC`}, so."productName" ASC
-      LIMIT 100`),
+      SELECT *
+      FROM (
+        SELECT so."productName", so.sku,
+          SUM(so.quantity)::bigint AS "soldUnits",
+          COALESCE(SUM(ri.quantity), 0)::bigint AS "returnedUnits",
+          COALESCE(SUM(so."lineTotal" + so."discountAmount"), 0)::float8 AS "grossSales",
+          COALESCE(SUM(so."discountAmount"), 0)::float8 AS discounts,
+          COALESCE(SUM(so."lineTotal" - (so."lineTotal" / NULLIF(so.quantity, 0)) * COALESCE(ri.quantity, 0)), 0)::float8 AS "netSales",
+          COALESCE(SUM(so."costPrice" * GREATEST(0, so.quantity - COALESCE(ri.quantity, 0))), 0)::float8 AS cogs,
+          COALESCE(SUM(so."lineTotal" - (so."lineTotal" / NULLIF(so.quantity, 0)) * COALESCE(ri.quantity, 0) - so."costPrice" * GREATEST(0, so.quantity - COALESCE(ri.quantity, 0))), 0)::float8 AS profit
+        FROM sold_items so
+        LEFT JOIN returned_items ri ON ri."orderItemId" = so.id
+        ${productSearchSql}
+        GROUP BY so."productName", so.sku
+      ) p
+      ORDER BY ${productSortSql}, p."productName" ASC
+      LIMIT ${productLimit}`),
     prisma.$queryRaw<
       { method: string; orders: bigint; sales: number; refunds: number }[]
     >(Prisma.sql`${ctes}
@@ -259,17 +284,32 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       cogs: money(item.cogs),
       grossProfit: money(money(item.netSales) - money(item.cogs)),
     })),
-    products: products.map((item) => ({
-      ...item,
-      units: Number(item.units),
-      returnedUnits: Number(item.returnedUnits),
-      grossSales: money(item.grossSales),
-      discounts: money(item.discounts),
-      netSales: money(item.netSales),
-      cogs: money(item.cogs),
-      profit: money(item.profit),
-      margin: money(item.netSales) > 0 ? Number(((money(item.profit) / money(item.netSales)) * 100).toFixed(2)) : null,
-    })),
+    products: products.map((item) => {
+      const itemSoldUnits = Number(item.soldUnits);
+      const itemReturnedUnits = Number(item.returnedUnits);
+      const netUnits = Math.max(0, itemSoldUnits - itemReturnedUnits);
+      const isAnomaly = itemReturnedUnits > itemSoldUnits;
+      const returnRate = itemSoldUnits > 0 ? Number(((itemReturnedUnits / itemSoldUnits) * 100).toFixed(2)) : null;
+      const itemNetSales = money(item.netSales);
+      const itemProfit = money(item.profit);
+      const margin = itemNetSales > 0 ? Number(((itemProfit / itemNetSales) * 100).toFixed(2)) : null;
+
+      return {
+        ...item,
+        soldUnits: itemSoldUnits,
+        returnedUnits: itemReturnedUnits,
+        netUnits,
+        units: netUnits,
+        returnRate,
+        isAnomaly,
+        grossSales: money(item.grossSales),
+        discounts: money(item.discounts),
+        netSales: itemNetSales,
+        cogs: money(item.cogs),
+        profit: itemProfit,
+        margin,
+      };
+    }),
     payments: payments.map((item) => ({
       ...item,
       orders: Number(item.orders),
@@ -291,7 +331,16 @@ export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
   const limit = 20;
   const search = filters.search?.trim();
   const searchSql = search
-    ? Prisma.sql`AND (o."orderNumber" ILIKE ${`%${search}%`} OR COALESCE(o."customerName", '') ILIKE ${`%${search}%`} OR o."customerEmail" ILIKE ${`%${search}%`})`
+    ? Prisma.sql`AND (
+        o."orderNumber" ILIKE ${`%${search}%`}
+        OR COALESCE(o."customerName", '') ILIKE ${`%${search}%`}
+        OR o."customerEmail" ILIKE ${`%${search}%`}
+        OR EXISTS (
+          SELECT 1 FROM "OrderItem" oi_s
+          WHERE oi_s."orderId" = o.id
+            AND (oi_s."productName" ILIKE ${`%${search}%`} OR oi_s.sku ILIKE ${`%${search}%`})
+        )
+      )`
     : Prisma.empty;
   const where = Prisma.sql`
     WHERE o."createdAt" >= ${start} AND o."createdAt" < ${end}
