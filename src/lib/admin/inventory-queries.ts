@@ -47,7 +47,7 @@ export async function getAdminInventory({
     LEFT JOIN (
       SELECT "variantId", SUM(quantity)::int AS reserved_stock
       FROM "InventoryReservation"
-      WHERE status = 'RESERVED'::"ReservationStatus" AND "expiresAt" > NOW()
+      WHERE status = 'RESERVED'::"ReservationStatus" AND "expiresAt" > (NOW() AT TIME ZONE 'UTC')
       GROUP BY "variantId"
     ) reserved ON reserved."variantId" = "ProductVariant"."id"
     WHERE 1 = 1 ${searchSql} ${filterSql}
@@ -164,5 +164,214 @@ export async function getAdminInventoryDetail(variantId: string, page = 1) {
     transactions,
     totalPages: Math.ceil(transactionCount / pageSize),
     page: normalizedPage,
+  };
+}
+
+export type InventorySummary = {
+  totalPhysicalStock: number;
+  totalReservedStock: number;
+  totalAvailableStock: number;
+  estimatedCostValue: number;
+  estimatedRetailValue: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  negativeStockCount: number;
+  totalVariants: number;
+};
+
+export const INVENTORY_EXPORT_LIMIT = 5000;
+
+export type InventoryExportItem = {
+  id: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  productName: string;
+  physicalStock: number;
+  reservedStock: number;
+  availableStock: number;
+  costPrice: number;
+  sellingPrice: number;
+  estimatedCostValue: number;
+  estimatedRetailValue: number;
+  status: "In stock" | "Low stock" | "Out of stock";
+};
+
+export type InventoryExportResult = {
+  items: InventoryExportItem[];
+  totalCount: number;
+  isTruncated: boolean;
+  limit: number;
+};
+
+export async function getAdminInventorySummary(): Promise<InventorySummary> {
+  await requireRole("ADMIN");
+
+  const [summary] = await prisma.$queryRaw<
+    {
+      totalPhysicalStock: number;
+      totalReservedStock: number;
+      totalAvailableStock: number;
+      estimatedCostValue: number;
+      estimatedRetailValue: number;
+      lowStockCount: number;
+      outOfStockCount: number;
+      negativeStockCount: number;
+      totalVariants: number;
+    }[]
+  >(Prisma.sql`
+    WITH variant_stock AS (
+      SELECT
+        pv.id,
+        pv."costPrice",
+        pv."sellingPrice",
+        COALESCE(stock.total_stock, 0)::int AS physical_stock,
+        COALESCE(reserved.reserved_stock, 0)::int AS reserved_stock,
+        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available_stock
+      FROM "ProductVariant" pv
+      LEFT JOIN (
+        SELECT "variantId", SUM(quantity)::int AS total_stock
+        FROM "InventoryTransaction"
+        GROUP BY "variantId"
+      ) stock ON stock."variantId" = pv.id
+      LEFT JOIN (
+        SELECT "variantId", SUM(quantity)::int AS reserved_stock
+        FROM "InventoryReservation"
+        WHERE status = 'RESERVED'::"ReservationStatus" AND "expiresAt" > (NOW() AT TIME ZONE 'UTC')
+        GROUP BY "variantId"
+      ) reserved ON reserved."variantId" = pv.id
+    )
+    SELECT
+      COALESCE(SUM(physical_stock), 0)::int AS "totalPhysicalStock",
+      COALESCE(SUM(reserved_stock), 0)::int AS "totalReservedStock",
+      COALESCE(SUM(available_stock), 0)::int AS "totalAvailableStock",
+      COALESCE(SUM(CASE WHEN physical_stock > 0 THEN physical_stock * "costPrice" ELSE 0 END), 0)::float8 AS "estimatedCostValue",
+      COALESCE(SUM(CASE WHEN physical_stock > 0 THEN physical_stock * "sellingPrice" ELSE 0 END), 0)::float8 AS "estimatedRetailValue",
+      COALESCE(COUNT(*) FILTER (WHERE available_stock BETWEEN 1 AND 5), 0)::int AS "lowStockCount",
+      COALESCE(COUNT(*) FILTER (WHERE available_stock <= 0), 0)::int AS "outOfStockCount",
+      COALESCE(COUNT(*) FILTER (WHERE physical_stock < 0 OR available_stock < 0), 0)::int AS "negativeStockCount",
+      COUNT(*)::int AS "totalVariants"
+    FROM variant_stock;
+  `);
+
+  return {
+    totalPhysicalStock: Number(summary?.totalPhysicalStock ?? 0),
+    totalReservedStock: Number(summary?.totalReservedStock ?? 0),
+    totalAvailableStock: Number(summary?.totalAvailableStock ?? 0),
+    estimatedCostValue: Number(summary?.estimatedCostValue ?? 0),
+    estimatedRetailValue: Number(summary?.estimatedRetailValue ?? 0),
+    lowStockCount: Number(summary?.lowStockCount ?? 0),
+    outOfStockCount: Number(summary?.outOfStockCount ?? 0),
+    negativeStockCount: Number(summary?.negativeStockCount ?? 0),
+    totalVariants: Number(summary?.totalVariants ?? 0),
+  };
+}
+
+export async function getAdminInventoryForExport({
+  search,
+  filter = "all",
+}: {
+  search?: string;
+  filter?: InventoryFilter;
+} = {}): Promise<InventoryExportResult> {
+  await requireRole("ADMIN");
+
+  const searchSql = search?.trim()
+    ? Prisma.sql`AND ("ProductVariant"."sku" ILIKE ${`%${search.trim()}%`} OR "Product"."name" ILIKE ${`%${search.trim()}%`})`
+    : Prisma.empty;
+  const filterSql =
+    filter === "in-stock"
+      ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) > 0`
+      : filter === "low-stock"
+        ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) BETWEEN 1 AND 5`
+        : filter === "out-of-stock"
+          ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= 0`
+          : Prisma.empty;
+
+  const inventoryCte = Prisma.sql`
+    FROM "ProductVariant"
+    INNER JOIN "Product" ON "Product"."id" = "ProductVariant"."productId"
+    LEFT JOIN (
+      SELECT "variantId", SUM(quantity)::int AS total_stock
+      FROM "InventoryTransaction"
+      GROUP BY "variantId"
+    ) stock ON stock."variantId" = "ProductVariant"."id"
+    LEFT JOIN (
+      SELECT "variantId", SUM(quantity)::int AS reserved_stock
+      FROM "InventoryReservation"
+      WHERE status = 'RESERVED'::"ReservationStatus" AND "expiresAt" > (NOW() AT TIME ZONE 'UTC')
+      GROUP BY "variantId"
+    ) reserved ON reserved."variantId" = "ProductVariant"."id"
+    WHERE 1 = 1 ${searchSql} ${filterSql}
+  `;
+
+  const [items, countResult] = await Promise.all([
+    prisma.$queryRaw<
+      {
+        id: string;
+        sku: string;
+        size: string | null;
+        color: string | null;
+        productName: string;
+        costPrice: number;
+        sellingPrice: number;
+        physicalStock: number;
+        reservedStock: number;
+        availableStock: number;
+      }[]
+    >(Prisma.sql`
+      SELECT
+        "ProductVariant"."id",
+        "ProductVariant"."sku",
+        "ProductVariant"."size",
+        "ProductVariant"."color",
+        "ProductVariant"."costPrice"::float8 AS "costPrice",
+        "ProductVariant"."sellingPrice"::float8 AS "sellingPrice",
+        "Product"."name" AS "productName",
+        COALESCE(stock.total_stock, 0)::int AS "physicalStock",
+        COALESCE(reserved.reserved_stock, 0)::int AS "reservedStock",
+        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS "availableStock"
+      ${inventoryCte}
+      ORDER BY "Product"."name" ASC, "ProductVariant"."sku" ASC
+      LIMIT ${INVENTORY_EXPORT_LIMIT}
+    `),
+    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+      SELECT COUNT(*)::bigint AS count
+      ${inventoryCte}
+    `),
+  ]);
+
+  const totalCount = Number(countResult[0]?.count ?? 0);
+  const isTruncated = totalCount > INVENTORY_EXPORT_LIMIT;
+
+  return {
+    items: items.map((item) => {
+      const physical = Number(item.physicalStock ?? 0);
+      const reserved = Number(item.reservedStock ?? 0);
+      const available = Number(item.availableStock ?? 0);
+      const costPrice = Number(item.costPrice ?? 0);
+      const sellingPrice = Number(item.sellingPrice ?? 0);
+      const status: "In stock" | "Low stock" | "Out of stock" =
+        available <= 0 ? "Out of stock" : available <= 5 ? "Low stock" : "In stock";
+
+      return {
+        id: item.id,
+        sku: item.sku,
+        size: item.size,
+        color: item.color,
+        productName: item.productName,
+        physicalStock: physical,
+        reservedStock: reserved,
+        availableStock: available,
+        costPrice,
+        sellingPrice,
+        estimatedCostValue: physical > 0 ? physical * costPrice : 0,
+        estimatedRetailValue: physical > 0 ? physical * sellingPrice : 0,
+        status,
+      };
+    }),
+    totalCount,
+    isTruncated,
+    limit: INVENTORY_EXPORT_LIMIT,
   };
 }
