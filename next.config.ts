@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  outputFileTracingIncludes: {
+    "/*": ["./node_modules/.prisma/client/**/*"],
+  },
   async headers() {
     return [
       {
