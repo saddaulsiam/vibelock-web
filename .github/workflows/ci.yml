@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
+      AUTH_SECRET: dummy-ci-auth-secret-for-build-and-test-only-32c
 
     steps:
       - name: Checkout repository
@@ -44,6 +45,3 @@ jobs:
 
       - name: Build Next.js
         run: npm run build
-        env:
-          # Fake DB URL required only if Next.js attempts to validate server env at build time
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
