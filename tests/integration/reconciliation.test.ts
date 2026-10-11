@@ -3,6 +3,8 @@ import { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import prisma from "../../src/lib/prisma/client";
 import { classifyOrder, getAdminReconciliation } from "../../src/lib/admin/reconciliation-queries";
+import AdminReconciliationPage from "../../src/app/(protected)/admin/reports/reconciliation/page";
+import Form from "next/form";
 
 let mockSession: unknown = null;
 vi.mock("../../src/auth", () => ({
@@ -828,5 +830,147 @@ describe("admin reconciliation", () => {
     const overpaidItem = result.orders.find((o) => o.orderNumber === oOverpaid.orderNumber);
     expect(overpaidItem?.classification).toBe("ANOMALY");
     expect(overpaidItem?.anomalyReason).toContain("Captured payments");
+  }, 30000);
+
+  test("reconciliation filter and search forms use Next.js Form, preserve active parameters, reset pagination, and omit empty parameters", async () => {
+    const adminUser = await prisma.user.create({
+      data: { email: `admin-nav-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(adminUser.id);
+    mockSession = { user: { id: adminUser.id, role: "ADMIN" } };
+
+    type JsxNode = {
+      type?: unknown;
+      props: {
+        children?: unknown;
+        action?: string;
+        name?: string;
+        value?: unknown;
+        defaultValue?: unknown;
+        [key: string]: unknown;
+      };
+    };
+
+    // Helper to find all Form components in JSX tree
+    function findForms(element: unknown): JsxNode[] {
+      const forms: JsxNode[] = [];
+      function walk(node: unknown) {
+        if (!node) return;
+        if (Array.isArray(node)) {
+          node.forEach(walk);
+          return;
+        }
+        if (typeof node === "object" && node !== null && "props" in node) {
+          const jsx = node as JsxNode;
+          if (
+            jsx.type === Form ||
+            jsx.props?.action === "/admin/reports/reconciliation"
+          ) {
+            forms.push(jsx);
+          }
+          walk(jsx.props?.children);
+        }
+      }
+      walk(element);
+      return forms;
+    }
+
+    // Helper to collect all inputs inside an element
+    function findInputs(element: unknown): Array<NonNullable<JsxNode["props"]>> {
+      const inputs: Array<NonNullable<JsxNode["props"]>> = [];
+      function walk(node: unknown) {
+        if (!node) return;
+        if (Array.isArray(node)) {
+          node.forEach(walk);
+          return;
+        }
+        if (typeof node === "object" && node !== null && "props" in node) {
+          const jsx = node as JsxNode;
+          const typeName =
+            typeof jsx.type === "function" ? (jsx.type as { name?: string }).name : undefined;
+          if (jsx.type === "input" || typeName === "Input") {
+            if (jsx.props) inputs.push(jsx.props);
+          }
+          walk(jsx.props?.children);
+        }
+      }
+      walk(element);
+      return inputs;
+    }
+
+    // Case 1: Search active with 7d range and empty from/to/all classification on page 3
+    const pageWithSearch = await AdminReconciliationPage({
+      searchParams: Promise.resolve({
+        q: "ACTIVE-QUERY",
+        range: "7d",
+        from: "",
+        to: "",
+        classification: "all",
+        page: "3",
+      }),
+    });
+
+    const forms1 = findForms(pageWithSearch);
+    expect(forms1.length).toBe(2);
+
+    const cohortForm1 = forms1[0];
+    const searchForm1 = forms1[1];
+
+    // Both forms must target /admin/reports/reconciliation and use Form component
+    expect(cohortForm1.type).toBe(Form);
+    expect(cohortForm1.props.action).toBe("/admin/reports/reconciliation");
+    expect(searchForm1.type).toBe(Form);
+    expect(searchForm1.props.action).toBe("/admin/reports/reconciliation");
+
+    // Cohort form preserves active search parameter q
+    const cohortInputs1 = findInputs(cohortForm1);
+    const cohortQ1 = cohortInputs1.find((i) => i.name === "q");
+    expect(cohortQ1).toBeDefined();
+    expect(cohortQ1?.value).toBe("ACTIVE-QUERY");
+
+    // Neither form must preserve stale page parameter (pagination resets to page 1)
+    expect(cohortInputs1.find((i) => i.name === "page")).toBeUndefined();
+    const searchInputs1 = findInputs(searchForm1);
+    expect(searchInputs1.find((i) => i.name === "page")).toBeUndefined();
+
+    // Search form preserves range
+    expect(searchInputs1.find((i) => i.name === "range")?.value).toBe("7d");
+
+    // Search form must NOT inject empty from/to or classification=all parameters
+    expect(searchInputs1.find((i) => i.name === "from")).toBeUndefined();
+    expect(searchInputs1.find((i) => i.name === "to")).toBeUndefined();
+    expect(searchInputs1.find((i) => i.name === "classification")).toBeUndefined();
+
+    // Case 2: Custom date range and classification set, no active search on page 2
+    const pageWithCustomFilter = await AdminReconciliationPage({
+      searchParams: Promise.resolve({
+        range: "custom",
+        from: "2099-01-01",
+        to: "2099-01-15",
+        classification: "ONLINE_SETTLED",
+        q: "",
+        page: "2",
+      }),
+    });
+
+    const forms2 = findForms(pageWithCustomFilter);
+    expect(forms2.length).toBe(2);
+
+    const cohortForm2 = forms2[0];
+    const searchForm2 = forms2[1];
+
+    // Cohort form must NOT inject empty q hidden input
+    const cohortInputs2 = findInputs(cohortForm2);
+    expect(cohortInputs2.find((i) => i.name === "q")).toBeUndefined();
+    expect(cohortInputs2.find((i) => i.name === "page")).toBeUndefined();
+
+    // Search form must preserve custom range, valid from, valid to, and classification
+    const searchInputs2 = findInputs(searchForm2);
+    expect(searchInputs2.find((i) => i.name === "range")?.value).toBe("custom");
+    expect(searchInputs2.find((i) => i.name === "from")?.value).toBe("2099-01-01");
+    expect(searchInputs2.find((i) => i.name === "to")?.value).toBe("2099-01-15");
+    expect(searchInputs2.find((i) => i.name === "classification")?.value).toBe("ONLINE_SETTLED");
+    // Search form must NOT preserve stale page
+    expect(searchInputs2.find((i) => i.name === "page")).toBeUndefined();
   }, 30000);
 });
