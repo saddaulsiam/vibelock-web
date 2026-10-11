@@ -2,6 +2,7 @@ import "server-only";
 
 import { OrderStatus, PaymentStatus, ProductStatus, Role } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { getAdminReport } from "@/lib/admin/report-queries";
 
 const LOW_STOCK_THRESHOLD = 5;
 
@@ -19,6 +20,7 @@ export async function getAdminDashboardData() {
     variants,
     transactionGroups,
     reservationGroups,
+    report,
   ] = await Promise.all([
     prisma.product.count({ where: { status: ProductStatus.PUBLISHED } }),
     prisma.category.count(),
@@ -63,6 +65,7 @@ export async function getAdminDashboardData() {
       },
       _sum: { quantity: true },
     }),
+    getAdminReport({ range: "30d" }),
   ]);
 
   const transactionQuantityByVariant = new Map(
@@ -110,6 +113,19 @@ export async function getAdminDashboardData() {
       productsWithLowStockCount: productsWithLowStock.size,
       productsOutOfStockCount: productsOutOfStock.size,
       lowStockThreshold: LOW_STOCK_THRESHOLD,
+    },
+    financials: {
+      netSales: report.summary.netSales,
+      grossProfit: report.summary.grossProfit,
+      grossMargin: report.summary.grossMargin,
+      soldUnits: report.summary.soldUnits,
+      returnedUnits: report.summary.returnedUnits,
+      retainedUnits: Math.max(0, report.summary.soldUnits - report.summary.returnedUnits),
+      orders: report.summary.orders,
+      refunds: report.summary.refunds,
+      cogs: report.summary.cogs,
+      discounts: report.summary.discounts,
+      grossSales: report.summary.grossSales,
     },
   };
 }

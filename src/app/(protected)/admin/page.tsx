@@ -1,14 +1,61 @@
-import { Boxes, ClipboardList, Layers3, PackageCheck, Users, Warehouse } from "lucide-react";
+import Link from "next/link";
+import {
+  Boxes,
+  CircleDollarSign,
+  ClipboardList,
+  Layers3,
+  PackageCheck,
+  Percent,
+  ShoppingBag,
+  TrendingUp,
+  Users,
+  Warehouse,
+} from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminDashboardData } from "@/lib/admin/dashboard-queries";
 
-function formatBdt(value: { toFixed: (decimalPlaces?: number) => string }) {
-  const [integerPart, fractionPart] = value.toFixed(2).split(".");
+function formatBdt(value: { toFixed: (decimalPlaces?: number) => string } | number) {
+  const num = typeof value === "number" ? value : Number(value);
+  const [integerPart, fractionPart] = (Number.isFinite(num) ? num : 0).toFixed(2).split(".");
   const sign = integerPart.startsWith("-") ? "-" : "";
   const unsignedInteger = sign ? integerPart.slice(1) : integerPart;
   const groupedInteger = unsignedInteger.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `৳${sign}${groupedInteger}.${fractionPart ?? "00"}`;
+}
+
+function FinancialKpiCard({
+  label,
+  value,
+  detail,
+  icon: Icon,
+  href = "/admin/reports",
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  icon: typeof Boxes;
+  href?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+    >
+      <Card className="rounded-sm border-[#101114]/10 bg-white shadow-none transition-colors group-hover:border-[#101114]/30">
+        <CardContent className="flex min-h-32 items-start justify-between gap-4 p-4 sm:p-5">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-[#101114]">{value}</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>
+          </div>
+          <span className="flex size-10 shrink-0 items-center justify-center bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
+            <Icon className="size-5" aria-hidden="true" />
+          </span>
+        </CardContent>
+      </Card>
+    </Link>
+  );
 }
 
 function MetricCard({
@@ -86,6 +133,55 @@ export default async function AdminPage() {
           Current catalog, customer, order, and inventory counts from VibeLock records.
         </p>
       </header>
+
+      <section aria-labelledby="financial-kpis-heading" className="space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h3 id="financial-kpis-heading" className="text-lg font-semibold tracking-tight text-[#101114]">
+              Executive performance
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Last 30 days financial metrics from audited store records.
+            </p>
+          </div>
+          <Link
+            href="/admin/reports"
+            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-[#101114] hover:underline"
+          >
+            View full report →
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
+          <FinancialKpiCard
+            label="Net merchandise sales"
+            value={formatBdt(dashboard.financials.netSales)}
+            detail="Last 30 days · After discounts & refunds"
+            icon={CircleDollarSign}
+          />
+          <FinancialKpiCard
+            label="Gross profit"
+            value={formatBdt(dashboard.financials.grossProfit)}
+            detail="Last 30 days · Net sales minus retained COGS"
+            icon={TrendingUp}
+          />
+          <FinancialKpiCard
+            label="Gross margin"
+            value={
+              dashboard.financials.grossMargin !== null
+                ? `${dashboard.financials.grossMargin.toFixed(1)}%`
+                : "—"
+            }
+            detail="Profit percentage on net sales"
+            icon={Percent}
+          />
+          <FinancialKpiCard
+            label="Retained units sold"
+            value={dashboard.financials.retainedUnits.toLocaleString("en-BD")}
+            detail={`${dashboard.financials.soldUnits.toLocaleString("en-BD")} sold, ${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned`}
+            icon={ShoppingBag}
+          />
+        </div>
+      </section>
 
       <section aria-label="Store totals" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
         <MetricCard
