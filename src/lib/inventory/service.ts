@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma/client";
-import { Prisma } from "@prisma/client";
+import { Prisma, SalesChannel } from "@prisma/client";
 import { env } from "@/lib/config/env";
 
 export class InsufficientInventoryError extends Error {
@@ -239,14 +239,18 @@ export class InventoryService {
   /**
    * Release reservations and restock committed inventory for a cancelled order.
    * Handles both unpaid reservations and already-committed SALE ledger entries.
-   * Safe and idempotent.
+   * Deducts previously completed returns so cancellation cannot restock the same units twice.
+   * Safe and idempotent under concurrent or repeated execution.
    */
   static async cancelOrderInventory(
     orderId: string,
     customTx?: Prisma.TransactionClient
   ): Promise<void> {
     const run = async (tx: Prisma.TransactionClient) => {
-      // 1. Release all active or committed reservations for this order
+      // 1. Serialize concurrent cancellation attempts for this order
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+
+      // 2. Release all active or committed reservations for this order
       await tx.inventoryReservation.updateMany({
         where: {
           orderId,
@@ -258,7 +262,7 @@ export class InventoryService {
         },
       });
 
-      // 2. Find any SALE transactions committed for this order
+      // 3. Find any SALE transactions committed for this order
       const sales = await tx.inventoryTransaction.findMany({
         where: {
           referenceId: orderId,
@@ -270,7 +274,7 @@ export class InventoryService {
         return;
       }
 
-      // 3. Find any existing RESTOCK transactions for idempotency
+      // 4. Find any existing RESTOCK transactions for idempotency
       const existingRestocks = await tx.inventoryTransaction.findMany({
         where: {
           referenceId: orderId,
@@ -280,18 +284,68 @@ export class InventoryService {
 
       const restockedVariantIds = new Set(existingRestocks.map((r) => r.variantId));
 
-      // 4. Create compensating positive RESTOCK transaction for each variant not yet restocked
+      // 5. Find all completed return transactions associated with this order to prevent double-restocking
+      const returnRequests = await tx.returnRequest.findMany({
+        where: { orderId },
+        select: { id: true },
+      });
+      const returnRefIds = [orderId, ...returnRequests.map((r) => r.id)];
+
+      const returnTransactions = await tx.inventoryTransaction.findMany({
+        where: {
+          referenceId: { in: returnRefIds },
+          type: "RETURN",
+        },
+        select: {
+          variantId: true,
+          quantity: true,
+        },
+      });
+
+      const returnedQuantityByVariant = new Map<string, number>();
+      for (const ret of returnTransactions) {
+        const current = returnedQuantityByVariant.get(ret.variantId) ?? 0;
+        returnedQuantityByVariant.set(ret.variantId, current + Math.abs(ret.quantity));
+      }
+
+      // 6. Aggregate sold quantities per variant
+      const salesByVariant = new Map<
+        string,
+        { soldQuantity: number; salesChannel: SalesChannel | null }
+      >();
       for (const sale of sales) {
-        if (restockedVariantIds.has(sale.variantId)) {
+        const existing = salesByVariant.get(sale.variantId);
+        const qty = Math.abs(sale.quantity);
+        if (existing) {
+          existing.soldQuantity += qty;
+        } else {
+          salesByVariant.set(sale.variantId, {
+            soldQuantity: qty,
+            salesChannel: sale.salesChannel,
+          });
+        }
+      }
+
+      // 7. Create compensating positive RESTOCK transaction for each variant not yet restocked,
+      // accounting for any quantities already restored via completed returns.
+      for (const [variantId, saleAgg] of salesByVariant) {
+        if (restockedVariantIds.has(variantId)) {
+          continue;
+        }
+
+        const alreadyReturned = returnedQuantityByVariant.get(variantId) ?? 0;
+        const remainingToRestock = Math.max(0, saleAgg.soldQuantity - alreadyReturned);
+
+        if (remainingToRestock <= 0) {
           continue;
         }
 
         await tx.inventoryTransaction.create({
           data: {
-            variantId: sale.variantId,
+            variantId,
             type: "RESTOCK",
-            quantity: Math.abs(sale.quantity),
-            salesChannel: sale.salesChannel,
+            quantity: remainingToRestock,
+            salesChannel: saleAgg.salesChannel,
             referenceId: orderId,
             notes: `Restock from cancelled order ${orderId}`,
           },
