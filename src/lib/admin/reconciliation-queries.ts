@@ -110,6 +110,7 @@ export function classifyOrder(order: {
   successfulRefundTotal: number;
   shipmentStatus: ShipmentStatus | null;
   shipmentId: string | null;
+  billedTotal?: number;
 }): { classification: ReconciliationClassification; label: string; anomalyReason: string | null } {
   const isOnline = order.paymentMethod === "ONLINE";
   const hasSuccessfulPayment = order.successfulPaymentTotal > 0;
@@ -122,19 +123,40 @@ export function classifyOrder(order: {
     order.shipmentStatus === "RETURNED" || order.shipmentStatus === "FAILED";
 
   if (isOnline) {
-    // Online Anomaly: Delivered without recorded payment, or cancelled with unrefunded payment
-    if (isDelivered && !hasSuccessfulPayment && order.paymentStatus !== "SUCCESS") {
+    // 1. Online Anomaly: Marked SUCCESS in status but no recorded payment transaction
+    if (order.paymentStatus === "SUCCESS" && !hasSuccessfulPayment) {
+      return {
+        classification: "ANOMALY",
+        label: "Online Marked Paid Without Payment",
+        anomalyReason: "Online order is marked SUCCESS in status without recorded payment transaction.",
+      };
+    }
+    // 2. Online Anomaly: Delivered without recorded payment
+    if (isDelivered && !hasSuccessfulPayment) {
       return {
         classification: "ANOMALY",
         label: "Online Delivered Unpaid",
         anomalyReason: "Parcel was delivered but no successful online payment record exists.",
       };
     }
+    // 3. Online Anomaly: Cancelled with unrefunded payment
     if (order.orderStatus === "CANCELLED" && hasSuccessfulPayment && !isFullyRefunded) {
       return {
         classification: "ANOMALY",
         label: "Cancelled with Unrefunded Payment",
         anomalyReason: "Order was cancelled but online payment was not fully refunded.",
+      };
+    }
+    // 4. Online Anomaly: Overpayment (successful payments exceed billed total by > ৳0.01)
+    if (
+      order.billedTotal !== undefined &&
+      hasSuccessfulPayment &&
+      order.successfulPaymentTotal > order.billedTotal + 0.01
+    ) {
+      return {
+        classification: "ANOMALY",
+        label: "Gateway Overpayment Captured",
+        anomalyReason: `Captured payments (৳${order.successfulPaymentTotal.toFixed(2)}) exceed billed order total (৳${order.billedTotal.toFixed(2)}).`,
       };
     }
     if (isFullyRefunded) {
@@ -166,6 +188,15 @@ export function classifyOrder(order: {
   }
 
   // COD branch
+  // 1. COD Anomaly: COD order with recorded online payment transaction
+  if (hasSuccessfulPayment) {
+    return {
+      classification: "ANOMALY",
+      label: "COD with Online Payment Record",
+      anomalyReason: "Order paymentMethod is COD but has recorded successful online payment transactions.",
+    };
+  }
+  // 2. COD Anomaly: COD marked SUCCESS in status without recorded payment transaction
   if (order.paymentStatus === "SUCCESS" && !hasSuccessfulPayment) {
     return {
       classification: "ANOMALY",
@@ -307,7 +338,7 @@ export async function getAdminReconciliation(
     ORDER BY fo."createdAt" DESC
   `);
 
-  // Gateway transaction totals directly from the payment ledger in period
+  // Gateway transaction totals directly from the payment ledger for ONLINE orders in period
   const [gatewayAgg] = await prisma.$queryRaw<
     {
       grossCaptured: number;
@@ -325,6 +356,7 @@ export async function getAdminReconciliation(
     FROM filtered_orders fo
     LEFT JOIN order_payments op ON op."orderId" = fo.id
     LEFT JOIN order_refunds orf ON orf."orderId" = fo.id
+    WHERE fo."paymentMethod" = 'ONLINE'::"PaymentMethod"
   `);
 
   // Classify each order into exactly one bucket
@@ -397,6 +429,7 @@ export async function getAdminReconciliation(
   let totalBilledSum = 0;
 
   const classifiedOrders: ReconciliationOrderItem[] = rawOrders.map((raw) => {
+    const billed = money(raw.total);
     const { classification, label, anomalyReason } = classifyOrder({
       paymentMethod: raw.paymentMethod,
       orderStatus: raw.orderStatus,
@@ -405,9 +438,9 @@ export async function getAdminReconciliation(
       successfulRefundTotal: raw.successfulRefundTotal,
       shipmentStatus: raw.shipmentStatus,
       shipmentId: raw.shipmentId,
+      billedTotal: billed,
     });
 
-    const billed = money(raw.total);
     totalBilledSum += billed;
 
     bucketMap[classification].orderCount += 1;

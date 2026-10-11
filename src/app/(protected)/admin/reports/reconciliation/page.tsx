@@ -171,13 +171,13 @@ export default async function AdminReconciliationPage({
             <CreditCard className="size-7 text-[#00a8c6]" /> Payment &amp; Cash Reconciliation
           </h1>
           <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
-            Authoritative cash settlement tracking distinguishing captured gateway payments,
+            Order-placement cohort lifecycle reconciliation tracking captured gateway payments,
             delivered COD awaiting courier remittance, in-flight parcels, and data anomalies.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">
-            Period: {dateLabel(summary.start)} – {dateLabel(new Date(summary.end.getTime() - 1))}
+            Order Cohort: {dateLabel(summary.start)} – {dateLabel(new Date(summary.end.getTime() - 1))}
           </Badge>
           <a
             href={buildHref({})}
@@ -191,7 +191,7 @@ export default async function AdminReconciliationPage({
       {/* Filter Form */}
       <form className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]">
         <label className="text-sm font-medium">
-          Period
+          Cohort Period
           <select
             name="range"
             defaultValue={range}
@@ -232,11 +232,21 @@ export default async function AdminReconciliationPage({
         >
           Apply
         </button>
+        <p className="text-xs text-muted-foreground col-span-full">
+          Date filters select orders placed within the window to reconcile their complete lifecycle (gateway captures, refunds, and courier deliveries).
+        </p>
       </form>
 
       {/* Primary Settlement Status Cards */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold text-[#101114]">Cash Settlement Ledger</h2>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-semibold text-[#101114]">
+            Settlement &amp; Courier Receivables Status
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Cohort lifecycle tracking: payments, refunds, and deliveries for orders placed in this period.
+          </p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Card 1: Online Captured */}
           <Card className="border-[#101114]/10 bg-white shadow-none">
