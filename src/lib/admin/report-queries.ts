@@ -79,7 +79,8 @@ export function resolveReportRange(filters: ReportFilters) {
 }
 
 function money(value: unknown) {
-  return Number(value ?? 0);
+  const num = Number(value ?? 0);
+  return Number.isFinite(num) ? Math.round((num + Number.EPSILON) * 100) / 100 : 0;
 }
 
 const financialCtes = (start: Date, end: Date) => Prisma.sql`
@@ -92,7 +93,7 @@ const financialCtes = (start: Date, end: Date) => Prisma.sql`
   ),
   sold_items AS (
     SELECT oi.*, o."orderNumber", o."paymentMethod", o."customerName", o."customerEmail",
-           o.status AS "orderStatus", o."paymentStatus", o."shippingCost", o."createdAt" AS "orderCreatedAt"
+           o.status AS "orderStatus", o."paymentStatus", o."shippingCost", o.discount AS "orderDiscount", o."createdAt" AS "orderCreatedAt"
     FROM "OrderItem" oi
     INNER JOIN eligible_orders o ON o.id = oi."orderId"
   ),
@@ -113,7 +114,7 @@ const financialCtes = (start: Date, end: Date) => Prisma.sql`
   ),
   order_financials AS (
     SELECT "orderId",
-      SUM("lineSubtotal") AS "grossSales",
+      SUM("lineTotal" + "discountAmount") AS "grossSales",
       SUM("discountAmount") AS discounts,
       SUM("lineTotal") AS "lineTotal",
       SUM("costPrice" * "keptQuantity") AS cogs,
@@ -145,8 +146,8 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       SELECT
         COUNT(DISTINCT of."orderId")::bigint AS orders,
         COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
-        COALESCE(SUM(of.discounts), 0)::float8 AS discounts,
-        COALESCE(SUM(of."lineTotal"), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+        COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+        COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
         COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
         COALESCE(SUM(of.cogs), 0)::float8 AS cogs,
         COALESCE(SUM(of."soldUnits"), 0)::bigint AS "soldUnits",
@@ -163,8 +164,8 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       SELECT DATE_TRUNC('day', o."createdAt") AS date,
         COUNT(*)::bigint AS orders,
         COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
-        COALESCE(SUM(of.discounts), 0)::float8 AS discounts,
-        COALESCE(SUM(of."lineTotal"), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+        COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+        COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
         COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
         COALESCE(SUM(of.cogs), 0)::float8 AS cogs
       FROM order_financials of
@@ -177,7 +178,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
     >(Prisma.sql`${ctes}
       SELECT so."productName", so.sku,
         SUM(so.quantity - COALESCE(ri.quantity, 0))::bigint AS units,
-        COALESCE(SUM(so."lineSubtotal"), 0)::float8 AS "grossSales",
+        COALESCE(SUM(so."lineTotal" + so."discountAmount"), 0)::float8 AS "grossSales",
         COALESCE(SUM(so."discountAmount"), 0)::float8 AS discounts,
         COALESCE(SUM(so."lineTotal" - (so."lineTotal" / NULLIF(so.quantity, 0)) * COALESCE(ri.quantity, 0)), 0)::float8 AS "netSales",
         COALESCE(SUM(ri.quantity), 0)::bigint AS "returnedUnits",
@@ -192,7 +193,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       { method: string; orders: bigint; sales: number; refunds: number }[]
     >(Prisma.sql`${ctes}
       SELECT o."paymentMethod"::text AS method, COUNT(*)::bigint AS orders,
-        COALESCE(SUM(of."lineTotal" + o."shippingCost"), 0)::float8 AS sales,
+        COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0) + o."shippingCost"), 0)::float8 AS sales,
         COALESCE(SUM(sr.amount), 0)::float8 AS refunds
       FROM order_financials of
       INNER JOIN eligible_orders o ON o.id = of."orderId"
@@ -233,14 +234,14 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       netSales,
       refunds,
       cogs,
-      grossProfit: netSales - cogs,
-      grossMargin: netSales > 0 ? ((netSales - cogs) / netSales) * 100 : null,
-      averageOrderValue: orders > 0 ? netSales / orders : 0,
+      grossProfit: money(netSales - cogs),
+      grossMargin: netSales > 0 ? Number((((netSales - cogs) / netSales) * 100).toFixed(2)) : null,
+      averageOrderValue: orders > 0 ? money(netSales / orders) : 0,
       soldUnits,
       returnedUnits,
       returnedValue: money(row?.returnedValue),
       returnCount: Number(row?.returnCount ?? 0),
-      returnRate: soldUnits > 0 ? (returnedUnits / soldUnits) * 100 : 0,
+      returnRate: soldUnits > 0 ? Number(((returnedUnits / soldUnits) * 100).toFixed(2)) : 0,
       shippingCharged: money(row?.shippingCharged),
       shippingExpense: null,
       paymentFees: null,
@@ -256,7 +257,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       netSales: money(item.netSales),
       refunds: money(item.refunds),
       cogs: money(item.cogs),
-      grossProfit: money(item.netSales) - money(item.cogs),
+      grossProfit: money(money(item.netSales) - money(item.cogs)),
     })),
     products: products.map((item) => ({
       ...item,
@@ -267,7 +268,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       netSales: money(item.netSales),
       cogs: money(item.cogs),
       profit: money(item.profit),
-      margin: money(item.netSales) > 0 ? (money(item.profit) / money(item.netSales)) * 100 : null,
+      margin: money(item.netSales) > 0 ? Number(((money(item.profit) / money(item.netSales)) * 100).toFixed(2)) : null,
     })),
     payments: payments.map((item) => ({
       ...item,
@@ -300,24 +301,68 @@ export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
     prisma.$queryRaw<
       { id: string; orderNumber: string; createdAt: Date; customerName: string | null; status: string; paymentStatus: string; paymentMethod: string; itemCount: bigint; grossSales: number; discount: number; shipping: number; refunds: number; cogs: number; profit: number }[]
     >(Prisma.sql`
+      WITH item_returns AS (
+        SELECT ri."orderItemId", SUM(ri.quantity)::int AS quantity
+        FROM "ReturnItem" ri
+        INNER JOIN "ReturnRequest" rr ON rr.id = ri."returnRequestId"
+        WHERE rr.status <> 'REJECTED'::"ReturnRequestStatus"
+        GROUP BY ri."orderItemId"
+      ),
+      order_item_financials AS (
+        SELECT oi."orderId",
+          COUNT(oi.id)::bigint AS "itemCount",
+          COALESCE(SUM(oi."lineTotal" + oi."discountAmount"), 0)::float8 AS "grossSales",
+          COALESCE(SUM(oi."discountAmount"), 0)::float8 AS "itemDiscounts",
+          COALESCE(SUM(oi."lineTotal"), 0)::float8 AS "lineTotal",
+          COALESCE(SUM(oi."costPrice" * GREATEST(0, oi.quantity - COALESCE(ir.quantity, 0))), 0)::float8 AS cogs
+        FROM "OrderItem" oi
+        LEFT JOIN item_returns ir ON ir."orderItemId" = oi.id
+        GROUP BY oi."orderId"
+      ),
+      order_refunds AS (
+        SELECT p."orderId", SUM(r.amount) AS amount
+        FROM "Refund" r
+        INNER JOIN "Payment" p ON p.id = r."paymentId"
+        WHERE r.status = 'SUCCESS'::"RefundStatus"
+        GROUP BY p."orderId"
+      )
       SELECT o.id, o."orderNumber", o."createdAt", o."customerName", o.status::text, o."paymentStatus"::text, o."paymentMethod"::text,
-        COUNT(oi.id)::bigint AS "itemCount",
-        COALESCE(SUM(oi."lineSubtotal"), 0)::float8 AS "grossSales",
-        COALESCE(SUM(oi."discountAmount"), 0)::float8 AS discount,
+        COALESCE(oif."itemCount", 0)::bigint AS "itemCount",
+        COALESCE(oif."grossSales", 0)::float8 AS "grossSales",
+        COALESCE(oif."itemDiscounts", 0)::float8 + COALESCE(o.discount, 0)::float8 AS discount,
         o."shippingCost"::float8 AS shipping,
-        COALESCE((SELECT SUM(r.amount) FROM "Refund" r INNER JOIN "Payment" p ON p.id = r."paymentId" WHERE p."orderId" = o.id AND r.status = 'SUCCESS'::"RefundStatus"), 0)::float8 AS refunds,
-        COALESCE(SUM(oi."costPrice" * oi.quantity), 0)::float8 AS cogs,
-        COALESCE(SUM(oi."lineTotal" - oi."costPrice" * oi.quantity), 0)::float8 AS profit
+        COALESCE(rf.amount, 0)::float8 AS refunds,
+        COALESCE(oif.cogs, 0)::float8 AS cogs,
+        (COALESCE(oif."lineTotal", 0)::float8 - COALESCE(o.discount, 0)::float8 - COALESCE(rf.amount, 0)::float8 - COALESCE(oif.cogs, 0)::float8) AS profit
       FROM "Order" o
-      LEFT JOIN "OrderItem" oi ON oi."orderId" = o.id
+      LEFT JOIN order_item_financials oif ON oif."orderId" = o.id
+      LEFT JOIN order_refunds rf ON rf."orderId" = o.id
       ${where}
-      GROUP BY o.id
       ORDER BY o."createdAt" DESC
       LIMIT ${limit} OFFSET ${(page - 1) * limit}`),
     prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "Order" o ${where}`),
   ]);
   return {
-    orders: rows.map((row) => ({ ...row, itemCount: Number(row.itemCount), grossSales: money(row.grossSales), discount: money(row.discount), shipping: money(row.shipping), refunds: money(row.refunds), cogs: money(row.cogs), profit: money(row.profit), margin: money(row.grossSales) - money(row.discount) > 0 ? (money(row.profit) / (money(row.grossSales) - money(row.discount))) * 100 : null })),
+    orders: rows.map((row) => {
+      const grossSales = money(row.grossSales);
+      const discount = money(row.discount);
+      const refunds = money(row.refunds);
+      const cogs = money(row.cogs);
+      const netSales = money(grossSales - discount - refunds);
+      const profit = money(row.profit);
+      const margin = netSales > 0 ? Number(((profit / netSales) * 100).toFixed(2)) : null;
+      return {
+        ...row,
+        itemCount: Number(row.itemCount),
+        grossSales,
+        discount,
+        shipping: money(row.shipping),
+        refunds,
+        cogs,
+        profit,
+        margin,
+      };
+    }),
     total: Number(count[0]?.count ?? 0),
     totalPages: Math.ceil(Number(count[0]?.count ?? 0) / limit),
     page,

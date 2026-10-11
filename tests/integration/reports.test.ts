@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import prisma from "../../src/lib/prisma/client";
-import { getAdminReport } from "../../src/lib/admin/report-queries";
+import { getAdminReport, getAdminOrderProfitability } from "../../src/lib/admin/report-queries";
 import crypto from "crypto";
 import { csv, csvCell } from "../../src/app/api/admin/reports/export/route";
 
@@ -14,6 +14,7 @@ const userIds: string[] = [];
 const orderIds: string[] = [];
 const paymentIds: string[] = [];
 const returnIds: string[] = [];
+const productIds: string[] = [];
 
 describe("admin reports", () => {
   beforeEach(() => {
@@ -28,12 +29,17 @@ describe("admin reports", () => {
         await tx.payment.deleteMany({ where: { id: { in: paymentIds } } });
       }
       if (orderIds.length) await tx.order.deleteMany({ where: { id: { in: orderIds } } });
+      if (productIds.length) {
+        await tx.productVariant.deleteMany({ where: { productId: { in: productIds } } });
+        await tx.product.deleteMany({ where: { id: { in: productIds } } });
+      }
       if (userIds.length) await tx.user.deleteMany({ where: { id: { in: userIds } } });
     });
     userIds.length = 0;
     orderIds.length = 0;
     paymentIds.length = 0;
     returnIds.length = 0;
+    productIds.length = 0;
   });
 
   test("excludes cancelled orders and does not double-count refunds for multi-item orders", async () => {
@@ -111,11 +117,13 @@ describe("admin reports", () => {
     await prisma.refund.create({
       data: { paymentId: payment.id, amount: new Prisma.Decimal(20), status: "SUCCESS" },
     });
+
+    const item55 = order.items.find((item) => Number(item.lineTotal) === 55)!;
     const returnRequest = await prisma.returnRequest.create({
       data: {
         orderId: order.id,
         status: "COMPLETED",
-        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+        items: { create: [{ orderItemId: item55.id, quantity: 1 }] },
       },
     });
     returnIds.push(returnRequest.id);
@@ -162,16 +170,899 @@ describe("admin reports", () => {
 
     expect(report.summary.orders).toBe(1);
     expect(report.summary.grossSales).toBe(100);
-    expect(report.summary.discounts).toBe(10);
+    expect(report.summary.discounts).toBe(20);
     expect(report.summary.refunds).toBe(20);
-    expect(report.summary.netSales).toBe(70);
+    expect(report.summary.netSales).toBe(60);
     expect(report.summary.returnCount).toBe(1);
     expect(report.summary.returnedUnits).toBe(1);
     expect(report.summary.cogs).toBe(20);
+    expect(report.summary.grossProfit).toBe(40);
     expect(report.products.reduce((sum, product) => sum + product.units, 0)).toBe(1);
     expect(report.products.reduce((sum, product) => sum + product.returnedUnits, 0)).toBe(1);
     expect(report.products.reduce((sum, product) => sum + product.netSales, 0)).toBe(35);
+  });
 
+  test("deducts Order.discount coupon exactly once from merchandise sales and gross profit", async () => {
+    const user = await prisma.user.create({
+      data: { email: `coupon-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `CPN-${crypto.randomUUID()}`;
+
+    // Order with 2 items: 500 each, total subtotal = 1000, costPrice: 200 each (COGS: 400)
+    // Order-level coupon discount: 150. Shipping: 60.
+    // Total charged: (1000 - 150) + 60 = 910.
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-02-01T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(60),
+        subtotal: new Prisma.Decimal(1000),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(150),
+        total: new Prisma.Decimal(910),
+        shippingStreet: "123 Elm St",
+        shippingCity: "Chittagong",
+        shippingCountry: "BD",
+        shippingMethodName: "Express",
+        items: {
+          create: [
+            {
+              productName: "Hoodie A",
+              sku: `CPN-A-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(500),
+              costPrice: new Prisma.Decimal(200),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+            {
+              productName: "Hoodie B",
+              sku: `CPN-B-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(500),
+              costPrice: new Prisma.Decimal(200),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+          ],
+        },
+      },
+    });
+    orderIds.push(order.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-02-01", to: "2099-02-01" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-02-01", to: "2099-02-01" });
+
+    // Summary assertions
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.grossSales).toBe(1000);
+    expect(report.summary.discounts).toBe(150);
+    expect(report.summary.netSales).toBe(850); // 1000 - 150 = 850
+    expect(report.summary.cogs).toBe(400); // 200 + 200 = 400
+    expect(report.summary.grossProfit).toBe(450); // 850 - 400 = 450 (coupon deducted exactly once)
+    expect(report.summary.shippingCharged).toBe(60);
+
+    // Payments section: total order revenue for payment method
+    const onlinePayment = report.payments.find((p) => p.method === "ONLINE");
+    expect(onlinePayment).toBeDefined();
+    expect(onlinePayment?.sales).toBe(910); // 850 merchandise + 60 shipping
+
+    // Order profitability assertions
+    expect(orderProf.orders).toHaveLength(1);
+    const orderRow = orderProf.orders[0];
+    expect(orderRow.grossSales).toBe(1000);
+    expect(orderRow.discount).toBe(150);
+    expect(orderRow.cogs).toBe(400);
+    expect(orderRow.profit).toBe(450); // (1000 - 400) - 150 = 450
+  });
+
+  test("calculates sales, discounts, and profit correctly for orders without a coupon", async () => {
+    const user = await prisma.user.create({
+      data: { email: `nocoupon-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `NCPN-${crypto.randomUUID()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-03-01T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(50),
+        subtotal: new Prisma.Decimal(500),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(550),
+        shippingStreet: "456 Oak St",
+        shippingCity: "Sylhet",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [
+            {
+              productName: "Cap",
+              sku: `NCPN-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(500),
+              costPrice: new Prisma.Decimal(250),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+          ],
+        },
+      },
+    });
+    orderIds.push(order.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-03-01", to: "2099-03-01" });
+
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.grossSales).toBe(500);
+    expect(report.summary.discounts).toBe(0);
+    expect(report.summary.netSales).toBe(500);
+    expect(report.summary.cogs).toBe(250);
+    expect(report.summary.grossProfit).toBe(250);
+    expect(report.summary.shippingCharged).toBe(50);
+  });
+
+  test("completely excludes cancelled orders from reporting and profitability", async () => {
+    const user = await prisma.user.create({
+      data: { email: `cancelled-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+
+    const cancelledOrder = await prisma.order.create({
+      data: {
+        orderNumber: `CAN-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-04-01T12:00:00.000Z"),
+        userId: user.id,
+        status: "CANCELLED",
+        paymentStatus: "CANCELLED",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(100),
+        subtotal: new Prisma.Decimal(2000),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(200),
+        total: new Prisma.Decimal(1900),
+        shippingStreet: "Cancelled Lane",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [
+            {
+              productName: "Cancelled Item",
+              sku: `CAN-SKU-${crypto.randomUUID()}`,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(1000),
+              costPrice: new Prisma.Decimal(400),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(2000),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(2000),
+            },
+          ],
+        },
+      },
+    });
+    orderIds.push(cancelledOrder.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-04-01", to: "2099-04-01" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-04-01", to: "2099-04-01" });
+
+    expect(report.summary.orders).toBe(0);
+    expect(report.summary.grossSales).toBe(0);
+    expect(report.summary.netSales).toBe(0);
+    expect(report.summary.cogs).toBe(0);
+    expect(report.summary.grossProfit).toBe(0);
+    expect(orderProf.orders).toHaveLength(0);
+  });
+
+  test("documents pending and failed online payment behavior without misrepresenting them as collected cash", async () => {
+    const user = await prisma.user.create({
+      data: { email: `payment-status-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+
+    // Online order 1: PENDING payment (abandoned checkout / awaiting payment)
+    const pendingOrder = await prisma.order.create({
+      data: {
+        orderNumber: `PEND-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-05-01T10:00:00.000Z"),
+        userId: user.id,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(60),
+        subtotal: new Prisma.Decimal(300),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(360),
+        shippingStreet: "Pending Ave",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Pending Item",
+            sku: `PEND-${crypto.randomUUID()}`,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(300),
+            costPrice: new Prisma.Decimal(100),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(300),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(300),
+          }],
+        },
+      },
+    });
+    orderIds.push(pendingOrder.id);
+
+    // Online order 2: FAILED payment (gateway declined / user cancelled at gateway)
+    const failedOrder = await prisma.order.create({
+      data: {
+        orderNumber: `FAIL-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-05-01T11:00:00.000Z"),
+        userId: user.id,
+        status: "PENDING",
+        paymentStatus: "FAILED",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(60),
+        subtotal: new Prisma.Decimal(400),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(460),
+        shippingStreet: "Failed Ave",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Failed Item",
+            sku: `FAIL-${crypto.randomUUID()}`,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(400),
+            costPrice: new Prisma.Decimal(150),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(400),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(400),
+          }],
+        },
+      },
+    });
+    orderIds.push(failedOrder.id);
+
+    // Failed payment record in Payment table
+    const failedPayment = await prisma.payment.create({
+      data: {
+        orderId: failedOrder.id,
+        amount: new Prisma.Decimal(460),
+        status: "FAILED",
+        gateway: "sslcommerz",
+        merchantReferenceId: `FAIL-REF-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(failedPayment.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-05-01", to: "2099-05-01" });
+
+    // Verify: Neither order has a successful payment in the Payment table
+    const successfulPayments = await prisma.payment.findMany({
+      where: { orderId: { in: [pendingOrder.id, failedOrder.id] }, status: "SUCCESS" },
+    });
+    expect(successfulPayments).toHaveLength(0);
+
+    // Verify: The report provides no cash-collection metric, and netProfit remains null
+    expect(report.summary.netProfit).toBeNull();
+    expect(report.summary.refunds).toBe(0);
+    // Preserves distinction between order totals and collected cash: refunds only count successful payments
+    expect(report.summary.orders).toBe(2);
+  });
+
+  test("uses historical OrderItem.costPrice snapshot rather than updated product variant cost", async () => {
+    const user = await prisma.user.create({
+      data: { email: `cogs-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+
+    // Create a product and variant with initial costPrice 100
+    const product = await prisma.product.create({
+      data: {
+        name: "Historical Cost Product",
+        slug: `hist-cost-${crypto.randomUUID()}`,
+        status: "PUBLISHED",
+        variants: {
+          create: {
+            sku: `HIST-SKU-${crypto.randomUUID()}`,
+            costPrice: new Prisma.Decimal(100),
+            sellingPrice: new Prisma.Decimal(300),
+          },
+        },
+      },
+      include: { variants: true },
+    });
+    productIds.push(product.id);
+    const variant = product.variants[0];
+
+    // Order created using historical cost price 100
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: `HIST-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-06-01T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        subtotal: new Prisma.Decimal(300),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(300),
+        shippingStreet: "Snapshot Way",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: product.name,
+            sku: variant.sku,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(300),
+            costPrice: new Prisma.Decimal(100), // Snapshot when order was placed
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(300),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(300),
+          }],
+        },
+      },
+    });
+    orderIds.push(order.id);
+
+    // Later: supplier increased cost price to 180
+    await prisma.productVariant.update({
+      where: { id: variant.id },
+      data: { costPrice: new Prisma.Decimal(180) },
+    });
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-06-01", to: "2099-06-01" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-06-01", to: "2099-06-01" });
+
+    // COGS must use historical OrderItem snapshot 100, NOT the updated variant cost 180
+    expect(report.summary.cogs).toBe(100);
+    expect(report.summary.grossProfit).toBe(200); // 300 - 100 = 200
+    expect(report.products[0].cogs).toBe(100);
+    expect(report.products[0].profit).toBe(200);
+    expect(orderProf.orders[0].cogs).toBe(100);
+    expect(orderProf.orders[0].profit).toBe(200);
+  });
+
+  test("handles decimal precision and strict date range boundaries", async () => {
+    const user = await prisma.user.create({
+      data: { email: `precision-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+
+    // In-range order on 2099-07-05 with fractional cents: 19.99 * 3 = 59.97, discount = 4.50, shipping = 10.25 -> total = 65.72
+    const inRangeOrder = await prisma.order.create({
+      data: {
+        orderNumber: `IN-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-07-05T14:30:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(10.25),
+        subtotal: new Prisma.Decimal(59.97),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(4.50),
+        total: new Prisma.Decimal(65.72),
+        shippingStreet: "Precision St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Precision Item",
+            sku: `PREC-${crypto.randomUUID()}`,
+            quantity: 3,
+            unitPrice: new Prisma.Decimal(19.99),
+            costPrice: new Prisma.Decimal(10.05),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(59.97),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(59.97),
+          }],
+        },
+      },
+    });
+    orderIds.push(inRangeOrder.id);
+
+    // Out-of-range order on 2099-07-06
+    const outOfRangeOrder = await prisma.order.create({
+      data: {
+        orderNumber: `OUT-${crypto.randomUUID()}`,
+        createdAt: new Date("2099-07-06T00:00:01.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(10),
+        subtotal: new Prisma.Decimal(100),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(110),
+        shippingStreet: "Out St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Out Item",
+            sku: `OUT-${crypto.randomUUID()}`,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(100),
+            costPrice: new Prisma.Decimal(50),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(100),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(100),
+          }],
+        },
+      },
+    });
+    orderIds.push(outOfRangeOrder.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    // Query only 2099-07-05
+    const report = await getAdminReport({ range: "custom", from: "2099-07-05", to: "2099-07-05" });
+
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.grossSales).toBe(59.97);
+    expect(report.summary.discounts).toBe(4.5);
+    expect(report.summary.netSales).toBe(55.47); // 59.97 - 4.50 = 55.47
+    expect(report.summary.cogs).toBe(30.15); // 10.05 * 3 = 30.15
+    expect(report.summary.grossProfit).toBe(25.32); // 55.47 - 30.15 = 25.32
+    expect(report.summary.shippingCharged).toBe(10.25);
+  });
+
+  test("handles an order with two units where one unit is returned and no refund is recorded", async () => {
+    const user = await prisma.user.create({
+      data: { email: `ret-noref-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `RET-NR-${crypto.randomUUID()}`;
+
+    // 2 units at 200 each = 400 total. costPrice: 100 each.
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-08-01T10:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        subtotal: new Prisma.Decimal(400),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(400),
+        shippingStreet: "Return Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Dual Item",
+            sku: `DUAL-${crypto.randomUUID()}`,
+            quantity: 2,
+            unitPrice: new Prisma.Decimal(200),
+            costPrice: new Prisma.Decimal(100),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(400),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(400),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    // Return 1 unit; NO payment refund recorded
+    const returnRequest = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(returnRequest.id);
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-08-01", to: "2099-08-01" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-01", to: "2099-08-01" });
+
+    // Summary checks: COGS charges only 1 retained unit (100), netSales remains 400 (no refund was issued)
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.soldUnits).toBe(2);
+    expect(report.summary.returnedUnits).toBe(1);
+    expect(report.summary.refunds).toBe(0);
+    expect(report.summary.netSales).toBe(400);
+    expect(report.summary.cogs).toBe(100);
+    expect(report.summary.grossProfit).toBe(300); // 400 - 100 = 300
+
+    // Order profitability checks: COGS must reflect retained unit (100, not 200)
+    expect(orderProf.orders).toHaveLength(1);
+    const row = orderProf.orders[0];
+    expect(row.cogs).toBe(100);
+    expect(row.refunds).toBe(0);
+    expect(row.profit).toBe(300); // (400 net sales - 100 retained COGS)
+    expect(row.margin).toBe(75); // (300 / 400) * 100
+  });
+
+  test("handles an order with a successful payment refund but no recorded item return", async () => {
+    const user = await prisma.user.create({
+      data: { email: `ref-noret-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `REF-NR-${crypto.randomUUID()}`;
+
+    // 1 unit at 300. costPrice: 120.
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-08-02T10:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        subtotal: new Prisma.Decimal(300),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(0),
+        total: new Prisma.Decimal(300),
+        shippingStreet: "Refund Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Refunded Item",
+            sku: `REF-NR-${crypto.randomUUID()}`,
+            quantity: 1,
+            unitPrice: new Prisma.Decimal(300),
+            costPrice: new Prisma.Decimal(120),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(300),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(300),
+          }],
+        },
+      },
+    });
+    orderIds.push(order.id);
+
+    // Payment and refund of 50 created (e.g. price adjustment / goodwill); NO return recorded
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        amount: new Prisma.Decimal(300),
+        status: "SUCCESS",
+        gateway: "sslcommerz",
+        merchantReferenceId: `REF-NR-PAY-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(payment.id);
+
+    await prisma.refund.create({
+      data: { paymentId: payment.id, amount: new Prisma.Decimal(50), status: "SUCCESS" },
+    });
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-08-02", to: "2099-08-02" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-02", to: "2099-08-02" });
+
+    // Summary checks: item retained so COGS is charged in full (120), refund reduces net sales to 250
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.refunds).toBe(50);
+    expect(report.summary.netSales).toBe(250); // 300 - 50 = 250
+    expect(report.summary.cogs).toBe(120);
+    expect(report.summary.grossProfit).toBe(130); // 250 - 120 = 130
+
+    // Order profitability checks: profit equals netSales (250) - COGS (120) = 130
+    expect(orderProf.orders).toHaveLength(1);
+    const row = orderProf.orders[0];
+    expect(row.refunds).toBe(50);
+    expect(row.cogs).toBe(120);
+    expect(row.profit).toBe(130);
+    expect(row.margin).toBe(52); // (130 / 250) * 100
+  });
+
+  test("handles an order with both a partial return and a successful payment refund", async () => {
+    const user = await prisma.user.create({
+      data: { email: `both-ret-ref-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `BOTH-${crypto.randomUUID()}`;
+
+    // 2 units at 250 each = 500. costPrice: 100 each (200 total). Coupon discount: 50. Total: 450.
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-08-03T10:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(0),
+        subtotal: new Prisma.Decimal(500),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(50),
+        total: new Prisma.Decimal(450),
+        shippingStreet: "Both Street",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "Combined Item",
+            sku: `BOTH-${crypto.randomUUID()}`,
+            quantity: 2,
+            unitPrice: new Prisma.Decimal(250),
+            costPrice: new Prisma.Decimal(100),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(500),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(500),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    // Payment of 450
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        amount: new Prisma.Decimal(450),
+        status: "SUCCESS",
+        gateway: "sslcommerz",
+        merchantReferenceId: `BOTH-PAY-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(payment.id);
+
+    // 1 unit returned
+    const returnRequest = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(returnRequest.id);
+
+    // Refund of 200 recorded
+    await prisma.refund.create({
+      data: { paymentId: payment.id, amount: new Prisma.Decimal(200), status: "SUCCESS" },
+    });
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const report = await getAdminReport({ range: "custom", from: "2099-08-03", to: "2099-08-03" });
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-03", to: "2099-08-03" });
+
+    // Summary checks:
+    // netSales = (500 - 50 coupon) - 200 refund = 250
+    // cogs = 1 retained unit * 100 = 100
+    // grossProfit = 250 netSales - 100 cogs = 150
+    expect(report.summary.orders).toBe(1);
+    expect(report.summary.grossSales).toBe(500);
+    expect(report.summary.discounts).toBe(50);
+    expect(report.summary.refunds).toBe(200);
+    expect(report.summary.netSales).toBe(250);
+    expect(report.summary.cogs).toBe(100);
+    expect(report.summary.grossProfit).toBe(150);
+
+    // Order profitability checks:
+    expect(orderProf.orders).toHaveLength(1);
+    const row = orderProf.orders[0];
+    expect(row.grossSales).toBe(500);
+    expect(row.discount).toBe(50);
+    expect(row.refunds).toBe(200);
+    expect(row.cogs).toBe(100);
+    expect(row.profit).toBe(150); // netSales (250) - cogs (100) = 150
+    expect(row.margin).toBe(60); // (150 / 250) * 100
+  });
+
+  test("produces consistent CSV output formulas and column labels matching documented definitions", async () => {
+    const user = await prisma.user.create({
+      data: { email: `csv-test-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+    });
+    userIds.push(user.id);
+    const orderNumber = `CSV-ORD-${crypto.randomUUID()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        createdAt: new Date("2099-08-04T12:00:00.000Z"),
+        userId: user.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerEmail: user.email,
+        taxRate: new Prisma.Decimal(0),
+        taxIncluded: false,
+        shippingCost: new Prisma.Decimal(50),
+        subtotal: new Prisma.Decimal(600),
+        taxAmount: new Prisma.Decimal(0),
+        discount: new Prisma.Decimal(60),
+        total: new Prisma.Decimal(590),
+        shippingStreet: "CSV Way",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        items: {
+          create: [{
+            productName: "CSV Item",
+            sku: `CSV-SKU-${crypto.randomUUID()}`,
+            quantity: 2,
+            unitPrice: new Prisma.Decimal(300),
+            costPrice: new Prisma.Decimal(100),
+            appliedDiscount: new Prisma.Decimal(0),
+            taxRate: new Prisma.Decimal(0),
+            taxIncluded: false,
+            lineSubtotal: new Prisma.Decimal(600),
+            discountAmount: new Prisma.Decimal(0),
+            taxAmount: new Prisma.Decimal(0),
+            lineTotal: new Prisma.Decimal(600),
+          }],
+        },
+      },
+      include: { items: true },
+    });
+    orderIds.push(order.id);
+
+    const payment = await prisma.payment.create({
+      data: {
+        orderId: order.id,
+        amount: new Prisma.Decimal(590),
+        status: "SUCCESS",
+        gateway: "sslcommerz",
+        merchantReferenceId: `CSV-PAY-${crypto.randomUUID()}`,
+      },
+    });
+    paymentIds.push(payment.id);
+
+    // 1 unit returned
+    const returnRequest = await prisma.returnRequest.create({
+      data: {
+        orderId: order.id,
+        status: "COMPLETED",
+        items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+      },
+    });
+    returnIds.push(returnRequest.id);
+
+    // Refund 150
+    await prisma.refund.create({
+      data: { paymentId: payment.id, amount: new Prisma.Decimal(150), status: "SUCCESS" },
+    });
+
+    mockSession = { user: { id: user.id, role: "ADMIN" } };
+    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-04", to: "2099-08-04" });
+    const row = orderProf.orders[0];
+
+    // CSV columns: Gross Sales, Discount, Net Sales, Refund, COGS, Gross Profit, Margin
+    const netSales = row.grossSales - row.discount - row.refunds; // 600 - 60 - 150 = 390
+    const grossProfit = row.profit; // netSales (390) - cogs (100) = 290
+
+    expect(row.grossSales).toBe(600);
+    expect(row.discount).toBe(60);
+    expect(row.refunds).toBe(150);
+    expect(netSales).toBe(390);
+    expect(row.cogs).toBe(100); // 1 retained unit * 100
+    expect(grossProfit).toBe(290);
+    expect(netSales - row.cogs).toBe(grossProfit); // CSV consistency identity: Net Sales - COGS === Gross Profit
+
+    const csvOutput = csv([
+      ["Order Number", "Date", "Customer", "Status", "Payment Method", "Gross Sales", "Discount", "Net Sales", "Refund", "COGS", "Gross Profit", "Margin"],
+      [row.orderNumber, "2099-08-04", row.customerName ?? "Guest", row.status, row.paymentMethod, row.grossSales, row.discount, netSales, row.refunds, row.cogs, grossProfit, `${row.margin?.toFixed(2)}%`]
+    ]);
+
+    expect(csvOutput).toContain("Gross Sales,Discount,Net Sales,Refund,COGS,Gross Profit,Margin");
+    expect(csvOutput).toContain(`${row.orderNumber},2099-08-04,Guest,DELIVERED,ONLINE,600,60,390,150,100,290,74.36%`);
   });
 
   test("rejects non-admin users", async () => {
