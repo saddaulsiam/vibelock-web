@@ -3,10 +3,17 @@ import "server-only";
 import { OrderStatus, PaymentStatus, ProductStatus, Role } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
 import { getAdminReport } from "@/lib/admin/report-queries";
+import { requireRole } from "@/lib/auth/authorization";
 
 const LOW_STOCK_THRESHOLD = 5;
 
-export async function getAdminDashboardData() {
+export type DashboardFilters = {
+  range?: string;
+};
+
+export async function getAdminDashboardData(filters: DashboardFilters = {}) {
+  await requireRole("ADMIN");
+  const range = filters.range ?? "30d";
   const now = new Date();
 
   const [
@@ -65,7 +72,7 @@ export async function getAdminDashboardData() {
       },
       _sum: { quantity: true },
     }),
-    getAdminReport({ range: "30d" }),
+    getAdminReport({ range, summaryOnly: true }),
   ]);
 
   const transactionQuantityByVariant = new Map(
@@ -115,6 +122,9 @@ export async function getAdminDashboardData() {
       lowStockThreshold: LOW_STOCK_THRESHOLD,
     },
     financials: {
+      range: report.range,
+      start: report.start,
+      end: report.end,
       netSales: report.summary.netSales,
       grossProfit: report.summary.grossProfit,
       grossMargin: report.summary.grossMargin,
@@ -122,6 +132,7 @@ export async function getAdminDashboardData() {
       returnedUnits: report.summary.returnedUnits,
       retainedUnits: Math.max(0, report.summary.soldUnits - report.summary.returnedUnits),
       orders: report.summary.orders,
+      returnRate: report.summary.returnRate,
       refunds: report.summary.refunds,
       cogs: report.summary.cogs,
       discounts: report.summary.discounts,
