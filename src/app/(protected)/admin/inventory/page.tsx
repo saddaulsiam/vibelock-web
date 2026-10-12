@@ -287,11 +287,21 @@ export default async function AdminInventoryPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-        <p className="text-muted-foreground">
-          Monitor stock, reservations, and inventory movements.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
+          <p className="text-muted-foreground">
+            Monitor stock, reservations, and inventory movements.
+          </p>
+        </div>
+        <div>
+          <Link
+            href="/admin/inventory-intelligence"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/90"
+          >
+            Inventory Intelligence →
+          </Link>
+        </div>
       </div>
 
       <Suspense
