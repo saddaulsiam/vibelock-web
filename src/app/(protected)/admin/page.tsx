@@ -6,6 +6,7 @@ import {
   Layers3,
   PackageCheck,
   Percent,
+  RotateCcw,
   ShoppingBag,
   TrendingUp,
   Users,
@@ -23,6 +24,18 @@ function formatBdt(value: { toFixed: (decimalPlaces?: number) => string } | numb
   const groupedInteger = unsignedInteger.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   return `৳${sign}${groupedInteger}.${fractionPart ?? "00"}`;
 }
+
+function dateLabel(value: Date) {
+  return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(value);
+}
+
+const rangePresets = [
+  { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
+  { key: "7d", label: "Last 7 days" },
+  { key: "30d", label: "Last 30 days" },
+  { key: "this-month", label: "Current month" },
+] as const;
 
 function FinancialKpiCard({
   label,
@@ -119,8 +132,19 @@ function StatusSummary({
   );
 }
 
-export default async function AdminPage() {
-  const dashboard = await getAdminDashboardData();
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+} = {}) {
+  const params = searchParams ? await searchParams : {};
+  const rawRange = typeof params.range === "string" ? params.range.trim() : undefined;
+  const validKeys = new Set(["today", "yesterday", "7d", "30d", "this-month"]);
+  const range = rawRange && validKeys.has(rawRange) ? rawRange : "30d";
+  const dashboard = await getAdminDashboardData({ range });
+
+  const activePreset = rangePresets.find((p) => p.key === range) ?? rangePresets[3];
+  const reportHref = range === "30d" ? "/admin/reports" : `/admin/reports?range=${range}`;
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-7 sm:space-y-9">
@@ -134,35 +158,59 @@ export default async function AdminPage() {
         </p>
       </header>
 
-      <section aria-labelledby="financial-kpis-heading" className="space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <section aria-labelledby="financial-kpis-heading" className="space-y-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h3 id="financial-kpis-heading" className="text-lg font-semibold tracking-tight text-[#101114]">
               Executive performance
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Last 30 days financial metrics from audited store records.
+            <p className="mt-1 text-sm text-muted-foreground">
+              {activePreset.label} financial metrics ({dateLabel(dashboard.financials.start)} – {dateLabel(new Date(dashboard.financials.end.getTime() - 1))}).
             </p>
           </div>
-          <Link
-            href="/admin/reports"
-            className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-[#101114] hover:underline"
-          >
-            View full report →
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <nav aria-label="Executive KPI range presets" className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              {rangePresets.map((preset) => {
+                const isActive = range === preset.key;
+                const href = preset.key === "30d" ? "/admin" : `/admin?range=${preset.key}`;
+                return (
+                  <Link
+                    key={preset.key}
+                    href={href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`inline-flex items-center justify-center rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
+                      isActive
+                        ? "border-[#101114] bg-[#101114] text-white shadow-none"
+                        : "border-[#101114]/15 bg-white text-muted-foreground hover:bg-muted hover:text-[#101114]"
+                    }`}
+                  >
+                    {preset.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <Link
+              href={reportHref}
+              className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-[#101114] hover:underline"
+            >
+              View full report →
+            </Link>
+          </div>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 sm:gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
           <FinancialKpiCard
-            label="Net merchandise sales"
+            label="Net sales"
             value={formatBdt(dashboard.financials.netSales)}
-            detail="Last 30 days · After discounts & refunds"
+            detail={`${activePreset.label} · After discounts & refunds`}
             icon={CircleDollarSign}
+            href={reportHref}
           />
           <FinancialKpiCard
             label="Gross profit"
             value={formatBdt(dashboard.financials.grossProfit)}
-            detail="Last 30 days · Net sales minus retained COGS"
+            detail={`${activePreset.label} · Net sales minus COGS`}
             icon={TrendingUp}
+            href={reportHref}
           />
           <FinancialKpiCard
             label="Gross margin"
@@ -173,12 +221,32 @@ export default async function AdminPage() {
             }
             detail="Profit percentage on net sales"
             icon={Percent}
+            href={reportHref}
           />
           <FinancialKpiCard
-            label="Retained units sold"
+            label="Orders"
+            value={dashboard.financials.orders.toLocaleString("en-BD")}
+            detail={`Placed in ${activePreset.label.toLowerCase()} (non-cancelled)`}
+            icon={ClipboardList}
+            href={reportHref}
+          />
+          <FinancialKpiCard
+            label="Retained units"
             value={dashboard.financials.retainedUnits.toLocaleString("en-BD")}
             detail={`${dashboard.financials.soldUnits.toLocaleString("en-BD")} sold, ${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned`}
             icon={ShoppingBag}
+            href={reportHref}
+          />
+          <FinancialKpiCard
+            label="Return rate"
+            value={
+              dashboard.financials.soldUnits > 0
+                ? `${dashboard.financials.returnRate.toFixed(1)}%`
+                : "—"
+            }
+            detail={`${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned of ${dashboard.financials.soldUnits.toLocaleString("en-BD")} units sold`}
+            icon={RotateCcw}
+            href={reportHref}
           />
         </div>
       </section>

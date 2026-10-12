@@ -15,6 +15,7 @@ export type ReportFilters = {
   page?: number;
   search?: string;
   limit?: number;
+  summaryOnly?: boolean;
 };
 
 const validRanges = new Set<ReportRange>([
@@ -84,6 +85,54 @@ function money(value: unknown) {
   return Number.isFinite(num) ? Math.round((num + Number.EPSILON) * 100) / 100 : 0;
 }
 
+type SummaryRow = {
+  orders: bigint;
+  grossSales: number;
+  discounts: number;
+  netSales: number;
+  refunds: number;
+  cogs: number;
+  soldUnits: bigint;
+  returnedUnits: bigint;
+  returnedValue: number;
+  returnCount: bigint;
+  shippingCharged: number;
+};
+
+function formatReportSummary(row: SummaryRow | undefined) {
+  const grossSales = money(row?.grossSales);
+  const discounts = money(row?.discounts);
+  const refunds = money(row?.refunds);
+  const netSales = money(row?.netSales);
+  const cogs = money(row?.cogs);
+  const soldUnits = Number(row?.soldUnits ?? 0);
+  const returnedUnits = Number(row?.returnedUnits ?? 0);
+  const orders = Number(row?.orders ?? 0);
+
+  return {
+    orders,
+    grossSales,
+    discounts,
+    netSales,
+    refunds,
+    cogs,
+    grossProfit: money(netSales - cogs),
+    grossMargin: netSales > 0 ? Number((((netSales - cogs) / netSales) * 100).toFixed(2)) : null,
+    averageOrderValue: orders > 0 ? money(netSales / orders) : 0,
+    soldUnits,
+    returnedUnits,
+    returnedValue: money(row?.returnedValue),
+    returnCount: Number(row?.returnCount ?? 0),
+    returnRate: soldUnits > 0 ? Number(((returnedUnits / soldUnits) * 100).toFixed(2)) : 0,
+    shippingCharged: money(row?.shippingCharged),
+    shippingExpense: null,
+    paymentFees: null,
+    operatingExpense: null,
+    netProfit: null,
+    netMargin: null,
+  };
+}
+
 const financialCtes = (start: Date, end: Date) => Prisma.sql`
   WITH eligible_orders AS (
     SELECT o.*
@@ -140,6 +189,37 @@ export async function getAdminReport(filters: ReportFilters = {}) {
   const { start, end, range } = resolveReportRange(filters);
   const ctes = financialCtes(start, end);
 
+  const summaryQuery = prisma.$queryRaw<[SummaryRow]>(Prisma.sql`${ctes}
+    SELECT
+      COUNT(DISTINCT of."orderId")::bigint AS orders,
+      COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
+      COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+      COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+      COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
+      COALESCE(SUM(of.cogs), 0)::float8 AS cogs,
+      COALESCE(SUM(of."soldUnits"), 0)::bigint AS "soldUnits",
+      COALESCE(SUM(of."returnedUnits"), 0)::bigint AS "returnedUnits",
+      COALESCE(SUM(of."returnedValue"), 0)::float8 AS "returnedValue",
+      COUNT(DISTINCT CASE WHEN of."returnedUnits" > 0 THEN of."orderId" END)::bigint AS "returnCount",
+      COALESCE(SUM(o."shippingCost"), 0)::float8 AS "shippingCharged"
+    FROM order_financials of
+    INNER JOIN eligible_orders o ON o.id = of."orderId"
+    LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"`);
+
+  if (filters.summaryOnly) {
+    const summary = await summaryQuery;
+    return {
+      range,
+      start,
+      end,
+      summary: formatReportSummary(summary[0]),
+      trend: [],
+      products: [],
+      payments: [],
+      returns: { count: 0, units: 0, value: 0 },
+    };
+  }
+
   const productSearch = filters.search?.trim();
   const productSearchSql = productSearch
     ? Prisma.sql`WHERE (so."productName" ILIKE ${`%${productSearch}%`} OR so.sku ILIKE ${`%${productSearch}%`})`
@@ -160,24 +240,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
   const productLimit = filters.limit && Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 100;
 
   const [summary, trend, products, payments, returns] = await Promise.all([
-    prisma.$queryRaw<
-      [{ orders: bigint; grossSales: number; discounts: number; netSales: number; refunds: number; cogs: number; soldUnits: bigint; returnedUnits: bigint; returnedValue: number; returnCount: bigint; shippingCharged: number }]
-    >(Prisma.sql`${ctes}
-      SELECT
-        COUNT(DISTINCT of."orderId")::bigint AS orders,
-        COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
-        COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
-        COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
-        COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
-        COALESCE(SUM(of.cogs), 0)::float8 AS cogs,
-        COALESCE(SUM(of."soldUnits"), 0)::bigint AS "soldUnits",
-        COALESCE(SUM(of."returnedUnits"), 0)::bigint AS "returnedUnits",
-        COALESCE(SUM(of."returnedValue"), 0)::float8 AS "returnedValue",
-        COUNT(DISTINCT CASE WHEN of."returnedUnits" > 0 THEN of."orderId" END)::bigint AS "returnCount",
-        COALESCE(SUM(o."shippingCost"), 0)::float8 AS "shippingCharged"
-      FROM order_financials of
-      INNER JOIN eligible_orders o ON o.id = of."orderId"
-      LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"`),
+    summaryQuery,
     prisma.$queryRaw<
       { date: Date; orders: bigint; grossSales: number; discounts: number; netSales: number; refunds: number; cogs: number }[]
     >(Prisma.sql`${ctes}
@@ -238,42 +301,11 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       WHERE rr.status <> 'REJECTED'::"ReturnRequestStatus"`),
   ]);
 
-  const row = summary[0];
-  const grossSales = money(row?.grossSales);
-  const discounts = money(row?.discounts);
-  const refunds = money(row?.refunds);
-  const netSales = money(row?.netSales);
-  const cogs = money(row?.cogs);
-  const soldUnits = Number(row?.soldUnits ?? 0);
-  const returnedUnits = Number(row?.returnedUnits ?? 0);
-  const orders = Number(row?.orders ?? 0);
-
   return {
     range,
     start,
     end,
-    summary: {
-      orders,
-      grossSales,
-      discounts,
-      netSales,
-      refunds,
-      cogs,
-      grossProfit: money(netSales - cogs),
-      grossMargin: netSales > 0 ? Number((((netSales - cogs) / netSales) * 100).toFixed(2)) : null,
-      averageOrderValue: orders > 0 ? money(netSales / orders) : 0,
-      soldUnits,
-      returnedUnits,
-      returnedValue: money(row?.returnedValue),
-      returnCount: Number(row?.returnCount ?? 0),
-      returnRate: soldUnits > 0 ? Number(((returnedUnits / soldUnits) * 100).toFixed(2)) : 0,
-      shippingCharged: money(row?.shippingCharged),
-      shippingExpense: null,
-      paymentFees: null,
-      operatingExpense: null,
-      netProfit: null,
-      netMargin: null,
-    },
+    summary: formatReportSummary(summary[0]),
     trend: trend.map((item) => ({
       ...item,
       orders: Number(item.orders),
