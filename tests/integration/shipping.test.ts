@@ -521,7 +521,185 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     const response = await provider.getShipmentStatus("123456");
     expect(JSON.stringify(response)).not.toContain("secret-api-key");
     expect(JSON.stringify(response)).not.toContain("secret-key");
+    fetchSpy.mockRestore();
   });
+
+  test("Steadfast provider normalizes approval-pending, confirmed delivery, and exceptional statuses safely", async () => {
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+
+    const cases = [
+      { providerStatus: "delivered_approval_pending", expectedStatus: "OUT_FOR_DELIVERY" },
+      { providerStatus: "cancelled_approval_pending", expectedStatus: "IN_TRANSIT" },
+      { providerStatus: "exceptional", expectedStatus: "FAILED" },
+      { providerStatus: "delivered", expectedStatus: "DELIVERED" },
+      { providerStatus: "cancelled", expectedStatus: "CANCELLED" },
+    ] as const;
+
+    for (const { providerStatus, expectedStatus } of cases) {
+      const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: 200, delivery_status: providerStatus }),
+      } as Response);
+
+      const result = await provider.getShipmentStatus("123456");
+      expect(result).toEqual({
+        success: true,
+        status: expectedStatus,
+        providerStatus,
+      });
+      fetchSpy.mockRestore();
+    }
+  });
+
+  test("Steadfast status synchronization keeps delivered_approval_pending non-terminal and preserves COD payment state on confirmed delivery", async () => {
+    const user = await makeUser();
+    const { order } = await makeOrder(user, { paymentMethod: "COD" });
+    const providerShipmentId = `STEADFAST-${crypto.randomUUID()}`;
+    const shipment = await addShipment(order.id, {
+      status: "CREATED",
+      provider: "steadfast",
+      providerShipmentId,
+    });
+
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    const service = new ShippingService(provider);
+
+    // 1. delivered_approval_pending maps to OUT_FOR_DELIVERY (not terminal DELIVERED)
+    const pendingFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "delivered_approval_pending" }),
+    } as Response);
+
+    await service.syncShipmentStatus(providerShipmentId);
+    pendingFetchSpy.mockRestore();
+
+    const pendingShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id } });
+    expect(pendingShipment.status).toBe("OUT_FOR_DELIVERY");
+    expect(pendingShipment.deliveredAt).toBeNull();
+
+    const pendingOrder = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(pendingOrder.status).toBe("SHIPPED");
+    expect(pendingOrder.paymentStatus).toBe("PENDING");
+
+    // 2. Confirmed delivered progresses from OUT_FOR_DELIVERY to DELIVERED; COD payment remains PENDING
+    const deliveredFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "delivered" }),
+    } as Response);
+
+    await service.syncShipmentStatus(providerShipmentId);
+    deliveredFetchSpy.mockRestore();
+
+    const deliveredShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id } });
+    expect(deliveredShipment.status).toBe("DELIVERED");
+    expect(deliveredShipment.deliveredAt).not.toBeNull();
+
+    const deliveredOrder = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(deliveredOrder.status).toBe("DELIVERED");
+    expect(deliveredOrder.paymentStatus).toBe("PENDING");
+  }, 15000);
+
+  test("Steadfast status synchronization keeps cancelled_approval_pending non-terminal and allows confirmed cancellation", async () => {
+    const user = await makeUser();
+    const cancelShipmentId = `STEADFAST-CANCEL-${crypto.randomUUID()}`;
+    const { order: cancelOrder } = await makeOrder(user, { paymentMethod: "COD" });
+    const cancelShipment = await addShipment(cancelOrder.id, {
+      status: "CREATED",
+      provider: "steadfast",
+      providerShipmentId: cancelShipmentId,
+    });
+
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    const service = new ShippingService(provider);
+
+    const pendingCancelFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "cancelled_approval_pending" }),
+    } as Response);
+
+    await service.syncShipmentStatus(cancelShipmentId);
+    pendingCancelFetchSpy.mockRestore();
+
+    const intermediateShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: cancelShipment.id } });
+    expect(intermediateShipment.status).toBe("IN_TRANSIT");
+    expect(intermediateShipment.cancelledAt).toBeNull();
+
+    const intermediateOrder = await prisma.order.findUniqueOrThrow({ where: { id: cancelOrder.id } });
+    expect(intermediateOrder.status).toBe("SHIPPED");
+
+    // Confirmed cancelled transitions IN_TRANSIT to CANCELLED
+    const confirmedCancelFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "cancelled" }),
+    } as Response);
+
+    await service.syncShipmentStatus(cancelShipmentId);
+    confirmedCancelFetchSpy.mockRestore();
+
+    const finalCancelShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: cancelShipment.id } });
+    expect(finalCancelShipment.status).toBe("CANCELLED");
+    expect(finalCancelShipment.cancelledAt).not.toBeNull();
+  }, 15000);
+
+  test("Steadfast status synchronization handles exceptional status as FAILED and allows subsequent cancellation", async () => {
+    const user = await makeUser();
+    const excShipmentId = `STEADFAST-EXC-${crypto.randomUUID()}`;
+    const { order: excOrder } = await makeOrder(user);
+    const excShipment = await addShipment(excOrder.id, {
+      status: "IN_TRANSIT",
+      provider: "steadfast",
+      providerShipmentId: excShipmentId,
+    });
+
+    const provider = new SteadfastCourierProvider(
+      "test-api-key",
+      "test-secret-key",
+      "https://steadfast.test/api/v1"
+    );
+    const service = new ShippingService(provider);
+
+    const excFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "exceptional" }),
+    } as Response);
+
+    await service.syncShipmentStatus(excShipmentId);
+    excFetchSpy.mockRestore();
+
+    const failedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: excShipment.id } });
+    expect(failedShipment.status).toBe("FAILED");
+
+    // Later cancelled transition from FAILED to CANCELLED
+    const excCancelFetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: async () => ({ status: 200, delivery_status: "cancelled" }),
+    } as Response);
+
+    await service.syncShipmentStatus(excShipmentId);
+    excCancelFetchSpy.mockRestore();
+
+    const terminatedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: excShipment.id } });
+    expect(terminatedShipment.status).toBe("CANCELLED");
+  }, 15000);
 
   test("shipment action requires an internal role and customer order detail exposes only safe shipment fields", async () => {
     const customer = await makeUser();
