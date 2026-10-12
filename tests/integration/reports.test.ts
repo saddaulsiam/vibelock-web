@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import prisma from "../../src/lib/prisma/client";
-import { getAdminReport, getAdminOrderProfitability } from "../../src/lib/admin/report-queries";
+import {
+  getAdminReport,
+  getAdminOrderProfitability,
+  getAdminProductProfitability,
+} from "../../src/lib/admin/report-queries";
 import crypto from "crypto";
 import { csv, csvCell } from "../../src/app/api/admin/reports/export/route";
 
@@ -1555,5 +1559,680 @@ describe("admin reports", () => {
     const csvContent = csv(productRows);
     expect(csvContent).toContain("Product,SKU,Sold Units,Returned Units,Net Units,Return Rate,Gross Sales,Discounts,Net Sales,COGS,Gross Profit,Margin");
     expect(csvContent).toContain(`CSV Parity Product,${sku},4,1,3,25.00%,400,0,300,90,210,70.00%`);
+  });
+
+  describe("getAdminProductProfitability", () => {
+    test("reconciles product totals to variant totals with proportional Order.discount allocation", async () => {
+      const user = await prisma.user.create({
+        data: { email: `prof-rec-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+      });
+      userIds.push(user.id);
+
+      const product = await prisma.product.create({
+        data: {
+          name: "Vibe Classic Hoodie",
+          slug: `vibe-classic-hoodie-${crypto.randomUUID()}`,
+          status: "PUBLISHED",
+          variants: {
+            create: [
+              {
+                sku: `VCH-BLK-M-${crypto.randomUUID()}`,
+                size: "M",
+                color: "Black",
+                costPrice: new Prisma.Decimal(200),
+                sellingPrice: new Prisma.Decimal(600),
+              },
+              {
+                sku: `VCH-BLK-L-${crypto.randomUUID()}`,
+                size: "L",
+                color: "Black",
+                costPrice: new Prisma.Decimal(100),
+                sellingPrice: new Prisma.Decimal(400),
+              },
+            ],
+          },
+        },
+        include: { variants: true },
+      });
+      productIds.push(product.id);
+      const [varM, varL] = product.variants;
+
+      // Order with 2 units of varM (1200) and 1 unit of varL (400) = subtotal 1600.
+      // Order.discount = 320 (20%). Total charged = 1280.
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-REC-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-10T12:00:00.000Z"),
+          userId: user.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(1600),
+          taxAmount: 0,
+          discount: new Prisma.Decimal(320),
+          total: new Prisma.Decimal(1280),
+          shippingStreet: "Gulshan 2",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: product.name,
+                sku: varM.sku,
+                size: varM.size,
+                color: varM.color,
+                quantity: 2,
+                unitPrice: new Prisma.Decimal(600),
+                costPrice: new Prisma.Decimal(200),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(1200),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(1200),
+              },
+              {
+                productName: product.name,
+                sku: varL.sku,
+                size: varL.size,
+                color: varL.color,
+                quantity: 1,
+                unitPrice: new Prisma.Decimal(400),
+                costPrice: new Prisma.Decimal(100),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(400),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(400),
+              },
+            ],
+          },
+        },
+      });
+      orderIds.push(order.id);
+
+      mockSession = { user: { id: user.id, role: "ADMIN" } };
+      const result = await getAdminProductProfitability({
+        range: "custom",
+        from: "2099-10-10",
+        to: "2099-10-10",
+      });
+
+      expect(result.total).toBe(1);
+      const prod = result.products[0];
+      expect(prod.productId).toBe(product.id);
+      expect(prod.productName).toBe(product.name);
+      expect(prod.variantCount).toBe(2);
+      expect(prod.variants).toHaveLength(2);
+
+      // Verify variant M:
+      // Allocated discount: 320 * (1200 / 1600) = 240.
+      // Net sales: 1200 - 240 = 960.
+      // COGS: 2 * 200 = 400.
+      // Profit: 960 - 400 = 560.
+      // Margin: (560 / 960) * 100 = 58.33%
+      const rowM = prod.variants.find((v) => v.sku === varM.sku)!;
+      expect(rowM).toBeDefined();
+      expect(rowM.soldUnits).toBe(2);
+      expect(rowM.retainedUnits).toBe(2);
+      expect(rowM.grossSales).toBe(1200);
+      expect(rowM.orderDiscounts).toBe(240);
+      expect(rowM.netSales).toBe(960);
+      expect(rowM.cogs).toBe(400);
+      expect(rowM.profit).toBe(560);
+      expect(rowM.margin).toBe(58.33);
+
+      // Verify variant L:
+      // Allocated discount: 320 * (400 / 1600) = 80.
+      // Net sales: 400 - 80 = 320.
+      // COGS: 1 * 100 = 100.
+      // Profit: 320 - 100 = 220.
+      // Margin: (220 / 320) * 100 = 68.75%
+      const rowL = prod.variants.find((v) => v.sku === varL.sku)!;
+      expect(rowL).toBeDefined();
+      expect(rowL.soldUnits).toBe(1);
+      expect(rowL.retainedUnits).toBe(1);
+      expect(rowL.grossSales).toBe(400);
+      expect(rowL.orderDiscounts).toBe(80);
+      expect(rowL.netSales).toBe(320);
+      expect(rowL.cogs).toBe(100);
+      expect(rowL.profit).toBe(220);
+      expect(rowL.margin).toBe(68.75);
+
+      // Verify product rollup reconciles exactly with variant totals
+      const variantGrossSum = prod.variants.reduce((sum, v) => sum + v.grossSales, 0);
+      const variantDiscountSum = prod.variants.reduce((sum, v) => sum + v.orderDiscounts, 0);
+      const variantNetSum = prod.variants.reduce((sum, v) => sum + v.netSales, 0);
+      const variantCogsSum = prod.variants.reduce((sum, v) => sum + v.cogs, 0);
+      const variantProfitSum = prod.variants.reduce((sum, v) => sum + v.profit, 0);
+      const variantUnitsSum = prod.variants.reduce((sum, v) => sum + v.soldUnits, 0);
+
+      expect(prod.grossSales).toBe(variantGrossSum);
+      expect(prod.orderDiscounts).toBe(variantDiscountSum);
+      expect(prod.netSales).toBe(variantNetSum);
+      expect(prod.cogs).toBe(variantCogsSum);
+      expect(prod.profit).toBe(variantProfitSum);
+      expect(prod.soldUnits).toBe(variantUnitsSum);
+
+      // Product margin: 780 / 1280 * 100 = 60.94%
+      expect(prod.profit).toBe(780);
+      expect(prod.netSales).toBe(1280);
+      expect(prod.margin).toBe(60.94);
+    });
+
+    test("handles returns with status <> 'REJECTED' and retains merchandise net sales without double-deducting payment refunds", async () => {
+      const user = await prisma.user.create({
+        data: { email: `prof-ret-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+      });
+      userIds.push(user.id);
+
+      const product = await prisma.product.create({
+        data: {
+          name: "Vibe Tech Parka",
+          slug: `vibe-tech-parka-${crypto.randomUUID()}`,
+          status: "PUBLISHED",
+          variants: {
+            create: {
+              sku: `VTP-OLV-XL-${crypto.randomUUID()}`,
+              size: "XL",
+              color: "Olive",
+              costPrice: new Prisma.Decimal(200),
+              sellingPrice: new Prisma.Decimal(500),
+            },
+          },
+        },
+        include: { variants: true },
+      });
+      productIds.push(product.id);
+      const variant = product.variants[0];
+
+      // 3 units at 500 = subtotal 1500, costPrice = 200.
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-RET-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-11T10:00:00.000Z"),
+          userId: user.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(1500),
+          taxAmount: 0,
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(1500),
+          shippingStreet: "Banani 11",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: product.name,
+                sku: variant.sku,
+                size: variant.size,
+                color: variant.color,
+                quantity: 3,
+                unitPrice: new Prisma.Decimal(500),
+                costPrice: new Prisma.Decimal(200),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(1500),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(1500),
+              },
+            ],
+          },
+        },
+        include: { items: true },
+      });
+      orderIds.push(order.id);
+
+      // Return 1: 1 unit COMPLETED
+      const completedReturn = await prisma.returnRequest.create({
+        data: {
+          orderId: order.id,
+          status: "COMPLETED",
+          items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+        },
+      });
+      returnIds.push(completedReturn.id);
+
+      // Return 2: 1 unit REJECTED (must be ignored per rule status <> 'REJECTED')
+      const rejectedReturn = await prisma.returnRequest.create({
+        data: {
+          orderId: order.id,
+          status: "REJECTED",
+          items: { create: [{ orderItemId: order.items[0].id, quantity: 1 }] },
+        },
+      });
+      returnIds.push(rejectedReturn.id);
+
+      // Online payment refund of 500
+      const payment = await prisma.payment.create({
+        data: {
+          orderId: order.id,
+          amount: new Prisma.Decimal(1500),
+          status: "SUCCESS",
+          gateway: "sslcommerz",
+          merchantReferenceId: `PAY-RET-${crypto.randomUUID()}`,
+        },
+      });
+      paymentIds.push(payment.id);
+
+      await prisma.refund.create({
+        data: {
+          paymentId: payment.id,
+          amount: new Prisma.Decimal(500),
+          status: "SUCCESS",
+        },
+      });
+
+      mockSession = { user: { id: user.id, role: "ADMIN" } };
+      const result = await getAdminProductProfitability({
+        range: "custom",
+        from: "2099-10-11",
+        to: "2099-10-11",
+      });
+
+      expect(result.total).toBe(1);
+      const prod = result.products[0];
+      expect(prod.soldUnits).toBe(3);
+      expect(prod.returnedUnits).toBe(1); // rejected return ignored
+      expect(prod.retainedUnits).toBe(2);
+      expect(prod.returnRate).toBe(33.33);
+
+      // Retained merchandise net sales: 1500 * (2/3) = 1000.
+      // Payment refund of 500 is NOT double-deducted from retained merchandise sales.
+      expect(prod.netSales).toBe(1000);
+      expect(prod.cogs).toBe(400); // 2 * 200 = 400
+      expect(prod.profit).toBe(600); // 1000 - 400 = 600
+      expect(prod.margin).toBe(60); // 600 / 1000 * 100 = 60%
+    });
+
+    test("includes legacy SKUs gracefully even when no Product or ProductVariant record exists", async () => {
+      const user = await prisma.user.create({
+        data: { email: `prof-leg-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+      });
+      userIds.push(user.id);
+
+      const legacySku = `LEGACY-TEE-${crypto.randomUUID()}`;
+      const legacyProductName = "Legacy Vintage Graphic Tee";
+
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-LEG-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-12T10:00:00.000Z"),
+          userId: user.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "COD",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(500),
+          taxAmount: 0,
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(500),
+          shippingStreet: "Dhanmondi 27",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: legacyProductName,
+                sku: legacySku,
+                quantity: 2,
+                unitPrice: new Prisma.Decimal(250),
+                costPrice: new Prisma.Decimal(80),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(500),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(500),
+              },
+            ],
+          },
+        },
+      });
+      orderIds.push(order.id);
+
+      mockSession = { user: { id: user.id, role: "ADMIN" } };
+      const result = await getAdminProductProfitability({
+        range: "custom",
+        from: "2099-10-12",
+        to: "2099-10-12",
+      });
+
+      expect(result.total).toBe(1);
+      const prod = result.products[0];
+      expect(prod.productName).toBe(legacyProductName);
+      expect(prod.productId).toBe(legacyProductName);
+      expect(prod.soldUnits).toBe(2);
+      expect(prod.retainedUnits).toBe(2);
+      expect(prod.netSales).toBe(500);
+      expect(prod.cogs).toBe(160);
+      expect(prod.profit).toBe(340);
+      expect(prod.margin).toBe(68);
+
+      expect(prod.variants).toHaveLength(1);
+      expect(prod.variants[0].sku).toBe(legacySku);
+      expect(prod.variants[0].netSales).toBe(500);
+      expect(prod.variants[0].profit).toBe(340);
+    });
+
+    test("supports search, sorting by revenue/profit/units/margin/returns, and pagination", async () => {
+      const user = await prisma.user.create({
+        data: { email: `prof-sort-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+      });
+      userIds.push(user.id);
+
+      // Create 3 distinct products:
+      // Product 1: High Units (10 units), Moderate Profit (200), Margin 20%
+      // Product 2: High Profit (500), High Margin (50%), Low Units (2 units)
+      // Product 3: High Returns (4 returned), Low Revenue
+      const p1 = await prisma.product.create({
+        data: {
+          name: "Searchable Cargo Pants",
+          slug: `cargo-${crypto.randomUUID()}`,
+          status: "PUBLISHED",
+          variants: {
+            create: {
+              sku: `CRG-01-${crypto.randomUUID()}`,
+              costPrice: new Prisma.Decimal(80),
+              sellingPrice: new Prisma.Decimal(100),
+            },
+          },
+        },
+        include: { variants: true },
+      });
+      const p2 = await prisma.product.create({
+        data: {
+          name: "Luxury Silk Bomber",
+          slug: `bomber-${crypto.randomUUID()}`,
+          status: "PUBLISHED",
+          variants: {
+            create: {
+              sku: `BMB-99-${crypto.randomUUID()}`,
+              costPrice: new Prisma.Decimal(250),
+              sellingPrice: new Prisma.Decimal(500),
+            },
+          },
+        },
+        include: { variants: true },
+      });
+      const p3 = await prisma.product.create({
+        data: {
+          name: "Oversized Flannel Shirt",
+          slug: `flannel-${crypto.randomUUID()}`,
+          status: "PUBLISHED",
+          variants: {
+            create: {
+              sku: `FLN-77-${crypto.randomUUID()}`,
+              costPrice: new Prisma.Decimal(50),
+              sellingPrice: new Prisma.Decimal(100),
+            },
+          },
+        },
+        include: { variants: true },
+      });
+      productIds.push(p1.id, p2.id, p3.id);
+
+      const order = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-SORT-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-13T12:00:00.000Z"),
+          userId: user.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(2500), // 1000 (p1) + 1000 (p2) + 500 (p3)
+          taxAmount: 0,
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(2500),
+          shippingStreet: "Uttara Sector 3",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: p1.name,
+                sku: p1.variants[0].sku,
+                quantity: 10,
+                unitPrice: new Prisma.Decimal(100),
+                costPrice: new Prisma.Decimal(80),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(1000),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(1000),
+              },
+              {
+                productName: p2.name,
+                sku: p2.variants[0].sku,
+                quantity: 2,
+                unitPrice: new Prisma.Decimal(500),
+                costPrice: new Prisma.Decimal(250),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(1000),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(1000),
+              },
+              {
+                productName: p3.name,
+                sku: p3.variants[0].sku,
+                quantity: 5,
+                unitPrice: new Prisma.Decimal(100),
+                costPrice: new Prisma.Decimal(50),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(500),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(500),
+              },
+            ],
+          },
+        },
+        include: { items: true },
+      });
+      orderIds.push(order.id);
+
+      // Return 4 units of p3
+      const flannelItem = order.items.find((i) => i.sku === p3.variants[0].sku)!;
+      const flannelReturn = await prisma.returnRequest.create({
+        data: {
+          orderId: order.id,
+          status: "COMPLETED",
+          items: { create: [{ orderItemId: flannelItem.id, quantity: 4 }] },
+        },
+      });
+      returnIds.push(flannelReturn.id);
+
+      mockSession = { user: { id: user.id, role: "ADMIN" } };
+      const baseFilters = { range: "custom", from: "2099-10-13", to: "2099-10-13" };
+
+      // 1. Sort by profit: Luxury Silk Bomber (500) > Searchable Cargo Pants (200) > Oversized Flannel Shirt (50)
+      const sortByProfit = await getAdminProductProfitability({ ...baseFilters, sort: "profit" });
+      expect(sortByProfit.products.map((p) => p.productName)).toEqual([
+        p2.name,
+        p1.name,
+        p3.name,
+      ]);
+
+      // 2. Sort by units: Searchable Cargo Pants (10) > Oversized Flannel Shirt (5) > Luxury Silk Bomber (2)
+      const sortByUnits = await getAdminProductProfitability({ ...baseFilters, sort: "units" });
+      expect(sortByUnits.products.map((p) => p.productName)).toEqual([
+        p1.name,
+        p3.name,
+        p2.name,
+      ]);
+
+      // 3. Sort by returns: Oversized Flannel Shirt (4) > others (0)
+      const sortByReturns = await getAdminProductProfitability({ ...baseFilters, sort: "returns" });
+      expect(sortByReturns.products[0].productName).toBe(p3.name);
+      expect(sortByReturns.products[0].returnedUnits).toBe(4);
+
+      // 4. Sort by margin: Luxury Silk Bomber (50%) > Oversized Flannel Shirt (50 retained / 100 net sales = 50%) or Cargo Pants (20%)
+      const sortByMargin = await getAdminProductProfitability({ ...baseFilters, sort: "margin" });
+      expect(sortByMargin.products[2].productName).toBe(p1.name); // Cargo pants is lowest margin (20%)
+
+      // 5. Search by product name
+      const searchByName = await getAdminProductProfitability({ ...baseFilters, search: "Cargo" });
+      expect(searchByName.total).toBe(1);
+      expect(searchByName.products[0].productName).toBe(p1.name);
+
+      // 6. Search by SKU
+      const searchBySku = await getAdminProductProfitability({ ...baseFilters, search: p2.variants[0].sku });
+      expect(searchBySku.total).toBe(1);
+      expect(searchBySku.products[0].productName).toBe(p2.name);
+
+      // 7. Pagination: limit 1, page 2
+      const page1 = await getAdminProductProfitability({ ...baseFilters, limit: 1, page: 1, sort: "profit" });
+      const page2 = await getAdminProductProfitability({ ...baseFilters, limit: 1, page: 2, sort: "profit" });
+      expect(page1.total).toBe(3);
+      expect(page1.totalPages).toBe(3);
+      expect(page1.products).toHaveLength(1);
+      expect(page1.products[0].productName).toBe(p2.name);
+      expect(page2.products).toHaveLength(1);
+      expect(page2.products[0].productName).toBe(p1.name);
+    });
+
+    test("handles zero-subtotal orders and cancelled orders safely without errors", async () => {
+      const user = await prisma.user.create({
+        data: { email: `prof-zero-${crypto.randomUUID()}@example.com`, role: "ADMIN" },
+      });
+      userIds.push(user.id);
+
+      // 1. Cancelled order on 2099-10-14
+      const cancelledOrder = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-CAN-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-14T09:00:00.000Z"),
+          userId: user.id,
+          status: "CANCELLED",
+          paymentStatus: "CANCELLED",
+          paymentMethod: "ONLINE",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(1000),
+          taxAmount: 0,
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(1000),
+          shippingStreet: "Test Street",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: "Cancelled Free Promo Tee",
+                sku: `CAN-PROMO-${crypto.randomUUID()}`,
+                quantity: 1,
+                unitPrice: new Prisma.Decimal(1000),
+                costPrice: new Prisma.Decimal(100),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(1000),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(1000),
+              },
+            ],
+          },
+        },
+      });
+      orderIds.push(cancelledOrder.id);
+
+      // 2. Zero-subtotal order (100% discount / free gift)
+      const freeOrder = await prisma.order.create({
+        data: {
+          orderNumber: `ORD-FREE-${crypto.randomUUID()}`,
+          createdAt: new Date("2099-10-14T11:00:00.000Z"),
+          userId: user.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "COD",
+          customerEmail: user.email,
+          taxRate: 0,
+          taxIncluded: false,
+          shippingCost: 0,
+          subtotal: new Prisma.Decimal(0),
+          taxAmount: 0,
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(0),
+          shippingStreet: "Test Street",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          items: {
+            create: [
+              {
+                productName: "Complimentary Sticker Pack",
+                sku: `FREE-STK-${crypto.randomUUID()}`,
+                quantity: 1,
+                unitPrice: new Prisma.Decimal(0),
+                costPrice: new Prisma.Decimal(5),
+                appliedDiscount: 0,
+                taxRate: 0,
+                taxIncluded: false,
+                lineSubtotal: new Prisma.Decimal(0),
+                discountAmount: 0,
+                taxAmount: 0,
+                lineTotal: new Prisma.Decimal(0),
+              },
+            ],
+          },
+        },
+      });
+      orderIds.push(freeOrder.id);
+
+      mockSession = { user: { id: user.id, role: "ADMIN" } };
+      const result = await getAdminProductProfitability({
+        range: "custom",
+        from: "2099-10-14",
+        to: "2099-10-14",
+      });
+
+      // Cancelled order should be excluded; only the free order should appear
+      expect(result.total).toBe(1);
+      const freeItem = result.products[0];
+      expect(freeItem.productName).toBe("Complimentary Sticker Pack");
+      expect(freeItem.soldUnits).toBe(1);
+      expect(freeItem.netSales).toBe(0);
+      expect(freeItem.cogs).toBe(5);
+      expect(freeItem.profit).toBe(-5);
+      expect(freeItem.margin).toBeNull(); // margin is null when netSales <= 0
+    });
   });
 });

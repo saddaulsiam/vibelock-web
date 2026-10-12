@@ -449,3 +449,310 @@ export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
     page,
   };
 }
+
+export type ProductProfitabilityVariant = {
+  sku: string;
+  size: string | null;
+  color: string | null;
+  soldUnits: number;
+  returnedUnits: number;
+  retainedUnits: number;
+  returnRate: number | null;
+  isAnomaly: boolean;
+  grossSales: number;
+  totalDiscounts: number;
+  orderDiscounts: number;
+  netSales: number;
+  cogs: number;
+  profit: number;
+  margin: number | null;
+};
+
+export type ProductProfitabilityProduct = {
+  productId: string;
+  productName: string;
+  productSlug: string | null;
+  variantCount: number;
+  soldUnits: number;
+  returnedUnits: number;
+  retainedUnits: number;
+  returnRate: number | null;
+  isAnomaly: boolean;
+  grossSales: number;
+  totalDiscounts: number;
+  orderDiscounts: number;
+  netSales: number;
+  cogs: number;
+  profit: number;
+  margin: number | null;
+  variants: ProductProfitabilityVariant[];
+};
+
+export type ProductProfitabilityResult = {
+  range: ReportRange;
+  start: Date;
+  end: Date;
+  products: ProductProfitabilityProduct[];
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+};
+
+export async function getAdminProductProfitability(
+  filters: ReportFilters = {}
+): Promise<ProductProfitabilityResult> {
+  await requireRole("ADMIN");
+  const { start, end, range } = resolveReportRange(filters);
+  const page = Number.isInteger(filters.page) && (filters.page ?? 0) > 0 ? filters.page! : 1;
+  const limit = Number.isInteger(filters.limit) && (filters.limit ?? 0) > 0 ? filters.limit! : 20;
+
+  const search = filters.search?.trim();
+  const searchSql = search
+    ? Prisma.sql`WHERE (
+        pr."productName" ILIKE ${`%${search}%`}
+        OR EXISTS (
+          SELECT 1 FROM sku_financials sf
+          WHERE sf."productId" = pr."productId" AND sf.sku ILIKE ${`%${search}%`}
+        )
+      )`
+    : Prisma.empty;
+
+  const sort = filters.sort;
+  const sortSql =
+    sort === "profit"
+      ? Prisma.sql`ORDER BY pr."profit" DESC, pr."productName" ASC`
+      : sort === "units"
+        ? Prisma.sql`ORDER BY pr."soldUnits" DESC, pr."productName" ASC`
+        : sort === "margin"
+          ? Prisma.sql`ORDER BY CASE WHEN pr."netSales" > 0 THEN (pr.profit / pr."netSales") ELSE -999999 END DESC, pr."productName" ASC`
+          : sort === "returns"
+            ? Prisma.sql`ORDER BY pr."returnedUnits" DESC, pr."productName" ASC`
+            : Prisma.sql`ORDER BY pr."netSales" DESC, pr."productName" ASC`;
+
+  const ctes = Prisma.sql`
+    WITH eligible_orders AS (
+      SELECT o.*
+      FROM "Order" o
+      WHERE o."createdAt" >= ${start}
+        AND o."createdAt" < ${end}
+        AND o.status <> 'CANCELLED'::"OrderStatus"
+    ),
+    sold_items AS (
+      SELECT oi.*, o."orderNumber", o."paymentMethod", o."customerName", o."customerEmail",
+             o.status AS "orderStatus", o."paymentStatus", o."shippingCost", o.discount AS "orderDiscount",
+             o.subtotal AS "orderSubtotal", o."createdAt" AS "orderCreatedAt"
+      FROM "OrderItem" oi
+      INNER JOIN eligible_orders o ON o.id = oi."orderId"
+    ),
+    returned_items AS (
+      SELECT ri."orderItemId", SUM(ri.quantity)::int AS quantity
+      FROM "ReturnItem" ri
+      INNER JOIN "ReturnRequest" rr ON rr.id = ri."returnRequestId"
+      INNER JOIN eligible_orders o ON o.id = rr."orderId"
+      WHERE rr.status <> 'REJECTED'::"ReturnRequestStatus"
+      GROUP BY ri."orderItemId"
+    ),
+    item_financials AS (
+      SELECT so.*,
+        COALESCE(ri.quantity, 0) AS "returnedQuantity",
+        GREATEST(0, so.quantity - COALESCE(ri.quantity, 0)) AS "keptQuantity",
+        CASE 
+          WHEN COALESCE(so."orderSubtotal", 0) > 0 THEN
+            (COALESCE(so."orderDiscount", 0) * (so."lineTotal" / so."orderSubtotal"))
+          ELSE 0
+        END AS "allocatedOrderDiscount"
+      FROM sold_items so
+      LEFT JOIN returned_items ri ON ri."orderItemId" = so.id
+    ),
+    sku_financials AS (
+      SELECT
+        COALESCE(p.id, so."productName") AS "productId",
+        COALESCE(p.name, so."productName") AS "productName",
+        p.slug AS "productSlug",
+        so.sku,
+        so.size,
+        so.color,
+        SUM(so.quantity)::bigint AS "soldUnits",
+        SUM(so."returnedQuantity")::bigint AS "returnedUnits",
+        SUM(so."keptQuantity")::bigint AS "retainedUnits",
+        COALESCE(SUM(so."lineTotal" + so."discountAmount"), 0)::float8 AS "grossSales",
+        COALESCE(SUM(so."discountAmount" + so."allocatedOrderDiscount"), 0)::float8 AS "totalDiscounts",
+        COALESCE(SUM(so."allocatedOrderDiscount"), 0)::float8 AS "orderDiscounts",
+        COALESCE(SUM(
+          CASE WHEN so.quantity > 0 THEN
+            (so."lineTotal" - so."allocatedOrderDiscount") * (so."keptQuantity"::float8 / so.quantity::float8)
+          ELSE 0 END
+        ), 0)::float8 AS "netSales",
+        COALESCE(SUM(so."costPrice" * so."keptQuantity"), 0)::float8 AS "cogs",
+        COALESCE(SUM(
+          CASE WHEN so.quantity > 0 THEN
+            (so."lineTotal" - so."allocatedOrderDiscount") * (so."keptQuantity"::float8 / so.quantity::float8)
+          ELSE 0 END
+          - (so."costPrice" * so."keptQuantity")
+        ), 0)::float8 AS "profit"
+      FROM item_financials so
+      LEFT JOIN "ProductVariant" pv ON pv.sku = so.sku
+      LEFT JOIN "Product" p ON p.id = pv."productId"
+      GROUP BY
+        COALESCE(p.id, so."productName"),
+        COALESCE(p.name, so."productName"),
+        p.slug,
+        so.sku,
+        so.size,
+        so.color
+    ),
+    product_rollups AS (
+      SELECT
+        "productId",
+        "productName",
+        "productSlug",
+        COUNT(DISTINCT sku)::int AS "variantCount",
+        SUM("soldUnits")::bigint AS "soldUnits",
+        SUM("returnedUnits")::bigint AS "returnedUnits",
+        SUM("retainedUnits")::bigint AS "retainedUnits",
+        SUM("grossSales")::float8 AS "grossSales",
+        SUM("totalDiscounts")::float8 AS "totalDiscounts",
+        SUM("orderDiscounts")::float8 AS "orderDiscounts",
+        SUM("netSales")::float8 AS "netSales",
+        SUM("cogs")::float8 AS "cogs",
+        SUM("profit")::float8 AS "profit"
+      FROM sku_financials
+      GROUP BY "productId", "productName", "productSlug"
+    )
+  `;
+
+  const [productRows, countRows] = await Promise.all([
+    prisma.$queryRaw<
+      {
+        productId: string;
+        productName: string;
+        productSlug: string | null;
+        variantCount: number;
+        soldUnits: bigint;
+        returnedUnits: bigint;
+        retainedUnits: bigint;
+        grossSales: number;
+        totalDiscounts: number;
+        orderDiscounts: number;
+        netSales: number;
+        cogs: number;
+        profit: number;
+      }[]
+    >(Prisma.sql`
+      ${ctes}
+      SELECT * FROM product_rollups pr
+      ${searchSql}
+      ${sortSql}
+      LIMIT ${limit} OFFSET ${(page - 1) * limit}
+    `),
+    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+      ${ctes}
+      SELECT COUNT(*)::bigint AS count FROM product_rollups pr
+      ${searchSql}
+    `),
+  ]);
+
+  const total = Number(countRows[0]?.count ?? 0);
+  const totalPages = Math.ceil(total / limit);
+
+  const productIds = productRows.map((p) => p.productId);
+  let variantRows: {
+    productId: string;
+    productName: string;
+    productSlug: string | null;
+    sku: string;
+    size: string | null;
+    color: string | null;
+    soldUnits: bigint;
+    returnedUnits: bigint;
+    retainedUnits: bigint;
+    grossSales: number;
+    totalDiscounts: number;
+    orderDiscounts: number;
+    netSales: number;
+    cogs: number;
+    profit: number;
+  }[] = [];
+
+  if (productIds.length > 0) {
+    variantRows = await prisma.$queryRaw(Prisma.sql`
+      ${ctes}
+      SELECT * FROM sku_financials
+      WHERE "productId" IN (${Prisma.join(productIds)})
+      ORDER BY "netSales" DESC, sku ASC
+    `);
+  }
+
+  const variantsByProductId = new Map<string, ProductProfitabilityVariant[]>();
+  for (const v of variantRows) {
+    const sold = Number(v.soldUnits);
+    const returned = Number(v.returnedUnits);
+    const retained = Number(v.retainedUnits);
+    const netSales = money(v.netSales);
+    const profit = money(v.profit);
+    const returnRate = sold > 0 ? Number(((returned / sold) * 100).toFixed(2)) : null;
+    const margin = netSales > 0 ? Number(((profit / netSales) * 100).toFixed(2)) : null;
+
+    const list = variantsByProductId.get(v.productId) ?? [];
+    list.push({
+      sku: v.sku,
+      size: v.size ?? null,
+      color: v.color ?? null,
+      soldUnits: sold,
+      returnedUnits: returned,
+      retainedUnits: retained,
+      returnRate,
+      isAnomaly: returned > sold,
+      grossSales: money(v.grossSales),
+      totalDiscounts: money(v.totalDiscounts),
+      orderDiscounts: money(v.orderDiscounts),
+      netSales,
+      cogs: money(v.cogs),
+      profit,
+      margin,
+    });
+    variantsByProductId.set(v.productId, list);
+  }
+
+  const products: ProductProfitabilityProduct[] = productRows.map((p) => {
+    const sold = Number(p.soldUnits);
+    const returned = Number(p.returnedUnits);
+    const retained = Number(p.retainedUnits);
+    const netSales = money(p.netSales);
+    const profit = money(p.profit);
+    const returnRate = sold > 0 ? Number(((returned / sold) * 100).toFixed(2)) : null;
+    const margin = netSales > 0 ? Number(((profit / netSales) * 100).toFixed(2)) : null;
+
+    return {
+      productId: p.productId,
+      productName: p.productName,
+      productSlug: p.productSlug ?? null,
+      variantCount: Number(p.variantCount),
+      soldUnits: sold,
+      returnedUnits: returned,
+      retainedUnits: retained,
+      returnRate,
+      isAnomaly: returned > sold,
+      grossSales: money(p.grossSales),
+      totalDiscounts: money(p.totalDiscounts),
+      orderDiscounts: money(p.orderDiscounts),
+      netSales,
+      cogs: money(p.cogs),
+      profit,
+      margin,
+      variants: variantsByProductId.get(p.productId) ?? [],
+    };
+  });
+
+  return {
+    range,
+    start,
+    end,
+    products,
+    total,
+    totalPages,
+    page,
+    limit,
+  };
+}

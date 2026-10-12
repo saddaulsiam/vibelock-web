@@ -4,7 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ReportCharts } from "@/components/admin/report-charts";
 import { ReportExportMenu } from "@/components/admin/report-export-menu";
-import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/report-queries";
+import { ProductProfitabilityDrilldown } from "@/components/admin/product-profitability-drilldown";
+import {
+  getAdminOrderProfitability,
+  getAdminProductProfitability,
+  getAdminReport,
+} from "@/lib/admin/report-queries";
 
 function money(value: number | null) {
   return value === null ? "Unavailable" : `৳${value.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -37,14 +42,25 @@ export default async function AdminReportsPage({
   const reportFilters = { range, from, to, sort: value("sort"), search: value("q") };
   const buildHref = (updates: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams();
-    for (const [key, current] of Object.entries({ range, from, to, q: value("q"), sort: value("sort"), page: value("page"), ...updates })) {
+    for (const [key, current] of Object.entries({
+      range,
+      from,
+      to,
+      q: value("q"),
+      sort: value("sort"),
+      page: value("page"),
+      pPage: value("pPage"),
+      ...updates,
+    })) {
       if (current !== undefined && current !== "") query.set(key, String(current));
     }
     return `?${query.toString()}`;
   };
-  const [report, orders] = await Promise.all([
+  const productPage = Number(value("pPage") ?? "1");
+  const [report, orders, productProfitability] = await Promise.all([
     getAdminReport(reportFilters),
     getAdminOrderProfitability({ ...reportFilters, page: Number(value("page") ?? "1") }),
+    getAdminProductProfitability({ ...reportFilters, page: productPage, limit: 20 }),
   ]);
 
   return (
@@ -70,6 +86,8 @@ export default async function AdminReportsPage({
         <label className="text-sm font-medium">To
           <Input name="to" type="date" defaultValue={to} className="mt-2" />
         </label>
+        {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
+        {value("q") ? <input type="hidden" name="q" value={value("q")!} /> : null}
         <button className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85" type="submit">Apply</button>
       </form>
 
@@ -106,68 +124,45 @@ export default async function AdminReportsPage({
         <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-sm"><thead className="bg-muted/50"><tr className="text-left"><th className="p-3">Date</th><th className="p-3">Orders</th><th className="p-3">Gross</th><th className="p-3">Discounts</th><th className="p-3">Net sales</th><th className="p-3">Refunds</th><th className="p-3">COGS</th><th className="p-3">Gross profit</th></tr></thead><tbody className="divide-y">{report.trend.length ? report.trend.map((row) => <tr key={row.date.toISOString()}><td className="p-3">{dateLabel(row.date)}</td><td className="p-3">{row.orders}</td><td className="p-3">{money(row.grossSales)}</td><td className="p-3">{money(row.discounts)}</td><td className="p-3">{money(row.netSales)}</td><td className="p-3">{money(row.refunds)}</td><td className="p-3">{money(row.cogs)}</td><td className="p-3">{money(row.grossProfit)}</td></tr>) : <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No sales in this period.</td></tr>}</tbody></table></div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="border border-[#101114]/10 bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4">
-            <div>
-              <h2 className="text-xl font-semibold">Product profitability</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Top 100 by selected sort. Profit uses historical item costs and returned quantities; order-level coupon discounts and payment refunds are not allocated to individual products and are accounted for at the order summary level.</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-xs text-muted-foreground">Sort:</span>
-              <Link href={buildHref({ sort: "revenue", page: undefined })} className={`underline-offset-4 hover:underline ${(!value("sort") || value("sort") === "revenue") ? "font-semibold underline" : ""}`}>Revenue</Link>
-              <Link href={buildHref({ sort: "profit", page: undefined })} className={`underline-offset-4 hover:underline ${value("sort") === "profit" ? "font-semibold underline" : ""}`}>Profit</Link>
-              <Link href={buildHref({ sort: "units", page: undefined })} className={`underline-offset-4 hover:underline ${value("sort") === "units" ? "font-semibold underline" : ""}`}>Units</Link>
-              <Link href={buildHref({ sort: "margin", page: undefined })} className={`underline-offset-4 hover:underline ${value("sort") === "margin" ? "font-semibold underline" : ""}`}>Margin</Link>
-              <Link href={buildHref({ sort: "returns", page: undefined })} className={`underline-offset-4 hover:underline ${value("sort") === "returns" ? "font-semibold underline" : ""}`}>Returns</Link>
-            </div>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead className="bg-muted/50">
-                <tr className="text-left">
-                  <th className="p-3">Product / SKU</th>
-                  <th className="p-3">Sold</th>
-                  <th className="p-3">Returns</th>
-                  <th className="p-3">Net units</th>
-                  <th className="p-3">Return %</th>
-                  <th className="p-3">Gross</th>
-                  <th className="p-3">Net sales</th>
-                  <th className="p-3">COGS</th>
-                  <th className="p-3">Profit</th>
-                  <th className="p-3">Margin</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {report.products.length ? report.products.map((row) => (
-                  <tr key={row.sku}>
-                    <td className="p-3">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-medium">{row.productName}</span>
-                        {row.isAnomaly ? (
-                          <Badge variant="destructive" className="h-4 px-1.5 py-0 text-[10px]">Over-return</Badge>
-                        ) : null}
-                      </div>
-                      <p className="text-xs text-muted-foreground">{row.sku}</p>
-                    </td>
-                    <td className="p-3">{row.soldUnits}</td>
-                    <td className="p-3">{row.returnedUnits}</td>
-                    <td className="p-3">{row.netUnits}</td>
-                    <td className="p-3">{row.returnRate === null ? "—" : `${row.returnRate.toFixed(1)}%`}</td>
-                    <td className="p-3">{money(row.grossSales)}</td>
-                    <td className="p-3">{money(row.netSales)}</td>
-                    <td className="p-3">{money(row.cogs)}</td>
-                    <td className="p-3">{money(row.profit)}</td>
-                    <td className="p-3">{row.margin === null ? "—" : `${row.margin.toFixed(1)}%`}</td>
-                  </tr>
-                )) : (
-                  <tr><td colSpan={10} className="p-8 text-center text-muted-foreground">No products found.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+      <ProductProfitabilityDrilldown
+        data={productProfitability}
+        currentSort={value("sort")}
+        currentSearch={value("q")}
+        range={range}
+        from={from}
+        to={to}
+        page={value("page")}
+      />
+
+      <section className="border border-[#101114]/10 bg-white">
+        <div className="border-b border-[#101114]/10 px-4 py-4">
+          <h2 className="text-xl font-semibold">Payment methods</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sales reflect billed order amounts, not proof of cash collection. Pending online payments and unsettled COD remittances are not counted as collected cash; actual COD remittances are not calculated by this dashboard.
+          </p>
         </div>
-        <div className="border border-[#101114]/10 bg-white"><div className="border-b border-[#101114]/10 px-4 py-4"><h2 className="text-xl font-semibold">Payment methods</h2><p className="mt-1 text-xs text-muted-foreground">Sales reflect billed order amounts, not proof of cash collection. Pending online payments and unsettled COD remittances are not counted as collected cash; actual COD remittances are not calculated by this dashboard.</p></div><div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-muted/50"><tr className="text-left"><th className="p-3">Method</th><th className="p-3">Orders</th><th className="p-3">Sales</th><th className="p-3">Refunds</th></tr></thead><tbody className="divide-y">{report.payments.map((row) => <tr key={row.method}><td className="p-3">{row.method === "COD" ? "Cash on delivery" : row.method}</td><td className="p-3">{row.orders}</td><td className="p-3">{money(row.sales)}</td><td className="p-3">{money(row.refunds)}</td></tr>)}</tbody></table></div></div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-muted/50">
+              <tr className="text-left">
+                <th className="p-3">Method</th>
+                <th className="p-3">Orders</th>
+                <th className="p-3">Sales</th>
+                <th className="p-3">Refunds</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y">
+              {report.payments.map((row) => (
+                <tr key={row.method}>
+                  <td className="p-3">{row.method === "COD" ? "Cash on delivery" : row.method}</td>
+                  <td className="p-3">{row.orders}</td>
+                  <td className="p-3">{money(row.sales)}</td>
+                  <td className="p-3">{money(row.refunds)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
       <section className="border border-[#101114]/10 bg-white">
