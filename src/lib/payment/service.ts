@@ -2,8 +2,14 @@ import prisma from "@/lib/prisma/client";
 import { PaymentInitiationResponse, PaymentProvider } from "./types";
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { BkashProvider } from "./providers/bkash/client";
+import { NagadProvider } from "./providers/nagad/client";
 import { Order, PaymentStatus, Prisma } from "@prisma/client";
-import { isSSLCommerzGateway, isBkashGateway, normalizePaymentGateway } from "./constants";
+import {
+  isSSLCommerzGateway,
+  isBkashGateway,
+  isNagadGateway,
+  normalizePaymentGateway,
+} from "./constants";
 
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
@@ -12,6 +18,9 @@ export class PaymentService {
     }
     if (isBkashGateway(gateway)) {
       return new BkashProvider();
+    }
+    if (isNagadGateway(gateway)) {
+      return new NagadProvider();
     }
     throw new Error(`Unsupported payment gateway: ${gateway}`);
   }
@@ -59,11 +68,13 @@ export class PaymentService {
     const provider = this.getProvider(gateway);
 
     // Extract merchant reference ID:
-    // SSLCommerz uses 'tran_id', bKash uses 'paymentID'
+    // SSLCommerz uses 'tran_id', bKash uses 'paymentID', Nagad uses 'payment_ref_id'
     const merchantReferenceId =
       (typeof payload.tran_id === "string" && payload.tran_id.trim() ? payload.tran_id.trim() : undefined) ??
       (typeof payload.paymentID === "string" && payload.paymentID.trim() ? payload.paymentID.trim() : undefined) ??
-      (typeof payload.paymentId === "string" && payload.paymentId.trim() ? payload.paymentId.trim() : undefined);
+      (typeof payload.paymentId === "string" && payload.paymentId.trim() ? payload.paymentId.trim() : undefined) ??
+      (typeof payload.payment_ref_id === "string" && payload.payment_ref_id.trim() ? payload.payment_ref_id.trim() : undefined) ??
+      (typeof payload.paymentRefId === "string" && payload.paymentRefId.trim() ? payload.paymentRefId.trim() : undefined);
 
     if (!merchantReferenceId) {
       console.error("[PaymentService] Missing transaction reference in callback");
@@ -203,6 +214,10 @@ export class PaymentService {
         delete safePayload.id_token;
         delete safePayload.refreshToken;
         delete safePayload.token;
+        delete safePayload.sensitiveData;
+        delete safePayload.signature;
+        delete safePayload.merchantPrivateKey;
+        delete safePayload.pgPublicKey;
 
         await prisma.payment.updateMany({
           where: { id: payment.id, status: { not: "SUCCESS" } },
@@ -232,6 +247,10 @@ export class PaymentService {
       delete safePayload.id_token;
       delete safePayload.refreshToken;
       delete safePayload.token;
+      delete safePayload.sensitiveData;
+      delete safePayload.signature;
+      delete safePayload.merchantPrivateKey;
+      delete safePayload.pgPublicKey;
 
       // 1. Atomic update of Payment:
       // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).

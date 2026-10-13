@@ -284,7 +284,7 @@ describe("Phase 2D — bKash Checkout Integration", () => {
 
     test("never trusts client choice: rejects unapproved payment method enum values", async () => {
       const result = await createOrderAction(
-        { ...validCheckoutPayload, paymentMethod: "NAGAD" as any },
+        { ...validCheckoutPayload, paymentMethod: "UNSUPPORTED" as any },
         "idempotency-unapproved"
       );
 
