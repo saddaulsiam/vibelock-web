@@ -16,7 +16,7 @@ interface CheckoutFormProps {
   defaultEmail: string;
   defaultName: string;
   availablePaymentMethods?: Array<{
-    value: "COD" | "ONLINE" | "BKASH";
+    value: "COD" | "ONLINE" | "BKASH" | "NAGAD";
     title: string;
     detail: string;
   }>;
@@ -51,6 +51,9 @@ function getSafeCheckoutError(error: string | undefined) {
   }
   if (error?.toLowerCase().includes("bkash payment is currently unavailable")) {
     return "bKash payment is currently unavailable. Please choose another payment method.";
+  }
+  if (error?.toLowerCase().includes("nagad payment is currently unavailable")) {
+    return "Nagad payment is currently unavailable. Please choose another payment method.";
   }
   if (
     error?.toLowerCase().includes("shipping") ||

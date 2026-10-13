@@ -40,7 +40,7 @@ function getStatusBadge(method: PaymentMethodStatus) {
     );
   }
 
-  if ((method.code === "SSLCOMMERZ" || method.code === "BKASH") && !method.isConfigured) {
+  if ((method.code === "SSLCOMMERZ" || method.code === "BKASH" || method.code === "NAGAD") && !method.isConfigured) {
     return (
       <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-800 font-medium">
         <AlertCircle className="mr-1 size-3 text-amber-600" />
@@ -112,7 +112,11 @@ export default async function AdminPaymentSettingsPage() {
       <div className="grid gap-6 md:grid-cols-2">
         {overview.methods.map((method) => {
           const Icon = getMethodIcon(method.code);
-          const canToggle = method.code === "COD" || method.code === "SSLCOMMERZ" || method.code === "BKASH";
+          const canToggle =
+            method.code === "COD" ||
+            method.code === "SSLCOMMERZ" ||
+            method.code === "BKASH" ||
+            method.code === "NAGAD";
 
           return (
             <Card key={method.code} className="border-[#101114]/10 bg-white shadow-sm flex flex-col justify-between">
@@ -183,7 +187,7 @@ export default async function AdminPaymentSettingsPage() {
                     <span className="text-muted-foreground font-medium">Admin Control:</span>
                     {canToggle ? (
                       <TogglePaymentMethodForm
-                        code={method.code as "COD" | "SSLCOMMERZ" | "BKASH"}
+                        code={method.code as "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD"}
                         isEnabled={method.isEnabled}
                         isConfigured={method.isConfigured}
                       />

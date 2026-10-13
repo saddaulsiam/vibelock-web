@@ -189,6 +189,14 @@ export async function createOrderAction(
         error: "bKash payment is currently unavailable. Please choose another payment method.",
       };
     }
+  } else if (paymentMethod === "NAGAD") {
+    const isNagadEnabled = await isPaymentMethodEnabled("NAGAD");
+    if (!isNagadEnabled) {
+      return {
+        success: false,
+        error: "Nagad payment is currently unavailable. Please choose another payment method.",
+      };
+    }
   } else {
     return {
       success: false,
@@ -509,6 +517,29 @@ export async function createOrderAction(
         const service = new paymentService();
 
         const initiation = await service.initiatePayment(orderRecord, "BKASH");
+        if (initiation.success && initiation.redirectUrl) {
+          return {
+            success: true,
+            orderNumber: finalOrderNumber,
+            redirectUrl: initiation.redirectUrl,
+          };
+        } else {
+          return {
+            success: true,
+            orderNumber: finalOrderNumber,
+            error: "Payment initiation failed. You can retry from your orders page.",
+          };
+        }
+      }
+    } else if (paymentMethod === "NAGAD") {
+      const orderRecord = await prisma.order.findUnique({
+        where: { orderNumber: finalOrderNumber },
+      });
+      if (orderRecord) {
+        const paymentService = (await import("@/lib/payment/service")).PaymentService;
+        const service = new paymentService();
+
+        const initiation = await service.initiatePayment(orderRecord, "NAGAD");
         if (initiation.success && initiation.redirectUrl) {
           return {
             success: true,

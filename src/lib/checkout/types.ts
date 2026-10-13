@@ -13,7 +13,7 @@ export interface CheckoutShippingInfo {
 }
 
 export interface CheckoutInput extends CheckoutCustomerInfo, CheckoutShippingInfo {
-  paymentMethod: "COD" | "ONLINE" | "BKASH";
+  paymentMethod: "COD" | "ONLINE" | "BKASH" | "NAGAD";
   couponCode?: string | null;
   shippingMethodId?: string | null;
 }

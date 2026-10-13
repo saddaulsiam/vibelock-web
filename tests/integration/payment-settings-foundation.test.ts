@@ -58,6 +58,7 @@ import {
   isPaymentMethodEnabled,
   getStorefrontPaymentMethods,
   updatePaymentMethodSetting,
+  type PaymentMethodCode,
 } from "../../src/lib/settings/payment-settings";
 import { togglePaymentMethodAction } from "../../src/lib/admin/payment-settings-actions";
 import AdminPaymentSettingsPage from "../../src/app/(protected)/admin/settings/payments/page";
@@ -297,10 +298,10 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       expect(sslStatus).toBe(false);
     });
 
-    test("rejects modifying unapproved providers like NAGAD", async () => {
-      const nagadResult = await updatePaymentMethodSetting("NAGAD", true, "admin-1");
-      expect(nagadResult.success).toBe(false);
-      expect(nagadResult.error).toContain("cannot be toggled at this stage");
+    test("rejects modifying unapproved providers like ROCKET", async () => {
+      const rocketResult = await updatePaymentMethodSetting("ROCKET" as unknown as PaymentMethodCode, true, "admin-1");
+      expect(rocketResult.success).toBe(false);
+      expect(rocketResult.error).toContain("cannot be toggled at this stage");
     });
   });
 

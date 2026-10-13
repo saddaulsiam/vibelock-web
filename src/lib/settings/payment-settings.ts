@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
 import { revalidatePath } from "next/cache";
 import type { PaymentMethodSetting } from "@prisma/client";
+import { validateRsaKeyMaterial } from "@/lib/payment/providers/nagad/crypto";
 
 export type PaymentMethodCode = "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD";
 
@@ -28,7 +29,7 @@ export interface PaymentSettingsOverview {
 }
 
 export interface StorefrontPaymentOption {
-  value: "COD" | "ONLINE" | "BKASH";
+  value: "COD" | "ONLINE" | "BKASH" | "NAGAD";
   title: string;
   detail: string;
 }
@@ -43,6 +44,34 @@ export function isBkashCredentialConfigured(): boolean {
     env.BKASH_USERNAME?.trim() &&
     env.BKASH_PASSWORD?.trim()
   );
+}
+
+/**
+ * Checks whether all four required Nagad credentials are present and non-empty after trimming,
+ * and confirms that both the PG public key and merchant private key are valid 2048-bit RSA keys.
+ * Fails closed if keys are malformed, truncated, or non-RSA-2048.
+ */
+export function isNagadCredentialConfigured(): boolean {
+  if (
+    !env.NAGAD_MERCHANT_ID?.trim() ||
+    !env.NAGAD_MERCHANT_NUMBER?.trim() ||
+    !env.NAGAD_PG_PUBLIC_KEY?.trim() ||
+    !env.NAGAD_MERCHANT_PRIVATE_KEY?.trim()
+  ) {
+    return false;
+  }
+
+  const pubValidation = validateRsaKeyMaterial(env.NAGAD_PG_PUBLIC_KEY, "PUBLIC", 2048);
+  if (!pubValidation.isValid || pubValidation.modulusLength !== 2048) {
+    return false;
+  }
+
+  const privValidation = validateRsaKeyMaterial(env.NAGAD_MERCHANT_PRIVATE_KEY, "PRIVATE", 2048);
+  if (!privValidation.isValid || privValidation.modulusLength !== 2048) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -115,8 +144,9 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
   }
 
   if (normalized === "NAGAD") {
-    // Nagad disabled by default
-    return false;
+    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
+    if (!isNagadCredentialConfigured()) return false;
+    return record ? record.isEnabled : false;
   }
 
   // Any unknown provider code is rejected
@@ -127,10 +157,11 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
  * Returns available payment methods formatted for the customer checkout UI.
  */
 export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOption[]> {
-  const [codActive, onlineActive, bkashActive] = await Promise.all([
+  const [codActive, onlineActive, bkashActive, nagadActive] = await Promise.all([
     isPaymentMethodEnabled("COD"),
     isPaymentMethodEnabled("ONLINE"),
     isPaymentMethodEnabled("BKASH"),
+    isPaymentMethodEnabled("NAGAD"),
   ]);
 
   const options: StorefrontPaymentOption[] = [];
@@ -159,6 +190,14 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
     });
   }
 
+  if (nagadActive) {
+    options.push({
+      value: "NAGAD",
+      title: "Nagad",
+      detail: "Pay directly with your Nagad account.",
+    });
+  }
+
   return options;
 }
 
@@ -170,6 +209,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
     env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
   );
   const isBkashConfigured = isBkashCredentialConfigured();
+  const isNagadConfigured = isNagadCredentialConfigured();
 
   let dbRecords: PaymentMethodSetting[] = [];
   let isTableMigrated = false;
@@ -197,7 +237,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
   const codEnabled = codRecord ? codRecord.isEnabled : true;
   const sslEnabled = (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
   const bkashEnabled = (bkashRecord ? bkashRecord.isEnabled : false) && isBkashConfigured;
-  const nagadEnabled = nagadRecord ? nagadRecord.isEnabled : false;
+  const nagadEnabled = (nagadRecord ? nagadRecord.isEnabled : false) && isNagadConfigured;
 
   const methods: PaymentMethodStatus[] = [
     {
@@ -255,14 +295,21 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
     {
       code: "NAGAD",
       name: "Nagad Gateway",
-      description: "Accept direct payments from Nagad mobile banking accounts.",
+      description: "Accept direct payments from Nagad mobile banking accounts via DFS PGW API.",
       type: "MFS_DIRECT",
       isEnabled: nagadEnabled,
-      isConfigured: false,
+      isConfigured: isNagadConfigured,
       isPersisted: isTableMigrated && Boolean(nagadRecord),
-      environmentMode: "unconfigured",
-      persistenceBlockerReason: "Future provider integration hook.",
-      checkoutImpact: "Not yet available in checkout.",
+      environmentMode: isNagadConfigured
+        ? env.NAGAD_SANDBOX
+          ? "sandbox"
+          : "production"
+        : "unconfigured",
+      persistenceBlockerReason: isTableMigrated
+        ? undefined
+        : "Database migration pending approval.",
+      checkoutImpact:
+        "When active, redirects customer to Nagad payment portal to complete payment via OTP and PIN.",
     },
   ];
 
@@ -287,7 +334,7 @@ export async function updatePaymentMethodSetting(
   actorId?: string
 ): Promise<{ success: boolean; error?: string }> {
   // Validate allowed codes
-  if (code !== "COD" && code !== "SSLCOMMERZ" && code !== "BKASH") {
+  if (code !== "COD" && code !== "SSLCOMMERZ" && code !== "BKASH" && code !== "NAGAD") {
     return {
       success: false,
       error: `Payment method ${code} cannot be toggled at this stage.`,
@@ -316,6 +363,15 @@ export async function updatePaymentMethodSetting(
     }
   }
 
+  if (code === "NAGAD" && isEnabled) {
+    if (!isNagadCredentialConfigured()) {
+      return {
+        success: false,
+        error: "Cannot enable Nagad without configured credentials in environment.",
+      };
+    }
+  }
+
   try {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.paymentMethodSetting.findUnique({ where: { code } });
@@ -330,7 +386,9 @@ export async function updatePaymentMethodSetting(
               ? "Cash on Delivery"
               : code === "SSLCOMMERZ"
               ? "SSLCOMMERZ Gateway"
-              : "Direct bKash Checkout",
+              : code === "BKASH"
+              ? "Direct bKash Checkout"
+              : "Nagad Gateway",
           isEnabled,
         },
       });

@@ -108,7 +108,7 @@ describe("VibeLock Stage 5 — Server-Side createOrderAction Payment Enforcement
 
   test("rejects order creation when unapproved provider is submitted", async () => {
     const result = await createOrderAction(
-      { ...validPayload, paymentMethod: "NAGAD" as unknown as "COD" },
+      { ...validPayload, paymentMethod: "UNSUPPORTED" as unknown as "COD" },
       "idempotency-key-unapproved"
     );
 
