@@ -6,7 +6,6 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { checkoutSchema } from "./validation";
 import { getCart } from "@/lib/cart/queries";
-import { env } from "@/lib/config/env";
 import crypto from "crypto";
 import {
   CouponError,
@@ -16,6 +15,7 @@ import {
 import type { DiscountType } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
+import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
 
 export async function validateCouponAction(code: string) {
   const session = await auth();
@@ -165,13 +165,26 @@ export async function createOrderAction(
     couponCode,
   } = parsed.data;
 
-  if (
-    paymentMethod === "ONLINE" &&
-    (!env.SSLCOMMERZ_STORE_ID || !env.SSLCOMMERZ_STORE_PASSWORD)
-  ) {
+  if (paymentMethod === "COD") {
+    const isCodEnabled = await isPaymentMethodEnabled("COD");
+    if (!isCodEnabled) {
+      return {
+        success: false,
+        error: "Cash on delivery is currently unavailable. Please choose another payment method.",
+      };
+    }
+  } else if (paymentMethod === "ONLINE") {
+    const isOnlineEnabled = await isPaymentMethodEnabled("ONLINE");
+    if (!isOnlineEnabled) {
+      return {
+        success: false,
+        error: "Online payment is currently unavailable. Please choose cash on delivery.",
+      };
+    }
+  } else {
     return {
       success: false,
-      error: "Online payment is currently unavailable. Please choose cash on delivery.",
+      error: "Selected payment method is currently unsupported.",
     };
   }
 
