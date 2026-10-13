@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getCart } from "@/lib/cart/queries";
+import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
@@ -53,6 +54,7 @@ export default async function CheckoutPage() {
           cart={cart}
           defaultEmail={session.user.email || ""}
           defaultName={session.user.name || ""}
+          availablePaymentMethods={await getStorefrontPaymentMethods()}
         />
       </Container>
     </Section>

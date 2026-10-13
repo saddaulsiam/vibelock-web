@@ -585,3 +585,12 @@ model Shipment {
 
   @@unique([provider, providerShipmentId])
 }
+
+model PaymentMethodSetting {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  name      String
+  isEnabled Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

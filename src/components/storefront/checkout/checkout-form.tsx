@@ -15,6 +15,11 @@ interface CheckoutFormProps {
   cart: CartDTO;
   defaultEmail: string;
   defaultName: string;
+  availablePaymentMethods?: Array<{
+    value: "COD" | "ONLINE";
+    title: string;
+    detail: string;
+  }>;
 }
 
 function formatPrice(amount: number) {
@@ -100,15 +105,31 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
   );
 }
 
-export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormProps) {
+export function CheckoutForm({
+  cart,
+  defaultEmail,
+  defaultName,
+  availablePaymentMethods,
+}: CheckoutFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isSubmitting = useRef(false);
   const idempotencyKey = useRef(crypto.randomUUID());
+
+  const paymentOptions =
+    availablePaymentMethods !== undefined
+      ? availablePaymentMethods
+      : ([
+          { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
+          { value: "ONLINE", title: "Online payment", detail: "Continue to the existing online payment flow." },
+        ] as const);
+
+  const initialPaymentMethod = paymentOptions[0]?.value ?? "";
+
   const [formData, setFormData] = useState<Partial<CheckoutFormValues>>({
     customerEmail: defaultEmail,
     customerName: defaultName,
-    paymentMethod: "COD",
+    paymentMethod: initialPaymentMethod,
     shippingCountry: "Bangladesh",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormValues, string>>>({});
@@ -235,6 +256,13 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
     event.preventDefault();
     if (isSubmitting.current) return;
     setSubmissionError(null);
+
+    if (paymentOptions.length === 0) {
+      const msg = "Checkout is currently unavailable as no payment methods are active.";
+      setSubmissionError(msg);
+      toast.error(msg);
+      return;
+    }
 
     if (!selectedShippingMethodId || shippingMethods.length === 0) {
       const msg =
@@ -531,33 +559,36 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
 
             <fieldset className="space-y-3">
               <legend className="sr-only">Choose a payment method</legend>
-              {([
-                { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
-                { value: "ONLINE", title: "Online payment", detail: "Continue to the existing online payment flow." },
-              ] as const).map((method) => {
-                const selected = formData.paymentMethod === method.value;
-                return (
-                  <label
-                    key={method.value}
-                    className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
-                      selected ? "border-[#101114] bg-[#F3F0E8]/60" : "border-border bg-white hover:border-[#101114]/40"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={method.value}
-                      checked={selected}
-                      onChange={(event) => handleInputChange("paymentMethod", event.target.value)}
-                      className="mt-1 size-4 accent-[#101114]"
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-[#101114]">{method.title}</span>
-                      <span className="mt-1 block text-sm leading-5 text-muted-foreground">{method.detail}</span>
-                    </span>
-                  </label>
-                );
-              })}
+              {paymentOptions.length === 0 ? (
+                <div className="rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 font-medium">
+                  Checkout is currently unavailable as no payment methods are active. Please contact support.
+                </div>
+              ) : (
+                paymentOptions.map((method) => {
+                  const selected = formData.paymentMethod === method.value;
+                  return (
+                    <label
+                      key={method.value}
+                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
+                        selected ? "border-[#101114] bg-[#F3F0E8]/60" : "border-border bg-white hover:border-[#101114]/40"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={method.value}
+                        checked={selected}
+                        onChange={(event) => handleInputChange("paymentMethod", event.target.value)}
+                        className="mt-1 size-4 accent-[#101114]"
+                      />
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-[#101114]">{method.title}</span>
+                        <span className="mt-1 block text-sm leading-5 text-muted-foreground">{method.detail}</span>
+                      </span>
+                    </label>
+                  );
+                })
+              )}
               {fieldError("paymentMethod")}
             </fieldset>
           </section>
@@ -721,7 +752,13 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
           <button
             type="submit"
             form="checkout-form"
-            disabled={isPending || isLoadingShipping || !selectedShippingMethodId || shippingMethods.length === 0}
+            disabled={
+              isPending ||
+              isLoadingShipping ||
+              !selectedShippingMethodId ||
+              shippingMethods.length === 0 ||
+              paymentOptions.length === 0
+            }
             className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
@@ -729,15 +766,21 @@ export function CheckoutForm({ cart, defaultEmail, defaultName }: CheckoutFormPr
               ? "Placing order"
               : isLoadingShipping
                 ? "Calculating shipping..."
-                : !selectedShippingMethodId
-                  ? "Select a shipping method"
-                  : "Place order"}
+                : paymentOptions.length === 0
+                  ? "Payment unavailable"
+                  : !selectedShippingMethodId
+                    ? "Select a shipping method"
+                    : "Place order"}
           </button>
-          {!selectedShippingMethodId && !isLoadingShipping && (
+          {paymentOptions.length === 0 ? (
+            <p className="mt-2 text-center text-xs font-medium text-amber-700">
+              Orders cannot be placed right now because no payment methods are currently active.
+            </p>
+          ) : !selectedShippingMethodId && !isLoadingShipping ? (
             <p className="mt-2 text-center text-xs text-muted-foreground">
               Please enter your delivery city and select a shipping method above to place your order.
             </p>
-          )}
+          ) : null}
         </div>
       </aside>
     </div>
