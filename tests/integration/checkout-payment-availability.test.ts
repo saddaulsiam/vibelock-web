@@ -123,6 +123,53 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
     });
 
+    test("renders COD, Online, and bKash radios when all are active", () => {
+      const availableMethods = [
+        { value: "COD" as const, title: "Cash on delivery", detail: "Pay when your order arrives." },
+        { value: "ONLINE" as const, title: "Online payment", detail: "Pay securely via cards and banking." },
+        { value: "BKASH" as const, title: "bKash", detail: "Pay directly with your bKash wallet." },
+      ];
+
+      const html = renderToString(
+        React.createElement(CheckoutForm, {
+          cart: mockCart,
+          defaultEmail: "customer@vibelock.com",
+          defaultName: "Dhaka Customer",
+          availablePaymentMethods: availableMethods,
+        })
+      );
+
+      expect(html).toContain('value="COD"');
+      expect(html).toContain("Cash on delivery");
+      expect(html).toContain('value="ONLINE"');
+      expect(html).toContain("Online payment");
+      expect(html).toContain('value="BKASH"');
+      expect(html).toContain("bKash");
+      expect(html).toContain("Pay directly with your bKash wallet.");
+      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+    });
+
+    test("renders bKash only when COD and Online are disabled", () => {
+      const availableMethods = [
+        { value: "BKASH" as const, title: "bKash", detail: "Pay directly with your bKash wallet." },
+      ];
+
+      const html = renderToString(
+        React.createElement(CheckoutForm, {
+          cart: mockCart,
+          defaultEmail: "customer@vibelock.com",
+          defaultName: "Dhaka Customer",
+          availablePaymentMethods: availableMethods,
+        })
+      );
+
+      expect(html).toContain('value="BKASH"');
+      expect(html).toContain("bKash");
+      expect(html).not.toContain('value="COD"');
+      expect(html).not.toContain('value="ONLINE"');
+      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+    });
+
     test("explicit empty array: shows unavailable message, hides all radios, and disables submission", () => {
       const html = renderToString(
         React.createElement(CheckoutForm, {

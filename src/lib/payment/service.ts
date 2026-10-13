@@ -1,13 +1,17 @@
 import prisma from "@/lib/prisma/client";
 import { PaymentInitiationResponse, PaymentProvider } from "./types";
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
+import { BkashProvider } from "./providers/bkash/client";
 import { Order, PaymentStatus, Prisma } from "@prisma/client";
-import { isSSLCommerzGateway, normalizePaymentGateway } from "./constants";
+import { isSSLCommerzGateway, isBkashGateway, normalizePaymentGateway } from "./constants";
 
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
     if (isSSLCommerzGateway(gateway)) {
       return new SSLCommerzProvider();
+    }
+    if (isBkashGateway(gateway)) {
+      return new BkashProvider();
     }
     throw new Error(`Unsupported payment gateway: ${gateway}`);
   }
@@ -54,11 +58,15 @@ export class PaymentService {
   ): Promise<{ orderNumber: string; verification: Awaited<ReturnType<PaymentProvider["verifyPayment"]>> }> {
     const provider = this.getProvider(gateway);
 
-    // Most providers pass the reference ID back
-    // SSLCommerz uses 'tran_id'
-    const merchantReferenceId = payload.tran_id as string | undefined;
+    // Extract merchant reference ID:
+    // SSLCommerz uses 'tran_id', bKash uses 'paymentID'
+    const merchantReferenceId =
+      (typeof payload.tran_id === "string" && payload.tran_id.trim() ? payload.tran_id.trim() : undefined) ??
+      (typeof payload.paymentID === "string" && payload.paymentID.trim() ? payload.paymentID.trim() : undefined) ??
+      (typeof payload.paymentId === "string" && payload.paymentId.trim() ? payload.paymentId.trim() : undefined);
+
     if (!merchantReferenceId) {
-      console.error("[PaymentService] Missing tran_id in callback");
+      console.error("[PaymentService] Missing transaction reference in callback");
       throw new Error("Missing transaction reference");
     }
 
@@ -91,7 +99,7 @@ export class PaymentService {
     if (payment.status === "FAILED" || payment.status === "CANCELLED") {
       const incomingStatus = typeof payload.status === "string" ? payload.status.toUpperCase() : "";
       const isIncomingNonSuccess =
-        !payload.val_id ||
+        (!payload.val_id && !payload.paymentID && !payload.paymentId) ||
         incomingStatus === "FAILED" ||
         incomingStatus === "FAIL" ||
         incomingStatus === "CANCELLED" ||
@@ -163,6 +171,21 @@ export class PaymentService {
         throw new Error("Payment verification failed: Transaction or Currency Mismatch");
       }
 
+      // Ensure any verified order reference matches our order record
+      if (verification.verifiedOrderNumber) {
+        const order = await prisma.order.findUnique({
+          where: { id: payment.orderId },
+          select: { orderNumber: true },
+        });
+        if (order && verification.verifiedOrderNumber !== order.orderNumber) {
+          console.error(
+            `[PaymentService] Order reference mismatch for ${merchantReferenceId}. ` +
+            `Expected ${order.orderNumber}, got ${verification.verifiedOrderNumber}`
+          );
+          throw new Error("Payment verification failed: Order reference mismatch");
+        }
+      }
+
       if (
         verification.verifiedAmount === undefined ||
         Math.abs(verification.verifiedAmount - Number(payment.amount)) > 0.01
@@ -174,6 +197,12 @@ export class PaymentService {
         const safePayload = { ...(verification.rawPayload as object) } as Record<string, unknown>;
         delete safePayload.store_passwd;
         delete safePayload.store_id;
+        delete safePayload.password;
+        delete safePayload.app_secret;
+        delete safePayload.app_key;
+        delete safePayload.id_token;
+        delete safePayload.refreshToken;
+        delete safePayload.token;
 
         await prisma.payment.updateMany({
           where: { id: payment.id, status: { not: "SUCCESS" } },
@@ -197,6 +226,12 @@ export class PaymentService {
       const safePayload = { ...(verification.rawPayload as object) } as Record<string, unknown>;
       delete safePayload.store_passwd;
       delete safePayload.store_id;
+      delete safePayload.password;
+      delete safePayload.app_secret;
+      delete safePayload.app_key;
+      delete safePayload.id_token;
+      delete safePayload.refreshToken;
+      delete safePayload.token;
 
       // 1. Atomic update of Payment:
       // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).

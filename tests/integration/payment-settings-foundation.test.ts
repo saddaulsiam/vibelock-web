@@ -297,10 +297,10 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       expect(sslStatus).toBe(false);
     });
 
-    test("rejects modifying unapproved providers like BKASH or NAGAD in Phase 2B", async () => {
-      const bkashResult = await updatePaymentMethodSetting("BKASH", true, "admin-1");
-      expect(bkashResult.success).toBe(false);
-      expect(bkashResult.error).toContain("cannot be toggled at this stage");
+    test("rejects modifying unapproved providers like NAGAD", async () => {
+      const nagadResult = await updatePaymentMethodSetting("NAGAD", true, "admin-1");
+      expect(nagadResult.success).toBe(false);
+      expect(nagadResult.error).toContain("cannot be toggled at this stage");
     });
   });
 

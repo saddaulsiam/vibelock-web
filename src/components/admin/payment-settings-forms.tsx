@@ -32,16 +32,18 @@ export function TogglePaymentMethodForm({
   isEnabled,
   isConfigured = true,
 }: {
-  code: "COD" | "SSLCOMMERZ";
+  code: "COD" | "SSLCOMMERZ" | "BKASH";
   isEnabled: boolean;
   isConfigured?: boolean;
 }) {
   const [state, action] = useActionState(togglePaymentMethodAction, initialState);
 
-  if (!isConfigured && code === "SSLCOMMERZ") {
+  if (!isConfigured && !isEnabled && (code === "SSLCOMMERZ" || code === "BKASH")) {
     return (
       <div className="text-xs text-amber-700 font-medium">
-        Configure store credentials in .env to enable
+        {code === "BKASH"
+          ? "Configure bKash credentials in .env to enable"
+          : "Configure store credentials in .env to enable"}
       </div>
     );
   }

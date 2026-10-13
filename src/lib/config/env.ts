@@ -17,7 +17,32 @@ const envSchema = z.object({
   // SSLCommerz placeholders
   SSLCOMMERZ_STORE_ID: z.string().optional(),
   SSLCOMMERZ_STORE_PASSWORD: z.string().optional(),
-  SSLCOMMERZ_SANDBOX: z.coerce.boolean().default(true),
+  SSLCOMMERZ_SANDBOX: z.preprocess((val) => {
+    if (typeof val === "string") {
+      const trimmed = val.trim().toLowerCase();
+      if (trimmed === "false" || trimmed === "0" || trimmed === "no") return false;
+      if (trimmed === "true" || trimmed === "1" || trimmed === "yes") return true;
+      if (trimmed === "") return undefined;
+    }
+    if (typeof val === "boolean") return val;
+    return undefined;
+  }, z.boolean().default(true)),
+
+  // bKash placeholders (Tokenized API v1.2.0)
+  BKASH_APP_KEY: z.string().optional(),
+  BKASH_APP_SECRET: z.string().optional(),
+  BKASH_USERNAME: z.string().optional(),
+  BKASH_PASSWORD: z.string().optional(),
+  BKASH_SANDBOX: z.preprocess((val) => {
+    if (typeof val === "string") {
+      const trimmed = val.trim().toLowerCase();
+      if (trimmed === "false" || trimmed === "0" || trimmed === "no") return false;
+      if (trimmed === "true" || trimmed === "1" || trimmed === "yes") return true;
+      if (trimmed === "") return undefined;
+    }
+    if (typeof val === "boolean") return val;
+    return undefined;
+  }, z.boolean().default(true)),
 
   // Shipping
   COURIER_WEBHOOK_SECRET: z.string().optional(),

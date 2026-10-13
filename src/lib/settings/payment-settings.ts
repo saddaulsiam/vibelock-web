@@ -28,9 +28,21 @@ export interface PaymentSettingsOverview {
 }
 
 export interface StorefrontPaymentOption {
-  value: "COD" | "ONLINE";
+  value: "COD" | "ONLINE" | "BKASH";
   title: string;
   detail: string;
+}
+
+/**
+ * Checks whether all four required bKash credentials are present and non-empty after trimming.
+ */
+export function isBkashCredentialConfigured(): boolean {
+  return Boolean(
+    env.BKASH_APP_KEY?.trim() &&
+    env.BKASH_APP_SECRET?.trim() &&
+    env.BKASH_USERNAME?.trim() &&
+    env.BKASH_PASSWORD?.trim()
+  );
 }
 
 /**
@@ -60,7 +72,7 @@ function isTableMissingError(err: unknown): boolean {
 export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
   const normalized = code.trim().toUpperCase();
   const isSslcommerzConfigured = Boolean(
-    env.SSLCOMMERZ_STORE_ID && env.SSLCOMMERZ_STORE_PASSWORD
+    env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
   );
 
   let record: PaymentMethodSetting | null = null;
@@ -97,8 +109,9 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
   }
 
   if (normalized === "BKASH") {
-    // bKash disabled by default unless explicitly enabled in future phases
-    return false;
+    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
+    if (!isBkashCredentialConfigured()) return false;
+    return record ? record.isEnabled : false;
   }
 
   if (normalized === "NAGAD") {
@@ -114,9 +127,10 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
  * Returns available payment methods formatted for the customer checkout UI.
  */
 export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOption[]> {
-  const [codActive, onlineActive] = await Promise.all([
+  const [codActive, onlineActive, bkashActive] = await Promise.all([
     isPaymentMethodEnabled("COD"),
     isPaymentMethodEnabled("ONLINE"),
+    isPaymentMethodEnabled("BKASH"),
   ]);
 
   const options: StorefrontPaymentOption[] = [];
@@ -137,6 +151,14 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
     });
   }
 
+  if (bkashActive) {
+    options.push({
+      value: "BKASH",
+      title: "bKash",
+      detail: "Pay directly with your bKash wallet.",
+    });
+  }
+
   return options;
 }
 
@@ -145,8 +167,9 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
  */
 export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverview> {
   const isSslcommerzConfigured = Boolean(
-    env.SSLCOMMERZ_STORE_ID && env.SSLCOMMERZ_STORE_PASSWORD
+    env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
   );
+  const isBkashConfigured = isBkashCredentialConfigured();
 
   let dbRecords: PaymentMethodSetting[] = [];
   let isTableMigrated = false;
@@ -173,7 +196,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
   // Determine effective status using Strategy A bootstrap rules
   const codEnabled = codRecord ? codRecord.isEnabled : true;
   const sslEnabled = (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
-  const bkashEnabled = bkashRecord ? bkashRecord.isEnabled : false;
+  const bkashEnabled = (bkashRecord ? bkashRecord.isEnabled : false) && isBkashConfigured;
   const nagadEnabled = nagadRecord ? nagadRecord.isEnabled : false;
 
   const methods: PaymentMethodStatus[] = [
@@ -216,11 +239,16 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
       description: "Direct tokenized bKash wallet checkout via official Tokenized API v1.2.0.",
       type: "MFS_DIRECT",
       isEnabled: bkashEnabled,
-      isConfigured: false,
+      isConfigured: isBkashConfigured,
       isPersisted: isTableMigrated && Boolean(bkashRecord),
-      environmentMode: "unconfigured",
-      persistenceBlockerReason:
-        "Targeted for Phase 2 implementation. Requires schema migration and bKash sandbox credentials setup.",
+      environmentMode: isBkashConfigured
+        ? env.BKASH_SANDBOX
+          ? "sandbox"
+          : "production"
+        : "unconfigured",
+      persistenceBlockerReason: isTableMigrated
+        ? undefined
+        : "Database migration pending approval.",
       checkoutImpact:
         "When active, allows seamless 1-click or PIN/OTP wallet payments without third-party redirection.",
     },
@@ -259,7 +287,7 @@ export async function updatePaymentMethodSetting(
   actorId?: string
 ): Promise<{ success: boolean; error?: string }> {
   // Validate allowed codes
-  if (code !== "COD" && code !== "SSLCOMMERZ") {
+  if (code !== "COD" && code !== "SSLCOMMERZ" && code !== "BKASH") {
     return {
       success: false,
       error: `Payment method ${code} cannot be toggled at this stage.`,
@@ -269,12 +297,21 @@ export async function updatePaymentMethodSetting(
   // Credential guard
   if (code === "SSLCOMMERZ" && isEnabled) {
     const isSslcommerzConfigured = Boolean(
-      env.SSLCOMMERZ_STORE_ID && env.SSLCOMMERZ_STORE_PASSWORD
+      env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
     );
     if (!isSslcommerzConfigured) {
       return {
         success: false,
         error: "Cannot enable SSLCOMMERZ without configured store credentials in environment.",
+      };
+    }
+  }
+
+  if (code === "BKASH" && isEnabled) {
+    if (!isBkashCredentialConfigured()) {
+      return {
+        success: false,
+        error: "Cannot enable bKash without configured credentials in environment.",
       };
     }
   }
@@ -288,7 +325,12 @@ export async function updatePaymentMethodSetting(
         update: { isEnabled },
         create: {
           code,
-          name: code === "COD" ? "Cash on Delivery" : "SSLCOMMERZ Gateway",
+          name:
+            code === "COD"
+              ? "Cash on Delivery"
+              : code === "SSLCOMMERZ"
+              ? "SSLCOMMERZ Gateway"
+              : "Direct bKash Checkout",
           isEnabled,
         },
       });

@@ -16,7 +16,7 @@ interface CheckoutFormProps {
   defaultEmail: string;
   defaultName: string;
   availablePaymentMethods?: Array<{
-    value: "COD" | "ONLINE";
+    value: "COD" | "ONLINE" | "BKASH";
     title: string;
     detail: string;
   }>;
@@ -48,6 +48,9 @@ function getSafeCheckoutError(error: string | undefined) {
   }
   if (error?.toLowerCase().includes("online payment is currently unavailable")) {
     return "Online payment is currently unavailable. Please choose cash on delivery.";
+  }
+  if (error?.toLowerCase().includes("bkash payment is currently unavailable")) {
+    return "bKash payment is currently unavailable. Please choose another payment method.";
   }
   if (
     error?.toLowerCase().includes("shipping") ||
@@ -120,9 +123,9 @@ export function CheckoutForm({
     availablePaymentMethods !== undefined
       ? availablePaymentMethods
       : ([
-          { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
-          { value: "ONLINE", title: "Online payment", detail: "Continue to the existing online payment flow." },
-        ] as const);
+        { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
+        { value: "ONLINE", title: "Online payment", detail: "Continue to the existing online payment flow." },
+      ] as const);
 
   const initialPaymentMethod = paymentOptions[0]?.value ?? "";
 
@@ -311,7 +314,7 @@ export function CheckoutForm({
         const safeMessage = getSafeCheckoutError(result.error);
         const displayMessage =
           result.correlationId &&
-          safeMessage === "We could not place your order. Please review your details and try again."
+            safeMessage === "We could not place your order. Please review your details and try again."
             ? `${safeMessage} (Ref: ${result.correlationId})`
             : safeMessage;
         setSubmissionError(displayMessage);
@@ -512,11 +515,10 @@ export function CheckoutForm({
                     return (
                       <label
                         key={method.id}
-                        className={`flex cursor-pointer items-center justify-between border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
-                          isSelected
+                        className={`flex cursor-pointer items-center justify-between border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${isSelected
                             ? "border-[#101114] bg-[#F3F0E8]/60"
                             : "border-border bg-white hover:border-[#101114]/40"
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -569,9 +571,8 @@ export function CheckoutForm({
                   return (
                     <label
                       key={method.value}
-                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
-                        selected ? "border-[#101114] bg-[#F3F0E8]/60" : "border-border bg-white hover:border-[#101114]/40"
-                      }`}
+                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${selected ? "border-[#101114] bg-[#F3F0E8]/60" : "border-border bg-white hover:border-[#101114]/40"
+                        }`}
                     >
                       <input
                         type="radio"
