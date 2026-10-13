@@ -181,6 +181,14 @@ export async function createOrderAction(
         error: "Online payment is currently unavailable. Please choose cash on delivery.",
       };
     }
+  } else if (paymentMethod === "BKASH") {
+    const isBkashEnabled = await isPaymentMethodEnabled("BKASH");
+    if (!isBkashEnabled) {
+      return {
+        success: false,
+        error: "bKash payment is currently unavailable. Please choose another payment method.",
+      };
+    }
   } else {
     return {
       success: false,
@@ -375,7 +383,7 @@ export async function createOrderAction(
           userId: session.user.id,
           status: "PENDING",
           paymentStatus: "PENDING",
-          paymentMethod: paymentMethod,
+          paymentMethod: paymentMethod === "COD" ? "COD" : "ONLINE",
           salesChannel: "WEBSITE",
           customerName,
           customerEmail,
@@ -478,6 +486,29 @@ export async function createOrderAction(
         const service = new paymentService();
 
         const initiation = await service.initiatePayment(orderRecord, "SSLCOMMERZ");
+        if (initiation.success && initiation.redirectUrl) {
+          return {
+            success: true,
+            orderNumber: finalOrderNumber,
+            redirectUrl: initiation.redirectUrl,
+          };
+        } else {
+          return {
+            success: true,
+            orderNumber: finalOrderNumber,
+            error: "Payment initiation failed. You can retry from your orders page.",
+          };
+        }
+      }
+    } else if (paymentMethod === "BKASH") {
+      const orderRecord = await prisma.order.findUnique({
+        where: { orderNumber: finalOrderNumber },
+      });
+      if (orderRecord) {
+        const paymentService = (await import("@/lib/payment/service")).PaymentService;
+        const service = new paymentService();
+
+        const initiation = await service.initiatePayment(orderRecord, "BKASH");
         if (initiation.success && initiation.redirectUrl) {
           return {
             success: true,

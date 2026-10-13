@@ -87,9 +87,28 @@ describe("VibeLock Stage 5 — Server-Side createOrderAction Payment Enforcement
     expect(mockIsPaymentMethodEnabled).toHaveBeenCalledWith("ONLINE");
   });
 
+  test("rejects order creation when bKash is disabled by admin or missing credentials", async () => {
+    // Admin has disabled BKASH (or credentials missing)
+    mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => {
+      if (code === "BKASH") return false;
+      return true;
+    });
+
+    const result = await createOrderAction(
+      { ...validPayload, paymentMethod: "BKASH" },
+      "idempotency-key-bkash-disabled"
+    );
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe(
+      "bKash payment is currently unavailable. Please choose another payment method."
+    );
+    expect(mockIsPaymentMethodEnabled).toHaveBeenCalledWith("BKASH");
+  });
+
   test("rejects order creation when unapproved provider is submitted", async () => {
     const result = await createOrderAction(
-      { ...validPayload, paymentMethod: "BKASH" as unknown as "COD" },
+      { ...validPayload, paymentMethod: "NAGAD" as unknown as "COD" },
       "idempotency-key-unapproved"
     );
 
