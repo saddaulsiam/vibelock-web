@@ -83,7 +83,11 @@ export async function getAdminProductFormData(id?: string) {
             categories: { select: { id: true } },
             variants: {
               orderBy: [{ createdAt: "asc" }, { sku: "asc" }],
-              select: { costPrice: true, sellingPrice: true, discountPrice: true },
+              select: { id: true, sku: true, size: true, color: true, costPrice: true, sellingPrice: true, discountPrice: true },
+            },
+            images: {
+              orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+              select: { url: true, alt: true, isPrimary: true },
             },
           },
         })
@@ -97,10 +101,15 @@ export async function getAdminProductFormData(id?: string) {
           ...product,
           categoryIds: product.categories.map((category) => category.id),
           variants: product.variants.map((variant) => ({
+            id: variant.id,
+            sku: variant.sku,
+            size: variant.size ?? "",
+            color: variant.color ?? "",
             costPrice: variant.costPrice.toFixed(2),
             sellingPrice: variant.sellingPrice.toFixed(2),
             discountPrice: variant.discountPrice?.toFixed(2) ?? "",
           })),
+          images: product.images,
           status: product.status as ProductStatus,
         }
       : null,

@@ -91,8 +91,15 @@ describe("Admin Catalog Management", () => {
       const formData = new FormData();
       formData.append("name", "Test Product");
       formData.append("slug", slug);
-      formData.append("costPrice", "500");
-      formData.append("sellingPrice", "1000");
+      formData.append("variantsJson", JSON.stringify([{
+        sku: "",
+        size: "M",
+        color: "Black",
+        costPrice: "500",
+        sellingPrice: "1000",
+        discountPrice: "",
+      }]));
+      formData.append("imageUrls", "https://images.example.test/front.webp\nhttps://images.example.test/back.webp");
       formData.append("status", "PUBLISHED");
 
       const result = await saveProductAction({ error: null }, formData);
@@ -107,6 +114,12 @@ describe("Admin Catalog Management", () => {
       expect(product?.variants).toHaveLength(1);
       expect(product?.variants[0].sellingPrice).toEqual(new Prisma.Decimal("1000"));
       expect(product?.variants[0].sku).toMatch(/^VL-TEST-PROD-.+/);
+      expect(product?.variants[0].size).toBe("M");
+      expect(product?.variants[0].color).toBe("Black");
+      const images = await prisma.productImage.findMany({ where: { productId: product!.id }, orderBy: { createdAt: "asc" } });
+      expect(images).toHaveLength(2);
+      expect(images.filter((image) => image.isPrimary)).toHaveLength(1);
+      expect(images.find((image) => image.isPrimary)?.url).toBe("https://images.example.test/front.webp");
     });
 
     test("should update pricing across all variants", async () => {
@@ -129,11 +142,19 @@ describe("Admin Catalog Management", () => {
         }
       });
 
+      const currentVariants = await prisma.productVariant.findMany({ where: { productId: prod.id } });
       const formData = new FormData();
       formData.append("id", prod.id);
       formData.append("name", prod.name);
-      formData.append("costPrice", "150");
-      formData.append("sellingPrice", "300");
+      formData.append("variantsJson", JSON.stringify(currentVariants.map((variant) => ({
+        id: variant.id,
+        sku: variant.sku,
+        size: variant.size ?? "",
+        color: variant.color ?? "",
+        costPrice: "150",
+        sellingPrice: "300",
+        discountPrice: "",
+      }))));
       formData.append("status", "PUBLISHED");
 
       const result = await saveProductAction({ error: null }, formData);
@@ -162,13 +183,18 @@ describe("Admin Catalog Management", () => {
     test("should fail if discount price is higher than selling price", async () => {
       const formData = new FormData();
       formData.append("name", "Bad Price Product");
-      formData.append("sellingPrice", "100");
-      formData.append("discountPrice", "200");
-      formData.append("costPrice", "50");
+      formData.append("variantsJson", JSON.stringify([{
+        sku: "",
+        size: "",
+        color: "",
+        sellingPrice: "100",
+        discountPrice: "200",
+        costPrice: "50",
+      }]));
       formData.append("status", "DRAFT");
 
       const result = await saveProductAction({ error: null }, formData);
-      expect(result.error).toBe("Discount price must be lower than selling price.");
+      expect(result.error).toBe("Discount price must be lower than the variant selling price.");
     });
 
     test("should block deletion of product with inventory history", async () => {

@@ -18,7 +18,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -68,7 +68,10 @@ vi.mock("@/lib/inventory/service", () => ({
 }));
 
 import { PaymentService } from "@/lib/payment/service";
-import { GET as bkashCallbackGet, POST as bkashCallbackPost } from "@/app/api/payments/bkash/callback/route";
+import {
+  GET as bkashCallbackGet,
+  POST as bkashCallbackPost,
+} from "@/app/api/payments/bkash/callback/route";
 
 describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
   let paymentService: PaymentService;
@@ -87,9 +90,9 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
 
   describe("1. PaymentService Reference Resolution & Validation", () => {
     test("throws error when neither tran_id nor paymentID is provided", async () => {
-      await expect(
-        paymentService.verifyCallback("BKASH", { status: "success" })
-      ).rejects.toThrow("Missing transaction reference");
+      await expect(paymentService.verifyCallback("BKASH", { status: "success" })).rejects.toThrow(
+        "Missing transaction reference"
+      );
     });
 
     test("resolves reference using payload.paymentID", async () => {
@@ -461,7 +464,7 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
       mockPrisma.order.updateMany.mockResolvedValueOnce({ count: 1 });
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/bkash/callback?paymentID=TR0011_ROUTE_SUCCESS&status=success",
+        "https://vibelock.bd/api/payments/bkash/callback?paymentID=TR0011_ROUTE_SUCCESS&status=success",
         { method: "GET" }
       );
 
@@ -485,7 +488,7 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
       });
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/bkash/callback?paymentID=TR0011_ROUTE_CANCEL&status=cancel",
+        "https://vibelock.bd/api/payments/bkash/callback?paymentID=TR0011_ROUTE_CANCEL&status=cancel",
         { method: "GET" }
       );
 
@@ -500,7 +503,7 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
       mockPrisma.payment.findUnique.mockResolvedValueOnce(null); // Payment not found
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/bkash/callback?paymentID=UNKNOWN_PAYMENT&status=success",
+        "https://vibelock.bd/api/payments/bkash/callback?paymentID=UNKNOWN_PAYMENT&status=success",
         { method: "GET" }
       );
 
@@ -523,20 +526,17 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
         orderNumber: "VL-20261013-0001",
       });
 
-      const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/bkash/callback",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-          body: JSON.stringify({
-            paymentID: "TR0011_JSON_CANCEL",
-            status: "cancel",
-          }),
-        }
-      );
+      const req = new NextRequest("https://vibelock.bd/api/payments/bkash/callback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          paymentID: "TR0011_JSON_CANCEL",
+          status: "cancel",
+        }),
+      });
 
       const response = await bkashCallbackPost(req);
 
@@ -559,11 +559,7 @@ describe("Phase 2B — bKash Callback & PaymentService Verification", () => {
 
       expect(response.status).toBe(303);
       const location = response.headers.get("location");
-      expect(location).toBe(
-        "https://vibelockbd.vercel.app/cart?error=payment_verification_failed"
-      );
+      expect(location).toBe("https://vibelock.bd/cart?error=payment_verification_failed");
     });
   });
 });
-
-

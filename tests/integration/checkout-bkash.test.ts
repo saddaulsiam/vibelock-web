@@ -24,7 +24,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -226,7 +226,10 @@ describe("Phase 2D — bKash Checkout Integration", () => {
 
     mockPrisma.order.findUnique.mockImplementation(async ({ where }: any) => {
       if (where.checkoutIdempotencyKey) {
-        return createdOrders.find((o) => o.checkoutIdempotencyKey === where.checkoutIdempotencyKey) || null;
+        return (
+          createdOrders.find((o) => o.checkoutIdempotencyKey === where.checkoutIdempotencyKey) ||
+          null
+        );
       }
       if (where.orderNumber) {
         return createdOrders.find((o) => o.orderNumber === where.orderNumber) || null;
@@ -381,9 +384,7 @@ describe("Phase 2D — bKash Checkout Integration", () => {
       expect(result.success).toBe(true);
       expect(result.orderNumber).toBeDefined();
       expect(result.redirectUrl).toBeUndefined();
-      expect(result.error).toBe(
-        "Payment initiation failed. You can retry from your orders page."
-      );
+      expect(result.error).toBe("Payment initiation failed. You can retry from your orders page.");
 
       // Order was created, inventory reserved
       expect(createdOrders.length).toBe(1);
@@ -408,10 +409,7 @@ describe("Phase 2D — bKash Checkout Integration", () => {
       };
       createdOrders.push(existingOrder);
 
-      const result = await createOrderAction(
-        validCheckoutPayload,
-        "idempotency-key-repeat"
-      );
+      const result = await createOrderAction(validCheckoutPayload, "idempotency-key-repeat");
 
       expect(result.success).toBe(true);
       expect(result.orderNumber).toBe("VL-20261013-EXISTING");
@@ -458,9 +456,7 @@ describe("Phase 2D — bKash Checkout Integration", () => {
 
       expect(result.success).toBe(true);
       expect(result.orderNumber).toBeDefined();
-      expect(result.redirectUrl).toBe(
-        "https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=pay"
-      );
+      expect(result.redirectUrl).toBe("https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=pay");
 
       expect(createdOrders.length).toBe(1);
       expect(createdOrders[0].paymentMethod).toBe("ONLINE");
@@ -499,12 +495,15 @@ describe("Phase 2D — bKash Checkout Integration", () => {
 
       mockPrisma.payment.findUnique.mockResolvedValue(payment);
       mockPrisma.order.findUnique.mockResolvedValue(order);
-      mockPrisma.productVariant.findMany.mockResolvedValue([
-        { id: "var-1", sku: "VL-TEE-BLK-M" },
-      ]);
+      mockPrisma.productVariant.findMany.mockResolvedValue([{ id: "var-1", sku: "VL-TEE-BLK-M" }]);
       mockPrisma.inventoryTransaction.findMany.mockResolvedValue([]);
       mockPrisma.inventoryReservation.findMany.mockResolvedValue([
-        { id: "res-1", orderId: order.id, status: "RESERVED", expiresAt: new Date(Date.now() + 60000) },
+        {
+          id: "res-1",
+          orderId: order.id,
+          status: "RESERVED",
+          expiresAt: new Date(Date.now() + 60000),
+        },
       ]);
       mockPrisma.payment.updateMany.mockResolvedValue({ count: 1 });
       mockPrisma.order.updateMany.mockResolvedValue({ count: 1 });

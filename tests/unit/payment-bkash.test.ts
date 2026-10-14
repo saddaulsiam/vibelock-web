@@ -19,7 +19,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -92,7 +92,9 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
 
       const [fetchUrl, fetchOptions] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
-      expect(fetchUrl).toBe("https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant");
+      expect(fetchUrl).toBe(
+        "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant"
+      );
       expect(fetchOptions.method).toBe("POST");
       expect(fetchOptions.headers["Content-Type"]).toBe("application/json");
       expect(fetchOptions.headers["username"]).toBe("sandbox_user_test_789");
@@ -126,7 +128,9 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
         status: 401,
       });
 
-      await expect(provider.grantToken()).rejects.toThrow("bKash token grant request failed with HTTP status 401");
+      await expect(provider.grantToken()).rejects.toThrow(
+        "bKash token grant request failed with HTTP status 401"
+      );
     });
 
     test("guards against missing credentials without making network calls", async () => {
@@ -169,7 +173,7 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
           statusMessage: "Successful",
           paymentID: "TR0011X1627000000000",
           bkashURL: "https://sandbox.bka.sh/checkout/version?paymentID=TR0011X1627000000000",
-          callbackURL: "https://vibelockbd.vercel.app/api/payments/bkash/callback",
+          callbackURL: "https://vibelock.bd/api/payments/bkash/callback",
           amount: "1490.50",
           currency: "BDT",
           intent: "sale",
@@ -181,14 +185,18 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
 
       expect(result.success).toBe(true);
       expect(result.merchantReferenceId).toBe("TR0011X1627000000000");
-      expect(result.redirectUrl).toBe("https://sandbox.bka.sh/checkout/version?paymentID=TR0011X1627000000000");
+      expect(result.redirectUrl).toBe(
+        "https://sandbox.bka.sh/checkout/version?paymentID=TR0011X1627000000000"
+      );
       expect(result.error).toBeUndefined();
 
       expect(global.fetch).toHaveBeenCalledTimes(2);
 
       // Verify create call headers and payload
       const [createUrl, createOptions] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[1];
-      expect(createUrl).toBe("https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create");
+      expect(createUrl).toBe(
+        "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/create"
+      );
       expect(createOptions.headers["Authorization"]).toBe("mock-valid-id-token");
       expect(createOptions.headers["X-APP-Key"]).toBe("sandbox_app_key_test_123");
 
@@ -199,7 +207,7 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(body.intent).toBe("sale");
       expect(body.merchantInvoiceNumber).toBe("VL-20261013-TEST01");
       expect(body.payerReference).toBe("01711111111");
-      expect(body.callbackURL).toBe("https://vibelockbd.vercel.app/api/payments/bkash/callback");
+      expect(body.callbackURL).toBe("https://vibelock.bd/api/payments/bkash/callback");
     });
 
     test("fails safely if configuration is missing without calling API", async () => {
@@ -435,7 +443,9 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
 
       // Verify the execute request payload and headers
       const [executeUrl, executeOptions] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[1];
-      expect(executeUrl).toBe("https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute");
+      expect(executeUrl).toBe(
+        "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/execute"
+      );
       expect(executeOptions.method).toBe("POST");
       expect(executeOptions.headers.Authorization).toBe("mock-valid-id-token");
       expect(executeOptions.headers["X-APP-Key"]).toBe("sandbox_app_key_test_123");
@@ -579,7 +589,9 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
 
       // Verify the query status URL
       const [queryUrl, queryOptions] = (global.fetch as ReturnType<typeof vi.fn>).mock.calls[2];
-      expect(queryUrl).toBe("https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/payment/status");
+      expect(queryUrl).toBe(
+        "https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/payment/status"
+      );
       expect(queryOptions.method).toBe("POST");
       expect(JSON.parse(queryOptions.body)).toEqual({ paymentID: "TR0011_TEST" });
     });
@@ -730,7 +742,9 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(result.success).toBe(false);
       expect(result.status).toBe("FAILED");
       expect(result.isUnverified).toBe(false);
-      expect(result.error).toContain("Missing or empty merchantInvoiceNumber in bKash execution response");
+      expect(result.error).toContain(
+        "Missing or empty merchantInvoiceNumber in bKash execution response"
+      );
     });
 
     test("rejects execute response containing mismatched paymentID", async () => {
@@ -993,7 +1007,7 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(result.providerTransactionId).toBe("BKASH_TRX_ALIAS_123");
       expect(result.verifiedMerchantReferenceId).toBe("TR0011_TEST");
       expect(result.verifiedOrderNumber).toBe("VL-20261013-TEST01");
-      expect(result.verifiedAmount).toBe(1490.50);
+      expect(result.verifiedAmount).toBe(1490.5);
       expect(result.verifiedCurrency).toBe("BDT");
     });
 
@@ -1035,7 +1049,7 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(result.providerTransactionId).toBe("BKASH_TRX_QUERY_INVOICE");
       expect(result.verifiedMerchantReferenceId).toBe("TR0011_TEST");
       expect(result.verifiedOrderNumber).toBe("VL-20261013-TEST01");
-      expect(result.verifiedAmount).toBe(1490.50);
+      expect(result.verifiedAmount).toBe(1490.5);
       expect(result.verifiedCurrency).toBe("BDT");
     });
 
@@ -1077,7 +1091,7 @@ describe("Phase 2A — bKash Tokenized Checkout Provider Unit Tests", () => {
       expect(result.providerTransactionId).toBe("BKASH_TRX_QUERY_ALL_ALIASES");
       expect(result.verifiedMerchantReferenceId).toBe("TR0011_TEST");
       expect(result.verifiedOrderNumber).toBe("VL-20261013-TEST01");
-      expect(result.verifiedAmount).toBe(1490.50);
+      expect(result.verifiedAmount).toBe(1490.5);
       expect(result.verifiedCurrency).toBe("BDT");
     });
   });

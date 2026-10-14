@@ -37,7 +37,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -238,10 +238,15 @@ describe("Nagad Checkout & Payment Settings Integration", () => {
 
     mockPrisma.order.findUnique.mockImplementation(async ({ where }: any) => {
       if (where?.checkoutIdempotencyKey) {
-        return createdOrders.find((o) => o.checkoutIdempotencyKey === where.checkoutIdempotencyKey) || null;
+        return (
+          createdOrders.find((o) => o.checkoutIdempotencyKey === where.checkoutIdempotencyKey) ||
+          null
+        );
       }
       if (where?.orderNumber) {
-        return createdOrders.find((o) => o.orderNumber === where.orderNumber) || createdOrders[0] || null;
+        return (
+          createdOrders.find((o) => o.orderNumber === where.orderNumber) || createdOrders[0] || null
+        );
       }
       if (where?.id) {
         return createdOrders.find((o) => o.id === where.id) || null;
@@ -287,7 +292,8 @@ describe("Nagad Checkout & Payment Settings Integration", () => {
     });
 
     test("isNagadCredentialConfigured returns false when merchant private key is truncated or malformed", () => {
-      mockEnv.NAGAD_MERCHANT_PRIVATE_KEY = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7V9K07eS";
+      mockEnv.NAGAD_MERCHANT_PRIVATE_KEY =
+        "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7V9K07eS";
       expect(isNagadCredentialConfigured()).toBe(false);
 
       mockEnv.NAGAD_MERCHANT_PRIVATE_KEY = "not-a-valid-key-at-all";
@@ -327,7 +333,9 @@ describe("Nagad Checkout & Payment Settings Integration", () => {
 
       const res = await createOrderAction(validCheckoutPayload as any, "idemp-nagad-test-1");
       expect(res.success).toBe(false);
-      expect(res.error).toBe("Nagad payment is currently unavailable. Please choose another payment method.");
+      expect(res.error).toBe(
+        "Nagad payment is currently unavailable. Please choose another payment method."
+      );
       expect(mockPaymentServiceInitiate).not.toHaveBeenCalled();
     });
 
@@ -339,17 +347,15 @@ describe("Nagad Checkout & Payment Settings Integration", () => {
 
       mockPaymentServiceInitiate.mockResolvedValueOnce({
         success: true,
-        redirectUrl: "https://api-sandbox.mynagad.com/remote-payment-gateway-1.0/index.php?paymentrefid=PRID_123",
+        redirectUrl:
+          "https://api-sandbox.mynagad.com/remote-payment-gateway-1.0/index.php?paymentrefid=PRID_123",
         merchantReferenceId: "PRID_123",
       });
 
       const res = await createOrderAction(validCheckoutPayload as any, "idemp-nagad-test-2");
       expect(res.success).toBe(true);
       expect(res.redirectUrl).toContain("remote-payment-gateway-1.0");
-      expect(mockPaymentServiceInitiate).toHaveBeenCalledWith(
-        expect.anything(),
-        "NAGAD"
-      );
+      expect(mockPaymentServiceInitiate).toHaveBeenCalledWith(expect.anything(), "NAGAD");
 
       // Verify that database Order.paymentMethod mapped to ONLINE
       expect(createdOrders[0].paymentMethod).toBe("ONLINE");
@@ -365,7 +371,9 @@ describe("Nagad Checkout & Payment Settings Integration", () => {
 
       const res = await createOrderAction(validCheckoutPayload as any, "idemp-nagad-test-3");
       expect(res.success).toBe(true);
-      expect(res.error).toContain("Payment initiation failed. You can retry from your orders page.");
+      expect(res.error).toContain(
+        "Payment initiation failed. You can retry from your orders page."
+      );
     });
   });
 });

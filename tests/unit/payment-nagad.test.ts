@@ -34,7 +34,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -206,15 +206,13 @@ describe("Nagad Provider Unit Tests", () => {
 
     (global.fetch as any)
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ sensitiveData: step1Encrypted }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
+        new Response(JSON.stringify({ sensitiveData: step1Encrypted }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
       )
       // Mock Step 2 failure
-      .mockResolvedValueOnce(
-        new Response("Invalid complete request", { status: 400 })
-      );
+      .mockResolvedValueOnce(new Response("Invalid complete request", { status: 400 }));
 
     const res = await provider.initiatePayment(sampleRequest);
     expect(res.success).toBe(false);
@@ -230,16 +228,17 @@ describe("Nagad Provider Unit Tests", () => {
 
     (global.fetch as any)
       .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({ sensitiveData: step1Encrypted }),
-          { status: 200, headers: { "Content-Type": "application/json" } }
-        )
+        new Response(JSON.stringify({ sensitiveData: step1Encrypted }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        })
       )
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             status: "Success",
-            callBackUrl: "https://api-sandbox.mynagad.com/remote-payment-gateway-1.0/index.php?paymentrefid=PRID_NAGAD_987654",
+            callBackUrl:
+              "https://api-sandbox.mynagad.com/remote-payment-gateway-1.0/index.php?paymentrefid=PRID_NAGAD_987654",
           }),
           { status: 200, headers: { "Content-Type": "application/json" } }
         )

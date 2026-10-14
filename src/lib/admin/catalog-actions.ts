@@ -152,6 +152,18 @@ const productSchema = z.object({
   status: z.nativeEnum(ProductStatus),
 });
 
+const variantInputSchema = z.object({
+  id: z.string().uuid().optional(),
+  sku: z.string().trim().max(100).optional().default(""),
+  size: z.string().trim().max(40).optional().default(""),
+  color: z.string().trim().max(60).optional().default(""),
+  costPrice: z.string().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Cost price must be a non-negative amount with up to two decimals."),
+  sellingPrice: z.string().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Selling price must be a non-negative amount with up to two decimals."),
+  discountPrice: z.string().optional().default(""),
+});
+
+type ProductVariantInput = z.infer<typeof variantInputSchema>;
+
 type ProductValues = {
   id?: string;
   name: string;
@@ -159,9 +171,8 @@ type ProductValues = {
   categoryIds: string[];
   status: ProductStatus;
   slug: string;
-  costPrice: string;
-  sellingPrice: string;
-  discountPrice: string | null;
+  variants: ProductVariantInput[];
+  imageUrls: string[];
 };
 
 function parseProduct(formData: FormData) {
@@ -174,26 +185,75 @@ function parseProduct(formData: FormData) {
     status: String(formData.get("status") ?? ""),
   });
   const slug = slugFromForm(formData, rawName);
-  const costPrice = money(formData.get("costPrice"), "Cost price");
-  const sellingPrice = money(formData.get("sellingPrice"), "Selling price");
-  const discountPrice = money(formData.get("discountPrice"), "Discount price", true);
-  if (!parsed.success || !slug.success || !costPrice.success || !sellingPrice.success || !discountPrice.success) {
-    const issue = parsed.error?.issues[0]?.message ??
-      (!slug.success ? "Enter a valid slug using letters, numbers, and hyphens." :
-      !costPrice.success ? costPrice.error.issues[0]?.message :
-      !sellingPrice.success ? sellingPrice.error.issues[0]?.message : discountPrice.success ? undefined : discountPrice.error.issues[0]?.message);
-    return { error: issue ?? "Enter valid product details and prices." } as const;
+
+  let rawVariants: unknown;
+  try {
+    rawVariants = JSON.parse(String(formData.get("variantsJson") ?? "[]"));
+  } catch {
+    return { error: "Variant data is invalid. Refresh the form and try again." } as const;
   }
-  if (discountPrice.data !== null && Number(discountPrice.data) >= Number(sellingPrice.data)) {
-    return { error: "Discount price must be lower than selling price." } as const;
+  const variantsParsed = z.array(variantInputSchema).min(1, "Add at least one product variant.").max(100, "A product can have at most 100 variants.").safeParse(rawVariants);
+  const rawImageUrls = String(formData.get("imageUrls") ?? "")
+    .split(/\r?\n/)
+    .map((url) => url.trim())
+    .filter(Boolean);
+  if (rawImageUrls.length > 12) return { error: "A product can have at most 12 images." } as const;
+  const imageUrls: string[] = [];
+  for (const rawUrl of rawImageUrls) {
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(rawUrl);
+    } catch {
+      return { error: "Every image must be a valid HTTP or HTTPS URL." } as const;
+    }
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return { error: "Every image must be a valid HTTP or HTTPS URL." } as const;
+    }
+    if (!imageUrls.includes(parsedUrl.toString())) imageUrls.push(parsedUrl.toString());
   }
+
+  if (!parsed.success || !slug.success || !variantsParsed.success) {
+    return {
+      error: parsed.error?.issues[0]?.message ??
+        (!slug.success ? "Enter a valid slug using letters, numbers, and hyphens." :
+        variantsParsed.success ? "Enter valid product details." : variantsParsed.error.issues[0]?.message),
+    } as const;
+  }
+
+  const variants = variantsParsed.data.map((variant) => ({
+    ...variant,
+    sku: variant.sku.trim(),
+    size: variant.size.trim(),
+    color: variant.color.trim(),
+    discountPrice: variant.discountPrice.trim(),
+  }));
+  const seenSkus = new Set<string>();
+  const seenCombinations = new Set<string>();
+  for (const variant of variants) {
+    if (variant.sku) {
+      const normalizedSku = variant.sku.toLowerCase();
+      if (seenSkus.has(normalizedSku)) return { error: "Each variant must have a unique SKU." } as const;
+      seenSkus.add(normalizedSku);
+    }
+    if (variant.size || variant.color) {
+      const combination = `${variant.size.toLowerCase()}::${variant.color.toLowerCase()}`;
+      if (seenCombinations.has(combination)) return { error: "Each size/color combination must be unique." } as const;
+      seenCombinations.add(combination);
+    }
+    if (variant.discountPrice !== "" && !/^\d{1,10}(?:\.\d{1,2})?$/.test(variant.discountPrice)) {
+      return { error: "Discount price must be a non-negative amount with up to two decimals." } as const;
+    }
+    if (variant.discountPrice !== "" && Number(variant.discountPrice) >= Number(variant.sellingPrice)) {
+      return { error: "Discount price must be lower than the variant selling price." } as const;
+    }
+  }
+
   return {
     data: {
       ...parsed.data,
       slug: slug.data,
-      costPrice: costPrice.data ?? "0.00",
-      sellingPrice: sellingPrice.data ?? "0.01",
-      discountPrice: discountPrice.data ?? null,
+      variants,
+      imageUrls,
     } satisfies ProductValues,
   } as const;
 }
@@ -202,6 +262,10 @@ async function validateCategories(categoryIds: string[]) {
   const uniqueIds = [...new Set(categoryIds)];
   if (uniqueIds.length !== categoryIds.length) return false;
   return (await prisma.category.count({ where: { id: { in: uniqueIds } } })) === uniqueIds.length;
+}
+
+function generatedSku(slug: string) {
+  return `VL-${slugify(slug).slice(0, 24).toUpperCase()}-${randomUUID().slice(0, 8).toUpperCase()}`;
 }
 
 export async function saveProductAction(
@@ -215,16 +279,23 @@ export async function saveProductAction(
   if (!(await validateCategories(product.categoryIds))) return { error: "One or more selected categories are unavailable." };
 
   try {
-    if (product.id) {
-      const existing = await prisma.product.findUnique({
-        where: { id: product.id },
-        select: { id: true, _count: { select: { variants: true } } },
-      });
-      if (!existing) return { error: "This product no longer exists." };
-      await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
+      let productId = product.id;
+      if (productId) {
+        const existing = await tx.product.findUnique({
+          where: { id: productId },
+          select: { id: true, variants: { select: { id: true } } },
+        });
+        if (!existing) throw new Error("PRODUCT_NOT_FOUND");
+
+        const existingVariantIds = new Set(existing.variants.map((variant) => variant.id));
+        if (product.variants.some((variant) => variant.id && !existingVariantIds.has(variant.id))) {
+          throw new Error("INVALID_VARIANT");
+        }
+
         await tx.product.update({
-          where: { id: product.id },
-        data: {
+          where: { id: productId },
+          data: {
             name: product.name,
             slug: product.slug,
             description: product.description || null,
@@ -233,52 +304,80 @@ export async function saveProductAction(
           },
         });
 
-        await tx.productVariant.updateMany({
-          where: { productId: product.id },
-          data: {
-            costPrice: new Prisma.Decimal(product.costPrice),
-            sellingPrice: new Prisma.Decimal(product.sellingPrice),
-            discountPrice: product.discountPrice === null ? null : new Prisma.Decimal(product.discountPrice),
-          },
-        });
-
-        if (existing._count.variants === 0 && product.id) {
-          await tx.productVariant.create({
-            data: {
-              productId: product.id,
-              sku: `VL-${slugify(product.slug).slice(0, 24).toUpperCase()}-${randomUUID().slice(0, 8).toUpperCase()}`,
-              costPrice: new Prisma.Decimal(product.costPrice),
-              sellingPrice: new Prisma.Decimal(product.sellingPrice),
-              discountPrice: product.discountPrice === null ? null : new Prisma.Decimal(product.discountPrice),
+        const submittedIds = new Set(product.variants.flatMap((variant) => variant.id ? [variant.id] : []));
+        const removedIds = existing.variants.map((variant) => variant.id).filter((id) => !submittedIds.has(id));
+        for (const variantId of removedIds) {
+          const usage = await tx.productVariant.findUnique({
+            where: { id: variantId },
+            select: {
+              sku: true,
+              _count: { select: { inventoryTransactions: true, inventoryReservations: true, cartItems: true } },
             },
           });
+          if (!usage) continue;
+          const historicalOrderItems = await tx.orderItem.count({ where: { sku: usage.sku } });
+          if (historicalOrderItems || usage._count.inventoryTransactions || usage._count.inventoryReservations || usage._count.cartItems) {
+            throw new Error("VARIANT_IN_USE");
+          }
+          await tx.productVariant.delete({ where: { id: variantId } });
         }
-      });
-    } else {
-      const base = await prisma.product.create({
-        data: {
-          name: product.name,
-          slug: product.slug,
-          description: product.description || null,
-          status: product.status,
-          categories: { connect: product.categoryIds.map((id) => ({ id })) },
-          variants: {
-            create: {
-              sku: `VL-${slugify(product.slug).slice(0, 24).toUpperCase()}-${randomUUID().slice(0, 8).toUpperCase()}`,
-              costPrice: new Prisma.Decimal(product.costPrice),
-              sellingPrice: new Prisma.Decimal(product.sellingPrice),
-              discountPrice: product.discountPrice === null ? null : new Prisma.Decimal(product.discountPrice),
-            },
+      } else {
+        const created = await tx.product.create({
+          data: {
+            name: product.name,
+            slug: product.slug,
+            description: product.description || null,
+            status: product.status,
+            categories: { connect: product.categoryIds.map((id) => ({ id })) },
           },
-        },
-        select: { id: true },
-      });
-      if (!base.id) return { error: "The product could not be created." };
-    }
+          select: { id: true },
+        });
+        productId = created.id;
+      }
+
+      if (!productId) throw new Error("PRODUCT_NOT_FOUND");
+
+      for (const variant of product.variants) {
+        const data = {
+          sku: variant.sku || generatedSku(product.slug),
+          size: variant.size || null,
+          color: variant.color || null,
+          costPrice: new Prisma.Decimal(variant.costPrice),
+          sellingPrice: new Prisma.Decimal(variant.sellingPrice),
+          discountPrice: variant.discountPrice === "" ? null : new Prisma.Decimal(variant.discountPrice),
+        };
+        if (variant.id) {
+          await tx.productVariant.update({
+            where: { id: variant.id, productId },
+            data,
+          });
+        } else {
+          await tx.productVariant.create({ data: { ...data, productId } });
+        }
+      }
+
+      await tx.productImage.deleteMany({ where: { productId } });
+      if (product.imageUrls.length) {
+        await tx.productImage.createMany({
+          data: product.imageUrls.map((url, index) => ({
+            productId: productId!,
+            url,
+            alt: `${product.name} image ${index + 1}`,
+            isPrimary: index === 0,
+          })),
+        });
+      }
+    });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "PRODUCT_NOT_FOUND") return { error: "This product no longer exists." };
+      if (error.message === "INVALID_VARIANT") return { error: "A submitted variant does not belong to this product." };
+      if (error.message === "VARIANT_IN_USE") return { error: "A variant with inventory, reservation, or cart history cannot be removed. Keep it and update its details instead." };
+    }
     return { error: duplicateMessage(error) ?? "The product could not be saved. Please try again." };
   }
   refreshCatalog();
+  revalidatePath("/admin");
   return ok;
 }
 

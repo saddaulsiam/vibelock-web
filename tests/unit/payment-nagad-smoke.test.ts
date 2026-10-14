@@ -45,7 +45,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -65,7 +65,8 @@ describe("Nagad Sandbox Smoke Test (Local Mocked & Diagnostic Validation)", () =
 
     test("detects and rejects truncated key material safely without leaking content", () => {
       // Simulate truncated key string (e.g. 139 chars)
-      const truncatedPriv = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7V9K07eS" +
+      const truncatedPriv =
+        "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC7V9K07eS" +
         "hP6t0KjF/77Y9x6QkQ7n6lPqZ0W8v8u8m8k7oI15l";
       const resultPriv = validateRsaKeyMaterial(truncatedPriv, "PRIVATE");
       expect(resultPriv.isValid).toBe(false);
@@ -176,10 +177,10 @@ describe("Nagad Sandbox Smoke Test (Local Mocked & Diagnostic Validation)", () =
       (global.fetch as any)
         // Step 1 response
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({ sensitiveData: step1Encrypted }),
-            { status: 200, headers: { "Content-Type": "application/json" } }
-          )
+          new Response(JSON.stringify({ sensitiveData: step1Encrypted }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          })
         )
         // Step 2 response
         .mockResolvedValueOnce(
