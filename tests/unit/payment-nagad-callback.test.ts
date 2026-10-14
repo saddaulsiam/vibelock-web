@@ -18,7 +18,7 @@ vi.mock("@/lib/config/env", () => ({
 
 vi.mock("@/lib/config/public-env", () => ({
   publicEnv: {
-    NEXT_PUBLIC_APP_URL: "https://vibelockbd.vercel.app",
+    NEXT_PUBLIC_APP_URL: "https://vibelock.bd",
   },
 }));
 
@@ -68,7 +68,10 @@ vi.mock("@/lib/inventory/service", () => ({
 }));
 
 import { PaymentService } from "@/lib/payment/service";
-import { GET as nagadCallbackGet, POST as nagadCallbackPost } from "@/app/api/payments/nagad/callback/route";
+import {
+  GET as nagadCallbackGet,
+  POST as nagadCallbackPost,
+} from "@/app/api/payments/nagad/callback/route";
 
 describe("Nagad Callback & PaymentService Verification", () => {
   let paymentService: PaymentService;
@@ -90,9 +93,9 @@ describe("Nagad Callback & PaymentService Verification", () => {
 
   describe("1. Reference Resolution & Idempotency", () => {
     test("throws error when transaction reference is missing in callback", async () => {
-      await expect(
-        paymentService.verifyCallback("NAGAD", { status: "Success" })
-      ).rejects.toThrow("Missing transaction reference");
+      await expect(paymentService.verifyCallback("NAGAD", { status: "Success" })).rejects.toThrow(
+        "Missing transaction reference"
+      );
     });
 
     test("resolves reference using payload.payment_ref_id", async () => {
@@ -308,7 +311,7 @@ describe("Nagad Callback & PaymentService Verification", () => {
       );
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/nagad/callback?payment_ref_id=PRID_ROUTE_OK&status=Success",
+        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=PRID_ROUTE_OK&status=Success",
         { method: "GET" }
       );
 
@@ -350,7 +353,7 @@ describe("Nagad Callback & PaymentService Verification", () => {
       );
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/nagad/callback?payment_ref_id=PRID_ROUTE_JSON&status=Success",
+        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=PRID_ROUTE_JSON&status=Success",
         {
           method: "GET",
           headers: { Accept: "application/json" },
@@ -368,7 +371,7 @@ describe("Nagad Callback & PaymentService Verification", () => {
       mockPrisma.payment.findUnique.mockResolvedValueOnce(null);
 
       const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/nagad/callback?payment_ref_id=UNKNOWN_REF",
+        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=UNKNOWN_REF",
         { method: "GET" }
       );
 
@@ -381,14 +384,11 @@ describe("Nagad Callback & PaymentService Verification", () => {
     test("POST callback handles JSON payload", async () => {
       mockPrisma.payment.findUnique.mockResolvedValueOnce(null);
 
-      const req = new NextRequest(
-        "https://vibelockbd.vercel.app/api/payments/nagad/callback",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ payment_ref_id: "UNKNOWN_POST_REF" }),
-        }
-      );
+      const req = new NextRequest("https://vibelock.bd/api/payments/nagad/callback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ payment_ref_id: "UNKNOWN_POST_REF" }),
+      });
 
       const res = await nagadCallbackPost(req);
       expect(res.status).toBe(303);

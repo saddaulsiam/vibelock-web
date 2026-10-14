@@ -28,7 +28,7 @@ jobs:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       DIRECT_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
       AUTH_SECRET: dummy-ci-auth-secret-for-build-and-test-only-32c
-      NEXT_PUBLIC_APP_URL: https://vibelockbd.vercel.app
+      NEXT_PUBLIC_APP_URL: https://vibelock.bd
 
     steps:
       - name: Checkout repository
