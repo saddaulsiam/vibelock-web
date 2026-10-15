@@ -4,9 +4,12 @@ export function AnnouncementBar() {
   return (
     <aside
       aria-label="Announcement"
-      className="bg-brand-charcoal text-brand-offwhite text-xs md:text-sm font-medium text-center py-2 px-4 relative z-50 border-b border-border/20"
+      className="relative z-50 border-b border-[#F3F0E8]/10 bg-[#101114] px-4 py-2 text-center text-xs font-medium text-[#F3F0E8]/75 md:text-sm"
     >
-      <p>VibeLock Streetwear — Modern Urban Identity for Dhaka</p>
+      <p>
+        VibeLock Streetwear <span className="text-[#00D9FF]">/</span> Modern Urban Identity for
+        Dhaka
+      </p>
     </aside>
   );
 }
