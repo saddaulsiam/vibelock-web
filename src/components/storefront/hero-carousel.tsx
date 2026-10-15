@@ -166,17 +166,30 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
               <div className="mt-7 sm:mt-8">
                 <Link
                   href={currentBanner.ctaUrl}
-                  className="inline-flex items-center gap-3 bg-[#101114] px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  className="group inline-flex items-center gap-3 rounded-full bg-[#101114] px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-black/85 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
                 >
                   <span>{currentBanner.ctaLabel}</span>
-                  <ArrowRight className="size-4 text-[#00D9FF]" aria-hidden="true" />
+                  <ArrowRight
+                    className="size-4 text-[#00D9FF] transition-transform duration-200 group-hover:translate-x-1"
+                    aria-hidden="true"
+                  />
                 </Link>
               </div>
             </div>
 
-            {/* Interactive Slide Indicators & Arrow Controls */}
+            {/* Interactive Slide Indicators & Controls */}
             {isMultiBanner ? (
-              <div className="mt-10 flex items-center gap-4 sm:mt-12 lg:mt-14">
+              <div className="mt-10 flex items-center gap-3 sm:mt-12 lg:mt-14">
+                {/* Autoplay status toggle icon */}
+                <button
+                  type="button"
+                  aria-label={isPaused ? "Play hero carousel" : "Pause hero carousel"}
+                  onClick={() => setIsPaused((prev) => !prev)}
+                  className="inline-flex size-6 items-center justify-center rounded-full bg-[#101114]/15 text-[#101114] transition-colors hover:bg-[#101114] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                >
+                  <span className="text-xs font-bold leading-none">{isPaused ? "▶" : "+"}</span>
+                </button>
+
                 {/* Clickable Indicators */}
                 <div className="flex items-center gap-2" role="tablist" aria-label="Slides">
                   {activeBanners.map((banner, index) => {
@@ -199,31 +212,11 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
                     );
                   })}
                 </div>
-
-                {/* Arrow Navigation */}
-                <div className="ml-2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    aria-label="Previous slide"
-                    onClick={goToPrev}
-                    className="inline-flex size-7 items-center justify-center rounded-sm bg-[#101114]/10 text-[#101114] transition-colors hover:bg-[#101114] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                  >
-                    <ArrowLeft className="size-3.5" aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Next slide"
-                    onClick={goToNext}
-                    className="inline-flex size-7 items-center justify-center rounded-sm bg-[#101114]/10 text-[#101114] transition-colors hover:bg-[#101114] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                  >
-                    <ArrowRight className="size-3.5" aria-hidden="true" />
-                  </button>
-                </div>
               </div>
             ) : null}
           </div>
 
-          {/* Right Column: Model Graphic Image */}
+          {/* Right Column: Model Graphic Image & Vertical Watermark */}
           <div className="relative flex items-end justify-center self-end lg:justify-end">
             <div className="relative w-full max-w-[560px] lg:max-w-none">
               {activeBanners.map((banner, index) => {
@@ -258,9 +251,39 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
                 );
               })}
             </div>
+
+            {/* Vertical Streetwear Culture Watermark (Far Right Edge) */}
+            <div
+              className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 rotate-90 select-none text-[10px] font-bold uppercase tracking-[0.32em] text-[#101114]/35 xl:block"
+              aria-hidden="true"
+            >
+              Streetwear &nbsp;|&nbsp; Culture &nbsp;|&nbsp; Community
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Flanking Circular Navigation Arrows */}
+      {isMultiBanner ? (
+        <>
+          <button
+            type="button"
+            aria-label="Previous slide"
+            onClick={goToPrev}
+            className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:bg-black/75 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:inline-flex lg:left-5"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next slide"
+            onClick={goToNext}
+            className="absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:bg-black/75 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:inline-flex lg:right-5"
+          >
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </button>
+        </>
+      ) : null}
     </section>
   );
 }
