@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
-import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
 import { Section } from "@/components/shared/section";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
 import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ProductGrid } from "@/components/storefront/catalog/product-grid";
-import { getDiscoveredProducts } from "@/lib/catalog/discovery";
-import { getCategories, getCatalogFilterOptions, getCategoryBySlug } from "@/lib/catalog/queries";
+import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
 import { getCategoryPromoBanner } from "@/lib/catalog/banners";
+import { getDiscoveredProducts } from "@/lib/catalog/discovery";
+import { getCatalogFilterOptions, getCategories, getCategoryBySlug } from "@/lib/catalog/queries";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({
   params,
@@ -69,34 +69,38 @@ export default async function CategoryPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white pb-12 pt-6 sm:pb-16 sm:pt-8">
+    <Section className="min-h-screen bg-white pt-4 pb-12 sm:pt-6 sm:pb-16">
       <Container>
+        {promoBanner ? (
+          <div className="mb-5 sm:mb-6">
+            <PromoBanner banner={promoBanner} />
+          </div>
+        ) : null}
+
         <header className="mb-6 sm:mb-8">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
-            VibeLock <span className="px-1 text-[#00D9FF]">/</span> Category
-          </p>
-          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+          <nav aria-label="Breadcrumb" className="mb-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
+              VibeLock <span className="px-1 text-[#00D9FF]">/</span> Category
+            </p>
+          </nav>
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div className="min-w-0">
-              <h1 className="text-3xl font-semibold tracking-[-0.045em] text-[#101114] sm:text-4xl lg:text-5xl">
+              <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#101114] sm:text-4xl">
                 {category.name}
               </h1>
               {category.description ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#101114]/60 sm:text-base">
+                <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-[#101114]/60 sm:text-sm sm:leading-6">
                   {category.description}
                 </p>
               ) : null}
             </div>
-            <p className="shrink-0 pb-1 text-sm text-[#101114]/60" aria-live="polite">
+            <p className="shrink-0 pb-0.5 text-xs text-[#101114]/60 sm:text-sm" aria-live="polite">
               <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
               {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
           </div>
         </header>
-      </Container>
 
-      {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}
-
-      <Container>
         <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
           <ProductFilters options={filterOptions} lockedCategorySlug={slug} />
           <div className="min-w-0 flex-1">
