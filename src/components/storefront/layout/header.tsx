@@ -31,7 +31,7 @@ export async function Header() {
 
           <nav
             aria-label="Shop navigation"
-            className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[11px] font-semibold uppercase tracking-[0.12em] lg:flex xl:gap-6 2xl:gap-7"
+            className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[11px] font-semibold uppercase tracking-[0.12em] xl:flex 2xl:gap-6"
           >
             {storefrontShopLinks.map((link) => (
               <Link
