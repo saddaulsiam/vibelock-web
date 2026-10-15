@@ -246,7 +246,13 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
                       height={440}
                       priority={isInitial}
                       loading={isInitial ? undefined : "lazy"}
-                      className="h-auto w-full object-contain [mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_100%)] lg:max-h-[540px] xl:max-h-[580px]"
+                      style={{
+                        maskImage:
+                          "radial-gradient(ellipse 92% 90% at 50% 50%, black 65%, transparent 100%)",
+                        WebkitMaskImage:
+                          "radial-gradient(ellipse 92% 90% at 50% 50%, black 65%, transparent 100%)",
+                      }}
+                      className="h-auto w-full object-contain lg:max-h-[540px] xl:max-h-[580px]"
                     />
                   </div>
                 );
