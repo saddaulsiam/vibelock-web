@@ -69,24 +69,35 @@ export default async function CategoryPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white py-10 sm:py-14 lg:py-16">
+    <Section className="min-h-screen bg-white pb-12 pt-6 sm:pb-16 sm:pt-8">
       <Container>
-        <header className="mb-8 border-b border-border pb-7 sm:mb-10 sm:pb-8">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            VibeLock / Category
+        <header className="mb-6 sm:mb-8">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
+            VibeLock <span className="px-1 text-[#00D9FF]">/</span> Category
           </p>
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">{category.name}</h1>
-          {category.description && (
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-              {category.description}
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div className="min-w-0">
+              <h1 className="text-3xl font-semibold tracking-[-0.045em] text-[#101114] sm:text-4xl lg:text-5xl">
+                {category.name}
+              </h1>
+              {category.description ? (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#101114]/60 sm:text-base">
+                  {category.description}
+                </p>
+              ) : null}
+            </div>
+            <p className="shrink-0 pb-1 text-sm text-[#101114]/60" aria-live="polite">
+              <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
+              {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
-          )}
-          <p className="mt-4 text-sm font-medium text-foreground" aria-live="polite">
-            {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "product" : "products"}
-          </p>
+          </div>
         </header>
+      </Container>
 
-        {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}\n\n        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+      {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}
+
+      <Container>
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
           <ProductFilters options={filterOptions} lockedCategorySlug={slug} />
           <div className="min-w-0 flex-1">
             <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">

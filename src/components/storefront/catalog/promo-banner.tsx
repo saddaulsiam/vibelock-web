@@ -10,7 +10,9 @@ export function PromoBanner({
   className?: string;
 }) {
   const content = (
-    <div className={`relative isolate aspect-[16/5] min-h-28 w-full overflow-hidden bg-[#F3F0E8] sm:aspect-[16/4] sm:min-h-40 lg:aspect-[16/3.5] ${className ?? ""}`}>
+    <div
+      className={`relative isolate mx-auto aspect-[3/2] max-h-[420px] w-full overflow-hidden bg-[#F3F0E8] sm:aspect-[16/5] lg:aspect-[16/4] ${className ?? ""}`}
+    >
       {banner.mobileImageUrl ? (
         <>
           <Image
@@ -44,7 +46,11 @@ export function PromoBanner({
   );
 
   return banner.linkUrl ? (
-    <Link href={banner.linkUrl} aria-label={banner.title} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+    <Link
+      href={banner.linkUrl}
+      aria-label={banner.title}
+      className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+    >
       {content}
     </Link>
   ) : content;
