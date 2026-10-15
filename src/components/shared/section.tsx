@@ -6,5 +6,5 @@ interface SectionProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 export function Section({ className, as: Component = "section", ...props }: SectionProps) {
-  return <Component className={cn("py-12 md:py-16 lg:py-24", className)} {...props} />;
+  return <Component className={cn("py-6 sm:py-8 lg:py-12", className)} {...props} />;
 }
