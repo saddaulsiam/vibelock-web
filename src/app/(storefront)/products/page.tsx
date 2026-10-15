@@ -55,40 +55,47 @@ export default async function ProductsPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white py-10 sm:py-14 lg:py-16">
+    <Section className="min-h-screen bg-white pb-12 pt-6 sm:pb-16 sm:pt-8">
       <Container>
-        <header className="mb-8 border-b border-border pb-7 sm:mb-10 sm:pb-8">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            {hasSearch ? "VibeLock / Search" : "VibeLock / Shop"}
+        <header className="mb-6 sm:mb-8">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
+            VibeLock <span className="px-1 text-[#00D9FF]">/</span> {hasSearch ? "Search" : "Shop"}
           </p>
-          <h1 className="break-words text-4xl font-semibold tracking-tight sm:text-5xl">
-            {hasSearch ? "Search results" : "All products"}
-          </h1>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            {hasSearch ? (
-              <p className="max-w-2xl break-words text-sm leading-6 text-muted-foreground sm:text-base">
-                Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
-              </p>
-            ) : (
-              <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                Everyday pieces and easy layers for your city rotation.
-              </p>
-            )}
-            <p className="text-sm font-medium text-foreground" aria-live="polite">
-              {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "product" : "products"}
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div className="min-w-0">
+              <h1 className="break-words text-3xl font-semibold tracking-[-0.045em] text-[#101114] sm:text-4xl lg:text-5xl">
+                {hasSearch ? "Search results" : "All products"}
+              </h1>
+              {hasSearch ? (
+                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-[#101114]/60 sm:text-base">
+                  Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
+                </p>
+              ) : (
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#101114]/60 sm:text-base">
+                  Everyday pieces and easy layers for your city rotation.
+                </p>
+              )}
+            </div>
+            <p className="shrink-0 pb-1 text-sm text-[#101114]/60" aria-live="polite">
+              <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
+              {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
           </div>
-          {hasSearch && (
+          {hasSearch ? (
             <Link
               href={clearSearchHref}
               className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
             >
               Clear search
             </Link>
-          )}
+          ) : null}
         </header>
+      </Container>
 
-        {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}\n\n        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+      {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}
+
+      <Container>
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
           <ProductFilters options={filterOptions} />
           <div className="min-w-0 flex-1">
             <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">
