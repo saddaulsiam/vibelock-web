@@ -1,9 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowDownRight, ArrowRight } from "lucide-react";
+import { ArrowDownRight, ArrowRight, Headphones, ShieldCheck, Truck } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { HeroCarousel } from "@/components/storefront/hero-carousel";
 import { ProductCard } from "@/components/storefront/product-card";
+import { getHomepageHeroBanners } from "@/lib/catalog/hero-banners";
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
 import { SITE_URL } from "@/lib/seo/site";
@@ -52,7 +54,9 @@ function ProductSection({
               VibeLock / 01
             </p>
             <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">{description}</p>
+            <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
+              {description}
+            </p>
           </div>
           <Link
             href="/products"
@@ -79,56 +83,68 @@ function ProductSection({
 }
 
 export default async function StorefrontHomePage() {
-  const [categories, publishedProducts] = await Promise.all([
+  const [categories, publishedProducts, heroBanners] = await Promise.all([
     getCategories(),
     getPublishedProducts({ take: 12 }),
+    getHomepageHeroBanners(),
   ]);
 
   const newArrivals = publishedProducts.slice(0, 6);
   const arrivalIds = new Set(newArrivals.map((product) => product.id));
   const featuredProducts = publishedProducts
     .filter((product) => !arrivalIds.has(product.id) && product.hasDiscount)
-    .concat(publishedProducts.filter((product) => !arrivalIds.has(product.id) && !product.hasDiscount))
+    .concat(
+      publishedProducts.filter((product) => !arrivalIds.has(product.id) && !product.hasDiscount)
+    )
     .slice(0, 4);
 
   return (
     <>
-      <section className="overflow-hidden bg-[#101114] text-[#F3F0E8]">
-        <Container className="grid min-h-[32rem] items-center gap-10 py-16 sm:min-h-[38rem] sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16 lg:py-24">
-          <div className="max-w-2xl">
-            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-[#00D9FF]">
-              Everyday pieces / Dhaka
-            </p>
-            <h1 className="max-w-xl text-5xl font-semibold leading-[0.98] tracking-[-0.055em] sm:text-7xl lg:text-[5.5rem]">
-              Built for the <span className="text-[#00D9FF]">city.</span>
-            </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-white/70 sm:text-lg">
-              Easy layers and everyday essentials, made to move with you.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/products"
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-[#00D9FF] px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#00D9FF]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#101114]"
-              >
-                  Shop all products <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
-              </Link>
-              <Link
-                href="/products?sort=newest"
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-white/35 bg-transparent px-5 text-sm font-semibold text-[#F3F0E8] transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:ring-offset-[#101114]"
-              >
-                Explore new arrivals
-              </Link>
+      {/* ── Dynamic Hero Carousel ─────────────────────────────── */}
+      <HeroCarousel banners={heroBanners} />
+
+      {/* ── Trust / Feature Bar ──────────────────────────────── */}
+      <section className="border-t border-black/10 bg-[#F2EFE8] py-5 sm:py-6">
+        <Container>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-0">
+            {/* Free Shipping */}
+            <div className="flex items-center justify-center gap-3.5 sm:justify-center lg:gap-4">
+              <Truck className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#101114] sm:text-sm">
+                  FREE SHIPPING
+                </p>
+                <p className="text-xs text-[#101114]/65">
+                  On orders over ৳2000
+                </p>
+              </div>
             </div>
-          </div>
-          <div aria-hidden="true" className="relative hidden min-h-[20rem] items-end justify-end lg:flex">
-            <span className="absolute right-0 top-0 h-48 w-48 rounded-full border border-white/15" />
-            <span className="absolute right-16 top-16 h-48 w-48 rounded-full border border-[#00D9FF]/60" />
-            <div className="relative z-10 max-w-xs border-l-2 border-[#00D9FF] py-2 pl-5 text-sm leading-6 text-white/65">
-              A considered rotation for the everyday.
+
+            {/* Secure Payments */}
+            <div className="flex items-center justify-center gap-3.5 border-t border-black/10 pt-4 sm:border-l sm:border-t-0 sm:pt-0 lg:gap-4">
+              <ShieldCheck className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#101114] sm:text-sm">
+                  SECURE PAYMENTS
+                </p>
+                <p className="text-xs text-[#101114]/65">
+                  100% safe & trusted
+                </p>
+              </div>
             </div>
-            <span className="absolute bottom-10 left-4 text-[10rem] font-semibold leading-none tracking-[-0.1em] text-white/[0.04]">
-              VL
-            </span>
+
+            {/* 24/7 Support */}
+            <div className="flex items-center justify-center gap-3.5 border-t border-black/10 pt-4 sm:border-l sm:border-t-0 sm:pt-0 lg:gap-4">
+              <Headphones className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-wider text-[#101114] sm:text-sm">
+                  24/7 SUPPORT
+                </p>
+                <p className="text-xs text-[#101114]/65">
+                  We&apos;re here to help
+                </p>
+              </div>
+            </div>
           </div>
         </Container>
       </section>
@@ -144,8 +160,12 @@ export default async function StorefrontHomePage() {
         <Container>
           <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
             <div>
-              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Find your fit</p>
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Shop by category</h2>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                Find your fit
+              </p>
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Shop by category
+              </h2>
             </div>
             <ArrowDownRight className="mb-1 hidden h-6 w-6 sm:block" aria-hidden="true" />
           </div>
@@ -160,7 +180,10 @@ export default async function StorefrontHomePage() {
                   <span className="text-xs font-medium text-muted-foreground">0{index + 1}</span>
                   <span className="flex items-center justify-between gap-2 text-lg font-semibold tracking-tight sm:text-2xl">
                     {category.name}
-                    <ArrowRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
                   </span>
                 </Link>
               ))}
@@ -182,7 +205,9 @@ export default async function StorefrontHomePage() {
 
       <section className="bg-white py-16 sm:py-20 lg:py-24">
         <Container className="grid gap-6 sm:grid-cols-[0.35fr_1fr] sm:gap-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">The VibeLock point of view</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            The VibeLock point of view
+          </p>
           <div className="max-w-3xl">
             <h2 className="text-3xl font-semibold leading-tight tracking-tight sm:text-5xl">
               Wear what feels like you.
@@ -197,14 +222,18 @@ export default async function StorefrontHomePage() {
       <section className="bg-[#00D9FF] py-14 text-[#101114] sm:py-16">
         <Container className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em]">Your next everyday favorite</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Find your rotation.</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em]">
+              Your next everyday favorite
+            </p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
+              Find your rotation.
+            </h2>
           </div>
           <Link
             href="/products"
             className="inline-flex h-11 items-center justify-center rounded-lg bg-[#101114] px-7 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#101114] focus-visible:ring-offset-2 focus-visible:ring-offset-[#00D9FF]"
           >
-              Shop all products <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
+            Shop all products <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
           </Link>
         </Container>
       </section>
