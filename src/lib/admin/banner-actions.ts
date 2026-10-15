@@ -66,14 +66,18 @@ export async function saveBannerAction(_previous: BannerActionState, formData: F
       placement,
       sortOrder,
       isActive,
-      categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
     };
     if (id) {
       const existing = await prisma.banner.findUnique({ where: { id }, select: { id: true } });
       if (!existing) return { error: "This banner no longer exists." };
-      await prisma.banner.update({ where: { id }, data });
+      await prisma.banner.update({
+        where: { id },
+        data: { ...data, categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) } },
+      });
     } else {
-      await prisma.banner.create({ data });
+      await prisma.banner.create({
+        data: { ...data, categories: { connect: categoryIds.map((categoryId) => ({ id: categoryId })) } },
+      });
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
