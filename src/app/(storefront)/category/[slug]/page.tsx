@@ -46,10 +46,11 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ slug }, rawSearchParams] = await Promise.all([params, searchParams]);
-  const [category, categories, filterOptionsData] = await Promise.all([
+  const [category, categories, filterOptionsData, promoBanner] = await Promise.all([
     getCategoryBySlug(slug),
     getCategories(),
     getCatalogFilterOptions(),
+    getCategoryPromoBanner(slug),
   ]);
 
   if (!category) notFound();
