@@ -1,10 +1,11 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowDownRight, ArrowRight, Headphones, ShieldCheck, Truck } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { HeroCarousel } from "@/components/storefront/hero-carousel";
 import { ProductCard } from "@/components/storefront/product-card";
+import { getHomepageHeroBanners } from "@/lib/catalog/hero-banners";
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
 import { SITE_URL } from "@/lib/seo/site";
@@ -82,9 +83,10 @@ function ProductSection({
 }
 
 export default async function StorefrontHomePage() {
-  const [categories, publishedProducts] = await Promise.all([
+  const [categories, publishedProducts, heroBanners] = await Promise.all([
     getCategories(),
     getPublishedProducts({ take: 12 }),
+    getHomepageHeroBanners(),
   ]);
 
   const newArrivals = publishedProducts.slice(0, 6);
@@ -98,63 +100,8 @@ export default async function StorefrontHomePage() {
 
   return (
     <>
-      {/* ── Hero Section ─────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-[#EDE9E0] text-[#101114]">
-        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:pl-10 lg:pr-0 xl:pl-16">
-          <div className="grid min-h-[460px] items-center lg:min-h-[500px] lg:grid-cols-[1.05fr_0.95fr] xl:min-h-[540px] xl:grid-cols-[1fr_1fr]">
-            {/* Left — Text Column */}
-            <div className="z-10 flex flex-col justify-center py-10 sm:py-14 lg:py-16 lg:pr-8">
-              {/* Eyebrow */}
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#101114]/60 sm:text-[13px]">
-                Vibelock Streetwear
-              </p>
-
-              {/* Bold Headline */}
-              <h1 className="mt-4 text-4xl font-black uppercase leading-[0.92] tracking-tight text-[#101114] sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem]">
-                Wear Your<br />
-                <span className="text-[#00D9FF]">Vibe</span> Daily
-              </h1>
-
-              {/* Supporting Text */}
-              <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-[#101114]/70 sm:mt-6 sm:text-base lg:text-lg">
-                Premium streetwear for the bold, the real, and the everyday dreamers.
-              </p>
-
-              {/* CTA Button */}
-              <div className="mt-7 sm:mt-8">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-3 bg-[#101114] px-7 py-3.5 text-xs font-bold uppercase tracking-wider text-white transition-colors hover:bg-black/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                >
-                  <span>SHOP NOW</span>
-                  <ArrowRight className="size-4 text-[#00D9FF]" aria-hidden="true" />
-                </Link>
-              </div>
-
-              {/* Carousel Indicators */}
-              <div className="mt-10 flex items-center gap-2 sm:mt-12 lg:mt-14" aria-hidden="true">
-                <span className="h-1.5 w-6 rounded-full bg-[#00D9FF]" />
-                <span className="h-1.5 w-5 rounded-full bg-[#101114]/25" />
-                <span className="h-1.5 w-5 rounded-full bg-[#101114]/25" />
-              </div>
-            </div>
-
-            {/* Right — Model Graphic Image */}
-            <div className="relative flex items-end justify-center self-end lg:justify-end">
-              <div className="relative w-full max-w-[560px] lg:max-w-none">
-                <Image
-                  src="/images/hero/hero-clean.png"
-                  alt="VibeLock Streetwear Model"
-                  width={550}
-                  height={440}
-                  priority
-                  className="h-auto w-full object-contain [mask-image:linear-gradient(to_right,transparent_0%,black_6%,black_100%)] lg:max-h-[540px] xl:max-h-[580px]"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── Dynamic Hero Carousel ─────────────────────────────── */}
+      <HeroCarousel banners={heroBanners} />
 
       {/* ── Trust / Feature Bar ──────────────────────────────── */}
       <section className="border-t border-black/10 bg-[#F2EFE8] py-5 sm:py-6">
