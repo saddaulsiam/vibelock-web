@@ -11,7 +11,10 @@ interface ImageGalleryProps {
 }
 
 export function ImageGallery({ images, productName }: ImageGalleryProps) {
-  const primaryIndex = Math.max(0, images.findIndex((image) => image.isPrimary));
+  const primaryIndex = Math.max(
+    0,
+    images.findIndex((image) => image.isPrimary)
+  );
   const [selectedIndex, setSelectedIndex] = useState(primaryIndex);
   const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
   const selectedImage = images[selectedIndex];
@@ -22,7 +25,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
 
   if (!selectedImage) {
     return (
-      <div className="flex aspect-[4/5] items-center justify-center bg-[#F3F0E8] text-muted-foreground sm:aspect-[3/4]">
+      <div className="flex aspect-4/4 items-center justify-center bg-[#F3F0E8] text-muted-foreground sm:aspect-4/4">
         <div className="flex flex-col items-center gap-3 text-center">
           <ImageOff className="size-8" aria-hidden="true" />
           <span className="text-sm">No product images available</span>
@@ -61,7 +64,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                     alt={image.alt || `${productName} thumbnail ${index + 1}`}
                     fill
                     sizes="80px"
-                    className="object-cover"
+                    className="object-center object-contain"
                     onError={() => markImageFailed(image.url)}
                   />
                 ) : (
@@ -75,14 +78,14 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
         </div>
       )}
 
-      <div className="relative order-1 aspect-[4/5] min-w-0 flex-1 overflow-hidden bg-[#F3F0E8] sm:aspect-[3/4] lg:order-2 lg:aspect-auto lg:min-h-[38rem]">
+      <div className="relative order-1 aspect-4/5 min-w-0 flex-1 overflow-hidden bg-[#F3F0E8] sm:aspect-3/4 lg:order-2 lg:aspect-auto lg:min-h-[38rem]">
         {!selectedImageFailed ? (
           <Image
             src={selectedImage.url}
             alt={selectedImage.alt || productName}
             fill
             priority
-            className="object-cover"
+            className="object-center object-contain"
             sizes="(max-width: 1023px) 100vw, 55vw"
             onError={() => markImageFailed(selectedImage.url)}
           />

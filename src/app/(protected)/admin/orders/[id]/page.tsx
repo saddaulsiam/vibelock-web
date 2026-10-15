@@ -133,21 +133,21 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
 
             <Card>
               <CardHeader>
-                <CardTitle>Shipment</CardTitle>
-                <CardDescription>
-                  {order.shipment ? "Shipment already exists for this order." : "No shipment has been created yet."}
-                </CardDescription>
+                <CardTitle>Customer Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {order.shipment ? (
-                  <div className="space-y-1 text-sm">
-                    <p><strong>Status:</strong> {order.shipment.status}</p>
-                    <p><strong>Provider:</strong> {order.shipment.provider}</p>
-                    <p><strong>Tracking:</strong> {order.shipment.trackingNumber || "Not assigned"}</p>
-                  </div>
-                ) : (
-                  <CreateShipmentForm orderId={order.id} />
-                )}
+
+              <CardContent className="space-y-2 text-sm">
+                <p>
+                  <strong>Name:</strong> {order.customerName || "Guest"}
+                </p>
+
+                <p>
+                  <strong>Email:</strong> {order.customerEmail}
+                </p>
+
+                <p>
+                  <strong>Phone:</strong> {order.customerPhone || "N/A"}
+                </p>
               </CardContent>
             </Card>
 
@@ -183,6 +183,34 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                   <span>Total:</span>
                   <span>{formatCurrency(order.total)}</span>
                 </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Shipment</CardTitle>
+                <CardDescription>
+                  {order.shipment
+                    ? "Shipment already exists for this order."
+                    : "No shipment has been created yet."}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {order.shipment ? (
+                  <div className="space-y-1 text-sm">
+                    <p>
+                      <strong>Status:</strong> {order.shipment.status}
+                    </p>
+                    <p>
+                      <strong>Provider:</strong> {order.shipment.provider}
+                    </p>
+                    <p>
+                      <strong>Tracking:</strong> {order.shipment.trackingNumber || "Not assigned"}
+                    </p>
+                  </div>
+                ) : (
+                  <CreateShipmentForm orderId={order.id} />
+                )}
               </CardContent>
             </Card>
           </div>
@@ -247,26 +275,6 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                 currentPaymentStatus={order.paymentStatus}
                 statuses={Object.values(PaymentStatus)}
               />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Details</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-2 text-sm">
-              <p>
-                <strong>Name:</strong> {order.customerName || "Guest"}
-              </p>
-
-              <p>
-                <strong>Email:</strong> {order.customerEmail}
-              </p>
-
-              <p>
-                <strong>Phone:</strong> {order.customerPhone || "N/A"}
-              </p>
             </CardContent>
           </Card>
         </div>
