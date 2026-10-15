@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Container } from "@/components/shared/container";
+import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
 import { Section } from "@/components/shared/section";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
 import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
@@ -8,6 +9,7 @@ import { ProductFilters } from "@/components/storefront/catalog/product-filters"
 import { ProductGrid } from "@/components/storefront/catalog/product-grid";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { getCategories, getCatalogFilterOptions, getCategoryBySlug } from "@/lib/catalog/queries";
+import { getCategoryPromoBanner } from "@/lib/catalog/banners";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
 
@@ -44,10 +46,11 @@ export default async function CategoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ slug }, rawSearchParams] = await Promise.all([params, searchParams]);
-  const [category, categories, filterOptionsData] = await Promise.all([
+  const [category, categories, filterOptionsData, promoBanner] = await Promise.all([
     getCategoryBySlug(slug),
     getCategories(),
     getCatalogFilterOptions(),
+    getCategoryPromoBanner(slug),
   ]);
 
   if (!category) notFound();
@@ -83,7 +86,7 @@ export default async function CategoryPage({
           </p>
         </header>
 
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
+        {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}\n\n        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
           <ProductFilters options={filterOptions} lockedCategorySlug={slug} />
           <div className="min-w-0 flex-1">
             <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">
