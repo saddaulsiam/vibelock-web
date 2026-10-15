@@ -39,10 +39,11 @@ export default async function ProductsPage({
   const params = await searchParams;
   const parsedParams = parseDiscoverySearchParams(params);
 
-  const [discoveryResult, categories, filterOptionsData] = await Promise.all([
+  const [discoveryResult, categories, filterOptionsData, promoBanner] = await Promise.all([
     getDiscoveredProducts(parsedParams),
     getCategories(),
     getCatalogFilterOptions(),
+    getSearchPromoBanner(parsedParams.category?.split(",").filter(Boolean) ?? []),
   ]);
   const hasSearch = Boolean(parsedParams.q?.trim());
   const searchTerm = parsedParams.q?.trim() ?? "";
