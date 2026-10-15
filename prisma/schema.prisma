@@ -87,6 +87,12 @@ enum ReturnRequestStatus {
   COMPLETED
 }
 
+enum BannerPlacement {
+  CATEGORY
+  SEARCH
+  BOTH
+}
+
 enum ProductStatus {
   DRAFT
   PUBLISHED
@@ -218,6 +224,7 @@ model Category {
   updatedAt   DateTime   @updatedAt
 
   products Product[]
+  banners  Banner[] @relation("BannerCategories")
 }
 
 model Product {
@@ -541,13 +548,19 @@ model Review {
 }
 
 model Banner {
-  id        String   @id @default(uuid())
-  title     String
-  imageUrl  String
-  linkUrl   String?
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String          @id @default(uuid())
+  title          String
+  imageUrl       String
+  mobileImageUrl String?
+  linkUrl        String?
+  placement      BannerPlacement @default(BOTH)
+  sortOrder      Int             @default(0)
+  isActive       Boolean         @default(true)
+  categories     Category[]      @relation("BannerCategories")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([isActive, placement, sortOrder])
 }
 
 model AuditLog {
