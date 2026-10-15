@@ -1,13 +1,11 @@
 import Link from "next/link";
-import { Search, ShoppingBag } from "lucide-react";
+import Image from "next/image";
+import { ChevronDown, Heart, Search, ShoppingBag, User } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { logoutAction } from "@/app/actions/auth";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { MobileNav } from "./mobile-nav";
-import { storefrontShopLinks } from "./navigation";
 
 export async function Header() {
   const user = await getCurrentUser();
@@ -15,133 +13,190 @@ export async function Header() {
   const itemCount = cart?.totalQuantity ?? 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#101114]/10 bg-[#F3F0E8]">
+    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#0C0D0E]">
       <Container>
-        <div className="flex min-h-[68px] items-center gap-3 py-2 sm:min-h-[72px] xl:gap-7">
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex h-16 items-center justify-between gap-4 py-2 sm:h-[72px] lg:gap-8">
+          {/* Left: Mobile Nav + Logo */}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             <MobileNav isAuthenticated={Boolean(user)} />
             <Link
               href="/"
-              className="rounded-sm text-[22px] font-extrabold tracking-[-0.075em] text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 sm:text-2xl"
-              aria-label="VibeLock home"
+              className="flex items-center transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              aria-label="VibeLock Home"
             >
-              VibeLock<span className="text-[#00D9FF]">.</span>
+              <Image
+                src="/images/vibelock-logo-white.png"
+                alt="VibeLock"
+                width={124}
+                height={36}
+                priority
+                className="h-7 w-auto object-contain sm:h-8"
+              />
             </Link>
           </div>
 
+          {/* Center: Desktop Navigation */}
           <nav
-            aria-label="Shop navigation"
-            className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[11px] font-semibold uppercase tracking-[0.12em] xl:flex 2xl:gap-6"
+            aria-label="Main navigation"
+            className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8] xl:flex 2xl:gap-8"
           >
-            {storefrontShopLinks.map((link) => (
+            <Link
+              href="/"
+              className="group relative flex flex-col items-center py-2 text-[#00D9FF]"
+            >
+              <span>HOME</span>
+              <span className="absolute -bottom-1 h-0.5 w-5 rounded-full bg-[#00D9FF]" />
+            </Link>
+
+            {/* Shop with dropdown */}
+            <div className="group relative py-2">
               <Link
-                key={link.href}
-                href={link.href}
-                className="whitespace-nowrap py-2 text-[#101114]/65 transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+                href="/products"
+                className="flex items-center gap-1 text-[#F3F0E8]/80 transition-colors hover:text-white"
               >
-                {link.label}
+                <span>SHOP</span>
+                <ChevronDown className="size-3 text-[#F3F0E8]/60 transition-transform group-hover:rotate-180" />
               </Link>
-            ))}
+              <div className="invisible absolute left-0 top-full z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
+                <Link
+                  href="/products"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  All Products
+                </Link>
+                <Link
+                  href="/products?sort=newest"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  New Arrivals
+                </Link>
+              </div>
+            </div>
+
+            {/* Categories with dropdown */}
+            <div className="group relative py-2">
+              <Link
+                href="/category/t-shirts"
+                className="flex items-center gap-1 text-[#F3F0E8]/80 transition-colors hover:text-white"
+              >
+                <span>CATEGORIES</span>
+                <ChevronDown className="size-3 text-[#F3F0E8]/60 transition-transform group-hover:rotate-180" />
+              </Link>
+              <div className="invisible absolute left-0 top-full z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
+                <Link
+                  href="/category/t-shirts"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  T-Shirts
+                </Link>
+                <Link
+                  href="/category/shirts"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  Shirts
+                </Link>
+                <Link
+                  href="/category/pants"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  Pants
+                </Link>
+                <Link
+                  href="/category/shorts"
+                  className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
+                >
+                  Shorts
+                </Link>
+              </div>
+            </div>
+
+            <Link
+              href="/about"
+              className="py-2 text-[#F3F0E8]/80 transition-colors hover:text-white"
+            >
+              ABOUT
+            </Link>
+
+            <Link
+              href="/contact"
+              className="py-2 text-[#F3F0E8]/80 transition-colors hover:text-white"
+            >
+              CONTACT
+            </Link>
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          {/* Right: Search + Icons */}
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            {/* Pill Search Input */}
             <form
               action="/products"
               method="get"
               role="search"
-              aria-label="Search the VibeLock catalog"
-              className="hidden w-40 items-center gap-1 border-b border-[#101114]/20 pl-2 transition-colors focus-within:border-[#101114] xl:flex 2xl:w-48"
+              aria-label="Search products"
+              className="relative hidden items-center lg:flex"
             >
-              <Search className="size-4 shrink-0 text-[#101114]/55" aria-hidden="true" />
+              <Search
+                className="pointer-events-none absolute left-3.5 size-4 text-[#F3F0E8]/40"
+                aria-hidden="true"
+              />
               <Input
                 type="search"
                 name="q"
-                aria-label="Search products"
-                placeholder="Search products"
-                className="h-10 border-0 bg-transparent px-1 text-sm shadow-none focus-visible:ring-0"
+                placeholder="Search for products..."
+                aria-label="Search for products"
+                className="h-9 w-48 rounded-full border border-white/10 bg-[#1A1D21] pl-9 pr-4 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40 focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF] xl:w-56"
               />
-              <Button
-                type="submit"
-                variant="ghost"
-                size="icon"
-                aria-label="Submit product search"
-                className="size-9 rounded-none text-[#101114] hover:bg-[#101114]/5 focus-visible:ring-[#00D9FF]"
-              >
-                <Search aria-hidden="true" className="size-4" />
-              </Button>
             </form>
 
-            <details className="group relative xl:hidden">
+            {/* Mobile Search Popover */}
+            <details className="group relative lg:hidden">
               <summary
-                aria-label="Open product search"
-                className="flex size-10 cursor-pointer list-none items-center justify-center text-[#101114] transition-colors hover:bg-[#101114]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] [&::-webkit-details-marker]:hidden"
+                aria-label="Open search"
+                className="flex size-9 cursor-pointer list-none items-center justify-center text-[#F3F0E8]/80 hover:text-white [&::-webkit-details-marker]:hidden"
               >
-                <Search className="size-5" aria-hidden="true" />
+                <Search className="size-5" />
               </summary>
-              <div className="absolute right-0 top-full z-50 mt-2 w-[min(88vw,24rem)] border border-[#101114]/15 bg-[#F3F0E8] p-3 shadow-lg">
-                <form
-                  action="/products"
-                  method="get"
-                  role="search"
-                  aria-label="Search the VibeLock catalog"
-                  className="flex items-center gap-2"
-                >
+              <div className="absolute right-0 top-full z-50 mt-2 w-72 border border-white/10 bg-[#101114] p-3 shadow-2xl">
+                <form action="/products" method="get" className="relative flex items-center">
+                  <Search className="pointer-events-none absolute left-3 size-4 text-[#F3F0E8]/40" />
                   <Input
                     type="search"
                     name="q"
-                    aria-label="Search products"
-                    placeholder="Search products"
-                    className="h-11 rounded-none border-[#101114]/20 bg-white focus-visible:border-[#101114] focus-visible:ring-[#00D9FF]/50"
+                    placeholder="Search for products..."
+                    className="h-10 rounded-full border-white/10 bg-[#1A1D21] pl-9 pr-3 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40"
                   />
-                  <Button
-                    type="submit"
-                    size="icon"
-                    aria-label="Submit product search"
-                    className="size-11 rounded-none bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
-                  >
-                    <Search aria-hidden="true" />
-                  </Button>
                 </form>
               </div>
             </details>
 
-            {user ? (
-              <>
-                <Link
-                  href="/account"
-                  className="hidden min-h-10 items-center px-3 text-sm font-medium text-[#101114]/75 transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 xl:inline-flex"
-                >
-                  Account
-                </Link>
-                <form action={logoutAction} className="hidden xl:block">
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-10 items-center px-3 text-sm font-medium text-[#101114]/60 transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </>
-            ) : (
-              <Link
-                href="/login"
-                className="hidden min-h-10 items-center px-3 text-sm font-medium text-[#101114]/75 transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 xl:inline-flex"
-              >
-                Sign in
-              </Link>
-            )}
+            {/* Account Icon */}
+            <Link
+              href={user ? "/account" : "/login"}
+              aria-label={user ? "Account" : "Sign in"}
+              className="inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
+            >
+              <User className="size-5" aria-hidden="true" />
+            </Link>
 
+            {/* Wishlist Icon */}
+            <Link
+              href="/wishlist"
+              aria-label="Wishlist"
+              className="inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
+            >
+              <Heart className="size-5" aria-hidden="true" />
+            </Link>
+
+            {/* Shopping Cart Icon */}
             <Link
               href="/cart"
               aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
-              className="relative inline-flex size-10 items-center justify-center text-[#101114] transition-colors hover:bg-[#101114]/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="relative inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
             >
               <ShoppingBag className="size-5" aria-hidden="true" />
-              {itemCount > 0 ? (
-                <span className="absolute right-0 top-0 flex min-h-5 min-w-5 items-center justify-center bg-[#00D9FF] px-1 text-[10px] font-bold leading-none text-[#101114]">
-                  {itemCount}
-                </span>
-              ) : null}
+              <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[10px] font-bold text-[#101114]">
+                {itemCount}
+              </span>
             </Link>
           </div>
         </div>
