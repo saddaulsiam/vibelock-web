@@ -62,7 +62,7 @@ export const getPublishedProducts = async (options?: {
       return products.map(mapProductSummary);
     },
     cacheKey,
-    { tags: ["products"], revalidate: 3600 }
+    { tags: ["products"], revalidate: 120 }
   );
 
   try {
@@ -90,7 +90,7 @@ export const getProductBySlug = unstable_cache(
     return mapProductDetail(product);
   },
   ["product-by-slug"],
-  { tags: ["products"], revalidate: 3600 }
+  { tags: ["products"], revalidate: 120 }
 );
 
 /**
@@ -149,7 +149,7 @@ export const getCatalogFilterOptions = async (): Promise<{ sizes: string[]; colo
       };
     },
     ["catalog-filter-options"],
-    { tags: ["products"], revalidate: 3600 }
+    { tags: ["products"], revalidate: 120 }
   );
 
   return queryFn();
