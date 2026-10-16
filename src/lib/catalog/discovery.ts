@@ -189,7 +189,7 @@ export const getDiscoveredProducts = async (
       };
     },
     cacheKey,
-    { tags: ["products", "discovery"], revalidate: 3600 }
+    { tags: ["products", "discovery"], revalidate: 120 }
   );
 
   return queryFn();
