@@ -29,7 +29,7 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] xl:gap-8 items-start">
           
           {/* Persistent Left Sidebar */}
-          <div className="w-full sticky top-24">
+          <div className="w-full md:sticky md:top-24">
             <AccountSidebar
               profile={profile}
               onOpenCoupons={() => setCouponsModalOpen(true)}

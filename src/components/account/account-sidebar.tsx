@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -33,9 +34,19 @@ interface AccountSidebarProps {
 
 export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [avatarSrc, setAvatarSrc] = useState(profile.image || "/images/hero/hero-slide1.png");
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logoutAction();
+    toast.success("You've been signed out.");
+    router.push("/");
+    router.refresh();
+  };
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,15 +193,15 @@ export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) 
           <div className="my-2 border-t border-[#101114]/10" />
 
           {/* Logout Action */}
-          <form action={logoutAction} className="w-full">
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
-            >
-              <LogOut className="size-4.5 shrink-0 text-muted-foreground transition-colors group-hover:text-rose-600" />
-              <span>Logout</span>
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50"
+          >
+            <LogOut className="size-4.5 shrink-0 text-muted-foreground transition-colors" />
+            <span>{loggingOut ? "Signing out..." : "Logout"}</span>
+          </button>
         </nav>
 
         {/* Small Dark Promotional Newsletter Card */}

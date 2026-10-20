@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { connection } from "next/server";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const inter = Inter({
@@ -43,8 +44,17 @@ export default async function RootLayout({
         className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground flex flex-col`}
       >
         {children}
+        <Toaster
+          position="bottom-right"
+          richColors
+          closeButton
+          toastOptions={{
+            duration: 3500,
+          }}
+        />
         <Analytics />
       </body>
     </html>
   );
 }
+

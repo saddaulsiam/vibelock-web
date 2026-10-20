@@ -5,7 +5,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import * as React from "react";
+import { toast } from "sonner";
 
 interface MobileNavProps {
   isAuthenticated: boolean;
@@ -13,7 +15,18 @@ interface MobileNavProps {
 
 export function MobileNav({ isAuthenticated }: MobileNavProps) {
   const [open, setOpen] = React.useState(false);
+  const [loggingOut, setLoggingOut] = React.useState(false);
+  const router = useRouter();
   const closeNav = () => setOpen(false);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await logoutAction();
+    toast.success("You've been signed out.");
+    closeNav();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -127,14 +140,14 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
             </Link>
           )}
           {isAuthenticated && (
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="inline-flex min-h-10 w-full items-center justify-center border border-white/10 px-4 text-xs font-medium text-[#F3F0E8]/60 hover:text-white"
-              >
-                Sign Out
-              </button>
-            </form>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="inline-flex min-h-10 w-full items-center justify-center border border-white/10 px-4 text-xs font-medium text-[#F3F0E8]/60 hover:text-white disabled:opacity-50"
+            >
+              {loggingOut ? "Signing out..." : "Sign Out"}
+            </button>
           )}
         </div>
       </SheetContent>
