@@ -11,19 +11,9 @@ import {
   type SessionInfo,
 } from "@/app/actions/session";
 import { deleteAccountAction } from "@/app/actions/account-deletion";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { Lock, Laptop, AlertTriangle, Check } from "lucide-react";
 
 export default function SecurityPage() {
   const router = useRouter();
@@ -115,195 +105,216 @@ export default function SecurityPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-12">
-      <header className="border-b border-[#101114]/15 pb-6">
-        <div className="flex justify-between items-center">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            Customer area
-          </p>
-          <Link
-            href="/account"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-[#101114]"
-          >
-            <ArrowLeft className="size-4" /> Back to account
-          </Link>
-        </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
-          Account security
+    <div className="flex flex-col gap-6">
+      {/* 1. Header Card */}
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+          Account Security
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-          Update your password and manage the sessions connected to your account.
+        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+          Manage your password, login credentials, and active device sessions.
         </p>
-      </header>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-          <CardDescription>
-            Update your password to keep your account secure. This will sign you out of all devices.
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handlePwSubmit}>
-          <CardContent className="space-y-4">
-            {pwError && <div className="text-sm text-destructive font-medium">{pwError}</div>}
-            {pwSuccess && <div className="text-sm text-emerald-600 font-medium">{pwSuccess}</div>}
+      {/* 2. Change Password Card */}
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+          <Lock className="size-4 text-[#101114]" />
+          <span>Change Password</span>
+        </h2>
 
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                required
-                value={pwData.currentPassword}
-                onChange={(e) =>
-                  setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))
-                }
-                disabled={pwLoading || !!pwSuccess}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                required
-                value={pwData.newPassword}
-                onChange={(e) => setPwData((prev) => ({ ...prev, newPassword: e.target.value }))}
-                disabled={pwLoading || !!pwSuccess}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
-              <Input
-                id="confirmNewPassword"
-                type="password"
-                required
-                value={pwData.confirmNewPassword}
-                onChange={(e) =>
-                  setPwData((prev) => ({ ...prev, confirmNewPassword: e.target.value }))
-                }
-                disabled={pwLoading || !!pwSuccess}
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" disabled={pwLoading || !!pwSuccess}>
-              {pwLoading ? "Updating..." : "Update Password"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Sessions</CardTitle>
-          <CardDescription>
-            Manage the devices that are currently logged in to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {sessionLoading ? (
-            <p role="status" className="text-sm text-muted-foreground">
-              Loading sessions...
-            </p>
-          ) : sessions.length === 0 ? (
-            <p className="border border-dashed border-[#101114]/15 bg-[#F3F0E8]/60 px-4 py-6 text-sm text-muted-foreground">
-              No active sessions are available to display.
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {sessions.map((s) => (
-                <div
-                  key={s.id}
-                  className="flex justify-between items-center bg-muted/50 p-4 rounded-lg"
-                >
-                  <div>
-                    <div className="font-medium flex items-center gap-2">
-                      Session
-                      {s.isCurrent && (
-                        <span className="bg-emerald-100 text-emerald-800 text-xs px-2 py-0.5 rounded-full">
-                          Current
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Expires: {new Date(s.expires).toLocaleDateString()}
-                    </div>
-                  </div>
-                  {!s.isCurrent && (
-                    <Button variant="outline" size="sm" onClick={() => handleRevokeSession(s.id)}>
-                      Revoke
-                    </Button>
-                  )}
-                </div>
-              ))}
+        <form onSubmit={handlePwSubmit} className="space-y-4 max-w-lg">
+          {pwError && (
+            <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs font-semibold text-destructive" role="alert">
+              {pwError}
             </div>
           )}
-        </CardContent>
-        <CardFooter className="flex gap-4">
-          <Button variant="outline" onClick={handleRevokeOther}>
-            Sign out all other devices
-          </Button>
-          <Button variant="destructive" onClick={handleRevokeAll}>
-            Sign out all devices
-          </Button>
-        </CardFooter>
-      </Card>
+          {pwSuccess && (
+            <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800" role="status">
+              <Check className="size-4 text-emerald-600 shrink-0" />
+              <span>{pwSuccess}</span>
+            </div>
+          )}
 
-      <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle className="text-destructive">Danger Zone</CardTitle>
-          <CardDescription>
-            Permanently delete your account and all associated personal data.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!delConfirmMode ? (
-            <Button variant="destructive" onClick={() => setDelConfirmMode(true)}>
-              Delete Account
-            </Button>
-          ) : (
-            <form
-              onSubmit={handleDeleteAccount}
-              className="space-y-4 bg-destructive/10 p-4 rounded-lg border border-destructive/20"
+          <div className="space-y-1.5">
+            <Label htmlFor="currentPassword" className="text-xs font-bold text-[#101114]">Current Password</Label>
+            <Input
+              id="currentPassword"
+              type="password"
+              required
+              value={pwData.currentPassword}
+              onChange={(e) =>
+                setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))
+              }
+              disabled={pwLoading || !!pwSuccess}
+              className="rounded-xl border-[#101114]/15 bg-white text-xs focus-visible:ring-[#00D9FF]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="newPassword" className="text-xs font-bold text-[#101114]">New Password</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              required
+              value={pwData.newPassword}
+              onChange={(e) => setPwData((prev) => ({ ...prev, newPassword: e.target.value }))}
+              disabled={pwLoading || !!pwSuccess}
+              className="rounded-xl border-[#101114]/15 bg-white text-xs focus-visible:ring-[#00D9FF]"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmNewPassword" className="text-xs font-bold text-[#101114]">Confirm New Password</Label>
+            <Input
+              id="confirmNewPassword"
+              type="password"
+              required
+              value={pwData.confirmNewPassword}
+              onChange={(e) =>
+                setPwData((prev) => ({ ...prev, confirmNewPassword: e.target.value }))
+              }
+              disabled={pwLoading || !!pwSuccess}
+              className="rounded-xl border-[#101114]/15 bg-white text-xs focus-visible:ring-[#00D9FF]"
+            />
+          </div>
+
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={pwLoading || !!pwSuccess}
+              className="inline-flex items-center justify-center rounded-xl bg-[#101114] px-5 py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f2229] active:scale-95 disabled:opacity-50"
             >
-              <div className="text-sm text-destructive font-medium mb-4">
-                Are you sure? This action cannot be undone. Please enter your password to confirm.
-              </div>
+              {pwLoading ? "Updating Password..." : "Update Password"}
+            </button>
+          </div>
+        </form>
+      </div>
 
-              {delError && <div className="text-sm text-destructive font-bold">{delError}</div>}
+      {/* 3. Active Sessions Card */}
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+          <Laptop className="size-4 text-[#0099b8]" />
+          <span>Active Device Sessions</span>
+        </h2>
 
-              <div className="space-y-2">
-                <Label htmlFor="delPassword">Password</Label>
-                <Input
-                  id="delPassword"
-                  type="password"
-                  required
-                  value={delPassword}
-                  onChange={(e) => setDelPassword(e.target.value)}
-                  disabled={delLoading}
-                />
+        {sessionLoading ? (
+          <p className="text-xs text-muted-foreground py-4">Loading active sessions...</p>
+        ) : sessions.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-[#101114]/15 bg-[#F3F0E8]/50 p-6 text-center text-xs text-muted-foreground">
+            No other active sessions detected.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {sessions.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-3.5"
+              >
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#101114]">
+                    <span>Device Session</span>
+                    {s.isCurrent && (
+                      <span className="rounded-full bg-[#00D9FF]/20 px-2 py-0.5 text-[10px] font-bold text-[#007b91]">
+                        Current Device
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Expires on {new Date(s.expires).toLocaleDateString()}
+                  </p>
+                </div>
+                {!s.isCurrent && (
+                  <button
+                    type="button"
+                    onClick={() => handleRevokeSession(s.id)}
+                    className="rounded-lg border border-[#101114]/15 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                  >
+                    Revoke
+                  </button>
+                )}
               </div>
+            ))}
 
-              <div className="flex gap-4">
-                <Button variant="destructive" type="submit" disabled={delLoading}>
-                  {delLoading ? "Deleting..." : "Confirm Deletion"}
-                </Button>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={() => setDelConfirmMode(false)}
-                  disabled={delLoading}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+            <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-[#101114]/10">
+              <button
+                type="button"
+                onClick={handleRevokeOther}
+                className="rounded-xl border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-bold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+              >
+                Sign out other devices
+              </button>
+              <button
+                type="button"
+                onClick={handleRevokeAll}
+                className="rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors"
+              >
+                Sign out all devices
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 4. Danger Zone Card */}
+      <div className="rounded-2xl border border-rose-200 bg-white p-5 shadow-xs sm:p-6">
+        <h2 className="flex items-center gap-2 text-base font-bold text-rose-600 border-b border-rose-100 pb-4 mb-4">
+          <AlertTriangle className="size-4" />
+          <span>Danger Zone</span>
+        </h2>
+        <p className="text-xs text-muted-foreground mb-4">
+          Permanently delete your VibeLock account and associated data. This action is irreversible.
+        </p>
+
+        {!delConfirmMode ? (
+          <button
+            type="button"
+            onClick={() => setDelConfirmMode(true)}
+            className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+          >
+            Delete Account
+          </button>
+        ) : (
+          <form
+            onSubmit={handleDeleteAccount}
+            className="space-y-3 rounded-xl border border-rose-200 bg-rose-50/60 p-4"
+          >
+            <p className="text-xs font-semibold text-rose-700">
+              Please enter your password to confirm permanent account deletion:
+            </p>
+            {delError && <div className="text-xs font-bold text-rose-700">{delError}</div>}
+            <div className="space-y-1.5 max-w-sm">
+              <Label htmlFor="delPassword" className="text-xs font-bold text-[#101114]">Password</Label>
+              <Input
+                id="delPassword"
+                type="password"
+                required
+                value={delPassword}
+                onChange={(e) => setDelPassword(e.target.value)}
+                disabled={delLoading}
+                className="rounded-xl border-rose-300 bg-white text-xs"
+              />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                disabled={delLoading}
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
+              >
+                {delLoading ? "Deleting..." : "Confirm Deletion"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setDelConfirmMode(false)}
+                disabled={delLoading}
+                className="rounded-xl border border-[#101114]/15 bg-white px-4 py-2 text-xs font-bold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

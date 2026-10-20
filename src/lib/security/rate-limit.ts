@@ -78,7 +78,8 @@ export async function checkRateLimit(
     | "verifyEmail"
     | "sessionManagement"
     | "accountDeletion",
-  identityModifier?: string
+  identityModifier?: string,
+  options?: { skipIp?: boolean }
 ) {
   // We prefer fail-closed for Auth if Redis is not configured, but wait:
   // If we haven't configured Redis locally or in staging, we shouldn't hard-crash the app unless we explicitly want to fail-closed.
@@ -97,10 +98,14 @@ export async function checkRateLimit(
   }
 
   try {
-    const ip = await getIp();
-    const identifier = identityModifier
-      ? `${endpoint}:${ip}:${identityModifier}`
-      : `${endpoint}:${ip}`;
+    // For verifyEmail, the token itself is cryptographically unique — no need to include IP.
+    // Including IP causes false rate-limit hits when users refresh the page (server re-calls action).
+    const identifier =
+      options?.skipIp && identityModifier
+        ? `${endpoint}:${identityModifier}`
+        : identityModifier
+          ? `${endpoint}:${await getIp()}:${identityModifier}`
+          : `${endpoint}:${await getIp()}`;
 
     let limiter: Ratelimit | null = null;
     switch (endpoint) {

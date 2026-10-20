@@ -1,46 +1,89 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
 import { ProfileForm } from "@/components/account/profile-form";
-import { Container } from "@/components/shared/container";
-import { Section } from "@/components/shared/section";
+import { NotificationPreferencesCard } from "@/components/account/notification-preferences-card";
+import { AccountMembershipCard } from "@/components/account/account-membership-card";
+import { getNotificationPreferences } from "@/lib/account/notification-actions";
 
 export const metadata: Metadata = {
-  title: "Profile | VibeLock",
+  title: "Profile & Account Settings | VibeLock",
+  description: "Manage your personal profile, notification preferences, and account security.",
   robots: { index: false, follow: false },
 };
 
 export default async function ProfilePage() {
-  const user = await requireUser();
+  const sessionUser = await requireUser();
+
+  const [user, notificationPrefs] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: sessionUser.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        image: true,
+        createdAt: true,
+        role: true,
+        accounts: {
+          select: {
+            provider: true,
+          },
+        },
+        orders: {
+          where: { customerPhone: { not: null } },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { customerPhone: true },
+        },
+      },
+    }),
+    getNotificationPreferences(),
+  ]);
+
+  const latestPhone = user?.orders[0]?.customerPhone ?? null;
+  const authProvider = user?.accounts[0]?.provider ?? "credentials";
+  const userEmail = user?.email ?? sessionUser.email ?? "";
+  const emailVerified = user?.emailVerified ?? null;
+  const createdAt = user?.createdAt ?? new Date();
+  const userId = user?.id ?? sessionUser.id;
+
   return (
-    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
-      <Container className="max-w-2xl">
-        <header className="mb-8 border-b border-[#101114]/15 pb-6">
-          <div className="flex justify-between items-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Customer area
-            </p>
-            <Link
-              href="/account"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-[#101114]"
-            >
-              <ArrowLeft className="size-4" /> Back to account
-            </Link>
-          </div>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Profile</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Update the name used on your VibeLock account.
-          </p>
-        </header>
-        <div className="border border-[#101114]/10 bg-white p-5 sm:p-6">
-          <ProfileForm initialName={user.name ?? ""} />
-          <p className="mt-5 text-xs leading-5 text-muted-foreground">
-            Email changes are not available here because this account uses the existing verification
-            and authentication flow.
+    <div className="flex flex-col gap-6">
+      {/* 1. Personal & Contact Info Card */}
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <div className="border-b border-[#101114]/10 pb-5 mb-6">
+          <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+            Personal & Contact Info
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            Manage your personal profile, streetwear avatar, contact details, and display preferences.
           </p>
         </div>
-      </Container>
-    </Section>
+
+        <ProfileForm
+          initialName={user?.name ?? sessionUser.name ?? ""}
+          email={userEmail}
+          emailVerified={emailVerified}
+          initialImage={user?.image ?? null}
+          phone={latestPhone}
+          createdAt={createdAt}
+          authProvider={authProvider}
+        />
+      </div>
+
+      {/* 2. Notification Preferences Card */}
+      <NotificationPreferencesCard initialPreferences={notificationPrefs} />
+
+      {/* 3. Account Membership & Login Security Card */}
+      <AccountMembershipCard
+        email={userEmail}
+        emailVerified={emailVerified}
+        createdAt={createdAt}
+        authProvider={authProvider}
+        userId={userId}
+      />
+    </div>
   );
 }

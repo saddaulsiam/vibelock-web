@@ -16,7 +16,8 @@ const addressSchema = z.object({
 });
 
 const profileSchema = z.object({
-  name: z.string().trim().min(2).max(100),
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  image: z.string().trim().url("Must be a valid image URL").nullable().optional().or(z.literal("")),
 });
 
 function refreshAccount() {
@@ -89,10 +90,16 @@ export async function deleteAddressAction(id: string) {
 export async function updateProfileAction(input: unknown) {
   const user = await requireUser({ throw: true });
   const parsed = profileSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid name." };
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid profile data." };
 
   try {
-    await prisma.user.update({ where: { id: user.id }, data: { name: parsed.data.name } });
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        name: parsed.data.name,
+        image: parsed.data.image && parsed.data.image.length > 0 ? parsed.data.image : null,
+      },
+    });
     refreshAccount();
     return { success: true };
   } catch (error) {

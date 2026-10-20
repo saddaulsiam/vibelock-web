@@ -7,6 +7,13 @@ import { Heart, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
+import {
+  subscribeWishlist,
+  getWishlistSnapshot,
+  getWishlistServerSnapshot,
+  toggleWishlistSlug,
+} from "@/lib/wishlist";
+import { toast } from "sonner";
 
 interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   product: {
@@ -28,6 +35,32 @@ interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function ProductCard({ product, className, ...props }: ProductCardProps) {
   const [failedImage, setFailedImage] = React.useState<string | null>(null);
   const hasImage = Boolean(product.image) && failedImage !== product.image;
+
+  const rawWishlist = React.useSyncExternalStore(
+    subscribeWishlist,
+    getWishlistSnapshot,
+    getWishlistServerSnapshot
+  );
+
+  const isWishlisted = React.useMemo(() => {
+    try {
+      const list = JSON.parse(rawWishlist);
+      return Array.isArray(list) && list.includes(product.slug);
+    } catch {
+      return false;
+    }
+  }, [rawWishlist, product.slug]);
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const isNowAdded = toggleWishlistSlug(product.slug);
+    if (isNowAdded) {
+      toast.success(`Saved "${product.name}" to wishlist`);
+    } else {
+      toast.info(`Removed "${product.name}" from wishlist`);
+    }
+  };
 
   return (
     <div
@@ -67,14 +100,29 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
         )}
 
         {/* Floating Wishlist Heart */}
-        <Link
-          href="/wishlist"
-          aria-label={`Add ${product.name} to wishlist`}
-          onClick={(e) => e.stopPropagation()}
-          className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/90 text-[#101114]/70 shadow-xs backdrop-blur-xs transition-all hover:bg-white hover:text-[#00D9FF] hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        <button
+          type="button"
+          aria-label={
+            isWishlisted
+              ? `Remove ${product.name} from wishlist`
+              : `Add ${product.name} to wishlist`
+          }
+          onClick={handleWishlistToggle}
+          className={cn(
+            "absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full shadow-xs backdrop-blur-xs transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]",
+            isWishlisted
+              ? "bg-white text-rose-500 scale-105"
+              : "bg-white/90 text-[#101114]/70 hover:bg-white hover:text-[#00D9FF]"
+          )}
         >
-          <Heart className="size-3.5" aria-hidden="true" />
-        </Link>
+          <Heart
+            className={cn(
+              "size-3.5 transition-colors",
+              isWishlisted && "fill-rose-500 text-rose-500"
+            )}
+            aria-hidden="true"
+          />
+        </button>
       </div>
 
       <div className="flex flex-col gap-0.5">

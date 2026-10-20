@@ -18,7 +18,9 @@ export async function verifyEmailAction(data: { token: string }) {
     const tokenHash = crypto.createHash("sha256").update(parsed.token).digest("hex");
 
     try {
-      await checkRateLimit("verifyEmail", tokenHash);
+      // Token is cryptographically unique — use token-only bucket (no IP) to avoid
+      // false rate-limit hits when the page re-renders or the user refreshes.
+      await checkRateLimit("verifyEmail", tokenHash, { skipIp: true });
     } catch {
       return { error: "Too many requests. Please try again later." };
     }

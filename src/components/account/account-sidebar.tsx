@@ -1,0 +1,238 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  User,
+  MapPin,
+  Heart,
+  Ticket,
+  RotateCcw,
+  Settings,
+  LogOut,
+  Check,
+  ArrowRight,
+  ShieldAlert,
+} from "lucide-react";
+import { logoutAction } from "@/app/actions/auth";
+import { toast } from "sonner";
+
+interface AccountSidebarProps {
+  profile: {
+    name: string | null;
+    email: string;
+    emailVerified: Date | null;
+    image: string | null;
+  };
+  onOpenCoupons?: () => void;
+}
+
+export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) {
+  const pathname = usePathname();
+  const [avatarSrc, setAvatarSrc] = useState(profile.image || "/images/hero/hero-slide1.png");
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail || !newsletterEmail.includes("@")) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    setSubscribing(true);
+    setTimeout(() => {
+      toast.success("You're on the list! Welcome to the VibeLock crew.");
+      setNewsletterEmail("");
+      setSubscribing(false);
+    }, 400);
+  };
+
+  const navItems = [
+    {
+      label: "Dashboard",
+      href: "/account",
+      icon: LayoutDashboard,
+      exact: true,
+    },
+    {
+      label: "My Orders",
+      href: "/account/orders",
+      icon: ShoppingBag,
+    },
+    {
+      label: "My Profile",
+      href: "/account/profile",
+      icon: User,
+    },
+    {
+      label: "Addresses",
+      href: "/account/addresses",
+      icon: MapPin,
+    },
+    {
+      label: "Wishlist",
+      href: "/wishlist",
+      icon: Heart,
+    },
+    {
+      label: "Coupons",
+      href: "#coupons",
+      icon: Ticket,
+      onClick: onOpenCoupons,
+    },
+    {
+      label: "Returns & Refunds",
+      href: "/account/returns",
+      icon: RotateCcw,
+    },
+    {
+      label: "Settings",
+      href: "/account/security",
+      icon: Settings,
+    },
+  ];
+
+  return (
+    <aside className="w-full flex-col">
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        
+        {/* Customer Avatar & Info */}
+        <div className="flex flex-col items-center text-center pb-6 border-b border-[#101114]/10">
+          <div className="relative mb-3 h-18 w-18 overflow-hidden rounded-full border-2 border-[#101114]/10 bg-[#F3F0E8] shadow-inner">
+            <Image
+              src={avatarSrc}
+              alt={profile.name || "Customer Avatar"}
+              fill
+              sizes="72px"
+              unoptimized={Boolean(avatarSrc.startsWith("http"))}
+              onError={() => setAvatarSrc("/images/hero/hero-slide1.png")}
+              className="object-cover"
+            />
+          </div>
+
+          <h2 className="text-base font-bold text-[#101114] leading-snug">
+            {profile.name || "VibeLock Customer"}
+          </h2>
+          
+          <p className="mt-0.5 text-xs text-muted-foreground truncate max-w-full px-2" title={profile.email}>
+            {profile.email}
+          </p>
+
+          <div className="mt-2.5">
+            {profile.emailVerified ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-700">
+                <Check className="size-3" strokeWidth={3} />
+                Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-700">
+                <ShieldAlert className="size-3" />
+                Unverified
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Navigation List */}
+        <nav aria-label="Customer Account Navigation" className="mt-4 flex flex-col gap-1">
+          {navItems.map((item) => {
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
+
+            if (item.onClick) {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={item.onClick}
+                  className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#101114]/80 transition-colors hover:bg-[#F3F0E8] hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                >
+                  <item.icon className="size-4.5 shrink-0 text-muted-foreground" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
+                  isActive
+                    ? "bg-[#00D9FF]/12 font-bold text-[#101114] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r before:bg-[#00D9FF]"
+                    : "text-[#101114]/80 hover:bg-[#F3F0E8] hover:text-[#101114]"
+                }`}
+              >
+                <item.icon
+                  className={`size-4.5 shrink-0 transition-colors ${
+                    isActive ? "text-[#0099b8]" : "text-muted-foreground"
+                  }`}
+                />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Divider */}
+          <div className="my-2 border-t border-[#101114]/10" />
+
+          {/* Logout Action */}
+          <form action={logoutAction} className="w-full">
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+            >
+              <LogOut className="size-4.5 shrink-0 text-muted-foreground transition-colors group-hover:text-rose-600" />
+              <span>Logout</span>
+            </button>
+          </form>
+        </nav>
+
+        {/* Small Dark Promotional Newsletter Card */}
+        <div className="relative mt-6 overflow-hidden rounded-xl bg-[#101114] p-4 text-white shadow-md">
+          <div 
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#00D9FF]/20 blur-xl" 
+            aria-hidden="true" 
+          />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#00D9FF]">
+            Stay In Style
+          </p>
+          <h4 className="mt-1 text-xs font-black uppercase tracking-tight text-white">
+            Get Exclusive Offers
+          </h4>
+          <p className="mt-1 text-[11px] leading-relaxed text-white/70">
+            Be the first to know about new drops, special discounts and more.
+          </p>
+
+          <form onSubmit={handleNewsletterSubmit} className="mt-3 flex items-center gap-1.5">
+            <input
+              type="email"
+              name="newsletter-email"
+              autoComplete="email"
+              suppressHydrationWarning
+              value={newsletterEmail}
+              onChange={(e) => setNewsletterEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+              className="w-full min-w-0 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1.5 text-xs text-white placeholder:text-white/40 focus:border-[#00D9FF] focus:outline-none focus:ring-1 focus:ring-[#00D9FF]"
+            />
+            <button
+              type="submit"
+              disabled={subscribing}
+              aria-label="Subscribe to exclusive offers"
+              className="shrink-0 rounded-lg bg-[#00D9FF] p-2 text-[#101114] transition-colors hover:bg-[#00c4e6] active:scale-95 disabled:opacity-50"
+            >
+              <ArrowRight className="size-3.5" />
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </aside>
+  );
+}

@@ -5,36 +5,116 @@ import prisma from "@/lib/prisma/client";
 
 export async function getAccountOverview() {
   const user = await requireUser();
-  const [profile, orderCount, returnCount, addresses, recentOrders] = await Promise.all([
+  const now = new Date();
+
+  const [
+    profile,
+    orderCount,
+    returnCount,
+    addresses,
+    recentOrders,
+    totalSpentAgg,
+    activeCoupons,
+  ] = await Promise.all([
     prisma.user.findUnique({
       where: { id: user.id },
-      select: { name: true, email: true, createdAt: true },
+      select: {
+        name: true,
+        email: true,
+        createdAt: true,
+        emailVerified: true,
+        image: true,
+      },
     }),
     prisma.order.count({ where: { userId: user.id } }),
     prisma.returnRequest.count({ where: { order: { userId: user.id } } }),
-    prisma.address.count({ where: { userId: user.id } }),
+    prisma.address.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      take: 2,
+    }),
     prisma.order.findMany({
       where: { userId: user.id },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 3,
-      select: {
-        orderNumber: true,
-        createdAt: true,
-        status: true,
-        paymentStatus: true,
+      take: 5,
+      include: {
+        items: {
+          select: {
+            id: true,
+            productName: true,
+            quantity: true,
+            sku: true,
+            unitPrice: true,
+          },
+        },
+      },
+    }),
+    prisma.order.aggregate({
+      where: {
+        userId: user.id,
+        status: { notIn: ["CANCELLED"] },
+      },
+      _sum: {
         total: true,
+      },
+    }),
+    prisma.coupon.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { startDate: null, endDate: null },
+          { startDate: { lte: now }, endDate: null },
+          { startDate: null, endDate: { gte: now } },
+          { startDate: { lte: now }, endDate: { gte: now } },
+        ],
+      },
+      select: {
+        id: true,
+        code: true,
+        discountType: true,
+        discountValue: true,
+        minOrderValue: true,
+        endDate: true,
       },
     }),
   ]);
 
   return {
-    profile: profile ?? { name: user.name ?? null, email: user.email, createdAt: new Date() },
+    profile: {
+      name: profile?.name ?? user.name ?? null,
+      email: profile?.email ?? user.email ?? "",
+      createdAt: profile?.createdAt ?? new Date(),
+      emailVerified: profile?.emailVerified ?? null,
+      image: profile?.image ?? null,
+    },
     orderCount,
     returnCount,
-    addressCount: addresses,
+    addressCount: addresses.length,
+    addresses: addresses.map((addr) => ({
+      ...addr,
+    })),
+    totalSpent: Number(totalSpentAgg._sum.total ?? 0),
+    activeCouponsCount: activeCoupons.length,
+    coupons: activeCoupons.map((c) => ({
+      id: c.id,
+      code: c.code,
+      discountType: c.discountType,
+      discountValue: Number(c.discountValue),
+      minOrderValue: c.minOrderValue ? Number(c.minOrderValue) : null,
+      endDate: c.endDate,
+    })),
     recentOrders: recentOrders.map((order) => ({
-      ...order,
+      id: order.id,
+      orderNumber: order.orderNumber,
+      createdAt: order.createdAt,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
       total: Number(order.total),
+      itemCount: order.items.reduce((sum, it) => sum + it.quantity, 0),
+      items: order.items.map((it) => ({
+        ...it,
+        unitPrice: Number(it.unitPrice),
+      })),
     })),
   };
 }

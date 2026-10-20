@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CreditCard, ImageOff, MapPin, Package, UserRound } from "lucide-react";
-import { Container } from "@/components/shared/container";
-import { Section } from "@/components/shared/section";
+import { ArrowLeft, CreditCard, MapPin, Package, Truck, ArrowRight } from "lucide-react";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
-import { Price } from "@/components/storefront/price";
 import { Separator } from "@/components/ui/separator";
 import { getCustomerOrder } from "@/lib/orders/queries";
 
@@ -15,8 +13,8 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { orderNumber } = await props.params;
   return {
-    title: `Order ${orderNumber} | VibeLock`,
-    description: "View your VibeLock order details.",
+    title: `Order #${orderNumber} | VibeLock`,
+    description: "View your VibeLock order details and tracking updates.",
     robots: { index: false, follow: false },
   };
 }
@@ -38,245 +36,235 @@ export default async function OrderDetailPage(props: {
     !order.shipment;
 
   return (
-    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
-      <Container className="max-w-6xl">
-        <header className="mb-7 border-b border-[#101114]/15 pb-6 sm:mb-9">
+    <div className="flex flex-col gap-6">
+      {/* Top Header Card */}
+      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <div className="flex items-center justify-between border-b border-[#101114]/10 pb-4 mb-4">
           <Link
             href="/account/orders"
-            className="mb-5 inline-flex min-h-9 items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-[#101114]"
           >
-            <ArrowLeft className="size-4" aria-hidden="true" /> Back to orders
+            <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
+            <span>Back to My Orders</span>
           </Link>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-            VibeLock / Account / Orders
-          </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="break-words text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
-                Order {order.orderNumber}
+          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            Order Details
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+                Order #{order.orderNumber}
               </h1>
-              <p className="mt-2 text-sm text-muted-foreground">Placed {formatDate(order.createdAt)}</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <OrderStatusBadge status={order.status} />
+              <OrderStatusBadge status={order.status} />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              Placed on {formatDate(order.createdAt)}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
+            {order.isReturnable && (
+              <Link
+                href={`/account/orders/${order.orderNumber}/return`}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-[#101114]/20 bg-[#F3F0E8] px-3.5 py-2 text-xs font-bold text-[#101114] transition-colors hover:bg-[#101114] hover:text-white"
+              >
+                <span>Request Return</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.5fr_1fr] items-start">
+        {/* Left Column: Order Items & Financials */}
+        <div className="space-y-6">
+          {/* Order Items Card */}
+          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+            <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4">
+              <Package className="size-4.5 text-[#101114]" />
+              <span>Purchased Items</span>
+              <span className="ml-auto rounded-full bg-[#101114]/5 px-2.5 py-0.5 text-xs font-bold text-muted-foreground">
+                {order.items.reduce((acc, it) => acc + it.quantity, 0)} items
+              </span>
+            </h2>
+
+            <ul className="divide-y divide-[#101114]/10 mt-2">
+              {order.items.map((item) => (
+                <li key={item.id} className="flex items-center gap-4 py-4 first:pt-4 last:pb-0">
+                  {/* Item Thumbnail */}
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#101114] border border-[#101114]/10">
+                    <Image
+                      src="/images/categories/cat-t-shirts.jpg"
+                      alt={item.productName}
+                      fill
+                      sizes="56px"
+                      className="object-cover opacity-85"
+                    />
+                  </div>
+
+                  {/* Item Info */}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-sm font-bold text-[#101114] truncate">
+                      {item.productName}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      {[item.size && `Size: ${item.size}`, item.color && `Color: ${item.color}`]
+                        .filter(Boolean)
+                        .map((opt) => (
+                          <span key={opt as string} className="rounded-md bg-[#F3F0E8] px-2 py-0.5 font-medium text-[#101114]">
+                            {opt}
+                          </span>
+                        ))}
+                      <span>• Qty: {item.quantity}</span>
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="text-right">
+                    <p className="text-sm font-black text-[#101114]">
+                      ৳ {item.lineTotal.toLocaleString("en-BD")}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">
+                      ৳ {item.unitPrice.toLocaleString("en-BD")} each
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            {/* Price Breakdown Footer */}
+            <div className="mt-6 border-t border-[#101114]/10 pt-5">
+              <dl className="space-y-2 text-xs sm:text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <dt>Subtotal</dt>
+                  <dd className="font-semibold text-[#101114]">৳ {order.subtotal.toLocaleString("en-BD")}</dd>
+                </div>
+                {order.discount > 0 && (
+                  <div className="flex justify-between text-emerald-700 font-medium">
+                    <dt>Discount</dt>
+                    <dd>-৳ {order.discount.toLocaleString("en-BD")}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between text-muted-foreground">
+                  <dt>Shipping ({order.shippingMethodName})</dt>
+                  <dd className="font-semibold text-[#101114]">৳ {order.shippingCost.toLocaleString("en-BD")}</dd>
+                </div>
+                {order.taxAmount > 0 && (
+                  <div className="flex justify-between text-muted-foreground">
+                    <dt>Estimated Tax</dt>
+                    <dd className="font-semibold text-[#101114]">৳ {order.taxAmount.toLocaleString("en-BD")}</dd>
+                  </div>
+                )}
+                <Separator className="!my-3 bg-[#101114]/10" />
+                <div className="flex justify-between text-base font-black text-[#101114]">
+                  <dt>Total Amount</dt>
+                  <dd className="text-[#101114]">৳ {order.total.toLocaleString("en-BD")}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+
+          {/* Returns & Refunds if any */}
+          {(order.returnRequests.length > 0 || order.refunds.length > 0) && (
+            <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+              <h2 className="text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+                Returns & Refunds
+              </h2>
+              <div className="space-y-3">
+                {order.returnRequests.map((req) => (
+                  <div key={req.id} className="rounded-xl border border-[#101114]/10 p-3.5 bg-[#F3F0E8]/40">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#101114]">Return Request</span>
+                      <OrderStatusBadge status={req.status} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Requested on {formatDate(req.createdAt)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column: Payment & Shipping Info */}
+        <div className="space-y-6">
+          {/* Payment Info Card */}
+          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+            <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4">
+              <CreditCard className="size-4 text-[#101114]" />
+              <span>Payment Details</span>
+            </h2>
+            <div className="mt-4 space-y-3 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Payment Method</span>
+                <span className="font-bold text-[#101114]">
+                  {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Payment Status</span>
                 <OrderStatusBadge status={order.paymentStatus} />
               </div>
             </div>
-            {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
           </div>
-        </header>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(17rem,0.8fr)] lg:gap-8">
-          <div className="min-w-0 space-y-6">
-            <section className="border border-[#101114]/10 bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4 sm:px-6">
-                <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight text-[#101114]">
-                  <Package className="size-5" aria-hidden="true" /> Items
-                </h2>
-                {order.isReturnable && (
-                  <Link
-                    href={`/account/orders/${order.orderNumber}/return`}
-                    className="inline-flex min-h-9 items-center justify-center border border-[#101114]/20 px-3 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                  >
-                    Request return
-                  </Link>
+          {/* Shipment Tracking Card */}
+          {order.shipment && (
+            <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+              <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4">
+                <Truck className="size-4 text-[#0099b8]" />
+                <span>Shipment Tracking</span>
+              </h2>
+              <div className="mt-4 space-y-3 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Status</span>
+                  <OrderStatusBadge status={order.shipment.status} />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Carrier</span>
+                  <span className="font-bold text-[#101114] capitalize">{order.shipment.provider}</span>
+                </div>
+                {order.shipment.trackingNumber && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-muted-foreground">Tracking #</span>
+                    <span className="font-mono font-bold text-[#101114] bg-[#F3F0E8] px-2 py-0.5 rounded">
+                      {order.shipment.trackingNumber}
+                    </span>
+                  </div>
                 )}
               </div>
+            </div>
+          )}
 
-              <ul className="divide-y divide-[#101114]/10 px-4 sm:px-6">
-                {order.items.map((item) => (
-                  <li key={item.id} className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-center gap-3 py-4 sm:grid-cols-[4rem_minmax(0,1fr)_auto] sm:gap-4">
-                    <span role="img" aria-label="Product image unavailable" className="flex aspect-square items-center justify-center bg-[#F3F0E8] text-muted-foreground">
-                      <ImageOff className="size-4" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="break-words text-sm font-semibold text-[#101114]">{item.productName}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {[item.size, item.color].filter(Boolean).join(" · ") || "Standard option"}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        <span className="font-medium text-[#101114]">
-                          {new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT", maximumFractionDigits: 0 }).format(item.unitPrice)}
-                        </span>{" "}× {item.quantity}
-                      </p>
-                    </div>
-                    <Price amount={item.lineTotal} className="text-sm font-semibold text-[#101114]" />
-                  </li>
-                ))}
-              </ul>
-
-              <div className="border-t border-[#101114]/10 bg-[#F3F0E8]/55 px-4 py-5 sm:px-6">
-                <dl className="ml-auto max-w-sm space-y-3 text-sm">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Subtotal</dt>
-                    <dd><Price amount={order.subtotal} className="font-medium text-[#101114]" /></dd>
-                  </div>
-                  {order.discount > 0 && (
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-muted-foreground">Discount</dt>
-                      <dd><Price amount={-order.discount} className="font-medium text-[#101114]" /></dd>
-                    </div>
-                  )}
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted-foreground">Shipping · {order.shippingMethodName}</dt>
-                    <dd><Price amount={order.shippingCost} className="font-medium text-[#101114]" /></dd>
-                  </div>
-                  {order.taxAmount > 0 && (
-                    <div className="flex justify-between gap-4">
-                      <dt className="text-muted-foreground">Tax</dt>
-                      <dd><Price amount={order.taxAmount} className="font-medium text-[#101114]" /></dd>
-                    </div>
-                  )}
-                  <Separator className="!my-4 bg-[#101114]/15" />
-                  <div className="flex justify-between gap-4 text-base font-semibold text-[#101114]">
-                    <dt>Total</dt>
-                    <dd><Price amount={order.total} /></dd>
-                  </div>
-                </dl>
+          {/* Delivery Address Card */}
+          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+            <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4">
+              <MapPin className="size-4 text-[#101114]" />
+              <span>Delivery Address</span>
+            </h2>
+            <div className="mt-4 text-xs space-y-1 leading-relaxed">
+              <p className="font-bold text-[#101114]">{order.customerName || "Customer"}</p>
+              <p className="text-muted-foreground">{order.customerEmail}</p>
+              {order.customerPhone && <p className="text-muted-foreground">{order.customerPhone}</p>}
+              <div className="pt-2 text-[#101114]">
+                <p>{order.shippingStreet}</p>
+                <p>
+                  {order.shippingCity}
+                  {order.shippingState ? `, ${order.shippingState}` : ""}
+                  {order.shippingZip ? ` - ${order.shippingZip}` : ""}
+                </p>
+                <p>{order.shippingCountry}</p>
               </div>
-            </section>
-
-            {(order.returnRequests.length > 0 || order.refunds.length > 0) && (
-              <section className="border border-[#101114]/10 bg-white">
-                <div className="border-b border-[#101114]/10 px-4 py-4 sm:px-6">
-                  <h2 className="text-lg font-semibold tracking-tight text-[#101114]">Returns & refunds</h2>
-                </div>
-                <div className="space-y-4 p-4 sm:p-6">
-                  {order.returnRequests.map((request) => (
-                    <article key={request.id} className="border border-[#101114]/10 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <h3 className="text-sm font-semibold text-[#101114]">Return request</h3>
-                        <OrderStatusBadge status={request.status} />
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">Requested {formatDate(request.createdAt)}</p>
-                      <ul className="mt-3 space-y-2 text-sm">
-                        {request.items.map((requestItem) => {
-                          const orderItem = order.items.find((item) => item.id === requestItem.orderItemId);
-                          return (
-                            <li key={requestItem.orderItemId} className="flex justify-between gap-3">
-                              <span>{orderItem?.productName ?? "Order item"}</span>
-                              <span className="text-muted-foreground">Qty {requestItem.quantity}</span>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </article>
-                  ))}
-                  {order.refunds.map((refund) => (
-                    <article key={`${refund.createdAt.toISOString()}-${refund.amount}`} className="flex flex-wrap items-center justify-between gap-3 border border-[#101114]/10 p-4">
-                      <div>
-                        <h3 className="text-sm font-semibold text-[#101114]">Refund</h3>
-                        <p className="mt-1 text-xs text-muted-foreground">{formatDate(refund.createdAt)}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <OrderStatusBadge status={refund.status} />
-                        <Price amount={refund.amount} className="font-semibold text-[#101114]" />
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
+            </div>
           </div>
-
-          <aside className="space-y-6">
-            <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
-              <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
-                <CreditCard className="size-4" aria-hidden="true" /> Payment
-              </h2>
-              <dl className="mt-4 space-y-4 text-sm">
-                <div>
-                  <dt className="text-xs text-muted-foreground">Method</dt>
-                  <dd className="mt-1 font-medium text-[#101114]">
-                    {order.paymentMethod === "COD" ? "Cash on delivery" : "Online payment"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="mb-1 text-xs text-muted-foreground">Payment status</dt>
-                  <dd><OrderStatusBadge status={order.paymentStatus} /></dd>
-                </div>
-              </dl>
-            </section>
-
-            {order.shipment && (
-              <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
-                <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
-                  <Package className="size-4" aria-hidden="true" /> Shipment
-                </h2>
-                <dl className="mt-4 space-y-4 text-sm">
-                  <div>
-                    <dt className="mb-1 text-xs text-muted-foreground">Status</dt>
-                    <dd><OrderStatusBadge status={order.shipment.status} /></dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs text-muted-foreground">Carrier</dt>
-                    <dd className="mt-1 font-medium capitalize text-[#101114]">{order.shipment.provider}</dd>
-                  </div>
-                  {order.shipment.trackingNumber && (
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Tracking number</dt>
-                      <dd className="mt-1 break-all font-medium text-[#101114]">{order.shipment.trackingNumber}</dd>
-                    </div>
-                  )}
-                  {order.shipment.shippedAt && (
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Shipped</dt>
-                      <dd className="mt-1 text-[#101114]">{formatDate(order.shipment.shippedAt)}</dd>
-                    </div>
-                  )}
-                  {order.shipment.deliveredAt && (
-                    <div>
-                      <dt className="text-xs text-muted-foreground">Delivered</dt>
-                      <dd className="mt-1 text-[#101114]">{formatDate(order.shipment.deliveredAt)}</dd>
-                    </div>
-                  )}
-                </dl>
-              </section>
-            )}
-
-            {order.history.length > 0 && (
-              <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
-                <h2 className="text-base font-semibold text-[#101114]">Order history</h2>
-                <ol className="mt-4 space-y-4 border-l border-[#101114]/15 pl-4">
-                  {order.history.map((entry, index) => (
-                    <li key={`${entry.createdAt.toISOString()}-${index}`} className="relative">
-                      <span className="absolute -left-[1.3rem] top-1 size-2 rounded-full bg-[#101114]" />
-                      <p className="text-sm font-medium text-[#101114]">{entry.status.replaceAll("_", " ")}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{formatDate(entry.createdAt)}</p>
-                      {entry.notes && !entry.notes.startsWith("[RETURN UPDATE]") ? <p className="mt-1 text-sm text-muted-foreground">{entry.notes}</p> : null}
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-
-            <section className="border border-[#101114]/10 bg-white p-4 sm:p-5">
-              <h2 className="flex items-center gap-2 text-base font-semibold text-[#101114]">
-                <UserRound className="size-4" aria-hidden="true" /> Customer & delivery
-              </h2>
-              <div className="mt-4 space-y-5 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground">Contact</p>
-                  <p className="mt-1 font-medium text-[#101114]">{order.customerName || "Customer"}</p>
-                  <p className="break-all text-muted-foreground">{order.customerEmail}</p>
-                  {order.customerPhone && <p className="text-muted-foreground">{order.customerPhone}</p>}
-                </div>
-                <Separator />
-                <div>
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <MapPin className="size-4" aria-hidden="true" /> Delivery address
-                  </p>
-                  <address className="mt-2 break-words not-italic leading-6 text-[#101114]">
-                    {order.shippingStreet}<br />
-                    {order.shippingCity}{order.shippingState ? `, ${order.shippingState}` : ""}<br />
-                    {order.shippingZip ? <>{order.shippingZip}<br /></> : null}
-                    {order.shippingCountry}
-                  </address>
-                </div>
-              </div>
-            </section>
-          </aside>
         </div>
-      </Container>
-    </Section>
+      </div>
+    </div>
   );
 }

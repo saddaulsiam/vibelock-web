@@ -1,27 +1,65 @@
 import { requireRole } from "@/lib/auth/authorization";
-import { Container } from "@/components/shared/container";
-import { AccountNavigation } from "@/components/storefront/layout/account-navigation";
+import prisma from "@/lib/prisma/client";
 import StorefrontLayout from "@/app/(storefront)/layout";
+import { AccountShell } from "@/components/account/account-shell";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   // Enforce at least CUSTOMER role (any authenticated user)
-  await requireRole("CUSTOMER");
+  const user = await requireRole("CUSTOMER");
+  const now = new Date();
+
+  const [profile, activeCoupons] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        name: true,
+        email: true,
+        emailVerified: true,
+        image: true,
+      },
+    }),
+    prisma.coupon.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { startDate: null, endDate: null },
+          { startDate: { lte: now }, endDate: null },
+          { startDate: null, endDate: { gte: now } },
+          { startDate: { lte: now }, endDate: { gte: now } },
+        ],
+      },
+      select: {
+        id: true,
+        code: true,
+        discountType: true,
+        discountValue: true,
+        minOrderValue: true,
+        endDate: true,
+      },
+    }),
+  ]);
+
+  const profileData = {
+    name: profile?.name ?? user.name ?? null,
+    email: profile?.email ?? user.email ?? "",
+    emailVerified: profile?.emailVerified ?? null,
+    image: profile?.image ?? null,
+  };
+
+  const couponData = activeCoupons.map((c) => ({
+    id: c.id,
+    code: c.code,
+    discountType: c.discountType,
+    discountValue: Number(c.discountValue),
+    minOrderValue: c.minOrderValue ? Number(c.minOrderValue) : null,
+    endDate: c.endDate,
+  }));
 
   return (
     <StorefrontLayout>
-      <div className="flex min-w-0 flex-1 flex-col bg-[#F3F0E8]">
-        <header className="border-b border-[#101114]/10 bg-white">
-          <Container className="py-4 sm:py-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                VibeLock / Account
-              </p>
-              <AccountNavigation />
-            </div>
-          </Container>
-        </header>
-        <div className="flex-1">{children}</div>
-      </div>
+      <AccountShell profile={profileData} coupons={couponData}>
+        {children}
+      </AccountShell>
     </StorefrontLayout>
   );
 }
