@@ -1,1 +1,1 @@
-export const SITE_URL = "https://vibelock.com.bd";
+export const SITE_URL = "https://vibelock.bd";

@@ -92,7 +92,7 @@ describe("Phase 3L - Launch Hardening", () => {
   test("production proxy returns a nonce-based CSP without unsafe-eval", () => {
     vi.stubEnv("NODE_ENV", "production");
     try {
-      const request = () => new NextRequest("https://vibelock.com.bd/products");
+      const request = () => new NextRequest("https://vibelock.bd/products");
       const response = proxy(request());
       const repeatedResponse = proxy(request());
       const policy = response.headers.get("content-security-policy") ?? "";
@@ -115,9 +115,9 @@ describe("Phase 3L - Launch Hardening", () => {
   });
 
   test("production canonical metadata uses the public host for storefront routes", async () => {
-    expect(rootMetadata.metadataBase?.toString()).toBe("https://vibelock.com.bd/");
-    expect(rootMetadata.alternates?.canonical).toBe("https://vibelock.com.bd");
-    expect(productsMetadata.alternates?.canonical).toBe("https://vibelock.com.bd/products");
+    expect(rootMetadata.metadataBase?.toString()).toBe("https://vibelock.bd/");
+    expect(rootMetadata.alternates?.canonical).toBe("https://vibelock.bd");
+    expect(productsMetadata.alternates?.canonical).toBe("https://vibelock.bd/products");
 
     const category = await prisma.category.create({
       data: { name: "Launch QA Category", slug: `launch-qa-${crypto.randomUUID()}` },
@@ -127,7 +127,7 @@ describe("Phase 3L - Launch Hardening", () => {
       params: Promise.resolve({ slug: category.slug }),
     });
     expect(metadata.alternates?.canonical).toBe(
-      `https://vibelock.com.bd/category/${category.slug}`
+      `https://vibelock.bd/category/${category.slug}`
     );
   });
 
@@ -186,7 +186,7 @@ describe("Phase 3L - Launch Hardening", () => {
     expect(metadata.title).toBe(product.name);
     expect(metadata.description).toBe("SEO fixture description");
     expect(metadata.openGraph).toMatchObject({ title: `${product.name} | VibeLock` });
-    expect(metadata.alternates?.canonical).toBe(`https://vibelock.com.bd/products/${product.slug}`);
+    expect(metadata.alternates?.canonical).toBe(`https://vibelock.bd/products/${product.slug}`);
 
     const page = await ProductDetailPage({ params: Promise.resolve({ slug: product.slug }) });
     const jsonLdText = findJsonLd(page);

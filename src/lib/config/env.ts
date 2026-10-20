@@ -93,7 +93,7 @@ const envSchema = z.object({
 
   // Email Configuration
   RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.com.bd>"),
+  EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.bd>"),
 
   // Upstash Redis (Rate Limiting)
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),

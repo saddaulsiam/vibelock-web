@@ -1,8 +1,9 @@
+import { SITE_URL } from "@/lib/seo/site";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { connection } from "next/server";
 import "./globals.css";
-import { SITE_URL } from "@/lib/seo/site";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default async function RootLayout({
         className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground flex flex-col`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
