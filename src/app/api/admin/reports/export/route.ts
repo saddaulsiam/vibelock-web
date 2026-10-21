@@ -12,10 +12,20 @@ export function csv(rows: unknown[][]) {
 }
 function filters(request: NextRequest) {
   const search = request.nextUrl.searchParams;
-  return { range: search.get("range") ?? "30d", from: search.get("from") ?? undefined, to: search.get("to") ?? undefined, sort: search.get("sort") ?? undefined, search: search.get("q") ?? undefined };
+  return {
+    range: search.get("range") ?? "30d",
+    from: search.get("from") ?? undefined,
+    to: search.get("to") ?? undefined,
+    sort: search.get("sort") ?? undefined,
+    search: search.get("q") ?? undefined,
+  };
 }
-function date(value: Date) { return value.toISOString().slice(0, 10); }
-function filename(type: string, start: Date, end: Date) { return `vibelock-${type}-report-${date(start)}-to-${date(new Date(end.getTime() - 1))}.csv`; }
+function date(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+function filename(type: string, start: Date, end: Date) {
+  return `vibelock-${type}-report-${date(start)}-to-${date(new Date(end.getTime() - 1))}.csv`;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,10 +34,45 @@ export async function GET(request: NextRequest) {
     const report = await getAdminReport(filters(request));
     const currentFilters = filters(request);
     let rows: unknown[][] = [];
-    if (type === "sales") rows = [["Date", "Orders", "Gross Sales", "Discounts", "Net Sales", "Refunds", "COGS", "Gross Profit"], ...report.trend.map((row) => [date(row.date), row.orders, row.grossSales, row.discounts, row.netSales, row.refunds, row.cogs, row.grossProfit])];
+    if (type === "sales")
+      rows = [
+        [
+          "Date",
+          "Orders",
+          "Gross Sales",
+          "Discounts",
+          "Net Sales",
+          "Refunds",
+          "COGS",
+          "Gross Profit",
+        ],
+        ...report.trend.map((row) => [
+          date(row.date),
+          row.orders,
+          row.grossSales,
+          row.discounts,
+          row.netSales,
+          row.refunds,
+          row.cogs,
+          row.grossProfit,
+        ]),
+      ];
     else if (type === "products") {
       rows = [
-        ["Product", "SKU", "Sold Units", "Returned Units", "Net Units", "Return Rate", "Gross Sales", "Discounts", "Net Sales", "COGS", "Gross Profit", "Margin"],
+        [
+          "Product",
+          "SKU",
+          "Sold Units",
+          "Returned Units",
+          "Net Units",
+          "Return Rate",
+          "Gross Sales",
+          "Discounts",
+          "Net Sales",
+          "COGS",
+          "Gross Profit",
+          "Margin",
+        ],
         ...report.products.map((row) => [
           row.productName,
           row.sku,
@@ -43,19 +88,56 @@ export async function GET(request: NextRequest) {
           row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`,
         ]),
       ];
-    }
-    else if (type === "orders") {
+    } else if (type === "orders") {
       const firstPage = await getAdminOrderProfitability({ ...currentFilters, page: 1 });
       const allOrders = [...firstPage.orders];
       for (let page = 2; page <= firstPage.totalPages; page += 1) {
         const nextPage = await getAdminOrderProfitability({ ...currentFilters, page });
         allOrders.push(...nextPage.orders);
       }
-      rows = [["Order Number", "Date", "Customer", "Status", "Payment Method", "Gross Sales", "Discount", "Net Sales", "Refund", "COGS", "Gross Profit", "Margin"], ...allOrders.map((row) => [row.orderNumber, date(row.createdAt), row.customerName ?? "Guest", row.status, row.paymentMethod, row.grossSales, row.discount, row.grossSales - row.discount - row.refunds, row.refunds, row.cogs, row.profit, row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`])];
+      rows = [
+        [
+          "Order Number",
+          "Date",
+          "Customer",
+          "Status",
+          "Payment Method",
+          "Gross Sales",
+          "Discount",
+          "Net Sales",
+          "Refund",
+          "COGS",
+          "Gross Profit",
+          "Margin",
+        ],
+        ...allOrders.map((row) => [
+          row.orderNumber,
+          date(row.createdAt),
+          row.customerName ?? "Guest",
+          row.status,
+          row.paymentMethod,
+          row.grossSales,
+          row.discount,
+          row.grossSales - row.discount - row.refunds,
+          row.refunds,
+          row.cogs,
+          row.profit,
+          row.margin === null ? "Unavailable" : `${row.margin.toFixed(2)}%`,
+        ]),
+      ];
     } else return NextResponse.json({ error: "Invalid export type" }, { status: 400 });
-    return new NextResponse(csv(rows), { headers: { "Content-Type": "text/csv; charset=utf-8", "Content-Disposition": `attachment; filename="${filename(type, report.start, report.end)}"` } });
+    return new NextResponse(csv(rows), {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename(type, report.start, report.end)}"`,
+      },
+    });
   } catch (error) {
-    if (error instanceof AuthRequiredError || error instanceof ForbiddenError) return NextResponse.json({ error: "Forbidden" }, { status: error instanceof AuthRequiredError ? 401 : 403 });
+    if (error instanceof AuthRequiredError || error instanceof ForbiddenError)
+      return NextResponse.json(
+        { error: "Forbidden" },
+        { status: error instanceof AuthRequiredError ? 401 : 403 }
+      );
     throw error;
   }
 }

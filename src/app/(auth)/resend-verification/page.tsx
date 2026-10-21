@@ -63,7 +63,7 @@ export default function ResendVerificationPage() {
       </CardHeader>
       <CardContent>
         {isSuccess ? (
-          <div className="rounded-lg border bg-green-50 text-green-900 border-green-200 p-4">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-green-900">
             <div className="text-sm">
               If the account can receive verification email, a new verification link has been sent.
               Please check your inbox.
@@ -72,7 +72,7 @@ export default function ResendVerificationPage() {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {error && (
-              <div className="rounded-lg border bg-destructive/15 text-destructive p-4 border-destructive/20">
+              <div className="bg-destructive/15 text-destructive border-destructive/20 rounded-lg border p-4">
                 <div className="text-sm">{error}</div>
               </div>
             )}
@@ -94,9 +94,9 @@ export default function ResendVerificationPage() {
         )}
       </CardContent>
       <CardFooter>
-        <div className="text-sm text-center w-full text-muted-foreground">
+        <div className="text-muted-foreground w-full text-center text-sm">
           Remember your password?{" "}
-          <Link href="/login" className="text-primary hover:underline font-medium">
+          <Link href="/login" className="text-primary font-medium hover:underline">
             Log in
           </Link>
         </div>

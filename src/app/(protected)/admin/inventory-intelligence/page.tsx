@@ -1,14 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import {
-  AlertTriangle,
-  Boxes,
-  Clock,
-  Coins,
-  Download,
-  Info,
-  TrendingDown,
-} from "lucide-react";
+import { AlertTriangle, Boxes, Clock, Coins, Download, Info, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -105,7 +97,7 @@ async function InventoryIntelligenceSummarySection({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Available Capital
             </CardTitle>
             <Coins className="size-4 text-emerald-600" />
@@ -114,32 +106,34 @@ async function InventoryIntelligenceSummarySection({
             <div className="text-2xl font-bold tracking-tight">
               {formatBdt(summary.totalAvailableCostValue)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Unreserved available stock at current variant cost (Physical: {formatBdt(summary.totalPhysicalCostValue)})
+            <p className="text-muted-foreground mt-1 text-xs">
+              Unreserved available stock at current variant cost (Physical:{" "}
+              {formatBdt(summary.totalPhysicalCostValue)})
             </p>
           </CardContent>
         </Card>
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Stock Units
             </CardTitle>
-            <Boxes className="size-4 text-muted-foreground" />
+            <Boxes className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight">
               {summary.totalAvailableStock.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Available units ({summary.totalPhysicalStock.toLocaleString()} physical on hand across {summary.totalVariants} variants)
+            <p className="text-muted-foreground mt-1 text-xs">
+              Available units ({summary.totalPhysicalStock.toLocaleString()} physical on hand across{" "}
+              {summary.totalVariants} variants)
             </p>
           </CardContent>
         </Card>
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Dead Stock Risk
             </CardTitle>
             <TrendingDown className="size-4 text-amber-600" />
@@ -148,7 +142,7 @@ async function InventoryIntelligenceSummarySection({
             <div className="text-2xl font-bold tracking-tight text-amber-800">
               {summary.deadStockCount.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Zero net sales in trailing {window}, in stock, &gt;14d since inflow
             </p>
           </CardContent>
@@ -156,7 +150,7 @@ async function InventoryIntelligenceSummarySection({
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Slow Moving
             </CardTitle>
             <Clock className="size-4 text-yellow-600" />
@@ -165,7 +159,7 @@ async function InventoryIntelligenceSummarySection({
             <div className="text-2xl font-bold tracking-tight text-yellow-800">
               {summary.slowMovingCount.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Estimated runout supply exceeds 180 days
             </p>
           </CardContent>
@@ -239,7 +233,7 @@ async function InventoryIntelligenceTable({
           <select
             name="window"
             defaultValue={window}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="30d">Trailing 30 Days</option>
             <option value="60d">Trailing 60 Days</option>
@@ -249,7 +243,7 @@ async function InventoryIntelligenceTable({
           <select
             name="status"
             defaultValue={status}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="all">All statuses</option>
             <option value="healthy">Healthy</option>
@@ -262,7 +256,7 @@ async function InventoryIntelligenceTable({
           <select
             name="sort"
             defaultValue={sort}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="valuation">Sort: Capital Value</option>
             <option value="stock">Sort: Available Stock</option>
@@ -283,7 +277,7 @@ async function InventoryIntelligenceTable({
           <a
             href={exportHref}
             download
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-input bg-background px-3 text-sm font-medium hover:bg-muted"
+            className="border-input bg-background hover:bg-muted inline-flex h-9 items-center justify-center gap-2 rounded-sm border px-3 text-sm font-medium"
             title={
               total > 5000
                 ? "Export capped at first 5,000 matching items"
@@ -296,7 +290,7 @@ async function InventoryIntelligenceTable({
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="text-muted-foreground flex items-center justify-between text-xs">
         <p>
           Showing {items.length} of {total} {total === 1 ? "variant" : "variants"}
           {total > 5000 ? " · CSV export limited to first 5,000 items" : ""}
@@ -308,7 +302,7 @@ async function InventoryIntelligenceTable({
 
       <div className="overflow-x-auto rounded-md border bg-white">
         <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50">
+          <thead className="bg-muted/50 border-b">
             <tr className="text-left">
               <th className="p-3 font-medium">SKU / Product</th>
               <th className="p-3 text-right font-medium">Stock (Phys / Avail)</th>
@@ -324,7 +318,7 @@ async function InventoryIntelligenceTable({
           <tbody className="divide-y">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={9} className="p-10 text-center text-muted-foreground">
+                <td colSpan={9} className="text-muted-foreground p-10 text-center">
                   No inventory items match the current filters.
                 </td>
               </tr>
@@ -333,26 +327,26 @@ async function InventoryIntelligenceTable({
                 <tr key={item.id} className="hover:bg-muted/30">
                   <td className="p-3">
                     <div className="font-mono text-xs font-semibold">{item.sku}</div>
-                    <div className="font-medium text-foreground">{item.productName}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-foreground font-medium">{item.productName}</div>
+                    <div className="text-muted-foreground text-xs">
                       {[item.size, item.color].filter(Boolean).join(" / ") || "Default variant"}
                     </div>
                   </td>
                   <td className="p-3 text-right">
                     <div className="font-semibold">{item.availableStock}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {item.physicalStock} phys ({item.reservedStock} res)
                     </div>
                   </td>
                   <td className="p-3 text-right">
                     <div className="font-semibold">{formatBdt(item.availableCostValue)}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       Cost: {item.costUnavailable ? "N/A" : formatBdt(item.costPrice)}
                     </div>
                   </td>
                   <td className="p-3 text-right">
                     <div className="font-semibold">{item.netRetainedUnits}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-muted-foreground text-xs">
                       {item.soldUnits} sold - {item.returnedUnits} ret
                     </div>
                   </td>
@@ -373,7 +367,7 @@ async function InventoryIntelligenceTable({
                         </span>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
+                      <span className="text-muted-foreground text-xs">—</span>
                     )}
                   </td>
                   <td className="p-3 text-right">
@@ -381,11 +375,16 @@ async function InventoryIntelligenceTable({
                       <div className="text-xs">
                         <span className="font-medium">{item.daysSinceLastInflow}d ago</span>
                         <div className="text-muted-foreground">
-                          {item.lastInflowAt ? new Date(item.lastInflowAt).toLocaleDateString() : ""}
+                          {item.lastInflowAt
+                            ? new Date(item.lastInflowAt).toLocaleDateString()
+                            : ""}
                         </div>
                       </div>
                     ) : (
-                      <span className="text-xs text-muted-foreground" title="No recorded inflow in system">
+                      <span
+                        className="text-muted-foreground text-xs"
+                        title="No recorded inflow in system"
+                      >
                         Unavailable
                       </span>
                     )}
@@ -394,7 +393,7 @@ async function InventoryIntelligenceTable({
                   <td className="p-3 text-right">
                     <Link
                       href={`/admin/inventory/${item.id}`}
-                      className="font-medium text-primary hover:underline"
+                      className="text-primary font-medium hover:underline"
                     >
                       Detail
                     </Link>
@@ -407,7 +406,10 @@ async function InventoryIntelligenceTable({
       </div>
 
       {totalPages > 1 && (
-        <nav aria-label="Inventory intelligence pages" className="flex items-center justify-center gap-3">
+        <nav
+          aria-label="Inventory intelligence pages"
+          className="flex items-center justify-center gap-3"
+        >
           {page > 1 ? (
             <Link
               href={`/admin/inventory-intelligence?${(() => {
@@ -439,26 +441,38 @@ async function InventoryIntelligenceTable({
       )}
 
       {/* Methodology and limitations footnote card */}
-      <div className="rounded-lg border border-[#101114]/10 bg-muted/20 p-4 text-xs text-muted-foreground space-y-2">
-        <div className="font-semibold text-foreground flex items-center gap-1.5">
-          <Info className="size-3.5 text-primary" />
+      <div className="bg-muted/20 text-muted-foreground space-y-2 rounded-lg border border-[#101114]/10 p-4 text-xs">
+        <div className="text-foreground flex items-center gap-1.5 font-semibold">
+          <Info className="text-primary size-3.5" />
           Methodology & Data Precision Disclosures
         </div>
-        <ul className="list-disc pl-4 space-y-1">
+        <ul className="list-disc space-y-1 pl-4">
           <li>
-            <strong>Stock Valuation:</strong> Valuation uses current variant cost price (<code>costPrice</code>) multiplied by non-negative quantities. Available Capital measures unreserved inventory (<code>max(availableStock, 0) × costPrice</code>).
+            <strong>Stock Valuation:</strong> Valuation uses current variant cost price (
+            <code>costPrice</code>) multiplied by non-negative quantities. Available Capital
+            measures unreserved inventory (<code>max(availableStock, 0) × costPrice</code>).
           </li>
           <li>
-            <strong>Velocity & Returns:</strong> Daily velocity is based on net retained units (committed <code>SALE</code> transactions minus positive <code>RETURN</code> transactions in the selected trailing window). Canceled orders are excluded.
+            <strong>Velocity & Returns:</strong> Daily velocity is based on net retained units
+            (committed <code>SALE</code> transactions minus positive <code>RETURN</code>{" "}
+            transactions in the selected trailing window). Canceled orders are excluded.
           </li>
           <li>
-            <strong>Inventory Age Precision:</strong> Days since last recorded inflow is tracked from the most recent <code>RESTOCK</code>, <code>RETURN</code>, or positive <code>ADJUSTMENT</code> transaction. VibeLock does not use FIFO/batch tracking; age represents the latest replenishment, not the age of every individual physical unit. If no inflow transaction exists, age is reported as Unavailable.
+            <strong>Inventory Age Precision:</strong> Days since last recorded inflow is tracked
+            from the most recent <code>RESTOCK</code>, <code>RETURN</code>, or positive{" "}
+            <code>ADJUSTMENT</code> transaction. VibeLock does not use FIFO/batch tracking; age
+            represents the latest replenishment, not the age of every individual physical unit. If
+            no inflow transaction exists, age is reported as Unavailable.
           </li>
           <li>
-            <strong>Dead Stock Rule:</strong> A variant is classified as Dead Stock only if it has positive available stock, zero net retained sales in the trailing window, a reliable recorded inflow date, and more than 14 days have passed since that inflow (14-day grace period prevents newly received goods from false dead-stock classification).
+            <strong>Dead Stock Rule:</strong> A variant is classified as Dead Stock only if it has
+            positive available stock, zero net retained sales in the trailing window, a reliable
+            recorded inflow date, and more than 14 days have passed since that inflow (14-day grace
+            period prevents newly received goods from false dead-stock classification).
           </li>
           <li>
-            <strong>Slow Moving Rule:</strong> A variant is classified as Slow Moving when estimated days of supply exceeds 180 days (half-year runout).
+            <strong>Slow Moving Rule:</strong> A variant is classified as Slow Moving when estimated
+            days of supply exceeds 180 days (half-year runout).
           </li>
         </ul>
       </div>
@@ -488,7 +502,7 @@ export default async function AdminInventoryIntelligencePage({
         <div>
           <Link
             href="/admin/inventory"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-input bg-background px-4 text-sm font-medium hover:bg-muted"
+            className="border-input bg-background hover:bg-muted inline-flex h-9 items-center justify-center gap-2 rounded-sm border px-4 text-sm font-medium"
           >
             ← Standard Inventory
           </Link>
@@ -499,7 +513,7 @@ export default async function AdminInventoryIntelligencePage({
         fallback={
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-xl bg-muted/40" />
+              <div key={i} className="bg-muted/40 h-28 animate-pulse rounded-xl" />
             ))}
           </div>
         }
@@ -507,7 +521,13 @@ export default async function AdminInventoryIntelligencePage({
         <InventoryIntelligenceSummarySection window={window} />
       </Suspense>
 
-      <Suspense fallback={<div className="p-12 text-center text-muted-foreground">Loading inventory intelligence...</div>}>
+      <Suspense
+        fallback={
+          <div className="text-muted-foreground p-12 text-center">
+            Loading inventory intelligence...
+          </div>
+        }
+      >
         <InventoryIntelligenceTable searchParams={resolvedSearchParams} />
       </Suspense>
     </div>

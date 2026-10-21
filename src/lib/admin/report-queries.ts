@@ -4,7 +4,8 @@ import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
-export type ReportRange = "today" | "yesterday" | "7d" | "30d" | "this-month" | "last-month" | "custom";
+export type ReportRange =
+  "today" | "yesterday" | "7d" | "30d" | "this-month" | "last-month" | "custom";
 export type ReportSort = "revenue" | "profit" | "units" | "margin" | "returns";
 
 export type ReportFilters = {
@@ -237,12 +238,21 @@ export async function getAdminReport(filters: ReportFilters = {}) {
             ? Prisma.sql`p."returnedUnits" DESC`
             : Prisma.sql`p."netSales" DESC`;
 
-  const productLimit = filters.limit && Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 100;
+  const productLimit =
+    filters.limit && Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 100;
 
   const [summary, trend, products, payments, returns] = await Promise.all([
     summaryQuery,
     prisma.$queryRaw<
-      { date: Date; orders: bigint; grossSales: number; discounts: number; netSales: number; refunds: number; cogs: number }[]
+      {
+        date: Date;
+        orders: bigint;
+        grossSales: number;
+        discounts: number;
+        netSales: number;
+        refunds: number;
+        cogs: number;
+      }[]
     >(Prisma.sql`${ctes}
       SELECT DATE_TRUNC('day', o."createdAt") AS date,
         COUNT(*)::bigint AS orders,
@@ -258,7 +268,17 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       ORDER BY date ASC`),
 
     prisma.$queryRaw<
-      { productName: string; sku: string; soldUnits: bigint; returnedUnits: bigint; grossSales: number; discounts: number; netSales: number; cogs: number; profit: number }[]
+      {
+        productName: string;
+        sku: string;
+        soldUnits: bigint;
+        returnedUnits: bigint;
+        grossSales: number;
+        discounts: number;
+        netSales: number;
+        cogs: number;
+        profit: number;
+      }[]
     >(Prisma.sql`${ctes}
       SELECT *
       FROM (
@@ -288,9 +308,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
       GROUP BY o."paymentMethod"
       ORDER BY sales DESC`),
-    prisma.$queryRaw<
-      { count: bigint; units: bigint; value: number }[]
-    >(Prisma.sql`${ctes}
+    prisma.$queryRaw<{ count: bigint; units: bigint; value: number }[]>(Prisma.sql`${ctes}
       SELECT COUNT(DISTINCT rr.id)::bigint AS count,
         COALESCE(SUM(ri.quantity), 0)::bigint AS units,
         COALESCE(SUM(ri.quantity * (oi."lineTotal" / NULLIF(oi.quantity, 0))), 0)::float8 AS value
@@ -321,10 +339,12 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       const itemReturnedUnits = Number(item.returnedUnits);
       const netUnits = Math.max(0, itemSoldUnits - itemReturnedUnits);
       const isAnomaly = itemReturnedUnits > itemSoldUnits;
-      const returnRate = itemSoldUnits > 0 ? Number(((itemReturnedUnits / itemSoldUnits) * 100).toFixed(2)) : null;
+      const returnRate =
+        itemSoldUnits > 0 ? Number(((itemReturnedUnits / itemSoldUnits) * 100).toFixed(2)) : null;
       const itemNetSales = money(item.netSales);
       const itemProfit = money(item.profit);
-      const margin = itemNetSales > 0 ? Number(((itemProfit / itemNetSales) * 100).toFixed(2)) : null;
+      const margin =
+        itemNetSales > 0 ? Number(((itemProfit / itemNetSales) * 100).toFixed(2)) : null;
 
       return {
         ...item,
@@ -380,7 +400,22 @@ export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
   `;
   const [rows, count] = await Promise.all([
     prisma.$queryRaw<
-      { id: string; orderNumber: string; createdAt: Date; customerName: string | null; status: string; paymentStatus: string; paymentMethod: string; itemCount: bigint; grossSales: number; discount: number; shipping: number; refunds: number; cogs: number; profit: number }[]
+      {
+        id: string;
+        orderNumber: string;
+        createdAt: Date;
+        customerName: string | null;
+        status: string;
+        paymentStatus: string;
+        paymentMethod: string;
+        itemCount: bigint;
+        grossSales: number;
+        discount: number;
+        shipping: number;
+        refunds: number;
+        cogs: number;
+        profit: number;
+      }[]
     >(Prisma.sql`
       WITH item_returns AS (
         SELECT ri."orderItemId", SUM(ri.quantity)::int AS quantity
@@ -421,7 +456,9 @@ export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
       ${where}
       ORDER BY o."createdAt" DESC
       LIMIT ${limit} OFFSET ${(page - 1) * limit}`),
-    prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "Order" o ${where}`),
+    prisma.$queryRaw<{ count: bigint }[]>(
+      Prisma.sql`SELECT COUNT(*)::bigint AS count FROM "Order" o ${where}`
+    ),
   ]);
   return {
     orders: rows.map((row) => {

@@ -130,7 +130,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
       onTouchEnd={handleTouchEnd}
       className="relative overflow-hidden bg-[#EDE9E0] text-[#101114] focus:outline-none"
     >
-      <div className="mx-auto max-w-360 px-4 sm:px-6 lg:pl-10 lg:pr-0 xl:pl-16">
+      <div className="mx-auto max-w-360 px-4 sm:px-6 lg:pr-0 lg:pl-10 xl:pl-16">
         <div className="grid min-h-[460px] items-center lg:min-h-[500px] lg:grid-cols-[1.05fr_0.95fr] xl:min-h-[540px] xl:grid-cols-[1.10fr_0.90fr]">
           {/* Left Column: Eyebrow, Headline, Description, CTA, Controls */}
           <div className="z-10 flex flex-col justify-center py-10 sm:py-14 lg:py-16 lg:pr-8">
@@ -143,12 +143,12 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
               )}
             >
               {/* Eyebrow */}
-              <p className="text-xs font-bold uppercase tracking-[0.28em] text-[#101114]/60 sm:text-[13px]">
+              <p className="text-xs font-bold tracking-[0.28em] text-[#101114]/60 uppercase sm:text-[13px]">
                 {currentBanner.eyebrow}
               </p>
 
               {/* Headline */}
-              <h1 className="mt-4 text-4xl font-black uppercase leading-[0.92] tracking-tight text-[#101114] sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem]">
+              <h1 className="mt-4 text-4xl leading-[0.92] font-black tracking-tight text-[#101114] uppercase sm:text-6xl md:text-7xl lg:text-[4.75rem] xl:text-[5.5rem]">
                 {currentBanner.headline}
                 <br />
                 {currentBanner.highlightText ? (
@@ -158,7 +158,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
               </h1>
 
               {/* Description */}
-              <p className="mt-5 max-w-md text-sm font-medium leading-relaxed text-[#101114]/70 sm:mt-6 sm:text-base lg:text-lg">
+              <p className="mt-5 max-w-md text-sm leading-relaxed font-medium text-[#101114]/70 sm:mt-6 sm:text-base lg:text-lg">
                 {currentBanner.description}
               </p>
 
@@ -166,7 +166,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
               <div className="mt-7 sm:mt-8">
                 <Link
                   href={currentBanner.ctaUrl}
-                  className="group inline-flex items-center gap-3 rounded-full bg-[#101114] px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-black/85 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  className="group inline-flex items-center gap-3 rounded-full bg-[#101114] px-8 py-3.5 text-xs font-bold tracking-wider text-white uppercase shadow-lg transition-all hover:bg-black/85 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
                   <span>{currentBanner.ctaLabel}</span>
                   <ArrowRight
@@ -185,9 +185,9 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
                   type="button"
                   aria-label={isPaused ? "Play hero carousel" : "Pause hero carousel"}
                   onClick={() => setIsPaused((prev) => !prev)}
-                  className="inline-flex size-6 items-center justify-center rounded-full bg-[#101114]/15 text-[#101114] transition-colors hover:bg-[#101114] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  className="inline-flex size-6 items-center justify-center rounded-full bg-[#101114]/15 text-[#101114] transition-colors hover:bg-[#101114] hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
-                  <span className="text-xs font-bold leading-none">{isPaused ? "▶" : "+"}</span>
+                  <span className="text-xs leading-none font-bold">{isPaused ? "▶" : "+"}</span>
                 </button>
 
                 {/* Clickable Indicators */}
@@ -203,7 +203,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
                         aria-label={`Go to slide ${index + 1}: ${banner.eyebrow}`}
                         onClick={() => goToSlide(index)}
                         className={cn(
-                          "h-1.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]",
+                          "h-1.5 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
                           isActive
                             ? "w-7 rounded-full bg-[#00D9FF]"
                             : "w-4 rounded-full bg-[#101114]/25 hover:bg-[#101114]/50"
@@ -254,7 +254,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
 
             {/* Vertical Streetwear Culture Watermark (Far Right Edge) */}
             <div
-              className="pointer-events-none absolute -right-6 top-1/2 hidden -translate-y-1/2 rotate-90 select-none text-[10px] font-bold uppercase tracking-[0.32em] text-[#101114]/35 xl:block"
+              className="pointer-events-none absolute top-1/2 -right-6 hidden -translate-y-1/2 rotate-90 text-[10px] font-bold tracking-[0.32em] text-[#101114]/35 uppercase select-none xl:block"
               aria-hidden="true"
             >
               Streetwear &nbsp;|&nbsp; Culture &nbsp;|&nbsp; Community
@@ -270,7 +270,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
             type="button"
             aria-label="Previous slide"
             onClick={goToPrev}
-            className="absolute left-3 top-1/2 z-20 hidden -translate-y-1/2 size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:bg-black/75 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:inline-flex lg:left-5"
+            className="absolute top-1/2 left-3 z-20 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:scale-105 hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:inline-flex lg:left-5"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
           </button>
@@ -278,7 +278,7 @@ export function HeroCarousel({ banners }: HeroCarouselProps) {
             type="button"
             aria-label="Next slide"
             onClick={goToNext}
-            className="absolute right-3 top-1/2 z-20 hidden -translate-y-1/2 size-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:bg-black/75 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:inline-flex lg:right-5"
+            className="absolute top-1/2 right-3 z-20 hidden size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur-xs transition-all hover:scale-105 hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:inline-flex lg:right-5"
           >
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>

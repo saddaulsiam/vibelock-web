@@ -128,7 +128,8 @@ export function classifyOrder(order: {
       return {
         classification: "ANOMALY",
         label: "Online Marked Paid Without Payment",
-        anomalyReason: "Online order is marked SUCCESS in status without recorded payment transaction.",
+        anomalyReason:
+          "Online order is marked SUCCESS in status without recorded payment transaction.",
       };
     }
     // 2. Online Anomaly: Delivered without recorded payment
@@ -193,7 +194,8 @@ export function classifyOrder(order: {
     return {
       classification: "ANOMALY",
       label: "COD with Online Payment Record",
-      anomalyReason: "Order paymentMethod is COD but has recorded successful online payment transactions.",
+      anomalyReason:
+        "Order paymentMethod is COD but has recorded successful online payment transactions.",
     };
   }
   // 2. COD Anomaly: COD marked SUCCESS in status without recorded payment transaction

@@ -61,6 +61,7 @@ Pass a specific task after `/implement`. Do not use a vague request such as “i
 ## Safety gates
 
 The workflows intentionally stop and ask you before:
+
 - running a command that could affect production data or a live service;
 - changing Prisma schema or creating/applying migrations;
 - editing secrets or `.env*` files;

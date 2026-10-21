@@ -21,15 +21,15 @@ export default async function WishlistPage() {
       <Container>
         {/* Wishlist Header */}
         <header className="mb-8 border-b border-[#101114]/10 pb-6 sm:mb-10">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+          <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
             VibeLock <span className="px-1 text-[#0099b8]">/</span> Wishlist
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-black uppercase tracking-tight text-[#101114] sm:text-4xl">
+              <h1 className="text-3xl font-black tracking-tight text-[#101114] uppercase sm:text-4xl">
                 My Wishlist
               </h1>
-              <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
                 Saved streetwear pieces, oversized fits, and city essentials.
               </p>
             </div>

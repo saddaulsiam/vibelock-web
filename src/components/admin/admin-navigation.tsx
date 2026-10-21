@@ -3,14 +3,23 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Boxes, FolderTree, LayoutDashboard, Menu, PackageCheck, Percent, RotateCcw, Settings, ShoppingBag, TrendingDown, Truck, Users, PanelsTopLeft } from "lucide-react";
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  BarChart3,
+  Boxes,
+  FolderTree,
+  LayoutDashboard,
+  Menu,
+  PackageCheck,
+  Percent,
+  RotateCcw,
+  Settings,
+  ShoppingBag,
+  TrendingDown,
+  Truck,
+  Users,
+  PanelsTopLeft,
+} from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const navigation = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -34,14 +43,17 @@ function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav aria-label="Admin navigation" className="grid gap-1">
       {navigation.map(({ label, href, icon: Icon }) => {
-        const active = href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+        const active =
+          href === "/admin"
+            ? pathname === href
+            : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
             onClick={onNavigate}
-            className={`inline-flex min-h-11 items-center gap-3 border-l-2 px-3 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 ${
+            className={`inline-flex min-h-11 items-center gap-3 border-l-2 px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none ${
               active
                 ? "border-[#00D9FF] bg-white/10 text-white"
                 : "border-transparent text-white/70 hover:bg-white/5 hover:text-white"
@@ -62,11 +74,13 @@ export function AdminSidebar() {
       <div className="border-b border-white/10 px-6 py-6">
         <Link
           href="/admin"
-          className="rounded-sm text-xl font-extrabold tracking-[-0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+          className="rounded-sm text-xl font-extrabold tracking-[-0.06em] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
         >
           VibeLock<span className="text-[#00D9FF]">.</span>
         </Link>
-        <p className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-white/55">Operations</p>
+        <p className="mt-1 text-xs font-medium tracking-[0.16em] text-white/55 uppercase">
+          Operations
+        </p>
       </div>
       <div className="px-3 py-5">
         <AdminNavLinks />
@@ -82,15 +96,20 @@ export function AdminMobileNavigation() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         aria-label="Open admin navigation"
-        className="inline-flex size-11 items-center justify-center border border-[#101114]/15 text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] lg:hidden"
+        className="inline-flex size-11 items-center justify-center border border-[#101114]/15 text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none lg:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-[min(86vw,20rem)] border-0 bg-[#101114] p-0 text-white">
+      <SheetContent
+        side="left"
+        className="w-[min(86vw,20rem)] border-0 bg-[#101114] p-0 text-white"
+      >
         <SheetHeader className="border-b border-white/10 px-5 py-6">
           <SheetTitle className="text-left text-xl font-extrabold tracking-[-0.06em] text-white">
             VibeLock<span className="text-[#00D9FF]">.</span>
-            <span className="ml-2 text-xs font-medium uppercase tracking-[0.16em] text-white/55">Operations</span>
+            <span className="ml-2 text-xs font-medium tracking-[0.16em] text-white/55 uppercase">
+              Operations
+            </span>
           </SheetTitle>
         </SheetHeader>
         <div className="px-3 py-5">

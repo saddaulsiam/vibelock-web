@@ -13,22 +13,22 @@ describe("Inventory Concurrency Tests", () => {
         slug: `race-${ts}`,
         status: "PUBLISHED",
         variants: {
-          create: { sku: `RACE-${ts}`, size: "M", costPrice: 10, sellingPrice: 20 }
-        }
+          create: { sku: `RACE-${ts}`, size: "M", costPrice: 10, sellingPrice: 20 },
+        },
       },
-      include: { variants: true }
+      include: { variants: true },
     });
     const variantId = product.variants[0].id;
     const sku = product.variants[0].sku;
-    
+
     // Add exactly 1 unit
     await prisma.inventoryTransaction.create({
-      data: { variantId, quantity: 1, type: "RESTOCK", referenceId: `R-${ts}` }
+      data: { variantId, quantity: 1, type: "RESTOCK", referenceId: `R-${ts}` },
     });
 
     // 2. Setup user and two separate orders trying to buy the same item
     const user = await prisma.user.create({ data: { email: `racer-${ts}@test.local` } });
-    
+
     const createOrder = async (num: string) => {
       return prisma.order.create({
         data: {
@@ -61,10 +61,10 @@ describe("Inventory Concurrency Tests", () => {
               discountAmount: 0,
               taxAmount: 0,
               lineTotal: 20,
-              quantity: 1 // wants the last unit
-            }
-          }
-        }
+              quantity: 1, // wants the last unit
+            },
+          },
+        },
       });
     };
 
@@ -74,33 +74,33 @@ describe("Inventory Concurrency Tests", () => {
     // 3. Start two concurrent calls against the REAL inventory reservation service
     const results = await Promise.allSettled([
       InventoryService.reserveInventoryForOrder(orderA.id),
-      InventoryService.reserveInventoryForOrder(orderB.id)
+      InventoryService.reserveInventoryForOrder(orderB.id),
     ]);
-    
-    const successes = results.filter(r => r.status === "fulfilled").length;
-    const failures = results.filter(r => r.status === "rejected").length;
-    
+
+    const successes = results.filter((r) => r.status === "fulfilled").length;
+    const failures = results.filter((r) => r.status === "rejected").length;
+
     // Expected: 1 success, 1 failure
     expect(successes).toBe(1);
     expect(failures).toBe(1);
-    
+
     // Verify available stock is never negative
     const stockAgg = await prisma.inventoryTransaction.aggregate({
       where: { variantId },
-      _sum: { quantity: true }
+      _sum: { quantity: true },
     });
     const reservedAgg = await prisma.inventoryReservation.aggregate({
       where: { variantId, status: "RESERVED", expiresAt: { gt: new Date() } },
-      _sum: { quantity: true }
+      _sum: { quantity: true },
     });
     const available = Number(stockAgg._sum.quantity || 0) - Number(reservedAgg._sum.quantity || 0);
-    
+
     expect(available).toBe(0);
     expect(available).toBeGreaterThanOrEqual(0);
-    
+
     // Verify only one reservation exists
     const resCount = await prisma.inventoryReservation.count({
-      where: { variantId, status: "RESERVED" }
+      where: { variantId, status: "RESERVED" },
     });
     expect(resCount).toBe(1);
   }, 30000);

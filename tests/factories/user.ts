@@ -8,7 +8,7 @@ export async function createTestUser(overrides: Partial<Prisma.UserUncheckedCrea
       email: `test-${ts}@example.com`,
       name: `User-${ts}`,
       ...overrides,
-    }
+    },
   });
 }
 
@@ -16,6 +16,6 @@ export async function createTestCart(userId?: string) {
   return prisma.cart.create({
     data: {
       userId,
-    }
+    },
   });
 }

@@ -18,7 +18,10 @@ const transitionSchema = z.object({
 
 const refundSchema = z.object({
   returnId: z.string().uuid(),
-  amount: z.string().trim().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Enter a valid refund amount."),
+  amount: z
+    .string()
+    .trim()
+    .regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Enter a valid refund amount."),
   reason: z.string().trim().max(500).optional(),
 });
 
@@ -117,7 +120,9 @@ export async function updateReturnStatusAction(
       });
     });
   } catch (error) {
-    return { error: knownError(error) ?? "The return status could not be updated. Please try again." };
+    return {
+      error: knownError(error) ?? "The return status could not be updated. Please try again.",
+    };
   }
 
   refreshReturns();
@@ -159,7 +164,8 @@ export async function initiateReturnRefundAction(
       new Prisma.Decimal(0)
     );
     const amount = new Prisma.Decimal(parsed.data.amount);
-    if (amount.gt(requestedAmount)) throw new Error("The refund amount exceeds the requested return value.");
+    if (amount.gt(requestedAmount))
+      throw new Error("The refund amount exceeds the requested return value.");
 
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Payment" WHERE id = ${payment.id} FOR UPDATE`;
@@ -171,11 +177,13 @@ export async function initiateReturnRefundAction(
         },
         select: { id: true },
       });
-      if (existingRefundAudit) throw new Error("A refund has already been initiated for this return.");
+      if (existingRefundAudit)
+        throw new Error("A refund has already been initiated for this return.");
 
       const refundable = await new RefundService().getRefundableAmount(payment.id, tx);
       if (amount.lte(0)) throw new Error("Refund amount must be greater than zero.");
-      if (amount.gt(refundable)) throw new Error("The refund amount exceeds the remaining refundable amount.");
+      if (amount.gt(refundable))
+        throw new Error("The refund amount exceeds the remaining refundable amount.");
 
       const refund = await tx.refund.create({
         data: {
@@ -200,7 +208,10 @@ export async function initiateReturnRefundAction(
   }
 
   refreshReturns();
-  return { error: null, message: "Refund created in pending state. Process it only when the provider is ready." };
+  return {
+    error: null,
+    message: "Refund created in pending state. Process it only when the provider is ready.",
+  };
 }
 
 export async function processReturnRefundAction(
@@ -224,10 +235,12 @@ export async function processReturnRefundAction(
       select: { id: true, orderId: true },
     });
     if (!refund || !request) throw new Error("Return request not found.");
-    if (refund.payment.orderId !== request.orderId) throw new Error("That refund does not belong to this return.");
+    if (refund.payment.orderId !== request.orderId)
+      throw new Error("That refund does not belong to this return.");
 
     const result = await new RefundService().processRefundWithProvider(refund.id);
-    if (!result.success) return { error: result.error ?? "The payment provider did not complete the refund." };
+    if (!result.success)
+      return { error: result.error ?? "The payment provider did not complete the refund." };
 
     await prisma.auditLog.create({
       data: {

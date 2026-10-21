@@ -52,16 +52,12 @@ const envSchema = z.object({
   NAGAD_MERCHANT_NUMBER: z.string().optional(),
   NAGAD_PG_PUBLIC_KEY: z.preprocess(
     (val) =>
-      typeof val === "string" && val.trim()
-        ? val
-        : process.env.NAGAD_APP_MERCHANT_PG_PUBLIC_KEY,
+      typeof val === "string" && val.trim() ? val : process.env.NAGAD_APP_MERCHANT_PG_PUBLIC_KEY,
     z.string().optional()
   ),
   NAGAD_MERCHANT_PRIVATE_KEY: z.preprocess(
     (val) =>
-      typeof val === "string" && val.trim()
-        ? val
-        : process.env.NAGAD_APP_MERCHANT_PRIVATE_KEY,
+      typeof val === "string" && val.trim() ? val : process.env.NAGAD_APP_MERCHANT_PRIVATE_KEY,
     z.string().optional()
   ),
   NAGAD_SANDBOX: z.preprocess((val) => {

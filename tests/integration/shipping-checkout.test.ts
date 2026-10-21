@@ -51,8 +51,12 @@ describe("Database-Configured Shipping Zones and Methods in Checkout", () => {
         await tx.order.deleteMany({ where: { id: { in: createdOrderIds } } });
       }
       if (createdVariantIds.length) {
-        await tx.inventoryReservation.deleteMany({ where: { variantId: { in: createdVariantIds } } });
-        await tx.inventoryTransaction.deleteMany({ where: { variantId: { in: createdVariantIds } } });
+        await tx.inventoryReservation.deleteMany({
+          where: { variantId: { in: createdVariantIds } },
+        });
+        await tx.inventoryTransaction.deleteMany({
+          where: { variantId: { in: createdVariantIds } },
+        });
         await tx.cartItem.deleteMany({ where: { variantId: { in: createdVariantIds } } });
         await tx.productVariant.deleteMany({ where: { id: { in: createdVariantIds } } });
       }
@@ -651,7 +655,9 @@ describe("Database-Configured Shipping Zones and Methods in Checkout", () => {
     };
 
     // Force an unexpected unhandled exception inside the transaction
-    const txSpy = vi.spyOn(prisma, "$transaction").mockRejectedValueOnce(new Error("Unexpected low-level failure"));
+    const txSpy = vi
+      .spyOn(prisma, "$transaction")
+      .mockRejectedValueOnce(new Error("Unexpected low-level failure"));
 
     try {
       const result = await createOrderAction(payload, crypto.randomUUID());

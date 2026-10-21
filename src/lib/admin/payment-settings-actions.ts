@@ -20,7 +20,10 @@ export async function togglePaymentMethodAction(
   const rawCode = formData.get("code")?.toString()?.trim()?.toUpperCase();
   const rawEnabled = formData.get("enabled")?.toString();
 
-  if (!rawCode || (rawCode !== "COD" && rawCode !== "SSLCOMMERZ" && rawCode !== "BKASH" && rawCode !== "NAGAD")) {
+  if (
+    !rawCode ||
+    (rawCode !== "COD" && rawCode !== "SSLCOMMERZ" && rawCode !== "BKASH" && rawCode !== "NAGAD")
+  ) {
     return { error: "Invalid payment method code." };
   }
 

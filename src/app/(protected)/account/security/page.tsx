@@ -108,51 +108,59 @@ export default function SecurityPage() {
     <div className="flex flex-col gap-6">
       {/* 1. Header Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+        <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
           Account Security
         </h1>
-        <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+        <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
           Manage your password, login credentials, and active device sessions.
         </p>
       </div>
 
       {/* 2. Change Password Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+        <h2 className="mb-4 flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
           <Lock className="size-4 text-[#101114]" />
           <span>Change Password</span>
         </h2>
 
-        <form onSubmit={handlePwSubmit} className="space-y-4 max-w-lg">
+        <form onSubmit={handlePwSubmit} className="max-w-lg space-y-4">
           {pwError && (
-            <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs font-semibold text-destructive" role="alert">
+            <div
+              className="border-destructive/20 bg-destructive/10 text-destructive rounded-xl border p-3 text-xs font-semibold"
+              role="alert"
+            >
               {pwError}
             </div>
           )}
           {pwSuccess && (
-            <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800" role="status">
-              <Check className="size-4 text-emerald-600 shrink-0" />
+            <div
+              className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-semibold text-emerald-800"
+              role="status"
+            >
+              <Check className="size-4 shrink-0 text-emerald-600" />
               <span>{pwSuccess}</span>
             </div>
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="currentPassword" className="text-xs font-bold text-[#101114]">Current Password</Label>
+            <Label htmlFor="currentPassword" className="text-xs font-bold text-[#101114]">
+              Current Password
+            </Label>
             <Input
               id="currentPassword"
               type="password"
               required
               value={pwData.currentPassword}
-              onChange={(e) =>
-                setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))
-              }
+              onChange={(e) => setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
               className="rounded-xl border-[#101114]/15 bg-white text-xs focus-visible:ring-[#00D9FF]"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="newPassword" className="text-xs font-bold text-[#101114]">New Password</Label>
+            <Label htmlFor="newPassword" className="text-xs font-bold text-[#101114]">
+              New Password
+            </Label>
             <Input
               id="newPassword"
               type="password"
@@ -165,7 +173,9 @@ export default function SecurityPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmNewPassword" className="text-xs font-bold text-[#101114]">Confirm New Password</Label>
+            <Label htmlFor="confirmNewPassword" className="text-xs font-bold text-[#101114]">
+              Confirm New Password
+            </Label>
             <Input
               id="confirmNewPassword"
               type="password"
@@ -193,15 +203,15 @@ export default function SecurityPage() {
 
       {/* 3. Active Sessions Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+        <h2 className="mb-4 flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
           <Laptop className="size-4 text-[#0099b8]" />
           <span>Active Device Sessions</span>
         </h2>
 
         {sessionLoading ? (
-          <p className="text-xs text-muted-foreground py-4">Loading active sessions...</p>
+          <p className="text-muted-foreground py-4 text-xs">Loading active sessions...</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-[#101114]/15 bg-[#F3F0E8]/50 p-6 text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground rounded-xl border border-dashed border-[#101114]/15 bg-[#F3F0E8]/50 p-6 text-center text-xs">
             No other active sessions detected.
           </p>
         ) : (
@@ -220,7 +230,7 @@ export default function SecurityPage() {
                       </span>
                     )}
                   </div>
-                  <p className="mt-1 text-[11px] text-muted-foreground">
+                  <p className="text-muted-foreground mt-1 text-[11px]">
                     Expires on {new Date(s.expires).toLocaleDateString()}
                   </p>
                 </div>
@@ -228,7 +238,7 @@ export default function SecurityPage() {
                   <button
                     type="button"
                     onClick={() => handleRevokeSession(s.id)}
-                    className="rounded-lg border border-[#101114]/15 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors"
+                    className="rounded-lg border border-[#101114]/15 bg-white px-2.5 py-1 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
                   >
                     Revoke
                   </button>
@@ -236,18 +246,18 @@ export default function SecurityPage() {
               </div>
             ))}
 
-            <div className="mt-4 flex flex-wrap gap-2 pt-2 border-t border-[#101114]/10">
+            <div className="mt-4 flex flex-wrap gap-2 border-t border-[#101114]/10 pt-2">
               <button
                 type="button"
                 onClick={handleRevokeOther}
-                className="rounded-xl border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-bold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+                className="rounded-xl border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-bold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
               >
                 Sign out other devices
               </button>
               <button
                 type="button"
                 onClick={handleRevokeAll}
-                className="rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors"
+                className="rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-rose-700"
               >
                 Sign out all devices
               </button>
@@ -258,11 +268,11 @@ export default function SecurityPage() {
 
       {/* 4. Danger Zone Card */}
       <div className="rounded-2xl border border-rose-200 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-rose-600 border-b border-rose-100 pb-4 mb-4">
+        <h2 className="mb-4 flex items-center gap-2 border-b border-rose-100 pb-4 text-base font-bold text-rose-600">
           <AlertTriangle className="size-4" />
           <span>Danger Zone</span>
         </h2>
-        <p className="text-xs text-muted-foreground mb-4">
+        <p className="text-muted-foreground mb-4 text-xs">
           Permanently delete your VibeLock account and associated data. This action is irreversible.
         </p>
 
@@ -270,7 +280,7 @@ export default function SecurityPage() {
           <button
             type="button"
             onClick={() => setDelConfirmMode(true)}
-            className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition-colors"
+            className="rounded-xl border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-100"
           >
             Delete Account
           </button>
@@ -283,8 +293,10 @@ export default function SecurityPage() {
               Please enter your password to confirm permanent account deletion:
             </p>
             {delError && <div className="text-xs font-bold text-rose-700">{delError}</div>}
-            <div className="space-y-1.5 max-w-sm">
-              <Label htmlFor="delPassword" className="text-xs font-bold text-[#101114]">Password</Label>
+            <div className="max-w-sm space-y-1.5">
+              <Label htmlFor="delPassword" className="text-xs font-bold text-[#101114]">
+                Password
+              </Label>
               <Input
                 id="delPassword"
                 type="password"
@@ -299,7 +311,7 @@ export default function SecurityPage() {
               <button
                 type="submit"
                 disabled={delLoading}
-                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
+                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-rose-700 disabled:opacity-50"
               >
                 {delLoading ? "Deleting..." : "Confirm Deletion"}
               </button>
@@ -307,7 +319,7 @@ export default function SecurityPage() {
                 type="button"
                 onClick={() => setDelConfirmMode(false)}
                 disabled={delLoading}
-                className="rounded-xl border border-[#101114]/15 bg-white px-4 py-2 text-xs font-bold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+                className="rounded-xl border border-[#101114]/15 bg-white px-4 py-2 text-xs font-bold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
               >
                 Cancel
               </button>

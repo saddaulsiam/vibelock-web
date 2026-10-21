@@ -26,7 +26,11 @@ interface ProductFiltersProps {
   lockedCategorySlug?: string;
 }
 
-export function ProductFilters({ options, isMobile = false, lockedCategorySlug }: ProductFiltersProps) {
+export function ProductFilters({
+  options,
+  isMobile = false,
+  lockedCategorySlug,
+}: ProductFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -86,9 +90,18 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
   const filterContent = (
     <div className="space-y-7">
       <section className="space-y-3" aria-labelledby="catalog-search-label">
-        <h3 id="catalog-search-label" className="text-sm font-semibold">Search</h3>
-        <form key={`search-${searchParams.toString()}`} onSubmit={applySearch} className="flex gap-2">
-          <label className="sr-only" htmlFor={isMobile ? "mobile-catalog-search" : "catalog-search"}>
+        <h3 id="catalog-search-label" className="text-sm font-semibold">
+          Search
+        </h3>
+        <form
+          key={`search-${searchParams.toString()}`}
+          onSubmit={applySearch}
+          className="flex gap-2"
+        >
+          <label
+            className="sr-only"
+            htmlFor={isMobile ? "mobile-catalog-search" : "catalog-search"}
+          >
             Search products
           </label>
           <Input
@@ -97,14 +110,21 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
             name="q"
             defaultValue={searchParams.get("q") ?? ""}
           />
-          <Button type="submit" size="icon" aria-label="Search products" className="h-9 w-10 bg-[#101114] text-white hover:bg-[#101114]/85">
+          <Button
+            type="submit"
+            size="icon"
+            aria-label="Search products"
+            className="h-9 w-10 bg-[#101114] text-white hover:bg-[#101114]/85"
+          >
             <Search aria-hidden="true" />
           </Button>
         </form>
       </section>
 
       <section className="space-y-3" aria-labelledby="catalog-sort-label">
-        <h3 id="catalog-sort-label" className="text-sm font-semibold">Sort by</h3>
+        <h3 id="catalog-sort-label" className="text-sm font-semibold">
+          Sort by
+        </h3>
         <Select
           value={sort}
           onValueChange={(value) => {
@@ -114,7 +134,10 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
             navigateWithParams(params);
           }}
         >
-          <SelectTrigger aria-label="Sort products" className="h-10 w-full rounded-sm border-[#101114]/20">
+          <SelectTrigger
+            aria-label="Sort products"
+            className="h-10 w-full rounded-sm border-[#101114]/20"
+          >
             <SelectValue placeholder="Sort products" />
           </SelectTrigger>
           <SelectContent>
@@ -127,14 +150,22 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
 
       {options.categories.length > 0 && (
         <section className="space-y-3" aria-labelledby="catalog-category-label">
-          <h3 id="catalog-category-label" className="text-sm font-semibold">Category</h3>
+          <h3 id="catalog-category-label" className="text-sm font-semibold">
+            Category
+          </h3>
           <div className="space-y-2.5">
             {options.categories.map((category) => (
-              <label key={category.slug} className="flex min-h-6 cursor-pointer items-center gap-3 text-sm text-foreground">
+              <label
+                key={category.slug}
+                className="text-foreground flex min-h-6 cursor-pointer items-center gap-3 text-sm"
+              >
                 <input
                   type="checkbox"
-                  className="size-4 rounded border-border accent-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
-                  checked={selectedCategories.includes(category.slug) || category.slug === lockedCategorySlug}
+                  className="border-border size-4 rounded accent-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+                  checked={
+                    selectedCategories.includes(category.slug) ||
+                    category.slug === lockedCategorySlug
+                  }
                   disabled={category.slug === lockedCategorySlug}
                   onChange={() => toggleArrayFilter("category", category.slug)}
                 />
@@ -147,7 +178,9 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
 
       {options.sizes.length > 0 && (
         <section className="space-y-3" aria-labelledby="catalog-size-label">
-          <h3 id="catalog-size-label" className="text-sm font-semibold">Size</h3>
+          <h3 id="catalog-size-label" className="text-sm font-semibold">
+            Size
+          </h3>
           <div className="flex flex-wrap gap-2">
             {options.sizes.map((size) => {
               const selected = selectedSizes.includes(size);
@@ -157,7 +190,7 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
                   type="button"
                   aria-pressed={selected}
                   onClick={() => toggleArrayFilter("size", size)}
-                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
+                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
                     selected
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-border bg-white hover:border-[#101114]"
@@ -173,13 +206,18 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
 
       {options.colors.length > 0 && (
         <section className="space-y-3" aria-labelledby="catalog-color-label">
-          <h3 id="catalog-color-label" className="text-sm font-semibold">Color</h3>
+          <h3 id="catalog-color-label" className="text-sm font-semibold">
+            Color
+          </h3>
           <div className="space-y-2.5">
             {options.colors.map((color) => (
-              <label key={color} className="flex min-h-6 cursor-pointer items-center gap-3 text-sm text-foreground">
+              <label
+                key={color}
+                className="text-foreground flex min-h-6 cursor-pointer items-center gap-3 text-sm"
+              >
                 <input
                   type="checkbox"
-                  className="size-4 rounded border-border accent-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+                  className="border-border size-4 rounded accent-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
                   checked={selectedColors.includes(color)}
                   onChange={() => toggleArrayFilter("color", color)}
                 />
@@ -191,32 +229,44 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
       )}
 
       <section className="space-y-3" aria-labelledby="catalog-price-label">
-        <h3 id="catalog-price-label" className="text-sm font-semibold">Price range</h3>
+        <h3 id="catalog-price-label" className="text-sm font-semibold">
+          Price range
+        </h3>
         <form key={`price-${searchParams.toString()}`} onSubmit={applyPrice} className="space-y-3">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-          <label className="sr-only" htmlFor={isMobile ? "mobile-min-price" : "min-price"}>Minimum price</label>
-          <Input
-            id={isMobile ? "mobile-min-price" : "min-price"}
-            type="number"
-            min="0"
-            inputMode="numeric"
-            placeholder="Min"
-            name="minPrice"
-            defaultValue={searchParams.get("minPrice") ?? ""}
-          />
-          <span aria-hidden="true" className="text-muted-foreground">–</span>
-          <label className="sr-only" htmlFor={isMobile ? "mobile-max-price" : "max-price"}>Maximum price</label>
-          <Input
-            id={isMobile ? "mobile-max-price" : "max-price"}
-            type="number"
-            min="0"
-            inputMode="numeric"
-            placeholder="Max"
-            name="maxPrice"
-            defaultValue={searchParams.get("maxPrice") ?? ""}
-          />
+            <label className="sr-only" htmlFor={isMobile ? "mobile-min-price" : "min-price"}>
+              Minimum price
+            </label>
+            <Input
+              id={isMobile ? "mobile-min-price" : "min-price"}
+              type="number"
+              min="0"
+              inputMode="numeric"
+              placeholder="Min"
+              name="minPrice"
+              defaultValue={searchParams.get("minPrice") ?? ""}
+            />
+            <span aria-hidden="true" className="text-muted-foreground">
+              –
+            </span>
+            <label className="sr-only" htmlFor={isMobile ? "mobile-max-price" : "max-price"}>
+              Maximum price
+            </label>
+            <Input
+              id={isMobile ? "mobile-max-price" : "max-price"}
+              type="number"
+              min="0"
+              inputMode="numeric"
+              placeholder="Max"
+              name="maxPrice"
+              defaultValue={searchParams.get("maxPrice") ?? ""}
+            />
           </div>
-          <Button type="submit" variant="outline" className="h-10 w-full rounded-sm border-[#101114]/20">
+          <Button
+            type="submit"
+            variant="outline"
+            className="h-10 w-full rounded-sm border-[#101114]/20"
+          >
             Apply price
           </Button>
         </form>
@@ -227,12 +277,12 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none">
           <SlidersHorizontal className="size-4" aria-hidden="true" />
           Filters
         </SheetTrigger>
         <SheetContent side="left" className="w-[min(88vw,24rem)] overflow-y-auto bg-white p-5">
-          <SheetHeader className="mb-5 border-b border-border px-0 pb-4 pt-1">
+          <SheetHeader className="border-border mb-5 border-b px-0 pt-1 pb-4">
             <SheetTitle className="text-left text-xl font-semibold">Filters & sort</SheetTitle>
           </SheetHeader>
           {filterContent}
@@ -243,9 +293,7 @@ export function ProductFilters({ options, isMobile = false, lockedCategorySlug }
 
   return (
     <aside aria-label="Product filters" className="hidden w-60 shrink-0 lg:block">
-      <div className="sticky top-24 border-r border-border pr-6">
-        {filterContent}
-      </div>
+      <div className="border-border sticky top-24 border-r pr-6">{filterContent}</div>
     </aside>
   );
 }

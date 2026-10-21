@@ -22,7 +22,7 @@ vi.mock("next/headers", () => ({
     get: (key: string) => mockCookies.get(key),
     set: (key: string, value: string, options: unknown) => mockCookies.set(key, { value, options }),
     delete: (key: string) => mockCookies.delete(key),
-  }))
+  })),
 }));
 
 vi.mock("../../src/auth", () => ({
@@ -30,7 +30,7 @@ vi.mock("../../src/auth", () => ({
     const store = userStorage.getStore();
     if (store) return { user: store };
     return mockSession;
-  })
+  }),
 }));
 
 // Mock fallback shipping pricing so legacy tests remain deterministic and isolated
@@ -77,7 +77,10 @@ describe("Phase 3F - Checkout", () => {
     expect(res.error).toBe("Your cart is empty");
 
     // Invalid input
-    const invalidRes = await createOrderAction({ ...validCheckoutData, paymentMethod: "INVALID" as unknown as "COD" }, crypto.randomUUID());
+    const invalidRes = await createOrderAction(
+      { ...validCheckoutData, paymentMethod: "INVALID" as unknown as "COD" },
+      crypto.randomUUID()
+    );
     expect(invalidRes.success).toBe(false);
     expect(invalidRes.error).toContain("Invalid");
   });
@@ -87,11 +90,11 @@ describe("Phase 3F - Checkout", () => {
     mockSession = { user: { id: user.id } };
 
     const prod = await createTestProduct();
-    const variant = await createTestVariant({ 
+    const variant = await createTestVariant({
       productId: prod.id,
       sellingPrice: new Prisma.Decimal("100"),
       discountPrice: new Prisma.Decimal("90"),
-      costPrice: new Prisma.Decimal("50")
+      costPrice: new Prisma.Decimal("50"),
     });
     await createTestInventory(variant.id, 10);
 
@@ -99,14 +102,14 @@ describe("Phase 3F - Checkout", () => {
 
     const idempotencyKey = crypto.randomUUID();
     const res = await createOrderAction(validCheckoutData, idempotencyKey);
-    
+
     expect(res.success).toBe(true);
     expect(res.orderNumber).toBeDefined();
 
     // Verify DB state
     const order = await prisma.order.findUnique({
       where: { orderNumber: res.orderNumber as string },
-      include: { items: true }
+      include: { items: true },
     });
 
     expect(order).toBeDefined();
@@ -121,7 +124,7 @@ describe("Phase 3F - Checkout", () => {
     // Cart clearing
     const cart = await prisma.cart.findUnique({
       where: { userId: user.id },
-      include: { items: true }
+      include: { items: true },
     });
     expect(cart?.items.length).toBe(0); // Cart should be cleared
   });
@@ -139,7 +142,7 @@ describe("Phase 3F - Checkout", () => {
 
     // Another process consumes 2
     await prisma.inventoryTransaction.create({
-      data: { variantId: variant.id, quantity: -2, type: "SALE", referenceId: `REF-${Date.now()}` }
+      data: { variantId: variant.id, quantity: -2, type: "SALE", referenceId: `REF-${Date.now()}` },
     });
 
     const res = await createOrderAction(validCheckoutData, crypto.randomUUID());
@@ -158,23 +161,25 @@ describe("Phase 3F - Checkout", () => {
     await addToCart(variant.id, 1);
 
     const idempotencyKey = crypto.randomUUID();
-    
+
     // Concurrent request
     await Promise.all([
       createOrderAction(validCheckoutData, idempotencyKey),
-      createOrderAction(validCheckoutData, idempotencyKey)
+      createOrderAction(validCheckoutData, idempotencyKey),
     ]);
-    
+
     // Wait, the action uses a transaction that might cause Prisma unique constraint violations on concurrent inserts
-    // We expect both to succeed (one creates, one reads) OR one to fail safely with "Unauthorized" or an error, 
+    // We expect both to succeed (one creates, one reads) OR one to fail safely with "Unauthorized" or an error,
     // but we expect exactly 1 order in DB.
-    
-    const orders = await prisma.order.findMany({ where: { checkoutIdempotencyKey: idempotencyKey } });
+
+    const orders = await prisma.order.findMany({
+      where: { checkoutIdempotencyKey: idempotencyKey },
+    });
     expect(orders.length).toBe(1);
-    
+
     const cart = await prisma.cart.findUnique({
       where: { userId: user.id },
-      include: { items: true }
+      include: { items: true },
     });
     expect(cart?.items.length).toBe(0);
   });
@@ -202,7 +207,7 @@ describe("Phase 3F - Checkout", () => {
     // Ensure cart was NOT cleared
     const cart = await prisma.cart.findUnique({
       where: { userId: user.id },
-      include: { items: true }
+      include: { items: true },
     });
     expect(cart?.items.length).toBe(1);
   });
@@ -550,4 +555,3 @@ describe("Phase 3F - Checkout", () => {
     });
   });
 });
-

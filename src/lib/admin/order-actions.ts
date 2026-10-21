@@ -146,7 +146,9 @@ export async function updateOrderStatusAction(
     const message = error instanceof Error ? error.message : "";
     return {
       error:
-        message === "Order not found." || message.startsWith("Order cannot transition") || message.endsWith("orders cannot be changed.")
+        message === "Order not found." ||
+        message.startsWith("Order cannot transition") ||
+        message.endsWith("orders cannot be changed.")
           ? message
           : [
                 "Only pending orders can be cancelled.",
@@ -155,7 +157,7 @@ export async function updateOrderStatusAction(
                 "Order has already committed stock and cannot be safely cancelled.",
               ].includes(message)
             ? message
-          : "Failed to update order status.",
+            : "Failed to update order status.",
     };
   }
 

@@ -24,16 +24,16 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <div className="mb-6 flex size-16 items-center justify-center bg-[#F3F0E8] text-[#101114]">
           <ShoppingBag className="size-7" aria-hidden="true" />
         </div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
           VibeLock / Cart
         </p>
         <h1 className="text-3xl font-semibold tracking-tight">Your cart is empty</h1>
-        <p className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
+        <p className="text-muted-foreground mt-3 max-w-sm text-sm leading-6">
           Take a look through the collection and find your next everyday piece.
         </p>
         <Link
           href="/products"
-          className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+          className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           Shop products <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
@@ -52,15 +52,17 @@ export function CartPageContent({ cart }: CartPageContentProps) {
 
   return (
     <div className="py-5 sm:py-8">
-      <header className="mb-8 border-b border-border pb-6 sm:mb-10 sm:pb-8">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <header className="border-border mb-8 border-b pb-6 sm:mb-10 sm:pb-8">
+        <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
           VibeLock / Cart
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your cart</h1>
-          <p className="text-sm text-muted-foreground" aria-live="polite">
+          <p className="text-muted-foreground text-sm" aria-live="polite">
             {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"}
-            <span className="mx-2 text-border" aria-hidden="true">·</span>
+            <span className="text-border mx-2" aria-hidden="true">
+              ·
+            </span>
             {cart.items.length} {cart.items.length === 1 ? "product" : "products"}
           </p>
         </div>
@@ -75,22 +77,27 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           </div>
           <Link
             href="/products"
-            className="mt-6 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="hover:text-muted-foreground mt-6 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             <ArrowLeft className="size-4" aria-hidden="true" /> Continue shopping
           </Link>
         </section>
 
         <aside aria-labelledby="cart-summary-heading" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="border border-border bg-[#F3F0E8]/55 p-5 sm:p-6">
-            <h2 id="cart-summary-heading" className="border-b border-[#101114]/15 pb-4 text-lg font-semibold tracking-tight">
+          <div className="border-border border bg-[#F3F0E8]/55 p-5 sm:p-6">
+            <h2
+              id="cart-summary-heading"
+              className="border-b border-[#101114]/15 pb-4 text-lg font-semibold tracking-tight"
+            >
               Order summary
             </h2>
 
             <dl className="space-y-4 py-5">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="font-medium text-[#101114]">{formatPrice(subtotalBeforeDiscount)}</dd>
+                <dd className="font-medium text-[#101114]">
+                  {formatPrice(subtotalBeforeDiscount)}
+                </dd>
               </div>
               {discountTotal > 0 && (
                 <div className="flex items-center justify-between gap-4 text-sm">
@@ -100,27 +107,32 @@ export function CartPageContent({ cart }: CartPageContentProps) {
               )}
               <div className="flex items-start justify-between gap-4 text-sm">
                 <dt className="text-muted-foreground">Shipping</dt>
-                <dd className="text-right text-muted-foreground">Calculated at checkout</dd>
+                <dd className="text-muted-foreground text-right">Calculated at checkout</dd>
               </div>
             </dl>
 
             <div className="flex items-center justify-between gap-4 border-t border-[#101114]/15 pt-4">
               <span className="font-semibold">Total</span>
-              <span className="text-xl font-semibold tracking-tight">{formatPrice(cart.subtotal)}</span>
+              <span className="text-xl font-semibold tracking-tight">
+                {formatPrice(cart.subtotal)}
+              </span>
             </div>
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">
+            <p className="text-muted-foreground mt-2 text-xs leading-5">
               Shipping and any applicable charges are confirmed at checkout.
             </p>
 
             {requiresAdjustment && (
-              <p className="mt-4 border-l-2 border-destructive bg-white/70 px-3 py-2 text-sm text-destructive" role="status">
+              <p
+                className="border-destructive text-destructive mt-4 border-l-2 bg-white/70 px-3 py-2 text-sm"
+                role="status"
+              >
                 Adjust or remove unavailable items before checkout.
               </p>
             )}
 
             <Link
               href="/checkout"
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+              className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Continue to checkout <ArrowRight className="size-4" aria-hidden="true" />
             </Link>

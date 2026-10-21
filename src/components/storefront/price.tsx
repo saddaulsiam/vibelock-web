@@ -28,7 +28,7 @@ export function Price({
     <div className={cn("flex flex-wrap items-baseline gap-2", className)} {...props}>
       <span className="font-bold tracking-tight">{formatPrice(amount)}</span>
       {originalAmount && originalAmount > amount && (
-        <span className="text-sm text-muted-foreground line-through">
+        <span className="text-muted-foreground text-sm line-through">
           {formatPrice(originalAmount)}
         </span>
       )}

@@ -53,12 +53,13 @@ export default async function ProfilePage() {
     <div className="flex flex-col gap-6">
       {/* 1. Personal & Contact Info Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-5 mb-6">
-          <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+        <div className="mb-6 border-b border-[#101114]/10 pb-5">
+          <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
             Personal & Contact Info
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-            Manage your personal profile, streetwear avatar, contact details, and display preferences.
+          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
+            Manage your personal profile, streetwear avatar, contact details, and display
+            preferences.
           </p>
         </div>
 

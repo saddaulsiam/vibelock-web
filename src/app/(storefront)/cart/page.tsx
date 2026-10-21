@@ -17,7 +17,7 @@ export default async function CartPage() {
   const cart = await getCart();
 
   return (
-    <Section className="py-8 bg-background min-h-screen">
+    <Section className="bg-background min-h-screen py-8">
       <Container>
         <CartPageContent cart={cart} />
       </Container>

@@ -55,19 +55,19 @@ export default async function ProductsPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white pb-12 pt-6 sm:pb-16 sm:pt-8">
+    <Section className="min-h-screen bg-white pt-6 pb-12 sm:pt-8 sm:pb-16">
       <Container>
         <header className="mb-6 sm:mb-8">
-          <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
+          <p className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">
             VibeLock <span className="px-1 text-[#00D9FF]">/</span> {hasSearch ? "Search" : "Shop"}
           </p>
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div className="min-w-0">
-              <h1 className="break-words text-3xl font-semibold tracking-[-0.045em] text-[#101114] sm:text-4xl lg:text-5xl">
+              <h1 className="text-3xl font-semibold tracking-[-0.045em] break-words text-[#101114] sm:text-4xl lg:text-5xl">
                 {hasSearch ? "Search results" : "All products"}
               </h1>
               {hasSearch ? (
-                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-[#101114]/60 sm:text-base">
+                <p className="mt-2 max-w-2xl text-sm leading-6 break-words text-[#101114]/60 sm:text-base">
                   Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
                 </p>
               ) : (
@@ -84,7 +84,7 @@ export default async function ProductsPage({
           {hasSearch ? (
             <Link
               href={clearSearchHref}
-              className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               Clear search
             </Link>
@@ -100,7 +100,7 @@ export default async function ProductsPage({
           <div className="min-w-0 flex-1">
             <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">
               <ProductFilters options={filterOptions} isMobile />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "item" : "items"}
               </span>
             </div>

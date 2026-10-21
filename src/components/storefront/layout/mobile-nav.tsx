@@ -32,12 +32,15 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         aria-label="Open navigation menu"
-        className="inline-flex size-10 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] xl:hidden"
+        className="inline-flex size-10 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none xl:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-[min(88vw,22rem)] overflow-y-auto border-white/10 bg-[#0C0D0E] p-6">
-        <SheetHeader className="border-b border-white/10 px-0 pb-5 pt-1">
+      <SheetContent
+        side="left"
+        className="w-[min(88vw,22rem)] overflow-y-auto border-white/10 bg-[#0C0D0E] p-6"
+      >
+        <SheetHeader className="border-b border-white/10 px-0 pt-1 pb-5">
           <SheetTitle className="text-left">
             <Image
               src="/images/vibelock-logo-white.png"
@@ -53,19 +56,19 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
           <Link
             href="/"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold uppercase tracking-wider text-[#00D9FF]"
+            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#00D9FF] uppercase"
           >
             Home
           </Link>
           <Link
             href="/products"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8]/80 hover:text-white"
+            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
           >
             Shop All
           </Link>
           <div className="border-b border-white/10 py-3">
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-[#F3F0E8]/40">
+            <span className="text-[11px] font-semibold tracking-widest text-[#F3F0E8]/40 uppercase">
               Categories
             </span>
             <div className="mt-2.5 flex flex-col gap-2 pl-2">
@@ -102,21 +105,21 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
           <Link
             href="/about"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8]/80 hover:text-white"
+            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
           >
             About
           </Link>
           <Link
             href="/contact"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8]/80 hover:text-white"
+            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
           >
             Contact
           </Link>
           <Link
             href="/wishlist"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8]/80 hover:text-white"
+            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
           >
             Wishlist
           </Link>
@@ -126,7 +129,7 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
           <Link
             href={isAuthenticated ? "/account" : "/login"}
             onClick={closeNav}
-            className="inline-flex min-h-10 items-center justify-center border border-white/15 px-4 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8] transition-colors hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="inline-flex min-h-10 items-center justify-center border border-white/15 px-4 text-xs font-semibold tracking-wider text-[#F3F0E8] uppercase transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             {isAuthenticated ? "My Account" : "Sign In"}
           </Link>
@@ -134,7 +137,7 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
             <Link
               href="/register"
               onClick={closeNav}
-              className="inline-flex min-h-10 items-center justify-center bg-[#00D9FF] px-4 text-xs font-semibold uppercase tracking-wider text-[#101114] transition-colors hover:bg-[#00D9FF]/90"
+              className="inline-flex min-h-10 items-center justify-center bg-[#00D9FF] px-4 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-[#00D9FF]/90"
             >
               Create Account
             </Link>

@@ -19,8 +19,10 @@ export default function AdminDashboardError({
     <section className="flex min-h-[50vh] items-center justify-center">
       <div className="w-full max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10">
         <AlertCircle className="mx-auto mb-5 size-8 text-[#101114]" aria-hidden="true" />
-        <h2 className="text-2xl font-semibold tracking-tight text-[#101114]">Dashboard unavailable</h2>
-        <p className="mt-3 text-sm leading-6 text-muted-foreground">
+        <h2 className="text-2xl font-semibold tracking-tight text-[#101114]">
+          Dashboard unavailable
+        </h2>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">
           Dashboard data could not be loaded. Please try again.
         </p>
         <Button

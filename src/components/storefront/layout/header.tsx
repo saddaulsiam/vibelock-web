@@ -21,7 +21,7 @@ export async function Header() {
             <MobileNav isAuthenticated={Boolean(user)} />
             <Link
               href="/"
-              className="flex items-center transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="flex items-center transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
               aria-label="VibeLock Home"
             >
               <Image
@@ -38,7 +38,7 @@ export async function Header() {
           {/* Center: Desktop Navigation */}
           <nav
             aria-label="Main navigation"
-            className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-wider text-[#F3F0E8] xl:flex 2xl:gap-8"
+            className="hidden items-center gap-6 text-xs font-semibold tracking-wider text-[#F3F0E8] uppercase xl:flex 2xl:gap-8"
           >
             <Link
               href="/"
@@ -57,7 +57,7 @@ export async function Header() {
                 <span>SHOP</span>
                 <ChevronDown className="size-3 text-[#F3F0E8]/60 transition-transform group-hover:rotate-180" />
               </Link>
-              <div className="invisible absolute left-0 top-full z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
+              <div className="invisible absolute top-full left-0 z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
                 <Link
                   href="/products"
                   className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
@@ -82,7 +82,7 @@ export async function Header() {
                 <span>CATEGORIES</span>
                 <ChevronDown className="size-3 text-[#F3F0E8]/60 transition-transform group-hover:rotate-180" />
               </Link>
-              <div className="invisible absolute left-0 top-full z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
+              <div className="invisible absolute top-full left-0 z-50 min-w-44 border border-white/10 bg-[#101114] p-1.5 opacity-0 shadow-2xl transition-all duration-150 group-hover:visible group-hover:opacity-100">
                 <Link
                   href="/category/t-shirts"
                   className="block px-3 py-2 text-xs font-medium text-[#F3F0E8]/80 transition-colors hover:bg-white/5 hover:text-white"
@@ -144,7 +144,7 @@ export async function Header() {
                 name="q"
                 placeholder="Search for products..."
                 aria-label="Search for products"
-                className="h-9 w-48 rounded-full border border-white/10 bg-[#1A1D21] pl-9 pr-4 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40 focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF] xl:w-56"
+                className="h-9 w-48 rounded-full border border-white/10 bg-[#1A1D21] pr-4 pl-9 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40 focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF] xl:w-56"
               />
             </form>
 
@@ -156,14 +156,14 @@ export async function Header() {
               >
                 <Search className="size-5" />
               </summary>
-              <div className="absolute right-0 top-full z-50 mt-2 w-72 border border-white/10 bg-[#101114] p-3 shadow-2xl">
+              <div className="absolute top-full right-0 z-50 mt-2 w-72 border border-white/10 bg-[#101114] p-3 shadow-2xl">
                 <form action="/products" method="get" className="relative flex items-center">
                   <Search className="pointer-events-none absolute left-3 size-4 text-[#F3F0E8]/40" />
                   <Input
                     type="search"
                     name="q"
                     placeholder="Search for products..."
-                    className="h-10 rounded-full border-white/10 bg-[#1A1D21] pl-9 pr-3 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40"
+                    className="h-10 rounded-full border-white/10 bg-[#1A1D21] pr-3 pl-9 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40"
                   />
                 </form>
               </div>
@@ -194,7 +194,7 @@ export async function Header() {
               className="relative inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
             >
               <ShoppingBag className="size-5" aria-hidden="true" />
-              <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[10px] font-bold text-[#101114]">
+              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[10px] font-bold text-[#101114]">
                 {itemCount}
               </span>
             </Link>

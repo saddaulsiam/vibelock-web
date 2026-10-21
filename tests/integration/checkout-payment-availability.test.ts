@@ -62,8 +62,16 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
   describe("1. Storefront CheckoutForm UI Component Rendering", () => {
     test("renders both COD and Online radios when both are active", () => {
       const availableMethods = [
-        { value: "COD" as const, title: "Cash on delivery", detail: "Pay when your order arrives." },
-        { value: "ONLINE" as const, title: "Online payment", detail: "Pay securely via cards and banking." },
+        {
+          value: "COD" as const,
+          title: "Cash on delivery",
+          detail: "Pay when your order arrives.",
+        },
+        {
+          value: "ONLINE" as const,
+          title: "Online payment",
+          detail: "Pay securely via cards and banking.",
+        },
       ];
 
       const html = renderToString(
@@ -79,12 +87,18 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).toContain("Cash on delivery");
       expect(html).toContain('value="ONLINE"');
       expect(html).toContain("Online payment");
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
 
     test("renders COD only when Online is disabled", () => {
       const availableMethods = [
-        { value: "COD" as const, title: "Cash on delivery", detail: "Pay when your order arrives." },
+        {
+          value: "COD" as const,
+          title: "Cash on delivery",
+          detail: "Pay when your order arrives.",
+        },
       ];
 
       const html = renderToString(
@@ -99,12 +113,18 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).toContain('value="COD"');
       expect(html).toContain("Cash on delivery");
       expect(html).not.toContain('value="ONLINE"');
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
 
     test("renders Online only when COD is disabled", () => {
       const availableMethods = [
-        { value: "ONLINE" as const, title: "Online payment", detail: "Pay securely via cards and banking." },
+        {
+          value: "ONLINE" as const,
+          title: "Online payment",
+          detail: "Pay securely via cards and banking.",
+        },
       ];
 
       const html = renderToString(
@@ -120,13 +140,23 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).toContain("Online payment");
       expect(html).not.toContain('value="COD"');
       expect(html).not.toContain("Cash on delivery");
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
 
     test("renders COD, Online, and bKash radios when all are active", () => {
       const availableMethods = [
-        { value: "COD" as const, title: "Cash on delivery", detail: "Pay when your order arrives." },
-        { value: "ONLINE" as const, title: "Online payment", detail: "Pay securely via cards and banking." },
+        {
+          value: "COD" as const,
+          title: "Cash on delivery",
+          detail: "Pay when your order arrives.",
+        },
+        {
+          value: "ONLINE" as const,
+          title: "Online payment",
+          detail: "Pay securely via cards and banking.",
+        },
         { value: "BKASH" as const, title: "bKash", detail: "Pay directly with your bKash wallet." },
       ];
 
@@ -146,7 +176,9 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).toContain('value="BKASH"');
       expect(html).toContain("bKash");
       expect(html).toContain("Pay directly with your bKash wallet.");
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
 
     test("renders bKash only when COD and Online are disabled", () => {
@@ -167,7 +199,9 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       expect(html).toContain("bKash");
       expect(html).not.toContain('value="COD"');
       expect(html).not.toContain('value="ONLINE"');
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
 
     test("explicit empty array: shows unavailable message, hides all radios, and disables submission", () => {
@@ -213,7 +247,9 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
       // Falls back to standard COD and Online options
       expect(html).toContain('value="COD"');
       expect(html).toContain('value="ONLINE"');
-      expect(html).not.toContain("Checkout is currently unavailable as no payment methods are active");
+      expect(html).not.toContain(
+        "Checkout is currently unavailable as no payment methods are active"
+      );
     });
   });
 });

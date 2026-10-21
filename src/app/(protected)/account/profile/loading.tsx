@@ -4,8 +4,8 @@ export default function ProfileLoading() {
   return (
     <div className="flex flex-col gap-6" role="status" aria-label="Loading profile">
       {/* 1. Personal & Contact Info Skeleton */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-8">
-        <div className="border-b border-[#101114]/10 pb-5 space-y-1.5">
+      <div className="space-y-8 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <div className="space-y-1.5 border-b border-[#101114]/10 pb-5">
           <Skeleton className="h-6 w-48 bg-[#101114]/10" />
           <Skeleton className="h-3.5 w-72 bg-[#101114]/10" />
         </div>
@@ -44,8 +44,8 @@ export default function ProfileLoading() {
       </div>
 
       {/* 2. Notification Preferences Skeleton */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-4">
-        <div className="border-b border-[#101114]/10 pb-5 space-y-1.5">
+      <div className="space-y-4 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <div className="space-y-1.5 border-b border-[#101114]/10 pb-5">
           <Skeleton className="h-6 w-52 bg-[#101114]/10" />
           <Skeleton className="h-3.5 w-80 bg-[#101114]/10" />
         </div>
@@ -70,8 +70,8 @@ export default function ProfileLoading() {
       </div>
 
       {/* 3. Account Membership Skeleton */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-5">
-        <div className="border-b border-[#101114]/10 pb-5 space-y-1.5">
+      <div className="space-y-5 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
+        <div className="space-y-1.5 border-b border-[#101114]/10 pb-5">
           <Skeleton className="h-6 w-60 bg-[#101114]/10" />
           <Skeleton className="h-3.5 w-96 bg-[#101114]/10" />
         </div>

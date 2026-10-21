@@ -79,7 +79,7 @@ export default async function CategoryPage({
 
         <header className="mb-6 sm:mb-8">
           <nav aria-label="Breadcrumb" className="mb-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#101114]/55">
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">
               VibeLock <span className="px-1 text-[#00D9FF]">/</span> Category
             </p>
           </nav>
@@ -106,7 +106,7 @@ export default async function CategoryPage({
           <div className="min-w-0 flex-1">
             <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">
               <ProductFilters options={filterOptions} isMobile lockedCategorySlug={slug} />
-              <span className="text-sm text-muted-foreground">
+              <span className="text-muted-foreground text-sm">
                 {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "item" : "items"}
               </span>
             </div>

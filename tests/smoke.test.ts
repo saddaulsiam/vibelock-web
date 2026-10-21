@@ -15,7 +15,7 @@ test("Extended smoke test: Core domain models", async () => {
       email: `smoke-${ts}@test.local`,
       name: "Smoke Test User",
       role: "CUSTOMER",
-    }
+    },
   });
   expect(user.id).toBeDefined();
 
@@ -24,7 +24,7 @@ test("Extended smoke test: Core domain models", async () => {
     data: {
       name: `Smoke Category ${ts}`,
       slug: `smoke-category-${ts}`,
-    }
+    },
   });
 
   // 3. Create Product & Variant
@@ -40,11 +40,11 @@ test("Extended smoke test: Core domain models", async () => {
           size: "M",
           color: "BLACK",
           costPrice: 500,
-          sellingPrice: 1000
-        }
-      }
+          sellingPrice: 1000,
+        },
+      },
     },
-    include: { variants: true }
+    include: { variants: true },
   });
   const variant = product.variants[0];
 
@@ -55,8 +55,8 @@ test("Extended smoke test: Core domain models", async () => {
       quantity: 50,
       type: "RESTOCK",
       referenceId: `REF-${ts}`,
-      notes: "Smoke test stock"
-    }
+      notes: "Smoke test stock",
+    },
   });
 
   // 5. Create Cart
@@ -66,10 +66,10 @@ test("Extended smoke test: Core domain models", async () => {
       items: {
         create: {
           variantId: variant.id,
-          quantity: 2
-        }
-      }
-    }
+          quantity: 2,
+        },
+      },
+    },
   });
 
   // 6. Create Order
@@ -105,10 +105,10 @@ test("Extended smoke test: Core domain models", async () => {
           discountAmount: 0,
           taxAmount: 0,
           lineTotal: 2000,
-          quantity: 2
-        }
-      }
-    }
+          quantity: 2,
+        },
+      },
+    },
   });
   expect(order.id).toBeDefined();
 

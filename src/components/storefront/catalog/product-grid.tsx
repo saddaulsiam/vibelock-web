@@ -8,27 +8,31 @@ interface ProductGridProps {
   clearSearchHref?: string;
 }
 
-export function ProductGrid({ products, searchTerm, clearSearchHref = "/products" }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  searchTerm,
+  clearSearchHref = "/products",
+}: ProductGridProps) {
   if (products.length === 0) {
     if (searchTerm) {
       return (
-        <div className="border border-dashed border-border px-5 py-14 text-center sm:py-20">
-          <h2 className="break-words text-xl font-semibold tracking-tight">
+        <div className="border-border border border-dashed px-5 py-14 text-center sm:py-20">
+          <h2 className="text-xl font-semibold tracking-tight break-words">
             No products matched “{searchTerm}”
           </h2>
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+          <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">
             Try a different search term, or clear your search to browse the catalog.
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href={clearSearchHref}
-              className="inline-flex min-h-11 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Clear search
             </Link>
             <Link
               href="/products"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               Browse all products
             </Link>
@@ -38,9 +42,9 @@ export function ProductGrid({ products, searchTerm, clearSearchHref = "/products
     }
 
     return (
-      <div className="border border-dashed border-border px-5 py-20 text-center">
+      <div className="border-border border border-dashed px-5 py-20 text-center">
         <h3 className="mb-2 text-xl font-semibold tracking-tight">No products found</h3>
-        <p className="text-sm text-muted-foreground">Try adjusting your filters or search.</p>
+        <p className="text-muted-foreground text-sm">Try adjusting your filters or search.</p>
       </div>
     );
   }

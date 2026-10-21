@@ -1,10 +1,6 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import prisma from "../../src/lib/prisma/client";
-import {
-  createTestProduct,
-  createTestVariant,
-  createTestInventory,
-} from "../factories";
+import { createTestProduct, createTestVariant, createTestInventory } from "../factories";
 import { createTestUser } from "../factories/user";
 import { addToCart } from "../../src/lib/cart/mutations";
 import { createOrderAction } from "../../src/lib/checkout/actions";

@@ -25,7 +25,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
 
   if (!selectedImage) {
     return (
-      <div className="flex aspect-4/4 items-center justify-center bg-[#F3F0E8] text-muted-foreground sm:aspect-4/4">
+      <div className="text-muted-foreground flex aspect-4/4 items-center justify-center bg-[#F3F0E8] sm:aspect-4/4">
         <div className="flex flex-col items-center gap-3 text-center">
           <ImageOff className="size-8" aria-hidden="true" />
           <span className="text-sm">No product images available</span>
@@ -40,7 +40,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
     <div className="flex min-w-0 flex-col gap-3 sm:gap-4 lg:flex-row">
       {images.length > 1 && (
         <div
-          className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[38rem] lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0"
+          className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[38rem] lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:pb-0"
           aria-label="Product image thumbnails"
         >
           {images.map((image, index) => {
@@ -52,7 +52,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                 key={`${image.url}-${index}`}
                 type="button"
                 onClick={() => setSelectedIndex(index)}
-                className={`relative size-[4.5rem] shrink-0 overflow-hidden border bg-[#F3F0E8] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:size-20 ${
+                className={`relative size-[4.5rem] shrink-0 overflow-hidden border bg-[#F3F0E8] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:size-20 ${
                   selected ? "border-[#101114]" : "border-transparent hover:border-[#101114]/35"
                 }`}
                 aria-label={`View image ${index + 1} of ${images.length}`}
@@ -64,11 +64,11 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                     alt={image.alt || `${productName} thumbnail ${index + 1}`}
                     fill
                     sizes="80px"
-                    className="object-center object-contain"
+                    className="object-contain object-center"
                     onError={() => markImageFailed(image.url)}
                   />
                 ) : (
-                  <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  <span className="text-muted-foreground absolute inset-0 flex items-center justify-center">
                     <ImageOff className="size-4" aria-hidden="true" />
                   </span>
                 )}
@@ -85,12 +85,12 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
             alt={selectedImage.alt || productName}
             fill
             priority
-            className="object-center object-contain"
+            className="object-contain object-center"
             sizes="(max-width: 1023px) 100vw, 55vw"
             onError={() => markImageFailed(selectedImage.url)}
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+          <div className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-3">
             <ImageOff className="size-9" aria-hidden="true" />
             <span className="text-sm">Image unavailable</span>
           </div>

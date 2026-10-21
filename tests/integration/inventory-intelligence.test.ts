@@ -5,11 +5,7 @@ import {
   getAdminInventoryIntelligence,
   getAdminInventoryIntelligenceForExport,
 } from "../../src/lib/admin/inventory-intelligence-queries";
-import {
-  GET,
-  csvCell,
-  csv,
-} from "../../src/app/api/admin/inventory-intelligence/export/route";
+import { GET, csvCell, csv } from "../../src/app/api/admin/inventory-intelligence/export/route";
 import { NextRequest } from "next/server";
 
 let mockSession: unknown = null;

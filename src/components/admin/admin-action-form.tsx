@@ -6,19 +6,27 @@ import type { AdminActionState } from "@/lib/admin/catalog-actions";
 
 const initialState: AdminActionState = { error: null };
 
-function SubmitButton({ label, pendingLabel, destructive = false }: { label: string; pendingLabel?: string; destructive?: boolean }) {
+function SubmitButton({
+  label,
+  pendingLabel,
+  destructive = false,
+}: {
+  label: string;
+  pendingLabel?: string;
+  destructive?: boolean;
+}) {
   const { pending } = useFormStatus();
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`inline-flex min-h-10 items-center justify-center border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-wait disabled:opacity-60 ${
+      className={`inline-flex min-h-10 items-center justify-center border px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-wait disabled:opacity-60 ${
         destructive
           ? "border-red-300 text-red-700 hover:bg-red-50"
           : "border-[#101114] bg-[#101114] text-white hover:bg-[#101114]/85"
       }`}
     >
-      {pending ? pendingLabel ?? "Saving…" : label}
+      {pending ? (pendingLabel ?? "Saving…") : label}
     </button>
   );
 }
@@ -36,8 +44,19 @@ export function AdminSaveForm({
   return (
     <form action={formAction} className="space-y-5">
       {children}
-      {state.error ? <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p> : null}
-      {state.message ? <p role="status" className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{state.message}</p> : null}
+      {state.error ? (
+        <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          {state.error}
+        </p>
+      ) : null}
+      {state.message ? (
+        <p
+          role="status"
+          className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800"
+        >
+          {state.message}
+        </p>
+      ) : null}
       <SubmitButton label={submitLabel} />
     </form>
   );
@@ -67,8 +86,16 @@ export function AdminMutationForm({
     >
       <input type="hidden" name="id" value={id} />
       <SubmitButton label={label} destructive={destructive} />
-      {state.error ? <p role="alert" className="max-w-56 text-xs leading-5 text-red-700">{state.error}</p> : null}
-      {state.message ? <p role="status" className="max-w-56 text-xs leading-5 text-emerald-700">{state.message}</p> : null}
+      {state.error ? (
+        <p role="alert" className="max-w-56 text-xs leading-5 text-red-700">
+          {state.error}
+        </p>
+      ) : null}
+      {state.message ? (
+        <p role="status" className="max-w-56 text-xs leading-5 text-emerald-700">
+          {state.message}
+        </p>
+      ) : null}
     </form>
   );
 }

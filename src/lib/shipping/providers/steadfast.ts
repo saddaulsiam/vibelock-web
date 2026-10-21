@@ -32,9 +32,7 @@ const statusMap: Record<string, ShipmentStatus> = {
 };
 
 function record(value: unknown): JsonRecord | null {
-  return value && typeof value === "object" && !Array.isArray(value)
-    ? (value as JsonRecord)
-    : null;
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as JsonRecord) : null;
 }
 
 function nonEmptyString(value: unknown) {
@@ -104,7 +102,13 @@ export class SteadfastCourierProvider implements ShippingProvider {
         invoice: request.orderNumber,
         recipient_name: request.recipientName,
         recipient_phone: request.recipientPhone,
-        recipient_address: [request.street, request.city, request.state, request.zip, request.country]
+        recipient_address: [
+          request.street,
+          request.city,
+          request.state,
+          request.zip,
+          request.country,
+        ]
           .filter(Boolean)
           .join(", "),
         cod_amount: request.codAmount ?? 0,
@@ -151,6 +155,9 @@ export class SteadfastCourierProvider implements ShippingProvider {
 
   async cancelShipment(_request: CancelShipmentRequest): Promise<CancelShipmentResponse> {
     void _request;
-    return { success: false, error: "Steadfast cancellation is not supported by the verified API contract." };
+    return {
+      success: false,
+      error: "Steadfast cancellation is not supported by the verified API contract.",
+    };
   }
 }

@@ -109,10 +109,11 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
           deliveredAt: order.shipment.deliveredAt,
         }
       : null,
-    history: order.history?.map((entry) => ({
-      status: entry.status,
-      notes: entry.notes,
-      createdAt: entry.createdAt,
-    })) || [],
+    history:
+      order.history?.map((entry) => ({
+        status: entry.status,
+        notes: entry.notes,
+        createdAt: entry.createdAt,
+      })) || [],
   };
 }

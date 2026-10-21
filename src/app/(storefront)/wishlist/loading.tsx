@@ -22,7 +22,7 @@ export default function WishlistLoading() {
         </div>
 
         {/* Wishlist Grid Skeleton */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
           {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
             <div key={i} className="flex flex-col space-y-3">
               <Skeleton className="aspect-3/4 w-full rounded-2xl bg-[#101114]/10" />

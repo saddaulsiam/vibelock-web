@@ -9,9 +9,14 @@ import prisma from "@/lib/prisma/client";
 
 const adjustmentSchema = z.object({
   variantId: z.string().uuid(),
-  quantity: z.coerce.number().int().min(-100000).max(100000).refine((value) => value !== 0, {
-    message: "Adjustment quantity cannot be zero.",
-  }),
+  quantity: z.coerce
+    .number()
+    .int()
+    .min(-100000)
+    .max(100000)
+    .refine((value) => value !== 0, {
+      message: "Adjustment quantity cannot be zero.",
+    }),
   reason: z.string().trim().min(1, "A reason is required.").max(1000),
 });
 

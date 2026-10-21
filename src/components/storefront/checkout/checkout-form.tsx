@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation";
 import { ImageOff, LoaderCircle, Tag } from "lucide-react";
 import { toast } from "sonner";
 import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
-import { createOrderAction, getShippingMethodsAction, validateCouponAction } from "@/lib/checkout/actions";
+import {
+  createOrderAction,
+  getShippingMethodsAction,
+  validateCouponAction,
+} from "@/lib/checkout/actions";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkout/validation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,7 +89,7 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <span className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+          <span className="text-muted-foreground absolute inset-0 flex items-center justify-center">
             <ImageOff className="size-4" aria-hidden="true" />
             <span className="sr-only">Image unavailable</span>
           </span>
@@ -93,12 +97,14 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
       </div>
 
       <div className="min-w-0">
-        <h3 className="break-words text-sm font-semibold leading-5 text-[#101114]">{item.productName}</h3>
-        <p className="mt-1 text-xs leading-5 text-muted-foreground">
+        <h3 className="text-sm leading-5 font-semibold break-words text-[#101114]">
+          {item.productName}
+        </h3>
+        <p className="text-muted-foreground mt-1 text-xs leading-5">
           {[item.variant.size, item.variant.color].filter(Boolean).join(" · ") || "Standard option"}
           {" · "}Qty {item.quantity}
         </p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-xs">
           {formatPrice(item.variant.effectivePrice)} each
           {item.variant.discountPrice !== null && (
             <span className="ml-2 line-through">{formatPrice(item.variant.sellingPrice)}</span>
@@ -106,7 +112,9 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
         </p>
       </div>
 
-      <span className="text-right text-sm font-semibold text-[#101114]">{formatPrice(item.lineTotal)}</span>
+      <span className="text-right text-sm font-semibold text-[#101114]">
+        {formatPrice(item.lineTotal)}
+      </span>
     </li>
   );
 }
@@ -126,9 +134,13 @@ export function CheckoutForm({
     availablePaymentMethods !== undefined
       ? availablePaymentMethods
       : ([
-        { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
-        { value: "ONLINE", title: "Online payment", detail: "Continue to the existing online payment flow." },
-      ] as const);
+          { value: "COD", title: "Cash on delivery", detail: "Pay when your order arrives." },
+          {
+            value: "ONLINE",
+            title: "Online payment",
+            detail: "Continue to the existing online payment flow.",
+          },
+        ] as const);
 
   const initialPaymentMethod = paymentOptions[0]?.value ?? "";
 
@@ -272,7 +284,8 @@ export function CheckoutForm({
 
     if (!selectedShippingMethodId || shippingMethods.length === 0) {
       const msg =
-        shippingLookupError || "Please select an eligible shipping method before placing your order.";
+        shippingLookupError ||
+        "Please select an eligible shipping method before placing your order.";
       setErrors((prev) => ({ ...prev, shippingMethodId: msg }));
       setSubmissionError(msg);
       toast.error(msg);
@@ -282,7 +295,7 @@ export function CheckoutForm({
     const submissionData = {
       ...formData,
       shippingMethodId: selectedShippingMethodId || undefined,
-      couponCode: appliedCoupon?.code || (couponInput.trim() || undefined),
+      couponCode: appliedCoupon?.code || couponInput.trim() || undefined,
     };
 
     const parsed = checkoutSchema.safeParse(submissionData);
@@ -317,7 +330,7 @@ export function CheckoutForm({
         const safeMessage = getSafeCheckoutError(result.error);
         const displayMessage =
           result.correlationId &&
-            safeMessage === "We could not place your order. Please review your details and try again."
+          safeMessage === "We could not place your order. Please review your details and try again."
             ? `${safeMessage} (Ref: ${result.correlationId})`
             : safeMessage;
         setSubmissionError(displayMessage);
@@ -334,7 +347,7 @@ export function CheckoutForm({
 
   const fieldError = (field: keyof CheckoutFormValues) =>
     errors[field] ? (
-      <p id={`${field}-error`} className="text-sm text-destructive" role="alert">
+      <p id={`${field}-error`} className="text-destructive text-sm" role="alert">
         {errors[field]}
       </p>
     ) : null;
@@ -353,16 +366,26 @@ export function CheckoutForm({
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:gap-12">
       <form id="checkout-form" onSubmit={handleSubmit} noValidate className="min-w-0 space-y-8">
         {submissionError && (
-          <div className="border-l-2 border-destructive bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
+          <div
+            className="border-destructive bg-destructive/5 text-destructive border-l-2 px-4 py-3 text-sm"
+            role="alert"
+          >
             {submissionError}
           </div>
         )}
 
         <fieldset disabled={isPending} className="min-w-0 space-y-8 disabled:opacity-80">
           <section aria-labelledby="customer-information-heading" className="space-y-5">
-            <div className="border-b border-border pb-3">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">01 / Contact</p>
-              <h2 id="customer-information-heading" className="text-xl font-semibold tracking-tight">Customer information</h2>
+            <div className="border-border border-b pb-3">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-[0.18em] uppercase">
+                01 / Contact
+              </p>
+              <h2
+                id="customer-information-heading"
+                className="text-xl font-semibold tracking-tight"
+              >
+                Customer information
+              </h2>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -413,9 +436,16 @@ export function CheckoutForm({
           </section>
 
           <section aria-labelledby="shipping-information-heading" className="space-y-5">
-            <div className="border-b border-border pb-3">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">02 / Delivery</p>
-              <h2 id="shipping-information-heading" className="text-xl font-semibold tracking-tight">Shipping address</h2>
+            <div className="border-border border-b pb-3">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-[0.18em] uppercase">
+                02 / Delivery
+              </p>
+              <h2
+                id="shipping-information-heading"
+                className="text-xl font-semibold tracking-tight"
+              >
+                Shipping address
+              </h2>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -448,7 +478,9 @@ export function CheckoutForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shippingState">State / area <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                <Label htmlFor="shippingState">
+                  State / area <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
                 <Input
                   id="shippingState"
                   autoComplete="address-level1"
@@ -462,7 +494,10 @@ export function CheckoutForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="shippingZip">Postal / ZIP code <span className="font-normal text-muted-foreground">(optional)</span></Label>
+                <Label htmlFor="shippingZip">
+                  Postal / ZIP code{" "}
+                  <span className="text-muted-foreground font-normal">(optional)</span>
+                </Label>
                 <Input
                   id="shippingZip"
                   autoComplete="postal-code"
@@ -493,20 +528,23 @@ export function CheckoutForm({
             <div className="space-y-3 pt-2">
               <Label className="text-sm font-semibold">Shipping method</Label>
               {isLoadingShipping && (
-                <div className="flex items-center gap-2 rounded-sm border border-border bg-[#F3F0E8]/40 p-3 text-sm text-muted-foreground">
+                <div className="border-border text-muted-foreground flex items-center gap-2 rounded-sm border bg-[#F3F0E8]/40 p-3 text-sm">
                   <LoaderCircle className="size-4 animate-spin text-[#101114]" />
                   <span>Calculating shipping options for your address...</span>
                 </div>
               )}
 
               {!isLoadingShipping && shippingLookupError && (
-                <div className="rounded-sm border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive" role="alert">
+                <div
+                  className="border-destructive/20 bg-destructive/5 text-destructive rounded-sm border p-3 text-sm"
+                  role="alert"
+                >
                   {shippingLookupError}
                 </div>
               )}
 
               {!isLoadingShipping && !shippingLookupError && shippingMethods.length === 0 && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Enter your delivery city and country to view available shipping options and rates.
                 </p>
               )}
@@ -518,10 +556,11 @@ export function CheckoutForm({
                     return (
                       <label
                         key={method.id}
-                        className={`flex cursor-pointer items-center justify-between border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${isSelected
+                        className={`flex cursor-pointer items-center justify-between border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
+                          isSelected
                             ? "border-[#101114] bg-[#F3F0E8]/60"
                             : "border-border bg-white hover:border-[#101114]/40"
-                          }`}
+                        }`}
                       >
                         <div className="flex items-center gap-3">
                           <input
@@ -539,7 +578,7 @@ export function CheckoutForm({
                             <span className="block text-sm font-semibold text-[#101114]">
                               {method.name}
                             </span>
-                            <span className="block text-xs text-muted-foreground">
+                            <span className="text-muted-foreground block text-xs">
                               {method.zoneName}
                             </span>
                           </div>
@@ -557,16 +596,21 @@ export function CheckoutForm({
           </section>
 
           <section aria-labelledby="payment-method-heading" className="space-y-5">
-            <div className="border-b border-border pb-3">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">03 / Payment</p>
-              <h2 id="payment-method-heading" className="text-xl font-semibold tracking-tight">Payment method</h2>
+            <div className="border-border border-b pb-3">
+              <p className="text-muted-foreground mb-1 text-xs font-semibold tracking-[0.18em] uppercase">
+                03 / Payment
+              </p>
+              <h2 id="payment-method-heading" className="text-xl font-semibold tracking-tight">
+                Payment method
+              </h2>
             </div>
 
             <fieldset className="space-y-3">
               <legend className="sr-only">Choose a payment method</legend>
               {paymentOptions.length === 0 ? (
-                <div className="rounded border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 font-medium">
-                  Checkout is currently unavailable as no payment methods are active. Please contact support.
+                <div className="rounded border border-amber-300 bg-amber-50 p-4 text-sm font-medium text-amber-900">
+                  Checkout is currently unavailable as no payment methods are active. Please contact
+                  support.
                 </div>
               ) : (
                 paymentOptions.map((method) => {
@@ -574,8 +618,11 @@ export function CheckoutForm({
                   return (
                     <label
                       key={method.value}
-                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${selected ? "border-[#101114] bg-[#F3F0E8]/60" : "border-border bg-white hover:border-[#101114]/40"
-                        }`}
+                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
+                        selected
+                          ? "border-[#101114] bg-[#F3F0E8]/60"
+                          : "border-border bg-white hover:border-[#101114]/40"
+                      }`}
                     >
                       <input
                         type="radio"
@@ -586,8 +633,12 @@ export function CheckoutForm({
                         className="mt-1 size-4 accent-[#101114]"
                       />
                       <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-[#101114]">{method.title}</span>
-                        <span className="mt-1 block text-sm leading-5 text-muted-foreground">{method.detail}</span>
+                        <span className="block text-sm font-semibold text-[#101114]">
+                          {method.title}
+                        </span>
+                        <span className="text-muted-foreground mt-1 block text-sm leading-5">
+                          {method.detail}
+                        </span>
                       </span>
                     </label>
                   );
@@ -599,23 +650,33 @@ export function CheckoutForm({
         </fieldset>
       </form>
 
-      <aside aria-labelledby="checkout-summary-heading" className="lg:sticky lg:top-24 lg:self-start">
-        <div className="border border-border bg-[#F3F0E8]/55 p-5 sm:p-6">
+      <aside
+        aria-labelledby="checkout-summary-heading"
+        className="lg:sticky lg:top-24 lg:self-start"
+      >
+        <div className="border-border border bg-[#F3F0E8]/55 p-5 sm:p-6">
           <div className="border-b border-[#101114]/15 pb-4">
-            <h2 id="checkout-summary-heading" className="text-lg font-semibold tracking-tight">Order summary</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <h2 id="checkout-summary-heading" className="text-lg font-semibold tracking-tight">
+              Order summary
+            </h2>
+            <p className="text-muted-foreground mt-1 text-sm">
               {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"}
             </p>
           </div>
 
-          <ul className="max-h-[22rem] divide-y-0 overflow-y-auto pr-1" aria-label="Items in your order">
-            {cart.items.map((item) => <CheckoutSummaryItem key={item.id} item={item} />)}
+          <ul
+            className="max-h-[22rem] divide-y-0 overflow-y-auto pr-1"
+            aria-label="Items in your order"
+          >
+            {cart.items.map((item) => (
+              <CheckoutSummaryItem key={item.id} item={item} />
+            ))}
           </ul>
 
           {/* Promo / Coupon Input */}
           <div className="border-t border-[#101114]/15 py-4">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+              <span className="text-muted-foreground text-xs font-semibold tracking-[0.15em] uppercase">
                 Promo code
               </span>
               {appliedCoupon && (
@@ -629,10 +690,10 @@ export function CheckoutForm({
             {appliedCoupon ? (
               <div className="flex items-center justify-between gap-2 rounded-sm border border-emerald-200 bg-white p-2.5">
                 <div className="min-w-0">
-                  <p className="font-mono text-xs font-bold uppercase tracking-wider text-[#101114]">
+                  <p className="font-mono text-xs font-bold tracking-wider text-[#101114] uppercase">
                     {appliedCoupon.code}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {appliedCoupon.discountType === "PERCENTAGE"
                       ? `${appliedCoupon.discountValue}% off`
                       : `${formatPrice(appliedCoupon.discountValue)} off`}
@@ -643,7 +704,7 @@ export function CheckoutForm({
                   type="button"
                   onClick={handleRemoveCoupon}
                   disabled={isPending || isApplyingCoupon}
-                  className="px-2 py-1 text-xs font-medium text-destructive hover:underline disabled:opacity-50"
+                  className="text-destructive px-2 py-1 text-xs font-medium hover:underline disabled:opacity-50"
                   aria-label="Remove applied coupon"
                 >
                   Remove
@@ -662,13 +723,13 @@ export function CheckoutForm({
                     }}
                     disabled={isPending || isApplyingCoupon}
                     aria-label="Coupon code"
-                    className="h-9 rounded-sm border-[#101114]/20 bg-white font-mono text-xs uppercase tracking-wider"
+                    className="h-9 rounded-sm border-[#101114]/20 bg-white font-mono text-xs tracking-wider uppercase"
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={isPending || isApplyingCoupon || !couponInput.trim()}
-                    className="inline-flex h-9 items-center justify-center bg-[#101114] px-3 text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:bg-[#101114]/85 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex h-9 items-center justify-center bg-[#101114] px-3 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-[#101114]/85 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isApplyingCoupon ? (
                       <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
@@ -678,7 +739,7 @@ export function CheckoutForm({
                   </button>
                 </div>
                 {couponError && (
-                  <p className="text-xs text-destructive" role="alert">
+                  <p className="text-destructive text-xs" role="alert">
                     {couponError}
                   </p>
                 )}
@@ -699,9 +760,9 @@ export function CheckoutForm({
             )}
             {appliedCoupon && appliedCoupon.discountAmount > 0 && (
               <div className="flex items-center justify-between gap-3">
-                <dt className="flex items-center gap-1.5 text-muted-foreground">
+                <dt className="text-muted-foreground flex items-center gap-1.5">
                   <span>Coupon</span>
-                  <span className="rounded bg-[#101114]/5 px-1 py-0.5 font-mono text-xs uppercase text-[#101114]">
+                  <span className="rounded bg-[#101114]/5 px-1 py-0.5 font-mono text-xs text-[#101114] uppercase">
                     {appliedCoupon.code}
                   </span>
                 </dt>
@@ -718,7 +779,7 @@ export function CheckoutForm({
                 ) : selectedMethod ? (
                   <span>
                     {formatPrice(shippingCost)}
-                    <span className="block text-xs font-normal text-muted-foreground">
+                    <span className="text-muted-foreground block text-xs font-normal">
                       {selectedMethod.name}
                     </span>
                   </span>
@@ -731,9 +792,7 @@ export function CheckoutForm({
 
           <div className="flex items-center justify-between gap-3 border-t border-[#101114]/15 pt-4">
             <span className="font-semibold">Items total</span>
-            <span className="text-xl font-semibold tracking-tight">
-              {formatPrice(itemsTotal)}
-            </span>
+            <span className="text-xl font-semibold tracking-tight">{formatPrice(itemsTotal)}</span>
           </div>
           <div className="mt-4 flex items-start justify-between gap-3 text-sm">
             <span className="font-semibold">Grand total</span>
@@ -741,13 +800,13 @@ export function CheckoutForm({
               {grandTotal !== null ? (
                 formatPrice(grandTotal)
               ) : (
-                <span className="text-sm font-medium text-muted-foreground">
+                <span className="text-muted-foreground text-sm font-medium">
                   Calculated after shipping selection
                 </span>
               )}
             </span>
           </div>
-          <p className="mt-2 text-xs leading-5 text-muted-foreground">
+          <p className="text-muted-foreground mt-2 text-xs leading-5">
             {selectedMethod
               ? `Final order total includes ${formatPrice(shippingCost)} delivery fee.`
               : "Final order total includes the delivery charge calculated from your selected shipping method."}
@@ -763,7 +822,7 @@ export function CheckoutForm({
               shippingMethods.length === 0 ||
               paymentOptions.length === 0
             }
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold uppercase tracking-wide text-white transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
             {isPending
@@ -781,8 +840,9 @@ export function CheckoutForm({
               Orders cannot be placed right now because no payment methods are currently active.
             </p>
           ) : !selectedShippingMethodId && !isLoadingShipping ? (
-            <p className="mt-2 text-center text-xs text-muted-foreground">
-              Please enter your delivery city and select a shipping method above to place your order.
+            <p className="text-muted-foreground mt-2 text-center text-xs">
+              Please enter your delivery city and select a shipping method above to place your
+              order.
             </p>
           ) : null}
         </div>

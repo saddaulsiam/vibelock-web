@@ -99,11 +99,11 @@ export function ReturnForm({ orderNumber, items }: ReturnFormProps) {
           <CardTitle>Select Items to Return</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="divide-y border rounded-md">
+          <div className="divide-y rounded-md border">
             {items.map((item) => (
               <div
                 key={item.id}
-                className="p-4 flex flex-col sm:flex-row gap-4 items-center justify-between"
+                className="flex flex-col items-center justify-between gap-4 p-4 sm:flex-row"
               >
                 <div>
                   <p className="font-semibold">{item.productName}</p>
@@ -111,7 +111,7 @@ export function ReturnForm({ orderNumber, items }: ReturnFormProps) {
                     {item.sku} {item.size ? ` • Size: ${item.size}` : ""}{" "}
                     {item.color ? ` • Color: ${item.color}` : ""}
                   </p>
-                  <p className="text-sm font-medium mt-1">
+                  <p className="mt-1 text-sm font-medium">
                     <Price amount={item.unitPrice} />
                   </p>
                 </div>
@@ -157,11 +157,11 @@ export function ReturnForm({ orderNumber, items }: ReturnFormProps) {
             </Select>
           </div>
         </CardContent>
-        <CardFooter className="bg-zinc-50 border-t p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <CardFooter className="flex flex-col items-center justify-between gap-4 border-t bg-zinc-50 p-6 sm:flex-row">
           <div>
             <p className="text-sm text-zinc-500">Estimated Refund</p>
             <Price amount={totalEst} className="text-xl font-bold" />
-            <p className="text-xs text-zinc-400 mt-1">Shipping charges are non-refundable.</p>
+            <p className="mt-1 text-xs text-zinc-400">Shipping charges are non-refundable.</p>
           </div>
           <Button type="submit" size="lg" disabled={isSubmitting || totalEst === 0}>
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

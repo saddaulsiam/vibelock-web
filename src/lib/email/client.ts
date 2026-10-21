@@ -153,4 +153,3 @@ export async function sendNewsletterWelcomeEmail(email: string): Promise<boolean
     return false;
   }
 }
-

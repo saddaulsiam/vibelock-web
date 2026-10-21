@@ -14,22 +14,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <div className="flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <AdminMobileNavigation />
             <div className="min-w-0">
-              <p className="truncate text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+              <p className="text-muted-foreground truncate text-xs font-medium tracking-[0.16em] uppercase">
                 VibeLock / Admin
               </p>
-              <h1 className="truncate text-base font-semibold tracking-tight sm:text-lg">Dashboard</h1>
+              <h1 className="truncate text-base font-semibold tracking-tight sm:text-lg">
+                Dashboard
+              </h1>
             </div>
             <div className="ml-auto flex min-w-0 items-center gap-3 sm:gap-4">
               <div className="hidden min-w-0 text-right sm:block">
                 <p className="max-w-48 truncate text-sm font-medium">
                   {admin.name || admin.email || "Administrator"}
                 </p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-muted-foreground text-xs">Administrator</p>
               </div>
               <form action={logoutAction}>
                 <button
                   type="submit"
-                  className="inline-flex min-h-11 items-center border border-[#101114]/15 px-3 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:px-4"
+                  className="inline-flex min-h-11 items-center border border-[#101114]/15 px-3 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:px-4"
                 >
                   Sign out
                 </button>

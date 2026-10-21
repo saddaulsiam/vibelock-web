@@ -2,7 +2,7 @@
 
 ## 1. High-level architecture
 
-``` text
+```text
 Customer Browser
    ├── Storefront pages
    ├── Customer account
@@ -29,32 +29,32 @@ PostgreSQL
 
 ## 2. Architectural principles
 
--   Server-side authorization is mandatory; hiding UI is not
-    authorization.
--   Provider integrations are isolated behind service/provider
-    boundaries.
--   PostgreSQL is the authoritative persistence layer.
--   Inventory is ledger-based; reservations are separate from committed
-    stock movements.
--   Order/payment transitions are explicit and validated.
--   Important state changes are transactional and audited.
--   Provider callbacks are untrusted until independently verified.
--   Public pages expose published catalog data only.
--   Fail closed for sensitive operations when required configuration is
-    missing.
+- Server-side authorization is mandatory; hiding UI is not
+  authorization.
+- Provider integrations are isolated behind service/provider
+  boundaries.
+- PostgreSQL is the authoritative persistence layer.
+- Inventory is ledger-based; reservations are separate from committed
+  stock movements.
+- Order/payment transitions are explicit and validated.
+- Important state changes are transactional and audited.
+- Provider callbacks are untrusted until independently verified.
+- Public pages expose published catalog data only.
+- Fail closed for sensitive operations when required configuration is
+  missing.
 
 ## 3. Inventory accounting
 
--   Current stock is derived from the sum of inventory transaction
-    quantities.
--   Reserved stock is derived from active RESERVED reservations.
--   Available stock is current stock minus reserved stock.
--   Order creation and reservation are atomic.
--   Payment success commits a reservation idempotently.
--   Cancellation releases only eligible reservations; it must not
-    blindly alter stock.
--   Returns/restocks write positive RETURN transactions and must be
-    idempotent.
+- Current stock is derived from the sum of inventory transaction
+  quantities.
+- Reserved stock is derived from active RESERVED reservations.
+- Available stock is current stock minus reserved stock.
+- Order creation and reservation are atomic.
+- Payment success commits a reservation idempotently.
+- Cancellation releases only eligible reservations; it must not
+  blindly alter stock.
+- Returns/restocks write positive RETURN transactions and must be
+  idempotent.
 
 ## 4. Payment architecture
 
@@ -86,7 +86,7 @@ if the data is not modeled reliably.
 
 Preferred target:
 
-``` text
+```text
 Online Store ─┐
               ├── VibeLock backend/services ── PostgreSQL
 Physical POS ─┘

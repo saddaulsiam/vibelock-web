@@ -54,11 +54,11 @@ export function CartItemCard({ item }: CartItemCardProps) {
   const isUnavailable = !item.variant.available;
 
   return (
-    <article className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 border-b border-border py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5 sm:py-6">
+    <article className="border-border grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 border-b py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5 sm:py-6">
       <Link
         href={`/products/${item.productSlug}`}
         aria-label={`View ${item.productName}`}
-        className="relative aspect-[3/4] overflow-hidden bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2"
+        className="relative aspect-[3/4] overflow-hidden bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {item.productImage && !imageFailed ? (
           <Image
@@ -70,7 +70,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+          <span className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
             <ImageOff className="size-5" aria-hidden="true" />
             <span className="text-[10px]">Image unavailable</span>
           </span>
@@ -82,16 +82,16 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <div className="min-w-0">
             <Link
               href={`/products/${item.productSlug}`}
-              className="break-words text-base font-semibold tracking-tight text-[#101114] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="text-base font-semibold tracking-tight break-words text-[#101114] underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               {item.productName}
             </Link>
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
               {item.variant.size && <span>Size: {item.variant.size}</span>}
               {item.variant.color && <span>Color: {item.variant.color}</span>}
             </div>
             {(isInsufficient || isUnavailable) && (
-              <p className="mt-2 text-sm font-medium text-destructive" role="status">
+              <p className="text-destructive mt-2 text-sm font-medium" role="status">
                 {isInsufficient
                   ? item.availableQuantity > 0
                     ? `Only ${item.availableQuantity} available. Reduce the quantity to continue.`
@@ -102,13 +102,18 @@ export function CartItemCard({ item }: CartItemCardProps) {
           </div>
 
           <div className="flex shrink-0 flex-row items-baseline justify-between gap-4 sm:flex-col sm:items-end sm:gap-1">
-            <span className="text-base font-semibold text-[#101114]" aria-label={`Line total ${formatPrice(item.lineTotal)}`}>
+            <span
+              className="text-base font-semibold text-[#101114]"
+              aria-label={`Line total ${formatPrice(item.lineTotal)}`}
+            >
               {formatPrice(item.lineTotal)}
             </span>
             <div className="flex items-baseline gap-2 text-sm">
-              <span className="text-muted-foreground">{formatPrice(item.variant.effectivePrice)} each</span>
+              <span className="text-muted-foreground">
+                {formatPrice(item.variant.effectivePrice)} each
+              </span>
               {item.variant.discountPrice !== null && (
-                <span className="text-xs text-muted-foreground line-through">
+                <span className="text-muted-foreground text-xs line-through">
                   {formatPrice(item.variant.sellingPrice)}
                 </span>
               )}
@@ -117,18 +122,25 @@ export function CartItemCard({ item }: CartItemCardProps) {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex h-10 items-center border border-[#101114]/20" aria-label={`Quantity for ${item.productName}`}>
+          <div
+            className="flex h-10 items-center border border-[#101114]/20"
+            aria-label={`Quantity for ${item.productName}`}
+          >
             <button
               type="button"
               onClick={() => handleUpdateQuantity(item.quantity - 1)}
               disabled={item.quantity <= 1 || isPending}
               aria-label={`Decrease ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Minus className="size-4" aria-hidden="true" />
             </button>
             <span className="min-w-10 text-center text-sm font-medium" aria-live="polite">
-              {isPending ? <LoaderCircle className="mx-auto size-4 animate-spin" aria-label="Updating cart" /> : item.quantity}
+              {isPending ? (
+                <LoaderCircle className="mx-auto size-4 animate-spin" aria-label="Updating cart" />
+              ) : (
+                item.quantity
+              )}
             </span>
             <button
               type="button"
@@ -140,7 +152,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
                 isUnavailable
               }
               aria-label={`Increase ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus className="size-4" aria-hidden="true" />
             </button>
@@ -150,10 +162,14 @@ export function CartItemCard({ item }: CartItemCardProps) {
             type="button"
             onClick={handleRemove}
             disabled={isPending}
-            className="inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-muted-foreground hover:text-destructive inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             aria-label={`Remove ${item.productName} from cart`}
           >
-            {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : <Trash2 className="size-4" aria-hidden="true" />}
+            {isPending ? (
+              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
+            ) : (
+              <Trash2 className="size-4" aria-hidden="true" />
+            )}
             Remove
           </button>
         </div>

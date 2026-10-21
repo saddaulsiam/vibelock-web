@@ -27,12 +27,15 @@ export function DiscoveryPagination({ currentPage, totalPages }: PaginationProps
         <Link
           href={createPageUrl(currentPage - 1)}
           aria-label="Previous page"
-          className="inline-flex size-10 items-center justify-center rounded-sm border border-border transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
         </Link>
       ) : (
-        <span aria-hidden="true" className="inline-flex size-10 items-center justify-center rounded-sm border border-border text-muted-foreground/50">
+        <span
+          aria-hidden="true"
+          className="border-border text-muted-foreground/50 inline-flex size-10 items-center justify-center rounded-sm border"
+        >
           <ChevronLeft className="size-4" />
         </span>
       )}
@@ -45,12 +48,15 @@ export function DiscoveryPagination({ currentPage, totalPages }: PaginationProps
         <Link
           href={createPageUrl(currentPage + 1)}
           aria-label="Next page"
-          className="inline-flex size-10 items-center justify-center rounded-sm border border-border transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
         >
           <ChevronRight className="size-4" aria-hidden="true" />
         </Link>
       ) : (
-        <span aria-hidden="true" className="inline-flex size-10 items-center justify-center rounded-sm border border-border text-muted-foreground/50">
+        <span
+          aria-hidden="true"
+          className="border-border text-muted-foreground/50 inline-flex size-10 items-center justify-center rounded-sm border"
+        >
           <ChevronRight className="size-4" />
         </span>
       )}

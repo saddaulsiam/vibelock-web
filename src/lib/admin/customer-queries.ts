@@ -12,13 +12,7 @@ function normalizePage(page: number) {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-export async function getAdminCustomers({
-  search,
-  page = 1,
-}: {
-  search?: string;
-  page?: number;
-}) {
+export async function getAdminCustomers({ search, page = 1 }: { search?: string; page?: number }) {
   await requireRole("ADMIN");
 
   const normalizedPage = normalizePage(page);
@@ -69,9 +63,7 @@ export async function getAdminCustomers({
       })
     : [];
 
-  const totalsByUserId = new Map(
-    paidTotals.map((entry) => [entry.userId, entry._sum.total])
-  );
+  const totalsByUserId = new Map(paidTotals.map((entry) => [entry.userId, entry._sum.total]));
 
   return {
     customers: users.map((user) => ({
@@ -147,10 +139,7 @@ export async function getAdminCustomerById(id: string, page = 1) {
       prisma.order.count({
         where: {
           ...orderWhere,
-          OR: [
-            { status: { in: returnedStatuses } },
-            { paymentStatus: "REFUNDED" },
-          ],
+          OR: [{ status: { in: returnedStatuses } }, { paymentStatus: "REFUNDED" }],
         },
       }),
       prisma.order.findFirst({

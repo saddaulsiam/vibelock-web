@@ -105,39 +105,29 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
     test("redirects unauthenticated users to /login", async () => {
       mockSession = null;
 
-      await expect(
-        AdminSettingsLayout({ children: null })
-      ).rejects.toThrow("NEXT_REDIRECT:/login");
+      await expect(AdminSettingsLayout({ children: null })).rejects.toThrow("NEXT_REDIRECT:/login");
 
-      await expect(
-        AdminPaymentSettingsPage()
-      ).rejects.toThrow("NEXT_REDIRECT:/login");
+      await expect(AdminPaymentSettingsPage()).rejects.toThrow("NEXT_REDIRECT:/login");
     });
 
     test("redirects non-admin (CUSTOMER) users to /unauthorized", async () => {
       mockSession = { user: { id: "cust-1", role: "CUSTOMER" } };
 
-      await expect(
-        AdminSettingsLayout({ children: null })
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(AdminSettingsLayout({ children: null })).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
 
-      await expect(
-        AdminPaymentSettingsPage()
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(AdminPaymentSettingsPage()).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
     });
 
     test("redirects STAFF or MANAGER users without ADMIN role to /unauthorized", async () => {
       mockSession = { user: { id: "staff-1", role: "STAFF" } };
 
-      await expect(
-        AdminPaymentSettingsPage()
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(AdminPaymentSettingsPage()).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
 
       mockSession = { user: { id: "mgr-1", role: "MANAGER" } };
 
-      await expect(
-        AdminPaymentSettingsPage()
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(AdminPaymentSettingsPage()).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
     });
 
     test("allows ADMIN role users to access the layout and page", async () => {
@@ -158,9 +148,7 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       formData.set("code", "COD");
       formData.set("enabled", "false");
 
-      await expect(
-        togglePaymentMethodAction({ error: null }, formData)
-      ).rejects.toThrow();
+      await expect(togglePaymentMethodAction({ error: null }, formData)).rejects.toThrow();
     });
   });
 
@@ -279,7 +267,9 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
 
       const result = await updatePaymentMethodSetting("SSLCOMMERZ", true, "admin-1");
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Cannot enable SSLCOMMERZ without configured store credentials");
+      expect(result.error).toContain(
+        "Cannot enable SSLCOMMERZ without configured store credentials"
+      );
     });
 
     test("enforces credential gating: isPaymentMethodEnabled returns false for SSLCOMMERZ even if DB row is true", async () => {
@@ -299,7 +289,11 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
     });
 
     test("rejects modifying unapproved providers like ROCKET", async () => {
-      const rocketResult = await updatePaymentMethodSetting("ROCKET" as unknown as PaymentMethodCode, true, "admin-1");
+      const rocketResult = await updatePaymentMethodSetting(
+        "ROCKET" as unknown as PaymentMethodCode,
+        true,
+        "admin-1"
+      );
       expect(rocketResult.success).toBe(false);
       expect(rocketResult.error).toContain("cannot be toggled at this stage");
     });

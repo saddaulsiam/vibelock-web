@@ -289,16 +289,24 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       formData({ id: order.id, status: "PROCESSING", notes: "Packed" })
     );
     expect(valid).toEqual({ error: null, message: "Order updated successfully." });
-    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe("PROCESSING");
-    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "PROCESSING" } })).toBe(1);
-    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_STATUS_CHANGED" } })).toBe(1);
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe(
+      "PROCESSING"
+    );
+    expect(
+      await prisma.orderHistory.count({ where: { orderId: order.id, status: "PROCESSING" } })
+    ).toBe(1);
+    expect(
+      await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_STATUS_CHANGED" } })
+    ).toBe(1);
 
     const invalid = await updateOrderStatusAction(
       { error: null },
       formData({ id: order.id, status: "PENDING" })
     );
     expect(invalid.error).toBe("Order cannot transition from PROCESSING to PENDING.");
-    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe("PROCESSING");
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).status).toBe(
+      "PROCESSING"
+    );
     expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(1);
   });
 
@@ -317,7 +325,9 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       const result = await updateOrderStatusAction({ error: null }, formData({ id, status }));
       expect(result.error).toBe(message);
       expect(await prisma.orderHistory.count({ where: { orderId: id } })).toBe(0);
-      expect(await prisma.auditLog.count({ where: { entityId: id, action: "ORDER_STATUS_CHANGED" } })).toBe(0);
+      expect(
+        await prisma.auditLog.count({ where: { entityId: id, action: "ORDER_STATUS_CHANGED" } })
+      ).toBe(0);
     }
   });
 
@@ -331,7 +341,9 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       formData({ id: order.id, paymentStatus: "INITIATED" })
     );
     expect(valid).toEqual({ error: null, message: "Order updated successfully." });
-    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).paymentStatus).toBe("INITIATED");
+    expect((await prisma.order.findUniqueOrThrow({ where: { id: order.id } })).paymentStatus).toBe(
+      "INITIATED"
+    );
 
     const invalid = await updateOrderPaymentStatusAction(
       { error: null },
@@ -339,7 +351,11 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     );
     expect(invalid.error).toBe("Payment status must match the recorded payment state.");
     expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(1);
-    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "PAYMENT_STATUS_CHANGED" } })).toBe(1);
+    expect(
+      await prisma.auditLog.count({
+        where: { entityId: order.id, action: "PAYMENT_STATUS_CHANGED" },
+      })
+    ).toBe(1);
 
     await prisma.payment.updateMany({ where: { orderId: order.id }, data: { status: "REFUNDED" } });
     await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: "REFUNDED" } });
@@ -367,7 +383,10 @@ describe("Phase 3I - Orders & Customer Order History", () => {
 
     mockSession = { user: { id: user.id, role: "CUSTOMER" } };
     await expect(
-      updateOrderPaymentStatusAction({ error: null }, formData({ id: order.id, paymentStatus: "PENDING" }))
+      updateOrderPaymentStatusAction(
+        { error: null },
+        formData({ id: order.id, paymentStatus: "PENDING" })
+      )
     ).rejects.toThrow("Forbidden");
   });
 
@@ -391,8 +410,12 @@ describe("Phase 3I - Orders & Customer Order History", () => {
     expect(after.payments[0].status).toBe("INITIATED");
     expect(after.inventoryReservations[0].status).toBe("RELEASED");
     expect(after.inventoryReservations[0].releasedAt).not.toBeNull();
-    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })).toBe(1);
-    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(1);
+    expect(
+      await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })
+    ).toBe(1);
+    expect(
+      await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })
+    ).toBe(1);
     expect(
       await prisma.inventoryTransaction.count({
         where: { variantId: variants[0].variant.id, referenceId: order.id },
@@ -404,8 +427,12 @@ describe("Phase 3I - Orders & Customer Order History", () => {
       formData({ id: order.id, status: "CANCELLED" })
     );
     expect(second.error).toBe("Cancelled orders cannot be changed.");
-    expect(await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })).toBe(1);
-    expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(1);
+    expect(
+      await prisma.orderHistory.count({ where: { orderId: order.id, status: "CANCELLED" } })
+    ).toBe(1);
+    expect(
+      await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })
+    ).toBe(1);
   });
 
   test("admin cancellation rejects shipped, delivered, and paid orders without changes", async () => {
@@ -433,9 +460,13 @@ describe("Phase 3I - Orders & Customer Order History", () => {
         include: { inventoryReservations: true },
       });
       expect(unchanged.status).not.toBe("CANCELLED");
-      expect(unchanged.inventoryReservations.some((reservation) => reservation.status === "RELEASED")).toBe(false);
+      expect(
+        unchanged.inventoryReservations.some((reservation) => reservation.status === "RELEASED")
+      ).toBe(false);
       expect(await prisma.orderHistory.count({ where: { orderId: order.id } })).toBe(0);
-      expect(await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })).toBe(0);
+      expect(
+        await prisma.auditLog.count({ where: { entityId: order.id, action: "ORDER_CANCELLED" } })
+      ).toBe(0);
     }
   });
 

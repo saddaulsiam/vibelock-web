@@ -194,7 +194,9 @@ describe("VibeLock Phase 2C — Admin Payment Settings & bKash Credential Gating
 
       const result = await updatePaymentMethodSetting("BKASH", true, "admin-123");
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Cannot enable bKash without configured credentials in environment.");
+      expect(result.error).toBe(
+        "Cannot enable bKash without configured credentials in environment."
+      );
 
       // Ensure transaction and upsert were not called
       expect(mockPrisma.paymentMethodSetting.upsert).not.toHaveBeenCalled();
@@ -289,12 +291,19 @@ describe("VibeLock Phase 2C — Admin Payment Settings & bKash Credential Gating
     });
 
     test("getStorefrontPaymentMethods includes bKash when enabled and credentials exist", async () => {
-      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(async ({ where }: { where: { code: string } }) => {
-        if (where.code === "BKASH") {
-          return { id: "bkash-id", code: "BKASH", name: "Direct bKash Checkout", isEnabled: true };
+      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(
+        async ({ where }: { where: { code: string } }) => {
+          if (where.code === "BKASH") {
+            return {
+              id: "bkash-id",
+              code: "BKASH",
+              name: "Direct bKash Checkout",
+              isEnabled: true,
+            };
+          }
+          return null;
         }
-        return null;
-      });
+      );
 
       const options = await getStorefrontPaymentMethods();
       const bkashOption = options.find((o) => o.value === "BKASH");
@@ -304,23 +313,37 @@ describe("VibeLock Phase 2C — Admin Payment Settings & bKash Credential Gating
     });
 
     test("getStorefrontPaymentMethods excludes bKash when disabled or credentials missing", async () => {
-      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(async ({ where }: { where: { code: string } }) => {
-        if (where.code === "BKASH") {
-          return { id: "bkash-id", code: "BKASH", name: "Direct bKash Checkout", isEnabled: false };
+      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(
+        async ({ where }: { where: { code: string } }) => {
+          if (where.code === "BKASH") {
+            return {
+              id: "bkash-id",
+              code: "BKASH",
+              name: "Direct bKash Checkout",
+              isEnabled: false,
+            };
+          }
+          return null;
         }
-        return null;
-      });
+      );
 
       let options = await getStorefrontPaymentMethods();
       expect(options.some((o) => o.value === "BKASH")).toBe(false);
 
       // Now enable it in DB but wipe a credential
-      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(async ({ where }: { where: { code: string } }) => {
-        if (where.code === "BKASH") {
-          return { id: "bkash-id", code: "BKASH", name: "Direct bKash Checkout", isEnabled: true };
+      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(
+        async ({ where }: { where: { code: string } }) => {
+          if (where.code === "BKASH") {
+            return {
+              id: "bkash-id",
+              code: "BKASH",
+              name: "Direct bKash Checkout",
+              isEnabled: true,
+            };
+          }
+          return null;
         }
-        return null;
-      });
+      );
       mockEnv.BKASH_APP_SECRET = "";
 
       options = await getStorefrontPaymentMethods();
@@ -428,7 +451,9 @@ describe("VibeLock Phase 2C — Admin Payment Settings & bKash Credential Gating
       formData.append("enabled", "true");
 
       const result = await togglePaymentMethodAction({ error: null }, formData);
-      expect(result.error).toContain("Cannot enable bKash without configured credentials in environment.");
+      expect(result.error).toContain(
+        "Cannot enable bKash without configured credentials in environment."
+      );
     });
 
     test("allows an ADMIN to toggle BKASH to disabled state even when credentials are missing", async () => {

@@ -8,5 +8,23 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const coupon = await getAdminCouponById(id);
   if (!coupon) notFound();
-  return <div className="max-w-3xl space-y-6"><div><Link href="/admin/coupons" className="text-sm font-medium text-primary hover:underline">← Back to coupons</Link><h1 className="mt-3 text-3xl font-bold tracking-tight">Edit coupon</h1></div><Card><CardHeader><CardTitle>{coupon.code}</CardTitle><CardDescription>Historical order totals are never changed by edits.</CardDescription></CardHeader><CardContent><CouponForm coupon={coupon} /></CardContent></Card></div>;
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <Link href="/admin/coupons" className="text-primary text-sm font-medium hover:underline">
+          ← Back to coupons
+        </Link>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight">Edit coupon</h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>{coupon.code}</CardTitle>
+          <CardDescription>Historical order totals are never changed by edits.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <CouponForm coupon={coupon} />
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

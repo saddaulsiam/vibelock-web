@@ -45,16 +45,16 @@ async function InventorySummarySection() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Physical Stock
             </CardTitle>
-            <Boxes className="size-4 text-muted-foreground" />
+            <Boxes className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight">
               {summary.totalPhysicalStock.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Total physical units on hand ({summary.totalVariants.toLocaleString()} variants)
             </p>
           </CardContent>
@@ -62,16 +62,16 @@ async function InventorySummarySection() {
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Reserved Stock
             </CardTitle>
-            <Lock className="size-4 text-muted-foreground" />
+            <Lock className="text-muted-foreground size-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold tracking-tight">
               {summary.totalReservedStock.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Active unexpired checkout reservations
             </p>
           </CardContent>
@@ -79,7 +79,7 @@ async function InventorySummarySection() {
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Available Stock
             </CardTitle>
             <PackageCheck className="size-4 text-emerald-600" />
@@ -88,7 +88,7 @@ async function InventorySummarySection() {
             <div className="text-2xl font-bold tracking-tight">
               {summary.totalAvailableStock.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Physical stock minus active reservations
             </p>
           </CardContent>
@@ -96,7 +96,7 @@ async function InventorySummarySection() {
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Est. Inventory Cost
             </CardTitle>
             <Coins className="size-4 text-amber-600" />
@@ -105,7 +105,7 @@ async function InventorySummarySection() {
             <div className="text-2xl font-bold tracking-tight">
               {currency(summary.estimatedCostValue)}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Estimated: positive physical stock × current variant cost (not historical batch cost)
             </p>
           </CardContent>
@@ -113,7 +113,7 @@ async function InventorySummarySection() {
 
         <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Low Stock Items
             </CardTitle>
             <AlertTriangle className="size-4 text-amber-500" />
@@ -122,7 +122,7 @@ async function InventorySummarySection() {
             <div className="text-2xl font-bold tracking-tight">
               {summary.lowStockCount.toLocaleString()}
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Available stock between 1 and 5 units ({summary.outOfStockCount.toLocaleString()} out
               of stock)
             </p>
@@ -159,7 +159,7 @@ async function InventoryTable({
           <select
             name="filter"
             defaultValue={filter}
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
+            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
           >
             <option value="all">All inventory</option>
             <option value="in-stock">In stock</option>
@@ -177,7 +177,7 @@ async function InventoryTable({
         <a
           href={exportHref}
           download
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-input bg-background px-3 text-sm font-medium hover:bg-muted"
+          className="border-input bg-background hover:bg-muted inline-flex h-9 items-center justify-center gap-2 rounded-sm border px-3 text-sm font-medium"
           title={
             total > 5000
               ? "Export capped at first 5,000 matching items"
@@ -189,14 +189,14 @@ async function InventoryTable({
         </a>
       </div>
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {total} inventory {total === 1 ? "item" : "items"}
         {total > 5000 ? " · CSV export limited to first 5,000 items" : ""}
       </p>
 
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50">
+          <thead className="bg-muted/50 border-b">
             <tr className="text-left">
               <th className="p-3 font-medium">Product</th>
               <th className="p-3 font-medium">SKU / Variant</th>
@@ -210,7 +210,7 @@ async function InventoryTable({
           <tbody className="divide-y">
             {variants.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-10 text-center text-muted-foreground">
+                <td colSpan={7} className="text-muted-foreground p-10 text-center">
                   No inventory items found.
                 </td>
               </tr>
@@ -223,7 +223,7 @@ async function InventoryTable({
                     <td className="p-3 font-medium">{item.product.name}</td>
                     <td className="p-3">
                       <div className="font-mono text-xs">{item.sku}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-muted-foreground text-xs">
                         {[item.size, item.color].filter(Boolean).join(" / ") || "Default variant"}
                       </div>
                     </td>
@@ -238,7 +238,7 @@ async function InventoryTable({
                     <td className="p-3 text-right">
                       <Link
                         href={`/admin/inventory/${item.id}`}
-                        className="font-medium text-primary hover:underline"
+                        className="text-primary font-medium hover:underline"
                       >
                         View
                       </Link>
@@ -308,7 +308,7 @@ export default async function AdminInventoryPage({
         fallback={
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-xl bg-muted/40" />
+              <div key={i} className="bg-muted/40 h-28 animate-pulse rounded-xl" />
             ))}
           </div>
         }

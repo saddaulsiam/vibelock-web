@@ -45,9 +45,7 @@ export async function getAdminShippingOverview(page = 1) {
 export async function getAdminShippingZones(search?: string) {
   await requireRole("ADMIN");
   return prisma.shippingZone.findMany({
-    where: search?.trim()
-      ? { name: { contains: search.trim(), mode: "insensitive" } }
-      : undefined,
+    where: search?.trim() ? { name: { contains: search.trim(), mode: "insensitive" } } : undefined,
     orderBy: { name: "asc" },
     select: {
       id: true,

@@ -26,7 +26,8 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
     [variants]
   );
   const colors = useMemo(
-    () => Array.from(new Set(variants.flatMap((variant) => (variant.color ? [variant.color] : [])))),
+    () =>
+      Array.from(new Set(variants.flatMap((variant) => (variant.color ? [variant.color] : [])))),
     [variants]
   );
   const initialVariant = variants.find((variant) => variant.available) ?? variants[0] ?? null;
@@ -71,7 +72,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
   const selectColor = (color: string) => {
     setSelectedColor(color);
     const selectedSizeAvailable = hasAvailableVariant(selectedSize, color);
-    const availableVariant = variants.find((variant) => variant.available && variant.color === color);
+    const availableVariant = variants.find(
+      (variant) => variant.available && variant.color === color
+    );
     if (sizes.length > 0 && !selectedSizeAvailable && availableVariant) {
       setSelectedSize(availableVariant.size);
     }
@@ -79,9 +82,10 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
 
   const discount =
     matchingVariant?.discountPrice !== null && matchingVariant?.discountPrice !== undefined;
-  const discountPercent = discount && matchingVariant
-    ? Math.round((1 - matchingVariant.effectivePrice / matchingVariant.sellingPrice) * 100)
-    : 0;
+  const discountPercent =
+    discount && matchingVariant
+      ? Math.round((1 - matchingVariant.effectivePrice / matchingVariant.sellingPrice) * 100)
+      : 0;
 
   return (
     <div className="space-y-7">
@@ -93,7 +97,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
             </span>
             {discount && (
               <>
-                <span className="text-lg text-muted-foreground line-through">
+                <span className="text-muted-foreground text-lg line-through">
                   {formatPrice(matchingVariant.sellingPrice)}
                 </span>
                 <span className="bg-[#00D9FF] px-2 py-1 text-xs font-semibold text-[#101114]">
@@ -103,10 +107,12 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
             )}
           </div>
         ) : (
-          <p className="text-lg font-medium text-muted-foreground">Price unavailable</p>
+          <p className="text-muted-foreground text-lg font-medium">Price unavailable</p>
         )}
 
-        <p className={`text-sm font-medium ${isAvailable ? "text-emerald-700" : "text-muted-foreground"}`}>
+        <p
+          className={`text-sm font-medium ${isAvailable ? "text-emerald-700" : "text-muted-foreground"}`}
+        >
           {isAvailable
             ? "In stock"
             : productAvailable
@@ -120,7 +126,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
           <legend className="text-sm font-semibold">Color</legend>
           <div className="flex flex-wrap gap-2">
             {colors.map((color) => {
-              const available = variants.some((variant) => variant.available && variant.color === color);
+              const available = variants.some(
+                (variant) => variant.available && variant.color === color
+              );
               const selected = selectedColor === color;
               return (
                 <button
@@ -129,11 +137,11 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   onClick={() => selectColor(color)}
                   disabled={!available}
                   aria-pressed={selected}
-                  className={`min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 ${
+                  className={`min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
-                  } disabled:cursor-not-allowed disabled:border-border disabled:bg-[#F3F0E8] disabled:text-muted-foreground disabled:opacity-60`}
+                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
                 >
                   {color}
                   {!available && <span className="sr-only">, unavailable</span>}
@@ -149,7 +157,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
           <legend className="text-sm font-semibold">Size</legend>
           <div className="flex flex-wrap gap-2">
             {sizes.map((size) => {
-              const available = variants.some((variant) => variant.available && variant.size === size);
+              const available = variants.some(
+                (variant) => variant.available && variant.size === size
+              );
               const selected = selectedSize === size;
               return (
                 <button
@@ -158,11 +168,11 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   onClick={() => selectSize(size)}
                   disabled={!available}
                   aria-pressed={selected}
-                  className={`min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 ${
+                  className={`min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
-                  } disabled:cursor-not-allowed disabled:border-border disabled:bg-[#F3F0E8] disabled:text-muted-foreground disabled:opacity-60`}
+                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
                 >
                   {size}
                   {!available && <span className="sr-only">, unavailable</span>}
@@ -173,15 +183,17 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
         </fieldset>
       )}
 
-      <div className="space-y-3 border-t border-border pt-5">
-        <label htmlFor="product-quantity" className="block text-sm font-semibold">Quantity</label>
+      <div className="border-border space-y-3 border-t pt-5">
+        <label htmlFor="product-quantity" className="block text-sm font-semibold">
+          Quantity
+        </label>
         <div className="flex h-12 w-36 items-center border border-[#101114]/20">
           <button
             type="button"
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
             disabled={quantity <= 1}
             aria-label="Decrease quantity"
-            className="inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Minus className="size-4" aria-hidden="true" />
           </button>
@@ -197,14 +209,14 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                 setQuantity(value);
               }
             }}
-            className="h-full w-12 border-0 bg-transparent p-0 text-center text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+            className="h-full w-12 border-0 bg-transparent p-0 text-center text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-inset"
           />
           <button
             type="button"
             onClick={() => setQuantity((current) => Math.min(MAX_QUANTITY, current + 1))}
             disabled={quantity >= MAX_QUANTITY}
             aria-label="Increase quantity"
-            className="inline-flex size-11 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#00D9FF]"
+            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus className="size-4" aria-hidden="true" />
           </button>

@@ -8,15 +8,26 @@ import prisma from "@/lib/prisma/client";
 
 export type BannerActionState = { error: string | null; message?: string };
 
-const imageUrlSchema = z.string().trim().url().refine((value) => {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && url.hostname === "res.cloudinary.com";
-  } catch {
-    return false;
-  }
-}, "Use a secure Cloudinary image URL.");
-const linkUrlSchema = z.string().trim().optional().refine((value) => !value || value.startsWith("/") || /^https:\/\//i.test(value), "Link must be a site path or HTTPS URL.");
+const imageUrlSchema = z
+  .string()
+  .trim()
+  .url()
+  .refine((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === "https:" && url.hostname === "res.cloudinary.com";
+    } catch {
+      return false;
+    }
+  }, "Use a secure Cloudinary image URL.");
+const linkUrlSchema = z
+  .string()
+  .trim()
+  .optional()
+  .refine(
+    (value) => !value || value.startsWith("/") || /^https:\/\//i.test(value),
+    "Link must be a site path or HTTPS URL."
+  );
 
 const bannerSchema = z.object({
   id: z.string().uuid().optional(),
@@ -25,7 +36,10 @@ const bannerSchema = z.object({
   mobileImageUrl: z.union([imageUrlSchema, z.literal("")]).optional(),
   linkUrl: linkUrlSchema,
   placement: z.nativeEnum(BannerPlacement),
-  sortOrder: z.string().regex(/^-?\d{1,5}$/).transform(Number),
+  sortOrder: z
+    .string()
+    .regex(/^-?\d{1,5}$/)
+    .transform(Number),
   isActive: z.enum(["on", "true", "false"]).optional(),
   categoryIds: z.array(z.string().uuid()).default([]),
 });
@@ -39,9 +53,15 @@ function refreshBanners() {
   revalidatePath("/category/[slug]", "page");
 }
 
-export async function saveBannerAction(_previous: BannerActionState, formData: FormData): Promise<BannerActionState> {
+export async function saveBannerAction(
+  _previous: BannerActionState,
+  formData: FormData
+): Promise<BannerActionState> {
   await requireRole("ADMIN", { throw: true });
-  const rawCategoryIds = formData.getAll("categoryIds").map((value) => String(value)).filter(Boolean);
+  const rawCategoryIds = formData
+    .getAll("categoryIds")
+    .map((value) => String(value))
+    .filter(Boolean);
   const parsed = bannerSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
     title: formData.get("title"),
@@ -53,9 +73,11 @@ export async function saveBannerAction(_previous: BannerActionState, formData: F
     isActive: formData.get("isActive") ? "on" : "false",
     categoryIds: rawCategoryIds,
   });
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Please check the banner details." };
+  if (!parsed.success)
+    return { error: parsed.error.issues[0]?.message ?? "Please check the banner details." };
 
-  const { id, title, imageUrl, mobileImageUrl, linkUrl, placement, sortOrder, categoryIds } = parsed.data;
+  const { id, title, imageUrl, mobileImageUrl, linkUrl, placement, sortOrder, categoryIds } =
+    parsed.data;
   const isActive = parsed.data.isActive !== "false";
   try {
     const data = {
@@ -72,21 +94,32 @@ export async function saveBannerAction(_previous: BannerActionState, formData: F
       if (!existing) return { error: "This banner no longer exists." };
       await prisma.banner.update({
         where: { id },
-        data: { ...data, categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) } },
+        data: {
+          ...data,
+          categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
+        },
       });
     } else {
       await prisma.banner.create({
-        data: { ...data, categories: { connect: categoryIds.map((categoryId) => ({ id: categoryId })) } },
+        data: {
+          ...data,
+          categories: { connect: categoryIds.map((categoryId) => ({ id: categoryId })) },
+        },
       });
     }
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
       return { error: "One of the selected categories no longer exists." };
     }
-    return { error: "The banner could not be saved. Please check the selected categories and try again." };
+    return {
+      error: "The banner could not be saved. Please check the selected categories and try again.",
+    };
   }
   refreshBanners();
-  return { error: null, message: id ? "Banner updated successfully." : "Banner created successfully." };
+  return {
+    error: null,
+    message: id ? "Banner updated successfully." : "Banner created successfully.",
+  };
 }
 
 export async function toggleBannerAction(formData: FormData): Promise<void> {

@@ -10,8 +10,23 @@ export default async function EditBannerPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const [banner, categories] = await Promise.all([
     getAdminBannerById(id),
-    prisma.category.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+    prisma.category.findMany({
+      select: { id: true, name: true, slug: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
   if (!banner) notFound();
-  return <div className="max-w-4xl space-y-6"><div><Link href="/admin/banners" className="text-sm font-medium hover:underline">← Back to banners</Link><h1 className="mt-3 text-3xl font-bold tracking-tight">Edit banner</h1></div><div className="border bg-white p-5 sm:p-7"><BannerForm banner={banner} categories={categories} /></div></div>;
+  return (
+    <div className="max-w-4xl space-y-6">
+      <div>
+        <Link href="/admin/banners" className="text-sm font-medium hover:underline">
+          ← Back to banners
+        </Link>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight">Edit banner</h1>
+      </div>
+      <div className="border bg-white p-5 sm:p-7">
+        <BannerForm banner={banner} categories={categories} />
+      </div>
+    </div>
+  );
 }

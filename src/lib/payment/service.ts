@@ -64,17 +64,30 @@ export class PaymentService {
   async verifyCallback(
     gateway: string,
     payload: Record<string, unknown>
-  ): Promise<{ orderNumber: string; verification: Awaited<ReturnType<PaymentProvider["verifyPayment"]>> }> {
+  ): Promise<{
+    orderNumber: string;
+    verification: Awaited<ReturnType<PaymentProvider["verifyPayment"]>>;
+  }> {
     const provider = this.getProvider(gateway);
 
     // Extract merchant reference ID:
     // SSLCommerz uses 'tran_id', bKash uses 'paymentID', Nagad uses 'payment_ref_id'
     const merchantReferenceId =
-      (typeof payload.tran_id === "string" && payload.tran_id.trim() ? payload.tran_id.trim() : undefined) ??
-      (typeof payload.paymentID === "string" && payload.paymentID.trim() ? payload.paymentID.trim() : undefined) ??
-      (typeof payload.paymentId === "string" && payload.paymentId.trim() ? payload.paymentId.trim() : undefined) ??
-      (typeof payload.payment_ref_id === "string" && payload.payment_ref_id.trim() ? payload.payment_ref_id.trim() : undefined) ??
-      (typeof payload.paymentRefId === "string" && payload.paymentRefId.trim() ? payload.paymentRefId.trim() : undefined);
+      (typeof payload.tran_id === "string" && payload.tran_id.trim()
+        ? payload.tran_id.trim()
+        : undefined) ??
+      (typeof payload.paymentID === "string" && payload.paymentID.trim()
+        ? payload.paymentID.trim()
+        : undefined) ??
+      (typeof payload.paymentId === "string" && payload.paymentId.trim()
+        ? payload.paymentId.trim()
+        : undefined) ??
+      (typeof payload.payment_ref_id === "string" && payload.payment_ref_id.trim()
+        ? payload.payment_ref_id.trim()
+        : undefined) ??
+      (typeof payload.paymentRefId === "string" && payload.paymentRefId.trim()
+        ? payload.paymentRefId.trim()
+        : undefined);
 
     if (!merchantReferenceId) {
       console.error("[PaymentService] Missing transaction reference in callback");
@@ -146,7 +159,7 @@ export class PaymentService {
     if (verification.isUnverified) {
       console.warn(
         `[PaymentService] Unverified ${verification.status} callback received for ${merchantReferenceId}. ` +
-        `Preserving INITIATED status and keeping reservations unchanged until trusted reconciliation.`
+          `Preserving INITIATED status and keeping reservations unchanged until trusted reconciliation.`
       );
       const order = await prisma.order.findUnique({
         where: { id: payment.orderId },
@@ -191,7 +204,7 @@ export class PaymentService {
         if (order && verification.verifiedOrderNumber !== order.orderNumber) {
           console.error(
             `[PaymentService] Order reference mismatch for ${merchantReferenceId}. ` +
-            `Expected ${order.orderNumber}, got ${verification.verifiedOrderNumber}`
+              `Expected ${order.orderNumber}, got ${verification.verifiedOrderNumber}`
           );
           throw new Error("Payment verification failed: Order reference mismatch");
         }
@@ -257,7 +270,12 @@ export class PaymentService {
       // For FAILED/CANCELLED (server verified): only transition from INITIATED.
       const whereCondition: Prisma.PaymentWhereInput =
         verification.status === "SUCCESS"
-          ? { id: payment.id, status: { in: [PaymentStatus.INITIATED, PaymentStatus.FAILED, PaymentStatus.CANCELLED] } }
+          ? {
+              id: payment.id,
+              status: {
+                in: [PaymentStatus.INITIATED, PaymentStatus.FAILED, PaymentStatus.CANCELLED],
+              },
+            }
           : { id: payment.id, status: PaymentStatus.INITIATED };
 
       const updateResult = await tx.payment.updateMany({
@@ -333,12 +351,15 @@ export class PaymentService {
               for (const item of orderWithItems.items) {
                 const variantId = skuToVariant.get(item.sku);
                 if (variantId) {
-                  const available = await inventoryService.calculateAvailableQuantity(tx, variantId);
+                  const available = await inventoryService.calculateAvailableQuantity(
+                    tx,
+                    variantId
+                  );
                   if (available < item.quantity) {
                     hasOversell = true;
                     console.error(
                       `[PaymentService] Late payment oversell risk for order ${payment.orderId}, variant ${variantId}. ` +
-                      `Available: ${available}, needed: ${item.quantity}`
+                        `Available: ${available}, needed: ${item.quantity}`
                     );
                     break;
                   }

@@ -1,18 +1,22 @@
 import prisma from "../../src/lib/prisma/client";
 import { Prisma } from "@prisma/client";
 
-export async function createTestCategory(overrides: Partial<Prisma.CategoryUncheckedCreateInput> = {}) {
+export async function createTestCategory(
+  overrides: Partial<Prisma.CategoryUncheckedCreateInput> = {}
+) {
   const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
   return prisma.category.create({
     data: {
       name: `Cat-${ts}`,
       slug: `cat-${ts}`,
       ...overrides,
-    }
+    },
   });
 }
 
-export async function createTestProduct(overrides: Partial<Prisma.ProductUncheckedCreateInput> = {}) {
+export async function createTestProduct(
+  overrides: Partial<Prisma.ProductUncheckedCreateInput> = {}
+) {
   const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
   return prisma.product.create({
     data: {
@@ -20,11 +24,13 @@ export async function createTestProduct(overrides: Partial<Prisma.ProductUncheck
       slug: `product-${ts}`,
       status: "PUBLISHED",
       ...overrides,
-    }
+    },
   });
 }
 
-export async function createTestVariant(overrides: Partial<Prisma.ProductVariantUncheckedCreateInput> & { productId: string }) {
+export async function createTestVariant(
+  overrides: Partial<Prisma.ProductVariantUncheckedCreateInput> & { productId: string }
+) {
   const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
   return prisma.productVariant.create({
     data: {
@@ -33,7 +39,7 @@ export async function createTestVariant(overrides: Partial<Prisma.ProductVariant
       costPrice: new Prisma.Decimal("10.00"),
       sellingPrice: new Prisma.Decimal("20.00"),
       ...overrides,
-    }
+    },
   });
 }
 
@@ -44,8 +50,8 @@ export async function createTestInventory(variantId: string, quantity: number) {
       variantId,
       quantity,
       type: "RESTOCK",
-      referenceId: `REF-${ts}`
-    }
+      referenceId: `REF-${ts}`,
+    },
   });
 }
 
@@ -62,7 +68,9 @@ export async function createTestCoupon(overrides: Partial<Prisma.CouponUnchecked
   });
 }
 
-export async function createTestShippingZone(overrides: Partial<Prisma.ShippingZoneUncheckedCreateInput> = {}) {
+export async function createTestShippingZone(
+  overrides: Partial<Prisma.ShippingZoneUncheckedCreateInput> = {}
+) {
   const ts = Date.now().toString() + Math.floor(Math.random() * 1000);
   return prisma.shippingZone.create({
     data: {
@@ -86,5 +94,3 @@ export async function createTestShippingMethod(
     },
   });
 }
-
-

@@ -7,77 +7,70 @@ export async function getAccountOverview() {
   const user = await requireUser();
   const now = new Date();
 
-  const [
-    profile,
-    orderCount,
-    returnCount,
-    addresses,
-    recentOrders,
-    totalSpentAgg,
-    activeCoupons,
-  ] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: user.id },
-      select: {
-        name: true,
-        email: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
-      },
-    }),
-    prisma.order.count({ where: { userId: user.id } }),
-    prisma.returnRequest.count({ where: { order: { userId: user.id } } }),
-    prisma.address.findMany({
-      where: { userId: user.id },
-      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
-      take: 2,
-    }),
-    prisma.order.findMany({
-      where: { userId: user.id },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 5,
-      include: {
-        items: {
-          select: {
-            id: true,
-            productName: true,
-            quantity: true,
-            sku: true,
-            unitPrice: true,
+  const [profile, orderCount, returnCount, addresses, recentOrders, totalSpentAgg, activeCoupons] =
+    await Promise.all([
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: {
+          name: true,
+          email: true,
+          createdAt: true,
+          emailVerified: true,
+          image: true,
+        },
+      }),
+      prisma.order.count({ where: { userId: user.id } }),
+      prisma.returnRequest.count({ where: { order: { userId: user.id } } }),
+      prisma.address.findMany({
+        where: { userId: user.id },
+        orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+        take: 2,
+      }),
+      prisma.order.findMany({
+        where: { userId: user.id },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        take: 5,
+        include: {
+          items: {
+            select: {
+              id: true,
+              productName: true,
+              quantity: true,
+              sku: true,
+              unitPrice: true,
+            },
           },
         },
-      },
-    }),
-    prisma.order.aggregate({
-      where: {
-        userId: user.id,
-        status: { notIn: ["CANCELLED"] },
-      },
-      _sum: {
-        total: true,
-      },
-    }),
-    prisma.coupon.findMany({
-      where: {
-        isActive: true,
-        OR: [
-          { startDate: null, endDate: null },
-          { startDate: { lte: now }, endDate: null },
-          { startDate: null, endDate: { gte: now } },
-          { startDate: { lte: now }, endDate: { gte: now } },
-        ],
-      },
-      select: {
-        id: true,
-        code: true,
-        discountType: true,
-        discountValue: true,
-        minOrderValue: true,
-        endDate: true,
-      },
-    }),
-  ]);
+      }),
+      prisma.order.aggregate({
+        where: {
+          userId: user.id,
+          status: { notIn: ["CANCELLED"] },
+        },
+        _sum: {
+          total: true,
+        },
+      }),
+      prisma.coupon.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            { startDate: null, endDate: null },
+            { startDate: { lte: now }, endDate: null },
+            { startDate: null, endDate: { gte: now } },
+            { startDate: { lte: now }, endDate: { gte: now } },
+          ],
+        },
+        select: {
+          id: true,
+          code: true,
+          discountType: true,
+          discountValue: true,
+          minOrderValue: true,
+          endDate: true,
+        },
+      }),
+    ]);
 
   return {
     profile: {

@@ -140,7 +140,8 @@ export class BkashProvider implements PaymentProvider {
 
       this.cachedToken = data.id_token;
       // Buffer token expiration by 120 seconds to prevent mid-flight expiration
-      const expiresInSec = typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 3600;
+      const expiresInSec =
+        typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 3600;
       this.tokenExpiresAt = Date.now() + Math.max(expiresInSec - 120, 60) * 1000;
 
       return this.cachedToken;
@@ -226,7 +227,9 @@ export class BkashProvider implements PaymentProvider {
 
       return {
         success: false,
-        error: result.statusMessage || `Failed to initiate payment with bKash (code: ${result.statusCode})`,
+        error:
+          result.statusMessage ||
+          `Failed to initiate payment with bKash (code: ${result.statusCode})`,
       };
     } catch (err: unknown) {
       const error = err as Error;
@@ -282,7 +285,10 @@ export class BkashProvider implements PaymentProvider {
    * Calls bKash Query Payment Status API (/tokenized/checkout/payment/status).
    * Official reference: POST /tokenized/checkout/payment/status
    */
-  async queryPaymentStatus(paymentID: string, idToken?: string): Promise<BkashQueryPaymentStatusResponse> {
+  async queryPaymentStatus(
+    paymentID: string,
+    idToken?: string
+  ): Promise<BkashQueryPaymentStatusResponse> {
     const token = idToken || (await this.getValidToken());
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
@@ -557,9 +563,7 @@ export class BkashProvider implements PaymentProvider {
             : undefined) ??
           "";
         const returnedInvoice =
-          typeof queryResult.merchantInvoice === "string"
-            ? queryResult.merchantInvoice.trim()
-            : "";
+          typeof queryResult.merchantInvoice === "string" ? queryResult.merchantInvoice.trim() : "";
 
         if (!returnedPaymentId || returnedPaymentId !== paymentId) {
           return {
@@ -585,9 +589,7 @@ export class BkashProvider implements PaymentProvider {
 
         const amount = Number(queryResult.amount);
         const currency =
-          typeof queryResult.currency === "string"
-            ? queryResult.currency.toUpperCase()
-            : undefined;
+          typeof queryResult.currency === "string" ? queryResult.currency.toUpperCase() : undefined;
 
         if (!Number.isFinite(amount) || amount <= 0 || !currency) {
           return {

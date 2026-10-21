@@ -83,20 +83,36 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Container>
-        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted-foreground sm:mb-8">
-          <Link href="/" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">Home</Link>
+        <nav
+          aria-label="Breadcrumb"
+          className="text-muted-foreground mb-6 flex flex-wrap items-center gap-2 text-sm sm:mb-8"
+        >
+          <Link
+            href="/"
+            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          >
+            Home
+          </Link>
           <ChevronRight className="size-4" aria-hidden="true" />
-          <Link href="/products" className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">Products</Link>
+          <Link
+            href="/products"
+            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          >
+            Products
+          </Link>
           {mainCategory && (
             <>
               <ChevronRight className="size-4" aria-hidden="true" />
-              <Link href={`/category/${mainCategory.slug}`} className="rounded-sm transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+              <Link
+                href={`/category/${mainCategory.slug}`}
+                className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              >
                 {mainCategory.name}
               </Link>
             </>
           )}
           <ChevronRight className="size-4" aria-hidden="true" />
-          <span className="max-w-full break-words font-medium text-foreground" aria-current="page">
+          <span className="text-foreground max-w-full font-medium break-words" aria-current="page">
             {product.name}
           </span>
         </nav>
@@ -107,16 +123,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-            <div className="mb-6 border-b border-border pb-5 sm:mb-7">
+            <div className="border-border mb-6 border-b pb-5 sm:mb-7">
               {mainCategory && (
                 <Link
                   href={`/category/${mainCategory.slug}`}
-                  className="mb-3 inline-flex min-h-8 items-center text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  className="text-muted-foreground mb-3 inline-flex min-h-8 items-center text-xs font-semibold tracking-[0.18em] uppercase transition-colors hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
                   {mainCategory.name}
                 </Link>
               )}
-              <h1 className="text-3xl font-semibold leading-tight tracking-tight text-[#101114] sm:text-4xl lg:text-[2.75rem]">
+              <h1 className="text-3xl leading-tight font-semibold tracking-tight text-[#101114] sm:text-4xl lg:text-[2.75rem]">
                 {product.name}
               </h1>
             </div>
@@ -124,14 +140,20 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             <VariantSelector variants={product.variants} productAvailable={product.available} />
 
             {product.description && (
-              <section className="mt-8 border-t border-border pt-6 sm:mt-10" aria-labelledby="product-details-heading">
+              <section
+                className="border-border mt-8 border-t pt-6 sm:mt-10"
+                aria-labelledby="product-details-heading"
+              >
                 <h2 id="product-details-heading" className="text-base font-semibold tracking-tight">
                   Product details
                 </h2>
-                <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">
-                  {product.description.split("\n").filter(Boolean).map((line, index) => (
-                    <p key={`${index}-${line}`}>{line}</p>
-                  ))}
+                <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-6">
+                  {product.description
+                    .split("\n")
+                    .filter(Boolean)
+                    .map((line, index) => (
+                      <p key={`${index}-${line}`}>{line}</p>
+                    ))}
                 </div>
               </section>
             )}
@@ -139,7 +161,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {mainCategory && (
               <Link
                 href={`/category/${mainCategory.slug}`}
-                className="mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                className="hover:text-muted-foreground mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
               >
                 Explore {mainCategory.name} <ChevronRight className="size-4" aria-hidden="true" />
               </Link>

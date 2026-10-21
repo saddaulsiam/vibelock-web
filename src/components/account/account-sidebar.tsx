@@ -126,9 +126,8 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
   return (
     <aside className="w-full flex-col">
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        
         {/* Customer Avatar & Info */}
-        <div className="flex flex-col items-center text-center pb-6 border-b border-[#101114]/10">
+        <div className="flex flex-col items-center border-b border-[#101114]/10 pb-6 text-center">
           <div className="relative mb-3 h-18 w-18 overflow-hidden rounded-full border-2 border-[#101114]/10 bg-[#F3F0E8] shadow-inner">
             <Image
               src={avatarSrc}
@@ -141,11 +140,14 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             />
           </div>
 
-          <h2 className="text-base font-bold text-[#101114] leading-snug">
+          <h2 className="text-base leading-snug font-bold text-[#101114]">
             {profile.name || "VibeLock Customer"}
           </h2>
-          
-          <p className="mt-0.5 text-xs text-muted-foreground truncate max-w-full px-2" title={profile.email}>
+
+          <p
+            className="text-muted-foreground mt-0.5 max-w-full truncate px-2 text-xs"
+            title={profile.email}
+          >
             {profile.email}
           </p>
 
@@ -167,19 +169,20 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
         {/* Navigation List */}
         <nav aria-label="Customer Account Navigation" className="mt-4 flex flex-col gap-1">
           {navItems.map((item) => {
-            const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+            const isActive = item.exact ? pathname === item.href : pathname.startsWith(item.href);
 
             if (item.onClick) {
               return (
                 <button
                   key={item.label}
                   type="button"
-                  onClick={() => { item.onClick?.(); onNavClick?.(); }}
-                  className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#101114]/80 transition-colors hover:bg-[#F3F0E8] hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  onClick={() => {
+                    item.onClick?.();
+                    onNavClick?.();
+                  }}
+                  className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#101114]/80 transition-colors hover:bg-[#F3F0E8] hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
-                  <item.icon className="size-4.5 shrink-0 text-muted-foreground" />
+                  <item.icon className="text-muted-foreground size-4.5 shrink-0" />
                   <span>{item.label}</span>
                 </button>
               );
@@ -190,9 +193,9 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
                 key={item.label}
                 href={item.href}
                 onClick={onNavClick}
-                className={`relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
+                className={`relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
                   isActive
-                    ? "bg-[#00D9FF]/12 font-bold text-[#101114] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r before:bg-[#00D9FF]"
+                    ? "bg-[#00D9FF]/12 font-bold text-[#101114] before:absolute before:top-2 before:bottom-2 before:left-0 before:w-1 before:rounded-r before:bg-[#00D9FF]"
                     : "text-[#101114]/80 hover:bg-[#F3F0E8] hover:text-[#101114]"
                 }`}
               >
@@ -214,23 +217,23 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 disabled:opacity-50"
+            className="text-muted-foreground flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none disabled:opacity-50"
           >
-            <LogOut className="size-4.5 shrink-0 text-muted-foreground transition-colors" />
+            <LogOut className="text-muted-foreground size-4.5 shrink-0 transition-colors" />
             <span>{loggingOut ? "Signing out..." : "Logout"}</span>
           </button>
         </nav>
 
         {/* Small Dark Promotional Newsletter Card */}
         <div className="relative mt-6 overflow-hidden rounded-xl bg-[#101114] p-4 text-white shadow-md">
-          <div 
-            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#00D9FF]/20 blur-xl" 
-            aria-hidden="true" 
+          <div
+            className="pointer-events-none absolute -top-6 -right-6 h-24 w-24 rounded-full bg-[#00D9FF]/20 blur-xl"
+            aria-hidden="true"
           />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#00D9FF]">
+          <p className="text-[10px] font-bold tracking-widest text-[#00D9FF] uppercase">
             Stay In Style
           </p>
-          <h4 className="mt-1 text-xs font-black uppercase tracking-tight text-white">
+          <h4 className="mt-1 text-xs font-black tracking-tight text-white uppercase">
             Get Exclusive Offers
           </h4>
           <p className="mt-1 text-[11px] leading-relaxed text-white/70">
@@ -247,7 +250,7 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
               onChange={(e) => setNewsletterEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="w-full min-w-0 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1.5 text-xs text-white placeholder:text-white/40 focus:border-[#00D9FF] focus:outline-none focus:ring-1 focus:ring-[#00D9FF]"
+              className="w-full min-w-0 rounded-lg border border-white/15 bg-white/10 px-2.5 py-1.5 text-xs text-white placeholder:text-white/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
             />
             <button
               type="submit"
@@ -259,7 +262,6 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             </button>
           </form>
         </div>
-
       </div>
     </aside>
   );

@@ -5,7 +5,11 @@ import { ArrowLeft, RotateCcw } from "lucide-react";
 import { getCustomerReturnById } from "@/lib/account/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params;
   const request = await getCustomerReturnById(id);
   return {
@@ -20,22 +24,24 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
   if (!request) notFound();
 
   const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium", timeStyle: "short" }).format(date);
+    return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium", timeStyle: "short" }).format(
+      date
+    );
   };
 
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <div className="flex items-center justify-between border-b border-[#101114]/10 pb-4 mb-4">
+        <div className="mb-4 flex items-center justify-between border-b border-[#101114]/10 pb-4">
           <Link
             href="/account/returns"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-[#101114]"
+            className="group text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#101114]"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Returns</span>
           </Link>
-          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
             Return Request
           </span>
         </div>
@@ -43,12 +49,12 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+              <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
                 Return #{request.id.slice(0, 8).toUpperCase()}
               </h1>
               <OrderStatusBadge status={request.status} />
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Order{" "}
               <Link
                 href={`/account/orders/${request.order.orderNumber}`}
@@ -64,12 +70,12 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
 
       {/* Return Information Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+        <h2 className="mb-4 flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
           <RotateCcw className="size-4 text-[#0099b8]" />
           <span>Return Summary</span>
         </h2>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
+        <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
           <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-4">
             <span className="text-muted-foreground font-medium">Reason for Return</span>
             <p className="mt-1 font-bold text-[#101114]">{request.reason || "Not specified"}</p>
@@ -85,7 +91,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
 
       {/* Returned Items Card */}
       <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-2">
+        <h2 className="mb-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
           Returned Items
         </h2>
 
@@ -93,9 +99,12 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
           {request.items.map((item) => (
             <li key={item.id} className="flex items-center justify-between py-4 text-xs">
               <div>
-                <p className="font-bold text-[#101114] text-sm">{item.orderItem.productName}</p>
-                <p className="mt-0.5 text-muted-foreground">
-                  {[item.orderItem.size && `Size: ${item.orderItem.size}`, item.orderItem.color && `Color: ${item.orderItem.color}`]
+                <p className="text-sm font-bold text-[#101114]">{item.orderItem.productName}</p>
+                <p className="text-muted-foreground mt-0.5">
+                  {[
+                    item.orderItem.size && `Size: ${item.orderItem.size}`,
+                    item.orderItem.color && `Color: ${item.orderItem.color}`,
+                  ]
                     .filter(Boolean)
                     .join(" • ") || item.orderItem.sku}
                 </p>
@@ -113,7 +122,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
       {/* Refunds settlements if any */}
       {request.refunds.length > 0 && (
         <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-          <h2 className="text-base font-bold text-[#101114] border-b border-[#101114]/10 pb-4 mb-4">
+          <h2 className="mb-4 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
             Refund Transactions
           </h2>
           <div className="space-y-3">

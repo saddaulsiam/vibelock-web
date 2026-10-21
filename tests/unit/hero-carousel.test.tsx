@@ -74,9 +74,7 @@ describe("HeroCarousel Component", () => {
   });
 
   test("renders null safely when empty banners array is passed", () => {
-    const html = ReactDOMServer.renderToString(
-      React.createElement(HeroCarousel, { banners: [] })
-    );
+    const html = ReactDOMServer.renderToString(React.createElement(HeroCarousel, { banners: [] }));
     expect(html).toBe("");
   });
 

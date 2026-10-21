@@ -4,10 +4,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProductDetailLoading() {
   return (
-    <Section role="status" aria-label="Loading product details" className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
+    <Section
+      role="status"
+      aria-label="Loading product details"
+      className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12"
+    >
       <Container>
         {/* Breadcrumbs Skeleton */}
-        <div className="flex items-center gap-2 mb-8">
+        <div className="mb-8 flex items-center gap-2">
           <Skeleton className="h-4 w-12" />
           <Skeleton className="h-4 w-4" />
           <Skeleton className="h-4 w-16" />
@@ -31,7 +35,7 @@ export default function ProductDetailLoading() {
             <Skeleton className="mb-4 h-4 w-24 bg-[#101114]/10" />
             <Skeleton className="mb-8 h-10 w-3/4 bg-[#101114]/10" />
 
-            <div className="space-y-4 mb-8">
+            <div className="mb-8 space-y-4">
               <Skeleton className="h-8 w-32 bg-[#101114]/10" />
               <Skeleton className="h-6 w-24 bg-[#101114]/10" />
             </div>
@@ -55,12 +59,12 @@ export default function ProductDetailLoading() {
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t">
+            <div className="mt-8 border-t pt-4">
               <Skeleton className="h-14 w-full rounded-xl" />
             </div>
 
-            <div className="mt-12 pt-8 border-t space-y-4">
-              <Skeleton className="h-6 w-32 mb-4" />
+            <div className="mt-12 space-y-4 border-t pt-8">
+              <Skeleton className="mb-4 h-6 w-32" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />

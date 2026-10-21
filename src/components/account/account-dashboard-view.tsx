@@ -47,7 +47,7 @@ interface AccountDashboardViewProps {
 
 export function AccountDashboardView({ account }: AccountDashboardViewProps) {
   return (
-    <div className="flex flex-col min-w-0">
+    <div className="flex min-w-0 flex-col">
       {/* 4 Summary Cards */}
       <AccountMetrics
         orderCount={account.orderCount}
@@ -63,10 +63,7 @@ export function AccountDashboardView({ account }: AccountDashboardViewProps) {
 
       {/* Bottom Two-Column: Shipping Addresses & Quick Actions */}
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <AccountAddressesCard
-          addresses={account.addresses}
-          userName={account.profile.name}
-        />
+        <AccountAddressesCard addresses={account.addresses} userName={account.profile.name} />
         <AccountQuickActions />
       </div>
 

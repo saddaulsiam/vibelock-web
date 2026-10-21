@@ -68,7 +68,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="border-b bg-muted/50">
+                  <thead className="bg-muted/50 border-b">
                     <tr className="text-left">
                       <th className="p-3 font-medium">Product</th>
                       <th className="p-3 font-medium">SKU</th>
@@ -223,7 +223,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
 
             <CardContent className="space-y-4">
               {order.history.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No history available.</p>
+                <p className="text-muted-foreground text-sm">No history available.</p>
               ) : (
                 order.history.map((entry) => {
                   const isPaymentUpdate = entry.notes?.startsWith("[PAYMENT UPDATE]") ?? false;
@@ -231,7 +231,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                   return (
                     <div
                       key={entry.id}
-                      className="flex gap-4 border-l-2 border-muted py-1 pl-4 text-sm"
+                      className="border-muted flex gap-4 border-l-2 py-1 pl-4 text-sm"
                     >
                       <div className="flex-1">
                         <p className="font-medium">
@@ -243,7 +243,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                         </p>
                       </div>
 
-                      <div className="text-right text-muted-foreground">
+                      <div className="text-muted-foreground text-right">
                         {formatDate(new Date(entry.createdAt))}
                       </div>
                     </div>

@@ -70,7 +70,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       )}
       {...props}
     >
-      <div className="relative block aspect-square sm:aspect-[4/5] overflow-hidden rounded-xs bg-[#F0EDE7]">
+      <div className="relative block aspect-square overflow-hidden rounded-xs bg-[#F0EDE7] sm:aspect-[4/5]">
         <Link
           href={`/products/${product.slug}`}
           aria-label={`View ${product.name}`}
@@ -86,7 +86,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
               onError={() => setFailedImage(product.image)}
             />
           ) : (
-            <span className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#F0EDE7] text-muted-foreground">
+            <span className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[#F0EDE7]">
               <ImageOff className="size-6 text-[#101114]/30" aria-hidden="true" />
               <span className="text-[11px] font-medium text-[#101114]/50">Image unavailable</span>
             </span>
@@ -94,7 +94,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
         </Link>
 
         {product.badge && (
-          <div className="absolute left-2 top-2 z-10 pointer-events-none">
+          <div className="pointer-events-none absolute top-2 left-2 z-10">
             <ProductBadge label={product.badge.label} variant={product.badge.variant} />
           </div>
         )}
@@ -109,9 +109,9 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-full shadow-xs backdrop-blur-xs transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]",
+            "absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full shadow-xs backdrop-blur-xs transition-all hover:scale-110 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
             isWishlisted
-              ? "bg-white text-rose-500 scale-105"
+              ? "scale-105 bg-white text-rose-500"
               : "bg-white/90 text-[#101114]/70 hover:bg-white hover:text-[#00D9FF]"
           )}
         >
@@ -128,7 +128,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       <div className="flex flex-col gap-0.5">
         <Link
           href={`/products/${product.slug}`}
-          className="truncate text-xs font-semibold text-[#101114] hover:underline underline-offset-4 sm:text-sm"
+          className="truncate text-xs font-semibold text-[#101114] underline-offset-4 hover:underline sm:text-sm"
         >
           {product.name}
         </Link>

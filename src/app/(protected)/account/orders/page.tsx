@@ -35,10 +35,10 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
         {/* Card Header */}
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#101114]/10 pb-5">
           <div>
-            <h1 className="text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+            <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
               My Orders
             </h1>
-            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
               Review order history, payment status, and track deliveries.
             </p>
           </div>
@@ -50,11 +50,11 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
         {/* Empty State */}
         {orders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F0E8] text-muted-foreground">
+            <div className="text-muted-foreground flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F0E8]">
               <PackageOpen className="size-7" />
             </div>
             <h2 className="mt-4 text-base font-bold text-[#101114]">No orders found</h2>
-            <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted-foreground">
+            <p className="text-muted-foreground mt-1.5 max-w-sm text-xs leading-relaxed">
               You haven&apos;t placed any orders yet. Once you make a purchase, it will appear here.
             </p>
             <Link
@@ -71,28 +71,28 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#101114]/10 text-muted-foreground font-semibold">
+                  <tr className="text-muted-foreground border-b border-[#101114]/10 font-semibold">
                     <th className="py-3.5 pr-4">Order</th>
-                    <th className="py-3.5 px-4">Date</th>
-                    <th className="py-3.5 px-4">Items</th>
-                    <th className="py-3.5 px-4">Total</th>
-                    <th className="py-3.5 px-4">Status</th>
+                    <th className="px-4 py-3.5">Date</th>
+                    <th className="px-4 py-3.5">Items</th>
+                    <th className="px-4 py-3.5">Total</th>
+                    <th className="px-4 py-3.5">Status</th>
                     <th className="py-3.5 pl-4 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#101114]/5 text-sm">
                   {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-[#F3F0E8]/40 transition-colors">
+                    <tr key={order.id} className="transition-colors hover:bg-[#F3F0E8]/40">
                       {/* Order Number */}
                       <td className="py-4 pr-4">
                         <Link
                           href={`/account/orders/${order.orderNumber}`}
-                          className="font-bold text-[#101114] hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#00D9FF]"
+                          className="font-bold text-[#101114] hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                         >
                           #{order.orderNumber}
                         </Link>
                         {order.shipment?.trackingNumber && (
-                          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <div className="text-muted-foreground mt-1 flex items-center gap-1 text-[11px]">
                             <Truck className="size-3 text-[#0099b8]" />
                             <span>Track: {order.shipment.trackingNumber}</span>
                           </div>
@@ -100,14 +100,14 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       </td>
 
                       {/* Date */}
-                      <td className="py-4 px-4 text-xs text-muted-foreground font-medium whitespace-nowrap">
+                      <td className="text-muted-foreground px-4 py-4 text-xs font-medium whitespace-nowrap">
                         {formatDate(order.createdAt)}
                       </td>
 
                       {/* Items */}
-                      <td className="py-4 px-4">
+                      <td className="px-4 py-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-[#101114] flex items-center justify-center text-white">
+                          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#101114] text-white">
                             <Image
                               src="/images/categories/cat-t-shirts.jpg"
                               alt="Product preview"
@@ -116,20 +116,20 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                               className="object-cover opacity-80"
                             />
                           </div>
-                          <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                          <span className="text-muted-foreground text-xs font-medium whitespace-nowrap">
                             {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
                           </span>
                         </div>
                       </td>
 
                       {/* Total */}
-                      <td className="py-4 px-4 font-bold text-[#101114] whitespace-nowrap">
+                      <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
                         ৳ {order.total.toLocaleString("en-BD")}
                       </td>
 
                       {/* Status Badges */}
-                      <td className="py-4 px-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-1 items-start">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        <div className="flex flex-col items-start gap-1">
                           <OrderStatusBadge status={order.status} />
                         </div>
                       </td>
@@ -138,7 +138,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       <td className="py-4 pl-4 text-right whitespace-nowrap">
                         <Link
                           href={`/account/orders/${order.orderNumber}`}
-                          className="group inline-flex items-center gap-1 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-all hover:bg-[#101114] hover:text-white hover:border-[#101114]"
+                          className="group inline-flex items-center gap-1 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-all hover:border-[#101114] hover:bg-[#101114] hover:text-white"
                         >
                           <span>View Details</span>
                           <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -157,20 +157,22 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                   <div className="flex items-center justify-between">
                     <Link
                       href={`/account/orders/${order.orderNumber}`}
-                      className="font-bold text-sm text-[#101114] hover:underline"
+                      className="text-sm font-bold text-[#101114] hover:underline"
                     >
                       #{order.orderNumber}
                     </Link>
                     <OrderStatusBadge status={order.status} />
                   </div>
 
-                  <div className="mt-2.5 flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="text-muted-foreground mt-2.5 flex items-center justify-between text-xs">
                     <span>{formatDate(order.createdAt)}</span>
-                    <span>{order.itemCount} {order.itemCount === 1 ? "item" : "items"}</span>
+                    <span>
+                      {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
+                    </span>
                   </div>
 
                   {order.shipment?.trackingNumber && (
-                    <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground bg-[#F3F0E8]/50 p-2 rounded-lg">
+                    <div className="text-muted-foreground mt-2 flex items-center gap-1.5 rounded-lg bg-[#F3F0E8]/50 p-2 text-xs">
                       <Truck className="size-3.5 text-[#0099b8]" />
                       <span>Tracking: {order.shipment.trackingNumber}</span>
                     </div>
@@ -207,13 +209,13 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       <ArrowLeft className="size-3.5" /> Previous
                     </Link>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-[#101114]/10 px-3.5 py-2 text-xs text-muted-foreground/50 cursor-not-allowed">
+                    <span className="text-muted-foreground/50 inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-[#101114]/10 px-3.5 py-2 text-xs">
                       <ArrowLeft className="size-3.5" /> Previous
                     </span>
                   )}
                 </div>
 
-                <span className="text-xs font-medium text-muted-foreground">
+                <span className="text-muted-foreground text-xs font-medium">
                   Page {page} of {totalPages}
                 </span>
 
@@ -226,7 +228,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       Next <ArrowRight className="size-3.5" />
                     </Link>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-xl border border-[#101114]/10 px-3.5 py-2 text-xs text-muted-foreground/50 cursor-not-allowed">
+                    <span className="text-muted-foreground/50 inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl border border-[#101114]/10 px-3.5 py-2 text-xs">
                       Next <ArrowRight className="size-3.5" />
                     </span>
                   )}

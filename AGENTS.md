@@ -1,12 +1,14 @@
 # VibeLock Project Rules for Antigravity
 
 ## Project context
+
 - Repository: `saddaulsiam/vibelock-web`
 - Stack: Next.js App Router, TypeScript, React, Prisma, PostgreSQL/Neon, Auth.js, Cloudinary, Resend, SSLCOMMERZ/COD and shipping integrations.
 - Treat the existing repository as the source of truth. Inspect actual files, `package.json`, current Git state, and existing patterns before acting.
 - Prefer focused, production-safe changes over broad refactors. Avoid beginner-level explanations; report concise, actionable findings.
 
 ## Mandatory safety constraints
+
 1. Never access, query, mutate, seed, truncate, or otherwise write to production data. Do not use production credentials or production URLs for tests.
 2. Do not edit `.env`, `.env.*`, secrets, credentials, tokens, or deployment environment settings. Do not print secret values. If a secret is needed, stop and ask the user to configure it safely.
 3. Do not change `prisma/schema.prisma`, generate or apply migrations, or change database structure unless the user explicitly approves that exact change first.
@@ -19,6 +21,7 @@
 10. Do not run destructive commands (`reset --hard`, `clean -fd`, force-push, database reset/drop/truncate, or equivalent).
 
 ## Required workflow for every coding task
+
 1. Inspect `git status --short --branch`, current branch, and recent commits. Do not switch branches or discard changes automatically.
 2. Read the relevant code and tests. Check repository scripts before choosing commands.
 3. State a short plan and list the files likely to change. For non-trivial tasks, wait for user confirmation before implementation.
@@ -29,6 +32,7 @@
 8. Finish with: summary, files changed, checks and exact results, remaining risks, Git status, and whether any approval is needed next.
 
 ## VibeLock-specific engineering guidance
+
 - Preserve the current Next.js App Router and TypeScript architecture.
 - For database work, inspect Prisma models, existing query/service modules, authorization guards, and integration-test setup before designing a change.
 - Keep admin routes protected by the existing role/authorization patterns; never rely on hiding navigation links as authorization.
@@ -40,12 +44,14 @@
 - Never fabricate test results, availability, production status, or browser verification.
 
 ## Commands and verification
+
 - Read `package.json` and existing project instructions before assuming script names.
 - Use focused tests first, then typecheck/lint/build as appropriate and affordable.
 - Do not run the full test suite by default if a focused test plus typecheck/lint is sufficient; explain when broader coverage is needed.
 - Never run a command that might point at production. If test DB isolation is uncertain, inspect configuration and stop before executing database-touching tests.
 
 ## Git and delivery
+
 - Keep the current branch unless the user asks to create/switch branches.
 - Never silently stage all files. Inspect `git diff` and `git status` first.
 - Before commit/push/remote PR/merge/deploy, show the exact proposed action and wait for explicit approval.

@@ -57,32 +57,32 @@ function classificationBadge(classification: ReconciliationClassification) {
   switch (classification) {
     case "ONLINE_SETTLED":
       return (
-        <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
-          <CheckCircle2 className="mr-1 size-3 inline" /> Online Paid
+        <Badge className="border-emerald-300 bg-emerald-100 text-emerald-800">
+          <CheckCircle2 className="mr-1 inline size-3" /> Online Paid
         </Badge>
       );
     case "COD_DELIVERED":
       return (
-        <Badge className="bg-amber-100 text-amber-800 border-amber-300">
-          <Truck className="mr-1 size-3 inline" /> COD Delivered (Unremitted)
+        <Badge className="border-amber-300 bg-amber-100 text-amber-800">
+          <Truck className="mr-1 inline size-3" /> COD Delivered (Unremitted)
         </Badge>
       );
     case "COD_IN_FLIGHT":
       return (
-        <Badge className="bg-sky-100 text-sky-800 border-sky-300">
-          <Clock className="mr-1 size-3 inline" /> COD In-Flight
+        <Badge className="border-sky-300 bg-sky-100 text-sky-800">
+          <Clock className="mr-1 inline size-3" /> COD In-Flight
         </Badge>
       );
     case "COD_FAILED_RETURNED":
       return (
-        <Badge className="bg-rose-100 text-rose-800 border-rose-300">
-          <RotateCcw className="mr-1 size-3 inline" /> COD Refused/Returned
+        <Badge className="border-rose-300 bg-rose-100 text-rose-800">
+          <RotateCcw className="mr-1 inline size-3" /> COD Refused/Returned
         </Badge>
       );
     case "ONLINE_REFUNDED":
       return (
-        <Badge className="bg-purple-100 text-purple-800 border-purple-300">
-          <RotateCcw className="mr-1 size-3 inline" /> Fully Refunded
+        <Badge className="border-purple-300 bg-purple-100 text-purple-800">
+          <RotateCcw className="mr-1 inline size-3" /> Fully Refunded
         </Badge>
       );
     case "ONLINE_PENDING":
@@ -95,13 +95,13 @@ function classificationBadge(classification: ReconciliationClassification) {
     case "COD_CANCELLED":
       return (
         <Badge variant="outline" className="text-zinc-500">
-          <XCircle className="mr-1 size-3 inline" /> Cancelled
+          <XCircle className="mr-1 inline size-3" /> Cancelled
         </Badge>
       );
     case "ANOMALY":
       return (
         <Badge variant="destructive" className="bg-red-600 text-white">
-          <AlertTriangle className="mr-1 size-3 inline" /> Anomaly
+          <AlertTriangle className="mr-1 inline size-3" /> Anomaly
         </Badge>
       );
     default:
@@ -166,7 +166,7 @@ export default async function AdminReconciliationPage({
           <div className="flex items-center gap-2">
             <Link
               href="/admin/reports"
-              className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-semibold tracking-[0.16em] uppercase"
             >
               <ArrowLeft className="size-3" /> Back to Profitability
             </Link>
@@ -174,18 +174,19 @@ export default async function AdminReconciliationPage({
           <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight text-[#101114]">
             <CreditCard className="size-7 text-[#00a8c6]" /> Payment &amp; Cash Reconciliation
           </h1>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-2 max-w-3xl text-sm">
             Order-placement cohort lifecycle reconciliation tracking captured gateway payments,
             delivered COD awaiting courier remittance, in-flight parcels, and data anomalies.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant="outline">
-            Order Cohort: {dateLabel(summary.start)} – {dateLabel(new Date(summary.end.getTime() - 1))}
+            Order Cohort: {dateLabel(summary.start)} –{" "}
+            {dateLabel(new Date(summary.end.getTime() - 1))}
           </Badge>
           <a
             href={buildHref({})}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium hover:bg-muted"
+            className="hover:bg-muted inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium"
           >
             <RefreshCw className="size-4" /> Refresh
           </a>
@@ -202,7 +203,7 @@ export default async function AdminReconciliationPage({
           <select
             name="range"
             defaultValue={range}
-            className="mt-2 h-10 w-full border border-input bg-background px-3 text-sm lg:w-40"
+            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-40"
           >
             {ranges.map(([k, label]) => (
               <option key={k} value={k}>
@@ -224,7 +225,7 @@ export default async function AdminReconciliationPage({
           <select
             name="classification"
             defaultValue={classification ?? "all"}
-            className="mt-2 h-10 w-full border border-input bg-background px-3 text-sm lg:w-56"
+            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-56"
           >
             {classificationOptions.map(([k, label]) => (
               <option key={k} value={k}>
@@ -240,8 +241,9 @@ export default async function AdminReconciliationPage({
         >
           Apply
         </button>
-        <p className="text-xs text-muted-foreground col-span-full">
-          Date filters select orders placed within the window to reconcile their complete lifecycle (gateway captures, refunds, and courier deliveries).
+        <p className="text-muted-foreground col-span-full text-xs">
+          Date filters select orders placed within the window to reconcile their complete lifecycle
+          (gateway captures, refunds, and courier deliveries).
         </p>
       </Form>
 
@@ -251,21 +253,22 @@ export default async function AdminReconciliationPage({
           <h2 className="text-xl font-semibold text-[#101114]">
             Settlement &amp; Courier Receivables Status
           </h2>
-          <p className="text-xs text-muted-foreground">
-            Cohort lifecycle tracking: payments, refunds, and deliveries for orders placed in this period.
+          <p className="text-muted-foreground text-xs">
+            Cohort lifecycle tracking: payments, refunds, and deliveries for orders placed in this
+            period.
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Card 1: Online Captured */}
           <Card className="border-[#101114]/10 bg-white shadow-none">
             <CardContent className="p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Online Gateway Captured
               </p>
               <p className="mt-2 text-2xl font-bold tracking-tight text-emerald-700">
                 {money(summary.gateway.grossCapturedOnline)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {summary.gateway.capturedOnlineTransactionsCount} successful transactions recorded
                 by SSLCommerz. Subject to gateway batch payout to bank.
               </p>
@@ -275,13 +278,13 @@ export default async function AdminReconciliationPage({
           {/* Card 2: Online Refunds */}
           <Card className="border-[#101114]/10 bg-white shadow-none">
             <CardContent className="p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Online Refunds Deducted
               </p>
               <p className="mt-2 text-2xl font-bold tracking-tight text-purple-700">
                 {money(summary.gateway.processedRefundsTotal)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {summary.gateway.processedRefundsCount} processed gateway refunds. Net captured:{" "}
                 {money(summary.gateway.netGatewayCaptured)}.
               </p>
@@ -292,12 +295,12 @@ export default async function AdminReconciliationPage({
           <Card className="border-[#101114]/10 bg-white shadow-none">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                   Delivered COD
                 </p>
                 <Badge
                   variant="outline"
-                  className="text-[10px] bg-amber-50 text-amber-700 border-amber-300"
+                  className="border-amber-300 bg-amber-50 text-[10px] text-amber-700"
                 >
                   Remittance unverified
                 </Badge>
@@ -305,7 +308,7 @@ export default async function AdminReconciliationPage({
               <p className="mt-2 text-2xl font-bold tracking-tight text-amber-800">
                 {money(summary.cod.deliveredUnremittedBilledTotal)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {summary.cod.deliveredUnremittedOrderCount} orders handed over at doorstep. Held by
                 courier; carrier bank remittance is unconfirmed in database.
               </p>
@@ -315,13 +318,13 @@ export default async function AdminReconciliationPage({
           {/* Card 4: In-Flight COD */}
           <Card className="border-[#101114]/10 bg-white shadow-none">
             <CardContent className="p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 In-Flight COD (Uncollected)
               </p>
               <p className="mt-2 text-2xl font-bold tracking-tight text-sky-800">
                 {money(summary.cod.inFlightBilledTotal)}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {summary.cod.inFlightOrderCount} orders in transit or processing. Cash is not
                 collected.
               </p>
@@ -334,7 +337,7 @@ export default async function AdminReconciliationPage({
       {summary.anomaliesCount > 0 ? (
         <div className="rounded-md border border-red-200 bg-red-50 p-4">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="size-5 text-red-600 shrink-0 mt-0.5" />
+            <ShieldAlert className="mt-0.5 size-5 shrink-0 text-red-600" />
             <div>
               <h3 className="text-sm font-semibold text-red-900">
                 {summary.anomaliesCount} Reconciliation Anomalies Detected (
@@ -355,7 +358,7 @@ export default async function AdminReconciliationPage({
       <section className="border border-[#101114]/10 bg-white">
         <div className="border-b border-[#101114]/10 px-4 py-4 sm:px-5">
           <h2 className="text-xl font-semibold text-[#101114]">Order Classification Breakdown</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-xs">
             Mutually exclusive categorization. Every order in the selected time window is assigned
             to exactly one bucket. Total orders: {summary.totalOrders} (
             {money(summary.totalBilledAmount)} billed).
@@ -384,9 +387,9 @@ export default async function AdminReconciliationPage({
                       {classificationBadge(bucket.classification)}
                     </td>
                     <td className="p-3">{bucket.orderCount.toLocaleString()}</td>
-                    <td className="p-3 text-muted-foreground">{pct}%</td>
+                    <td className="text-muted-foreground p-3">{pct}%</td>
                     <td className="p-3 text-right font-medium">{money(bucket.billedTotal)}</td>
-                    <td className="p-3 text-xs text-muted-foreground">{bucket.description}</td>
+                    <td className="text-muted-foreground p-3 text-xs">{bucket.description}</td>
                   </tr>
                 );
               })}
@@ -396,7 +399,7 @@ export default async function AdminReconciliationPage({
       </section>
 
       {/* Financial Completeness & Disclaimers */}
-      <section className="rounded-md border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-900 space-y-2">
+      <section className="space-y-2 rounded-md border border-amber-200 bg-amber-50/60 p-4 text-xs text-amber-900">
         <div className="flex items-center gap-2 font-semibold">
           <HelpCircle className="size-4 text-amber-700" />
           Financial Limitations &amp; Unrecorded Expenses
@@ -419,7 +422,7 @@ export default async function AdminReconciliationPage({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4 sm:px-5">
           <div>
             <h2 className="text-xl font-semibold text-[#101114]">Order Reconciliation Audit</h2>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-1 text-xs">
               Showing {orders.length} of {totalOrders} orders matching active filters.
             </p>
           </div>
@@ -437,7 +440,7 @@ export default async function AdminReconciliationPage({
               <input type="hidden" name="classification" value={classification} />
             ) : null}
             <button
-              className="border border-input px-3 text-sm font-medium hover:bg-muted"
+              className="border-input hover:bg-muted border px-3 text-sm font-medium"
               type="submit"
             >
               Search
@@ -464,7 +467,7 @@ export default async function AdminReconciliationPage({
             <tbody className="divide-y">
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="p-8 text-center text-muted-foreground">
+                  <td colSpan={10} className="text-muted-foreground p-8 text-center">
                     No orders match the selected filters.
                   </td>
                 </tr>
@@ -478,11 +481,11 @@ export default async function AdminReconciliationPage({
                       >
                         {order.orderNumber}
                       </Link>
-                      <p className="text-xs text-muted-foreground">{dateLabel(order.createdAt)}</p>
+                      <p className="text-muted-foreground text-xs">{dateLabel(order.createdAt)}</p>
                     </td>
                     <td className="p-3">
                       <div>{order.customerName || "Guest"}</div>
-                      <p className="text-xs text-muted-foreground">{order.customerEmail}</p>
+                      <p className="text-muted-foreground text-xs">{order.customerEmail}</p>
                     </td>
                     <td className="p-3">
                       <Badge variant="outline" className="font-mono text-xs">
@@ -499,24 +502,24 @@ export default async function AdminReconciliationPage({
                             {order.shipmentStatus}
                           </Badge>
                           {order.shipmentProvider ? (
-                            <p className="text-[10px] text-muted-foreground uppercase">
+                            <p className="text-muted-foreground text-[10px] uppercase">
                               {order.shipmentProvider}
                             </p>
                           ) : null}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">No shipment</span>
+                        <span className="text-muted-foreground text-xs">No shipment</span>
                       )}
                     </td>
                     <td className="p-3">
                       <div>{classificationBadge(order.classification)}</div>
                       {order.anomalyReason ? (
-                        <p className="mt-1 text-[11px] text-red-600 font-medium">
+                        <p className="mt-1 text-[11px] font-medium text-red-600">
                           {order.anomalyReason}
                         </p>
                       ) : null}
                       {order.hasActiveReturn ? (
-                        <p className="text-[10px] text-purple-700 font-medium">
+                        <p className="text-[10px] font-medium text-purple-700">
                           Post-delivery return
                         </p>
                       ) : null}
@@ -531,7 +534,7 @@ export default async function AdminReconciliationPage({
                     <td className="p-3">
                       <Link
                         href={`/admin/orders/${order.id}`}
-                        className="text-primary hover:underline text-xs font-medium"
+                        className="text-primary text-xs font-medium hover:underline"
                       >
                         View
                       </Link>
@@ -547,7 +550,7 @@ export default async function AdminReconciliationPage({
         {totalPages > 1 ? (
           <div className="flex justify-center gap-4 border-t border-[#101114]/10 p-4 text-sm">
             <Link
-              className={page <= 1 ? "pointer-events-none text-muted-foreground/50" : "font-medium"}
+              className={page <= 1 ? "text-muted-foreground/50 pointer-events-none" : "font-medium"}
               href={buildHref({ page: page - 1 })}
             >
               Previous
@@ -557,7 +560,7 @@ export default async function AdminReconciliationPage({
             </span>
             <Link
               className={
-                page >= totalPages ? "pointer-events-none text-muted-foreground/50" : "font-medium"
+                page >= totalPages ? "text-muted-foreground/50 pointer-events-none" : "font-medium"
               }
               href={buildHref({ page: page + 1 })}
             >

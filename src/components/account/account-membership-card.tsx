@@ -35,17 +35,18 @@ export function AccountMembershipCard({
   return (
     <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-5 mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-5">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#101114] text-white">
             <Key className="size-5 text-[#00D9FF]" />
           </div>
           <div>
-            <h2 className="text-lg font-black uppercase tracking-tight text-[#101114] sm:text-xl">
+            <h2 className="text-lg font-black tracking-tight text-[#101114] uppercase sm:text-xl">
               Account Membership & Login Security
             </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
-              Review your VibeLock streetwear membership status, login providers, and security controls.
+            <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
+              Review your VibeLock streetwear membership status, login providers, and security
+              controls.
             </p>
           </div>
         </div>
@@ -61,32 +62,30 @@ export function AccountMembershipCard({
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
           {/* Member Since */}
           <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
               Member Since
             </p>
             <p className="mt-1 text-sm font-black text-[#101114]">{formattedDate}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Lifetime VibeLock Customer
-            </p>
+            <p className="text-muted-foreground mt-1 text-[11px]">Lifetime VibeLock Customer</p>
           </div>
 
           {/* Account Status */}
           <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
               Account Status
             </p>
             <div className="mt-1 flex items-center gap-1.5">
               <CheckCircle2 className="size-4 text-emerald-600" />
               <span className="text-sm font-black text-[#101114]">Active & Verified</span>
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground truncate" title={userId}>
+            <p className="text-muted-foreground mt-1 truncate text-[11px]" title={userId}>
               ID: {userId.slice(0, 13).toUpperCase()}...
             </p>
           </div>
 
           {/* Email Verification */}
           <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <p className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">
               Email Security
             </p>
             <div className="mt-1 flex items-center gap-1.5">
@@ -102,7 +101,7 @@ export function AccountMembershipCard({
                 </>
               )}
             </div>
-            <p className="mt-1 text-[11px] text-muted-foreground truncate" title={email}>
+            <p className="text-muted-foreground mt-1 truncate text-[11px]" title={email}>
               {email}
             </p>
           </div>
@@ -110,32 +109,34 @@ export function AccountMembershipCard({
 
         {/* 2. Connected Providers */}
         <div className="rounded-xl border border-[#101114]/10 p-4 sm:p-5">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#101114] border-b border-[#101114]/10 pb-3 mb-4">
+          <h3 className="mb-4 border-b border-[#101114]/10 pb-3 text-xs font-bold tracking-wider text-[#101114] uppercase">
             Connected Authentication Providers
           </h3>
 
           <div className="space-y-3">
             {/* Google OAuth Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-[#101114]/10 bg-white p-3.5">
+            <div className="flex flex-col items-start justify-between gap-3 rounded-xl border border-[#101114]/10 bg-white p-3.5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#101114]/10 bg-white font-bold text-xs shadow-xs">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#101114]/10 bg-white text-xs font-bold shadow-xs">
                   <span className="text-[#4285F4]">G</span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#101114]">Google Account</span>
                     {isGoogle ? (
-                      <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 border border-emerald-200">
+                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                         Primary Login
                       </span>
                     ) : (
-                      <span className="rounded-full bg-[#101114]/5 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                      <span className="text-muted-foreground rounded-full bg-[#101114]/5 px-2 py-0.5 text-[10px] font-semibold">
                         Not linked
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {isGoogle ? `Connected to ${email}` : "Quick one-click authentication with Google"}
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
+                    {isGoogle
+                      ? `Connected to ${email}`
+                      : "Quick one-click authentication with Google"}
                   </p>
                 </div>
               </div>
@@ -149,7 +150,7 @@ export function AccountMembershipCard({
             </div>
 
             {/* Email & Password Row */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-[#101114]/10 bg-white p-3.5">
+            <div className="flex flex-col items-start justify-between gap-3 rounded-xl border border-[#101114]/10 bg-white p-3.5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#101114]/10 bg-[#101114] text-white shadow-xs">
                   <Key className="size-4 text-[#00D9FF]" />
@@ -161,7 +162,7 @@ export function AccountMembershipCard({
                       Encrypted
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-muted-foreground mt-0.5 text-[11px]">
                     Protected with industry-standard bcrypt encryption
                   </p>
                 </div>
@@ -169,24 +170,24 @@ export function AccountMembershipCard({
 
               <Link
                 href="/account/security"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
               >
                 <span>Change Password</span>
-                <ExternalLink className="size-3 text-muted-foreground" />
+                <ExternalLink className="text-muted-foreground size-3" />
               </Link>
             </div>
           </div>
         </div>
 
         {/* 3. Session & Security Shortcut */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-4">
+        <div className="flex flex-col items-start justify-between gap-4 rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white border border-[#101114]/10 text-[#0099b8]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#101114]/10 bg-white text-[#0099b8]">
               <Laptop className="size-4.5" />
             </div>
             <div>
               <p className="text-xs font-bold text-[#101114]">Active Sessions & Devices</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-muted-foreground text-[11px]">
                 You can review signed-in devices, revoke active sessions, or sign out all devices.
               </p>
             </div>
@@ -194,7 +195,7 @@ export function AccountMembershipCard({
 
           <Link
             href="/account/security"
-            className="inline-flex items-center gap-1 text-xs font-bold text-[#0099b8] hover:text-[#00c2e5] transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-bold text-[#0099b8] transition-colors hover:text-[#00c2e5]"
           >
             <span>Manage All Sessions</span>
             <ExternalLink className="size-3.5" />

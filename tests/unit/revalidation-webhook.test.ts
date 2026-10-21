@@ -22,10 +22,7 @@ function buildSignedRequest({
   body?: string;
   customHeader?: string;
 } = {}) {
-  const digest = crypto
-    .createHmac("sha256", secret)
-    .update(`${timestamp}.${body}`)
-    .digest("hex");
+  const digest = crypto.createHmac("sha256", secret).update(`${timestamp}.${body}`).digest("hex");
 
   const header = customHeader !== undefined ? customHeader : `t=${timestamp},v1=${digest}`;
 

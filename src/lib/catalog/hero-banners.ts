@@ -33,7 +33,8 @@ export const defaultHeroBanners: HeroBanner[] = [
     headline: "Heavyweight",
     highlightText: "Boxy",
     headlineSuffix: "Tees",
-    description: "Built from 280 GSM combed cotton. Structured, effortless, and designed for Dhaka.",
+    description:
+      "Built from 280 GSM combed cotton. Structured, effortless, and designed for Dhaka.",
     ctaLabel: "EXPLORE TEES",
     ctaUrl: "/category/t-shirts",
     imageUrl: "/images/hero/hero-slide-2.png",

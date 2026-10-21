@@ -143,20 +143,22 @@ describe("admin dashboard executive KPIs", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Dashboard Item",
-            sku: `DASH-SKU-${crypto.randomUUID()}`,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(250),
-            costPrice: new Prisma.Decimal(100),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(500),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(500),
-          }],
+          create: [
+            {
+              productName: "Dashboard Item",
+              sku: `DASH-SKU-${crypto.randomUUID()}`,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(250),
+              costPrice: new Prisma.Decimal(100),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -202,7 +204,9 @@ describe("admin dashboard executive KPIs", () => {
     expect(dashboard.financials.grossMargin).toBe(report.summary.grossMargin);
     expect(dashboard.financials.soldUnits).toBe(report.summary.soldUnits);
     expect(dashboard.financials.returnedUnits).toBe(report.summary.returnedUnits);
-    expect(dashboard.financials.retainedUnits).toBe(report.summary.soldUnits - report.summary.returnedUnits);
+    expect(dashboard.financials.retainedUnits).toBe(
+      report.summary.soldUnits - report.summary.returnedUnits
+    );
     expect(dashboard.financials.orders).toBe(report.summary.orders);
     expect(dashboard.financials.returnRate).toBe(report.summary.returnRate);
     expect(dashboard.financials.refunds).toBe(report.summary.refunds);
@@ -256,7 +260,9 @@ describe("admin dashboard executive KPIs", () => {
     expect(pageWithPreset).toBeDefined();
 
     // Invalid preset searchParam falls back gracefully
-    const pageWithFallback = await AdminPage({ searchParams: Promise.resolve({ range: "invalid-range" }) });
+    const pageWithFallback = await AdminPage({
+      searchParams: Promise.resolve({ range: "invalid-range" }),
+    });
     expect(pageWithFallback).toBeDefined();
 
     // No searchParams provided

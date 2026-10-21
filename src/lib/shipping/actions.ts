@@ -11,7 +11,10 @@ export async function adminCreateShipmentAction(orderId: string) {
   try {
     provider = getShippingProvider();
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Shipping provider configuration error." };
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Shipping provider configuration error.",
+    };
   }
   if (process.env.NODE_ENV === "production" && provider.name === "mock-courier") {
     return { success: false, error: "Shipping provider unavailable / configuration error" };

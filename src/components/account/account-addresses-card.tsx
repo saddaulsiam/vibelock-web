@@ -38,7 +38,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
 
         {/* Addresses List */}
         {addresses.length === 0 ? (
-          <div className="py-8 text-center text-xs text-muted-foreground">
+          <div className="text-muted-foreground py-8 text-center text-xs">
             <p>You have no saved addresses yet.</p>
             <p className="mt-1">Add an address for faster checkout.</p>
           </div>
@@ -57,10 +57,10 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
                 >
                   <div className="flex items-center justify-between">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                         addr.isDefault
                           ? "bg-[#00D9FF]/20 text-[#008ba3]"
-                          : "bg-[#101114]/5 text-muted-foreground"
+                          : "text-muted-foreground bg-[#101114]/5"
                       }`}
                     >
                       {label}
@@ -69,7 +69,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/account/addresses/${addr.id}/edit`}
-                        className="rounded p-1 text-muted-foreground hover:bg-[#101114]/5 hover:text-[#101114]"
+                        className="text-muted-foreground rounded p-1 hover:bg-[#101114]/5 hover:text-[#101114]"
                         aria-label={`Edit ${label} address`}
                       >
                         <Pencil className="size-3.5" />
@@ -78,7 +78,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
                       {addr.isDefault ? (
                         <CheckCircle2 className="size-4 text-[#0099b8]" />
                       ) : (
-                        <div className="size-3.5 rounded-full border border-muted-foreground/40" />
+                        <div className="border-muted-foreground/40 size-3.5 rounded-full border" />
                       )}
                     </div>
                   </div>

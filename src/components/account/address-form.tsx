@@ -16,15 +16,17 @@ type AddressValues = {
   isDefault: boolean;
 };
 
-export function AddressForm({
-  address,
-  onDone,
-}: {
-  address?: AddressValues;
-  onDone?: () => void;
-}) {
+export function AddressForm({ address, onDone }: { address?: AddressValues; onDone?: () => void }) {
   const [values, setValues] = useState<AddressValues>(
-    address ?? { label: "", street: "", city: "", state: "", zip: "", country: "BD", isDefault: false }
+    address ?? {
+      label: "",
+      street: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "BD",
+      isDefault: false,
+    }
   );
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
@@ -47,14 +49,19 @@ export function AddressForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       {error && (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-xs font-semibold text-destructive" role="alert">
+        <div
+          className="border-destructive/20 bg-destructive/10 text-destructive rounded-xl border p-3 text-xs font-semibold"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="address-label" className="text-xs font-bold text-[#101114]">Label (optional)</Label>
+          <Label htmlFor="address-label" className="text-xs font-bold text-[#101114]">
+            Label (optional)
+          </Label>
           <Input
             id="address-label"
             value={values.label}
@@ -66,7 +73,9 @@ export function AddressForm({
         </div>
 
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="address-street" className="text-xs font-bold text-[#101114]">Street Address</Label>
+          <Label htmlFor="address-street" className="text-xs font-bold text-[#101114]">
+            Street Address
+          </Label>
           <Input
             id="address-street"
             required
@@ -79,7 +88,9 @@ export function AddressForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="address-city" className="text-xs font-bold text-[#101114]">City</Label>
+          <Label htmlFor="address-city" className="text-xs font-bold text-[#101114]">
+            City
+          </Label>
           <Input
             id="address-city"
             required
@@ -92,7 +103,9 @@ export function AddressForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="address-state" className="text-xs font-bold text-[#101114]">State / Division</Label>
+          <Label htmlFor="address-state" className="text-xs font-bold text-[#101114]">
+            State / Division
+          </Label>
           <Input
             id="address-state"
             value={values.state}
@@ -104,7 +117,9 @@ export function AddressForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="address-zip" className="text-xs font-bold text-[#101114]">Postal Code</Label>
+          <Label htmlFor="address-zip" className="text-xs font-bold text-[#101114]">
+            Postal Code
+          </Label>
           <Input
             id="address-zip"
             value={values.zip}
@@ -116,7 +131,9 @@ export function AddressForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="address-country" className="text-xs font-bold text-[#101114]">Country</Label>
+          <Label htmlFor="address-country" className="text-xs font-bold text-[#101114]">
+            Country
+          </Label>
           <Input
             id="address-country"
             required
@@ -129,7 +146,7 @@ export function AddressForm({
       </div>
 
       <div className="pt-2">
-        <label className="flex items-center gap-2.5 text-xs font-medium text-[#101114] cursor-pointer">
+        <label className="flex cursor-pointer items-center gap-2.5 text-xs font-medium text-[#101114]">
           <input
             type="checkbox"
             checked={values.isDefault}

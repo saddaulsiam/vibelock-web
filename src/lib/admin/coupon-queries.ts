@@ -12,11 +12,14 @@ function normalizePage(page: number) {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-export function couponStatus(coupon: {
-  isActive: boolean;
-  startDate: Date | null;
-  endDate: Date | null;
-}, now = new Date()) {
+export function couponStatus(
+  coupon: {
+    isActive: boolean;
+    startDate: Date | null;
+    endDate: Date | null;
+  },
+  now = new Date()
+) {
   if (coupon.endDate && coupon.endDate < now) return "EXPIRED" as const;
   if (!coupon.isActive || (coupon.startDate && coupon.startDate > now)) return "INACTIVE" as const;
   return "ACTIVE" as const;
@@ -51,16 +54,10 @@ export async function getAdminCoupons({
   } else if (filter === "inactive") {
     where.OR = [
       {
-        AND: [
-          { endDate: null },
-          { OR: [{ isActive: false }, { startDate: { gt: now } }] },
-        ],
+        AND: [{ endDate: null }, { OR: [{ isActive: false }, { startDate: { gt: now } }] }],
       },
       {
-        AND: [
-          { endDate: { gte: now } },
-          { OR: [{ isActive: false }, { startDate: { gt: now } }] },
-        ],
+        AND: [{ endDate: { gte: now } }, { OR: [{ isActive: false }, { startDate: { gt: now } }] }],
       },
     ];
   }

@@ -2,14 +2,20 @@ import { Suspense } from "react";
 import { getAdminOrders } from "@/lib/admin/order-queries";
 import { OrderStatus } from "@prisma/client";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
 async function OrdersTable({
-  searchParams
+  searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedSearchParams = await searchParams;
   const status = (resolvedSearchParams.status as OrderStatus) || undefined;
@@ -24,8 +30,8 @@ async function OrdersTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
           <Input
             name="q"
             placeholder="Search order #, email, name..."
@@ -48,7 +54,7 @@ async function OrdersTable({
         </div>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
+      <div className="overflow-hidden rounded-md border">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 border-b">
             <tr className="text-left">
@@ -64,7 +70,7 @@ async function OrdersTable({
           <tbody className="divide-y">
             {orders.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                <td colSpan={7} className="text-muted-foreground p-8 text-center">
                   No orders found.
                 </td>
               </tr>
@@ -75,7 +81,7 @@ async function OrdersTable({
                   <td className="p-3">
                     <div className="flex flex-col">
                       <span>{order.customerName || "Guest"}</span>
-                      <span className="text-xs text-muted-foreground">{order.customerEmail}</span>
+                      <span className="text-muted-foreground text-xs">{order.customerEmail}</span>
                     </div>
                   </td>
                   <td className="p-3">
@@ -84,16 +90,14 @@ async function OrdersTable({
                     </Badge>
                   </td>
                   <td className="p-3">
-                    <Badge variant="secondary">
-                      {order.paymentStatus}
-                    </Badge>
+                    <Badge variant="secondary">{order.paymentStatus}</Badge>
                   </td>
                   <td className="p-3">${Number(order.total).toFixed(2)}</td>
                   <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
                   <td className="p-3 text-right">
                     <Link
                       href={`/admin/orders/${order.id}`}
-                      className="text-sm font-medium text-primary hover:underline"
+                      className="text-primary text-sm font-medium hover:underline"
                     >
                       View
                     </Link>
@@ -106,11 +110,11 @@ async function OrdersTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3 mt-6">
+        <div className="mt-6 flex items-center justify-center gap-3">
           {page > 1 && (
             <Link
               href={`?page=${page - 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border border-border hover:bg-muted transition-colors"
+              className="border-border hover:bg-muted inline-flex size-10 items-center justify-center rounded-sm border transition-colors"
             >
               ←
             </Link>
@@ -121,7 +125,7 @@ async function OrdersTable({
           {page < totalPages && (
             <Link
               href={`?page=${page + 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border border-border hover:bg-muted transition-colors"
+              className="border-border hover:bg-muted inline-flex size-10 items-center justify-center rounded-sm border transition-colors"
             >
               →
             </Link>
@@ -133,13 +137,13 @@ async function OrdersTable({
 }
 
 export default async function AdminOrdersPage({
-  searchParams
+  searchParams,
 }: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Order Management</h1>
       </div>
       <Suspense fallback={<div className="flex justify-center p-12">Loading orders...</div>}>

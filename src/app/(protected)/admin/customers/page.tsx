@@ -39,13 +39,13 @@ async function CustomersTable({
         </button>
       </form>
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         {total} {total === 1 ? "customer" : "customers"}
       </p>
 
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50">
+          <thead className="bg-muted/50 border-b">
             <tr className="text-left">
               <th className="p-3 font-medium">Customer</th>
               <th className="p-3 font-medium">Phone</th>
@@ -59,7 +59,7 @@ async function CustomersTable({
           <tbody className="divide-y">
             {customers.length === 0 ? (
               <tr>
-                <td colSpan={7} className="p-10 text-center text-muted-foreground">
+                <td colSpan={7} className="text-muted-foreground p-10 text-center">
                   No customers found.
                 </td>
               </tr>
@@ -68,7 +68,7 @@ async function CustomersTable({
                 <tr key={customer.id} className="hover:bg-muted/30">
                   <td className="p-3">
                     <div className="font-medium">{customer.name || "Unnamed customer"}</div>
-                    <div className="text-xs text-muted-foreground">{customer.email}</div>
+                    <div className="text-muted-foreground text-xs">{customer.email}</div>
                   </td>
                   <td className="p-3">{customer.phone || "N/A"}</td>
                   <td className="p-3">{customer.orderCount}</td>
@@ -84,7 +84,7 @@ async function CustomersTable({
                   <td className="p-3 text-right">
                     <Link
                       href={`/admin/customers/${customer.id}`}
-                      className="font-medium text-primary hover:underline"
+                      className="text-primary font-medium hover:underline"
                     >
                       View
                     </Link>

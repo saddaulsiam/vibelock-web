@@ -32,7 +32,7 @@ function ResetPasswordForm() {
   if (!token) {
     return (
       <CardContent className="pt-6 text-center">
-        <div className="text-destructive font-medium mb-4">Invalid or missing reset token.</div>
+        <div className="text-destructive mb-4 font-medium">Invalid or missing reset token.</div>
         <Link href="/forgot-password">
           <Button variant="outline">Request new token</Button>
         </Link>
@@ -76,9 +76,9 @@ function ResetPasswordForm() {
   return (
     <form onSubmit={handleSubmit}>
       <CardContent className="space-y-4">
-        {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
+        {error && <div className="text-destructive text-center text-sm font-medium">{error}</div>}
         {success && (
-          <div className="text-sm text-emerald-600 text-center font-medium">{success}</div>
+          <div className="text-center text-sm font-medium text-emerald-600">{success}</div>
         )}
 
         <div className="space-y-2">
@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
         <CardTitle className="text-2xl font-bold">Set New Password</CardTitle>
         <CardDescription>Enter your new password below</CardDescription>
       </CardHeader>
-      <Suspense fallback={<CardContent className="text-center py-4">Loading...</CardContent>}>
+      <Suspense fallback={<CardContent className="py-4 text-center">Loading...</CardContent>}>
         <ResetPasswordForm />
       </Suspense>
     </Card>

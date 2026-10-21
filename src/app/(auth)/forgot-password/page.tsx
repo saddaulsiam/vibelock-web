@@ -48,9 +48,9 @@ export default function ForgotPasswordPage() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
+          {error && <div className="text-destructive text-center text-sm font-medium">{error}</div>}
           {success && (
-            <div className="text-sm text-emerald-600 text-center font-medium">{success}</div>
+            <div className="text-center text-sm font-medium text-emerald-600">{success}</div>
           )}
 
           <div className="space-y-2">
@@ -71,9 +71,9 @@ export default function ForgotPasswordPage() {
           <Button type="submit" className="w-full" disabled={isLoading || !!success}>
             {isLoading ? "Sending..." : "Send Reset Link"}
           </Button>
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-center text-sm">
             Remember your password?{" "}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
+            <Link href="/login" className="text-primary font-semibold hover:underline">
               Sign in
             </Link>
           </div>

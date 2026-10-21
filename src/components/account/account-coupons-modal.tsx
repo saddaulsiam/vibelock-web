@@ -32,9 +32,9 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div 
-        className="relative w-full max-w-md rounded-2xl border border-[#101114]/15 bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-200"
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-200">
+      <div
+        className="animate-in zoom-in-95 relative w-full max-w-md rounded-2xl border border-[#101114]/15 bg-white p-6 shadow-2xl duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="coupons-modal-title"
@@ -49,7 +49,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
               <h3 id="coupons-modal-title" className="text-base font-bold text-[#101114]">
                 Active Coupons
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Apply at checkout to save on your order
               </p>
             </div>
@@ -58,17 +58,17 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-[#F3F0E8] hover:text-[#101114] transition-colors"
+            className="text-muted-foreground rounded-lg p-1.5 transition-colors hover:bg-[#F3F0E8] hover:text-[#101114]"
           >
             <X className="size-4" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="mt-4 max-h-80 overflow-y-auto space-y-3 pr-1">
+        <div className="mt-4 max-h-80 space-y-3 overflow-y-auto pr-1">
           {coupons.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              <Sparkles className="mx-auto size-7 text-muted-foreground/50 mb-2" />
+            <div className="text-muted-foreground py-8 text-center text-xs">
+              <Sparkles className="text-muted-foreground/50 mx-auto mb-2 size-7" />
               <p className="font-semibold text-[#101114]">No active coupons right now</p>
               <p className="mt-1">Check back during special seasonal drops and events!</p>
             </div>
@@ -87,7 +87,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-extrabold uppercase tracking-wider text-[#101114]">
+                      <span className="font-mono text-sm font-extrabold tracking-wider text-[#101114] uppercase">
                         {coupon.code}
                       </span>
                       <span className="rounded-full bg-[#00D9FF]/20 px-2 py-0.5 text-[10px] font-bold text-[#007b91]">
@@ -95,18 +95,19 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
                       </span>
                     </div>
 
-                    <p className="mt-1 text-[11px] text-muted-foreground">
+                    <p className="text-muted-foreground mt-1 text-[11px]">
                       {coupon.minOrderValue
                         ? `Min. order ৳ ${coupon.minOrderValue.toLocaleString()}`
                         : "No minimum order requirement"}
-                      {coupon.endDate && ` • Expires ${new Date(coupon.endDate).toLocaleDateString()}`}
+                      {coupon.endDate &&
+                        ` • Expires ${new Date(coupon.endDate).toLocaleDateString()}`}
                     </p>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => handleCopy(coupon.code)}
-                    className="inline-flex items-center gap-1 rounded-lg border border-[#101114]/15 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#101114] shadow-2xs hover:bg-[#101114] hover:text-white transition-colors"
+                    className="inline-flex items-center gap-1 rounded-lg border border-[#101114]/15 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#101114] hover:text-white"
                   >
                     {isCopied ? (
                       <>
@@ -127,11 +128,11 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
         </div>
 
         {/* Footer */}
-        <div className="mt-5 border-t border-[#101114]/10 pt-4 flex justify-end">
+        <div className="mt-5 flex justify-end border-t border-[#101114]/10 pt-4">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl bg-[#101114] px-4 py-2 text-xs font-bold text-white hover:bg-[#1f2229] transition-colors"
+            className="rounded-xl bg-[#101114] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#1f2229]"
           >
             Close
           </button>

@@ -95,7 +95,14 @@ export async function getAdminReturnById(id: string) {
     where: {
       OR: [
         { entityType: "ReturnRequest", entityId: id },
-        { entityType: "Refund", entityId: { in: returnRequest.order.payments.flatMap((payment) => payment.refunds.map((refund) => refund.id)) } },
+        {
+          entityType: "Refund",
+          entityId: {
+            in: returnRequest.order.payments.flatMap((payment) =>
+              payment.refunds.map((refund) => refund.id)
+            ),
+          },
+        },
       ],
     },
     orderBy: { createdAt: "desc" },

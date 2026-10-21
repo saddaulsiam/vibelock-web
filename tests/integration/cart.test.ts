@@ -13,11 +13,11 @@ vi.mock("next/headers", () => ({
     get: (key: string) => mockCookies.get(key),
     set: (key: string, value: string, options: unknown) => mockCookies.set(key, { value, options }),
     delete: (key: string) => mockCookies.delete(key),
-  }))
+  })),
 }));
 
 vi.mock("../../src/auth", () => ({
-  auth: vi.fn(() => Promise.resolve(mockSession))
+  auth: vi.fn(() => Promise.resolve(mockSession)),
 }));
 
 describe("Phase 3E - Cart", () => {
@@ -68,7 +68,7 @@ describe("Phase 3E - Cart", () => {
     // 2. User logs in (has no cart initially)
     const user = await createTestUser();
     mockSession = { user: { id: user.id } };
-    
+
     // 3. getOrCreateCartId should merge/claim the guest cart
     const authCartId = await getOrCreateCartId();
     expect(authCartId).toBe(guestCartId); // Claimed same ID
@@ -93,28 +93,28 @@ describe("Phase 3E - Cart", () => {
     // 2. User logs in (already has a cart with variant1)
     const user = await createTestUser();
     mockSession = { user: { id: user.id } };
-    
+
     // Seed user's auth cart
     const authCart = await prisma.cart.create({ data: { userId: user.id } });
     await prisma.cartItem.create({
-      data: { cartId: authCart.id, variantId: variant1.id, quantity: 5 }
+      data: { cartId: authCart.id, variantId: variant1.id, quantity: 5 },
     });
-    
+
     // 3. getOrCreateCartId should merge the guest cart into the auth cart
     const resultingCartId = await getOrCreateCartId();
     expect(resultingCartId).toBe(authCart.id);
 
     const mergedCart = await prisma.cart.findUnique({
       where: { id: authCart.id },
-      include: { items: true }
+      include: { items: true },
     });
 
     // Variant 1 quantity: 5 + 2 = 7
-    const mergedV1 = mergedCart?.items.find(i => i.variantId === variant1.id);
+    const mergedV1 = mergedCart?.items.find((i) => i.variantId === variant1.id);
     expect(mergedV1?.quantity).toBe(7);
 
     // Variant 2 quantity: 3
-    const mergedV2 = mergedCart?.items.find(i => i.variantId === variant2.id);
+    const mergedV2 = mergedCart?.items.find((i) => i.variantId === variant2.id);
     expect(mergedV2?.quantity).toBe(3);
 
     // Guest cart should be deleted
@@ -163,15 +163,15 @@ describe("Phase 3E - Cart", () => {
 
   test("3E.7 Server-derived product pricing", async () => {
     const prod = await createTestProduct();
-    const variant = await createTestVariant({ 
+    const variant = await createTestVariant({
       productId: prod.id,
       sellingPrice: new Prisma.Decimal("100"),
-      discountPrice: new Prisma.Decimal("80")
+      discountPrice: new Prisma.Decimal("80"),
     });
     await createTestInventory(variant.id, 20);
 
     const cart = await addToCart(variant.id, 2); // API takes ONLY variantId and quantity
-    
+
     // Check returned CartDTO has the server-calculated prices
     expect(cart.subtotal).toBe(160); // 80 * 2
   });
@@ -184,7 +184,7 @@ describe("Phase 3E - Cart", () => {
     await addToCart(variant.id, 5);
 
     const reservations = await prisma.inventoryReservation.findMany({
-      where: { variantId: variant.id }
+      where: { variantId: variant.id },
     });
     expect(reservations.length).toBe(0);
   });

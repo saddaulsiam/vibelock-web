@@ -18,7 +18,7 @@ export function SectionHeading({
     <div className={cn("mb-8 space-y-2", centered && "text-center", className)} {...props}>
       <h2 className="text-3xl font-bold tracking-tight md:text-4xl">{title}</h2>
       {description && (
-        <p className="text-muted-foreground md:text-lg max-w-2xl mx-auto">{description}</p>
+        <p className="text-muted-foreground mx-auto max-w-2xl md:text-lg">{description}</p>
       )}
     </div>
   );

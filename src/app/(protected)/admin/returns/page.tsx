@@ -26,17 +26,35 @@ async function ReturnsTable({
   return (
     <div className="space-y-4">
       <form method="get" className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <Input name="q" placeholder="Search order, customer, email..." defaultValue={search} className="max-w-sm" />
-        <select name="status" defaultValue={status ?? ""} className="flex h-9 w-[180px] rounded-md border border-input bg-transparent px-3 text-sm">
+        <Input
+          name="q"
+          placeholder="Search order, customer, email..."
+          defaultValue={search}
+          className="max-w-sm"
+        />
+        <select
+          name="status"
+          defaultValue={status ?? ""}
+          className="border-input flex h-9 w-[180px] rounded-md border bg-transparent px-3 text-sm"
+        >
           <option value="">All statuses</option>
-          {Object.values(ReturnRequestStatus).map((value) => <option key={value} value={value}>{value}</option>)}
+          {Object.values(ReturnRequestStatus).map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
         </select>
-        <button type="submit" className="inline-flex h-9 items-center justify-center border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white">Filter</button>
+        <button
+          type="submit"
+          className="inline-flex h-9 items-center justify-center border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white"
+        >
+          Filter
+        </button>
       </form>
 
       <div className="overflow-x-auto rounded-md border">
         <table className="w-full text-sm">
-          <thead className="border-b bg-muted/50">
+          <thead className="bg-muted/50 border-b">
             <tr className="text-left">
               <th className="p-3 font-medium">Order #</th>
               <th className="p-3 font-medium">Customer</th>
@@ -48,26 +66,64 @@ async function ReturnsTable({
           </thead>
           <tbody className="divide-y">
             {returns.length === 0 ? (
-              <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No return requests found.</td></tr>
-            ) : returns.map((request) => (
-              <tr key={request.id} className="hover:bg-muted/30">
-                <td className="p-3 font-medium">{request.order.orderNumber}</td>
-                <td className="p-3"><div>{request.order.customerName || "Guest"}</div><div className="text-xs text-muted-foreground">{request.order.customerEmail}</div></td>
-                <td className="p-3">{new Date(request.createdAt).toLocaleDateString()}</td>
-                <td className="p-3"><Badge variant={request.status === "REJECTED" ? "destructive" : "outline"}>{request.status}</Badge></td>
-                <td className="p-3">৳{request.requestedAmount.toFixed(2)}</td>
-                <td className="p-3 text-right"><Link href={`/admin/returns/${request.id}`} className="font-medium text-primary hover:underline">View</Link></td>
+              <tr>
+                <td colSpan={6} className="text-muted-foreground p-8 text-center">
+                  No return requests found.
+                </td>
               </tr>
-            ))}
+            ) : (
+              returns.map((request) => (
+                <tr key={request.id} className="hover:bg-muted/30">
+                  <td className="p-3 font-medium">{request.order.orderNumber}</td>
+                  <td className="p-3">
+                    <div>{request.order.customerName || "Guest"}</div>
+                    <div className="text-muted-foreground text-xs">
+                      {request.order.customerEmail}
+                    </div>
+                  </td>
+                  <td className="p-3">{new Date(request.createdAt).toLocaleDateString()}</td>
+                  <td className="p-3">
+                    <Badge variant={request.status === "REJECTED" ? "destructive" : "outline"}>
+                      {request.status}
+                    </Badge>
+                  </td>
+                  <td className="p-3">৳{request.requestedAmount.toFixed(2)}</td>
+                  <td className="p-3 text-right">
+                    <Link
+                      href={`/admin/returns/${request.id}`}
+                      className="text-primary font-medium hover:underline"
+                    >
+                      View
+                    </Link>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-3">
-          {page > 1 && <Link href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page - 1}`} className="inline-flex size-10 items-center justify-center rounded-sm border">←</Link>}
-          <span className="text-sm font-medium">Page {page} of {totalPages}</span>
-          {page < totalPages && <Link href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page + 1}`} className="inline-flex size-10 items-center justify-center rounded-sm border">→</Link>}
+          {page > 1 && (
+            <Link
+              href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page - 1}`}
+              className="inline-flex size-10 items-center justify-center rounded-sm border"
+            >
+              ←
+            </Link>
+          )}
+          <span className="text-sm font-medium">
+            Page {page} of {totalPages}
+          </span>
+          {page < totalPages && (
+            <Link
+              href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page + 1}`}
+              className="inline-flex size-10 items-center justify-center rounded-sm border"
+            >
+              →
+            </Link>
+          )}
         </div>
       )}
     </div>
@@ -81,7 +137,12 @@ export default async function AdminReturnsPage({
 }) {
   return (
     <div className="space-y-6">
-      <div><h1 className="text-3xl font-bold tracking-tight">Returns &amp; Refunds</h1><p className="text-muted-foreground">Review customer return requests and payment refunds.</p></div>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Returns &amp; Refunds</h1>
+        <p className="text-muted-foreground">
+          Review customer return requests and payment refunds.
+        </p>
+      </div>
       <Suspense fallback={<div className="p-12 text-center">Loading returns...</div>}>
         <ReturnsTable searchParams={await searchParams} />
       </Suspense>

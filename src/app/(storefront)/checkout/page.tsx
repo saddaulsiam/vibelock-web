@@ -39,14 +39,16 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <Section className="min-h-screen bg-background py-8 sm:py-10">
+    <Section className="bg-background min-h-screen py-8 sm:py-10">
       <Container>
-        <div className="mb-7 border-b border-border pb-5 sm:mb-9 sm:pb-6">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        <div className="border-border mb-7 border-b pb-5 sm:mb-9 sm:pb-6">
+          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / Checkout
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">Checkout</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+            Checkout
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
             Add your contact and delivery details, then choose how you would like to pay.
           </p>
         </div>

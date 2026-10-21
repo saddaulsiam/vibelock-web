@@ -4,15 +4,7 @@ import { useState } from "react";
 import type { NotificationPreferences } from "@/lib/account/notification-types";
 import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
 import { toast } from "sonner";
-import {
-  Bell,
-  PackageCheck,
-  Flame,
-  RefreshCw,
-  Tag,
-  Loader2,
-  Check,
-} from "lucide-react";
+import { Bell, PackageCheck, Flame, RefreshCw, Tag, Loader2, Check } from "lucide-react";
 
 interface NotificationPreferencesCardProps {
   initialPreferences: NotificationPreferences;
@@ -21,8 +13,7 @@ interface NotificationPreferencesCardProps {
 export function NotificationPreferencesCard({
   initialPreferences,
 }: NotificationPreferencesCardProps) {
-  const [prefs, setPrefs] =
-    useState<NotificationPreferences>(initialPreferences);
+  const [prefs, setPrefs] = useState<NotificationPreferences>(initialPreferences);
   const [pending, setPending] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -78,16 +69,16 @@ export function NotificationPreferencesCard({
   return (
     <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-5 mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-5">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#101114] text-white">
             <Bell className="size-5 text-[#00D9FF]" />
           </div>
           <div>
-            <h2 className="text-lg font-black uppercase tracking-tight text-[#101114] sm:text-xl">
+            <h2 className="text-lg font-black tracking-tight text-[#101114] uppercase sm:text-xl">
               Notification Preferences
             </h2>
-            <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+            <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
               Control which updates, drop alerts, and delivery notifications you receive.
             </p>
           </div>
@@ -125,23 +116,21 @@ export function NotificationPreferencesCard({
                     className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-colors ${
                       isChecked
                         ? "border-[#101114] bg-[#101114] text-[#00D9FF]"
-                        : "border-[#101114]/10 bg-white text-muted-foreground"
+                        : "text-muted-foreground border-[#101114]/10 bg-white"
                     }`}
                   >
                     <Icon className="size-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#101114]">
-                        {opt.title}
-                      </span>
+                      <span className="text-xs font-bold text-[#101114]">{opt.title}</span>
                       {opt.badge && (
-                        <span className="rounded-full bg-[#101114]/5 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#101114]">
+                        <span className="rounded-full bg-[#101114]/5 px-2 py-0.5 text-[9px] font-bold tracking-wider text-[#101114] uppercase">
                           {opt.badge}
                         </span>
                       )}
                     </div>
-                    <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-xl">
+                    <p className="text-muted-foreground mt-1 max-w-xl text-xs leading-relaxed">
                       {opt.desc}
                     </p>
                   </div>
@@ -177,7 +166,7 @@ export function NotificationPreferencesCard({
           <button
             type="submit"
             disabled={pending}
-            className="inline-flex items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f2229] active:scale-95 disabled:opacity-50 shadow-sm"
+            className="inline-flex items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#1f2229] active:scale-95 disabled:opacity-50"
           >
             {pending ? (
               <span className="flex items-center gap-1.5">

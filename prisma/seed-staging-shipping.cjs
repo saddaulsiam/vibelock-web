@@ -1,11 +1,11 @@
 /* eslint @typescript-eslint/no-require-imports: "off" */
 /**
  * Idempotent Staging-Only Shipping Configuration Setup
- * 
+ *
  * Configures default active shipping zones and methods for Bangladesh delivery:
  * - Inside Dhaka: Standard Delivery (configurable default: 60.00 BDT)
  * - Outside Dhaka: Standard Delivery (configurable default: 120.00 BDT)
- * 
+ *
  * Safety:
  * - Does NOT modify production databases automatically.
  * - Idempotent: safe to run multiple times without creating duplicate zones or methods.
@@ -120,7 +120,9 @@ async function main() {
         isActive: true,
       },
     });
-    console.log(`Created ShippingMethod: Standard Delivery (${created.cost} BDT) for Outside Dhaka`);
+    console.log(
+      `Created ShippingMethod: Standard Delivery (${created.cost} BDT) for Outside Dhaka`
+    );
   } else {
     const updated = await prisma.shippingMethod.update({
       where: { id: outsideDhakaMethod.id },
@@ -129,7 +131,9 @@ async function main() {
         isActive: true,
       },
     });
-    console.log(`Updated ShippingMethod: Standard Delivery (${updated.cost} BDT) for Outside Dhaka`);
+    console.log(
+      `Updated ShippingMethod: Standard Delivery (${updated.cost} BDT) for Outside Dhaka`
+    );
   }
 
   console.log("Staging shipping configuration completed successfully.");

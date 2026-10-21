@@ -50,7 +50,8 @@ export function ProductProfitabilityDrilldown({
     });
   };
 
-  const allExpanded = data.products.length > 0 && data.products.every((p) => expandedIds.has(p.productId));
+  const allExpanded =
+    data.products.length > 0 && data.products.every((p) => expandedIds.has(p.productId));
 
   const toggleAll = () => {
     if (allExpanded) {
@@ -81,20 +82,28 @@ export function ProductProfitabilityDrilldown({
   };
 
   return (
-    <section className="border border-[#101114]/10 bg-white" aria-labelledby="product-profitability-heading">
+    <section
+      className="border border-[#101114]/10 bg-white"
+      aria-labelledby="product-profitability-heading"
+    >
       <div className="border-b border-[#101114]/10 p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h2 id="product-profitability-heading" className="text-xl font-semibold tracking-tight text-[#101114]">
+              <h2
+                id="product-profitability-heading"
+                className="text-xl font-semibold tracking-tight text-[#101114]"
+              >
                 Product &amp; SKU profitability
               </h2>
-              <Badge variant="outline" className="font-normal text-xs">
+              <Badge variant="outline" className="text-xs font-normal">
                 {data.total.toLocaleString("en-BD")} {data.total === 1 ? "product" : "products"}
               </Badge>
             </div>
-            <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground">
-              Product-level rollups with expandable SKU variant drilldown. Net sales reflects retained merchandise value after line discounts and order coupon allocations. Payment refunds are accounted for at the order summary level.
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              Product-level rollups with expandable SKU variant drilldown. Net sales reflects
+              retained merchandise value after line discounts and order coupon allocations. Payment
+              refunds are accounted for at the order summary level.
             </p>
           </div>
 
@@ -103,8 +112,10 @@ export function ProductProfitabilityDrilldown({
               <button
                 type="button"
                 onClick={toggleAll}
-                className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/15 bg-white px-3 text-xs font-medium text-[#101114] hover:bg-muted"
-                aria-label={allExpanded ? "Collapse all product variants" : "Expand all product variants"}
+                className="hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/15 bg-white px-3 text-xs font-medium text-[#101114]"
+                aria-label={
+                  allExpanded ? "Collapse all product variants" : "Expand all product variants"
+                }
               >
                 <Layers className="size-3.5" aria-hidden="true" />
                 {allExpanded ? "Collapse all" : "Expand all"}
@@ -119,7 +130,10 @@ export function ProductProfitabilityDrilldown({
               Search by product name or SKU
             </label>
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden="true" />
+              <Search
+                className="text-muted-foreground absolute top-2.5 left-2.5 size-4"
+                aria-hidden="true"
+              />
               <Input
                 id={searchInputId}
                 name="q"
@@ -155,10 +169,11 @@ export function ProductProfitabilityDrilldown({
                 <Link
                   key={key}
                   href={buildHref({ sort: key, pPage: undefined })}
-                  className={`rounded-sm px-2 py-1 transition-colors ${isActive
+                  className={`rounded-sm px-2 py-1 transition-colors ${
+                    isActive
                       ? "bg-[#101114] font-semibold text-white"
                       : "text-muted-foreground hover:bg-muted hover:text-[#101114]"
-                    }`}
+                  }`}
                   aria-current={isActive ? "true" : undefined}
                 >
                   {label}
@@ -171,7 +186,7 @@ export function ProductProfitabilityDrilldown({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[840px] text-left text-sm">
-          <thead className="border-b border-[#101114]/10 bg-muted/40 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          <thead className="bg-muted/40 text-muted-foreground border-b border-[#101114]/10 text-xs font-semibold tracking-wider uppercase">
             <tr>
               <th scope="col" className="p-3.5">
                 Product / Variant SKU
@@ -208,13 +223,13 @@ export function ProductProfitabilityDrilldown({
           <tbody className="divide-y divide-[#101114]/10">
             {data.products.length === 0 ? (
               <tr>
-                <td colSpan={10} className="p-10 text-center text-muted-foreground">
+                <td colSpan={10} className="text-muted-foreground p-10 text-center">
                   {currentSearch ? (
                     <div className="space-y-2">
                       <p>No products or SKUs match &ldquo;{currentSearch}&rdquo; in this period.</p>
                       <Link
                         href={buildHref({ q: undefined, pPage: undefined })}
-                        className="text-xs font-medium text-primary underline underline-offset-4"
+                        className="text-primary text-xs font-medium underline underline-offset-4"
                       >
                         Clear search filter
                       </Link>
@@ -245,28 +260,31 @@ export function ProductProfitabilityDrilldown({
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 p-4 text-xs">
           <p className="text-muted-foreground">
             Showing page <span className="font-semibold text-[#101114]">{data.page}</span> of{" "}
-            <span className="font-semibold text-[#101114]">{data.totalPages}</span> ({data.total.toLocaleString("en-BD")} products)
+            <span className="font-semibold text-[#101114]">{data.totalPages}</span> (
+            {data.total.toLocaleString("en-BD")} products)
           </p>
           <div className="flex items-center gap-2">
             <Link
               href={buildHref({ pPage: data.page - 1 })}
-              className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${data.page <= 1
+              className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
+                data.page <= 1
                   ? "pointer-events-none opacity-40"
-                  : "border-[#101114]/15 bg-white text-[#101114] hover:bg-muted"
-                }`}
+                  : "hover:bg-muted border-[#101114]/15 bg-white text-[#101114]"
+              }`}
               aria-disabled={data.page <= 1}
             >
               Previous
             </Link>
-            <span className="px-2 text-muted-foreground">
+            <span className="text-muted-foreground px-2">
               {data.page} / {data.totalPages}
             </span>
             <Link
               href={buildHref({ pPage: data.page + 1 })}
-              className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${data.page >= data.totalPages
+              className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
+                data.page >= data.totalPages
                   ? "pointer-events-none opacity-40"
-                  : "border-[#101114]/15 bg-white text-[#101114] hover:bg-muted"
-                }`}
+                  : "hover:bg-muted border-[#101114]/15 bg-white text-[#101114]"
+              }`}
               aria-disabled={data.page >= data.totalPages}
             >
               Next
@@ -289,13 +307,13 @@ function ProductRowGroup({
 }) {
   return (
     <>
-      <tr className="group transition-colors hover:bg-muted/30">
+      <tr className="group hover:bg-muted/30 transition-colors">
         <td className="p-3.5">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onToggle}
-              className="inline-flex size-6 shrink-0 items-center justify-center rounded-sm border border-[#101114]/15 text-[#101114] transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="hover:bg-muted inline-flex size-6 shrink-0 items-center justify-center rounded-sm border border-[#101114]/15 text-[#101114] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? "Collapse" : "Expand"} variants for ${product.productName}`}
             >
@@ -308,12 +326,12 @@ function ProductRowGroup({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="font-semibold text-[#101114]">{product.productName}</span>
-                <Badge variant="outline" className="h-4.5 px-1.5 text-[10px] text-muted-foreground">
+                <Badge variant="outline" className="text-muted-foreground h-4.5 px-1.5 text-[10px]">
                   {product.variantCount} {product.variantCount === 1 ? "variant" : "variants"}
                 </Badge>
                 {product.isAnomaly && (
                   <Badge variant="destructive" className="h-4 px-1.5 text-[10px]">
-                    <AlertTriangle className="mr-1 size-2.5 inline" aria-hidden="true" />
+                    <AlertTriangle className="mr-1 inline size-2.5" aria-hidden="true" />
                     Over-return
                   </Badge>
                 )}
@@ -321,55 +339,66 @@ function ProductRowGroup({
             </div>
           </div>
         </td>
-        <td className="p-3.5 text-right font-medium tabular-nums">{product.soldUnits.toLocaleString("en-BD")}</td>
-        <td className="p-3.5 text-right font-medium tabular-nums text-amber-700">
+        <td className="p-3.5 text-right font-medium tabular-nums">
+          {product.soldUnits.toLocaleString("en-BD")}
+        </td>
+        <td className="p-3.5 text-right font-medium text-amber-700 tabular-nums">
           {product.returnedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="p-3.5 text-right font-semibold tabular-nums text-[#101114]">
+        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
           {product.retainedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="p-3.5 text-right tabular-nums text-muted-foreground">
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
           {product.returnRate !== null ? `${product.returnRate.toFixed(1)}%` : "—"}
         </td>
-        <td className="p-3.5 text-right tabular-nums text-muted-foreground">{formatBdt(product.grossSales)}</td>
-        <td className="p-3.5 text-right font-semibold tabular-nums text-[#101114]">{formatBdt(product.netSales)}</td>
-        <td className="p-3.5 text-right tabular-nums text-muted-foreground">{formatBdt(product.cogs)}</td>
-        <td className="p-3.5 text-right font-semibold tabular-nums text-emerald-700">{formatBdt(product.profit)}</td>
-        <td className="p-3.5 text-right font-semibold tabular-nums text-[#101114]">
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
+          {formatBdt(product.grossSales)}
+        </td>
+        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
+          {formatBdt(product.netSales)}
+        </td>
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
+          {formatBdt(product.cogs)}
+        </td>
+        <td className="p-3.5 text-right font-semibold text-emerald-700 tabular-nums">
+          {formatBdt(product.profit)}
+        </td>
+        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
           {product.margin !== null ? `${product.margin.toFixed(1)}%` : "—"}
         </td>
       </tr>
 
       {isExpanded &&
         (product.variants.length === 0 ? (
-          <tr className="bg-muted/15 text-xs text-muted-foreground">
-            <td colSpan={10} className="py-2.5 pl-12 pr-4 italic">
+          <tr className="bg-muted/15 text-muted-foreground text-xs">
+            <td colSpan={10} className="py-2.5 pr-4 pl-12 italic">
               No variant details recorded for this product.
             </td>
           </tr>
         ) : (
-          product.variants.map((variant) => (
-            <VariantSubRow key={variant.sku} variant={variant} />
-          ))
+          product.variants.map((variant) => <VariantSubRow key={variant.sku} variant={variant} />)
         ))}
     </>
   );
 }
 
 function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
-  const attributes = [variant.size ? `Size: ${variant.size}` : null, variant.color ? `Color: ${variant.color}` : null]
+  const attributes = [
+    variant.size ? `Size: ${variant.size}` : null,
+    variant.color ? `Color: ${variant.color}` : null,
+  ]
     .filter(Boolean)
     .join(" · ");
 
   return (
     <tr className="border-b border-[#101114]/5 bg-[#FAF9F6]/80 text-xs transition-colors hover:bg-[#FAF9F6]">
-      <td className="py-2.5 pl-11 pr-3">
+      <td className="py-2.5 pr-3 pl-11">
         <div className="flex flex-wrap items-center gap-2">
           <span className="font-mono text-[11px] font-medium text-[#101114]">{variant.sku}</span>
           {attributes ? (
-            <span className="text-[11px] text-muted-foreground">({attributes})</span>
+            <span className="text-muted-foreground text-[11px]">({attributes})</span>
           ) : (
-            <span className="text-[11px] text-muted-foreground italic">(Default variant)</span>
+            <span className="text-muted-foreground text-[11px] italic">(Default variant)</span>
           )}
           {variant.isAnomaly && (
             <Badge variant="destructive" className="h-3.5 px-1 text-[9px]">
@@ -378,27 +407,31 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
           )}
         </div>
       </td>
-      <td className="py-2.5 pr-3.5 text-right tabular-nums text-muted-foreground">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
         {variant.soldUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right tabular-nums text-amber-700">
+      <td className="py-2.5 pr-3.5 text-right text-amber-700 tabular-nums">
         {variant.returnedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium tabular-nums text-[#101114]">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
         {variant.retainedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right tabular-nums text-muted-foreground">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
         {variant.returnRate !== null ? `${variant.returnRate.toFixed(1)}%` : "—"}
       </td>
-      <td className="py-2.5 pr-3.5 text-right tabular-nums text-muted-foreground">{formatBdt(variant.grossSales)}</td>
-      <td className="py-2.5 pr-3.5 text-right font-medium tabular-nums text-[#101114]">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+        {formatBdt(variant.grossSales)}
+      </td>
+      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
         {formatBdt(variant.netSales)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right tabular-nums text-muted-foreground">{formatBdt(variant.cogs)}</td>
-      <td className="py-2.5 pr-3.5 text-right font-medium tabular-nums text-emerald-700">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+        {formatBdt(variant.cogs)}
+      </td>
+      <td className="py-2.5 pr-3.5 text-right font-medium text-emerald-700 tabular-nums">
         {formatBdt(variant.profit)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium tabular-nums text-[#101114]">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
         {variant.margin !== null ? `${variant.margin.toFixed(1)}%` : "—"}
       </td>
     </tr>

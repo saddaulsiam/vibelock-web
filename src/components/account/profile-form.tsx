@@ -14,7 +14,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sparkles,
-  User
+  User,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -124,7 +124,7 @@ export function ProfileForm({
 
       {error && (
         <div
-          className="rounded-xl border border-destructive/20 bg-destructive/10 p-3.5 text-xs font-semibold text-destructive"
+          className="border-destructive/20 bg-destructive/10 text-destructive rounded-xl border p-3.5 text-xs font-semibold"
           role="alert"
         >
           {error}
@@ -133,7 +133,7 @@ export function ProfileForm({
 
       {/* 1. Profile Avatar Section */}
       <div className="rounded-2xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#101114]/10 pb-5">
+        <div className="flex flex-col items-start justify-between gap-4 border-b border-[#101114]/10 pb-5 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
             <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[#101114]/15 bg-white shadow-sm ring-4 ring-[#00D9FF]/20">
               {imageUrl ? (
@@ -160,7 +160,7 @@ export function ProfileForm({
                   Streetwear Identity
                 </span>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="text-muted-foreground mt-1 text-xs">
                 Choose a signature VibeLock avatar preset or enter a custom image URL.
               </p>
             </div>
@@ -173,7 +173,7 @@ export function ProfileForm({
                 setImageUrl("");
                 setCustomUrlInput("");
               }}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition-colors"
+              className="text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
             >
               Reset to Initials
             </button>
@@ -182,7 +182,7 @@ export function ProfileForm({
 
         {/* Preset Selector */}
         <div className="mt-4 space-y-3">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#101114]">
+          <p className="text-[11px] font-bold tracking-wider text-[#101114] uppercase">
             Select VibeLock Signature Preset:
           </p>
           <div className="flex flex-wrap gap-3">
@@ -217,7 +217,7 @@ export function ProfileForm({
             <button
               type="button"
               onClick={() => setShowCustomInput(!showCustomInput)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#101114]/30 bg-white/70 px-3 py-2 text-xs font-semibold text-[#101114] hover:bg-white transition-all"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-dashed border-[#101114]/30 bg-white/70 px-3 py-2 text-xs font-semibold text-[#101114] transition-all hover:bg-white"
             >
               <Camera className="size-3.5 text-[#0099b8]" />
               <span>{showCustomInput ? "Hide Custom URL" : "Custom Image URL"}</span>
@@ -255,7 +255,10 @@ export function ProfileForm({
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {/* Full Name */}
         <div className="space-y-2">
-          <Label htmlFor="profile-name" className="flex items-center gap-1.5 text-xs font-bold text-[#101114]">
+          <Label
+            htmlFor="profile-name"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#101114]"
+          >
             <User className="size-3.5 text-[#0099b8]" />
             <span>Full Name</span>
           </Label>
@@ -268,7 +271,7 @@ export function ProfileForm({
             placeholder="Your name"
             className="rounded-xl border-[#101114]/15 bg-white text-xs focus-visible:ring-[#00D9FF]"
           />
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-muted-foreground text-[11px]">
             Displayed on order invoices, packaging slips, and greetings.
           </p>
         </div>
@@ -276,7 +279,10 @@ export function ProfileForm({
         {/* Email Address with Verification Badge */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="profile-email" className="flex items-center gap-1.5 text-xs font-bold text-[#101114]">
+            <Label
+              htmlFor="profile-email"
+              className="flex items-center gap-1.5 text-xs font-bold text-[#101114]"
+            >
               <Mail className="size-3.5 text-[#0099b8]" />
               <span>Email Address</span>
             </Label>
@@ -297,7 +303,7 @@ export function ProfileForm({
             value={email}
             disabled
             suppressHydrationWarning
-            className="rounded-xl border-[#101114]/10 bg-[#F3F0E8]/50 text-xs text-muted-foreground cursor-not-allowed"
+            className="text-muted-foreground cursor-not-allowed rounded-xl border-[#101114]/10 bg-[#F3F0E8]/50 text-xs"
           />
 
           {!emailVerified && (
@@ -325,11 +331,14 @@ export function ProfileForm({
 
         {/* Contact Phone Number */}
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="profile-phone" className="flex items-center gap-1.5 text-xs font-bold text-[#101114]">
+          <Label
+            htmlFor="profile-phone"
+            className="flex items-center gap-1.5 text-xs font-bold text-[#101114]"
+          >
             <Phone className="size-3.5 text-[#0099b8]" />
             <span>Delivery Contact Phone</span>
           </Label>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
             <div className="relative flex-1">
               <Input
                 id="profile-phone"
@@ -341,26 +350,25 @@ export function ProfileForm({
             </div>
             <Link
               href="/account/addresses"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-2 text-xs font-bold text-[#101114] hover:bg-[#F3F0E8] transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-2 text-xs font-bold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
             >
               <span>Manage Addresses</span>
-              <ExternalLink className="size-3.5 text-muted-foreground" />
+              <ExternalLink className="text-muted-foreground size-3.5" />
             </Link>
           </div>
-          <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Your delivery phone number is synced with your checkout addresses to ensure Steadfast and Pathao riders can contact you before drop deliveries.
+          <p className="text-muted-foreground text-[11px] leading-relaxed">
+            Your delivery phone number is synced with your checkout addresses to ensure Steadfast
+            and Pathao riders can contact you before drop deliveries.
           </p>
         </div>
       </div>
-
-
 
       {/* 4. Action Bar */}
       <div className="flex items-center justify-end gap-3 pt-2">
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f2229] active:scale-95 disabled:opacity-50 shadow-sm"
+          className="inline-flex items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-bold text-white shadow-sm transition-all hover:bg-[#1f2229] active:scale-95 disabled:opacity-50"
         >
           {pending ? (
             <span className="flex items-center gap-1.5">

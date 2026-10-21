@@ -862,10 +862,7 @@ describe("admin reconciliation", () => {
         }
         if (typeof node === "object" && node !== null && "props" in node) {
           const jsx = node as JsxNode;
-          if (
-            jsx.type === Form ||
-            jsx.props?.action === "/admin/reports/reconciliation"
-          ) {
+          if (jsx.type === Form || jsx.props?.action === "/admin/reports/reconciliation") {
             forms.push(jsx);
           }
           walk(jsx.props?.children);

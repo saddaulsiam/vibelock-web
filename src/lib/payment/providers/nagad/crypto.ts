@@ -37,7 +37,10 @@ export function formatPemKey(rawKey: string, type: "PUBLIC" | "PRIVATE"): string
  * Internal helper to parse and validate an RSA public key into a crypto.KeyObject.
  * Supports standard SPKI (-----BEGIN PUBLIC KEY-----) and PKCS#1 (-----BEGIN RSA PUBLIC KEY-----).
  */
-export function parsePublicKey(rawKey: string): { keyObject: crypto.KeyObject; format: "SPKI" | "PKCS#1" } {
+export function parsePublicKey(rawKey: string): {
+  keyObject: crypto.KeyObject;
+  format: "SPKI" | "PKCS#1";
+} {
   if (!rawKey || !rawKey.trim()) {
     throw new Error("Public key cannot be empty");
   }
@@ -70,7 +73,10 @@ export function parsePublicKey(rawKey: string): { keyObject: crypto.KeyObject; f
  * Internal helper to parse and validate an RSA private key into a crypto.KeyObject.
  * Supports standard PKCS#1 (-----BEGIN RSA PRIVATE KEY-----) and PKCS#8 (-----BEGIN PRIVATE KEY-----).
  */
-export function parsePrivateKey(rawKey: string): { keyObject: crypto.KeyObject; format: "PKCS#1" | "PKCS#8" } {
+export function parsePrivateKey(rawKey: string): {
+  keyObject: crypto.KeyObject;
+  format: "PKCS#1" | "PKCS#8";
+} {
   if (!rawKey || !rawKey.trim()) {
     throw new Error("Private key cannot be empty");
   }

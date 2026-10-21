@@ -48,7 +48,7 @@ export default function LoginPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
+          {error && <div className="text-destructive text-center text-sm font-medium">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -85,7 +85,7 @@ export default function LoginPage() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background text-muted-foreground px-2">Or continue with</span>
           </div>
         </div>
         <form action={googleSignInAction} className="w-full">
@@ -93,9 +93,9 @@ export default function LoginPage() {
             Google
           </SubmitButton>
         </form>
-        <div className="text-center text-sm text-muted-foreground pt-2">
+        <div className="text-muted-foreground pt-2 text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-semibold text-primary hover:underline">
+          <Link href="/register" className="text-primary font-semibold hover:underline">
             Sign up
           </Link>
         </div>

@@ -50,7 +50,10 @@ export async function getAdminProducts() {
   return products.map((product) => {
     const sellingPrices = product.variants.map((variant) => variant.sellingPrice);
     const discountPrices = product.variants
-      .filter((variant) => variant.discountPrice !== null && variant.discountPrice.lt(variant.sellingPrice))
+      .filter(
+        (variant) =>
+          variant.discountPrice !== null && variant.discountPrice.lt(variant.sellingPrice)
+      )
       .map((variant) => variant.discountPrice!);
     return {
       id: product.id,
@@ -83,7 +86,15 @@ export async function getAdminProductFormData(id?: string) {
             categories: { select: { id: true } },
             variants: {
               orderBy: [{ createdAt: "asc" }, { sku: "asc" }],
-              select: { id: true, sku: true, size: true, color: true, costPrice: true, sellingPrice: true, discountPrice: true },
+              select: {
+                id: true,
+                sku: true,
+                size: true,
+                color: true,
+                costPrice: true,
+                sellingPrice: true,
+                discountPrice: true,
+              },
             },
             images: {
               orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],

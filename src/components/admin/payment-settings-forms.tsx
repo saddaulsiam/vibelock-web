@@ -38,14 +38,18 @@ export function TogglePaymentMethodForm({
 }) {
   const [state, action] = useActionState(togglePaymentMethodAction, initialState);
 
-  if (!isConfigured && !isEnabled && (code === "SSLCOMMERZ" || code === "BKASH" || code === "NAGAD")) {
+  if (
+    !isConfigured &&
+    !isEnabled &&
+    (code === "SSLCOMMERZ" || code === "BKASH" || code === "NAGAD")
+  ) {
     return (
-      <div className="text-xs text-amber-700 font-medium">
+      <div className="text-xs font-medium text-amber-700">
         {code === "BKASH"
           ? "Configure bKash credentials in .env to enable"
           : code === "NAGAD"
-          ? "Configure Nagad credentials in .env to enable"
-          : "Configure store credentials in .env to enable"}
+            ? "Configure Nagad credentials in .env to enable"
+            : "Configure store credentials in .env to enable"}
       </div>
     );
   }
@@ -58,13 +62,13 @@ export function TogglePaymentMethodForm({
       <SubmitButton isEnabled={isEnabled} />
 
       {state.error ? (
-        <span role="alert" className="text-xs text-red-600 font-medium">
+        <span role="alert" className="text-xs font-medium text-red-600">
           {state.error}
         </span>
       ) : null}
 
       {state.message ? (
-        <span role="status" className="text-xs text-emerald-700 font-medium">
+        <span role="status" className="text-xs font-medium text-emerald-700">
           {state.message}
         </span>
       ) : null}

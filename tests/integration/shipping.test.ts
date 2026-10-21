@@ -472,7 +472,11 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     ).resolves.toEqual({ success: false, error: "Steadfast rejected the shipment." });
     vi.restoreAllMocks();
 
-    const missing = new SteadfastCourierProvider(undefined, undefined, "https://steadfast.test/api/v1");
+    const missing = new SteadfastCourierProvider(
+      undefined,
+      undefined,
+      "https://steadfast.test/api/v1"
+    );
     await expect(
       missing.createShipment({
         orderId: "order-1",
@@ -601,7 +605,9 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     await service.syncShipmentStatus(providerShipmentId);
     deliveredFetchSpy.mockRestore();
 
-    const deliveredShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id } });
+    const deliveredShipment = await prisma.shipment.findUniqueOrThrow({
+      where: { id: shipment.id },
+    });
     expect(deliveredShipment.status).toBe("DELIVERED");
     expect(deliveredShipment.deliveredAt).not.toBeNull();
 
@@ -636,11 +642,15 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     await service.syncShipmentStatus(cancelShipmentId);
     pendingCancelFetchSpy.mockRestore();
 
-    const intermediateShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: cancelShipment.id } });
+    const intermediateShipment = await prisma.shipment.findUniqueOrThrow({
+      where: { id: cancelShipment.id },
+    });
     expect(intermediateShipment.status).toBe("IN_TRANSIT");
     expect(intermediateShipment.cancelledAt).toBeNull();
 
-    const intermediateOrder = await prisma.order.findUniqueOrThrow({ where: { id: cancelOrder.id } });
+    const intermediateOrder = await prisma.order.findUniqueOrThrow({
+      where: { id: cancelOrder.id },
+    });
     expect(intermediateOrder.status).toBe("SHIPPED");
 
     // Confirmed cancelled transitions IN_TRANSIT to CANCELLED
@@ -653,7 +663,9 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     await service.syncShipmentStatus(cancelShipmentId);
     confirmedCancelFetchSpy.mockRestore();
 
-    const finalCancelShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: cancelShipment.id } });
+    const finalCancelShipment = await prisma.shipment.findUniqueOrThrow({
+      where: { id: cancelShipment.id },
+    });
     expect(finalCancelShipment.status).toBe("CANCELLED");
     expect(finalCancelShipment.cancelledAt).not.toBeNull();
   }, 15000);
@@ -684,7 +696,9 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     await service.syncShipmentStatus(excShipmentId);
     excFetchSpy.mockRestore();
 
-    const failedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: excShipment.id } });
+    const failedShipment = await prisma.shipment.findUniqueOrThrow({
+      where: { id: excShipment.id },
+    });
     expect(failedShipment.status).toBe("FAILED");
 
     // Later cancelled transition from FAILED to CANCELLED
@@ -697,7 +711,9 @@ describe("Phase 3K - Shipping & Delivery Integration", () => {
     await service.syncShipmentStatus(excShipmentId);
     excCancelFetchSpy.mockRestore();
 
-    const terminatedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: excShipment.id } });
+    const terminatedShipment = await prisma.shipment.findUniqueOrThrow({
+      where: { id: excShipment.id },
+    });
     expect(terminatedShipment.status).toBe("CANCELLED");
   }, 15000);
 

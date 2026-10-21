@@ -23,8 +23,12 @@ export default function AccountError({
       <Container>
         <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10">
           <AlertCircle className="mx-auto mb-5 size-8 text-[#101114]" aria-hidden="true" />
-          <h1 className="text-2xl font-semibold tracking-tight text-[#101114]">Account page unavailable</h1>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">Please try again, or return to your account overview.</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#101114]">
+            Account page unavailable
+          </h1>
+          <p className="text-muted-foreground mt-3 text-sm leading-6">
+            Please try again, or return to your account overview.
+          </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Button
               onClick={reset}
@@ -35,7 +39,7 @@ export default function AccountError({
             </Button>
             <Link
               href="/account"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               Account overview
             </Link>

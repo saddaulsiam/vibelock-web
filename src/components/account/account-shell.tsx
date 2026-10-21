@@ -44,7 +44,7 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
       {/* ── Mobile Sticky Top Bar (hidden on lg+) ── */}
       <div className="sticky top-0 z-40 flex items-center justify-between border-b border-[#101114]/10 bg-[#F3F0E8]/95 px-4 py-3 backdrop-blur-sm lg:hidden">
         <div className="flex flex-col leading-tight">
-          <span className="text-[10px] font-semibold uppercase tracking-widest text-[#101114]/40">
+          <span className="text-[10px] font-semibold tracking-widest text-[#101114]/40 uppercase">
             My Account
           </span>
           <span className="text-sm font-bold text-[#101114]">{pageLabel}</span>
@@ -68,7 +68,7 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
         aria-hidden="true"
         onClick={() => setDrawerOpen(false)}
         className={`fixed inset-0 z-50 bg-[#101114]/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
-          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          drawerOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
       />
 
@@ -85,12 +85,10 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
         {/* Drawer Header */}
         <div className="flex items-center justify-between border-b border-[#101114]/10 bg-white px-5 py-4">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#00D9FF]">
+            <p className="text-[10px] font-bold tracking-widest text-[#00D9FF] uppercase">
               VibeLock
             </p>
-            <p className="text-sm font-black uppercase tracking-tight text-[#101114]">
-              My Account
-            </p>
+            <p className="text-sm font-black tracking-tight text-[#101114] uppercase">My Account</p>
           </div>
           <button
             type="button"
@@ -116,22 +114,15 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
       </div>
 
       {/* ── 2-Column Responsive Dashboard Shell ── */}
-      <div className="mx-auto w-full max-w-360 px-4 py-6 sm:px-6 sm:py-8 lg:py-10 lg:px-8 flex-1">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] xl:gap-8 items-start">
-
+      <div className="mx-auto w-full max-w-360 flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] xl:gap-8">
           {/* Persistent Left Sidebar — desktop only */}
-          <div className="hidden lg:block lg:sticky lg:top-24">
-            <AccountSidebar
-              profile={profile}
-              onOpenCoupons={() => setCouponsModalOpen(true)}
-            />
+          <div className="hidden lg:sticky lg:top-24 lg:block">
+            <AccountSidebar profile={profile} onOpenCoupons={() => setCouponsModalOpen(true)} />
           </div>
 
           {/* Right Content Area */}
-          <main className="min-w-0 flex-1">
-            {children}
-          </main>
-
+          <main className="min-w-0 flex-1">{children}</main>
         </div>
       </div>
 
@@ -144,4 +135,3 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
     </div>
   );
 }
-

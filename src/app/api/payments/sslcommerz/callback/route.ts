@@ -56,7 +56,9 @@ async function handleCallback(req: NextRequest) {
     }
 
     const paymentState =
-      result.verification.status === "SUCCESS" ? "success" : result.verification.status.toLowerCase();
+      result.verification.status === "SUCCESS"
+        ? "success"
+        : result.verification.status.toLowerCase();
     const redirectUrl = new URL(
       `/order-success/${encodeURIComponent(result.orderNumber)}`,
       publicEnv.NEXT_PUBLIC_APP_URL
@@ -65,7 +67,10 @@ async function handleCallback(req: NextRequest) {
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: unknown) {
     const error = err as Error;
-    console.error("[SSLCommerz Callback Error] Payment callback processing failed:", error?.message);
+    console.error(
+      "[SSLCommerz Callback Error] Payment callback processing failed:",
+      error?.message
+    );
 
     if (isIpn) {
       const isRetryable =

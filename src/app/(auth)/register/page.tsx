@@ -75,7 +75,7 @@ export default function RegisterPage() {
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="text-sm text-destructive text-center font-medium">{error}</div>}
+          {error && <div className="text-destructive text-center text-sm font-medium">{error}</div>}
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -87,7 +87,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               autoComplete="name"
             />
-            {fieldErrors.name && <p className="text-xs text-destructive">{fieldErrors.name}</p>}
+            {fieldErrors.name && <p className="text-destructive text-xs">{fieldErrors.name}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -101,7 +101,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               autoComplete="email"
             />
-            {fieldErrors.email && <p className="text-xs text-destructive">{fieldErrors.email}</p>}
+            {fieldErrors.email && <p className="text-destructive text-xs">{fieldErrors.email}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -115,7 +115,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
             />
             {fieldErrors.password && (
-              <p className="text-xs text-destructive">{fieldErrors.password}</p>
+              <p className="text-destructive text-xs">{fieldErrors.password}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -130,7 +130,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
             />
             {fieldErrors.confirmPassword && (
-              <p className="text-xs text-destructive">{fieldErrors.confirmPassword}</p>
+              <p className="text-destructive text-xs">{fieldErrors.confirmPassword}</p>
             )}
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
@@ -144,7 +144,7 @@ export default function RegisterPage() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background text-muted-foreground px-2">Or continue with</span>
           </div>
         </div>
         <form action={googleSignInAction} className="w-full">
@@ -152,9 +152,9 @@ export default function RegisterPage() {
             Google
           </SubmitButton>
         </form>
-        <div className="text-center text-sm text-muted-foreground pt-2">
+        <div className="text-muted-foreground pt-2 text-center text-sm">
           Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-primary hover:underline">
+          <Link href="/login" className="text-primary font-semibold hover:underline">
             Sign in
           </Link>
         </div>

@@ -49,7 +49,8 @@ function refreshAccount() {
 export async function createAddressAction(input: unknown) {
   const user = await requireUser({ throw: true });
   const parsed = addressSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid address." };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid address." };
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -57,7 +58,13 @@ export async function createAddressAction(input: unknown) {
         await tx.address.updateMany({ where: { userId: user.id }, data: { isDefault: false } });
       }
       await tx.address.create({
-        data: { ...parsed.data, userId: user.id, label: parsed.data.label || null, state: parsed.data.state || null, zip: parsed.data.zip || null },
+        data: {
+          ...parsed.data,
+          userId: user.id,
+          label: parsed.data.label || null,
+          state: parsed.data.state || null,
+          zip: parsed.data.zip || null,
+        },
       });
     });
     refreshAccount();
@@ -71,18 +78,27 @@ export async function createAddressAction(input: unknown) {
 export async function updateAddressAction(id: string, input: unknown) {
   const user = await requireUser({ throw: true });
   const parsed = addressSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid address." };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid address." };
 
   try {
     await prisma.$transaction(async (tx) => {
-      const address = await tx.address.findFirst({ where: { id, userId: user.id }, select: { id: true } });
+      const address = await tx.address.findFirst({
+        where: { id, userId: user.id },
+        select: { id: true },
+      });
       if (!address) throw new Error("Address not found.");
       if (parsed.data.isDefault) {
         await tx.address.updateMany({ where: { userId: user.id }, data: { isDefault: false } });
       }
       await tx.address.update({
         where: { id: address.id },
-        data: { ...parsed.data, label: parsed.data.label || null, state: parsed.data.state || null, zip: parsed.data.zip || null },
+        data: {
+          ...parsed.data,
+          label: parsed.data.label || null,
+          state: parsed.data.state || null,
+          zip: parsed.data.zip || null,
+        },
       });
     });
     refreshAccount();
@@ -109,7 +125,8 @@ export async function deleteAddressAction(id: string) {
 export async function updateProfileAction(input: unknown) {
   const user = await requireUser({ throw: true });
   const parsed = profileSchema.safeParse(input);
-  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid profile data." };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid profile data." };
 
   try {
     await prisma.user.update({

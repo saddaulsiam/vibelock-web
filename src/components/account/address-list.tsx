@@ -45,17 +45,17 @@ export function AddressList({ addresses }: { addresses: Address[] }) {
             className={`relative flex flex-col justify-between rounded-2xl border p-5 transition-all ${
               address.isDefault
                 ? "border-[#00D9FF]/40 bg-[#00D9FF]/5 shadow-xs"
-                : "border-[#101114]/10 bg-white hover:border-[#101114]/25 shadow-xs"
+                : "border-[#101114]/10 bg-white shadow-xs hover:border-[#101114]/25"
             }`}
           >
             <div>
               {/* Top Row: Label badge & default check */}
               <div className="flex items-center justify-between">
                 <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
                     address.isDefault
                       ? "bg-[#00D9FF]/20 text-[#008ba3]"
-                      : "bg-[#101114]/5 text-muted-foreground"
+                      : "text-muted-foreground bg-[#101114]/5"
                   }`}
                 >
                   {label}
@@ -70,7 +70,7 @@ export function AddressList({ addresses }: { addresses: Address[] }) {
               </div>
 
               {/* Address details */}
-              <address className="mt-3.5 text-xs not-italic leading-relaxed text-[#101114]">
+              <address className="mt-3.5 text-xs leading-relaxed text-[#101114] not-italic">
                 <p className="font-semibold">{address.street}</p>
                 <p className="text-muted-foreground mt-0.5">
                   {address.city}

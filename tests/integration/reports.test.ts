@@ -150,20 +150,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Cancelled",
-            sku: `RPT-CI-${crypto.randomUUID()}`,
-            quantity: 1,
-            unitPrice: 999,
-            costPrice: 1,
-            appliedDiscount: 0,
-            taxRate: 0,
-            taxIncluded: false,
-            lineSubtotal: 999,
-            discountAmount: 0,
-            taxAmount: 0,
-            lineTotal: 999,
-          }],
+          create: [
+            {
+              productName: "Cancelled",
+              sku: `RPT-CI-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: 999,
+              costPrice: 1,
+              appliedDiscount: 0,
+              taxRate: 0,
+              taxIncluded: false,
+              lineSubtotal: 999,
+              discountAmount: 0,
+              taxAmount: 0,
+              lineTotal: 999,
+            },
+          ],
         },
       },
     });
@@ -254,7 +256,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-02-01", to: "2099-02-01" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-02-01", to: "2099-02-01" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-02-01",
+      to: "2099-02-01",
+    });
 
     // Summary assertions
     expect(report.summary.orders).toBe(1);
@@ -390,7 +396,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-04-01", to: "2099-04-01" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-04-01", to: "2099-04-01" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-04-01",
+      to: "2099-04-01",
+    });
 
     expect(report.summary.orders).toBe(0);
     expect(report.summary.grossSales).toBe(0);
@@ -428,20 +438,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Pending Item",
-            sku: `PEND-${crypto.randomUUID()}`,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(300),
-            costPrice: new Prisma.Decimal(100),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(300),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(300),
-          }],
+          create: [
+            {
+              productName: "Pending Item",
+              sku: `PEND-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(300),
+              costPrice: new Prisma.Decimal(100),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(300),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(300),
+            },
+          ],
         },
       },
     });
@@ -469,20 +481,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Failed Item",
-            sku: `FAIL-${crypto.randomUUID()}`,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(400),
-            costPrice: new Prisma.Decimal(150),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(400),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(400),
-          }],
+          create: [
+            {
+              productName: "Failed Item",
+              sku: `FAIL-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(400),
+              costPrice: new Prisma.Decimal(150),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(400),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(400),
+            },
+          ],
         },
       },
     });
@@ -563,20 +577,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: product.name,
-            sku: variant.sku,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(300),
-            costPrice: new Prisma.Decimal(100), // Snapshot when order was placed
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(300),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(300),
-          }],
+          create: [
+            {
+              productName: product.name,
+              sku: variant.sku,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(300),
+              costPrice: new Prisma.Decimal(100), // Snapshot when order was placed
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(300),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(300),
+            },
+          ],
         },
       },
     });
@@ -590,7 +606,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-06-01", to: "2099-06-01" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-06-01", to: "2099-06-01" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-06-01",
+      to: "2099-06-01",
+    });
 
     // COGS must use historical OrderItem snapshot 100, NOT the updated variant cost 180
     expect(report.summary.cogs).toBe(100);
@@ -622,27 +642,29 @@ describe("admin reports", () => {
         shippingCost: new Prisma.Decimal(10.25),
         subtotal: new Prisma.Decimal(59.97),
         taxAmount: new Prisma.Decimal(0),
-        discount: new Prisma.Decimal(4.50),
+        discount: new Prisma.Decimal(4.5),
         total: new Prisma.Decimal(65.72),
         shippingStreet: "Precision St",
         shippingCity: "Dhaka",
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Precision Item",
-            sku: `PREC-${crypto.randomUUID()}`,
-            quantity: 3,
-            unitPrice: new Prisma.Decimal(19.99),
-            costPrice: new Prisma.Decimal(10.05),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(59.97),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(59.97),
-          }],
+          create: [
+            {
+              productName: "Precision Item",
+              sku: `PREC-${crypto.randomUUID()}`,
+              quantity: 3,
+              unitPrice: new Prisma.Decimal(19.99),
+              costPrice: new Prisma.Decimal(10.05),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(59.97),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(59.97),
+            },
+          ],
         },
       },
     });
@@ -670,20 +692,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Out Item",
-            sku: `OUT-${crypto.randomUUID()}`,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(100),
-            costPrice: new Prisma.Decimal(50),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(100),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(100),
-          }],
+          create: [
+            {
+              productName: "Out Item",
+              sku: `OUT-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(100),
+              costPrice: new Prisma.Decimal(50),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(100),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(100),
+            },
+          ],
         },
       },
     });
@@ -731,20 +755,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Dual Item",
-            sku: `DUAL-${crypto.randomUUID()}`,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(200),
-            costPrice: new Prisma.Decimal(100),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(400),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(400),
-          }],
+          create: [
+            {
+              productName: "Dual Item",
+              sku: `DUAL-${crypto.randomUUID()}`,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(200),
+              costPrice: new Prisma.Decimal(100),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(400),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(400),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -763,7 +789,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-08-01", to: "2099-08-01" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-01", to: "2099-08-01" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-08-01",
+      to: "2099-08-01",
+    });
 
     // Summary checks: COGS charges only 1 retained unit (100), netSales remains 400 (no refund was issued)
     expect(report.summary.orders).toBe(1);
@@ -812,20 +842,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Refunded Item",
-            sku: `REF-NR-${crypto.randomUUID()}`,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(300),
-            costPrice: new Prisma.Decimal(120),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(300),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(300),
-          }],
+          create: [
+            {
+              productName: "Refunded Item",
+              sku: `REF-NR-${crypto.randomUUID()}`,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(300),
+              costPrice: new Prisma.Decimal(120),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(300),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(300),
+            },
+          ],
         },
       },
     });
@@ -849,7 +881,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-08-02", to: "2099-08-02" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-02", to: "2099-08-02" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-08-02",
+      to: "2099-08-02",
+    });
 
     // Summary checks: item retained so COGS is charged in full (120), refund reduces net sales to 250
     expect(report.summary.orders).toBe(1);
@@ -896,20 +932,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "Combined Item",
-            sku: `BOTH-${crypto.randomUUID()}`,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(250),
-            costPrice: new Prisma.Decimal(100),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(500),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(500),
-          }],
+          create: [
+            {
+              productName: "Combined Item",
+              sku: `BOTH-${crypto.randomUUID()}`,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(250),
+              costPrice: new Prisma.Decimal(100),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -945,7 +983,11 @@ describe("admin reports", () => {
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
     const report = await getAdminReport({ range: "custom", from: "2099-08-03", to: "2099-08-03" });
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-03", to: "2099-08-03" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-08-03",
+      to: "2099-08-03",
+    });
 
     // Summary checks:
     // netSales = (500 - 50 coupon) - 200 refund = 250
@@ -998,20 +1040,22 @@ describe("admin reports", () => {
         shippingCountry: "BD",
         shippingMethodName: "Standard",
         items: {
-          create: [{
-            productName: "CSV Item",
-            sku: `CSV-SKU-${crypto.randomUUID()}`,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(300),
-            costPrice: new Prisma.Decimal(100),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(600),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(600),
-          }],
+          create: [
+            {
+              productName: "CSV Item",
+              sku: `CSV-SKU-${crypto.randomUUID()}`,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(300),
+              costPrice: new Prisma.Decimal(100),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(600),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(600),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -1045,7 +1089,11 @@ describe("admin reports", () => {
     });
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
-    const orderProf = await getAdminOrderProfitability({ range: "custom", from: "2099-08-04", to: "2099-08-04" });
+    const orderProf = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-08-04",
+      to: "2099-08-04",
+    });
     const row = orderProf.orders[0];
 
     // CSV columns: Gross Sales, Discount, Net Sales, Refund, COGS, Gross Profit, Margin
@@ -1061,12 +1109,40 @@ describe("admin reports", () => {
     expect(netSales - row.cogs).toBe(grossProfit); // CSV consistency identity: Net Sales - COGS === Gross Profit
 
     const csvOutput = csv([
-      ["Order Number", "Date", "Customer", "Status", "Payment Method", "Gross Sales", "Discount", "Net Sales", "Refund", "COGS", "Gross Profit", "Margin"],
-      [row.orderNumber, "2099-08-04", row.customerName ?? "Guest", row.status, row.paymentMethod, row.grossSales, row.discount, netSales, row.refunds, row.cogs, grossProfit, `${row.margin?.toFixed(2)}%`]
+      [
+        "Order Number",
+        "Date",
+        "Customer",
+        "Status",
+        "Payment Method",
+        "Gross Sales",
+        "Discount",
+        "Net Sales",
+        "Refund",
+        "COGS",
+        "Gross Profit",
+        "Margin",
+      ],
+      [
+        row.orderNumber,
+        "2099-08-04",
+        row.customerName ?? "Guest",
+        row.status,
+        row.paymentMethod,
+        row.grossSales,
+        row.discount,
+        netSales,
+        row.refunds,
+        row.cogs,
+        grossProfit,
+        `${row.margin?.toFixed(2)}%`,
+      ],
     ]);
 
     expect(csvOutput).toContain("Gross Sales,Discount,Net Sales,Refund,COGS,Gross Profit,Margin");
-    expect(csvOutput).toContain(`${row.orderNumber},2099-08-04,Guest,DELIVERED,ONLINE,600,60,390,150,100,290,74.36%`);
+    expect(csvOutput).toContain(
+      `${row.orderNumber},2099-08-04,Guest,DELIVERED,ONLINE,600,60,390,150,100,290,74.36%`
+    );
   });
 
   test("rejects non-admin users", async () => {
@@ -1075,9 +1151,16 @@ describe("admin reports", () => {
   });
 
   test("escapes CSV values and preserves UTF-8 text", () => {
-    expect(csvCell("ঢাকা, \"Main\"\nStreet")).toBe('"ঢাকা, ""Main""\nStreet"');
-    expect(csv([["Product", "Customer"], ["শার্ট", "A, B"]])).toContain('শার্ট,"A, B"');
-    expect(csvCell("=HYPERLINK(\"https://attacker.example\")")).toBe("\"'=HYPERLINK(\"\"https://attacker.example\"\")\"");
+    expect(csvCell('ঢাকা, "Main"\nStreet')).toBe('"ঢাকা, ""Main""\nStreet"');
+    expect(
+      csv([
+        ["Product", "Customer"],
+        ["শার্ট", "A, B"],
+      ])
+    ).toContain('শার্ট,"A, B"');
+    expect(csvCell('=HYPERLINK("https://attacker.example")')).toBe(
+      '"\'=HYPERLINK(""https://attacker.example"")"'
+    );
   });
 
   test("handles multiple return requests on the same product SKU and calculates separate sold, returned, net units, and return rate", async () => {
@@ -1108,20 +1191,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(500),
         items: {
-          create: [{
-            productName: "Multi Return Item",
-            sku,
-            quantity: 5,
-            unitPrice: new Prisma.Decimal(100),
-            costPrice: new Prisma.Decimal(40),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(500),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(500),
-          }],
+          create: [
+            {
+              productName: "Multi Return Item",
+              sku,
+              quantity: 5,
+              unitPrice: new Prisma.Decimal(100),
+              costPrice: new Prisma.Decimal(40),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(500),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(500),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -1192,20 +1277,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(300),
         items: {
-          create: [{
-            productName: "Anomaly Item",
-            sku,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(150),
-            costPrice: new Prisma.Decimal(50),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(300),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(300),
-          }],
+          create: [
+            {
+              productName: "Anomaly Item",
+              sku,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(150),
+              costPrice: new Prisma.Decimal(50),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(300),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(300),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -1264,20 +1351,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(100),
         items: {
-          create: [{
-            productName: "Alpha Search Gadget",
-            sku: skuA,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(100),
-            costPrice: new Prisma.Decimal(40),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(100),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(100),
-          }],
+          create: [
+            {
+              productName: "Alpha Search Gadget",
+              sku: skuA,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(100),
+              costPrice: new Prisma.Decimal(40),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(100),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(100),
+            },
+          ],
         },
       },
     });
@@ -1304,20 +1393,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(200),
         items: {
-          create: [{
-            productName: "Beta Search Widget",
-            sku: skuB,
-            quantity: 1,
-            unitPrice: new Prisma.Decimal(200),
-            costPrice: new Prisma.Decimal(80),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(200),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(200),
-          }],
+          create: [
+            {
+              productName: "Beta Search Widget",
+              sku: skuB,
+              quantity: 1,
+              unitPrice: new Prisma.Decimal(200),
+              costPrice: new Prisma.Decimal(80),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(200),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(200),
+            },
+          ],
         },
       },
     });
@@ -1326,8 +1417,18 @@ describe("admin reports", () => {
     mockSession = { user: { id: user.id, role: "ADMIN" } };
 
     // Search by Alpha SKU
-    const reportA = await getAdminReport({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: skuA });
-    const orderProfA = await getAdminOrderProfitability({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: skuA });
+    const reportA = await getAdminReport({
+      range: "custom",
+      from: "2099-09-03",
+      to: "2099-09-03",
+      search: skuA,
+    });
+    const orderProfA = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-09-03",
+      to: "2099-09-03",
+      search: skuA,
+    });
 
     expect(reportA.products).toHaveLength(1);
     expect(reportA.products[0].sku).toBe(skuA);
@@ -1338,8 +1439,18 @@ describe("admin reports", () => {
     expect(reportA.summary.grossSales).toBe(300);
 
     // Search by product name "Beta Search"
-    const reportB = await getAdminReport({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: "Beta Search" });
-    const orderProfB = await getAdminOrderProfitability({ range: "custom", from: "2099-09-03", to: "2099-09-03", search: "Beta Search" });
+    const reportB = await getAdminReport({
+      range: "custom",
+      from: "2099-09-03",
+      to: "2099-09-03",
+      search: "Beta Search",
+    });
+    const orderProfB = await getAdminOrderProfitability({
+      range: "custom",
+      from: "2099-09-03",
+      to: "2099-09-03",
+      search: "Beta Search",
+    });
 
     expect(reportB.products).toHaveLength(1);
     expect(reportB.products[0].sku).toBe(skuB);
@@ -1378,20 +1489,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(1000),
         items: {
-          create: [{
-            productName: "Sort Product X",
-            sku: skuX,
-            quantity: 10,
-            unitPrice: new Prisma.Decimal(100),
-            costPrice: new Prisma.Decimal(90),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(1000),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(1000),
-          }],
+          create: [
+            {
+              productName: "Sort Product X",
+              sku: skuX,
+              quantity: 10,
+              unitPrice: new Prisma.Decimal(100),
+              costPrice: new Prisma.Decimal(90),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(1000),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(1000),
+            },
+          ],
         },
       },
     });
@@ -1419,20 +1532,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(600),
         items: {
-          create: [{
-            productName: "Sort Product Y",
-            sku: skuY,
-            quantity: 2,
-            unitPrice: new Prisma.Decimal(300),
-            costPrice: new Prisma.Decimal(50),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(600),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(600),
-          }],
+          create: [
+            {
+              productName: "Sort Product Y",
+              sku: skuY,
+              quantity: 2,
+              unitPrice: new Prisma.Decimal(300),
+              costPrice: new Prisma.Decimal(50),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(600),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(600),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -1451,27 +1566,52 @@ describe("admin reports", () => {
     mockSession = { user: { id: user.id, role: "ADMIN" } };
 
     // Sort by revenue: X (1000) > Y (300)
-    const reportRev = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "revenue" });
+    const reportRev = await getAdminReport({
+      range: "custom",
+      from: "2099-09-04",
+      to: "2099-09-04",
+      sort: "revenue",
+    });
     const skusRev = reportRev.products.map((p) => p.sku);
     expect(skusRev.indexOf(skuX)).toBeLessThan(skusRev.indexOf(skuY));
 
     // Sort by profit: Y (250) > X (100)
-    const reportProf = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "profit" });
+    const reportProf = await getAdminReport({
+      range: "custom",
+      from: "2099-09-04",
+      to: "2099-09-04",
+      sort: "profit",
+    });
     const skusProf = reportProf.products.map((p) => p.sku);
     expect(skusProf.indexOf(skuY)).toBeLessThan(skusProf.indexOf(skuX));
 
     // Sort by units: X (10) > Y (2)
-    const reportUnits = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "units" });
+    const reportUnits = await getAdminReport({
+      range: "custom",
+      from: "2099-09-04",
+      to: "2099-09-04",
+      sort: "units",
+    });
     const skusUnits = reportUnits.products.map((p) => p.sku);
     expect(skusUnits.indexOf(skuX)).toBeLessThan(skusUnits.indexOf(skuY));
 
     // Sort by margin: Y (83.33%) > X (10%)
-    const reportMargin = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "margin" });
+    const reportMargin = await getAdminReport({
+      range: "custom",
+      from: "2099-09-04",
+      to: "2099-09-04",
+      sort: "margin",
+    });
     const skusMargin = reportMargin.products.map((p) => p.sku);
     expect(skusMargin.indexOf(skuY)).toBeLessThan(skusMargin.indexOf(skuX));
 
     // Sort by returns: Y (1) > X (0)
-    const reportReturns = await getAdminReport({ range: "custom", from: "2099-09-04", to: "2099-09-04", sort: "returns" });
+    const reportReturns = await getAdminReport({
+      range: "custom",
+      from: "2099-09-04",
+      to: "2099-09-04",
+      sort: "returns",
+    });
     const skusReturns = reportReturns.products.map((p) => p.sku);
     expect(skusReturns.indexOf(skuY)).toBeLessThan(skusReturns.indexOf(skuX));
   });
@@ -1504,20 +1644,22 @@ describe("admin reports", () => {
         discount: new Prisma.Decimal(0),
         total: new Prisma.Decimal(400),
         items: {
-          create: [{
-            productName: "CSV Parity Product",
-            sku,
-            quantity: 4,
-            unitPrice: new Prisma.Decimal(100),
-            costPrice: new Prisma.Decimal(30),
-            appliedDiscount: new Prisma.Decimal(0),
-            taxRate: new Prisma.Decimal(0),
-            taxIncluded: false,
-            lineSubtotal: new Prisma.Decimal(400),
-            discountAmount: new Prisma.Decimal(0),
-            taxAmount: new Prisma.Decimal(0),
-            lineTotal: new Prisma.Decimal(400),
-          }],
+          create: [
+            {
+              productName: "CSV Parity Product",
+              sku,
+              quantity: 4,
+              unitPrice: new Prisma.Decimal(100),
+              costPrice: new Prisma.Decimal(30),
+              appliedDiscount: new Prisma.Decimal(0),
+              taxRate: new Prisma.Decimal(0),
+              taxIncluded: false,
+              lineSubtotal: new Prisma.Decimal(400),
+              discountAmount: new Prisma.Decimal(0),
+              taxAmount: new Prisma.Decimal(0),
+              lineTotal: new Prisma.Decimal(400),
+            },
+          ],
         },
       },
       include: { items: true },
@@ -1534,10 +1676,28 @@ describe("admin reports", () => {
     returnIds.push(ret.id);
 
     mockSession = { user: { id: user.id, role: "ADMIN" } };
-    const report = await getAdminReport({ range: "custom", from: "2099-09-05", to: "2099-09-05", search: sku });
+    const report = await getAdminReport({
+      range: "custom",
+      from: "2099-09-05",
+      to: "2099-09-05",
+      search: sku,
+    });
     const product = report.products[0];
 
-    const expectedHeaders = ["Product", "SKU", "Sold Units", "Returned Units", "Net Units", "Return Rate", "Gross Sales", "Discounts", "Net Sales", "COGS", "Gross Profit", "Margin"];
+    const expectedHeaders = [
+      "Product",
+      "SKU",
+      "Sold Units",
+      "Returned Units",
+      "Net Units",
+      "Return Rate",
+      "Gross Sales",
+      "Discounts",
+      "Net Sales",
+      "COGS",
+      "Gross Profit",
+      "Margin",
+    ];
     const productRows = [
       expectedHeaders,
       [
@@ -1557,7 +1717,9 @@ describe("admin reports", () => {
     ];
 
     const csvContent = csv(productRows);
-    expect(csvContent).toContain("Product,SKU,Sold Units,Returned Units,Net Units,Return Rate,Gross Sales,Discounts,Net Sales,COGS,Gross Profit,Margin");
+    expect(csvContent).toContain(
+      "Product,SKU,Sold Units,Returned Units,Net Units,Return Rate,Gross Sales,Discounts,Net Sales,COGS,Gross Profit,Margin"
+    );
     expect(csvContent).toContain(`CSV Parity Product,${sku},4,1,3,25.00%,400,0,300,90,210,70.00%`);
   });
 
@@ -2081,19 +2243,11 @@ describe("admin reports", () => {
 
       // 1. Sort by profit: Luxury Silk Bomber (500) > Searchable Cargo Pants (200) > Oversized Flannel Shirt (50)
       const sortByProfit = await getAdminProductProfitability({ ...baseFilters, sort: "profit" });
-      expect(sortByProfit.products.map((p) => p.productName)).toEqual([
-        p2.name,
-        p1.name,
-        p3.name,
-      ]);
+      expect(sortByProfit.products.map((p) => p.productName)).toEqual([p2.name, p1.name, p3.name]);
 
       // 2. Sort by units: Searchable Cargo Pants (10) > Oversized Flannel Shirt (5) > Luxury Silk Bomber (2)
       const sortByUnits = await getAdminProductProfitability({ ...baseFilters, sort: "units" });
-      expect(sortByUnits.products.map((p) => p.productName)).toEqual([
-        p1.name,
-        p3.name,
-        p2.name,
-      ]);
+      expect(sortByUnits.products.map((p) => p.productName)).toEqual([p1.name, p3.name, p2.name]);
 
       // 3. Sort by returns: Oversized Flannel Shirt (4) > others (0)
       const sortByReturns = await getAdminProductProfitability({ ...baseFilters, sort: "returns" });
@@ -2110,13 +2264,26 @@ describe("admin reports", () => {
       expect(searchByName.products[0].productName).toBe(p1.name);
 
       // 6. Search by SKU
-      const searchBySku = await getAdminProductProfitability({ ...baseFilters, search: p2.variants[0].sku });
+      const searchBySku = await getAdminProductProfitability({
+        ...baseFilters,
+        search: p2.variants[0].sku,
+      });
       expect(searchBySku.total).toBe(1);
       expect(searchBySku.products[0].productName).toBe(p2.name);
 
       // 7. Pagination: limit 1, page 2
-      const page1 = await getAdminProductProfitability({ ...baseFilters, limit: 1, page: 1, sort: "profit" });
-      const page2 = await getAdminProductProfitability({ ...baseFilters, limit: 1, page: 2, sort: "profit" });
+      const page1 = await getAdminProductProfitability({
+        ...baseFilters,
+        limit: 1,
+        page: 1,
+        sort: "profit",
+      });
+      const page2 = await getAdminProductProfitability({
+        ...baseFilters,
+        limit: 1,
+        page: 2,
+        sort: "profit",
+      });
       expect(page1.total).toBe(3);
       expect(page1.totalPages).toBe(3);
       expect(page1.products).toHaveLength(1);

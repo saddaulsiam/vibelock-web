@@ -86,7 +86,8 @@ export class SSLCommerzProvider implements PaymentProvider {
     }
 
     const { val_id } = callbackPayload as { val_id?: string };
-    const rawStatus = typeof callbackPayload.status === "string" ? callbackPayload.status.toUpperCase() : "";
+    const rawStatus =
+      typeof callbackPayload.status === "string" ? callbackPayload.status.toUpperCase() : "";
 
     // 1. Explicit cancellation reported by gateway without val_id (browser cancel_url callback)
     // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
@@ -95,7 +96,8 @@ export class SSLCommerzProvider implements PaymentProvider {
         success: false,
         status: "CANCELLED",
         isUnverified: true,
-        verifiedMerchantReferenceId: typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
+        verifiedMerchantReferenceId:
+          typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
         error: "Unverified browser cancellation callback",
         rawPayload: callbackPayload,
       };
@@ -103,13 +105,23 @@ export class SSLCommerzProvider implements PaymentProvider {
 
     // 2. Explicit failure reported by gateway without val_id (browser fail_url callback)
     // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
-    if (!val_id && (rawStatus === "FAILED" || rawStatus === "FAIL" || rawStatus === "UNATTEMPTED" || rawStatus === "EXPIRED")) {
+    if (
+      !val_id &&
+      (rawStatus === "FAILED" ||
+        rawStatus === "FAIL" ||
+        rawStatus === "UNATTEMPTED" ||
+        rawStatus === "EXPIRED")
+    ) {
       return {
         success: false,
         status: "FAILED",
         isUnverified: true,
-        verifiedMerchantReferenceId: typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
-        error: (callbackPayload.failedreason as string) || (callbackPayload.error as string) || "Unverified browser failure callback",
+        verifiedMerchantReferenceId:
+          typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
+        error:
+          (callbackPayload.failedreason as string) ||
+          (callbackPayload.error as string) ||
+          "Unverified browser failure callback",
         rawPayload: callbackPayload,
       };
     }
@@ -142,7 +154,8 @@ export class SSLCommerzProvider implements PaymentProvider {
 
       if (result.status === "VALID" || result.status === "VALIDATED") {
         const amount = Number(result.amount);
-        const currency = typeof result.currency === "string" ? result.currency.toUpperCase() : undefined;
+        const currency =
+          typeof result.currency === "string" ? result.currency.toUpperCase() : undefined;
 
         if (!Number.isFinite(amount) || !currency || !result.tran_id) {
           return {
@@ -192,7 +205,12 @@ export class SSLCommerzProvider implements PaymentProvider {
       }
     } catch {
       console.error("[SSLCommerz] Payment verification request failed");
-      return { success: false, status: "FAILED", isUnverified: false, error: "Verification request failed" };
+      return {
+        success: false,
+        status: "FAILED",
+        isUnverified: false,
+        error: "Verification request failed",
+      };
     }
   }
 

@@ -22,7 +22,9 @@ export async function POST(req: NextRequest) {
   // 1. Secret availability check (fail closed if unconfigured)
   const secret = process.env.REVALIDATION_WEBHOOK_SECRET;
   if (!secret) {
-    console.error("[Inventory Webhook] Missing server secret: REVALIDATION_WEBHOOK_SECRET is not configured.");
+    console.error(
+      "[Inventory Webhook] Missing server secret: REVALIDATION_WEBHOOK_SECRET is not configured."
+    );
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
   }
 
@@ -57,7 +59,10 @@ export async function POST(req: NextRequest) {
   // 4. Timestamp tolerance enforcement (+/- 5 minutes)
   const now = Date.now();
   if (Math.abs(now - timestamp) > MAX_TIMESTAMP_DRIFT_MS) {
-    return NextResponse.json({ error: "Signature timestamp expired or out of tolerance" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Signature timestamp expired or out of tolerance" },
+      { status: 400 }
+    );
   }
 
   // 5. HMAC verification using timing-safe comparison
@@ -66,10 +71,7 @@ export async function POST(req: NextRequest) {
     .update(`${timestamp}.${rawBody}`)
     .digest("hex");
 
-  const expectedDigestRaw = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody)
-    .digest("hex");
+  const expectedDigestRaw = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
 
   const suppliedBuf = Buffer.from(suppliedDigestHex, "hex");
   const expectedBufWithTimestamp = Buffer.from(expectedDigestWithTimestamp, "hex");
@@ -104,7 +106,10 @@ export async function POST(req: NextRequest) {
   try {
     revalidateTag("products", { expire: 0 });
   } catch (err) {
-    console.error("[Inventory Webhook] Error during cache revalidation:", err instanceof Error ? err.message : "Unknown error");
+    console.error(
+      "[Inventory Webhook] Error during cache revalidation:",
+      err instanceof Error ? err.message : "Unknown error"
+    );
     return NextResponse.json({ error: "Revalidation failed" }, { status: 500 });
   }
 

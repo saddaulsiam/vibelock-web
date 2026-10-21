@@ -13,7 +13,9 @@ import { getShippingProvider } from "@/lib/shipping/provider";
 export type ShippingActionState = { error: string | null; message?: string };
 
 const name = z.string().trim().min(1, "Name is required.").max(120);
-const cost = z.string().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Cost must be a non-negative amount with up to two decimals.");
+const cost = z
+  .string()
+  .regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Cost must be a non-negative amount with up to two decimals.");
 const id = z.string().uuid();
 
 function refreshShipping() {
@@ -38,11 +40,13 @@ export async function saveShippingZoneAction(
   formData: FormData
 ): Promise<ShippingActionState> {
   await requireRole("ADMIN");
-  const parsed = z.object({ id: id.optional(), name, countries: z.array(z.string().min(2).max(3)).min(1) }).safeParse({
-    id: String(formData.get("id") ?? "") || undefined,
-    name: formData.get("name"),
-    countries: parseCountries(formData.get("countries")),
-  });
+  const parsed = z
+    .object({ id: id.optional(), name, countries: z.array(z.string().min(2).max(3)).min(1) })
+    .safeParse({
+      id: String(formData.get("id") ?? "") || undefined,
+      name: formData.get("name"),
+      countries: parseCountries(formData.get("countries")),
+    });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {
     if (parsed.data.id) {
@@ -59,7 +63,10 @@ export async function saveShippingZoneAction(
     return { error: "The shipping zone could not be saved. Please try again." };
   }
   refreshShipping();
-  return { error: null, message: parsed.data.id ? "Shipping zone updated." : "Shipping zone created." };
+  return {
+    error: null,
+    message: parsed.data.id ? "Shipping zone updated." : "Shipping zone created.",
+  };
 }
 
 export async function saveShippingMethodAction(
@@ -67,19 +74,21 @@ export async function saveShippingMethodAction(
   formData: FormData
 ): Promise<ShippingActionState> {
   await requireRole("ADMIN");
-  const parsed = z.object({
-    id: id.optional(),
-    zoneId: id,
-    name,
-    cost,
-    isActive: z.enum(["on", "true", "false"]),
-  }).safeParse({
-    id: String(formData.get("id") ?? "") || undefined,
-    zoneId: formData.get("zoneId"),
-    name: formData.get("name"),
-    cost: String(formData.get("cost") ?? "").trim(),
-    isActive: formData.get("isActive") ? "on" : "false",
-  });
+  const parsed = z
+    .object({
+      id: id.optional(),
+      zoneId: id,
+      name,
+      cost,
+      isActive: z.enum(["on", "true", "false"]),
+    })
+    .safeParse({
+      id: String(formData.get("id") ?? "") || undefined,
+      zoneId: formData.get("zoneId"),
+      name: formData.get("name"),
+      cost: String(formData.get("cost") ?? "").trim(),
+      isActive: formData.get("isActive") ? "on" : "false",
+    });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {
     const data = {
@@ -97,7 +106,10 @@ export async function saveShippingMethodAction(
     return { error: "The shipping method could not be saved. Please try again." };
   }
   refreshShipping();
-  return { error: null, message: parsed.data.id ? "Shipping method updated." : "Shipping method created." };
+  return {
+    error: null,
+    message: parsed.data.id ? "Shipping method updated." : "Shipping method created.",
+  };
 }
 
 export async function toggleShippingMethodAction(
@@ -108,9 +120,15 @@ export async function toggleShippingMethodAction(
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipping method." };
   try {
-    const method = await prisma.shippingMethod.findUnique({ where: { id: parsed.data }, select: { isActive: true } });
+    const method = await prisma.shippingMethod.findUnique({
+      where: { id: parsed.data },
+      select: { isActive: true },
+    });
     if (!method) return { error: "Shipping method not found." };
-    await prisma.shippingMethod.update({ where: { id: parsed.data }, data: { isActive: !method.isActive } });
+    await prisma.shippingMethod.update({
+      where: { id: parsed.data },
+      data: { isActive: !method.isActive },
+    });
   } catch {
     return { error: "The shipping method status could not be changed." };
   }
@@ -137,9 +155,10 @@ export async function updateShipmentStatusAction(
     if (updated.status !== parsed.data.status) {
       return { error: "That shipment status transition is not allowed." };
     }
-
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Shipment status could not be updated." };
+    return {
+      error: error instanceof Error ? error.message : "Shipment status could not be updated.",
+    };
   }
   refreshShipping();
   revalidatePath("/admin/orders");

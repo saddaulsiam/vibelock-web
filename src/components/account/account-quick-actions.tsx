@@ -39,7 +39,7 @@ export function AccountQuickActions() {
             <Link
               key={act.title}
               href={act.href}
-              className="group flex items-center justify-between rounded-xl border border-[#101114]/10 p-3 transition-all hover:border-[#101114]/25 hover:bg-[#F3F0E8]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="group flex items-center justify-between rounded-xl border border-[#101114]/10 p-3 transition-all hover:border-[#101114]/25 hover:bg-[#F3F0E8]/50 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
@@ -47,10 +47,10 @@ export function AccountQuickActions() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-[#101114]">{act.title}</h4>
-                  <p className="text-[11px] text-muted-foreground">{act.description}</p>
+                  <p className="text-muted-foreground text-[11px]">{act.description}</p>
                 </div>
               </div>
-              <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
           ))}
 
@@ -58,7 +58,7 @@ export function AccountQuickActions() {
           <form action={logoutAction} className="w-full">
             <button
               type="submit"
-              className="group flex w-full items-center justify-between rounded-xl border border-[#101114]/10 p-3 text-left transition-all hover:border-rose-200 hover:bg-rose-50/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+              className="group flex w-full items-center justify-between rounded-xl border border-[#101114]/10 p-3 text-left transition-all hover:border-rose-200 hover:bg-rose-50/50 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-rose-600 group-hover:text-white">
@@ -68,10 +68,10 @@ export function AccountQuickActions() {
                   <h4 className="text-xs font-bold text-[#101114] group-hover:text-rose-700">
                     Logout
                   </h4>
-                  <p className="text-[11px] text-muted-foreground">Sign out from your account</p>
+                  <p className="text-muted-foreground text-[11px]">Sign out from your account</p>
                 </div>
               </div>
-              <ChevronRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-rose-600" />
+              <ChevronRight className="text-muted-foreground size-4 transition-transform group-hover:translate-x-0.5 group-hover:text-rose-600" />
             </button>
           </form>
         </div>

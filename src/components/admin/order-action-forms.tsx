@@ -5,10 +5,7 @@ import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { AdminActionState } from "@/lib/admin/order-actions";
-import {
-  updateOrderPaymentStatusAction,
-  updateOrderStatusAction,
-} from "@/lib/admin/order-actions";
+import { updateOrderPaymentStatusAction, updateOrderStatusAction } from "@/lib/admin/order-actions";
 import { createShipmentAction } from "@/lib/admin/shipping-actions";
 import type { OrderStatus, PaymentStatus } from "@prisma/client";
 
@@ -46,7 +43,7 @@ export function OrderStatusForm({
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
@@ -63,7 +60,7 @@ export function OrderStatusForm({
           id="order-notes"
           name="notes"
           placeholder="Reason for status change..."
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
         />
       </div>
 
@@ -83,10 +80,7 @@ export function OrderPaymentForm({
   currentPaymentStatus: PaymentStatus;
   statuses: PaymentStatus[];
 }) {
-  const [state, formAction] = useActionState(
-    updateOrderPaymentStatusAction,
-    initialState
-  );
+  const [state, formAction] = useActionState(updateOrderPaymentStatusAction, initialState);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -99,7 +93,7 @@ export function OrderPaymentForm({
           id="payment-status"
           name="paymentStatus"
           defaultValue={currentPaymentStatus}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
@@ -116,7 +110,7 @@ export function OrderPaymentForm({
           id="payment-notes"
           name="notes"
           placeholder="Payment reference or notes..."
-          className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none"
         />
       </div>
 
@@ -133,7 +127,7 @@ export function CreateShipmentForm({ orderId }: { orderId: string }) {
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="id" value={orderId} />
-      <p className="text-sm text-muted-foreground">
+      <p className="text-muted-foreground text-sm">
         Create a shipment after the order is ready and, for online orders, payment is successful.
       </p>
       {state.error ? <p className="text-sm text-red-600">{state.error}</p> : null}

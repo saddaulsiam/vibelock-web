@@ -4,7 +4,8 @@ import { AccountDashboardView } from "@/components/account/account-dashboard-vie
 
 export const metadata: Metadata = {
   title: "My Account | VibeLock",
-  description: "Manage your VibeLock profile, recent orders, shipping addresses, and exclusive rewards.",
+  description:
+    "Manage your VibeLock profile, recent orders, shipping addresses, and exclusive rewards.",
   robots: { index: false, follow: false },
 };
 

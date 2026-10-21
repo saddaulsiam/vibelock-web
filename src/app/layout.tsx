@@ -41,7 +41,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} font-sans antialiased min-h-screen bg-background text-foreground flex flex-col`}
+        className={`${inter.variable} bg-background text-foreground flex min-h-screen flex-col font-sans antialiased`}
       >
         {children}
         <Toaster
@@ -57,4 +57,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

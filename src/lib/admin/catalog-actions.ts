@@ -10,7 +10,11 @@ import prisma from "@/lib/prisma/client";
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Changes saved." };
-const nameField = z.string().trim().min(1, "Name is required.").max(120, "Name must be 120 characters or fewer.");
+const nameField = z
+  .string()
+  .trim()
+  .min(1, "Name is required.")
+  .max(120, "Name must be 120 characters or fewer.");
 
 function slugify(value: string) {
   return value
@@ -25,7 +29,12 @@ function slugify(value: string) {
 function slugFromForm(formData: FormData, name: string) {
   const requested = String(formData.get("slug") ?? "").trim();
   const slug = slugify(requested || name);
-  return z.string().min(1).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse(slug);
+  return z
+    .string()
+    .min(1)
+    .max(160)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .safeParse(slug);
 }
 
 function duplicateMessage(error: unknown) {
@@ -66,20 +75,29 @@ export async function saveCategoryAction(
   const parsed = categorySchema.safeParse(raw);
   const slug = slugFromForm(formData, rawName);
   if (!parsed.success || !slug.success) {
-    return { error: parsed.error?.issues[0]?.message ?? "Enter a valid slug using letters, numbers, and hyphens." };
+    return {
+      error:
+        parsed.error?.issues[0]?.message ??
+        "Enter a valid slug using letters, numbers, and hyphens.",
+    };
   }
 
   const { id, name, description, parentId } = parsed.data;
   if (id && parentId === id) return { error: "A category cannot be its own parent." };
   if (parentId) {
-    const parent = await prisma.category.findUnique({ where: { id: parentId }, select: { id: true } });
+    const parent = await prisma.category.findUnique({
+      where: { id: parentId },
+      select: { id: true },
+    });
     if (!parent) return { error: "Choose an existing parent category." };
     if (id) {
       let ancestorId: string | null = parentId;
       const visited = new Set<string>();
       while (ancestorId) {
-        if (ancestorId === id) return { error: "A category cannot be moved beneath one of its descendants." };
-        if (visited.has(ancestorId)) return { error: "The selected category hierarchy is invalid." };
+        if (ancestorId === id)
+          return { error: "A category cannot be moved beneath one of its descendants." };
+        if (visited.has(ancestorId))
+          return { error: "The selected category hierarchy is invalid." };
         visited.add(ancestorId);
         const ancestor: { parentId: string | null } | null = await prisma.category.findUnique({
           where: { id: ancestorId },
@@ -96,15 +114,27 @@ export async function saveCategoryAction(
       if (!existing) return { error: "This category no longer exists." };
       await prisma.category.update({
         where: { id },
-        data: { name, slug: slug.data, description: description || null, parentId: parentId ?? null },
+        data: {
+          name,
+          slug: slug.data,
+          description: description || null,
+          parentId: parentId ?? null,
+        },
       });
     } else {
       await prisma.category.create({
-        data: { name, slug: slug.data, description: description || null, parentId: parentId ?? null },
+        data: {
+          name,
+          slug: slug.data,
+          description: description || null,
+          parentId: parentId ?? null,
+        },
       });
     }
   } catch (error) {
-    return { error: duplicateMessage(error) ?? "The category could not be saved. Please try again." };
+    return {
+      error: duplicateMessage(error) ?? "The category could not be saved. Please try again.",
+    };
   }
 
   refreshCatalog();
@@ -124,7 +154,9 @@ export async function deleteCategoryAction(
   });
   if (!category) return { error: "This category no longer exists." };
   if (category._count.products || category._count.children) {
-    return { error: "This category has products or child categories. Reassign them before deleting it." };
+    return {
+      error: "This category has products or child categories. Reassign them before deleting it.",
+    };
   }
   try {
     await prisma.category.delete({ where: { id: id.data } });
@@ -148,8 +180,18 @@ const variantInputSchema = z.object({
   sku: z.string().trim().max(100).optional().default(""),
   size: z.string().trim().max(40).optional().default(""),
   color: z.string().trim().max(60).optional().default(""),
-  costPrice: z.string().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Cost price must be a non-negative amount with up to two decimals."),
-  sellingPrice: z.string().regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Selling price must be a non-negative amount with up to two decimals."),
+  costPrice: z
+    .string()
+    .regex(
+      /^\d{1,10}(?:\.\d{1,2})?$/,
+      "Cost price must be a non-negative amount with up to two decimals."
+    ),
+  sellingPrice: z
+    .string()
+    .regex(
+      /^\d{1,10}(?:\.\d{1,2})?$/,
+      "Selling price must be a non-negative amount with up to two decimals."
+    ),
   discountPrice: z.string().optional().default(""),
 });
 
@@ -183,7 +225,11 @@ function parseProduct(formData: FormData) {
   } catch {
     return { error: "Variant data is invalid. Refresh the form and try again." } as const;
   }
-  const variantsParsed = z.array(variantInputSchema).min(1, "Add at least one product variant.").max(100, "A product can have at most 100 variants.").safeParse(rawVariants);
+  const variantsParsed = z
+    .array(variantInputSchema)
+    .min(1, "Add at least one product variant.")
+    .max(100, "A product can have at most 100 variants.")
+    .safeParse(rawVariants);
   const rawImageUrls = String(formData.get("imageUrls") ?? "")
     .split(/\r?\n/)
     .map((url) => url.trim())
@@ -205,9 +251,13 @@ function parseProduct(formData: FormData) {
 
   if (!parsed.success || !slug.success || !variantsParsed.success) {
     return {
-      error: parsed.error?.issues[0]?.message ??
-        (!slug.success ? "Enter a valid slug using letters, numbers, and hyphens." :
-        variantsParsed.success ? "Enter valid product details." : variantsParsed.error.issues[0]?.message),
+      error:
+        parsed.error?.issues[0]?.message ??
+        (!slug.success
+          ? "Enter a valid slug using letters, numbers, and hyphens."
+          : variantsParsed.success
+            ? "Enter valid product details."
+            : variantsParsed.error.issues[0]?.message),
     } as const;
   }
 
@@ -223,18 +273,25 @@ function parseProduct(formData: FormData) {
   for (const variant of variants) {
     if (variant.sku) {
       const normalizedSku = variant.sku.toLowerCase();
-      if (seenSkus.has(normalizedSku)) return { error: "Each variant must have a unique SKU." } as const;
+      if (seenSkus.has(normalizedSku))
+        return { error: "Each variant must have a unique SKU." } as const;
       seenSkus.add(normalizedSku);
     }
     if (variant.size || variant.color) {
       const combination = `${variant.size.toLowerCase()}::${variant.color.toLowerCase()}`;
-      if (seenCombinations.has(combination)) return { error: "Each size/color combination must be unique." } as const;
+      if (seenCombinations.has(combination))
+        return { error: "Each size/color combination must be unique." } as const;
       seenCombinations.add(combination);
     }
     if (variant.discountPrice !== "" && !/^\d{1,10}(?:\.\d{1,2})?$/.test(variant.discountPrice)) {
-      return { error: "Discount price must be a non-negative amount with up to two decimals." } as const;
+      return {
+        error: "Discount price must be a non-negative amount with up to two decimals.",
+      } as const;
     }
-    if (variant.discountPrice !== "" && Number(variant.discountPrice) >= Number(variant.sellingPrice)) {
+    if (
+      variant.discountPrice !== "" &&
+      Number(variant.discountPrice) >= Number(variant.sellingPrice)
+    ) {
       return { error: "Discount price must be lower than the variant selling price." } as const;
     }
   }
@@ -267,7 +324,8 @@ export async function saveProductAction(
   const parsed = parseProduct(formData);
   if ("error" in parsed) return { error: parsed.error ?? null };
   const product = parsed.data;
-  if (!(await validateCategories(product.categoryIds))) return { error: "One or more selected categories are unavailable." };
+  if (!(await validateCategories(product.categoryIds)))
+    return { error: "One or more selected categories are unavailable." };
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -295,19 +353,34 @@ export async function saveProductAction(
           },
         });
 
-        const submittedIds = new Set(product.variants.flatMap((variant) => variant.id ? [variant.id] : []));
-        const removedIds = existing.variants.map((variant) => variant.id).filter((id) => !submittedIds.has(id));
+        const submittedIds = new Set(
+          product.variants.flatMap((variant) => (variant.id ? [variant.id] : []))
+        );
+        const removedIds = existing.variants
+          .map((variant) => variant.id)
+          .filter((id) => !submittedIds.has(id));
         for (const variantId of removedIds) {
           const usage = await tx.productVariant.findUnique({
             where: { id: variantId },
             select: {
               sku: true,
-              _count: { select: { inventoryTransactions: true, inventoryReservations: true, cartItems: true } },
+              _count: {
+                select: {
+                  inventoryTransactions: true,
+                  inventoryReservations: true,
+                  cartItems: true,
+                },
+              },
             },
           });
           if (!usage) continue;
           const historicalOrderItems = await tx.orderItem.count({ where: { sku: usage.sku } });
-          if (historicalOrderItems || usage._count.inventoryTransactions || usage._count.inventoryReservations || usage._count.cartItems) {
+          if (
+            historicalOrderItems ||
+            usage._count.inventoryTransactions ||
+            usage._count.inventoryReservations ||
+            usage._count.cartItems
+          ) {
             throw new Error("VARIANT_IN_USE");
           }
           await tx.productVariant.delete({ where: { id: variantId } });
@@ -335,7 +408,8 @@ export async function saveProductAction(
           color: variant.color || null,
           costPrice: new Prisma.Decimal(variant.costPrice),
           sellingPrice: new Prisma.Decimal(variant.sellingPrice),
-          discountPrice: variant.discountPrice === "" ? null : new Prisma.Decimal(variant.discountPrice),
+          discountPrice:
+            variant.discountPrice === "" ? null : new Prisma.Decimal(variant.discountPrice),
         };
         if (variant.id) {
           await tx.productVariant.update({
@@ -362,10 +436,17 @@ export async function saveProductAction(
   } catch (error) {
     if (error instanceof Error) {
       if (error.message === "PRODUCT_NOT_FOUND") return { error: "This product no longer exists." };
-      if (error.message === "INVALID_VARIANT") return { error: "A submitted variant does not belong to this product." };
-      if (error.message === "VARIANT_IN_USE") return { error: "A variant with inventory, reservation, or cart history cannot be removed. Keep it and update its details instead." };
+      if (error.message === "INVALID_VARIANT")
+        return { error: "A submitted variant does not belong to this product." };
+      if (error.message === "VARIANT_IN_USE")
+        return {
+          error:
+            "A variant with inventory, reservation, or cart history cannot be removed. Keep it and update its details instead.",
+        };
     }
-    return { error: duplicateMessage(error) ?? "The product could not be saved. Please try again." };
+    return {
+      error: duplicateMessage(error) ?? "The product could not be saved. Please try again.",
+    };
   }
   refreshCatalog();
   revalidatePath("/admin");
@@ -379,11 +460,17 @@ export async function toggleProductPublishedAction(
   await requireRole("ADMIN");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid product." };
-  const product = await prisma.product.findUnique({ where: { id: id.data }, select: { status: true } });
+  const product = await prisma.product.findUnique({
+    where: { id: id.data },
+    select: { status: true },
+  });
   if (!product) return { error: "This product no longer exists." };
   await prisma.product.update({
     where: { id: id.data },
-    data: { status: product.status === ProductStatus.PUBLISHED ? ProductStatus.DRAFT : ProductStatus.PUBLISHED },
+    data: {
+      status:
+        product.status === ProductStatus.PUBLISHED ? ProductStatus.DRAFT : ProductStatus.PUBLISHED,
+    },
   });
   refreshCatalog();
   return ok;
@@ -401,7 +488,9 @@ export async function deleteProductAction(
     select: {
       variants: {
         select: {
-          _count: { select: { inventoryTransactions: true, inventoryReservations: true, cartItems: true } },
+          _count: {
+            select: { inventoryTransactions: true, inventoryReservations: true, cartItems: true },
+          },
         },
       },
       _count: { select: { reviews: true } },
@@ -410,18 +499,24 @@ export async function deleteProductAction(
   if (!product) return { error: "This product no longer exists." };
   if (
     product._count.reviews > 0 ||
-    product.variants.some((variant) =>
-      variant._count.inventoryTransactions > 0 ||
-      variant._count.inventoryReservations > 0 ||
-      variant._count.cartItems > 0
+    product.variants.some(
+      (variant) =>
+        variant._count.inventoryTransactions > 0 ||
+        variant._count.inventoryReservations > 0 ||
+        variant._count.cartItems > 0
     )
   ) {
-    return { error: "This product has reviews, cart items, or inventory history. Unpublish it instead of deleting it." };
+    return {
+      error:
+        "This product has reviews, cart items, or inventory history. Unpublish it instead of deleting it.",
+    };
   }
   try {
     await prisma.product.delete({ where: { id: id.data } });
   } catch {
-    return { error: "This product is still in use and could not be deleted. Unpublish it instead." };
+    return {
+      error: "This product is still in use and could not be deleted. Unpublish it instead.",
+    };
   }
   refreshCatalog();
   return ok;

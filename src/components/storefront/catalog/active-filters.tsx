@@ -68,15 +68,17 @@ export function ActiveFilters() {
 
   return (
     <div className="mb-6 flex flex-wrap items-center gap-2" aria-label="Active filters">
-      <span className="mr-1 text-sm text-muted-foreground">Active filters</span>
+      <span className="text-muted-foreground mr-1 text-sm">Active filters</span>
 
       {q && (
-        <Badge
-          variant="secondary"
-          className="flex items-center gap-1 py-1 text-sm"
-        >
+        <Badge variant="secondary" className="flex items-center gap-1 py-1 text-sm">
           Search: {q}
-          <button type="button" onClick={() => removeFilter("q")} aria-label="Remove search filter" className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+          <button
+            type="button"
+            onClick={() => removeFilter("q")}
+            aria-label="Remove search filter"
+            className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          >
             <X className="size-3" aria-hidden="true" />
           </button>
         </Badge>
@@ -87,10 +89,15 @@ export function ActiveFilters() {
           <Badge
             key={`cat-${c}`}
             variant="secondary"
-            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
           >
             Category: {c}
-            <button type="button" onClick={() => removeFilter("category", c)} aria-label={`Remove ${c} category filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+            <button
+              type="button"
+              onClick={() => removeFilter("category", c)}
+              aria-label={`Remove ${c} category filter`}
+              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            >
               <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
@@ -101,10 +108,15 @@ export function ActiveFilters() {
           <Badge
             key={`size-${s}`}
             variant="secondary"
-            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
           >
             Size: {s}
-            <button type="button" onClick={() => removeFilter("size", s)} aria-label={`Remove ${s} size filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+            <button
+              type="button"
+              onClick={() => removeFilter("size", s)}
+              aria-label={`Remove ${s} size filter`}
+              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            >
               <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
@@ -115,22 +127,29 @@ export function ActiveFilters() {
           <Badge
             key={`color-${c}`}
             variant="secondary"
-            className="flex items-center gap-1 hover:bg-secondary/80 text-sm py-1"
+            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
           >
             Color: {c}
-            <button type="button" onClick={() => removeFilter("color", c)} aria-label={`Remove ${c} color filter`} className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+            <button
+              type="button"
+              onClick={() => removeFilter("color", c)}
+              aria-label={`Remove ${c} color filter`}
+              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            >
               <X className="size-3" aria-hidden="true" />
             </button>
           </Badge>
         ))}
 
       {(minPrice || maxPrice) && (
-        <Badge
-          variant="secondary"
-          className="flex items-center gap-1 py-1 text-sm"
-        >
+        <Badge variant="secondary" className="flex items-center gap-1 py-1 text-sm">
           Price: {minPrice ? `৳${minPrice}` : "0"} - {maxPrice ? `৳${maxPrice}` : "Any"}
-          <button type="button" onClick={clearPrice} aria-label="Remove price filter" className="ml-1 rounded-sm hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]">
+          <button
+            type="button"
+            onClick={clearPrice}
+            aria-label="Remove price filter"
+            className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          >
             <X className="size-3" aria-hidden="true" />
           </button>
         </Badge>
@@ -139,7 +158,7 @@ export function ActiveFilters() {
       <button
         onClick={clearAll}
         type="button"
-        className="ml-2 min-h-9 rounded-sm px-2 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        className="text-muted-foreground hover:text-foreground ml-2 min-h-9 rounded-sm px-2 text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
       >
         Clear all
       </button>

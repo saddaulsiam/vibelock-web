@@ -35,7 +35,10 @@ export function StorefrontNewsletterForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col items-start gap-1.5 sm:max-w-md md:items-end">
+    <form
+      onSubmit={handleSubmit}
+      className="flex w-full flex-col items-start gap-1.5 sm:max-w-md md:items-end"
+    >
       <div className="flex w-full items-center gap-2">
         <input
           type="email"
@@ -44,12 +47,12 @@ export function StorefrontNewsletterForm() {
           placeholder="Enter your email address"
           required
           aria-label="Email address for newsletter"
-          className="h-10 w-full rounded-full border border-white/15 bg-[#1A1D21] px-4 text-xs text-white placeholder:text-[#F3F0E8]/40 focus:border-[#00D9FF] focus:outline-none focus:ring-1 focus:ring-[#00D9FF]"
+          className="h-10 w-full rounded-full border border-white/15 bg-[#1A1D21] px-4 text-xs text-white placeholder:text-[#F3F0E8]/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
         />
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#00D9FF] px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider text-[#101114] transition-all hover:bg-[#00c4e6] active:scale-95 disabled:opacity-50"
+          className="inline-flex shrink-0 items-center justify-center rounded-full bg-[#00D9FF] px-6 py-2.5 text-xs font-extrabold tracking-wider text-[#101114] uppercase transition-all hover:bg-[#00c4e6] active:scale-95 disabled:opacity-50"
         >
           {loading ? <Loader2 className="size-3.5 animate-spin" /> : "SUBSCRIBE"}
         </button>

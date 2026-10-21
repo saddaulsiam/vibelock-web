@@ -4,7 +4,7 @@ import { Download } from "lucide-react";
 
 export function ReportExportMenu({ query }: { query: string }) {
   return (
-    <div className="relative group">
+    <div className="group relative">
       <button
         type="button"
         className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/85"
@@ -22,7 +22,7 @@ export function ReportExportMenu({ query }: { query: string }) {
             key={type}
             href={`/api/admin/reports/export?type=${type}&${query}`}
             download
-            className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"
+            className="hover:bg-muted flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm"
           >
             {label}
           </a>

@@ -44,10 +44,10 @@ export default async function ReturnRequestPage(props: {
 
   if (returnableItems.length === 0) {
     return (
-      <Section className="py-12 bg-zinc-50 min-h-screen">
-        <Container className="max-w-3xl text-center py-20">
-          <h1 className="text-2xl font-bold mb-4">No Returnable Items</h1>
-          <p className="text-zinc-500 mb-8">
+      <Section className="min-h-screen bg-zinc-50 py-12">
+        <Container className="max-w-3xl py-20 text-center">
+          <h1 className="mb-4 text-2xl font-bold">No Returnable Items</h1>
+          <p className="mb-8 text-zinc-500">
             All items in this order have already been returned or requested for return.
           </p>
         </Container>
@@ -56,11 +56,11 @@ export default async function ReturnRequestPage(props: {
   }
 
   return (
-    <Section className="py-12 bg-zinc-50 min-h-screen">
+    <Section className="min-h-screen bg-zinc-50 py-12">
       <Container className="max-w-3xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-zinc-900">Request a Return</h1>
-          <p className="text-zinc-500 mt-1">Order {order.orderNumber}</p>
+          <p className="mt-1 text-zinc-500">Order {order.orderNumber}</p>
         </div>
 
         <ReturnForm orderNumber={order.orderNumber} items={returnableItems} />

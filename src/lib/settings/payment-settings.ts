@@ -117,10 +117,7 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
     } else {
       // Real database connectivity or runtime failure: Fail closed!
       const message = err instanceof Error ? err.message : "Unknown error";
-      console.error(
-        `[PaymentSettings] Database error checking payment method ${code}:`,
-        message
-      );
+      console.error(`[PaymentSettings] Database error checking payment method ${code}:`, message);
       throw new Error(`Database error while checking payment configuration for ${code}`);
     }
   }
@@ -223,7 +220,10 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
       dbRecords = [];
     } else {
       const message = err instanceof Error ? err.message : "Database error";
-      console.error("[PaymentSettings] Database access failed in getPaymentSettingsOverview:", message);
+      console.error(
+        "[PaymentSettings] Database access failed in getPaymentSettingsOverview:",
+        message
+      );
       throw new Error("Database error while loading payment settings");
     }
   }
@@ -235,7 +235,8 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
 
   // Determine effective status using Strategy A bootstrap rules
   const codEnabled = codRecord ? codRecord.isEnabled : true;
-  const sslEnabled = (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
+  const sslEnabled =
+    (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
   const bkashEnabled = (bkashRecord ? bkashRecord.isEnabled : false) && isBkashConfigured;
   const nagadEnabled = (nagadRecord ? nagadRecord.isEnabled : false) && isNagadConfigured;
 
@@ -385,10 +386,10 @@ export async function updatePaymentMethodSetting(
             code === "COD"
               ? "Cash on Delivery"
               : code === "SSLCOMMERZ"
-              ? "SSLCOMMERZ Gateway"
-              : code === "BKASH"
-              ? "Direct bKash Checkout"
-              : "Nagad Gateway",
+                ? "SSLCOMMERZ Gateway"
+                : code === "BKASH"
+                  ? "Direct bKash Checkout"
+                  : "Nagad Gateway",
           isEnabled,
         },
       });

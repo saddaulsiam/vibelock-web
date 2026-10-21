@@ -1,5 +1,8 @@
 import { requireRole } from "@/lib/auth/authorization";
-import { getPaymentSettingsOverview, type PaymentMethodStatus } from "@/lib/settings/payment-settings";
+import {
+  getPaymentSettingsOverview,
+  type PaymentMethodStatus,
+} from "@/lib/settings/payment-settings";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TogglePaymentMethodForm } from "@/components/admin/payment-settings-forms";
@@ -33,16 +36,22 @@ function getMethodIcon(code: PaymentMethodStatus["code"]) {
 function getStatusBadge(method: PaymentMethodStatus) {
   if (method.isEnabled) {
     return (
-      <Badge variant="outline" className="border-emerald-400 bg-emerald-50 text-emerald-800 font-semibold">
+      <Badge
+        variant="outline"
+        className="border-emerald-400 bg-emerald-50 font-semibold text-emerald-800"
+      >
         <CheckCircle2 className="mr-1 size-3 text-emerald-600" />
         ACTIVE
       </Badge>
     );
   }
 
-  if ((method.code === "SSLCOMMERZ" || method.code === "BKASH" || method.code === "NAGAD") && !method.isConfigured) {
+  if (
+    (method.code === "SSLCOMMERZ" || method.code === "BKASH" || method.code === "NAGAD") &&
+    !method.isConfigured
+  ) {
     return (
-      <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-800 font-medium">
+      <Badge variant="outline" className="border-amber-400 bg-amber-50 font-medium text-amber-800">
         <AlertCircle className="mr-1 size-3 text-amber-600" />
         CREDENTIALS MISSING
       </Badge>
@@ -50,7 +59,7 @@ function getStatusBadge(method: PaymentMethodStatus) {
   }
 
   return (
-    <Badge variant="outline" className="border-zinc-300 bg-zinc-100 text-zinc-600 font-medium">
+    <Badge variant="outline" className="border-zinc-300 bg-zinc-100 font-medium text-zinc-600">
       <Clock className="mr-1 size-3 text-zinc-500" />
       INACTIVE
     </Badge>
@@ -70,8 +79,9 @@ export default async function AdminPaymentSettingsPage() {
         <h2 className="text-xl font-semibold tracking-tight text-[#101114]">
           Payment Gateways & Checkout Controls
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          View operational payment channels, server-side enforcement status, and checkout lifecycle rules.
+        <p className="text-muted-foreground mt-1 text-sm">
+          View operational payment channels, server-side enforcement status, and checkout lifecycle
+          rules.
         </p>
       </div>
 
@@ -102,7 +112,8 @@ export default async function AdminPaymentSettingsPage() {
                   "Settings are safeguarded by the Strategy A bootstrap matrix. COD defaults to enabled, and SSLCOMMERZ respects environment credentials."}
             </p>
             <p className="text-xs opacity-80">
-              Authoritative server-side enforcement is active in createOrderAction. Toggling methods updates checkout availability instantly.
+              Authoritative server-side enforcement is active in createOrderAction. Toggling methods
+              updates checkout availability instantly.
             </p>
           </div>
         </div>
@@ -119,7 +130,10 @@ export default async function AdminPaymentSettingsPage() {
             method.code === "NAGAD";
 
           return (
-            <Card key={method.code} className="border-[#101114]/10 bg-white shadow-sm flex flex-col justify-between">
+            <Card
+              key={method.code}
+              className="flex flex-col justify-between border-[#101114]/10 bg-white shadow-sm"
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -130,8 +144,9 @@ export default async function AdminPaymentSettingsPage() {
                       <CardTitle className="text-base font-semibold text-[#101114]">
                         {method.name}
                       </CardTitle>
-                      <CardDescription className="text-xs text-muted-foreground">
-                        {method.type.replace("_", " ")} · Code: <code className="font-mono text-[#101114]">{method.code}</code>
+                      <CardDescription className="text-muted-foreground text-xs">
+                        {method.type.replace("_", " ")} · Code:{" "}
+                        <code className="font-mono text-[#101114]">{method.code}</code>
                       </CardDescription>
                     </div>
                   </div>
@@ -140,30 +155,28 @@ export default async function AdminPaymentSettingsPage() {
               </CardHeader>
 
               <CardContent className="space-y-4 text-sm">
-                <p className="text-muted-foreground leading-relaxed">
-                  {method.description}
-                </p>
+                <p className="text-muted-foreground leading-relaxed">{method.description}</p>
 
                 {/* Environment & Configuration Details */}
-                <div className="rounded-md border border-[#101114]/5 bg-[#F3F0E8]/40 p-3 space-y-1.5 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-muted-foreground">Runtime State:</span>
+                <div className="space-y-1.5 rounded-md border border-[#101114]/5 bg-[#F3F0E8]/40 p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground font-medium">Runtime State:</span>
                     <span className="font-semibold text-[#101114]">
                       {method.isEnabled ? "Available in Checkout" : "Unavailable / Disabled"}
                     </span>
                   </div>
 
                   {method.environmentMode && (
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-muted-foreground">Environment:</span>
-                      <span className="font-mono uppercase text-[#101114]">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground font-medium">Environment:</span>
+                      <span className="font-mono text-[#101114] uppercase">
                         {method.environmentMode}
                       </span>
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-muted-foreground">Credentials Security:</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground font-medium">Credentials Security:</span>
                     <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
                       <Lock className="size-3" />
                       Server-only (Never exposed)
@@ -173,16 +186,16 @@ export default async function AdminPaymentSettingsPage() {
 
                 {/* Checkout Impact */}
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                  <p className="text-muted-foreground flex items-center gap-1 text-xs font-semibold tracking-wider uppercase">
                     <Info className="size-3" /> Checkout Impact
                   </p>
-                  <p className="text-xs leading-relaxed text-[#101114]/80 bg-[#101114]/[0.02] p-2.5 rounded border border-[#101114]/5">
+                  <p className="rounded border border-[#101114]/5 bg-[#101114]/[0.02] p-2.5 text-xs leading-relaxed text-[#101114]/80">
                     {method.checkoutImpact}
                   </p>
                 </div>
 
                 {/* Admin Toggle Control */}
-                <div className="pt-3 border-t border-[#101114]/10">
+                <div className="border-t border-[#101114]/10 pt-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground font-medium">Admin Control:</span>
                     {canToggle ? (
@@ -192,7 +205,7 @@ export default async function AdminPaymentSettingsPage() {
                         isConfigured={method.isConfigured}
                       />
                     ) : (
-                      <span className="font-medium text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">
+                      <span className="rounded bg-zinc-100 px-2 py-0.5 font-medium text-zinc-500">
                         Planned in Phase 2 / Future
                       </span>
                     )}
@@ -207,7 +220,7 @@ export default async function AdminPaymentSettingsPage() {
       {/* Security & Enforcement Summary */}
       <Card className="border-[#101114]/10 bg-[#101114] text-white">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base font-semibold flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base font-semibold">
             <Lock className="size-4 text-[#00D9FF]" />
             Server-Side Enforcement Guarantees
           </CardTitle>
@@ -216,18 +229,25 @@ export default async function AdminPaymentSettingsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2 text-xs leading-relaxed text-white/80">
-          <ul className="list-disc list-inside space-y-1">
+          <ul className="list-inside list-disc space-y-1">
             <li>
-              <strong>Server-Authoritative:</strong> Checkout methods are enforced by <code className="text-[#00D9FF]">createOrderAction</code>. Bypassing client UI forms will not allow unconfigured or disabled payment methods.
+              <strong>Server-Authoritative:</strong> Checkout methods are enforced by{" "}
+              <code className="text-[#00D9FF]">createOrderAction</code>. Bypassing client UI forms
+              will not allow unconfigured or disabled payment methods.
             </li>
             <li>
-              <strong>Credential Gating:</strong> Enabling an online gateway in the database requires active credentials in environment variables; missing keys prevent enablement.
+              <strong>Credential Gating:</strong> Enabling an online gateway in the database
+              requires active credentials in environment variables; missing keys prevent enablement.
             </li>
             <li>
-              <strong>In-Flight Safety:</strong> Disabling an online provider prevents new checkout sessions, but callbacks and IPN reconciliation for already-created orders remain active.
+              <strong>In-Flight Safety:</strong> Disabling an online provider prevents new checkout
+              sessions, but callbacks and IPN reconciliation for already-created orders remain
+              active.
             </li>
             <li>
-              <strong>Auditability:</strong> All payment setting modifications generate atomic records in the <code className="text-[#00D9FF]">AuditLog</code> table with actor ID and state transitions.
+              <strong>Auditability:</strong> All payment setting modifications generate atomic
+              records in the <code className="text-[#00D9FF]">AuditLog</code> table with actor ID
+              and state transitions.
             </li>
           </ul>
         </CardContent>

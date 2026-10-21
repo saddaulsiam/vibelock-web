@@ -9,11 +9,7 @@ import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-import {
-  subscribeWishlist,
-  getWishlistSnapshot,
-  getWishlistServerSnapshot,
-} from "@/lib/wishlist";
+import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
 
 interface WishlistContentProps {
   initialProducts: ProductSummary[];
@@ -81,7 +77,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             <Skeleton className="h-4 w-24 bg-[#101114]/10" />
             <Skeleton className="h-4 w-16 bg-[#101114]/10" />
           </div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="flex flex-col space-y-3">
                 <Skeleton className="aspect-3/4 w-full rounded-2xl bg-[#101114]/10" />
@@ -110,21 +106,21 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             <button
               type="button"
               onClick={clearAll}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-700 transition-colors"
+              className="text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
             >
               Clear All
             </button>
           </div>
 
           {/* Saved Items Grid */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-6">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
             {savedProducts.map((product) => (
               <div key={product.id} className="group relative flex flex-col justify-between">
                 <ProductCard product={mapToProductCard(product)} />
                 <button
                   type="button"
                   onClick={() => handleRemove(product.slug)}
-                  className="mt-2.5 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white py-2 text-xs font-semibold text-muted-foreground transition-all hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200"
+                  className="text-muted-foreground mt-2.5 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white py-2 text-xs font-semibold transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Remove</span>
@@ -135,19 +131,20 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#101114]/15 bg-white p-8 py-16 text-center sm:p-12 sm:py-20 shadow-xs">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#101114]/15 bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F3F0E8] text-[#101114]">
             <Heart className="size-8 text-[#0099b8]" />
           </div>
-          <h2 className="mt-4 text-xl font-black uppercase tracking-tight text-[#101114] sm:text-2xl">
+          <h2 className="mt-4 text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
             Your wishlist is empty
           </h2>
-          <p className="mt-2 max-w-md text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            Hit the heart icon on any streetwear drop, graphic tee, or oversized hoodie to save your favorite fits for later.
+          <p className="text-muted-foreground mt-2 max-w-md text-xs leading-relaxed sm:text-sm">
+            Hit the heart icon on any streetwear drop, graphic tee, or oversized hoodie to save your
+            favorite fits for later.
           </p>
           <Link
             href="/products"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-6 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-[#1f2229] active:scale-95"
+            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-6 py-3 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-[#1f2229] active:scale-95"
           >
             <span>Explore Drops</span>
             <ArrowRight className="size-4" />
@@ -159,23 +156,23 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       <div className="border-t border-[#101114]/10 pt-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold uppercase tracking-widest text-[#0099b8]">
+            <span className="text-[11px] font-bold tracking-widest text-[#0099b8] uppercase">
               Trending Drops
             </span>
-            <h3 className="mt-1 text-lg font-black uppercase tracking-tight text-[#101114] sm:text-xl">
+            <h3 className="mt-1 text-lg font-black tracking-tight text-[#101114] uppercase sm:text-xl">
               You Might Also Like
             </h3>
           </div>
           <Link
             href="/products"
-            className="group inline-flex items-center gap-1 text-xs font-bold text-[#101114] hover:text-[#0099b8] transition-colors"
+            className="group inline-flex items-center gap-1 text-xs font-bold text-[#101114] transition-colors hover:text-[#0099b8]"
           >
             <span>View All</span>
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {recommendedProducts.map((product) => (
             <ProductCard key={product.id} product={mapToProductCard(product)} />
           ))}

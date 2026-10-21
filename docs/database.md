@@ -8,20 +8,20 @@ date. Always verify the current environment before deployment.
 
 ## Rules
 
--   Treat `prisma/schema.prisma` and migration history as authoritative.
--   Never run `prisma migrate reset`, DROP, TRUNCATE, or destructive
-    cleanup against a shared/important database.
--   Do not edit an already-applied migration to change production
-    history.
--   Review generated SQL and migration diff before applying schema
-    changes.
--   Back up production before migrations and verify restore capability.
--   Avoid casual schema/dependency changes for tasks that can be solved
-    without them.
+- Treat `prisma/schema.prisma` and migration history as authoritative.
+- Never run `prisma migrate reset`, DROP, TRUNCATE, or destructive
+  cleanup against a shared/important database.
+- Do not edit an already-applied migration to change production
+  history.
+- Review generated SQL and migration diff before applying schema
+  changes.
+- Back up production before migrations and verify restore capability.
+- Avoid casual schema/dependency changes for tasks that can be solved
+  without them.
 
 ## Inventory ledger
 
-``` text
+```text
 currentStock = SUM(InventoryTransaction.quantity)
 reservedStock = SUM(active InventoryReservation.quantity where status = RESERVED)
 availableStock = currentStock - reservedStock
@@ -32,24 +32,24 @@ reservations. Never use a direct `stock--` mutation.
 
 ## Order and payment consistency
 
--   Order creation and reservation are one transaction.
--   Payment state must be verified from the provider server-side.
--   A verified successful payment should commit the associated
-    reservation exactly once.
--   Repeated callbacks must not duplicate inventory or payment effects.
--   State changes should use guarded transitions and history/audit
-    records.
--   Keep purchase-time item prices and customer/delivery snapshots
-    consistent with the existing schema.
+- Order creation and reservation are one transaction.
+- Payment state must be verified from the provider server-side.
+- A verified successful payment should commit the associated
+  reservation exactly once.
+- Repeated callbacks must not duplicate inventory or payment effects.
+- State changes should use guarded transitions and history/audit
+  records.
+- Keep purchase-time item prices and customer/delivery snapshots
+  consistent with the existing schema.
 
 ## Returns/refunds
 
--   Validate returnable quantities against prior accepted/processed
-    returns.
--   Restock once through positive RETURN transactions.
--   Validate refund amount and payment relationship.
--   Do not claim a provider refund succeeded unless provider
-    response/record supports it.
+- Validate returnable quantities against prior accepted/processed
+  returns.
+- Restock once through positive RETURN transactions.
+- Validate refund amount and payment relationship.
+- Do not claim a provider refund succeeded unless provider
+  response/record supports it.
 
 ## Migration procedure
 

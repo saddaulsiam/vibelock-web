@@ -32,7 +32,9 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
       u.port !== "5432" ||
       u.pathname !== "/vibelock_test"
     ) {
-      throw new Error(`ABORT: DATABASE_URL is not localhost:5432/vibelock_test (${u.hostname}:${u.port}${u.pathname})`);
+      throw new Error(
+        `ABORT: DATABASE_URL is not localhost:5432/vibelock_test (${u.hostname}:${u.port}${u.pathname})`
+      );
     }
 
     if (
@@ -40,7 +42,9 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
       uDirect.port !== "5432" ||
       uDirect.pathname !== "/vibelock_test"
     ) {
-      throw new Error(`ABORT: DIRECT_URL is not localhost:5432/vibelock_test (${uDirect.hostname}:${uDirect.port}${uDirect.pathname})`);
+      throw new Error(
+        `ABORT: DIRECT_URL is not localhost:5432/vibelock_test (${uDirect.hostname}:${uDirect.port}${uDirect.pathname})`
+      );
     }
 
     // 2. Capture Baseline
@@ -131,7 +135,11 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     expect(auditRecord?.action).toBe("PAYMENT_METHOD_SETTING_UPDATED");
     expect(auditRecord?.actorId).toBeNull();
 
-    const metadata = auditRecord?.metadata as { code: string; previousState: unknown; newState: unknown };
+    const metadata = auditRecord?.metadata as {
+      code: string;
+      previousState: unknown;
+      newState: unknown;
+    };
     expect(metadata.code).toBe("COD");
     expect(metadata.previousState).toBe("UNINITIALIZED");
     expect(metadata.newState).toBe(false);
@@ -167,7 +175,11 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     expect(auditRecord).not.toBeNull();
     expect(auditRecord?.action).toBe("PAYMENT_METHOD_SETTING_UPDATED");
 
-    const metadata = auditRecord?.metadata as { code: string; previousState: unknown; newState: unknown };
+    const metadata = auditRecord?.metadata as {
+      code: string;
+      previousState: unknown;
+      newState: unknown;
+    };
     expect(metadata.code).toBe("COD");
     expect(metadata.previousState).toBe(false);
     expect(metadata.newState).toBe(true);
@@ -204,7 +216,11 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     expect(auditRecord).not.toBeNull();
     expect(auditRecord?.action).toBe("PAYMENT_METHOD_SETTING_UPDATED");
 
-    const metadata = auditRecord?.metadata as { code: string; previousState: unknown; newState: unknown };
+    const metadata = auditRecord?.metadata as {
+      code: string;
+      previousState: unknown;
+      newState: unknown;
+    };
     expect(metadata.code).toBe("SSLCOMMERZ");
     expect(metadata.previousState).toBe("UNINITIALIZED");
     expect(metadata.newState).toBe(false);

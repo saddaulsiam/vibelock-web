@@ -10,26 +10,11 @@ export const INVENTORY_INTELLIGENCE_EXPORT_LIMIT = 5000;
 
 export type InventoryIntelligenceWindow = "30d" | "60d" | "90d";
 export type InventoryIntelligenceStatusFilter =
-  | "all"
-  | "negative"
-  | "out-of-stock"
-  | "dead"
-  | "slow"
-  | "healthy";
+  "all" | "negative" | "out-of-stock" | "dead" | "slow" | "healthy";
 
-export type InventoryIntelligenceSort =
-  | "valuation"
-  | "stock"
-  | "velocity"
-  | "age"
-  | "runout";
+export type InventoryIntelligenceSort = "valuation" | "stock" | "velocity" | "age" | "runout";
 
-export type InventoryIntelligenceStatus =
-  | "NEGATIVE"
-  | "OUT_OF_STOCK"
-  | "DEAD"
-  | "SLOW"
-  | "HEALTHY";
+export type InventoryIntelligenceStatus = "NEGATIVE" | "OUT_OF_STOCK" | "DEAD" | "SLOW" | "HEALTHY";
 
 const WINDOW_DAYS: Record<InventoryIntelligenceWindow, number> = {
   "30d": 30,
@@ -172,8 +157,7 @@ function processIntelligenceRow(
   const dailyVelocity = netRetainedUnits / windowDays;
 
   // Days of supply is calculated only when both available stock and daily velocity are strictly positive
-  const daysOfSupply =
-    available > 0 && dailyVelocity > 0 ? available / dailyVelocity : null;
+  const daysOfSupply = available > 0 && dailyVelocity > 0 ? available / dailyVelocity : null;
 
   let daysSinceLastInflow: number | null = null;
   if (row.lastInflowAt) {
@@ -199,10 +183,7 @@ function processIntelligenceRow(
     daysSinceLastInflow > DEAD_STOCK_GRACE_DAYS
   ) {
     status = "DEAD";
-  } else if (
-    daysOfSupply !== null &&
-    daysOfSupply > SLOW_MOVING_DAYS_OF_SUPPLY
-  ) {
+  } else if (daysOfSupply !== null && daysOfSupply > SLOW_MOVING_DAYS_OF_SUPPLY) {
     status = "SLOW";
   } else {
     status = "HEALTHY";
@@ -367,9 +348,7 @@ function filterAndSortItems(
   if (options.search && options.search.trim()) {
     const q = options.search.trim().toLowerCase();
     filtered = filtered.filter(
-      (item) =>
-        item.sku.toLowerCase().includes(q) ||
-        item.productName.toLowerCase().includes(q)
+      (item) => item.sku.toLowerCase().includes(q) || item.productName.toLowerCase().includes(q)
     );
   }
 
@@ -386,9 +365,7 @@ function filterAndSortItems(
       slow: "SLOW",
       healthy: "HEALTHY",
     };
-    filtered = filtered.filter(
-      (item) => item.status === targetStatus[statusFilter]
-    );
+    filtered = filtered.filter((item) => item.status === targetStatus[statusFilter]);
   }
 
   // Sort
@@ -444,9 +421,7 @@ export async function getAdminInventoryIntelligence({
   const asOf = new Date();
 
   const rawRows = await fetchRawIntelligenceData(asOf, windowDays);
-  const allItems = rawRows.map((row) =>
-    processIntelligenceRow(row, asOf, windowDays)
-  );
+  const allItems = rawRows.map((row) => processIntelligenceRow(row, asOf, windowDays));
 
   // Global summary across whole catalog (before table filters)
   const summary = calculateSummary(allItems);
@@ -496,9 +471,7 @@ export async function getAdminInventoryIntelligenceForExport({
   const asOf = new Date();
 
   const rawRows = await fetchRawIntelligenceData(asOf, windowDays);
-  const allItems = rawRows.map((row) =>
-    processIntelligenceRow(row, asOf, windowDays)
-  );
+  const allItems = rawRows.map((row) => processIntelligenceRow(row, asOf, windowDays));
 
   const filteredAndSorted = filterAndSortItems(allItems, {
     search,
@@ -508,10 +481,7 @@ export async function getAdminInventoryIntelligenceForExport({
 
   const totalCount = filteredAndSorted.length;
   const isTruncated = totalCount > INVENTORY_INTELLIGENCE_EXPORT_LIMIT;
-  const exportedItems = filteredAndSorted.slice(
-    0,
-    INVENTORY_INTELLIGENCE_EXPORT_LIMIT
-  );
+  const exportedItems = filteredAndSorted.slice(0, INVENTORY_INTELLIGENCE_EXPORT_LIMIT);
 
   return {
     items: exportedItems,

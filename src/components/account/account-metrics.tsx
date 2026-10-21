@@ -3,11 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Package, ShoppingCart, Heart, Ticket, ArrowRight } from "lucide-react";
-import {
-  subscribeWishlist,
-  getWishlistSnapshot,
-  getWishlistServerSnapshot,
-} from "@/lib/wishlist";
+import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
 
 interface AccountMetricsProps {
   orderCount: number;
@@ -83,7 +79,7 @@ export function AccountMetrics({
             <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#F3F0E8] text-[#101114]">
               <metric.icon className="size-5 text-[#101114]" />
             </div>
-            <p className="text-xs font-semibold text-muted-foreground">{metric.label}</p>
+            <p className="text-muted-foreground text-xs font-semibold">{metric.label}</p>
             <p className="mt-1 text-2xl font-black tracking-tight text-[#101114] sm:text-3xl">
               {metric.value}
             </p>

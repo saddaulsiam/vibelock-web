@@ -1266,15 +1266,18 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     expect(sales.length).toBe(1);
 
     // Duplicate IPN acknowledged with HTTP 200 without double-consuming inventory
-    const duplicateIpnReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=ipn", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        tran_id: payment!.merchantReferenceId!,
-        val_id: "VAL-IPN-SUCCESS",
-        status: "VALID",
-      }).toString(),
-    });
+    const duplicateIpnReq = new NextRequest(
+      "http://localhost/api/payments/sslcommerz/callback?status=ipn",
+      {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          tran_id: payment!.merchantReferenceId!,
+          val_id: "VAL-IPN-SUCCESS",
+          status: "VALID",
+        }).toString(),
+      }
+    );
 
     const duplicateIpnRes = await paymentCallback(duplicateIpnReq);
     expect(duplicateIpnRes.status).toBe(200);
@@ -1286,14 +1289,17 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
     expect(finalSales.length).toBe(1);
 
     // Conflicting terminal state: Confirmed SUCCESS payment cannot be overwritten by failure callback
-    const conflictingCancelReq = new NextRequest("http://localhost/api/payments/sslcommerz/callback?status=cancel", {
-      method: "POST",
-      headers: { "content-type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        tran_id: payment!.merchantReferenceId!,
-        status: "CANCELLED",
-      }).toString(),
-    });
+    const conflictingCancelReq = new NextRequest(
+      "http://localhost/api/payments/sslcommerz/callback?status=cancel",
+      {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          tran_id: payment!.merchantReferenceId!,
+          status: "CANCELLED",
+        }).toString(),
+      }
+    );
     const cancelRes = await paymentCallback(conflictingCancelReq);
     expect(cancelRes.status).toBe(303);
     expect(cancelRes.headers.get("location")).toContain("payment=success");

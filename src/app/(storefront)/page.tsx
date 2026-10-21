@@ -59,7 +59,11 @@ export default async function StorefrontHomePage() {
       const slug = category.slug.toLowerCase();
       const name = category.name.toLowerCase();
       // Exclude automated integration test fixtures
-      if (name.startsWith("cat-") || name.startsWith("existing") || name.startsWith("new category")) {
+      if (
+        name.startsWith("cat-") ||
+        name.startsWith("existing") ||
+        name.startsWith("new category")
+      ) {
         return false;
       }
       return priorityCategoryKeys.some((k) => slug.includes(k) || name.includes(k));
@@ -87,25 +91,24 @@ export default async function StorefrontHomePage() {
             <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
               <Truck className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-[#101114] sm:text-sm">
+                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
                   FREE SHIPPING
                 </p>
-                <p className="text-xs text-[#101114]/65">
-                  On orders over ৳2000
-                </p>
+                <p className="text-xs text-[#101114]/65">On orders over ৳2000</p>
               </div>
             </div>
 
             {/* Secure Payments */}
             <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
-              <ShieldCheck className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
+              <ShieldCheck
+                className="size-6 shrink-0 text-[#101114] sm:size-7"
+                aria-hidden="true"
+              />
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-[#101114] sm:text-sm">
+                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
                   SECURE PAYMENTS
                 </p>
-                <p className="text-xs text-[#101114]/65">
-                  100% safe &amp; trusted
-                </p>
+                <p className="text-xs text-[#101114]/65">100% safe &amp; trusted</p>
               </div>
             </div>
 
@@ -113,12 +116,10 @@ export default async function StorefrontHomePage() {
             <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
               <Headphones className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-wider text-[#101114] sm:text-sm">
+                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
                   24/7 SUPPORT
                 </p>
-                <p className="text-xs text-[#101114]/65">
-                  We&apos;re here to help
-                </p>
+                <p className="text-xs text-[#101114]/65">We&apos;re here to help</p>
               </div>
             </div>
           </div>
@@ -131,19 +132,22 @@ export default async function StorefrontHomePage() {
           {/* Header */}
           <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.20em] text-[#00D9FF]">
+              <p className="text-[11px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
                 SHOP BY CATEGORY
               </p>
-              <h2 className="mt-1 text-2xl font-black uppercase tracking-tight text-[#101114] sm:text-3xl lg:text-4xl">
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-[#101114] uppercase sm:text-3xl lg:text-4xl">
                 OUR CATEGORIES
               </h2>
             </div>
             <Link
               href="/products"
-              className="group inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#101114] transition-colors hover:text-[#00D9FF] sm:text-sm"
+              className="group inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:text-[#00D9FF] sm:text-sm"
             >
               <span>View All</span>
-              <ArrowRight className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              <ArrowRight
+                className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
             </Link>
           </div>
 
@@ -158,7 +162,7 @@ export default async function StorefrontHomePage() {
                   <Link
                     key={category.id}
                     href={`/category/${category.slug}`}
-                    className="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-xs bg-[#101114] p-4 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:p-5"
+                    className="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-xs bg-[#101114] p-4 text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:p-5"
                   >
                     {/* Category Image */}
                     <Image
@@ -177,12 +181,15 @@ export default async function StorefrontHomePage() {
 
                     {/* Bottom Text Content */}
                     <div className="relative z-10 flex flex-col items-start gap-1">
-                      <span className="text-base font-black uppercase tracking-wide text-white sm:text-lg">
+                      <span className="text-base font-black tracking-wide text-white uppercase sm:text-lg">
                         {cleanName}
                       </span>
                       <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-white/80 transition-colors group-hover:text-[#00D9FF]">
                         <span>Shop Now</span>
-                        <ArrowRight className="size-3 text-[#00D9FF] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                        <ArrowRight
+                          className="size-3 text-[#00D9FF] transition-transform group-hover:translate-x-1"
+                          aria-hidden="true"
+                        />
                       </span>
                     </div>
                   </Link>
@@ -190,7 +197,7 @@ export default async function StorefrontHomePage() {
               })}
             </div>
           ) : (
-            <div className="rounded-sm border border-dashed border-[#101114]/20 px-4 py-12 text-center text-sm text-muted-foreground">
+            <div className="text-muted-foreground rounded-sm border border-dashed border-[#101114]/20 px-4 py-12 text-center text-sm">
               No categories available yet.
             </div>
           )}
@@ -203,19 +210,22 @@ export default async function StorefrontHomePage() {
           {/* Header */}
           <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
             <div>
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.20em] text-[#00D9FF]">
+              <p className="text-[11px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
                 FEATURED PRODUCTS
               </p>
-              <h2 className="mt-1 text-2xl font-black uppercase tracking-tight text-[#101114] sm:text-3xl lg:text-4xl">
+              <h2 className="mt-1 text-2xl font-black tracking-tight text-[#101114] uppercase sm:text-3xl lg:text-4xl">
                 BEST SELLERS
               </h2>
             </div>
             <Link
               href="/products"
-              className="group inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#101114] transition-colors hover:text-[#00D9FF] sm:text-sm"
+              className="group inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:text-[#00D9FF] sm:text-sm"
             >
               <span>View All Products</span>
-              <ArrowRight className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              <ArrowRight
+                className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1"
+                aria-hidden="true"
+              />
             </Link>
           </div>
 
@@ -227,7 +237,7 @@ export default async function StorefrontHomePage() {
               ))}
             </div>
           ) : (
-            <div className="rounded-sm border border-dashed border-border px-4 py-14 text-center text-sm text-muted-foreground">
+            <div className="border-border text-muted-foreground rounded-sm border border-dashed px-4 py-14 text-center text-sm">
               No products available yet.
             </div>
           )}
@@ -240,23 +250,27 @@ export default async function StorefrontHomePage() {
           <div className="grid items-center gap-8 lg:grid-cols-[1.1fr_1.3fr_0.8fr] lg:gap-6">
             {/* Left Column: Typography & Action */}
             <div className="z-10 flex flex-col items-start">
-              <p className="text-[11px] font-extrabold uppercase tracking-[0.20em] text-[#00D9FF]">
+              <p className="text-[11px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
                 THE VIBELOCK COLLECTION
               </p>
-              <h2 className="mt-2 text-3xl font-black uppercase leading-[1.0] tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <h2 className="mt-2 text-3xl leading-[1.0] font-black tracking-tight text-white uppercase sm:text-4xl lg:text-5xl">
                 BUILT FOR <br />
                 <span className="text-[#00D9FF]">REAL ONES</span>
               </h2>
-              <p className="mt-4 max-w-sm text-xs font-medium leading-relaxed text-[#F3F0E8]/70 sm:text-sm">
-                Streetwear that moves with your story. Crafted for comfort, silhouette, and the streets of Dhaka.
+              <p className="mt-4 max-w-sm text-xs leading-relaxed font-medium text-[#F3F0E8]/70 sm:text-sm">
+                Streetwear that moves with your story. Crafted for comfort, silhouette, and the
+                streets of Dhaka.
               </p>
               <div className="mt-6 sm:mt-7">
                 <Link
                   href="/products"
-                  className="group inline-flex items-center gap-3 rounded-full border border-white/80 bg-transparent px-7 py-3 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-white hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  className="group inline-flex items-center gap-3 rounded-full border border-white/80 bg-transparent px-7 py-3 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-white hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
                   <span>SHOP COLLECTION</span>
-                  <ArrowRight className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1 group-hover:text-[#101114]" aria-hidden="true" />
+                  <ArrowRight
+                    className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1 group-hover:text-[#101114]"
+                    aria-hidden="true"
+                  />
                 </Link>
               </div>
             </div>
@@ -319,19 +333,22 @@ export default async function StorefrontHomePage() {
           <Container>
             <div className="mb-6 flex items-end justify-between gap-4 sm:mb-8">
               <div>
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.20em] text-[#00D9FF]">
+                <p className="text-[11px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
                   EXPLORE THE LINEUP
                 </p>
-                <h2 className="mt-1 text-2xl font-black uppercase tracking-tight text-[#101114] sm:text-3xl">
+                <h2 className="mt-1 text-2xl font-black tracking-tight text-[#101114] uppercase sm:text-3xl">
                   NEW ARRIVALS
                 </h2>
               </div>
               <Link
                 href="/products?sort=newest"
-                className="group inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#101114] transition-colors hover:text-[#00D9FF] sm:text-sm"
+                className="group inline-flex items-center gap-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:text-[#00D9FF] sm:text-sm"
               >
                 <span>Shop New Drops</span>
-                <ArrowRight className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                <ArrowRight
+                  className="size-3.5 text-[#00D9FF] transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
               </Link>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
@@ -349,10 +366,10 @@ export default async function StorefrontHomePage() {
           <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             {/* Left Content */}
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.20em] text-[#00D9FF]">
+              <p className="text-[10px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
                 STAY IN THE LOOP
               </p>
-              <h2 className="mt-1 text-xl font-black uppercase tracking-tight text-white sm:text-2xl lg:text-3xl">
+              <h2 className="mt-1 text-xl font-black tracking-tight text-white uppercase sm:text-2xl lg:text-3xl">
                 JOIN OUR NEWSLETTER
               </h2>
               <p className="mt-1 text-xs text-[#F3F0E8]/60">

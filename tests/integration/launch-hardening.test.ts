@@ -126,9 +126,7 @@ describe("Phase 3L - Launch Hardening", () => {
     const metadata = await generateCategoryMetadata({
       params: Promise.resolve({ slug: category.slug }),
     });
-    expect(metadata.alternates?.canonical).toBe(
-      `https://vibelock.bd/category/${category.slug}`
-    );
+    expect(metadata.alternates?.canonical).toBe(`https://vibelock.bd/category/${category.slug}`);
   });
 
   test("server environment validation rejects missing secrets and malformed configuration safely", async () => {
