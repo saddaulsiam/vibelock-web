@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -17,6 +17,7 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
   const [open, setOpen] = React.useState(false);
   const [loggingOut, setLoggingOut] = React.useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const closeNav = () => setOpen(false);
 
   const handleLogout = async () => {
@@ -56,14 +57,20 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
           <Link
             href="/"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#00D9FF] uppercase"
+            className={`border-b border-white/10 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+              pathname === "/" ? "text-[#00D9FF]" : "text-[#F3F0E8]/80 hover:text-white"
+            }`}
           >
             Home
           </Link>
           <Link
             href="/products"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
+            className={`border-b border-white/10 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+              pathname.startsWith("/products")
+                ? "text-[#00D9FF]"
+                : "text-[#F3F0E8]/80 hover:text-white"
+            }`}
           >
             Shop All
           </Link>
@@ -75,28 +82,44 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
               <Link
                 href="/category/t-shirts"
                 onClick={closeNav}
-                className="text-xs font-medium text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                className={`text-xs font-medium transition-colors ${
+                  pathname === "/category/t-shirts"
+                    ? "text-[#00D9FF]"
+                    : "text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                }`}
               >
                 T-Shirts
               </Link>
               <Link
                 href="/category/shirts"
                 onClick={closeNav}
-                className="text-xs font-medium text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                className={`text-xs font-medium transition-colors ${
+                  pathname === "/category/shirts"
+                    ? "text-[#00D9FF]"
+                    : "text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                }`}
               >
                 Shirts
               </Link>
               <Link
                 href="/category/pants"
                 onClick={closeNav}
-                className="text-xs font-medium text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                className={`text-xs font-medium transition-colors ${
+                  pathname === "/category/pants"
+                    ? "text-[#00D9FF]"
+                    : "text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                }`}
               >
                 Pants
               </Link>
               <Link
                 href="/category/shorts"
                 onClick={closeNav}
-                className="text-xs font-medium text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                className={`text-xs font-medium transition-colors ${
+                  pathname === "/category/shorts"
+                    ? "text-[#00D9FF]"
+                    : "text-[#F3F0E8]/80 hover:text-[#00D9FF]"
+                }`}
               >
                 Shorts
               </Link>
@@ -105,21 +128,27 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
           <Link
             href="/about"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
+            className={`border-b border-white/10 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+              pathname === "/about" ? "text-[#00D9FF]" : "text-[#F3F0E8]/80 hover:text-white"
+            }`}
           >
             About
           </Link>
           <Link
             href="/contact"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
+            className={`border-b border-white/10 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+              pathname === "/contact" ? "text-[#00D9FF]" : "text-[#F3F0E8]/80 hover:text-white"
+            }`}
           >
             Contact
           </Link>
           <Link
             href="/wishlist"
             onClick={closeNav}
-            className="border-b border-white/10 py-3 text-xs font-semibold tracking-wider text-[#F3F0E8]/80 uppercase hover:text-white"
+            className={`border-b border-white/10 py-3 text-xs font-semibold tracking-wider uppercase transition-colors ${
+              pathname === "/wishlist" ? "text-[#00D9FF]" : "text-[#F3F0E8]/80 hover:text-white"
+            }`}
           >
             Wishlist
           </Link>
