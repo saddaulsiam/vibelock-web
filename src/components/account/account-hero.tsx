@@ -12,8 +12,8 @@ export function AccountHero({ name }: AccountHeroProps) {
     <section className="relative w-full overflow-hidden bg-[#0A0D10] text-[#F3F0E8] border-b border-white/10">
       {/* Background brutalist texture and cyan splatter accents */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-25 mix-blend-screen bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/Collection campaign background.png')" }}
+        className="pointer-events-none absolute inset-0 opacity-50 mix-blend-screen bg-cover bg-center"
+        style={{ backgroundImage: "url('/images/hero/account-hero.png')" }}
         aria-hidden="true"
       />
       
@@ -24,7 +24,7 @@ export function AccountHero({ name }: AccountHeroProps) {
       /> */}
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col-reverse items-center justify-between gap-6 py-10 sm:py-12 md:flex-row lg:py-14">
+        <div className="flex flex-col-reverse items-center justify-between gap-6 py-10 sm:py-12 md:flex-row lg:py-16">
           
           {/* Left Text Block */}
           <div className="z-10 flex w-full flex-col text-left md:max-w-xl">

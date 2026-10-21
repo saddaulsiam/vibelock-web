@@ -8,11 +8,11 @@ export function AccountCollectionBanner() {
       {/* Background Campaign Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src="/images/VibeLock in Cyan Concrete.png"
+          src="/images/collection/collection-banner2.png"
           alt="Explore VibeLock Streetwear Collection"
           fill
           sizes="(max-width: 1280px) 100vw, 1200px"
-          className="object-cover object-center opacity-40 sm:opacity-50"
+          className="object-cover object-center opacity-40 sm:opacity-60"
         />
         {/* Dark Gradient Overlay for optimal contrast */}
         <div 

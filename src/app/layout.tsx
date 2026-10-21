@@ -45,7 +45,7 @@ export default async function RootLayout({
       >
         {children}
         <Toaster
-          position="bottom-right"
+          position="top-center"
           richColors
           closeButton
           toastOptions={{
