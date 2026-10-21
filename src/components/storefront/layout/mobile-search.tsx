@@ -33,9 +33,9 @@ export function MobileSearch() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close search" : "Open search"}
-        className="flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        className="flex size-9 items-center justify-center rounded-full text-[#101114]/80 transition-colors hover:bg-black/5 hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
       >
-        {isOpen ? <X className="size-5 text-[#00D9FF]" /> : <Search className="size-5" />}
+        {isOpen ? <X className="size-4.5 text-[#0088A8]" /> : <Search className="size-4.5" />}
       </button>
 
       {/* Full-Width Mobile Search Bar & Overlay */}

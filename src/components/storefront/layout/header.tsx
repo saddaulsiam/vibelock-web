@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Search, ShoppingBag, User } from "lucide-react";
-import { Container } from "@/components/shared/container";
+import { Heart, Search, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { MobileNav } from "./mobile-nav";
 import { DesktopNav } from "./desktop-nav";
 import { MobileSearch } from "./mobile-search";
+import { AccountPopover } from "./account-popover";
 
 export async function Header() {
   const user = await getCurrentUser();
@@ -15,89 +15,89 @@ export async function Header() {
   const itemCount = cart?.totalQuantity ?? 0;
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/5 bg-[#0C0D0E]">
-      <Container>
-        <div className="flex h-16 items-center justify-between gap-4 py-2 sm:h-[72px] lg:gap-8">
-          {/* Left: Mobile Nav + Logo */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            <MobileNav isAuthenticated={Boolean(user)} />
-            <Link
-              href="/"
-              className="flex items-center transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-              aria-label="VibeLock Home"
-            >
+    <header className="pointer-events-none sticky top-2 z-40 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
+      <div className="pointer-events-auto mx-auto flex h-14 w-full max-w-7xl items-center justify-between rounded-full border border-black/8 bg-white/95 px-3 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-md sm:h-16 sm:px-6">
+        {/* ── Left: Mobile Nav + Circular Emblem & Brand Name ── */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
+          <MobileNav isAuthenticated={Boolean(user)} />
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-90 focus-visible:outline-none"
+            aria-label="VibeLock Home"
+          >
+            {/* Circular Black Badge with White Logo Emblem */}
+            <div className="flex size-8.5 items-center justify-center rounded-full border border-black/10 bg-[#101114] shadow-sm">
               <Image
                 src="/images/vibelock-logo.png"
                 alt="VibeLock"
-                width={124}
-                height={36}
+                width={22}
+                height={22}
                 priority
-                className="h-7 w-auto object-contain sm:h-8"
+                className="object-contain"
               />
-            </Link>
-          </div>
+            </div>
+            <span className="text-sm font-black tracking-wider text-[#101114] uppercase sm:text-base">
+              VIBELOCK
+            </span>
+          </Link>
+        </div>
 
-          {/* Center: Desktop Navigation */}
-          <DesktopNav />
+        {/* ── Center: Desktop Navigation ── */}
+        <DesktopNav />
 
-          {/* Right: Search + Icons */}
-          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-            {/* Pill Search Input */}
-            <form
-              action="/products"
-              method="get"
-              role="search"
-              aria-label="Search products"
-              className="relative hidden items-center lg:flex"
-            >
-              <Search
-                className="pointer-events-none absolute left-3.5 size-4 text-[#F3F0E8]/40"
-                aria-hidden="true"
-              />
-              <Input
-                type="search"
-                name="q"
-                placeholder="Search for products..."
-                aria-label="Search for products"
-                className="h-9 w-48 rounded-full border border-white/10 bg-[#1A1D21] pr-4 pl-9 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40 focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF] xl:w-56"
-              />
-            </form>
+        {/* ── Right: Search Pill + Wishlist + Cart + Account Popover ── */}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+          {/* Pill Search Input (like screenshot "🔍 Search drops...") */}
+          <form
+            action="/products"
+            method="get"
+            role="search"
+            aria-label="Search products"
+            className="relative hidden items-center lg:flex"
+          >
+            <Search
+              className="pointer-events-none absolute left-3.5 size-3.5 text-[#101114]/40"
+              aria-hidden="true"
+            />
+            <Input
+              type="search"
+              name="q"
+              placeholder="Search drops..."
+              aria-label="Search drops"
+              className="h-9 w-36 rounded-full border border-black/10 bg-[#F5F5F3] pr-3.5 pl-9 text-xs text-[#101114] placeholder:text-[#101114]/40 focus-visible:border-[#101114] focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-[#101114] xl:w-48"
+            />
+          </form>
 
-            {/* Mobile Search Component */}
-            <MobileSearch />
+          {/* Mobile Search Icon/Drawer */}
+          <MobileSearch />
 
-            {/* Account Icon */}
-            <Link
-              href={user ? "/account" : "/login"}
-              aria-label={user ? "Account" : "Sign in"}
-              className="inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
-            >
-              <User className="size-5" aria-hidden="true" />
-            </Link>
+          {/* Wishlist Link */}
+          <Link
+            href="/wishlist"
+            aria-label="Wishlist"
+            className="inline-flex size-9 items-center justify-center rounded-full text-[#101114]/75 transition-colors hover:bg-black/5 hover:text-[#101114]"
+          >
+            <Heart className="size-4.5" aria-hidden="true" />
+          </Link>
 
-            {/* Wishlist Icon */}
-            <Link
-              href="/wishlist"
-              aria-label="Wishlist"
-              className="inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
-            >
-              <Heart className="size-5" aria-hidden="true" />
-            </Link>
-
-            {/* Shopping Cart Icon */}
-            <Link
-              href="/cart"
-              aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
-              className="relative inline-flex size-9 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white"
-            >
-              <ShoppingBag className="size-5" aria-hidden="true" />
-              <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[10px] font-bold text-[#101114]">
+          {/* Shopping Cart Link */}
+          <Link
+            href="/cart"
+            aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
+            className="relative inline-flex size-9 items-center justify-center rounded-full text-[#101114]/75 transition-colors hover:bg-black/5 hover:text-[#101114]"
+          >
+            <ShoppingBag className="size-4.5" aria-hidden="true" />
+            {itemCount > 0 && (
+              <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[9px] font-black text-[#101114]">
                 {itemCount}
               </span>
-            </Link>
-          </div>
+            )}
+          </Link>
+
+          {/* Account Popover Menu (Matching screenshot!) */}
+          <AccountPopover user={user} />
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

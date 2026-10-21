@@ -33,7 +33,7 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         aria-label="Open navigation menu"
-        className="inline-flex size-10 items-center justify-center text-[#F3F0E8]/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none xl:hidden"
+        className="inline-flex size-9 items-center justify-center rounded-full text-[#101114]/80 transition-colors hover:bg-black/5 hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none xl:hidden"
       >
         <Menu className="size-5" aria-hidden="true" />
       </SheetTrigger>
