@@ -17,10 +17,29 @@ const addressSchema = z.object({
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
-  image: z.string().trim().url("Must be a valid image URL").nullable().optional().or(z.literal("")),
+  image: z
+    .string()
+    .trim()
+    .refine(
+      (val) => {
+        if (!val) return true;
+        if (val.startsWith("/")) return true;
+        try {
+          const parsed = new URL(val);
+          return parsed.protocol === "http:" || parsed.protocol === "https:";
+        } catch {
+          return false;
+        }
+      },
+      { message: "Must be a valid image URL or path" }
+    )
+    .nullable()
+    .optional()
+    .or(z.literal("")),
 });
 
 function refreshAccount() {
+  revalidatePath("/account", "layout");
   revalidatePath("/account");
   revalidatePath("/account/profile");
   revalidatePath("/account/addresses");

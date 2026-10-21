@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface ProfileFormProps {
@@ -32,9 +33,9 @@ interface ProfileFormProps {
 }
 
 const PRESET_AVATARS = [
-  { label: "Tokyo Cyber", url: "/images/hero/hero-slide1.png" },
-  { label: "Urban Drift", url: "/images/hero/hero-slide2.png" },
-  { label: "Concrete Wave", url: "/images/hero/hero-slide3.png" },
+  { label: "Tokyo Cyber", url: "/images/hero/hero-slide-1.png" },
+  { label: "Urban Drift", url: "/images/hero/hero-slide-2.png" },
+  { label: "Concrete Wave", url: "/images/hero/hero-slide-3.png" },
 ];
 
 export function ProfileForm({
@@ -46,10 +47,20 @@ export function ProfileForm({
   createdAt,
   authProvider,
 }: ProfileFormProps) {
+  const router = useRouter();
   const [name, setName] = useState(initialName);
   const [imageUrl, setImageUrl] = useState(initialImage ?? "");
   const [customUrlInput, setCustomUrlInput] = useState(initialImage ?? "");
   const [showCustomInput, setShowCustomInput] = useState(false);
+
+  useEffect(() => {
+    setName(initialName);
+  }, [initialName]);
+
+  useEffect(() => {
+    setImageUrl(initialImage ?? "");
+    setCustomUrlInput(initialImage ?? "");
+  }, [initialImage]);
 
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -77,6 +88,7 @@ export function ProfileForm({
     if (result.success) {
       setMessage("Profile details saved successfully.");
       toast.success("Profile updated successfully!");
+      router.refresh();
     } else {
       setError(result.error ?? "Unable to update your profile.");
       toast.error(result.error ?? "Failed to save profile.");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -30,12 +30,17 @@ interface AccountSidebarProps {
     image: string | null;
   };
   onOpenCoupons?: () => void;
+  onNavClick?: () => void;
 }
 
-export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) {
+export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [avatarSrc, setAvatarSrc] = useState(profile.image || "/images/hero/hero-slide1.png");
+  const [avatarSrc, setAvatarSrc] = useState(profile.image || "/images/hero/hero-slide-1.png");
+
+  useEffect(() => {
+    setAvatarSrc(profile.image || "/images/hero/hero-slide-1.png");
+  }, [profile.image]);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -120,7 +125,7 @@ export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) 
               fill
               sizes="72px"
               unoptimized={Boolean(avatarSrc.startsWith("http"))}
-              onError={() => setAvatarSrc("/images/hero/hero-slide1.png")}
+              onError={() => setAvatarSrc("/images/hero/hero-slide-1.png")}
               className="object-cover"
             />
           </div>
@@ -160,7 +165,7 @@ export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) 
                 <button
                   key={item.label}
                   type="button"
-                  onClick={item.onClick}
+                  onClick={() => { item.onClick?.(); onNavClick?.(); }}
                   className="flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#101114]/80 transition-colors hover:bg-[#F3F0E8] hover:text-[#101114] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
                 >
                   <item.icon className="size-4.5 shrink-0 text-muted-foreground" />
@@ -173,6 +178,7 @@ export function AccountSidebar({ profile, onOpenCoupons }: AccountSidebarProps) 
               <Link
                 key={item.label}
                 href={item.href}
+                onClick={onNavClick}
                 className={`relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] ${
                   isActive
                     ? "bg-[#00D9FF]/12 font-bold text-[#101114] before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r before:bg-[#00D9FF]"
