@@ -5,6 +5,7 @@ import { ArrowRight, Headphones, ShieldCheck, Truck } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { HeroCarousel } from "@/components/storefront/hero-carousel";
 import { ProductCard } from "@/components/storefront/product-card";
+import { StorefrontNewsletterForm } from "@/components/storefront/newsletter-form";
 import { getHomepageHeroBanners } from "@/lib/catalog/hero-banners";
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
@@ -359,28 +360,8 @@ export default async function StorefrontHomePage() {
               </p>
             </div>
 
-            {/* Right Form with Coming Soon Notice */}
-            <div className="flex w-full flex-col items-start gap-1.5 sm:max-w-md md:items-end">
-              <div className="flex w-full items-center gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email address"
-                  disabled
-                  aria-label="Email address for newsletter"
-                  className="h-10 w-full rounded-full border border-white/15 bg-[#1A1D21] px-4 text-xs text-white placeholder:text-[#F3F0E8]/40 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  disabled
-                  className="shrink-0 rounded-full bg-[#00D9FF] px-6 py-2.5 text-xs font-extrabold uppercase tracking-wider text-[#101114] opacity-90 transition-opacity cursor-not-allowed"
-                >
-                  SUBSCRIBE
-                </button>
-              </div>
-              <span className="text-[10px] text-[#F3F0E8]/45">
-                Newsletter subscription launching soon with next seasonal drop.
-              </span>
-            </div>
+            {/* Right Newsletter Subscription Form */}
+            <StorefrontNewsletterForm />
           </div>
         </Container>
       </section>

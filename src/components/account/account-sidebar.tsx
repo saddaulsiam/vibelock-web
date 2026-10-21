@@ -20,6 +20,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
+import { subscribeNewsletterAction } from "@/app/actions/newsletter";
 import { toast } from "sonner";
 
 interface AccountSidebarProps {
@@ -53,18 +54,29 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
     router.refresh();
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail || !newsletterEmail.includes("@")) {
       toast.error("Please enter a valid email address.");
       return;
     }
     setSubscribing(true);
-    setTimeout(() => {
-      toast.success("You're on the list! Welcome to the VibeLock crew.");
-      setNewsletterEmail("");
+    try {
+      const res = await subscribeNewsletterAction({
+        email: newsletterEmail,
+        source: "ACCOUNT_SIDEBAR",
+      });
+      if (res.success) {
+        toast.success(res.message || "You're on the list! Welcome to the VibeLock crew.");
+        setNewsletterEmail("");
+      } else {
+        toast.error(res.error || "Failed to subscribe. Please try again.");
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
       setSubscribing(false);
-    }, 400);
+    }
   };
 
   const navItems = [

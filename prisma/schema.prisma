@@ -607,3 +607,15 @@ model PaymentMethodSetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  source    String?  @default("ACCOUNT_SIDEBAR")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
