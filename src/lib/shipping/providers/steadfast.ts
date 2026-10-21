@@ -150,6 +150,7 @@ export class SteadfastCourierProvider implements ShippingProvider {
   }
 
   async cancelShipment(_request: CancelShipmentRequest): Promise<CancelShipmentResponse> {
+    void _request;
     return { success: false, error: "Steadfast cancellation is not supported by the verified API contract." };
   }
 }

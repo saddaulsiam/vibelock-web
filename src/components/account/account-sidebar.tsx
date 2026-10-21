@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -37,11 +37,10 @@ interface AccountSidebarProps {
 export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const [avatarSrc, setAvatarSrc] = useState(profile.image || "/images/hero/hero-slide-1.png");
+  const FALLBACK = "/images/hero/hero-slide-1.png";
+  const [imgError, setImgError] = useState(false);
+  const avatarSrc = !imgError && profile.image ? profile.image : FALLBACK;
 
-  useEffect(() => {
-    setAvatarSrc(profile.image || "/images/hero/hero-slide-1.png");
-  }, [profile.image]);
   const [newsletterEmail, setNewsletterEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -137,7 +136,7 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
               fill
               sizes="72px"
               unoptimized={Boolean(avatarSrc.startsWith("http"))}
-              onError={() => setAvatarSrc("/images/hero/hero-slide-1.png")}
+              onError={() => setImgError(true)}
               className="object-cover"
             />
           </div>

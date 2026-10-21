@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Badge } from "@/components/ui/badge";
 import { getAdminShippingOverview } from "@/lib/admin/shipping-queries";
-import { ShipmentStatus } from "@prisma/client";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

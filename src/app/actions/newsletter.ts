@@ -21,7 +21,10 @@ export async function subscribeNewsletterAction(input: unknown) {
   const { email, source } = parsed.data;
 
   try {
-    // Save or update subscriber in DB
+    // Save or update subscriber in DB — the NewsletterSubscriber model may not
+    // exist in the generated client if the migration hasn't run yet, so we
+    // duck-type check at runtime instead of relying on the typed client.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const prismaAny = prisma as any;
     if (typeof prismaAny.newsletterSubscriber?.upsert === "function") {
       await prismaAny.newsletterSubscriber.upsert({

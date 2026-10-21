@@ -62,6 +62,17 @@ export function Footer() {
           
           {/* Left Column: Brand & About (Col-span 4) */}
           <div className="flex flex-col items-start lg:col-span-4">
+
+            {/* 
+                   <Image
+                            src="/images/vibelock-logo.png"
+                            alt="VibeLock"
+                            width={124}
+                            height={36}
+                            priority
+                            className="h-7 w-auto object-contain sm:h-8"
+                          />
+            */}
             {/* Circular Logo Badge + Brand Name */}
             <div className="relative flex items-center gap-3">
                   {/* Animated Cyberpunk Ring - Subtle Glow */}

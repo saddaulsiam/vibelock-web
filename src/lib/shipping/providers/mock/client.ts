@@ -35,6 +35,7 @@ export class MockCourierProvider implements ShippingProvider {
   }
 
   async getShipmentStatus(_providerShipmentId: string): Promise<ShipmentStatusResult> {
+    void _providerShipmentId;
     await new Promise((resolve) => setTimeout(resolve, 300));
 
     // For demo purposes, we will return DELIVERED if it has been checked.
@@ -48,6 +49,7 @@ export class MockCourierProvider implements ShippingProvider {
   }
 
   async cancelShipment(_request: CancelShipmentRequest): Promise<CancelShipmentResponse> {
+    void _request;
     await new Promise((resolve) => setTimeout(resolve, 300));
     return { success: true };
   }

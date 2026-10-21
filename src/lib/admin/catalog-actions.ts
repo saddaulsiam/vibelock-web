@@ -28,15 +28,6 @@ function slugFromForm(formData: FormData, name: string) {
   return z.string().min(1).max(160).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).safeParse(slug);
 }
 
-function money(value: FormDataEntryValue | null, label: string, allowEmpty = false) {
-  const raw = String(value ?? "").trim();
-  if (allowEmpty && raw === "") return { success: true as const, data: null };
-  return z
-    .string()
-    .regex(/^\d{1,10}(?:\.\d{1,2})?$/, `${label} must be a non-negative amount with up to two decimals.`)
-    .safeParse(raw);
-}
-
 function duplicateMessage(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002"
     ? "That name or slug is already in use. Choose a unique value."

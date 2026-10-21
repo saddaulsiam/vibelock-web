@@ -25,7 +25,7 @@ export async function Header() {
               aria-label="VibeLock Home"
             >
               <Image
-                src="/images/vibelock-logo-white.png"
+                src="/images/vibelock-logo.png"
                 alt="VibeLock"
                 width={124}
                 height={36}

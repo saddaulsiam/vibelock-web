@@ -19,7 +19,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface ProfileFormProps {
@@ -44,8 +44,6 @@ export function ProfileForm({
   emailVerified,
   initialImage,
   phone,
-  createdAt,
-  authProvider,
 }: ProfileFormProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
@@ -53,26 +51,26 @@ export function ProfileForm({
   const [customUrlInput, setCustomUrlInput] = useState(initialImage ?? "");
   const [showCustomInput, setShowCustomInput] = useState(false);
 
-  useEffect(() => {
-    setName(initialName);
-  }, [initialName]);
+  // Sync state if props change (e.g. after router.refresh()) without running an effect
+  const [prevInitialName, setPrevInitialName] = useState(initialName);
+  const [prevInitialImage, setPrevInitialImage] = useState(initialImage);
 
-  useEffect(() => {
+  if (initialName !== prevInitialName) {
+    setPrevInitialName(initialName);
+    setName(initialName);
+  }
+
+  if (initialImage !== prevInitialImage) {
+    setPrevInitialImage(initialImage);
     setImageUrl(initialImage ?? "");
     setCustomUrlInput(initialImage ?? "");
-  }, [initialImage]);
+  }
 
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const [resendingEmail, setResendingEmail] = useState(false);
-
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(createdAt));
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
