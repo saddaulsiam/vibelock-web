@@ -3,14 +3,13 @@ import { createHash } from "node:crypto";
 export function isCloudinaryConfigured(): boolean {
   return Boolean(
     process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME &&
-      process.env.CLOUDINARY_API_KEY &&
-      process.env.CLOUDINARY_API_SECRET
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
   );
 }
 
 export type CloudinaryUploadResult =
-  | { success: true; url: string; publicId: string }
-  | { success: false; error: string };
+  { success: true; url: string; publicId: string } | { success: false; error: string };
 
 let serverTimeOffsetMs = 0;
 let hasSynced = false;

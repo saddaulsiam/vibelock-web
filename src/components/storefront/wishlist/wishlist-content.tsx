@@ -4,7 +4,7 @@ import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Heart, ArrowRight, Trash2 } from "lucide-react";
 import { ProductSummary } from "@/lib/catalog/types";
-import { ProductCard } from "@/components/storefront/product-card";
+import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { toast } from "sonner";
 
 import { Skeleton } from "@/components/ui/skeleton";

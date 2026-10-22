@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { createReturnRequestAction } from "@/lib/returns/actions";
 import { OrderItemSummary } from "@/lib/orders/types";
 import { Loader2 } from "lucide-react";
-import { Price } from "@/components/storefront/price";
+import { Price } from "@/components/storefront/catalog/price";
 import {
   Select,
   SelectContent,
