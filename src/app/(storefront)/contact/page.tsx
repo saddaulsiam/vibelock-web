@@ -8,7 +8,6 @@ import {
   ExternalLink,
   PackageSearch,
   RotateCcw,
-  MessageSquare,
   HelpCircle,
 } from "lucide-react";
 import { Container } from "@/components/shared/container";

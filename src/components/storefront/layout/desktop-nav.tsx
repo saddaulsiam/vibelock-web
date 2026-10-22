@@ -7,7 +7,6 @@ import { ChevronDown, Menu } from "lucide-react";
 export function DesktopNav() {
   const pathname = usePathname();
 
-  const isHomeActive = pathname === "/";
   const isShopActive = pathname === "/products";
   const isTshirtsActive = pathname === "/category/t-shirts";
   const isShirtsActive = pathname === "/category/shirts";

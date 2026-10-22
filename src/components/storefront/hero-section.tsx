@@ -49,8 +49,11 @@ function useTypewriter(words: string[], typingSpeed = 80, deletingSpeed = 45, pa
         const t = setTimeout(() => setDisplayed((d) => d.slice(0, -1)), deletingSpeed);
         return () => clearTimeout(t);
       } else {
-        setWordIdx((i) => (i + 1) % words.length);
-        setPhase("typing");
+        const t = setTimeout(() => {
+          setWordIdx((i) => (i + 1) % words.length);
+          setPhase("typing");
+        }, 120);
+        return () => clearTimeout(t);
       }
     }
   }, [displayed, wordIdx, phase, words, typingSpeed, deletingSpeed, pauseMs]);
@@ -58,8 +61,6 @@ function useTypewriter(words: string[], typingSpeed = 80, deletingSpeed = 45, pa
   return displayed;
 }
 
-// Card width in px used for the animation distance calculation
-const CARD_WIDTH = 480;
 const CARD_GAP = 2;
 
 function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
@@ -87,8 +88,9 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         const centerX = rect.left + rect.width / 2;
         const ratio = Math.max(0, Math.min(1, centerX / containerW));
         // ratio 1 (right edge) → full height (top 0%, bottom 0%)
-        // ratio 0 (left edge) → top sinks down to 36%, bottom remains glued to 0
-        const insetTop = (1 - ratio) * 60;
+        // ratio 0 (left edge) → top sinks down to 55-60%, bottom remains glued to 0
+        const maxInset = containerW < 640 ? 55 : 60;
+        const insetTop = (1 - ratio) * maxInset;
         card.style.top = `${insetTop.toFixed(2)}%`;
         card.style.bottom = "0px";
       });
@@ -100,8 +102,6 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
   }, []);
 
   const items = [...categories, ...categories, ...categories];
-  const singleSetWidth = categories.length * (CARD_WIDTH + CARD_GAP);
-
   const animDuration = Math.max(7, Math.round(categories.length * 2.2));
 
   return (
@@ -127,10 +127,11 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
             key={`${cat.id}-${i}`}
             href={`/category/${cat.slug}`}
             tabIndex={-1}
+            className="vl-card-link"
             style={{
               position: "relative",
               flexShrink: 0,
-              width: `${CARD_WIDTH}px`,
+              width: "var(--vl-card-width, 480px)",
               height: "100%",
               display: "block",
               overflow: "visible",
@@ -153,7 +154,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
                 src={cat.imageUrl}
                 alt={cat.name}
                 fill
-                sizes="480px"
+                sizes="(max-width: 640px) 290px, (max-width: 1024px) 380px, 480px"
                 className="object-cover"
                 priority={i < 4}
                 style={{ objectPosition: "center bottom" }}
@@ -212,9 +213,22 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
       </div>
 
       <style>{`
+        :root {
+          --vl-card-width: 480px;
+        }
+        @media (max-width: 640px) {
+          :root {
+            --vl-card-width: 290px;
+          }
+        }
+        @media (min-width: 641px) and (max-width: 1024px) {
+          :root {
+            --vl-card-width: 380px;
+          }
+        }
         @keyframes vibelock-scroll {
           0%, 3% { transform: translateX(0); }
-          97%, 100% { transform: translateX(-${singleSetWidth}px); }
+          97%, 100% { transform: translateX(calc(-1 * (var(--vl-card-width, 480px) + ${CARD_GAP}px) * ${categories.length})); }
         }
         .vl-track:hover {
           animation-play-state: paused;
@@ -247,10 +261,10 @@ export function HeroSection({
         className="relative z-20 flex flex-col justify-start px-7 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20"
         style={{ pointerEvents: "none" }}
       >
-        <div className="relative max-w-[440px] lg:max-w-full">
+        <div className="relative max-w-[340px] sm:max-w-[440px] lg:max-w-full">
           {/* Typewriter headline */}
           <h1
-            className="text-[clamp(3rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
+            className="text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
             aria-label={`Shop ${words.join(", ")}`}
           >
             {displayed}
@@ -265,21 +279,28 @@ export function HeroSection({
             />
           </h1>
 
-          <p className="mt-5 text-[11px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/60 uppercase sm:text-xs lg:text-[13px]">
+          <p className="mt-3 text-[10px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/60 uppercase sm:mt-5 sm:text-xs lg:text-[13px]">
             {tagline}
           </p>
 
-          <p className="mt-2 text-[11px] font-black tracking-[0.25em] text-[#00D9FF] uppercase">
+          <p className="mt-1.5 text-[10px] font-black tracking-[0.22em] text-[#00D9FF] uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
             {subtagline}
           </p>
 
-          <div className="mt-7" style={{ pointerEvents: "auto" }}>
+          <div className="mt-4 sm:mt-7" style={{ pointerEvents: "auto" }}>
             <Link
               href="/products"
-              className="inline-flex items-center gap-3 rounded-full border border-[#00D9FF]/40 bg-[#00D9FF]/10 px-7 py-3 text-xs font-black tracking-[0.18em] text-[#00D9FF] uppercase backdrop-blur-sm transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF] hover:text-[#080A0C] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="inline-flex items-center gap-2.5 rounded-full border border-[#00D9FF]/40 bg-[#00D9FF]/10 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-[#00D9FF] uppercase backdrop-blur-sm transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF] hover:text-[#080A0C] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
             >
               SHOP ALL DROPS
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 14 14"
+                fill="none"
+                aria-hidden="true"
+                className="sm:size-3.5"
+              >
                 <path
                   d="M1 7h12M8 2l5 5-5 5"
                   stroke="currentColor"
@@ -301,11 +322,11 @@ export function HeroSection({
             window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
           }
         }}
-        className="group absolute bottom-6 left-1/2 z-30 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer select-none transition-transform duration-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        className="group absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
         aria-label="Scroll down"
       >
-        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.6)] transition-colors group-hover:border-[#00D9FF]">
-          <div className="h-1.5 w-1 rounded-full bg-[#00D9FF] animate-vl-scroll-wheel shadow-[0_0_6px_#00D9FF]" />
+        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors group-hover:border-[#00D9FF]">
+          <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-[#00D9FF] shadow-[0_0_6px_#00D9FF]" />
         </div>
       </button>
 

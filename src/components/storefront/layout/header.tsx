@@ -36,7 +36,7 @@ export async function Header() {
                 className="object-contain"
               />
             </div>
-            <span className="text-sm font-black tracking-wider text-white uppercase sm:text-base">
+            <span className="shrink-0 text-sm font-black tracking-wider text-white uppercase whitespace-nowrap sm:text-base">
               VIBELOCK
             </span>
           </Link>

@@ -1,4 +1,3 @@
-import { AnnouncementBar } from "@/components/storefront/layout/announcement-bar";
 import { Header } from "@/components/storefront/layout/header";
 import { Footer } from "@/components/storefront/layout/footer";
 
