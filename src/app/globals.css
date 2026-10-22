@@ -106,3 +106,56 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes vl-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes vl-scroll-wheel {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(7px);
+    opacity: 0.15;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+:root {
+  --vl-card-width: 480px;
+}
+@media (max-width: 640px) {
+  :root {
+    --vl-card-width: 290px;
+  }
+}
+@media (min-width: 641px) and (max-width: 1024px) {
+  :root {
+    --vl-card-width: 380px;
+  }
+}
+
+@keyframes vibelock-scroll {
+  0%, 3% {
+    transform: translateX(0);
+  }
+  97%, 100% {
+    transform: translateX(calc(-1 * (var(--vl-card-width, 480px) + 2px) * var(--vl-cat-count, 6)));
+  }
+}
+
+.vl-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vl-track {
+    animation: none !important;
+  }
+}
