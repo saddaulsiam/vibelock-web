@@ -8,7 +8,7 @@ export function proxy(request: NextRequest) {
   const policy = [
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
-    `style-src 'self' 'unsafe-inline' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob: https://res.cloudinary.com",
     "font-src 'self'",

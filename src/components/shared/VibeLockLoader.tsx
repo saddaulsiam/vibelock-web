@@ -126,7 +126,7 @@ export default function VibeLockLoader({
               width={60}
               height={60}
               priority
-              className="vl-breathe object-contain"
+              className="vl-breathe h-auto w-auto object-contain"
             />
           </div>
         </div>

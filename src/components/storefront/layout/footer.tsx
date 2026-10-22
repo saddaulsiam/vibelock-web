@@ -85,7 +85,7 @@ export function Footer() {
                   alt="VibeLock Emblem"
                   width={28}
                   height={28}
-                  className="object-contain"
+                  className="h-auto w-auto object-contain"
                 />
               </div>
 

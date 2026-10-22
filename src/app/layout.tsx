@@ -52,7 +52,7 @@ export default async function RootLayout({
             duration: 3500,
           }}
         />
-        <Analytics />
+        {process.env.VERCEL ? <Analytics /> : null}
       </body>
     </html>
   );

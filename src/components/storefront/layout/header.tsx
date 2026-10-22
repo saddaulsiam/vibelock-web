@@ -15,7 +15,7 @@ export async function Header() {
   const itemCount = cart?.totalQuantity ?? 0;
 
   return (
-    <header className="pointer-events-none fixed top-2 left-0 right-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
+    <header className="pointer-events-none fixed top-2 right-0 left-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
       <div className="pointer-events-auto mx-auto flex h-14 w-full max-w-7xl items-center justify-between rounded-full border border-white/10 bg-black/60 px-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:h-16 sm:px-6">
         {/* ── Left: Mobile Nav + Circular Emblem & Brand Name ── */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
@@ -33,10 +33,10 @@ export async function Header() {
                 width={22}
                 height={22}
                 priority
-                className="object-contain"
+                className="h-auto w-auto object-contain"
               />
             </div>
-            <span className="shrink-0 text-sm font-black tracking-wider text-white uppercase whitespace-nowrap sm:text-base">
+            <span className="shrink-0 text-sm font-black tracking-wider whitespace-nowrap text-white uppercase sm:text-base">
               VIBELOCK
             </span>
           </Link>

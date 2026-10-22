@@ -69,11 +69,6 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
   const rafRef = React.useRef<number>(0);
 
   React.useEffect(() => {
-    const prefersReduced =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced) return;
-
     function tick() {
       const wrapper = wrapperRef.current;
       const track = trackRef.current;
@@ -103,6 +98,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
 
   const items = [...categories, ...categories, ...categories];
   const animDuration = Math.max(7, Math.round(categories.length * 2.2));
+  const scrollDistance = `calc(-1 * (var(--vl-card-width, 480px) + ${CARD_GAP}px) * ${categories.length})`;
 
   return (
     <div
@@ -121,6 +117,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
           width: "max-content",
           animation: `vibelock-scroll ${animDuration}s ease-in-out infinite alternate`,
           ["--vl-cat-count" as string]: categories.length,
+          ["--vl-scroll-dist" as string]: scrollDistance,
         }}
       >
         {items.map((cat, i) => (
