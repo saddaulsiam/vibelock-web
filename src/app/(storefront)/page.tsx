@@ -45,14 +45,17 @@ function getCategoryImageUrl(slug: string, name: string) {
   return "/images/categories/cat-t-shirts.jpg";
 }
 
-function toHeroCategory(category: { id: string; name: string; slug: string }, index: number) {
+function toHeroCategory(
+  category: { id: string; name: string; slug: string; imageUrl?: string | null },
+  index: number
+) {
   const cleanName = category.name.replace(/^\d+[.\s-]+/, "").toUpperCase();
   return {
     id: category.id,
     label: `CAT. ${String(index + 1).padStart(2, "0")}`,
     name: cleanName,
     slug: category.slug,
-    imageUrl: getCategoryImageUrl(category.slug, category.name),
+    imageUrl: category.imageUrl || getCategoryImageUrl(category.slug, category.name),
   };
 }
 

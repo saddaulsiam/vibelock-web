@@ -24,6 +24,7 @@ export function mapCategory(category: Category): CategorySummary {
     name: category.name,
     slug: category.slug,
     description: category.description,
+    imageUrl: category.imageUrl,
   };
 }
 

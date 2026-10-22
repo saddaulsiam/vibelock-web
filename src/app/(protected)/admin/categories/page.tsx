@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { deleteCategoryAction } from "@/lib/admin/catalog-actions";
 import { getAdminCategories } from "@/lib/admin/catalog-queries";
 import { FolderPlus, Pencil } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export default async function AdminCategoriesPage() {
@@ -69,13 +70,27 @@ export default async function AdminCategoriesPage() {
                 {categories.map((category) => (
                   <tr key={category.id} className="align-top">
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-[#101114]">{category.name}</p>
-                      <p className="text-muted-foreground mt-1 text-xs">/{category.slug}</p>
-                      {category.description ? (
-                        <p className="text-muted-foreground mt-1 max-w-md text-xs">
-                          {category.description}
-                        </p>
-                      ) : null}
+                      <div className="flex items-center gap-3.5">
+                        {category.imageUrl ? (
+                          <div className="relative size-12 shrink-0 overflow-hidden rounded border border-[#101114]/15 bg-black/5">
+                            <Image
+                              src={category.imageUrl}
+                              alt={category.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : null}
+                        <div>
+                          <p className="font-semibold text-[#101114]">{category.name}</p>
+                          <p className="text-muted-foreground mt-0.5 text-xs">/{category.slug}</p>
+                          {category.description ? (
+                            <p className="text-muted-foreground mt-1 max-w-md text-xs">
+                              {category.description}
+                            </p>
+                          ) : null}
+                        </div>
+                      </div>
                     </td>
                     <td className="text-muted-foreground px-5 py-4">
                       {category.parent?.name ?? "—"}
