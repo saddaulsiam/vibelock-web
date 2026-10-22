@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Changes saved." };
@@ -132,22 +133,32 @@ export async function saveCategoryAction(
     if (!allowedMimes.includes(file.type)) {
       return { error: "Only JPG, PNG, WebP, GIF, or AVIF image files are supported." };
     }
-    const ext =
-      file.type === "image/png"
-        ? "png"
-        : file.type === "image/webp"
-        ? "webp"
-        : file.type === "image/gif"
-        ? "gif"
-        : file.type === "image/avif"
-        ? "avif"
-        : "jpg";
-    const fileName = `cat-${slug.data}-${Date.now()}.${ext}`;
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "categories");
-    await fs.mkdir(uploadDir, { recursive: true });
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(path.join(uploadDir, fileName), buffer);
-    finalImageUrl = `/uploads/categories/${fileName}`;
+
+    if (isCloudinaryConfigured()) {
+      const uploadRes = await uploadToCloudinary(file, "vibelock/categories");
+      if (!uploadRes.success) {
+        return { error: `Cloudinary upload failed: ${uploadRes.error}` };
+      }
+      finalImageUrl = uploadRes.url;
+    } else {
+      // Local fallback for offline/development if Cloudinary is not configured in .env yet
+      const ext =
+        file.type === "image/png"
+          ? "png"
+          : file.type === "image/webp"
+          ? "webp"
+          : file.type === "image/gif"
+          ? "gif"
+          : file.type === "image/avif"
+          ? "avif"
+          : "jpg";
+      const fileName = `cat-${slug.data}-${Date.now()}.${ext}`;
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "categories");
+      await fs.mkdir(uploadDir, { recursive: true });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(path.join(uploadDir, fileName), buffer);
+      finalImageUrl = `/uploads/categories/${fileName}`;
+    }
   } else if (rawImageUrl) {
     finalImageUrl = rawImageUrl;
   }

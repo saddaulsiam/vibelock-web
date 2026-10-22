@@ -59,7 +59,7 @@ function useTypewriter(words: string[], typingSpeed = 80, deletingSpeed = 45, pa
 }
 
 // Card width in px used for the animation distance calculation
-const CARD_WIDTH = 450;
+const CARD_WIDTH = 480;
 const CARD_GAP = 2;
 
 function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
@@ -86,9 +86,11 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         const rect = card.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const ratio = Math.max(0, Math.min(1, centerX / containerW));
-        // 0.30 at left edge → 1.0 at right edge
-        const scale = 0.3 + ratio * 0.7;
-        card.style.transform = `scaleY(${scale.toFixed(3)})`;
+        // ratio 1 (right edge) → full height (top 0%, bottom 0%)
+        // ratio 0 (left edge) → top sinks down to 36%, bottom remains glued to 0
+        const insetTop = (1 - ratio) * 60;
+        card.style.top = `${insetTop.toFixed(2)}%`;
+        card.style.bottom = "0px";
       });
       rafRef.current = requestAnimationFrame(tick);
     }
@@ -134,33 +136,47 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
               overflow: "visible",
             }}
           >
-            {/* Inner wrapper — scaleY applied here from bottom */}
+            {/* Inner wrapper — glued to bottom, height scales down from the top */}
             <div
               className="vl-card-inner"
               style={{
                 position: "absolute",
-                inset: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
                 overflow: "hidden",
-                transformOrigin: "bottom center",
-                willChange: "transform",
+                willChange: "top",
               }}
             >
               <Image
                 src={cat.imageUrl}
                 alt={cat.name}
                 fill
-                sizes="450px"
+                sizes="480px"
                 className="object-cover"
+                priority={i < 4}
+                style={{ objectPosition: "center bottom" }}
               />
+              {/* Dual scrim: top shadow for legible text, bottom shadow for depth */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
                   background:
-                    "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0.05) 100%)",
+                    "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 30%, transparent 60%, rgba(0,0,0,0.6) 100%)",
                 }}
               />
-              <div style={{ position: "absolute", top: "1.25rem", left: "1.25rem", zIndex: 10 }}>
+              <div
+                style={{
+                  position: "absolute",
+                  top: "1.25rem",
+                  left: "1.25rem",
+                  zIndex: 10,
+                  maxWidth: "calc(100% - 2.5rem)",
+                  pointerEvents: "none",
+                }}
+              >
                 <p
                   style={{
                     fontSize: "10px",
@@ -169,6 +185,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
                     color: "#00D9FF",
                     textTransform: "uppercase",
                     margin: 0,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {cat.label}
@@ -182,6 +199,8 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
                     textTransform: "uppercase",
                     margin: 0,
                     marginTop: "2px",
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {cat.name}
@@ -223,24 +242,12 @@ export function HeroSection({
     >
       {categories.length > 0 && <InfiniteTrack categories={categories} />}
 
-      {/* Left content panel */}
+      {/* Left content panel positioned at the top left empty space */}
       <div
-        className="relative z-20 flex flex-col justify-center px-7 sm:px-10 lg:px-14 xl:px-20"
+        className="relative z-20 flex flex-col justify-start px-7 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20"
         style={{ pointerEvents: "none" }}
       >
-        {/* Left-side gradient scrim so text is always readable */}
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to right, rgba(8,10,12,1) 0%, rgba(8,10,12,0.96) 32%, rgba(8,10,12,0.70) 60%, transparent 100%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div className="relative max-w-[440px] lg:max-w-[520px]">
+        <div className="relative max-w-[440px] lg:max-w-full">
           {/* Typewriter headline */}
           <h1
             className="text-[clamp(3rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
@@ -286,10 +293,43 @@ export function HeroSection({
         </div>
       </div>
 
+      {/* Scroll Down Mouse Indicator */}
+      <button
+        type="button"
+        onClick={() => {
+          if (typeof window !== "undefined") {
+            window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
+          }
+        }}
+        className="group absolute bottom-6 left-1/2 z-30 -translate-x-1/2 flex flex-col items-center gap-1.5 cursor-pointer select-none transition-transform duration-300 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        aria-label="Scroll down"
+      >
+        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.6)] transition-colors group-hover:border-[#00D9FF]">
+          <div className="h-1.5 w-1 rounded-full bg-[#00D9FF] animate-vl-scroll-wheel shadow-[0_0_6px_#00D9FF]" />
+        </div>
+      </button>
+
       <style>{`
         @keyframes vl-blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
+        }
+        @keyframes vl-scroll-wheel {
+          0% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+          60% {
+            transform: translateY(7px);
+            opacity: 0.15;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 0;
+          }
+        }
+        .animate-vl-scroll-wheel {
+          animation: vl-scroll-wheel 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
         }
       `}</style>
     </section>

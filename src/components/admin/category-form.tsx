@@ -160,7 +160,7 @@ export function CategoryForm({
                 {previewUrl ? "Choose a different image file" : "Click or drag to upload image"}
               </span>
               <span className="text-muted-foreground mt-1 text-xs">
-                Supports JPG, PNG, WebP, GIF, or AVIF (Max 5MB)
+                Uploads directly to Cloudinary CDN • Supports JPG, PNG, WebP, GIF, or AVIF (Max 5MB)
               </span>
               <input
                 id="category-image-file"
