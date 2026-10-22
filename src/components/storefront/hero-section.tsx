@@ -120,6 +120,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
           gap: `${CARD_GAP}px`,
           width: "max-content",
           animation: `vibelock-scroll ${animDuration}s ease-in-out infinite alternate`,
+          ["--vl-cat-count" as string]: categories.length,
         }}
       >
         {items.map((cat, i) => (
@@ -211,32 +212,6 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
           </Link>
         ))}
       </div>
-
-      <style>{`
-        :root {
-          --vl-card-width: 480px;
-        }
-        @media (max-width: 640px) {
-          :root {
-            --vl-card-width: 290px;
-          }
-        }
-        @media (min-width: 641px) and (max-width: 1024px) {
-          :root {
-            --vl-card-width: 380px;
-          }
-        }
-        @keyframes vibelock-scroll {
-          0%, 3% { transform: translateX(0); }
-          97%, 100% { transform: translateX(calc(-1 * (var(--vl-card-width, 480px) + ${CARD_GAP}px) * ${categories.length})); }
-        }
-        .vl-track:hover {
-          animation-play-state: paused;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          [style*="vibelock-scroll"], .vl-track { animation: none !important; }
-        }
-      `}</style>
     </div>
   );
 }
@@ -329,30 +304,6 @@ export function HeroSection({
           <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-[#00D9FF] shadow-[0_0_6px_#00D9FF]" />
         </div>
       </button>
-
-      <style>{`
-        @keyframes vl-blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0; }
-        }
-        @keyframes vl-scroll-wheel {
-          0% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          60% {
-            transform: translateY(7px);
-            opacity: 0.15;
-          }
-          100% {
-            transform: translateY(0);
-            opacity: 0;
-          }
-        }
-        .animate-vl-scroll-wheel {
-          animation: vl-scroll-wheel 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-        }
-      `}</style>
     </section>
   );
 }
