@@ -1,28 +1,62 @@
-import { Container } from "@/components/shared/container";
-import { StorefrontNewsletterForm } from "./newsletter-form";
+"use client";
+
+import { useState } from "react";
+import { subscribeNewsletterAction } from "@/app/actions/newsletter";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 export function Newsletter() {
-  return (
-    <section className="relative border-y border-white/10 bg-[#070B0E] py-10 text-white sm:py-12">
-      <Container>
-        <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-          {/* Left Content */}
-          <div>
-            <p className="text-[10px] font-extrabold tracking-[0.20em] text-[#00D9FF] uppercase">
-              STAY IN THE LOOP
-            </p>
-            <h2 className="mt-1 text-xl font-black tracking-tight text-white uppercase sm:text-2xl lg:text-3xl">
-              JOIN OUR NEWSLETTER
-            </h2>
-            <p className="mt-1 text-xs text-[#F3F0E8]/60">
-              Be the first to know about new drops, exclusive offers and more.
-            </p>
-          </div>
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-          {/* Right Newsletter Subscription Form */}
-          <StorefrontNewsletterForm />
-        </div>
-      </Container>
-    </section>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await subscribeNewsletterAction({
+        email,
+        source: "STOREFRONT_FOOTER",
+      });
+      if (res.success) {
+        toast.success(res.message || "You're on the list!");
+        setEmail("");
+      } else {
+        toast.error(res.error || "Failed to subscribe. Try again.");
+      }
+    } catch {
+      toast.error("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-6 w-full">
+      <div className="flex h-9 w-11/12 overflow-hidden rounded-sm border border-white/10 sm:w-10/12">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="your@email.com"
+          required
+          suppressHydrationWarning
+          autoComplete="email"
+          aria-label="Email for newsletter"
+          className="min-w-0 flex-1 bg-white/5 px-3 text-xs text-white placeholder:text-[#F3F0E8]/35 focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="shrink-0 cursor-pointer bg-[#00D9FF] px-4 text-[10px] font-extrabold tracking-wider text-[#0B0F14] uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {loading ? <Loader2 className="size-3 animate-spin" /> : "SUBSCRIBE"}
+        </button>
+      </div>
+      <p className="mt-1.5 text-[10px] text-[#F3F0E8]/35">No spam. Unsubscribe anytime.</p>
+    </form>
   );
 }

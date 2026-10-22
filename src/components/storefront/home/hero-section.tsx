@@ -4,6 +4,8 @@ import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import type { CategorySummary } from "@/lib/catalog/types";
+
 export interface HeroCategory {
   id: string;
   label: string;
@@ -13,8 +15,8 @@ export interface HeroCategory {
 }
 
 interface HeroSectionProps {
-  categories: HeroCategory[];
-  words: string[];
+  categories: (HeroCategory | CategorySummary)[];
+  words?: string[];
   tagline?: string;
   subtagline?: string;
 }
@@ -214,19 +216,40 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
 }
 
 export function HeroSection({
-  categories,
+  categories = [],
   words,
   tagline = "VIBELOCK — PREMIUM STREETWEAR CATALOG,\nCURATING CULTURE FOR THE REAL ONES.",
   subtagline = "EXCLUSIVE. LIMITED. HIGH-END.",
 }: HeroSectionProps) {
-  const displayed = useTypewriter(words);
+  const formattedCategories: HeroCategory[] = React.useMemo(() => {
+    return categories
+      .filter((c) => Boolean(c && c.name))
+      .map((cat, index) => {
+        const cleanName = cat.name.replace(/^\d+[.\s-]+/, "").trim().toUpperCase();
+        return {
+          id: cat.id,
+          label: "label" in cat && cat.label ? cat.label : `CAT. ${String(index + 1).padStart(2, "0")}`,
+          name: cleanName,
+          slug: cat.slug,
+          imageUrl: cat.imageUrl || "/images/categories/cat-t-shirts.jpg",
+        };
+      });
+  }, [categories]);
+
+  const activeWords = React.useMemo(() => {
+    if (words && words.length > 0) return words;
+    if (formattedCategories.length > 0) return formattedCategories.map((c) => c.name);
+    return ["STREETWEAR", "COLLECTION", "DROPS"];
+  }, [words, formattedCategories]);
+
+  const displayed = useTypewriter(activeWords);
 
   return (
     <section
       className="relative flex h-screen overflow-hidden bg-[#080A0C]"
       aria-label="VibeLock hero — shop by category"
     >
-      {categories.length > 0 && <InfiniteTrack categories={categories} />}
+      {formattedCategories.length > 0 && <InfiniteTrack categories={formattedCategories} />}
 
       {/* Left content panel positioned at the top left empty space */}
       <div
@@ -237,7 +260,7 @@ export function HeroSection({
           {/* Typewriter headline */}
           <h1
             className="text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
-            aria-label={`Shop ${words.join(", ")}`}
+            aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}
             <span

@@ -1,33 +1,27 @@
 import { Container } from "@/components/shared/container";
+import { SectionHeading } from "@/components/shared/section-heading";
 import type { CategorySummary } from "@/lib/catalog/types";
 import Image from "next/image";
 import Link from "next/link";
-import { getCategoryImageUrl } from "./home-categories";
 
 interface FeaturedCategoriesProps {
   categories: CategorySummary[];
 }
 
 export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
+  const displayCategories = categories.slice(0, 8);
+
   return (
     <section className="bg-white py-12 sm:py-16 lg:py-20">
       <Container>
-        {/* Centered Header with Decorative Flanking Lines */}
-        <div className="mb-8 flex items-center justify-center gap-3 sm:mb-12 sm:gap-6">
-          <span className="h-px w-10 bg-[#101114] sm:w-20" aria-hidden="true" />
-          <h2 className="text-lg font-black tracking-widest text-[#101114] uppercase sm:text-xl md:text-2xl">
-            FEATURED CATEGORIES
-          </h2>
-          <span className="h-px w-10 bg-[#101114] sm:w-20" aria-hidden="true" />
-        </div>
+        <SectionHeading title="FEATURED CATEGORIES" />
 
         {/* 8 Category Cards (4x2 on desktop, 2x4 on mobile) */}
-        {categories.length ? (
+        {displayCategories.length ? (
           <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            {categories.map((category) => {
+            {displayCategories.map((category) => {
               const cleanName = category.name.replace(/^\d+[.\s-]+/, "").trim();
-              const imageUrl =
-                category.imageUrl || getCategoryImageUrl(category.slug, category.name);
+              const imageUrl = category.imageUrl || "/images/categories/cat-t-shirts.jpg";
 
               return (
                 <Link

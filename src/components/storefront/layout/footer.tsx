@@ -2,6 +2,7 @@ import { Container } from "@/components/shared/container";
 import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Newsletter } from "../home/newsletter";
 
 interface RetailLocation {
   city: string;
@@ -13,7 +14,7 @@ interface RetailLocation {
 
 const RETAIL_LOCATION: RetailLocation = {
   city: "PABNA",
-  badge: "CHATMOHAR FLAGSHIP OUTLET",
+  badge: "CHATMOHAR",
   address: "Khondokar Market, Star More, Chatmohar, Pabna, Bangladesh",
   phone: "01311-333277",
   mapUrl: "https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6",
@@ -110,6 +111,9 @@ export function Footer() {
                 the fashion-forward in Bangladesh. Built for Dhaka youth.
               </p>
             </div>
+
+            {/* Newsletter */}
+            <Newsletter />
           </div>
 
           {/* Right Column: 3 Columns (Shop Links, Customer Links, Retail Location) */}
