@@ -1,15 +1,31 @@
-import Link from "next/link";
-import Image from "next/image";
-import type { Metadata } from "next";
-import { ArrowRight, Headphones, ShieldCheck, Truck } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { HeroSection } from "@/components/storefront/hero-section";
-import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontNewsletterForm } from "@/components/storefront/newsletter-form";
-
+import { ProductCard } from "@/components/storefront/product-card";
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
 import { SITE_URL } from "@/lib/seo/site";
+import {
+  ArrowRight,
+  Headphones,
+  PackageCheck,
+  RotateCcw,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+
+const TRUST_BENEFITS = [
+  { icon: Truck, label: "FREE SHIPPING OVER ৳2000" },
+  { icon: ShieldCheck, label: "100% SECURE PAYMENTS" },
+  { icon: Headphones, label: "24/7 DEDICATED SUPPORT" },
+  { icon: PackageCheck, label: "CASH ON DELIVERY AVAILABLE" },
+  { icon: Sparkles, label: "100% AUTHENTIC QUALITY" },
+  { icon: RotateCcw, label: "EASY 7-DAY RETURN POLICY" },
+];
 
 export const metadata: Metadata = {
   title: "Modern Dhaka Streetwear",
@@ -99,58 +115,85 @@ export default async function StorefrontHomePage() {
     })
     .map(toHeroCategory);
 
+  const fallbackHeroCategories = [
+    {
+      id: "cat-fb-1",
+      label: "CAT. 01",
+      name: "T-SHIRTS",
+      slug: "t-shirts",
+      imageUrl: "/images/categories/cat-t-shirts.jpg",
+    },
+    {
+      id: "cat-fb-2",
+      label: "CAT. 02",
+      name: "PANTS",
+      slug: "pants",
+      imageUrl: "/images/categories/cat-pants.jpg",
+    },
+    {
+      id: "cat-fb-3",
+      label: "CAT. 03",
+      name: "SHIRTS",
+      slug: "shirts",
+      imageUrl: "/images/categories/cat-shirts.jpg",
+    },
+    {
+      id: "cat-fb-4",
+      label: "CAT. 04",
+      name: "SHORTS",
+      slug: "shorts",
+      imageUrl: "/images/categories/cat-shorts.jpg",
+    },
+  ];
+
+  const finalHeroCategories =
+    heroCategories.length > 0 ? heroCategories : fallbackHeroCategories;
+
   // Typewriter words — category names, always have at least one
-  const typewriterWords =
-    heroCategories.length > 0
-      ? heroCategories.map((c) => c.name)
-      : ["T-SHIRTS", "PANTS", "SHIRTS", "SHORTS"];
+  const typewriterWords = finalHeroCategories.map((c) => c.name);
 
   return (
     <>
       {/* ── 1. Errumbd-style Category Hero ────────────────────── */}
-      <HeroSection categories={heroCategories} words={typewriterWords} />
+      <HeroSection categories={finalHeroCategories} words={typewriterWords} />
 
-      {/* ── 2. Trust / Service Benefits Bar ───────────────────── */}
-      <section className="border-y border-black/10 bg-[#F0ECE6] py-5 sm:py-6">
-        <Container>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-black/10">
-            {/* Free Shipping */}
-            <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
-              <Truck className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
-              <div>
-                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
-                  FREE SHIPPING
-                </p>
-                <p className="text-xs text-[#101114]/65">On orders over ৳2000</p>
-              </div>
-            </div>
-
-            {/* Secure Payments */}
-            <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
-              <ShieldCheck
-                className="size-6 shrink-0 text-[#101114] sm:size-7"
-                aria-hidden="true"
-              />
-              <div>
-                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
-                  SECURE PAYMENTS
-                </p>
-                <p className="text-xs text-[#101114]/65">100% safe &amp; trusted</p>
-              </div>
-            </div>
-
-            {/* 24/7 Support */}
-            <div className="flex items-center justify-center gap-3.5 px-4 lg:gap-4">
-              <Headphones className="size-6 shrink-0 text-[#101114] sm:size-7" aria-hidden="true" />
-              <div>
-                <p className="text-xs font-extrabold tracking-wider text-[#101114] uppercase sm:text-sm">
-                  24/7 SUPPORT
-                </p>
-                <p className="text-xs text-[#101114]/65">We&apos;re here to help</p>
-              </div>
-            </div>
+      {/* ── 2. Errumbd-style Continuous Moving Ticker (Trust & Benefits) ── */}
+      <section
+        className="w-full max-w-full overflow-hidden border-y border-black bg-[#00D9FF] py-3 text-[#080A0C] select-none"
+        aria-label="VibeLock Trust and Service Benefits"
+      >
+        <div className="animate-marquee flex w-max items-center text-xs font-black tracking-[0.2em] whitespace-nowrap uppercase hover:[animation-play-state:paused] sm:text-sm">
+          {/* Track 1 */}
+          <div className="flex shrink-0 items-center">
+            {TRUST_BENEFITS.concat(TRUST_BENEFITS).map((item, idx) => (
+              <span key={`t1-${idx}`} className="inline-flex items-center">
+                <span className="mx-4 text-xs select-none sm:mx-6 sm:text-sm" aria-hidden="true">
+                  ✦
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <item.icon
+                    className="size-4 shrink-0 stroke-[2.25] sm:size-4.5"
+                    aria-hidden="true"
+                  />
+                  <span>{item.label}</span>
+                </span>
+              </span>
+            ))}
           </div>
-        </Container>
+
+          {/* Track 2 (Duplicate for seamless loop) */}
+          <div className="flex shrink-0 items-center" aria-hidden="true">
+            {TRUST_BENEFITS.concat(TRUST_BENEFITS).map((item, idx) => (
+              <span key={`t2-${idx}`} className="inline-flex items-center">
+                <span className="mx-4 text-xs select-none sm:mx-6 sm:text-sm">✦</span>
+                <span className="inline-flex items-center gap-2">
+                  <item.icon className="size-4 shrink-0 stroke-[2.25] sm:size-4.5" />
+                  <span>{item.label}</span>
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── 3. Shop by Category (OUR CATEGORIES) ───────────────── */}
@@ -309,6 +352,7 @@ export default async function StorefrontHomePage() {
                   src="/images/collection/collection-hoodie.png"
                   alt="VibeLock Collection Feature"
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 384px, 400px"
                   className="object-contain object-center"
                 />
               </div>
@@ -324,6 +368,7 @@ export default async function StorefrontHomePage() {
                   src="/images/collection/acc-chain.png"
                   alt="VibeLock Signature Chain"
                   fill
+                  sizes="96px"
                   className="object-cover"
                 />
               </Link>
@@ -335,6 +380,7 @@ export default async function StorefrontHomePage() {
                   src="/images/collection/acc-cap.png"
                   alt="VibeLock Snapback Cap"
                   fill
+                  sizes="96px"
                   className="object-cover"
                 />
               </Link>
@@ -346,6 +392,7 @@ export default async function StorefrontHomePage() {
                   src="/images/collection/acc-tag.png"
                   alt="VibeLock Editorial Hangtag"
                   fill
+                  sizes="96px"
                   className="object-cover"
                 />
               </Link>

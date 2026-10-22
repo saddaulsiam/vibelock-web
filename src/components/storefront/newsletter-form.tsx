@@ -46,6 +46,8 @@ export function StorefrontNewsletterForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email address"
           required
+          suppressHydrationWarning
+          autoComplete="email"
           aria-label="Email address for newsletter"
           className="h-10 w-full rounded-full border border-white/15 bg-[#1A1D21] px-4 text-xs text-white placeholder:text-[#F3F0E8]/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
         />
