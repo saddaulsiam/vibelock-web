@@ -18,15 +18,15 @@ export function DesktopNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="hidden items-center gap-4 text-xs font-bold tracking-wider text-[#101114] uppercase xl:flex 2xl:gap-6"
+      className="hidden items-center gap-4 text-xs font-bold tracking-wider text-white uppercase xl:flex 2xl:gap-6"
     >
       {/* ── 1. CATEGORIES (with Menu Icon ≡ CATEGORIES like screenshot) ── */}
       <div className="group relative py-2">
         <Link
           href="/category/t-shirts"
-          className="flex items-center gap-1.5 text-[#101114]/80 transition-colors hover:text-[#101114]"
+          className="flex items-center gap-1.5 text-white/75 transition-colors hover:text-white"
         >
-          <Menu className="size-3.5 text-[#101114]/60" />
+          <Menu className="size-3.5 text-white/50" />
           <span>CATEGORIES</span>
         </Link>
 
@@ -64,11 +64,11 @@ export function DesktopNav() {
         <Link
           href="/products"
           className={`flex items-center gap-1 transition-colors ${
-            isShopActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+            isShopActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
           }`}
         >
           <span>SHOP</span>
-          <ChevronDown className="size-3 text-[#101114]/50 transition-transform group-hover:rotate-180" />
+          <ChevronDown className="size-3 text-white/50 transition-transform group-hover:rotate-180" />
         </Link>
         {isShopActive && (
           <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#00D9FF]" />
@@ -94,7 +94,7 @@ export function DesktopNav() {
       <Link
         href="/category/t-shirts"
         className={`group relative py-2 transition-colors ${
-          isTshirtsActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+          isTshirtsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
         }`}
       >
         <span>T-SHIRTS</span>
@@ -106,7 +106,7 @@ export function DesktopNav() {
       <Link
         href="/category/shirts"
         className={`group relative py-2 transition-colors ${
-          isShirtsActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+          isShirtsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
         }`}
       >
         <span>SHIRTS</span>
@@ -118,7 +118,7 @@ export function DesktopNav() {
       <Link
         href="/category/pants"
         className={`group relative py-2 transition-colors ${
-          isPantsActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+          isPantsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
         }`}
       >
         <span>PANTS</span>
@@ -131,7 +131,7 @@ export function DesktopNav() {
       <Link
         href="/about"
         className={`group relative py-2 transition-colors ${
-          isAboutActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+          isAboutActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
         }`}
       >
         <span>ABOUT</span>
@@ -143,7 +143,7 @@ export function DesktopNav() {
       <Link
         href="/contact"
         className={`group relative py-2 transition-colors ${
-          isContactActive ? "text-[#0088A8]" : "text-[#101114]/80 hover:text-[#101114]"
+          isContactActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
         }`}
       >
         <span>CONTACT</span>

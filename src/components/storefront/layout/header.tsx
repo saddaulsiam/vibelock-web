@@ -15,8 +15,8 @@ export async function Header() {
   const itemCount = cart?.totalQuantity ?? 0;
 
   return (
-    <header className="pointer-events-none sticky top-2 z-40 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
-      <div className="pointer-events-auto mx-auto flex h-14 w-full max-w-7xl items-center justify-between rounded-full border border-black/8 bg-white/95 px-3 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-blur-md sm:h-16 sm:px-6">
+    <header className="pointer-events-none fixed top-2 left-0 right-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
+      <div className="pointer-events-auto mx-auto flex h-14 w-full max-w-7xl items-center justify-between rounded-full border border-white/10 bg-black/60 px-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:h-16 sm:px-6">
         {/* ── Left: Mobile Nav + Circular Emblem & Brand Name ── */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <MobileNav isAuthenticated={Boolean(user)} />
@@ -36,7 +36,7 @@ export async function Header() {
                 className="object-contain"
               />
             </div>
-            <span className="text-sm font-black tracking-wider text-[#101114] uppercase sm:text-base">
+            <span className="text-sm font-black tracking-wider text-white uppercase sm:text-base">
               VIBELOCK
             </span>
           </Link>
@@ -56,7 +56,7 @@ export async function Header() {
             className="relative hidden items-center lg:flex"
           >
             <Search
-              className="pointer-events-none absolute left-3.5 size-3.5 text-[#101114]/40"
+              className="pointer-events-none absolute left-3.5 size-3.5 text-white/40"
               aria-hidden="true"
             />
             <Input
@@ -64,7 +64,7 @@ export async function Header() {
               name="q"
               placeholder="Search drops..."
               aria-label="Search drops"
-              className="h-9 w-36 rounded-full border border-black/10 bg-[#F5F5F3] pr-3.5 pl-9 text-xs text-[#101114] placeholder:text-[#101114]/40 focus-visible:border-[#101114] focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-[#101114] xl:w-48"
+              className="h-9 w-36 rounded-full border border-white/15 bg-white/10 pr-3.5 pl-9 text-xs text-white placeholder:text-white/40 focus-visible:border-[#00D9FF] focus-visible:bg-white/15 focus-visible:ring-1 focus-visible:ring-[#00D9FF] xl:w-48"
             />
           </form>
 
@@ -75,7 +75,7 @@ export async function Header() {
           <Link
             href="/wishlist"
             aria-label="Wishlist"
-            className="inline-flex size-9 items-center justify-center rounded-full text-[#101114]/75 transition-colors hover:bg-black/5 hover:text-[#101114]"
+            className="inline-flex size-9 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
           >
             <Heart className="size-4.5" aria-hidden="true" />
           </Link>
@@ -84,11 +84,11 @@ export async function Header() {
           <Link
             href="/cart"
             aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
-            className="relative inline-flex size-9 items-center justify-center rounded-full text-[#101114]/75 transition-colors hover:bg-black/5 hover:text-[#101114]"
+            className="relative inline-flex size-9 items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white"
           >
             <ShoppingBag className="size-4.5" aria-hidden="true" />
             {itemCount > 0 && (
-              <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[9px] font-black text-[#101114]">
+              <span className="absolute top-1 right-1 flex size-4 items-center justify-center rounded-full bg-[#00D9FF] text-[9px] font-black text-[#080A0C]">
                 {itemCount}
               </span>
             )}

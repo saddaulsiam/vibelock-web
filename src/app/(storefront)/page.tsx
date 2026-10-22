@@ -3,10 +3,10 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { ArrowRight, Headphones, ShieldCheck, Truck } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { HeroCarousel } from "@/components/storefront/hero-carousel";
+import { HeroSection } from "@/components/storefront/hero-section";
 import { ProductCard } from "@/components/storefront/product-card";
 import { StorefrontNewsletterForm } from "@/components/storefront/newsletter-form";
-import { getHomepageHeroBanners } from "@/lib/catalog/hero-banners";
+
 import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import type { ProductSummary } from "@/lib/catalog/types";
 import { SITE_URL } from "@/lib/seo/site";
@@ -45,11 +45,21 @@ function getCategoryImageUrl(slug: string, name: string) {
   return "/images/categories/cat-t-shirts.jpg";
 }
 
+function toHeroCategory(category: { id: string; name: string; slug: string }, index: number) {
+  const cleanName = category.name.replace(/^\d+[.\s-]+/, "").toUpperCase();
+  return {
+    id: category.id,
+    label: `CAT. ${String(index + 1).padStart(2, "0")}`,
+    name: cleanName,
+    slug: category.slug,
+    imageUrl: getCategoryImageUrl(category.slug, category.name),
+  };
+}
+
 export default async function StorefrontHomePage() {
-  const [categories, publishedProducts, heroBanners] = await Promise.all([
+  const [categories, publishedProducts] = await Promise.all([
     getCategories(),
     getPublishedProducts({ take: 15 }),
-    getHomepageHeroBanners(),
   ]);
 
   // Clean and filter categories to the 4 core streetwear categories
@@ -78,10 +88,24 @@ export default async function StorefrontHomePage() {
   // Secondary rotation products
   const moreArrivals = publishedProducts.slice(5, 10);
 
+  // Map all real categories to hero cards (filter out test fixtures)
+  const heroCategories = categories
+    .filter((c) => {
+      const n = c.name.toLowerCase();
+      return !n.startsWith("cat-") && !n.startsWith("existing") && !n.startsWith("new category");
+    })
+    .map(toHeroCategory);
+
+  // Typewriter words — category names, always have at least one
+  const typewriterWords =
+    heroCategories.length > 0
+      ? heroCategories.map((c) => c.name)
+      : ["T-SHIRTS", "PANTS", "SHIRTS", "SHORTS"];
+
   return (
     <>
-      {/* ── 1. Dynamic Hero Carousel ──────────────────────────── */}
-      <HeroCarousel banners={heroBanners} />
+      {/* ── 1. Errumbd-style Category Hero ────────────────────── */}
+      <HeroSection categories={heroCategories} words={typewriterWords} />
 
       {/* ── 2. Trust / Service Benefits Bar ───────────────────── */}
       <section className="border-y border-black/10 bg-[#F0ECE6] py-5 sm:py-6">
