@@ -1,5 +1,7 @@
 "use server";
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { Prisma, ProductStatus } from "@prisma/client";
 import { updateTag } from "next/cache";
@@ -7,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Changes saved." };
@@ -108,9 +111,64 @@ export async function saveCategoryAction(
     }
   }
 
+  const removeImage = formData.get("removeImage") === "true";
+  const rawImageUrl = String(formData.get("imageUrl") ?? "").trim();
+  const imageFile = formData.get("imageFile");
+
+  let finalImageUrl: string | null | undefined = undefined;
+
+  if (removeImage) {
+    finalImageUrl = null;
+  } else if (
+    imageFile &&
+    typeof imageFile === "object" &&
+    "size" in imageFile &&
+    (imageFile as File).size > 0
+  ) {
+    const file = imageFile as File;
+    if (file.size > 5 * 1024 * 1024) {
+      return { error: "Image file size must be under 5MB." };
+    }
+    const allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+    if (!allowedMimes.includes(file.type)) {
+      return { error: "Only JPG, PNG, WebP, GIF, or AVIF image files are supported." };
+    }
+
+    if (isCloudinaryConfigured()) {
+      const uploadRes = await uploadToCloudinary(file, "vibelock/categories");
+      if (!uploadRes.success) {
+        return { error: `Cloudinary upload failed: ${uploadRes.error}` };
+      }
+      finalImageUrl = uploadRes.url;
+    } else {
+      // Local fallback for offline/development if Cloudinary is not configured in .env yet
+      const ext =
+        file.type === "image/png"
+          ? "png"
+          : file.type === "image/webp"
+          ? "webp"
+          : file.type === "image/gif"
+          ? "gif"
+          : file.type === "image/avif"
+          ? "avif"
+          : "jpg";
+      const fileName = `cat-${slug.data}-${Date.now()}.${ext}`;
+      const uploadDir = path.join(process.cwd(), "public", "uploads", "categories");
+      await fs.mkdir(uploadDir, { recursive: true });
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(path.join(uploadDir, fileName), buffer);
+      finalImageUrl = `/uploads/categories/${fileName}`;
+    }
+  } else if (rawImageUrl) {
+    finalImageUrl = rawImageUrl;
+  }
+
   try {
     if (id) {
-      const existing = await prisma.category.findUnique({ where: { id }, select: { id: true } });
+      const existing = await prisma.category.findUnique({
+        where: { id },
+        select: { id: true, imageUrl: true },
+      });
       if (!existing) return { error: "This category no longer exists." };
       await prisma.category.update({
         where: { id },
@@ -118,6 +176,7 @@ export async function saveCategoryAction(
           name,
           slug: slug.data,
           description: description || null,
+          imageUrl: finalImageUrl !== undefined ? finalImageUrl : existing.imageUrl,
           parentId: parentId ?? null,
         },
       });
@@ -127,6 +186,7 @@ export async function saveCategoryAction(
           name,
           slug: slug.data,
           description: description || null,
+          imageUrl: finalImageUrl ?? null,
           parentId: parentId ?? null,
         },
       });

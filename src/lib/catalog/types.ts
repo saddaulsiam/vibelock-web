@@ -5,6 +5,7 @@ export interface CategorySummary {
   name: string;
   slug: string;
   description: string | null;
+  imageUrl: string | null;
 }
 
 export interface ProductImageSummary {
