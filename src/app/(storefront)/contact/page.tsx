@@ -11,7 +11,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { ContactForm } from "@/components/storefront/contact-form";
+import { ContactForm } from "@/components/storefront/contact/contact-form";
 import { SITE_URL } from "@/lib/seo/site";
 
 export const metadata: Metadata = {

@@ -101,7 +101,7 @@ export function CategoryForm({
           <button
             type="button"
             onClick={() => setUseUrlInput((prev) => !prev)}
-            className="text-muted-foreground hover:text-[#101114] inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4"
+            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-[#101114]"
           >
             {useUrlInput ? (
               <>
@@ -151,7 +151,7 @@ export function CategoryForm({
           <div>
             <label
               htmlFor="category-image-file"
-              className="hover:border-[#00D9FF] hover:bg-white/60 flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-[#101114]/20 bg-white/40 p-6 text-center transition-colors"
+              className="flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed border-[#101114]/20 bg-white/40 p-6 text-center transition-colors hover:border-[#00D9FF] hover:bg-white/60"
             >
               <div className="flex size-12 items-center justify-center rounded-full bg-[#101114]/5 text-[#101114]">
                 <ImagePlus className="size-6 text-[#101114]/70" />

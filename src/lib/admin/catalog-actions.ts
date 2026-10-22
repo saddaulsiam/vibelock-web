@@ -146,12 +146,12 @@ export async function saveCategoryAction(
         file.type === "image/png"
           ? "png"
           : file.type === "image/webp"
-          ? "webp"
-          : file.type === "image/gif"
-          ? "gif"
-          : file.type === "image/avif"
-          ? "avif"
-          : "jpg";
+            ? "webp"
+            : file.type === "image/gif"
+              ? "gif"
+              : file.type === "image/avif"
+                ? "avif"
+                : "jpg";
       const fileName = `cat-${slug.data}-${Date.now()}.${ext}`;
       const uploadDir = path.join(process.cwd(), "public", "uploads", "categories");
       await fs.mkdir(uploadDir, { recursive: true });

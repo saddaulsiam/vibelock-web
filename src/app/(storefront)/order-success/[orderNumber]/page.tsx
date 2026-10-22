@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
-import { Price } from "@/components/storefront/price";
+import { Price } from "@/components/storefront/catalog/price";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 
 export const metadata: Metadata = {

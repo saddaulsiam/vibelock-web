@@ -27,7 +27,14 @@ export async function getAdminCategoryFormData(id?: string) {
     id
       ? prisma.category.findUnique({
           where: { id },
-          select: { id: true, name: true, slug: true, description: true, imageUrl: true, parentId: true },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            imageUrl: true,
+            parentId: true,
+          },
         })
       : Promise.resolve(null),
     prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),

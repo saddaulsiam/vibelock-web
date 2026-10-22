@@ -1,5 +1,5 @@
 import { ProductSummary } from "@/lib/catalog/types";
-import { ProductCard } from "@/components/storefront/product-card";
+import { ProductCard } from "@/components/storefront/catalog/product-card";
 import Link from "next/link";
 
 interface ProductGridProps {
