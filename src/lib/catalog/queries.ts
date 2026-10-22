@@ -3,7 +3,7 @@ import prisma from "@/lib/prisma/client";
 import { mapProductSummary, mapProductDetail, mapCategory } from "./mappers";
 import { ProductSummary, ProductDetail, CategorySummary } from "./types";
 import { unstable_cache } from "next/cache";
-import { ProductStatus } from "@prisma/client";
+import { InventoryTransactionType, ProductStatus } from "@prisma/client";
 
 class EmptyPublishedProductsError extends Error {}
 class EmptyCategoriesError extends Error {}
@@ -170,3 +170,81 @@ export const getCategoryBySlug = unstable_cache(
   ["category-by-slug"],
   { tags: ["categories"], revalidate: 3600 }
 );
+
+/**
+ * Get best-selling published products ranked by total units sold.
+ * Uses InventoryTransaction (type=SALE) records to count sold units per product.
+ * Falls back to the most-recently-published products when no sale data exists yet.
+ */
+export const getBestSellingProducts = async (options?: {
+  take?: number;
+}): Promise<ProductSummary[]> => {
+  const take = options?.take ?? 8;
+
+  const queryFn = unstable_cache(
+    async () => {
+      // Group SALE transactions by variantId and sum absolute quantities sold
+      const saleTotals = await prisma.inventoryTransaction.groupBy({
+        by: ["variantId"],
+        where: { type: InventoryTransactionType.SALE },
+        _sum: { quantity: true },
+      });
+
+      // Map variantId → productId
+      if (saleTotals.length > 0) {
+        const variantIds = saleTotals.map((s) => s.variantId);
+
+        const variants = await prisma.productVariant.findMany({
+          where: { id: { in: variantIds } },
+          select: { id: true, productId: true },
+        });
+
+        // Aggregate sold units per productId (SALE quantities are negative)
+        const soldByProduct = new Map<string, number>();
+        for (const s of saleTotals) {
+          const variant = variants.find((v) => v.id === s.variantId);
+          if (!variant) continue;
+          const units = Math.abs(s._sum.quantity ?? 0);
+          soldByProduct.set(variant.productId, (soldByProduct.get(variant.productId) ?? 0) + units);
+        }
+
+        // Sort productIds by sold units desc and take top N
+        const topProductIds = [...soldByProduct.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, take)
+          .map(([id]) => id);
+
+        if (topProductIds.length > 0) {
+          const products = await prisma.product.findMany({
+            where: {
+              id: { in: topProductIds },
+              status: ProductStatus.PUBLISHED,
+            },
+            include: PUBLIC_PRODUCT_INCLUDES,
+          });
+
+          // Re-sort by sold-unit rank
+          const sorted = topProductIds
+            .map((id) => products.find((p) => p.id === id))
+            .filter((p): p is NonNullable<typeof p> => p !== undefined);
+
+          return sorted.map(mapProductSummary);
+        }
+      }
+
+      // Fallback: no sale data yet — return most recently published
+      const fallbackProducts = await prisma.product.findMany({
+        where: { status: ProductStatus.PUBLISHED },
+        include: PUBLIC_PRODUCT_INCLUDES,
+        orderBy: { createdAt: "desc" },
+        take,
+      });
+
+      return fallbackProducts.map(mapProductSummary);
+    },
+    ["best-selling-products-v1", take.toString()],
+    { tags: ["products"], revalidate: 300 }
+  );
+
+  return queryFn();
+};

@@ -1,15 +1,10 @@
+import { BestSellers } from "@/components/storefront/home/best-sellers";
 import { CollectionBanner } from "@/components/storefront/home/collection-banner";
-import { FeaturedCategories } from "@/components/storefront/home/featured-categories";
 import { FeaturedProducts } from "@/components/storefront/home/featured-products";
 import { HeroSection } from "@/components/storefront/home/hero-section";
-import {
-  getFeaturedCategories,
-  getHeroCategories,
-} from "@/components/storefront/home/home-categories";
 import { NewArrivals } from "@/components/storefront/home/new-arrivals";
-import { Newsletter } from "@/components/storefront/home/newsletter";
 import { TrustBenefits } from "@/components/storefront/home/trust-benefits";
-import { getCategories, getPublishedProducts } from "@/lib/catalog/queries";
+import { getBestSellingProducts, getCategories, getPublishedProducts } from "@/lib/catalog/queries";
 import { SITE_URL } from "@/lib/seo/site";
 import type { Metadata } from "next";
 
@@ -26,38 +21,31 @@ export const metadata: Metadata = {
 };
 
 export default async function StorefrontHomePage() {
-  const [categories, publishedProducts] = await Promise.all([
+  const [categories, publishedProducts, bestSellingProducts] = await Promise.all([
     getCategories(),
-    getPublishedProducts({ take: 15 }),
+    getPublishedProducts({ take: 24 }),
+    getBestSellingProducts({ take: 8 }),
   ]);
-
-  const finalCategories = getFeaturedCategories(categories);
-  const { heroCategories, typewriterWords } = getHeroCategories(categories);
-  const bestSellers = publishedProducts.slice(0, 5);
-  const moreArrivals = publishedProducts.slice(5, 10);
 
   return (
     <>
       {/* ── 1. Category Hero ────────────────────── */}
-      <HeroSection categories={heroCategories} words={typewriterWords} />
+      <HeroSection categories={categories} />
 
       {/* ── 2. Continuous Moving Ticker (Trust & Benefits) ── */}
       <TrustBenefits />
 
-      {/* ── 3. Featured Categories ─────────────────────────────── */}
-      <FeaturedCategories categories={finalCategories} />
+      {/* ── 3. New Arrivals ───────────────────────────────── */}
+      <NewArrivals products={publishedProducts} />
 
-      {/* ── 4. Featured Products (BEST SELLERS) ────────────────── */}
-      <FeaturedProducts bestSellers={bestSellers} />
+      {/* ── 4. Best Sellers ─────────────────────────────── */}
+      <BestSellers products={bestSellingProducts} />
 
-      {/* ── 5. Collection Banner (BUILT FOR REAL ONES) ─────────── */}
+      {/* ── 6. Collection Banner (BUILT FOR REAL ONES) ─────────── */}
       <CollectionBanner />
 
-      {/* ── 6. Secondary Rotation / More Arrivals ───────────────── */}
-      <NewArrivals moreArrivals={moreArrivals} />
-
-      {/* ── 7. Newsletter Signup (STAY IN THE LOOP) ─────────────── */}
-      <Newsletter />
+      {/* ── 5. Explore Our Catalog (filtered grid) ──────── */}
+      <FeaturedProducts products={publishedProducts} categories={categories} />
     </>
   );
 }
