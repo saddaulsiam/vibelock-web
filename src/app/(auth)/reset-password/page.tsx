@@ -108,7 +108,12 @@ function ResetPasswordForm() {
         </div>
       </CardContent>
       <CardFooter>
-        <Button type="submit" className="w-full" disabled={isLoading || !!success}>
+        <Button
+          type="submit"
+          variant="brand"
+          className="font-heading w-full rounded-xs font-black tracking-widest uppercase"
+          disabled={isLoading || !!success}
+        >
           {isLoading ? "Resetting..." : "Reset Password"}
         </Button>
       </CardFooter>
@@ -120,7 +125,9 @@ export default function ResetPasswordPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Set New Password</CardTitle>
+        <CardTitle className="font-heading text-2xl font-black uppercase text-vl-black">
+          Set New Password
+        </CardTitle>
         <CardDescription>Enter your new password below</CardDescription>
       </CardHeader>
       <Suspense fallback={<CardContent className="py-4 text-center">Loading...</CardContent>}>

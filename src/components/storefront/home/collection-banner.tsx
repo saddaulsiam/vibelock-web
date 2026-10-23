@@ -82,7 +82,7 @@ export function CollectionBanner() {
               >
                 {/* Subtle sheen highlight on hover */}
                 <span
-                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
+                  className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
                   aria-hidden="true"
                 />
                 <span className="relative z-10">SHOP COLLECTION</span>
@@ -105,7 +105,7 @@ export function CollectionBanner() {
                 className="group relative flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00D9FF]/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,217,255,0.12)]"
               >
                 {/* Image */}
-                <div className="relative aspect-[3/4] w-[72px] sm:w-20 md:w-[88px]">
+                <div className="relative aspect-3/4 w-18 sm:w-20 md:w-22">
                   <Image
                     src={src}
                     alt={alt}
@@ -128,7 +128,7 @@ export function CollectionBanner() {
 
       {/* Bottom edge accent line */}
       <div
-        className="pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-gradient-to-r from-transparent via-[#00D9FF]/30 to-transparent"
+        className="pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-linear-to-r from-transparent via-[#00D9FF]/30 to-transparent"
         aria-hidden="true"
       />
     </section>

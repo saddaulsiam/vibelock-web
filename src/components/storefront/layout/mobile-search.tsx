@@ -45,11 +45,11 @@ export function MobileSearch() {
           <div
             aria-hidden="true"
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 top-16 z-40 bg-black/60 backdrop-blur-xs sm:top-[72px]"
+            className="fixed inset-0 top-16 z-40 bg-black/60 backdrop-blur-xs sm:top-18"
           />
 
           {/* Search Bar Container - Perfectly Aligned Edge-to-Edge */}
-          <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-[#0C0D0E] px-4 py-3 shadow-2xl sm:top-[72px]">
+          <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-[#0C0D0E] px-4 py-3 shadow-2xl sm:top-18">
             <div className="mx-auto max-w-lg">
               <form
                 action="/products"

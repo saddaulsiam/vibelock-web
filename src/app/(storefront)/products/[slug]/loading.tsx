@@ -22,11 +22,11 @@ export default function ProductDetailLoading() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12">
           {/* Left Column: Image Gallery Skeleton */}
           <div className="w-full min-w-0">
-            <Skeleton className="aspect-[3/4] w-full rounded-sm bg-white" />
+            <Skeleton className="aspect-3/4 w-full rounded-sm bg-white" />
             <div className="mt-3 flex gap-3 overflow-hidden">
-              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
-              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
-              <Skeleton className="aspect-[3/4] w-16 shrink-0 rounded-sm bg-white sm:w-20" />
+              <Skeleton className="aspect-3/4 w-16 shrink-0 rounded-sm bg-white sm:w-20" />
+              <Skeleton className="aspect-3/4 w-16 shrink-0 rounded-sm bg-white sm:w-20" />
+              <Skeleton className="aspect-3/4 w-16 shrink-0 rounded-sm bg-white sm:w-20" />
             </div>
           </div>
 

@@ -24,8 +24,8 @@ export default function VibeLockLoaderDark({
       className={cn(
         "bg-vl-black text-vl-white relative isolate flex flex-col items-center justify-center overflow-hidden select-none",
         fullScreen
-          ? "fixed inset-0 z-[9999] min-h-dvh w-full"
-          : "border-vl-border min-h-[240px] w-full rounded-xl border",
+          ? "fixed inset-0 z-9999 min-h-dvh w-full"
+          : "border-vl-border min-h-60 w-full rounded-xl border",
         className
       )}
       {...props}
@@ -71,7 +71,7 @@ export default function VibeLockLoaderDark({
           aria-hidden="true"
           className="bg-vl-border relative mt-5 h-0.5 w-36 overflow-hidden rounded-full sm:w-44"
         >
-          <div className="bg-vl-cyan absolute inset-y-0 h-full w-1/2 [animation:vl-indeterminate_1.5s_ease-in-out_infinite] rounded-full shadow-[0_0_8px_#00d9ff] motion-reduce:w-full motion-reduce:animate-none" />
+          <div className="bg-vl-cyan animate-[vl-indeterminate_1.5s_ease-in-out_infinite]rounded-full absolute inset-y-0 h-full w-1/2 shadow-[0_0_8px_#00d9ff] motion-reduce:w-full motion-reduce:animate-none" />
         </div>
       </div>
 

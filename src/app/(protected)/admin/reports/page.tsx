@@ -212,7 +212,7 @@ export default async function AdminReportsPage({
           <h2 className="text-xl font-semibold">Daily sales trend</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[760px] text-sm">
+          <table className="w-full min-w-190 text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left">
                 <th className="p-3">Date</th>
@@ -319,7 +319,7 @@ export default async function AdminReportsPage({
           </form>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-sm">
+          <table className="w-full min-w-245 text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left">
                 <th className="p-3">Order</th>

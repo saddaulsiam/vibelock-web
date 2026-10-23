@@ -64,7 +64,7 @@ export function PromoBanner({
 
       {/* Subtle editorial streetwear tint & inner border to harmonize colorful promo graphics with #101114 / #F3F0E8 */}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101114]/30 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#101114]/30 via-transparent to-transparent"
         aria-hidden="true"
       />
       <div

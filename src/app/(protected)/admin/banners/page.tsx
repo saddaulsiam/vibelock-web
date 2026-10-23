@@ -44,7 +44,7 @@ export default async function AdminBannersPage() {
               key={banner.id}
               className="grid gap-4 border bg-white p-4 md:grid-cols-[240px_1fr]"
             >
-              <div className="relative aspect-[16/7] overflow-hidden bg-[#F3F0E8]">
+              <div className="relative aspect-16/7 overflow-hidden bg-[#F3F0E8]">
                 <Image
                   src={banner.imageUrl}
                   alt={banner.title}

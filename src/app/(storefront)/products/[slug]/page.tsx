@@ -112,7 +112,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </>
           )}
           <ChevronRight className="size-4" aria-hidden="true" />
-          <span className="text-foreground max-w-full font-medium break-words" aria-current="page">
+          <span
+            className="text-foreground max-w-full font-medium wrap-break-word"
+            aria-current="page"
+          >
             {product.name}
           </span>
         </nav>
@@ -127,12 +130,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {mainCategory && (
                 <Link
                   href={`/category/${mainCategory.slug}`}
-                  className="text-muted-foreground mb-3 inline-flex min-h-8 items-center text-xs font-semibold tracking-[0.18em] uppercase transition-colors hover:text-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                  className="text-muted-foreground hover:text-vl-black focus-visible:ring-vl-cyan mb-3 inline-flex min-h-8 items-center text-xs font-semibold tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
                 >
                   {mainCategory.name}
                 </Link>
               )}
-              <h1 className="font-heading text-3xl leading-tight font-black tracking-tight text-vl-black sm:text-4xl lg:text-[2.75rem]">
+              <h1 className="font-heading text-vl-black text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">
                 {product.name}
               </h1>
             </div>
@@ -144,7 +147,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 className="border-border mt-8 border-t pt-6 sm:mt-10"
                 aria-labelledby="product-details-heading"
               >
-                <h2 id="product-details-heading" className="font-heading text-sm font-bold tracking-wider text-vl-black uppercase">
+                <h2
+                  id="product-details-heading"
+                  className="font-heading text-vl-black text-sm font-bold tracking-wider uppercase"
+                >
                   Product details
                 </h2>
                 <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-6">
@@ -161,7 +167,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {mainCategory && (
               <Link
                 href={`/category/${mainCategory.slug}`}
-                className="mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-vl-black underline underline-offset-4 transition-colors hover:text-vl-cyan focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                className="text-vl-black hover:text-vl-cyan focus-visible:ring-vl-cyan mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
                 Explore {mainCategory.name} <ChevronRight className="size-4" aria-hidden="true" />
               </Link>

@@ -26,7 +26,7 @@ export default async function WishlistPage() {
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-[#101114] uppercase sm:text-4xl">
+              <h1 className="font-heading text-3xl font-black tracking-tight text-[#101114] uppercase sm:text-4xl">
                 My Wishlist
               </h1>
               <p className="text-muted-foreground mt-1 text-xs sm:text-sm">

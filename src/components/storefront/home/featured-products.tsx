@@ -99,7 +99,7 @@ export function FeaturedProducts({
 
         {/* Filter Tabs (Pills) */}
         {tabs.length > 1 && (
-          <div className="mt-7 flex [scrollbar-width:none] items-center justify-start gap-2 overflow-x-auto px-1 py-1 sm:mt-9 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:py-0 [&::-webkit-scrollbar]:hidden">
+          <div className="mt-7 flex scrollbar-none items-center justify-start gap-2 overflow-x-auto px-1 py-1 sm:mt-9 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:py-0 [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
@@ -129,7 +129,7 @@ export function FeaturedProducts({
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/[0.02] px-4 py-16 text-center sm:mt-12">
+          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/2 px-4 py-16 text-center sm:mt-12">
             <p className="text-sm font-bold tracking-wider text-[#101114] uppercase">
               No products found in {activeTabLabel} yet
             </p>
@@ -139,7 +139,7 @@ export function FeaturedProducts({
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className="mt-4 inline-flex cursor-pointer items-center rounded-xs bg-vl-black px-5 py-2 font-heading text-xs font-black tracking-widest text-vl-white uppercase transition-opacity hover:opacity-90"
+              className="bg-vl-black font-heading text-vl-white mt-4 inline-flex cursor-pointer items-center rounded-xs px-5 py-2 text-xs font-black tracking-widest uppercase transition-opacity hover:opacity-90"
             >
               Show All Products
             </button>

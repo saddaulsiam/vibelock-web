@@ -225,10 +225,14 @@ export function HeroSection({
     return categories
       .filter((c) => Boolean(c && c.name))
       .map((cat, index) => {
-        const cleanName = cat.name.replace(/^\d+[.\s-]+/, "").trim().toUpperCase();
+        const cleanName = cat.name
+          .replace(/^\d+[.\s-]+/, "")
+          .trim()
+          .toUpperCase();
         return {
           id: cat.id,
-          label: "label" in cat && cat.label ? cat.label : `CAT. ${String(index + 1).padStart(2, "0")}`,
+          label:
+            "label" in cat && cat.label ? cat.label : `CAT. ${String(index + 1).padStart(2, "0")}`,
           name: cleanName,
           slug: cat.slug,
           imageUrl: cat.imageUrl || "/images/categories/cat-t-shirts.jpg",
@@ -256,7 +260,7 @@ export function HeroSection({
         className="relative z-20 flex flex-col justify-start px-7 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20"
         style={{ pointerEvents: "none" }}
       >
-        <div className="relative max-w-[340px] sm:max-w-[440px] lg:max-w-full">
+        <div className="relative max-w-85 sm:max-w-110 lg:max-w-full">
           {/* Typewriter headline */}
           <h1
             className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"

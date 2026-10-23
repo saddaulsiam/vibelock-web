@@ -53,7 +53,7 @@ export default function ContactPage() {
       <section className="relative overflow-hidden border-b border-white/10 bg-[#090D11] py-16 text-[#F3F0E8] sm:py-20">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:36px_36px]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
@@ -67,7 +67,7 @@ export default function ContactPage() {
               <span>DIRECT LINE // 24/7 ASSISTANCE</span>
             </div>
 
-            <h1 className="mt-4 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl">
+            <h1 className="font-heading mt-4 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl">
               CONNECT WITH VIBELOCK
             </h1>
 

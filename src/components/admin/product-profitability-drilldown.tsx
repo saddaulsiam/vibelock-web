@@ -185,7 +185,7 @@ export function ProductProfitabilityDrilldown({
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[840px] text-left text-sm">
+        <table className="w-full min-w-210 text-left text-sm">
           <thead className="bg-muted/40 text-muted-foreground border-b border-[#101114]/10 text-xs font-semibold tracking-wider uppercase">
             <tr>
               <th scope="col" className="p-3.5">

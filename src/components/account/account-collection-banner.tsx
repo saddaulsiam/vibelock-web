@@ -16,7 +16,7 @@ export function AccountCollectionBanner() {
         />
         {/* Dark Gradient Overlay for optimal contrast */}
         <div
-          className="absolute inset-0 bg-gradient-to-r from-[#101114] via-[#101114]/85 to-transparent sm:via-[#101114]/75"
+          className="absolute inset-0 bg-linear-to-r from-[#101114] via-[#101114]/85 to-transparent sm:via-[#101114]/75"
           aria-hidden="true"
         />
       </div>

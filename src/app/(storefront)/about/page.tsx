@@ -26,7 +26,7 @@ export default function AboutPage() {
         {/* Subtle Cyberpunk Grid Background */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:36px_36px]"
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
@@ -42,7 +42,7 @@ export default function AboutPage() {
             </div>
 
             {/* Headline */}
-            <h1 className="mt-4 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
+            <h1 className="font-heading mt-4 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
               WE DON’T DO FLIMSY.
               <br />
               <span className="text-[#00D9FF]">WE ENGINEER CULTURE.</span>
@@ -92,14 +92,14 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-16">
             {/* Visual Showcase (Col 5) */}
             <div className="relative lg:col-span-5">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl border border-black/10 bg-[#0C1014] shadow-2xl">
+              <div className="relative aspect-4/5 w-full overflow-hidden rounded-2xl border border-black/10 bg-[#0C1014] shadow-2xl">
                 <Image
                   src="/images/hero/hero-clean.png"
                   alt="VibeLock Dhaka Streetwear"
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
                 <div className="absolute right-6 bottom-6 left-6">
                   <span className="inline-block rounded bg-[#00D9FF] px-2.5 py-1 text-[10px] font-black tracking-widest text-[#101114] uppercase">
                     PROTOTYPE // 026

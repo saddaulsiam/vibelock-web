@@ -70,7 +70,7 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       )}
       {...props}
     >
-      <div className="relative block aspect-square overflow-hidden rounded-xs bg-[#F0EDE7] sm:aspect-[4/5]">
+      <div className="relative block aspect-square overflow-hidden rounded-xs bg-[#F0EDE7] sm:aspect-4/5">
         <Link
           href={`/products/${product.slug}`}
           aria-label={`View ${product.name}`}
@@ -128,11 +128,11 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       <div className="flex flex-col gap-0.5">
         <Link
           href={`/products/${product.slug}`}
-          className="font-heading truncate text-xs font-bold tracking-tight text-vl-black underline-offset-4 transition-colors hover:text-vl-cyan sm:text-sm"
+          className="font-heading text-vl-black hover:text-vl-cyan truncate text-xs font-bold tracking-tight underline-offset-4 transition-colors sm:text-sm"
         >
           {product.name}
         </Link>
-        <div className="text-xs font-bold text-vl-black sm:text-sm">
+        <div className="text-vl-black text-xs font-bold sm:text-sm">
           <Price amount={product.price} originalAmount={product.originalPrice} />
         </div>
       </div>

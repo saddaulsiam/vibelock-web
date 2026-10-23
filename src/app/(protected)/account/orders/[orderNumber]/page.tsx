@@ -167,7 +167,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                     </dd>
                   </div>
                 )}
-                <Separator className="!my-3 bg-[#101114]/10" />
+                <Separator className="my-3! bg-[#101114]/10" />
                 <div className="flex justify-between text-base font-black text-[#101114]">
                   <dt>Total Amount</dt>
                   <dd className="text-[#101114]">৳ {order.total.toLocaleString("en-BD")}</dd>

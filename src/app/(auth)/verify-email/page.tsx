@@ -26,8 +26,8 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
         <div
           className={`absolute inset-x-0 top-0 h-1 ${
             result.success
-              ? "bg-gradient-to-r from-emerald-500 via-green-400 to-teal-500"
-              : "bg-gradient-to-r from-red-500 via-rose-400 to-pink-500"
+              ? "bg-linear-to-r from-emerald-500 via-green-400 to-teal-500"
+              : "bg-linear-to-r from-red-500 via-rose-400 to-pink-500"
           }`}
         />
 
@@ -35,8 +35,8 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
         <div
           className={`pointer-events-none absolute inset-0 opacity-[0.04] ${
             result.success
-              ? "[background:radial-gradient(ellipse_at_top,_theme(colors.emerald.500),_transparent_70%)]"
-              : "[background:radial-gradient(ellipse_at_top,_theme(colors.red.500),_transparent_70%)]"
+              ? "[background:radial-gradient(ellipse_at_top,var(--color-emerald-500),transparent_70%)]"
+              : "[background:radial-gradient(ellipse_at_top,var(--color-red-500),transparent_70%)]"
           }`}
         />
 
@@ -65,7 +65,7 @@ export default async function VerifyEmailPage({ searchParams }: VerifyEmailPageP
           </div>
 
           {/* Title */}
-          <h1 className="text-foreground mb-2 text-center text-2xl font-bold tracking-tight">
+          <h1 className="font-heading text-foreground mb-2 text-center text-2xl font-black tracking-tight uppercase">
             {result.success ? "Email Verified!" : "Verification Failed"}
           </h1>
 

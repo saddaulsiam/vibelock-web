@@ -27,7 +27,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
                 <Link
                   key={category.id}
                   href={`/category/${category.slug}`}
-                  className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden bg-[#101114] text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                  className="group relative flex aspect-3/4 flex-col justify-end overflow-hidden bg-[#101114] text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                 >
                   {/* Category Image */}
                   <Image
@@ -40,7 +40,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
 
                   {/* Gradient Overlay for Bottom Legibility */}
                   <div
-                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity group-hover:from-black/85"
+                    className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent transition-opacity group-hover:from-black/85"
                     aria-hidden="true"
                   />
 

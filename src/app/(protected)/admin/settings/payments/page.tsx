@@ -189,7 +189,7 @@ export default async function AdminPaymentSettingsPage() {
                   <p className="text-muted-foreground flex items-center gap-1 text-xs font-semibold tracking-wider uppercase">
                     <Info className="size-3" /> Checkout Impact
                   </p>
-                  <p className="rounded border border-[#101114]/5 bg-[#101114]/[0.02] p-2.5 text-xs leading-relaxed text-[#101114]/80">
+                  <p className="rounded border border-[#101114]/5 bg-[#101114]/2 p-2.5 text-xs leading-relaxed text-[#101114]/80">
                     {method.checkoutImpact}
                   </p>
                 </div>

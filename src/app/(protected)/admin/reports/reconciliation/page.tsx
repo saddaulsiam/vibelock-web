@@ -365,7 +365,7 @@ export default async function AdminReconciliationPage({
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[700px] text-sm">
+          <table className="w-full min-w-175 text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left">
                 <th className="p-3">Classification</th>
@@ -449,7 +449,7 @@ export default async function AdminReconciliationPage({
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[960px] text-sm">
+          <table className="w-full min-w-240 text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left">
                 <th className="p-3">Order #</th>
