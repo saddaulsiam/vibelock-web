@@ -32,6 +32,8 @@ export function BestSellers({ products }: BestSellersProps) {
         <SectionHeading
           title="BEST SELLERS"
           eyebrow="Top Picks"
+          align="center"
+          action={{ href: "/products?sort=newest", label: "View All" }}
         />
 
         <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -39,7 +41,7 @@ export function BestSellers({ products }: BestSellersProps) {
             <div key={product.id} className="relative">
               {/* Rank badge */}
               <span
-                className="absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-black tabular-nums shadow-md"
+                className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-black tabular-nums shadow-md"
                 style={{
                   background:
                     index === 0

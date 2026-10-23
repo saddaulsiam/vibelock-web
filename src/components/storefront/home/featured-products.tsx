@@ -90,7 +90,12 @@ export function FeaturedProducts({
   return (
     <section className="border-t border-black/5 bg-white py-12 sm:py-16 lg:py-20">
       <Container>
-        <SectionHeading title="EXPLORE OUR CATALOG" />
+        <SectionHeading
+          eyebrow="FEATURED"
+          title="EXPLORE OUR CATALOG"
+          align="center"
+          action={{ href: "/products", label: "View All" }}
+        />
 
         {/* Filter Tabs (Pills) */}
         {tabs.length > 1 && (

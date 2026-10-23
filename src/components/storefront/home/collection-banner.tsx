@@ -4,9 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 const ACCESSORIES = [
-  { src: "/images/collection/acc-chain.png", alt: "VibeLock Signature Chain", label: "CHAIN" },
-  { src: "/images/collection/acc-cap.png", alt: "VibeLock Snapback Cap", label: "CAP" },
-  { src: "/images/collection/acc-tag.png", alt: "VibeLock Editorial Hangtag", label: "TAG" },
+  { src: "/images/collection/acc-chain.png", alt: "VibeLock Signature Chain", label: "WEAR" },
+  { src: "/images/collection/acc-cap.png", alt: "VibeLock Snapback Cap", label: "YOUR" },
+  { src: "/images/collection/acc-tag.png", alt: "VibeLock Editorial Hangtag", label: "VIBE" },
 ];
 
 export function CollectionBanner() {
@@ -14,7 +14,7 @@ export function CollectionBanner() {
     <section className="relative overflow-hidden border-y border-white/10 bg-[#080C0F] text-white">
       {/* Background texture overlay */}
       <div
-        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50 mix-blend-screen sm:opacity-70"
         style={{ backgroundImage: "url('/images/hero/account-hero3.png')" }}
         aria-hidden="true"
       />
@@ -35,48 +35,63 @@ export function CollectionBanner() {
         <div className="relative z-10 grid grid-cols-1 gap-6 py-12 sm:gap-8 sm:py-14 md:grid-cols-[1.2fr_0.8fr] md:items-center md:gap-8 md:py-16 lg:py-20 xl:py-30">
           {/* ── 1. Left Column: Typography & CTA ── */}
           <div className="flex flex-col items-start">
-            <p className="text-[10px] font-extrabold tracking-[0.22em] text-[#00D9FF] uppercase sm:text-[11px]">
-              THE VIBELOCK COLLECTION
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#00D9FF]/30 bg-[#00D9FF]/10 px-3 py-1 backdrop-blur-sm">
+              <span className="size-1.5 rounded-full bg-[#00D9FF]" aria-hidden="true" />
+              <p className="text-[10px] font-extrabold tracking-[0.22em] text-[#00D9FF] uppercase sm:text-[11px]">
+                THE VIBELOCK COLLECTION
+              </p>
+            </div>
 
-            <h2 className="mt-3 text-4xl leading-none font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
+            <h2 className="mt-4 text-4xl leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-6xl">
               BUILT FOR{" "}
               <span className="mt-1 block text-[#00D9FF] drop-shadow-[0_0_20px_rgba(0,217,255,0.4)]">
                 REAL ONES
               </span>
             </h2>
 
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#F3F0E8]/65 sm:max-w-sm sm:text-sm">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed font-medium text-[#F3F0E8] drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] sm:max-w-md sm:text-base">
               Streetwear that moves with your story. Crafted for comfort, silhouette, and the
               streets of Dhaka.
             </p>
 
-            {/* Stats row — mobile */}
-            <div className="mt-6 flex items-center gap-6 sm:gap-8">
+            {/* Stats row */}
+            <div className="mt-6 flex items-center gap-6 rounded-xl border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-5 sm:py-3.5">
               {[
                 { value: "200+", label: "Styles" },
                 { value: "12K+", label: "Orders" },
                 { value: "100%", label: "Authentic" },
-              ].map(({ value, label }) => (
-                <div key={label} className="flex flex-col">
-                  <span className="text-xl font-black text-white sm:text-2xl">{value}</span>
-                  <span className="text-[10px] font-semibold tracking-widest text-[#F3F0E8]/50 uppercase">
-                    {label}
-                  </span>
+              ].map(({ value, label }, idx) => (
+                <div key={label} className="flex items-center gap-6 sm:gap-8">
+                  <div className="flex flex-col">
+                    <span className="text-xl font-black tracking-tight text-white drop-shadow-sm sm:text-2xl">
+                      {value}
+                    </span>
+                    <span className="text-[10px] font-bold tracking-widest text-zinc-300 uppercase sm:text-[11px]">
+                      {label}
+                    </span>
+                  </div>
+                  {idx < 2 && <div className="h-8 w-px bg-white/10" aria-hidden="true" />}
                 </div>
               ))}
             </div>
 
-            <div className="mt-7">
+            <div className="mt-6">
               <Link
                 href="/products"
-                className="group inline-flex items-center gap-3 rounded-full border border-white/80 bg-transparent px-7 py-3.5 text-xs font-bold tracking-wider text-white uppercase transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF]/10 hover:text-[#00D9FF] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-[#00D9FF] py-2 pr-2 pl-4.5 text-[10px] font-black tracking-[0.16em] text-[#080C0F] uppercase shadow-[0_0_18px_rgba(0,217,255,0.3)] transition-all duration-300 hover:scale-[1.02] hover:bg-[#2ae0ff] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95 sm:py-2.5 sm:pr-2.5 sm:pl-5 sm:text-[11px]"
               >
-                <span>SHOP COLLECTION</span>
-                <ArrowRight
-                  className="size-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                {/* Subtle sheen highlight on hover */}
+                <span
+                  className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
                   aria-hidden="true"
                 />
+                <span className="relative z-10">SHOP COLLECTION</span>
+                <span
+                  className="relative z-10 flex size-5 items-center justify-center rounded-full bg-[#080C0F] text-[#00D9FF] transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-white group-hover:text-[#080C0F] sm:size-5.5"
+                  aria-hidden="true"
+                >
+                  <ArrowRight className="size-2.5 transition-transform duration-300 group-hover:translate-x-0.5 sm:size-3" />
+                </span>
               </Link>
             </div>
           </div>
