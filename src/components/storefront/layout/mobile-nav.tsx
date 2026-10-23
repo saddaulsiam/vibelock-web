@@ -43,13 +43,20 @@ export function MobileNav({ isAuthenticated }: MobileNavProps) {
       >
         <SheetHeader className="border-b border-white/10 px-0 pt-1 pb-5">
           <SheetTitle className="text-left">
-            <Image
-              src="/images/vibelock-logo-white.png"
-              alt="VibeLock"
-              width={110}
-              height={32}
-              className="h-7 w-auto object-contain"
-            />
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-full border border-white/10 bg-[#101114]">
+                <Image
+                  src="/images/vibelock-logo.png"
+                  alt="VibeLock"
+                  width={20}
+                  height={20}
+                  className="h-auto w-auto object-contain"
+                />
+              </div>
+              <span className="font-heading text-sm font-black tracking-wider text-white uppercase">
+                VIBELOCK
+              </span>
+            </div>
           </SheetTitle>
         </SheetHeader>
 

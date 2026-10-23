@@ -42,7 +42,7 @@ export function CollectionBanner() {
               </p>
             </div>
 
-            <h2 className="mt-4 text-4xl leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-6xl">
+            <h2 className="font-heading mt-4 text-4xl leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-6xl">
               BUILT FOR{" "}
               <span className="mt-1 block text-[#00D9FF] drop-shadow-[0_0_20px_rgba(0,217,255,0.4)]">
                 REAL ONES

@@ -28,7 +28,7 @@ export function AccountCollectionBanner() {
             Your Style Matters
           </p>
 
-          <h3 className="mt-2 text-2xl font-black tracking-tight text-white uppercase sm:text-3xl lg:text-4xl">
+          <h3 className="font-heading mt-2 text-2xl font-black tracking-tight text-white uppercase sm:text-3xl lg:text-4xl">
             Explore New Collections
           </h3>
 

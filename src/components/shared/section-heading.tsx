@@ -86,7 +86,7 @@ export function SectionHeading({
                 {eyebrow}
               </p>
             )}
-            <h2 className="text-2xl font-black tracking-tight text-[#101114] uppercase sm:text-3xl md:text-4xl">
+            <h2 className="font-heading text-2xl font-black tracking-tight text-[#101114] uppercase sm:text-3xl md:text-4xl">
               {title}
             </h2>
             {description && (
@@ -121,7 +121,7 @@ export function SectionHeading({
         </p>
       )}
 
-      <h2 className="text-2xl leading-[1.08] font-black tracking-tight text-[#101114] uppercase sm:text-3xl md:text-4xl lg:text-[2.65rem]">
+      <h2 className="font-heading text-2xl leading-[1.08] font-black tracking-tight text-[#101114] uppercase sm:text-3xl md:text-4xl lg:text-[2.65rem]">
         {title}
       </h2>
 

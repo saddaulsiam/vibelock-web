@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Reset Password</CardTitle>
+        <CardTitle className="font-heading text-2xl font-black tracking-tight">Reset Password</CardTitle>
         <CardDescription>Enter your email to receive a password reset link</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -68,7 +68,11 @@ export default function ForgotPasswordPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isLoading || !!success}>
+          <Button
+            type="submit"
+            className="w-full bg-vl-black font-heading font-black tracking-widest text-vl-white uppercase hover:bg-vl-black/85 focus-visible:ring-vl-cyan rounded-xs"
+            disabled={isLoading || !!success}
+          >
             {isLoading ? "Sending..." : "Send Reset Link"}
           </Button>
           <div className="text-muted-foreground text-center text-sm">

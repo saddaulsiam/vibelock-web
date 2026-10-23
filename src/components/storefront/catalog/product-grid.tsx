@@ -26,13 +26,13 @@ export function ProductGrid({
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href={clearSearchHref}
-              className="inline-flex min-h-11 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="inline-flex min-h-11 items-center justify-center rounded-xs bg-vl-black px-5 font-heading text-sm font-black tracking-widest text-vl-white uppercase transition-colors hover:bg-vl-black/85 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Clear search
             </Link>
             <Link
               href="/products"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="inline-flex min-h-11 items-center justify-center border border-vl-black/20 px-5 font-heading text-sm font-black tracking-widest text-vl-black uppercase transition-colors hover:bg-vl-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
             >
               Browse all products
             </Link>

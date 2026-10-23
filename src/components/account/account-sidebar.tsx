@@ -140,7 +140,7 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             />
           </div>
 
-          <h2 className="text-base leading-snug font-bold text-[#101114]">
+          <h2 className="font-heading text-base font-black leading-snug tracking-tight text-vl-black">
             {profile.name || "VibeLock Customer"}
           </h2>
 

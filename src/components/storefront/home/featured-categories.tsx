@@ -46,7 +46,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
 
                   {/* Bottom Centered Category Label */}
                   <div className="relative z-10 w-full px-2 pb-4 text-center sm:pb-5">
-                    <span className="text-sm font-bold tracking-wide text-white drop-shadow-md sm:text-base">
+                    <span className="font-heading text-sm font-bold tracking-wide text-white drop-shadow-md sm:text-base">
                       {cleanName}
                     </span>
                   </div>

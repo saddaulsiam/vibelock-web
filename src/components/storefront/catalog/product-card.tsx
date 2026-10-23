@@ -128,11 +128,11 @@ export function ProductCard({ product, className, ...props }: ProductCardProps) 
       <div className="flex flex-col gap-0.5">
         <Link
           href={`/products/${product.slug}`}
-          className="truncate text-xs font-semibold text-[#101114] underline-offset-4 hover:underline sm:text-sm"
+          className="font-heading truncate text-xs font-bold tracking-tight text-vl-black underline-offset-4 transition-colors hover:text-vl-cyan sm:text-sm"
         >
           {product.name}
         </Link>
-        <div className="text-xs font-bold text-[#101114] sm:text-sm">
+        <div className="text-xs font-bold text-vl-black sm:text-sm">
           <Price amount={product.price} originalAmount={product.originalPrice} />
         </div>
       </div>

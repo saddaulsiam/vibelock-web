@@ -29,7 +29,7 @@ export function AccountHero({ name }: AccountHeroProps) {
               My Account
             </span>
 
-            <h1 className="mt-3 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
+            <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
               Welcome Back,
               <span className="mt-1 block font-serif text-4xl font-extrabold tracking-normal text-[#00D9FF] italic drop-shadow-[0_0_25px_rgba(0,217,255,0.45)] sm:text-6xl lg:text-7xl">
                 {firstName}

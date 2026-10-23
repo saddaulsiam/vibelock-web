@@ -70,7 +70,7 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+        <CardTitle className="font-heading text-2xl font-black tracking-tight">Create an account</CardTitle>
         <CardDescription>Enter your details to create your account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,7 +133,11 @@ export default function RegisterPage() {
               <p className="text-destructive text-xs">{fieldErrors.confirmPassword}</p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-vl-black font-heading font-black tracking-widest text-vl-white uppercase hover:bg-vl-black/85 focus-visible:ring-vl-cyan rounded-xs"
+            disabled={isLoading}
+          >
             {isLoading ? "Creating account..." : "Sign up"}
           </Button>
         </form>

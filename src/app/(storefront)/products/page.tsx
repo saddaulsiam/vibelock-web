@@ -63,11 +63,11 @@ export default async function ProductsPage({
           </p>
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div className="min-w-0">
-              <h1 className="text-3xl font-semibold tracking-[-0.045em] break-words text-[#101114] sm:text-4xl lg:text-5xl">
+              <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight wrap-break-word uppercase sm:text-4xl lg:text-5xl">
                 {hasSearch ? "Search results" : "All products"}
               </h1>
               {hasSearch ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 break-words text-[#101114]/60 sm:text-base">
+                <p className="mt-2 max-w-2xl text-sm leading-6 wrap-break-word text-[#101114]/60 sm:text-base">
                   Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
                 </p>
               ) : (

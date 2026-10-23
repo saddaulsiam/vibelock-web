@@ -259,7 +259,7 @@ export function HeroSection({
         <div className="relative max-w-[340px] sm:max-w-[440px] lg:max-w-full">
           {/* Typewriter headline */}
           <h1
-            className="text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
+            className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
             aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}

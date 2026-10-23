@@ -139,7 +139,7 @@ export function FeaturedProducts({
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className="mt-4 inline-flex cursor-pointer items-center rounded-full bg-[#101114] px-5 py-2 text-xs font-bold tracking-wider text-white uppercase transition-opacity hover:opacity-90"
+              className="mt-4 inline-flex cursor-pointer items-center rounded-xs bg-vl-black px-5 py-2 font-heading text-xs font-black tracking-widest text-vl-white uppercase transition-opacity hover:opacity-90"
             >
               Show All Products
             </button>

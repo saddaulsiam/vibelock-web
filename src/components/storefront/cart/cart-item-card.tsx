@@ -82,7 +82,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <div className="min-w-0">
             <Link
               href={`/products/${item.productSlug}`}
-              className="text-base font-semibold tracking-tight break-words text-[#101114] underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="font-heading text-base font-black tracking-tight break-words text-vl-black underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
             >
               {item.productName}
             </Link>
