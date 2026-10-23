@@ -1,30 +1,16 @@
 "use client";
 
-import * as React from "react";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
-import { cn } from "@/lib/utils";
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface FeaturedProductsProps {
   products?: ProductSummary[];
   bestSellers?: ProductSummary[];
   categories?: CategorySummary[];
-}
-
-function toCardProduct(product: ProductSummary) {
-  return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    price: product.minPrice,
-    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-    image: product.primaryImage?.url ?? "",
-    badge: product.hasDiscount
-      ? { label: "SALE", variant: "sale" as const }
-      : { label: "NEW", variant: "sale" as const },
-  };
 }
 
 export function FeaturedProducts({
@@ -63,7 +49,7 @@ export function FeaturedProducts({
   // Filter products by selected tab, capping at 8 for the 4x2 grid
   const displayedProducts = React.useMemo(() => {
     if (activeTab === "all") {
-      return allProducts.slice(0, 8);
+      return allProducts.slice(0, 50);
     }
 
     const tabSlug = activeTab.toLowerCase();
@@ -123,9 +109,17 @@ export function FeaturedProducts({
 
         {/* 4-Column x 2-Row Grid (8 Cards) */}
         {displayedProducts.length > 0 ? (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:mt-12 sm:grid-cols-3 sm:gap-4 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
             {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={toCardProduct(product)} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                badge={
+                  product.hasDiscount
+                    ? { label: "SALE", variant: "sale" }
+                    : { label: "NEW", variant: "new" }
+                }
+              />
             ))}
           </div>
         ) : (

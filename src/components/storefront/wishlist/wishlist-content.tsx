@@ -56,15 +56,6 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
     toast.success("Wishlist cleared.");
   };
 
-  const mapToProductCard = (product: ProductSummary) => ({
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    price: product.minPrice,
-    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-    image: product.primaryImage?.url ?? "",
-    badge: product.hasDiscount ? { label: "Sale", variant: "sale" as const } : undefined,
-  });
 
   const savedProducts = initialProducts.filter((p) => wishlistSlugs.includes(p.slug));
   const recommendedProducts = initialProducts.slice(0, 4);
@@ -116,7 +107,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
             {savedProducts.map((product) => (
               <div key={product.id} className="group relative flex flex-col justify-between">
-                <ProductCard product={mapToProductCard(product)} />
+                <ProductCard product={product} />
                 <button
                   type="button"
                   onClick={() => handleRemove(product.slug)}
@@ -174,7 +165,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {recommendedProducts.map((product) => (
-            <ProductCard key={product.id} product={mapToProductCard(product)} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>
