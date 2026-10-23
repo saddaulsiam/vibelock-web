@@ -1,5 +1,5 @@
-import VibeLockLoader from "@/components/shared/VibeLockLoader";
+import VibeLockLoaderDark from "@/components/shared/VibeLockLoaderDark";
 
 export default function Loading() {
-  return <VibeLockLoader />;
+  return <VibeLockLoaderDark />;
 }

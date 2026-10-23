@@ -15,6 +15,9 @@ const badgeVariants = cva(
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
+        cyan: "bg-vl-cyan/15 text-[#00a3c4] dark:text-vl-cyan border border-vl-cyan/30 font-bold uppercase tracking-wider text-[10px]",
+        brand:
+          "bg-vl-black text-vl-white border border-vl-border font-bold uppercase tracking-wider text-[10px]",
       },
     },
     defaultVariants: {

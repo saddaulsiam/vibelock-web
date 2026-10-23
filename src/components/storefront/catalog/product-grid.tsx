@@ -17,7 +17,7 @@ export function ProductGrid({
     if (searchTerm) {
       return (
         <div className="border-border border border-dashed px-5 py-14 text-center sm:py-20">
-          <h2 className="text-xl font-semibold tracking-tight break-words">
+          <h2 className="text-xl font-semibold tracking-tight wrap-break-word">
             No products matched “{searchTerm}”
           </h2>
           <p className="text-muted-foreground mx-auto mt-2 max-w-md text-sm leading-6">
@@ -26,13 +26,13 @@ export function ProductGrid({
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href={clearSearchHref}
-              className="inline-flex min-h-11 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center rounded-xs px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Clear search
             </Link>
             <Link
               href="/products"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               Browse all products
             </Link>
@@ -52,18 +52,7 @@ export function ProductGrid({
   return (
     <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
       {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={{
-            id: product.id,
-            name: product.name,
-            slug: product.slug,
-            price: product.minPrice,
-            originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-            image: product.primaryImage?.url ?? "",
-            badge: product.hasDiscount ? { label: "Sale", variant: "sale" } : undefined,
-          }}
-        />
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   );

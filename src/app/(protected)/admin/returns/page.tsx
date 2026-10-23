@@ -35,7 +35,7 @@ async function ReturnsTable({
         <select
           name="status"
           defaultValue={status ?? ""}
-          className="border-input flex h-9 w-[180px] rounded-md border bg-transparent px-3 text-sm"
+          className="border-input flex h-9 w-45 rounded-md border bg-transparent px-3 text-sm"
         >
           <option value="">All statuses</option>
           {Object.values(ReturnRequestStatus).map((value) => (

@@ -140,7 +140,7 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             />
           </div>
 
-          <h2 className="text-base leading-snug font-bold text-[#101114]">
+          <h2 className="font-heading text-vl-black text-base leading-snug font-black tracking-tight">
             {profile.name || "VibeLock Customer"}
           </h2>
 
@@ -217,9 +217,9 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
             type="button"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="text-muted-foreground flex w-full items-center gap-3.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none disabled:opacity-50"
+            className="flex w-full items-center gap-3.5 rounded-md border border-red-500/20 bg-red-500/10 px-3.5 py-2 text-sm font-medium text-red-500 transition-colors duration-200 hover:border-red-500 hover:bg-red-500/90 hover:text-white focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none disabled:opacity-50"
           >
-            <LogOut className="text-muted-foreground size-4.5 shrink-0 transition-colors" />
+            <LogOut className="size-4.5 shrink-0 transition-colors" />
             <span>{loggingOut ? "Signing out..." : "Logout"}</span>
           </button>
         </nav>

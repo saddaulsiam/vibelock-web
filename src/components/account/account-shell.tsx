@@ -78,7 +78,7 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
         role="dialog"
         aria-modal="true"
         aria-label="Account navigation menu"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col bg-[#F3F0E8] shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-75 flex-col bg-[#F3F0E8] shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >

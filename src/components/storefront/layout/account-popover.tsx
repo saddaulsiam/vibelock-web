@@ -59,24 +59,24 @@ export function AccountPopover({ user }: AccountPopoverProps) {
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="flex h-9 items-center gap-1 rounded-full px-2 text-[#101114]/80 transition-colors hover:bg-black/5 hover:text-[#101114] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        className="focus-visible:ring-vl-cyan hover:text-vl-white text-vl-white/75 hover:bg-vl-white/10 flex h-9 cursor-pointer items-center gap-1 rounded-full px-2 transition-all focus:outline-none focus-visible:ring-2"
       >
-        <div className="flex size-7 items-center justify-center rounded-full bg-black/5">
+        <div className="bg-vl-white/5 flex size-7 items-center justify-center rounded-full">
           <User className="size-4" />
         </div>
         <ChevronDown
           className={`size-3 transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-[#00D9FF]" : "text-[#101114]/50"
+            isOpen ? "text-vl-cyan rotate-180" : "text-vl-white/50"
           }`}
         />
       </button>
 
       {/* Floating Card Popover */}
       {isOpen && (
-        <div className="absolute top-full right-0 z-50 mt-2.5 w-76 rounded-2xl border border-black/10 bg-white p-5 shadow-[0_15px_40px_rgba(0,0,0,0.12)]">
+        <div className="border-vl-white/10 absolute top-full right-0 z-50 mt-2.5 w-76 rounded-2xl border bg-white p-5 shadow-[0_15px_40px_rgba(0,0,0,0.12)]">
           {/* ── Top Header & Main CTA ── */}
           <div className="text-center">
-            <p className="text-xs font-medium text-[#101114]/70">
+            <p className="text-vl-black/70 text-xs font-medium">
               {user ? `Hello, ${user.name || "Customer"}` : "Hello, sign in"}
             </p>
 
@@ -84,7 +84,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
               <Link
                 href="/account"
                 onClick={() => setIsOpen(false)}
-                className="mt-2.5 inline-flex h-9 w-full items-center justify-center gap-2 rounded-full bg-[#101114] text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-[#1E262C]"
+                className="bg-vl-black text-vl-white hover:bg-vl-black/80 mt-2.5 inline-flex h-9 w-full items-center justify-center gap-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all"
               >
                 <LayoutDashboard className="size-3.5" />
                 <span>Go to Dashboard</span>
@@ -94,17 +94,17 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="mt-2.5 inline-flex h-9.5 w-full items-center justify-center rounded-full bg-[#101114] text-xs font-extrabold tracking-wider text-white uppercase transition-all hover:bg-[#1E262C]"
+                  className="bg-vl-black text-vl-white hover:bg-vl-black/80 mt-2.5 inline-flex h-9.5 w-full items-center justify-center rounded-full text-xs font-extrabold tracking-wider uppercase transition-all"
                 >
                   SIGN IN
                 </Link>
 
-                <p className="mt-2 text-[11px] text-[#101114]/60">
+                <p className="text-vl-black/60 mt-2 text-[11px]">
                   New customer?{" "}
                   <Link
                     href="/register"
                     onClick={() => setIsOpen(false)}
-                    className="font-bold text-[#0088A8] hover:underline"
+                    className="text-vl-cyan font-bold hover:underline"
                   >
                     Start here
                   </Link>
@@ -119,16 +119,16 @@ export function AccountPopover({ user }: AccountPopoverProps) {
           <div className="grid grid-cols-2 gap-4 text-xs">
             {/* Column 1: YOUR LISTS */}
             <div>
-              <p className="font-mono text-[10px] font-extrabold tracking-wider text-[#101114]/40 uppercase">
+              <p className="text-vl-black/40 font-mono text-[10px] font-extrabold tracking-wider uppercase">
                 YOUR LISTS
               </p>
               <div className="mt-2.5 flex flex-col gap-2">
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2 text-xs font-medium text-[#101114]/75 transition-colors hover:text-[#0088A8]"
+                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
                 >
-                  <Heart className="size-3.5 text-[#101114]/50 group-hover:text-[#0088A8]" />
+                  <Heart className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
                   <span>Wishlist</span>
                 </Link>
               </div>
@@ -136,32 +136,32 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
             {/* Column 2: YOUR ACCOUNT */}
             <div>
-              <p className="font-mono text-[10px] font-extrabold tracking-wider text-[#101114]/40 uppercase">
+              <p className="text-vl-black/40 font-mono text-[10px] font-extrabold tracking-wider uppercase">
                 YOUR ACCOUNT
               </p>
               <div className="mt-2.5 flex flex-col gap-2">
                 <Link
                   href="/account/orders"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2 text-xs font-medium text-[#101114]/75 transition-colors hover:text-[#0088A8]"
+                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
                 >
-                  <Package className="size-3.5 text-[#101114]/50 group-hover:text-[#0088A8]" />
+                  <Package className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
                   <span>Orders</span>
                 </Link>
                 <Link
                   href="/account"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2 text-xs font-medium text-[#101114]/75 transition-colors hover:text-[#0088A8]"
+                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
                 >
-                  <Tag className="size-3.5 text-[#101114]/50 group-hover:text-[#0088A8]" />
+                  <Tag className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
                   <span>Offers</span>
                 </Link>
                 <Link
                   href="/account"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2 text-xs font-medium text-[#101114]/75 transition-colors hover:text-[#0088A8]"
+                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
                 >
-                  <MapPin className="size-3.5 text-[#101114]/50 group-hover:text-[#0088A8]" />
+                  <MapPin className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
                   <span>Addresses</span>
                 </Link>
               </div>
@@ -170,18 +170,19 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
           {/* If Authenticated: Sign Out Action at bottom */}
           {user && (
-            <div className="mt-4 border-t border-black/8 pt-3">
+            <div className="border-vl-black/10 mt-4 border-t pt-3">
               <button
                 type="button"
                 disabled={isLoggingOut}
                 onClick={handleLogout}
-                className="flex w-full items-center justify-between text-xs font-semibold text-red-600 transition-colors hover:text-red-700"
+                className="group flex w-full items-center justify-between rounded-sm border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold tracking-wide text-red-500 transition-all duration-200 hover:border-red-500 hover:bg-red-500/90 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
               >
-                <span className="flex items-center gap-1.5">
-                  <LogOut className="size-3.5" />
-                  <span>Sign Out</span>
+                <span className="flex items-center gap-2">
+                  <LogOut className="size-3.5 transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:text-white" />
+                  <span>{isLoggingOut ? "Signing Out..." : "Sign Out"}</span>
                 </span>
-                <ArrowRight className="size-3" />
+
+                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
               </button>
             </div>
           )}

@@ -7,27 +7,13 @@ interface BestSellersProps {
   products: ProductSummary[];
 }
 
-function toCardProduct(product: ProductSummary) {
-  return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    price: product.minPrice,
-    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-    image: product.primaryImage?.url ?? "",
-    badge: product.hasDiscount
-      ? { label: "SALE", variant: "sale" as const }
-      : { label: "HOT", variant: "sale" as const },
-  };
-}
-
 export function BestSellers({ products }: BestSellersProps) {
   if (products.length === 0) return null;
 
-  const displayed = products.slice(0, 8);
+  const displayed = products; //.slice(0, 10);
 
   return (
-    <section className="border-t border-black/5 bg-white py-12 sm:py-16 lg:py-20">
+    <section className="bg-white pb-12 sm:pb-16">
       <Container>
         <SectionHeading
           title="BEST SELLERS"
@@ -36,28 +22,13 @@ export function BestSellers({ products }: BestSellersProps) {
           action={{ href: "/products?sort=newest", label: "View All" }}
         />
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {displayed.map((product, index) => (
-            <div key={product.id} className="relative">
-              {/* Rank badge */}
-              <span
-                className="absolute top-2 left-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-black tabular-nums shadow-md"
-                style={{
-                  background:
-                    index === 0
-                      ? "linear-gradient(135deg,#FFB800,#FF6B00)"
-                      : index === 1
-                        ? "linear-gradient(135deg,#C0C0C0,#808080)"
-                        : index === 2
-                          ? "linear-gradient(135deg,#CD7F32,#8B4513)"
-                          : "#1a1b1e",
-                  color: "#fff",
-                }}
-              >
-                {index === 0 ? "🔥" : `#${index + 1}`}
-              </span>
-              <ProductCard product={toCardProduct(product)} />
-            </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
+          {displayed.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              badge={product.hasDiscount ? undefined : { label: "HOT", variant: "sale" }}
+            />
           ))}
         </div>
       </Container>

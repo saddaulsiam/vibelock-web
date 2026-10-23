@@ -38,7 +38,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
     <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#101114]/10 pb-4">
-        <h3 className="text-base font-bold text-[#101114] sm:text-lg">Recent Orders</h3>
+        <h3 className="font-heading text-base font-black tracking-tight text-vl-black sm:text-lg">Recent Orders</h3>
         <Link
           href="/account/orders"
           className="group inline-flex items-center gap-1 text-xs font-semibold text-[#0099b8] transition-colors hover:text-[#00c2e5]"

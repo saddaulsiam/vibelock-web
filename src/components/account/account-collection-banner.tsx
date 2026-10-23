@@ -16,7 +16,7 @@ export function AccountCollectionBanner() {
         />
         {/* Dark Gradient Overlay for optimal contrast */}
         <div
-          className="absolute inset-0 bg-gradient-to-r from-[#101114] via-[#101114]/85 to-transparent sm:via-[#101114]/75"
+          className="absolute inset-0 bg-linear-to-r from-[#101114] via-[#101114]/85 to-transparent sm:via-[#101114]/75"
           aria-hidden="true"
         />
       </div>
@@ -28,7 +28,7 @@ export function AccountCollectionBanner() {
             Your Style Matters
           </p>
 
-          <h3 className="mt-2 text-2xl font-black tracking-tight text-white uppercase sm:text-3xl lg:text-4xl">
+          <h3 className="font-heading mt-2 text-2xl font-black tracking-tight text-white uppercase sm:text-3xl lg:text-4xl">
             Explore New Collections
           </h3>
 

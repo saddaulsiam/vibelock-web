@@ -67,14 +67,14 @@ export default function VibeLockLoader({
         "relative isolate flex flex-col items-center justify-center overflow-hidden select-none",
         "bg-[#F3F0E8] text-[#101114]", // Matches website warm off-white theme
         fullScreen
-          ? "fixed inset-0 z-[9999] min-h-dvh w-full"
-          : "min-h-[360px] w-full rounded-2xl border border-[#101114]/10",
+          ? "fixed inset-0 z-9999 min-h-dvh w-full"
+          : "min-h-90 w-full rounded-2xl border border-[#101114]/10",
       ].join(" ")}
     >
       {/* ── 1. Cyberpunk Subtle Grid & Ambient Glows ── */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,17,20,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,17,20,0.04)_1px,transparent_1px)] bg-[size:32px_32px]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,17,20,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,17,20,0.04)_1px,transparent_1px)] bg-size-[32px_32px]"
       />
       <div
         aria-hidden="true"
@@ -163,10 +163,10 @@ export default function VibeLockLoader({
           </div>
 
           {/* ── Main Dynamic Progress Bar ── */}
-          <div className="relative h-[4px] w-full overflow-hidden rounded-full bg-[#101114]/12 shadow-inner">
+          <div className="relative h-1 w-full overflow-hidden rounded-full bg-[#101114]/12 shadow-inner">
             {/* Smooth Dynamic Fill */}
             <div
-              className="relative h-full rounded-full bg-gradient-to-r from-[#101114] via-[#101114] to-[#00A3C4] shadow-[0_0_12px_rgba(0,163,196,0.6)] transition-all duration-100 ease-linear"
+              className="relative h-full rounded-full bg-linear-to-r from-[#101114] via-[#101114] to-[#00A3C4] shadow-[0_0_12px_rgba(0,163,196,0.6)] transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             >
               {/* Leading Sparkle Head */}
@@ -174,17 +174,17 @@ export default function VibeLockLoader({
             </div>
 
             {/* Continuous Sweeping Laser Beam */}
-            <div className="vl-laser-beam absolute inset-y-0 w-1/4 rounded-full bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+            <div className="vl-laser-beam absolute inset-y-0 w-1/4 rounded-full bg-linear-to-r from-transparent via-white/80 to-transparent" />
           </div>
 
           {/* Live Data Waveform + Sub-Description */}
           <div className="mt-3.5 flex w-full items-center justify-between font-mono text-[9px] tracking-wider text-[#101114]/60">
             {/* Live Frequency Equalizer Bars */}
-            <div className="flex items-center gap-[3px]">
+            <div className="flex items-center gap-0.75">
               {[8, 14, 6, 12, 16, 9, 13, 7].map((h, i) => (
                 <span
                   key={i}
-                  className="vl-equalizer w-[2px] rounded-full bg-[#101114]"
+                  className="vl-equalizer w-0.5 rounded-full bg-[#101114]"
                   style={{
                     height: `${h}px`,
                     animationDelay: `${i * 0.12}s`,

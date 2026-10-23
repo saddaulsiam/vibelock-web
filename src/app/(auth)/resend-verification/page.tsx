@@ -56,7 +56,9 @@ export default function ResendVerificationPage() {
   return (
     <Card className="w-full">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-bold">Resend Verification</CardTitle>
+        <CardTitle className="font-heading text-2xl font-black uppercase text-vl-black">
+          Resend Verification
+        </CardTitle>
         <CardDescription>
           Enter your email address and we will send you a new verification link.
         </CardDescription>
@@ -87,7 +89,12 @@ export default function ResendVerificationPage() {
               />
               {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
-            <Button type="submit" className="w-full" disabled={isPending}>
+            <Button
+              type="submit"
+              variant="brand"
+              className="font-heading w-full rounded-xs font-black tracking-widest uppercase"
+              disabled={isPending}
+            >
               {isPending ? "Sending..." : "Send Verification Link"}
             </Button>
           </form>

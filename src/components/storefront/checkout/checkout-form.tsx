@@ -97,7 +97,7 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
       </div>
 
       <div className="min-w-0">
-        <h3 className="text-sm leading-5 font-semibold break-words text-[#101114]">
+        <h3 className="text-sm leading-5 font-semibold wrap-break-word text-[#101114]">
           {item.productName}
         </h3>
         <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -618,7 +618,7 @@ export function CheckoutForm({
                   return (
                     <label
                       key={method.value}
-                      className={`flex min-h-[4.5rem] cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
+                      className={`flex min-h-18 cursor-pointer items-start gap-3 border p-4 transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] ${
                         selected
                           ? "border-[#101114] bg-[#F3F0E8]/60"
                           : "border-border bg-white hover:border-[#101114]/40"
@@ -664,10 +664,7 @@ export function CheckoutForm({
             </p>
           </div>
 
-          <ul
-            className="max-h-[22rem] divide-y-0 overflow-y-auto pr-1"
-            aria-label="Items in your order"
-          >
+          <ul className="max-h-88 divide-y-0 overflow-y-auto pr-1" aria-label="Items in your order">
             {cart.items.map((item) => (
               <CheckoutSummaryItem key={item.id} item={item} />
             ))}
@@ -822,7 +819,7 @@ export function CheckoutForm({
               shippingMethods.length === 0 ||
               paymentOptions.length === 0
             }
-            className="mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
             {isPending

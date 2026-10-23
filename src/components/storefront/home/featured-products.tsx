@@ -1,30 +1,16 @@
 "use client";
 
-import * as React from "react";
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
-import { cn } from "@/lib/utils";
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
+import { cn } from "@/lib/utils";
+import * as React from "react";
 
 interface FeaturedProductsProps {
   products?: ProductSummary[];
   bestSellers?: ProductSummary[];
   categories?: CategorySummary[];
-}
-
-function toCardProduct(product: ProductSummary) {
-  return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    price: product.minPrice,
-    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-    image: product.primaryImage?.url ?? "",
-    badge: product.hasDiscount
-      ? { label: "SALE", variant: "sale" as const }
-      : { label: "NEW", variant: "sale" as const },
-  };
 }
 
 export function FeaturedProducts({
@@ -63,7 +49,7 @@ export function FeaturedProducts({
   // Filter products by selected tab, capping at 8 for the 4x2 grid
   const displayedProducts = React.useMemo(() => {
     if (activeTab === "all") {
-      return allProducts.slice(0, 8);
+      return allProducts.slice(0, 50);
     }
 
     const tabSlug = activeTab.toLowerCase();
@@ -99,7 +85,7 @@ export function FeaturedProducts({
 
         {/* Filter Tabs (Pills) */}
         {tabs.length > 1 && (
-          <div className="mt-7 flex [scrollbar-width:none] items-center justify-start gap-2 overflow-x-auto px-1 py-1 sm:mt-9 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:py-0 [&::-webkit-scrollbar]:hidden">
+          <div className="mt-7 flex scrollbar-none items-center justify-start gap-2 overflow-x-auto px-1 py-1 sm:mt-9 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 sm:py-0 [&::-webkit-scrollbar]:hidden">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
@@ -123,13 +109,21 @@ export function FeaturedProducts({
 
         {/* 4-Column x 2-Row Grid (8 Cards) */}
         {displayedProducts.length > 0 ? (
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:mt-12 sm:grid-cols-3 sm:gap-4 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
             {displayedProducts.map((product) => (
-              <ProductCard key={product.id} product={toCardProduct(product)} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                badge={
+                  product.hasDiscount
+                    ? { label: "SALE", variant: "sale" }
+                    : { label: "NEW", variant: "new" }
+                }
+              />
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/[0.02] px-4 py-16 text-center sm:mt-12">
+          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/2 px-4 py-16 text-center sm:mt-12">
             <p className="text-sm font-bold tracking-wider text-[#101114] uppercase">
               No products found in {activeTabLabel} yet
             </p>
@@ -139,7 +133,7 @@ export function FeaturedProducts({
             <button
               type="button"
               onClick={() => setActiveTab("all")}
-              className="mt-4 inline-flex cursor-pointer items-center rounded-full bg-[#101114] px-5 py-2 text-xs font-bold tracking-wider text-white uppercase transition-opacity hover:opacity-90"
+              className="bg-vl-black font-heading text-vl-white mt-4 inline-flex cursor-pointer items-center rounded-xs px-5 py-2 text-xs font-black tracking-widest uppercase transition-opacity hover:opacity-90"
             >
               Show All Products
             </button>

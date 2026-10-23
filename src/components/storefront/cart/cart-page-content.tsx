@@ -27,13 +27,13 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
           VibeLock / Cart
         </p>
-        <h1 className="text-3xl font-semibold tracking-tight">Your cart is empty</h1>
+        <h1 className="font-heading text-3xl font-black tracking-tight text-vl-black uppercase">Your cart is empty</h1>
         <p className="text-muted-foreground mt-3 max-w-sm text-sm leading-6">
           Take a look through the collection and find your next everyday piece.
         </p>
         <Link
           href="/products"
-          className="mt-7 inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-6 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="font-heading mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-xs bg-vl-black px-6 text-xs font-black tracking-wider text-vl-white uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           Shop products <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
@@ -57,7 +57,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           VibeLock / Cart
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Your cart</h1>
+          <h1 className="font-heading text-3xl font-black tracking-tight text-vl-black uppercase sm:text-4xl">Your cart</h1>
           <p className="text-muted-foreground text-sm" aria-live="polite">
             {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"}
             <span className="text-border mx-2" aria-hidden="true">
@@ -87,7 +87,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           <div className="border-border border bg-[#F3F0E8]/55 p-5 sm:p-6">
             <h2
               id="cart-summary-heading"
-              className="border-b border-[#101114]/15 pb-4 text-lg font-semibold tracking-tight"
+              className="font-heading border-b border-vl-border/30 pb-4 text-sm font-black tracking-wider text-vl-black uppercase"
             >
               Order summary
             </h2>
@@ -132,7 +132,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
 
             <Link
               href="/checkout"
-              className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold tracking-wide text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="font-heading mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs bg-vl-black px-5 text-xs font-black tracking-widest text-vl-white uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
             >
               Continue to checkout <ArrowRight className="size-4" aria-hidden="true" />
             </Link>

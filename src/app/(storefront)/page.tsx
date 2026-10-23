@@ -23,8 +23,8 @@ export const metadata: Metadata = {
 export default async function StorefrontHomePage() {
   const [categories, publishedProducts, bestSellingProducts] = await Promise.all([
     getCategories(),
-    getPublishedProducts({ take: 24 }),
-    getBestSellingProducts({ take: 8 }),
+    getPublishedProducts({ take: 50 }),
+    getBestSellingProducts({ take: 10 }),
   ]);
 
   return (

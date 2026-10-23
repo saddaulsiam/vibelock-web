@@ -71,13 +71,13 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
             <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
               VibeLock / Order update
             </p>
-            <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+            <h1 className="font-heading text-3xl font-black tracking-tight text-[#101114] uppercase sm:text-4xl">
               {confirmationTitle}
             </h1>
             <p className="text-muted-foreground mx-auto mt-3 max-w-xl text-sm leading-6 sm:text-base">
               {confirmationCopy}
             </p>
-            <p className="mt-5 font-mono text-sm font-semibold break-words text-[#101114] sm:text-base">
+            <p className="mt-5 font-mono text-sm font-semibold wrap-break-word text-[#101114] sm:text-base">
               {order.orderNumber}
             </p>
             <p className="text-muted-foreground mt-1 text-xs">
@@ -115,7 +115,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
             <div className="mb-3 flex items-baseline justify-between gap-3">
               <h2
                 id="order-summary-heading"
-                className="text-lg font-semibold tracking-tight text-[#101114]"
+                className="font-heading text-base font-bold tracking-wider text-[#101114] uppercase"
               >
                 Order summary
               </h2>
@@ -137,7 +137,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
                     <ImageOff className="size-4" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    <p className="text-sm font-medium break-words text-[#101114]">
+                    <p className="text-sm font-medium wrap-break-word text-[#101114]">
                       {item.productName}
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">

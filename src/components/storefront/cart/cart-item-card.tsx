@@ -58,7 +58,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
       <Link
         href={`/products/${item.productSlug}`}
         aria-label={`View ${item.productName}`}
-        className="relative aspect-[3/4] overflow-hidden bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="relative aspect-3/4 overflow-hidden bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {item.productImage && !imageFailed ? (
           <Image
@@ -82,7 +82,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
           <div className="min-w-0">
             <Link
               href={`/products/${item.productSlug}`}
-              className="text-base font-semibold tracking-tight break-words text-[#101114] underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="font-heading text-vl-black focus-visible:ring-vl-cyan text-base font-black tracking-tight wrap-break-word underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none"
             >
               {item.productName}
             </Link>

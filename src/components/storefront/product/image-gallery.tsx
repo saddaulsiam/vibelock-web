@@ -40,7 +40,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
     <div className="flex min-w-0 flex-col gap-3 sm:gap-4 lg:flex-row">
       {images.length > 1 && (
         <div
-          className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-[38rem] lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:pb-0"
+          className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:max-h-152 lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:pb-0"
           aria-label="Product image thumbnails"
         >
           {images.map((image, index) => {
@@ -52,7 +52,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                 key={`${image.url}-${index}`}
                 type="button"
                 onClick={() => setSelectedIndex(index)}
-                className={`relative size-[4.5rem] shrink-0 overflow-hidden border bg-[#F3F0E8] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:size-20 ${
+                className={`relative size-18 shrink-0 overflow-hidden border bg-[#F3F0E8] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:size-20 ${
                   selected ? "border-[#101114]" : "border-transparent hover:border-[#101114]/35"
                 }`}
                 aria-label={`View image ${index + 1} of ${images.length}`}
@@ -78,7 +78,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
         </div>
       )}
 
-      <div className="relative order-1 aspect-4/5 min-w-0 flex-1 overflow-hidden bg-[#F3F0E8] sm:aspect-3/4 lg:order-2 lg:aspect-auto lg:min-h-[38rem]">
+      <div className="relative order-1 aspect-4/5 min-w-0 flex-1 overflow-hidden bg-[#F3F0E8] sm:aspect-3/4 lg:order-2 lg:aspect-auto lg:min-h-152">
         {!selectedImageFailed ? (
           <Image
             src={selectedImage.url}

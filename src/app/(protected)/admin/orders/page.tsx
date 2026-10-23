@@ -39,7 +39,7 @@ async function OrdersTable({
             className="max-w-sm"
           />
           <Select defaultValue={status}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-45">
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>

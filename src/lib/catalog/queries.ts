@@ -179,7 +179,7 @@ export const getCategoryBySlug = unstable_cache(
 export const getBestSellingProducts = async (options?: {
   take?: number;
 }): Promise<ProductSummary[]> => {
-  const take = options?.take ?? 8;
+  const take = options?.take ?? 10;
 
   const queryFn = unstable_cache(
     async () => {

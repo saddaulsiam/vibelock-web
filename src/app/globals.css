@@ -8,6 +8,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-mono: var(--font-geist-mono);
 
   --color-primary: var(--primary);
@@ -28,7 +29,14 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  /* Brand Tokens */
+  /* VibeLock Core Brand Tokens */
+  --color-vl-black: #101114;
+  --color-vl-white: #f3f0e8;
+  --color-vl-cyan: #00d9ff;
+  --color-vl-grey: #777982;
+  --color-vl-border: #303137;
+
+  /* Legacy brand token aliases for backward compatibility */
   --color-brand-charcoal: #101114;
   --color-brand-offwhite: #f3f0e8;
   --color-brand-cyan: #00d9ff;
@@ -70,7 +78,7 @@
 }
 
 .dark {
-  /* Deep Charcoal */
+  /* Obsidian Black */
   --background: #101114;
   --foreground: #f3f0e8;
 
@@ -80,21 +88,21 @@
   --accent: #00d9ff;
   --accent-foreground: #101114;
 
-  --card: #1a1b20;
+  --card: #16171b;
   --card-foreground: #f3f0e8;
-  --popover: #1a1b20;
+  --popover: #16171b;
   --popover-foreground: #f3f0e8;
 
-  --secondary: #27282f;
+  --secondary: #212228;
   --secondary-foreground: #f3f0e8;
 
-  --muted: #27282f;
-  --muted-foreground: #a1a1aa;
+  --muted: #212228;
+  --muted-foreground: #777982;
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: #3f3f46;
-  --input: #3f3f46;
+  --border: #303137;
+  --input: #303137;
   --ring: #00d9ff;
 }
 
@@ -129,6 +137,30 @@
   100% {
     transform: translateY(0);
     opacity: 0;
+  }
+}
+
+@keyframes vl-indeterminate {
+  0% {
+    left: -40%;
+    width: 40%;
+  }
+  50% {
+    width: 60%;
+  }
+  100% {
+    left: 100%;
+    width: 40%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @keyframes vl-indeterminate {
+    0%,
+    100% {
+      left: 0%;
+      width: 100%;
+    }
   }
 }
 

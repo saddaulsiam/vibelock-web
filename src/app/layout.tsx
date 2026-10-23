@@ -1,7 +1,7 @@
 import { SITE_URL } from "@/lib/seo/site";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { connection } from "next/server";
 import { Toaster } from "sonner";
 import "./globals.css";
@@ -10,6 +10,12 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-sans",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-heading",
 });
 
 export const metadata: Metadata = {
@@ -41,7 +47,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} bg-background text-foreground flex min-h-screen flex-col font-sans antialiased`}
+        className={`${inter.variable} ${spaceGrotesk.variable} bg-background text-foreground flex min-h-screen flex-col font-sans antialiased`}
       >
         {children}
         <Toaster

@@ -15,10 +15,10 @@ export function ProductBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 text-xs font-semibold tracking-wider uppercase",
-        variant === "default" && "bg-secondary text-secondary-foreground",
-        variant === "sale" && "bg-destructive text-destructive-foreground",
-        variant === "new" && "bg-accent text-accent-foreground",
+        "inline-flex items-center rounded-[2px] px-2 py-0.5 text-[10px] leading-tight font-bold tracking-wider uppercase shadow-xs select-none",
+        variant === "default" && "bg-[#101114] text-white",
+        variant === "sale" && "bg-[#E50010] text-white",
+        variant === "new" && "bg-[#E50010] text-white",
         className
       )}
       {...props}

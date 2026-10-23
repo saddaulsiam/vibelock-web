@@ -118,7 +118,7 @@ export function CategoryForm({
         {/* Live Preview If image exists */}
         {previewUrl && !isRemoved ? (
           <div className="space-y-3">
-            <div className="relative aspect-[16/9] max-w-sm overflow-hidden rounded border border-[#101114]/20 bg-black/5 shadow-sm">
+            <div className="relative aspect-video max-w-sm overflow-hidden rounded border border-[#101114]/20 bg-black/5 shadow-sm">
               <Image
                 src={previewUrl}
                 alt="Category image preview"
@@ -126,7 +126,7 @@ export function CategoryForm({
                 unoptimized={previewUrl.startsWith("blob:")}
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute right-2 bottom-2 left-2 flex items-center justify-between text-white">
                 <span className="rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase backdrop-blur-sm">
                   Active Image

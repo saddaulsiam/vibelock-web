@@ -46,7 +46,7 @@ export default async function AdminCategoriesPage() {
           </CardContent>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[46rem] text-left text-sm">
+            <table className="w-full min-w-184 text-left text-sm">
               <thead className="text-muted-foreground bg-[#F3F0E8]/70 text-xs tracking-wide uppercase">
                 <tr>
                   <th scope="col" className="px-5 py-3">

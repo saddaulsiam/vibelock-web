@@ -18,7 +18,7 @@ export default function StorefrontLoading() {
         <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
           {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="space-y-3">
-              <Skeleton className="aspect-[3/4] w-full rounded-sm bg-white" />
+              <Skeleton className="aspect-3/4 w-full rounded-sm bg-white" />
               <Skeleton className="h-4 w-3/4 bg-[#101114]/10" />
               <Skeleton className="h-4 w-1/3 bg-[#101114]/10" />
             </div>

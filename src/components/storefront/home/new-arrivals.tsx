@@ -3,18 +3,6 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import type { ProductSummary } from "@/lib/catalog/types";
 
-function toCardProduct(product: ProductSummary) {
-  return {
-    id: product.id,
-    name: product.name,
-    slug: product.slug,
-    price: product.minPrice,
-    originalPrice: product.hasDiscount ? product.maxPrice : undefined,
-    image: product.primaryImage?.url ?? "",
-    badge: product.hasDiscount ? { label: "Sale", variant: "sale" as const } : undefined,
-  };
-}
-
 interface NewArrivalsProps {
   products?: ProductSummary[];
   newArrivals?: ProductSummary[];
@@ -35,9 +23,18 @@ export function NewArrivals({ products, newArrivals }: NewArrivalsProps) {
           align="center"
           action={{ href: "/products?sort=newest", label: "View All" }}
         />
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-5">
+
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
           {items.map((product) => (
-            <ProductCard key={product.id} product={toCardProduct(product)} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              badge={
+                product.hasDiscount
+                  ? { label: "SALE", variant: "sale" }
+                  : { label: "NEW", variant: "new" }
+              }
+            />
           ))}
         </div>
       </Container>
