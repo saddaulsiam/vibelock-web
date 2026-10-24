@@ -39,7 +39,7 @@ export default async function CheckoutPage() {
   }
 
   return (
-    <Section className="bg-background min-h-screen py-8 sm:py-10">
+    <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         <div className="border-border mb-7 border-b pb-5 sm:mb-9 sm:pb-6">
           <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">

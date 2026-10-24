@@ -7,7 +7,7 @@ export default function ProductDetailLoading() {
     <Section
       role="status"
       aria-label="Loading product details"
-      className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12"
+      className="min-h-screen bg-[#F3F0E8] pt-20 pb-12 sm:pt-24 sm:pb-16"
     >
       <Container>
         {/* Breadcrumbs Skeleton */}

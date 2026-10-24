@@ -55,7 +55,7 @@ export default async function ProductsPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white pt-6 pb-12 sm:pt-8 sm:pb-16">
+    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         <header className="mb-6 sm:mb-8">
           <p className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">

@@ -76,7 +76,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   };
 
   return (
-    <Section className="min-h-screen bg-white py-6 sm:py-8 lg:py-10">
+    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <script
         nonce={nonce}
         type="application/ld+json"

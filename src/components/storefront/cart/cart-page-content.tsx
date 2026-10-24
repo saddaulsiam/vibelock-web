@@ -20,7 +20,7 @@ function formatPrice(amount: number) {
 export function CartPageContent({ cart }: CartPageContentProps) {
   if (!cart || cart.items.length === 0) {
     return (
-      <section className="flex min-h-[55vh] flex-col items-center justify-center py-16 text-center">
+      <div className="flex min-h-[50vh] flex-col items-center justify-center py-8 text-center">
         <div className="mb-6 flex size-16 items-center justify-center bg-[#F3F0E8] text-[#101114]">
           <ShoppingBag className="size-7" aria-hidden="true" />
         </div>
@@ -37,7 +37,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         >
           Shop products <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
-      </section>
+      </div>
     );
   }
 
@@ -51,7 +51,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
   const subtotalBeforeDiscount = cart.subtotal + discountTotal;
 
   return (
-    <div className="py-5 sm:py-8">
+    <div>
       <header className="border-border mb-8 border-b pb-6 sm:mb-10 sm:pb-8">
         <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
           VibeLock / Cart
