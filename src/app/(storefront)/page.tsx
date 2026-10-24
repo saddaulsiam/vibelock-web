@@ -24,7 +24,7 @@ export default async function StorefrontHomePage() {
   const [categories, publishedProducts, bestSellingProducts] = await Promise.all([
     getCategories(),
     getPublishedProducts({ take: 50 }),
-    getBestSellingProducts({ take: 5 }),
+    getBestSellingProducts({ take: 10 }),
   ]);
 
   return (

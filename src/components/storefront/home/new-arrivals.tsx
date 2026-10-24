@@ -10,7 +10,7 @@ interface NewArrivalsProps {
 
 export function NewArrivals({ products, newArrivals }: NewArrivalsProps) {
   // Use explicit newArrivals or take the latest products from published catalog
-  const items = newArrivals ?? (products ?? []).slice(0, 5);
+  const items = newArrivals ?? (products ?? []).slice(0, 10);
 
   if (!items.length) return null;
 
