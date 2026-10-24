@@ -84,9 +84,16 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         const rect = card.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const ratio = Math.max(0, Math.min(1, centerX / containerW));
-        // ratio 1 (right edge) → full height (top 0%, bottom 0%)
-        // ratio 0 (left edge) → top sinks down to 55-60%, bottom remains glued to 0
-        const maxInset = containerW < 640 ? 55 : 60;
+        // =========================================================================
+        // [HEIGHT ADJUSTMENT 1: ANIMATION SLOPE / INSET]
+        // Controls how much the top of the card sinks down as it slides right → left:
+        // - ratio 1 (right edge): full card height (top 0%, bottom 0%)
+        // - ratio 0 (left edge): top sinks down by maxInset%
+        // Values:
+        //   * Mobile (<640px): 35 (increase e.g. 50-60 for steeper slope; decrease e.g. 20-25 for straighter cards)
+        //   * Desktop: 60 (sinks down 60% on left to clear space for typewriter text)
+        // =========================================================================
+        const maxInset = containerW < 640 ? 35 : 60;
         const insetTop = (1 - ratio) * maxInset;
         card.style.top = `${insetTop.toFixed(2)}%`;
         card.style.bottom = "0px";
@@ -103,10 +110,16 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
   const scrollDistance = `calc(-1 * (var(--vl-card-width, 480px) + ${CARD_GAP}px) * ${categories.length})`;
 
   return (
+    // =========================================================================
+    // [HEIGHT ADJUSTMENT 2: OVERALL SLIDER HEIGHT]
+    // - Mobile (<640px): `h-[75vh]` (change this to adjust mobile image height,
+    //   e.g. h-[48vh], h-[55vh], h-[70vh], or fixed like h-[420px])
+    // - Desktop (sm+): `sm:inset-0 sm:h-full` (always stays full-height 100vh)
+    // =========================================================================
     <div
       ref={wrapperRef}
       aria-hidden="true"
-      style={{ position: "absolute", inset: 0, overflow: "hidden" }}
+      className="absolute inset-x-0 bottom-0 h-[75vh] overflow-hidden sm:inset-0 sm:h-full"
     >
       <div
         ref={trackRef}
