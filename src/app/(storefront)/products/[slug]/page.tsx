@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Container>
+      <Container className="max-w-6xl">
         <nav
           aria-label="Breadcrumb"
           className="text-muted-foreground mb-6 flex flex-wrap items-center gap-2 text-sm sm:mb-8"
