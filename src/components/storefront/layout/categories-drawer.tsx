@@ -56,7 +56,7 @@ export function CategoriesDrawer({
           id="mobile-nav-trigger"
           onClick={() => setOpen(true)}
           aria-label="Open navigation menu"
-          className="inline-flex size-9 cursor-pointer items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none xl:hidden"
+          className="inline-flex size-8 sm:size-9 cursor-pointer items-center justify-center rounded-full text-white/75 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none xl:hidden"
         >
           <Menu className="size-4" aria-hidden="true" />
         </SheetTrigger>
