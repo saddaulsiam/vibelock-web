@@ -66,7 +66,7 @@ export async function Header() {
               name="q"
               placeholder="Search drops..."
               aria-label="Search drops"
-              className="border-vl-white/15 bg-vl-white/10 text-vl-white placeholder:text-vl-white/40 focus-visible:bg-vl-white/15 focus-visible:ring-vl-cyan focus-visible:border-vl-cyan h-9 w-36 rounded-full border pr-3.5 pl-9 text-xs focus-visible:ring-1 xl:w-48"
+              className="border-vl-white/15 bg-vl-white/10 text-vl-white placeholder:text-vl-white/40 focus-visible:bg-vl-white/15 focus-visible:ring-vl-cyan focus-visible:border-vl-cyan h-8 w-36 rounded-full border pr-3.5 pl-9 text-xs focus-visible:ring-1 xl:w-48"
             />
           </form>
 
