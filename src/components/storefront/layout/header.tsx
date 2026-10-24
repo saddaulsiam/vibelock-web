@@ -4,22 +4,29 @@ import { Heart, Search, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
-import { MobileNav } from "./mobile-nav";
+import { getCategories } from "@/lib/catalog/queries";
+import { CategoriesDrawer } from "./categories-drawer";
 import { DesktopNav } from "./desktop-nav";
 import { MobileSearch } from "./mobile-search";
 import { AccountPopover } from "./account-popover";
 
 export async function Header() {
-  const user = await getCurrentUser();
-  const cart = await getCart();
+  const [user, cart, categories] = await Promise.all([
+    getCurrentUser(),
+    getCart(),
+    getCategories(),
+  ]);
   const itemCount = cart?.totalQuantity ?? 0;
 
   return (
     <header className="pointer-events-none fixed top-2 right-0 left-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
-      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-14 w-full max-w-7xl items-center justify-between rounded-full border px-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:h-16 sm:px-6">
-        {/* ── Left: Mobile Nav + Circular Emblem & Brand Name ── */}
+      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-12 w-full max-w-7xl items-center justify-between rounded-full border px-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:px-6">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
-          <MobileNav isAuthenticated={Boolean(user)} />
+          <CategoriesDrawer
+            variant="mobile"
+            isAuthenticated={Boolean(user)}
+            categories={categories}
+          />
           <Link
             href="/"
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90 focus-visible:outline-none"
@@ -43,10 +50,10 @@ export async function Header() {
         </div>
 
         {/* ── Center: Desktop Navigation ── */}
-        <DesktopNav />
+        <DesktopNav categories={categories} isAuthenticated={Boolean(user)} />
 
         {/* ── Right: Search Pill + Wishlist + Cart + Account Popover ── */}
-        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+        <div className="flex shrink-0 items-center gap-0 sm:gap-1">
           {/* Pill Search Input (like screenshot "🔍 Search drops...") */}
           <form
             action="/products"
