@@ -27,13 +27,15 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
           VibeLock / Cart
         </p>
-        <h1 className="font-heading text-3xl font-black tracking-tight text-vl-black uppercase">Your cart is empty</h1>
+        <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight uppercase">
+          Your cart is empty
+        </h1>
         <p className="text-muted-foreground mt-3 max-w-sm text-sm leading-6">
           Take a look through the collection and find your next everyday piece.
         </p>
         <Link
           href="/products"
-          className="font-heading mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-xs bg-vl-black px-6 text-xs font-black tracking-wider text-vl-white uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+          className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-xs px-6 text-xs font-black tracking-wider uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none"
         >
           Shop products <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
@@ -57,7 +59,9 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           VibeLock / Cart
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 className="font-heading text-3xl font-black tracking-tight text-vl-black uppercase sm:text-4xl">Your cart</h1>
+          <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight uppercase sm:text-4xl">
+            Your cart
+          </h1>
           <p className="text-muted-foreground text-sm" aria-live="polite">
             {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"}
             <span className="text-border mx-2" aria-hidden="true">
@@ -84,10 +88,10 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         </section>
 
         <aside aria-labelledby="cart-summary-heading" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="border-border border bg-[#F3F0E8]/55 p-5 sm:p-6">
+          <div className="border-border bg-background border p-5 sm:p-6">
             <h2
               id="cart-summary-heading"
-              className="font-heading border-b border-vl-border/30 pb-4 text-sm font-black tracking-wider text-vl-black uppercase"
+              className="font-heading border-vl-border/30 text-vl-black border-b pb-4 text-sm font-black tracking-wider uppercase"
             >
               Order summary
             </h2>
@@ -132,7 +136,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
 
             <Link
               href="/checkout"
-              className="font-heading mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs bg-vl-black px-5 text-xs font-black tracking-widest text-vl-white uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none"
             >
               Continue to checkout <ArrowRight className="size-4" aria-hidden="true" />
             </Link>

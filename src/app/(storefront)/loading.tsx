@@ -7,7 +7,7 @@ export default function StorefrontLoading() {
     <Section
       role="status"
       aria-label="Loading storefront"
-      className="min-h-[70vh] bg-[#F3F0E8] pt-20 pb-10 sm:pt-24 sm:pb-14"
+      className="bg-background min-h-[70vh] pt-20 pb-10 sm:pt-24 sm:pb-14"
     >
       <Container className="max-w-6xl">
         <div className="mb-8 space-y-4 border-b border-[#101114]/10 pb-7 sm:mb-10">

@@ -654,7 +654,7 @@ export function CheckoutForm({
         aria-labelledby="checkout-summary-heading"
         className="lg:sticky lg:top-24 lg:self-start"
       >
-        <div className="border-border border bg-[#F3F0E8]/55 p-5 sm:p-6">
+        <div className="border-border bg-background border p-5 sm:p-6">
           <div className="border-b border-[#101114]/15 pb-4">
             <h2 id="checkout-summary-heading" className="text-lg font-semibold tracking-tight">
               Order summary

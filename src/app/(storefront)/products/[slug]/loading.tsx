@@ -9,7 +9,7 @@ export default function ProductDetailLoading() {
       aria-label="Loading product details"
       className="min-h-screen bg-[#F3F0E8] pt-20 pb-12 sm:pt-24 sm:pb-16"
     >
-      <Container>
+      <Container className="max-w-6xl">
         {/* Breadcrumbs Skeleton */}
         <div className="mb-8 flex items-center gap-2">
           <Skeleton className="h-4 w-12" />
