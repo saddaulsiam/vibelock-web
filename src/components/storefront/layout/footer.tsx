@@ -92,7 +92,7 @@ export function Footer() {
 
           {/* Right Column: 3 Columns (Shop Links, Customer Links, Retail Location) */}
           <div className="lg:col-span-8">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
               {/* Column 1: Shop Categories (Clean Links List - No Box) */}
               <div className="flex flex-col">
                 <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
@@ -148,7 +148,7 @@ export function Footer() {
               </div>
 
               {/* Column 3: Our Retail Location (Preserved Box Card Design) */}
-              <div className="flex flex-col">
+              <div className="col-span-2 flex flex-col sm:col-span-1">
                 <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
                   FLAGSHIP OUTLET
                 </span>
@@ -209,9 +209,7 @@ export function Footer() {
               rel="noreferrer"
               className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-[#1877F2]/60 hover:bg-[#1877F2]/10"
             >
-              <div className="flex size-4.5 items-center justify-center rounded-full bg-[#1877F2]">
-                <span className="text-[11px] leading-none font-bold text-white">f</span>
-              </div>
+              <Image src="/icons/facebook.svg" alt="Facebook" width={20} height={20} />
               <span>Facebook</span>
             </a>
 
@@ -222,16 +220,19 @@ export function Footer() {
               rel="noreferrer"
               className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-pink-500/60 hover:bg-pink-500/10"
             >
-              <div className="flex size-4.5 items-center justify-center rounded-full bg-linear-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888]">
-                <svg className="size-2.5 fill-none stroke-white stroke-[2.2]" viewBox="0 0 24 24">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
-              </div>
+              <Image src="/icons/instagram.svg" alt="Instagram" width={20} height={20} />
               <span>Instagram</span>
             </a>
-
+            {/* Whatsapp */}
+            <a
+              href="https://wa.me/+8801311333277"
+              target="_blank"
+              rel="noreferrer"
+              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"
+            >
+              <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={20} height={20} />
+              <span>WhatsApp</span>
+            </a>
             {/* TikTok */}
             <a
               href="https://tiktok.com/@vibelock.bd"
@@ -239,11 +240,7 @@ export function Footer() {
               rel="noreferrer"
               className="border-vl-border text-vl-white/90 hover:border-vl-cyan/60 hover:bg-vl-cyan/10 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all"
             >
-              <div className="flex size-4.5 items-center justify-center rounded-full border border-white/20 bg-black">
-                <svg className="size-2.5 fill-white" viewBox="0 0 24 24">
-                  <path d="M12.525.02c1.31 0 2.6.43 3.65 1.22.1.08.18.17.26.26.85.86 1.4 1.98 1.54 3.2.02.13.03.26.03.39v.03c.8-.18 1.63-.16 2.42.06.8.22 1.53.64 2.13 1.23.05.05.1.1.15.15v3.4c-.78-.23-1.6-.33-2.42-.29-.82.04-1.62.24-2.36.6-.74.35-1.39.86-1.92 1.48-.52.62-.9 1.34-1.11 2.13-.05.18-.08.36-.1.54v6.86c0 1.25-.33 2.47-.96 3.54-.62 1.07-1.52 1.95-2.59 2.53-1.07.58-2.28.87-3.51.84-1.23-.03-2.43-.38-3.47-1.02-1.04-.64-1.89-1.54-2.46-2.61-.57-1.08-.83-2.29-.75-3.51.08-1.22.48-2.4 1.17-3.41.69-1.01 1.63-1.81 2.73-2.32 1.1-.51 2.32-.72 3.53-.61.18.02.36.05.54.09v3.47c-.6-.2-1.24-.26-1.87-.18-.63.08-1.22.31-1.73.68-.51.37-.91.86-1.16 1.44-.25.57-.34 1.21-.26 1.84.08.63.33 1.22.72 1.72.39.49.91.87 1.51 1.09.6.22 1.25.26 1.87.12.62-.14 1.18-.46 1.62-.93.44-.46.73-1.04.84-1.67.04-.21.06-.42.06-.63V.02h3.31z" />
-                </svg>
-              </div>
+              <Image src="/icons/tiktok.svg" alt="TikTok" width={20} height={20} />
               <span>TikTok</span>
             </a>
             {/* YouTube */}
@@ -253,17 +250,13 @@ export function Footer() {
               rel="noreferrer"
               className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-red-500/60 hover:bg-red-500/10"
             >
-              <div className="flex size-4.5 items-center justify-center rounded-full bg-[#FF0000]">
-                <svg className="size-2.5 fill-white" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </div>
+              <Image src="/icons/youtube.svg" alt="YouTube" width={20} height={20} />
               <span>YouTube</span>
             </a>
           </div>
         </div>
 
-        {/* ── 3 + 4. Brutalist Watermark with Bottom-Cut Effect (like ERRUMBD) ── */}
+        {/* ── 3 + 4. Brutalist Watermark with Bottom-Cut Effect */}
         {/* The copyright bar overlaps the bottom half of the huge text, creating the slice/cut effect */}
         <div className="pointer-events-none relative mt-3 overflow-hidden select-none">
           {/* Giant watermark text — full-width, anchored to bottom */}
@@ -286,7 +279,7 @@ export function Footer() {
         </div>
 
         {/* ── Bottom Footer Bar — sits on top of the watermark ── */}
-        <div className="border-vl-border text-vl-white/50 pointer-events-auto relative z-10 flex flex-col gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-vl-border text-vl-white/50 pointer-events-auto relative z-10 flex flex-col items-center gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>© {currentYear} VIBELOCKBD. All rights reserved.</p>
 
           <div className="flex items-center gap-5">
