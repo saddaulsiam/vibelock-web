@@ -151,7 +151,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
   if (!isOpen || !isMounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex flex-col justify-start">
+    <div className="fixed inset-0 z-100 flex flex-col justify-start">
       {/* Dimmed backdrop overlay */}
       <div
         aria-hidden="true"
@@ -187,7 +187,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             </Link>
 
             {/* Pill Search Input Container */}
-            <form onSubmit={handleSubmit} className="relative mx-auto flex-1 max-w-2xl">
+            <form onSubmit={handleSubmit} className="relative mx-auto max-w-2xl flex-1">
               <Search
                 className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-gray-400"
                 aria-hidden="true"
@@ -278,7 +278,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 ) : results.length > 0 ? (
                   /* Product items list */
                   <div>
-                    <div className="max-h-[340px] scrollbar-thin space-y-1.5 overflow-y-auto pr-1.5">
+                    <div className="max-h-85 scrollbar-thin space-y-1.5 overflow-y-auto pr-1.5">
                       {results.map((product) => {
                         const price = product.minPrice;
                         return (
