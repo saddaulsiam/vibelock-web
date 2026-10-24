@@ -9,7 +9,7 @@ export default function StorefrontLoading() {
       aria-label="Loading storefront"
       className="min-h-[70vh] bg-[#F3F0E8] pt-20 pb-10 sm:pt-24 sm:pb-14"
     >
-      <Container>
+      <Container className="max-w-6xl">
         <div className="mb-8 space-y-4 border-b border-[#101114]/10 pb-7 sm:mb-10">
           <Skeleton className="h-3 w-28 bg-[#101114]/10" />
           <Skeleton className="h-10 w-3/4 max-w-xl bg-[#101114]/10 sm:h-12" />

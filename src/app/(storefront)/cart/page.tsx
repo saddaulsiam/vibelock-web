@@ -18,7 +18,7 @@ export default async function CartPage() {
 
   return (
     <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
-      <Container>
+      <Container className="max-w-6xl">
         <CartPageContent cart={cart} />
       </Container>
     </Section>
