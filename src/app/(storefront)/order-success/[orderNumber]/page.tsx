@@ -60,7 +60,7 @@ export default async function OrderSuccessPage({ params }: OrderSuccessPageProps
   const discountTotal = Math.max(0, order.discount);
 
   return (
-    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
+    <Section className="min-h-screen bg-[#F3F0E8] pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container className="max-w-4xl">
         <div className="border border-[#101114]/10 bg-white p-5 sm:p-8 lg:p-10">
           <header className="border-b border-[#101114]/10 pb-6 text-center sm:pb-8">

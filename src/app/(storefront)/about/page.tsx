@@ -22,7 +22,7 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col bg-[#F3F0E8] text-[#101114]">
       {/* ── 1. Brutalist Hero Manifesto Section ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#090D11] py-16 text-[#F3F0E8] sm:py-24">
+      <section className="relative overflow-hidden border-b border-white/10 bg-[#090D11] pt-24 pb-16 text-[#F3F0E8] sm:pt-28 sm:pb-24">
         {/* Subtle Cyberpunk Grid Background */}
         <div
           aria-hidden="true"

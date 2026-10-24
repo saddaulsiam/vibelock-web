@@ -22,7 +22,7 @@ export function AccountHero({ name }: AccountHeroProps) {
       />
 
       <div className="relative mx-auto max-w-360 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col-reverse items-center justify-between gap-6 py-10 sm:py-12 md:flex-row lg:py-16">
+        <div className="flex flex-col-reverse items-center justify-between gap-6 pt-20 pb-10 sm:pt-24 sm:pb-12 md:flex-row lg:pt-28 lg:pb-16">
           {/* Left Text Block */}
           <div className="z-10 flex w-full flex-col text-left md:max-w-xl">
             <span className="text-[11px] font-bold tracking-[0.25em] text-[#F3F0E8]/70 uppercase">

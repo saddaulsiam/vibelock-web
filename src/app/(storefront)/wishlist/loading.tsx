@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function WishlistLoading() {
   return (
-    <Section className="min-h-screen bg-[#F3F0E8] py-8 sm:py-12">
+    <Section className="min-h-screen bg-[#F3F0E8] pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         {/* Wishlist Header Skeleton */}
         <header className="mb-8 border-b border-[#101114]/10 pb-6 sm:mb-10">

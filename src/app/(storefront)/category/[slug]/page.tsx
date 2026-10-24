@@ -69,7 +69,7 @@ export default async function CategoryPage({
   };
 
   return (
-    <Section className="min-h-screen bg-white pt-4 pb-12 sm:pt-6 sm:pb-16">
+    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         {promoBanner ? (
           <div className="mb-5 sm:mb-6">

@@ -5,7 +5,7 @@ import { Section } from "@/components/shared/section";
 
 export default function StorefrontNotFound() {
   return (
-    <Section className="flex min-h-[65vh] items-center justify-center bg-[#F3F0E8] py-16">
+    <Section className="flex min-h-[75vh] items-center justify-center bg-[#F3F0E8] pt-24 pb-16 sm:pt-28 sm:pb-20">
       <Container>
         <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
           <div className="mx-auto mb-6 flex size-14 items-center justify-center bg-[#F3F0E8] text-[#101114]">

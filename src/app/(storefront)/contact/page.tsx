@@ -50,7 +50,7 @@ export default function ContactPage() {
   return (
     <div className="flex flex-col bg-[#F3F0E8] text-[#101114]">
       {/* ── 1. Hero Header Banner ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#090D11] py-16 text-[#F3F0E8] sm:py-20">
+      <section className="relative overflow-hidden border-b border-white/10 bg-[#090D11] pt-24 pb-16 text-[#F3F0E8] sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
