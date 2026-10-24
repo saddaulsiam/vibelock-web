@@ -1,14 +1,13 @@
-import { Input } from "@/components/ui/input";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getCategories } from "@/lib/catalog/queries";
-import { Heart, Search, ShoppingBag } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AccountPopover } from "./account-popover";
 import { CategoriesDrawer } from "./categories-drawer";
 import { DesktopNav } from "./desktop-nav";
-import { MobileSearch } from "./mobile-search";
+import { HeaderSearch } from "./header-search";
 
 export async function Header() {
   const [user, cart, categories] = await Promise.all([
@@ -20,7 +19,7 @@ export async function Header() {
 
   return (
     <header className="pointer-events-none fixed top-2 right-0 left-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
-      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-12 w-full max-w-6xl items-center justify-between rounded-full border px-3 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:px-6">
+      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-4 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:px-6">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link
             href="/"
@@ -49,29 +48,8 @@ export async function Header() {
 
         {/* ── Right: Search Pill + Wishlist + Cart + Account Popover ── */}
         <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-          {/* Pill Search Input (like screenshot "🔍 Search drops...") */}
-          <form
-            action="/products"
-            method="get"
-            role="search"
-            aria-label="Search products"
-            className="relative hidden items-center lg:flex"
-          >
-            <Search
-              className="text-vl-white/40 pointer-events-none absolute left-3.5 size-3.5"
-              aria-hidden="true"
-            />
-            <Input
-              type="search"
-              name="q"
-              placeholder="Search drops..."
-              aria-label="Search drops"
-              className="border-vl-white/15 bg-vl-white/10 text-vl-white placeholder:text-vl-white/40 focus-visible:bg-vl-white/15 focus-visible:ring-vl-cyan focus-visible:border-vl-cyan h-8 w-36 rounded-full border pr-3.5 pl-9 text-xs focus-visible:ring-1 xl:w-48"
-            />
-          </form>
-
-          {/* Mobile Search Icon/Drawer */}
-          <MobileSearch />
+          {/* Search Trigger (Desktop pill + Mobile icon) & Instant Search Modal */}
+          <HeaderSearch categories={categories} />
 
           {/* Wishlist Link */}
           <Link
