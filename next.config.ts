@@ -15,6 +15,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.example.test",
+      },
+      {
+        protocol: "http",
+        hostname: "images.example.test",
+      },
+      {
+        protocol: "https",
+        hostname: "*.example.test",
+      },
+      {
+        protocol: "https",
+        hostname: "example.com",
+      },
     ],
   },
   outputFileTracingIncludes: {

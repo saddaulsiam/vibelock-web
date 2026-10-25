@@ -18,7 +18,10 @@ import {
 } from "../../src/app/(storefront)/products/[slug]/page";
 
 vi.mock("../../src/auth", () => ({ auth: vi.fn() }));
-vi.mock("next/font/google", () => ({ Inter: () => ({ variable: "test-font" }) }));
+vi.mock("next/font/google", () => ({
+  Inter: () => ({ variable: "test-font" }),
+  Space_Grotesk: () => ({ variable: "test-font-space" }),
+}));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 
 const productIds: string[] = [];
@@ -158,7 +161,7 @@ describe("Phase 3L - Launch Hardening", () => {
     }
   });
 
-  test("production auth rate limiting fails closed when Redis is not configured", async () => {
+  test("production auth rate limiting falls back to in-memory rate limiter when Redis is not configured", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("DATABASE_URL", "https://database.invalid");
     vi.stubEnv("AUTH_SECRET", "production-test-secret");
@@ -169,7 +172,11 @@ describe("Phase 3L - Launch Hardening", () => {
     vi.resetModules();
     try {
       const { checkRateLimit } = await import("../../src/lib/security/rate-limit");
-      await expect(checkRateLimit("login")).rejects.toThrow("RATE_LIMIT_ERROR");
+      const testEmail = `memory-${Date.now()}@example.com`;
+      for (let i = 0; i < 5; i++) {
+        await expect(checkRateLimit("login", testEmail)).resolves.toBeUndefined();
+      }
+      await expect(checkRateLimit("login", testEmail)).rejects.toThrow("RATE_LIMIT_EXCEEDED");
     } finally {
       vi.unstubAllEnvs();
       vi.resetModules();

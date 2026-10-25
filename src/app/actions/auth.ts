@@ -4,8 +4,12 @@ import prisma from "@/lib/prisma/client";
 import {
   registerSchema,
   loginSchema,
+  phoneOtpRequestSchema,
+  phoneOtpVerifySchema,
   type RegisterInput,
   type LoginInput,
+  type PhoneOtpRequestInput,
+  type PhoneOtpVerifyInput,
 } from "@/lib/validations/auth";
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -14,18 +18,23 @@ import { Prisma } from "@prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import crypto from "crypto";
 import { sendEmailVerificationEmail } from "@/lib/email/client";
+import { sendOtp } from "@/lib/sms/client";
+import { ZodError } from "zod";
 
 export async function registerAction(data: RegisterInput) {
   try {
     const parsed = registerSchema.parse(data);
+    const email = parsed.email.toLowerCase();
 
     try {
-      await checkRateLimit("register");
-    } catch {
-      return { error: "Too many attempts. Please try again later." };
+      await checkRateLimit("register", email);
+    } catch (e) {
+      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
+        return { error: "Too many attempts. Please try again later." };
+      }
+      console.error("Rate limit check error in registerAction:", e);
+      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
     }
-
-    const email = parsed.email.toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -91,8 +100,12 @@ export async function loginAction(data: LoginInput) {
 
     try {
       await checkRateLimit("login", email);
-    } catch {
-      return { error: "Too many attempts. Please try again later." };
+    } catch (e) {
+      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
+        return { error: "Too many attempts. Please try again later." };
+      }
+      console.error("Rate limit check error in loginAction:", e);
+      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
     }
 
     await signIn("credentials", {
@@ -124,3 +137,71 @@ export async function logoutAction() {
 export async function googleSignInAction() {
   await signIn("google", { redirectTo: "/" });
 }
+
+export async function sendPhoneOtpAction(data: PhoneOtpRequestInput) {
+  try {
+    const parsed = phoneOtpRequestSchema.parse(data);
+
+    try {
+      await checkRateLimit("login", parsed.phone);
+    } catch (e) {
+      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
+        return { error: "Too many OTP requests. Please try again in a few minutes." };
+      }
+      console.error("Rate limit check error in sendPhoneOtpAction:", e);
+      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
+    }
+
+    const result = await sendOtp(parsed.phone);
+    return {
+      success: true,
+      phone: parsed.phone,
+      devOtp: result.devOtp,
+    };
+  } catch (error) {
+    if (error instanceof ZodError) {
+      return { error: error.errors[0]?.message || "Invalid phone number." };
+    }
+    console.error("Send OTP error:", error);
+    return { error: "Failed to send OTP code. Please try again." };
+  }
+}
+
+export async function verifyPhoneOtpAction(data: PhoneOtpVerifyInput) {
+  try {
+    const parsed = phoneOtpVerifySchema.parse(data);
+
+    try {
+      await checkRateLimit("login", parsed.phone);
+    } catch (e) {
+      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
+        return { error: "Too many attempts. Please try again later." };
+      }
+      return { error: "Authentication service is temporarily unavailable." };
+    }
+
+    await signIn("credentials", {
+      phone: parsed.phone,
+      otp: parsed.otp,
+      name: parsed.name,
+      redirect: false,
+    });
+
+    return { success: true };
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case "CredentialsSignin":
+          return { error: "Invalid or expired OTP code. Please try again." };
+        default:
+          return { error: "Authentication failed. Please try again." };
+      }
+    }
+    if (error instanceof ZodError) {
+      return { error: error.errors[0]?.message || "Invalid input." };
+    }
+    console.error("Verify OTP error:", error);
+    return { error: "Verification failed. Please try again." };
+  }
+}
+

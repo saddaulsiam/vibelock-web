@@ -9,6 +9,9 @@ import { compare } from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
+import { verifyOtp } from "@/lib/sms/client";
+
 // Augment the default session, user, and token types
 declare module "next-auth" {
   interface Session {
@@ -98,8 +101,60 @@ export const authConfig: NextAuthConfig = {
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        phone: { label: "Phone", type: "text" },
+        otp: { label: "OTP", type: "text" },
+        name: { label: "Name", type: "text" },
       },
       async authorize(credentials) {
+        // Phone + OTP Authentication Flow
+        if (credentials?.phone && credentials?.otp) {
+          const phone = normalizeBdPhoneNumber(credentials.phone as string);
+          const otp = credentials.otp as string;
+          const isValid = await verifyOtp(phone, otp);
+
+          if (!isValid) {
+            return null;
+          }
+
+          let user = await prisma.user.findUnique({
+            where: { phone },
+          });
+
+          if (!user) {
+            const userName =
+              typeof credentials.name === "string" && credentials.name.trim()
+                ? credentials.name.trim()
+                : `Member ${phone.slice(-4)}`;
+
+            const phoneEmail = `${phone}@vibelock.bd`;
+
+            user = await prisma.user.create({
+              data: {
+                phone,
+                email: phoneEmail,
+                name: userName,
+                role: "CUSTOMER",
+                phoneVerified: new Date(),
+              },
+            });
+          } else if (!user.phoneVerified) {
+            user = await prisma.user.update({
+              where: { id: user.id },
+              data: { phoneVerified: new Date() },
+            });
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            role: user.role,
+            emailVerified: user.emailVerified,
+          };
+        }
+
+        // Email + Password Flow
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
