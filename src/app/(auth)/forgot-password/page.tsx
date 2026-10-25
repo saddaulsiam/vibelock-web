@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative hidden h-full w-full overflow-hidden bg-[#0c0d10] lg:block">
         <Image
-          src="/images/auth/login-back-model.png"
+          src="/images/auth/login-front-model.png"
           alt="VibeLock Forgot Password Page Image"
           fill
           priority
@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative h-44 w-full overflow-hidden bg-[#0c0d10] sm:h-56 lg:hidden">
         <Image
-          src="/images/auth/login-back-model.png"
+          src="/images/auth/login-front-model.png"
           alt="VibeLock Forgot Password Page Image"
           fill
           priority
