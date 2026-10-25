@@ -15,8 +15,13 @@ if (!_publicEnv.success) {
   throw new Error("Invalid public environment variables");
 }
 
+const isLocalhost =
+  _publicEnv.data.NEXT_PUBLIC_APP_URL.includes("localhost") ||
+  _publicEnv.data.NEXT_PUBLIC_APP_URL.includes("127.0.0.1");
+
 if (
   process.env.NODE_ENV === "production" &&
+  !isLocalhost &&
   !/^https:\/\//i.test(_publicEnv.data.NEXT_PUBLIC_APP_URL)
 ) {
   throw new Error("NEXT_PUBLIC_APP_URL must use HTTPS in production");
