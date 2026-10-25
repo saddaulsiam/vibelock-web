@@ -14,6 +14,16 @@ export type AdminProductsQueryOptions = {
   pageSize?: number;
 };
 
+export type AdminProductVariantItem = {
+  id: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  sellingPrice: number;
+  discountPrice: number | null;
+  stock: number;
+};
+
 export type AdminProductItem = {
   id: string;
   name: string;
@@ -28,6 +38,7 @@ export type AdminProductItem = {
   minSellingPrice: number | null;
   maxSellingPrice: number | null;
   minDiscountPrice: number | null;
+  variants: AdminProductVariantItem[];
   createdAt: Date | string;
   updatedAt: Date | string;
 };
@@ -127,6 +138,8 @@ export async function getAdminProducts(
           select: {
             id: true,
             sku: true,
+            size: true,
+            color: true,
             sellingPrice: true,
             discountPrice: true,
             inventoryTransactions: {
@@ -144,10 +157,17 @@ export async function getAdminProducts(
       .filter((v) => v.discountPrice !== null && v.discountPrice.lt(v.sellingPrice))
       .map((v) => Number(v.discountPrice!));
 
-    const totalStock = p.variants.reduce((acc, v) => {
-      const varStock = v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
-      return acc + varStock;
-    }, 0);
+    const mappedVariants: AdminProductVariantItem[] = p.variants.map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      size: v.size ?? null,
+      color: v.color ?? null,
+      sellingPrice: Number(v.sellingPrice),
+      discountPrice: v.discountPrice !== null ? Number(v.discountPrice) : null,
+      stock: v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0),
+    }));
+
+    const totalStock = mappedVariants.reduce((acc, v) => acc + v.stock, 0);
 
     return {
       id: p.id,
@@ -163,6 +183,7 @@ export async function getAdminProducts(
       minSellingPrice: sellingPrices.length ? Math.min(...sellingPrices) : null,
       maxSellingPrice: sellingPrices.length ? Math.max(...sellingPrices) : null,
       minDiscountPrice: discountPrices.length ? Math.min(...discountPrices) : null,
+      variants: mappedVariants,
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
     };

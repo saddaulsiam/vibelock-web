@@ -2,7 +2,10 @@
 
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
 import {
+  bulkDeleteProductsAction,
+  bulkUpdateProductStatusAction,
   deleteProductAction,
+  exportAdminProductsCsvAction,
   loadMoreAdminProductsAction,
   toggleProductPublishedAction,
 } from "@/lib/admin/catalog-actions";
@@ -10,19 +13,59 @@ import type { AdminProductItem, AdminProductsResult } from "@/lib/admin/catalog-
 import {
   AlertTriangle,
   Boxes,
+  ChevronDown,
+  Columns3,
   Copy,
+  Download,
   ExternalLink,
+  Eye,
+  EyeOff,
   ImageOff,
+  Layers,
   Loader2,
   Pencil,
+  Printer,
   RotateCcw,
   Search,
+  Tag,
+  Trash2,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
+
+function BarcodeSvg({ value, height = 28 }: { value: string; height?: number }) {
+  const chars = value.split("");
+  const bars: number[] = [2, 1, 1, 2];
+  chars.forEach((char) => {
+    const code = char.charCodeAt(0);
+    bars.push((code % 3) + 1, ((code >> 1) % 2) + 1, ((code >> 2) % 3) + 1, 1);
+  });
+  bars.push(2, 3, 1, 1, 2);
+
+  const totalWidth = bars.reduce((acc, b) => acc + b, 0);
+  let currentX = 0;
+
+  return (
+    <svg
+      viewBox={`0 0 ${totalWidth} ${height}`}
+      className="h-7 w-full"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      {bars.map((w, idx) => {
+        const x = currentX;
+        currentX += w;
+        if (idx % 2 === 0) {
+          return <rect key={idx} x={x} y={0} width={w} height={height} fill="#000000" />;
+        }
+        return null;
+      })}
+    </svg>
+  );
+}
 
 function formatPrice(value: number | null) {
   if (value === null) return "—";
@@ -51,6 +94,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
   const [searchTerm, setSearchTerm] = React.useState(currentFilters.q);
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const { allCategories, totalFiltered, pageSize, counts } = initialData;
 
@@ -61,6 +105,37 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   const [isLoadingMore, setIsLoadingMore] = React.useState<boolean>(false);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
+  // Multi-select & Bulk actions state
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [isBulkOperating, setIsBulkOperating] = React.useState(false);
+  const [bulkFeedback, setBulkFeedback] = React.useState<string | null>(null);
+
+  // Variant breakdown popover state
+  const [expandedVariantId, setExpandedVariantId] = React.useState<string | null>(null);
+
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = React.useState({
+    categories: true,
+    price: true,
+    stock: true,
+    status: true,
+  });
+  const [showColumnMenu, setShowColumnMenu] = React.useState(false);
+
+  // Barcode / Price Tag Modal state
+  const [barcodeModalProducts, setBarcodeModalProducts] = React.useState<AdminProductItem[] | null>(
+    null
+  );
+  const [barcodeLabelSize, setBarcodeLabelSize] = React.useState<"standard" | "compact" | "sheet">(
+    "standard"
+  );
+  const [barcodeQuantityMode, setBarcodeQuantityMode] = React.useState<
+    "one-per-variant" | "by-stock"
+  >("one-per-variant");
+
+  // CSV Export state
+  const [isExporting, setIsExporting] = React.useState(false);
+
   // Adjust state during render when initialData or filters change (React standard pattern)
   const [prevInitialData, setPrevInitialData] = React.useState(initialData);
   if (prevInitialData !== initialData) {
@@ -68,6 +143,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     setLoadedProducts(initialData.products);
     setCurrentPage(initialData.page || 1);
     setIsLoadingMore(false);
+    setSelectedIds(new Set());
+    setExpandedVariantId(null);
   }
 
   const [prevFilterQ, setPrevFilterQ] = React.useState(currentFilters.q);
@@ -75,6 +152,129 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     setPrevFilterQ(currentFilters.q);
     setSearchTerm(currentFilters.q);
   }
+
+  // Keyboard shortcut '/' to focus search input, 'Escape' to blur
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isInput =
+        target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+
+      if (e.key === "/" && !isInput) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      } else if (e.key === "Escape" && document.activeElement === searchInputRef.current) {
+        searchInputRef.current?.blur();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Multi-select helpers
+  const isAllSelected =
+    loadedProducts.length > 0 && loadedProducts.every((p) => selectedIds.has(p.id));
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(loadedProducts.map((p) => p.id)));
+    }
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkStatus = async (status: "PUBLISHED" | "DRAFT") => {
+    if (selectedIds.size === 0 || isBulkOperating) return;
+    setIsBulkOperating(true);
+    setBulkFeedback(null);
+    try {
+      const res = await bulkUpdateProductStatusAction(Array.from(selectedIds), status);
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setBulkFeedback(res.message || "Updated successfully.");
+        setSelectedIds(new Set());
+        router.refresh();
+      }
+    } catch {
+      alert("Bulk status update failed.");
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0 || isBulkOperating) return;
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${selectedIds.size} selected product(s)? Products with existing orders, reservations, or reviews will be skipped.`
+    );
+    if (!confirmed) return;
+
+    setIsBulkOperating(true);
+    setBulkFeedback(null);
+    try {
+      const res = await bulkDeleteProductsAction(Array.from(selectedIds));
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setBulkFeedback(res.message || "Deleted successfully.");
+        setSelectedIds(new Set());
+        router.refresh();
+      }
+    } catch {
+      alert("Bulk delete failed.");
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
+  const handleExportCsv = async () => {
+    if (isExporting) return;
+    setIsExporting(true);
+    try {
+      const res = await exportAdminProductsCsvAction({
+        search: currentFilters.q,
+        category: currentFilters.category,
+        status: currentFilters.status,
+        stockStatus: currentFilters.stock,
+        sort: currentFilters.sort,
+      });
+
+      if (res.error || !res.csv) {
+        alert(res.error || "Failed to export CSV.");
+        return;
+      }
+
+      const blob = new Blob([res.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", res.filename || "vibelock-products.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export failed:", err);
+      alert("Failed to export products.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Helper to update URL search params
   const updateQuery = React.useCallback(
@@ -265,19 +465,34 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
         )}
       </div>
 
+      {/* ── Optional Bulk Feedback Notice ── */}
+      {bulkFeedback && (
+        <div className="flex items-center justify-between rounded-sm border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-900">
+          <span>{bulkFeedback}</span>
+          <button
+            type="button"
+            onClick={() => setBulkFeedback(null)}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* ── 2. Search & Filter Controls Toolbar ── */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        {/* Search Bar */}
+        {/* Search Bar with '/' shortcut */}
         <div className="relative max-w-lg flex-1">
           <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#101114]/40" />
           <input
+            ref={searchInputRef}
             type="text"
             value={searchTerm}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search by product name, slug, SKU, or category..."
-            className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-9 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
           />
-          {searchTerm && (
+          {searchTerm ? (
             <button
               type="button"
               onClick={handleClearSearch}
@@ -286,10 +501,17 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             >
               <X className="size-3.5" />
             </button>
+          ) : (
+            <kbd
+              className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-[#101114]/20 bg-[#F3F0E8] px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/60 sm:inline-flex"
+              title="Press / to search"
+            >
+              /
+            </kbd>
           )}
         </div>
 
-        {/* Filter & Sort Dropdowns */}
+        {/* Filter, Sort & Export Dropdowns */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Category Filter */}
           <div className="flex items-center gap-1">
@@ -350,6 +572,76 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             </select>
           </div>
 
+          {/* Export to CSV Button */}
+          <button
+            type="button"
+            disabled={isExporting}
+            onClick={handleExportCsv}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:opacity-50"
+            title="Export filtered catalog to CSV"
+          >
+            {isExporting ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Download className="size-3.5 text-[#101114]/70" />
+            )}
+            <span className="hidden sm:inline">Export CSV</span>
+          </button>
+
+          {/* Column Visibility Customizer */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowColumnMenu(!showColumnMenu)}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              title="Customize visible columns"
+            >
+              <Columns3 className="size-3.5 text-[#101114]/70" />
+              <span className="hidden sm:inline">Columns</span>
+            </button>
+
+            {showColumnMenu && (
+              <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-40 mt-1.5 w-44 rounded-sm border border-[#101114]/15 bg-white p-2 shadow-xl duration-150">
+                <div className="border-b border-[#101114]/10 pb-1.5 mb-1.5 flex items-center justify-between">
+                  <p className="text-[11px] font-semibold text-[#101114]">Visible Columns</p>
+                  <button
+                    type="button"
+                    onClick={() => setShowColumnMenu(false)}
+                    className="text-[#101114]/40 hover:text-[#101114]"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+                <div className="space-y-1 text-xs">
+                  {[
+                    { key: "categories", label: "Categories" },
+                    { key: "price", label: "Price" },
+                    { key: "stock", label: "Inventory Stock" },
+                    { key: "status", label: "Status" },
+                  ].map((col) => (
+                    <label
+                      key={col.key}
+                      className="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-[#F3F0E8] cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visibleColumns[col.key as keyof typeof visibleColumns]}
+                        onChange={() =>
+                          setVisibleColumns((prev) => ({
+                            ...prev,
+                            [col.key]: !prev[col.key as keyof typeof visibleColumns],
+                          }))
+                        }
+                        className="size-3.5 rounded-xs accent-[#101114] cursor-pointer"
+                      />
+                      <span className="text-[#101114]">{col.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Reset Filters Button */}
           {hasActiveFilters && (
             <button
@@ -369,21 +661,38 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
         <table className="w-full min-w-5xl text-left text-sm">
           <thead className="bg-[#F3F0E8]/70 text-[11px] font-semibold tracking-wider text-[#101114]/70 uppercase">
             <tr>
+              <th scope="col" className="w-10 px-4 py-3 text-center">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={handleToggleSelectAll}
+                  aria-label="Select all products"
+                  className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+                />
+              </th>
               <th scope="col" className="px-5 py-3">
                 Product
               </th>
-              <th scope="col" className="px-5 py-3">
-                Categories
-              </th>
-              <th scope="col" className="px-5 py-3">
-                Price
-              </th>
-              <th scope="col" className="px-5 py-3">
-                Inventory Stock
-              </th>
-              <th scope="col" className="px-5 py-3">
-                Status
-              </th>
+              {visibleColumns.categories && (
+                <th scope="col" className="px-5 py-3">
+                  Categories
+                </th>
+              )}
+              {visibleColumns.price && (
+                <th scope="col" className="px-5 py-3">
+                  Price
+                </th>
+              )}
+              {visibleColumns.stock && (
+                <th scope="col" className="px-5 py-3">
+                  Inventory Stock
+                </th>
+              )}
+              {visibleColumns.status && (
+                <th scope="col" className="px-5 py-3">
+                  Status
+                </th>
+              )}
               <th scope="col" className="px-5 py-3 text-right">
                 Actions
               </th>
@@ -392,7 +701,17 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
           <tbody className="divide-y divide-[#101114]/10">
             {loadedProducts.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-5 py-14 text-center">
+                <td
+                  colSpan={
+                    2 +
+                    (visibleColumns.categories ? 1 : 0) +
+                    (visibleColumns.price ? 1 : 0) +
+                    (visibleColumns.stock ? 1 : 0) +
+                    (visibleColumns.status ? 1 : 0) +
+                    1
+                  }
+                  className="px-5 py-14 text-center"
+                >
                   <div className="mx-auto max-w-sm space-y-3">
                     <Boxes className="mx-auto size-8 text-[#101114]/30" />
                     <h3 className="text-sm font-semibold text-[#101114]">
@@ -440,32 +759,73 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                 const isOutOfStock = product.totalStock <= 0;
                 const isLowStock = product.totalStock > 0 && product.totalStock <= 5;
+                const isSelected = selectedIds.has(product.id);
 
                 return (
-                  <tr key={product.id} className="transition-colors hover:bg-[#FAFAF9]">
+                  <tr
+                    key={product.id}
+                    className={`transition-colors ${isSelected ? "bg-[#F3F0E8]/50" : "hover:bg-[#FAFAF9]"}`}
+                  >
+                    {/* ── Selection Checkbox ── */}
+                    <td className="w-10 px-4 py-3.5 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelect(product.id)}
+                        aria-label={`Select ${product.name}`}
+                        className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+                      />
+                    </td>
+
                     {/* ── Product Info & Thumbnail ── */}
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3.5">
-                        {/* Thumbnail */}
-                        <div className="relative size-12 shrink-0 overflow-hidden rounded-sm border border-[#101114]/15 bg-[#F2F2F2]">
-                          {product.primaryImage ? (
-                            <Image
-                              src={product.primaryImage}
-                              alt={product.name}
-                              fill
-                              sizes="48px"
-                              loading="lazy"
-                              className="object-cover object-center"
-                              unoptimized={product.primaryImage.startsWith("blob:")}
-                            />
-                          ) : (
-                            <div className="flex size-full items-center justify-center text-[#101114]/25">
-                              <ImageOff className="size-5" />
+                        {/* Thumbnail with High-Res Hover Preview */}
+                        <div className="group/thumb relative size-12 shrink-0">
+                          <div className="relative size-12 overflow-hidden rounded-sm border border-[#101114]/15 bg-[#F2F2F2]">
+                            {product.primaryImage ? (
+                              <Image
+                                src={product.primaryImage}
+                                alt={product.name}
+                                fill
+                                sizes="48px"
+                                loading="lazy"
+                                className="object-cover object-center"
+                                unoptimized={product.primaryImage.startsWith("blob:")}
+                              />
+                            ) : (
+                              <div className="flex size-full items-center justify-center text-[#101114]/25">
+                                <ImageOff className="size-5" />
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Hover preview card */}
+                          {product.primaryImage && (
+                            <div className="pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border border-[#101114]/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
+                              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-[#F2F2F2]">
+                                <Image
+                                  src={product.primaryImage}
+                                  alt={product.name}
+                                  fill
+                                  sizes="192px"
+                                  loading="lazy"
+                                  className="object-cover object-center"
+                                  unoptimized={product.primaryImage.startsWith("blob:")}
+                                />
+                              </div>
+                              <p className="mt-2 truncate text-xs font-semibold text-[#101114]">
+                                {product.name}
+                              </p>
+                              <div className="mt-0.5 flex items-center justify-between text-[10px] text-[#101114]/60">
+                                <span className="font-mono">/{product.slug}</span>
+                                <span>{product.totalStock} in stock</span>
+                              </div>
                             </div>
                           )}
                         </div>
 
-                        {/* Title, Slug & Variant summary */}
+                        {/* Title, Slug & Variant summary with breakdown popover */}
                         <div className="min-w-0">
                           <Link
                             href={`/admin/products/${product.id}/edit`}
@@ -476,104 +836,208 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-1.5 text-xs">
                             <span className="font-mono text-[11px]">/{product.slug}</span>
                             <span>•</span>
-                            <span className="py-0.2 rounded-xs bg-[#101114]/5 px-1.5 text-[10px] font-semibold text-[#101114]/70">
-                              {product.variantCount}{" "}
-                              {product.variantCount === 1 ? "variant" : "variants"}
-                            </span>
+
+                            {/* Variant Breakdown Trigger & Popover */}
+                            <div className="relative inline-block">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedVariantId(
+                                    expandedVariantId === product.id ? null : product.id
+                                  )
+                                }
+                                className="inline-flex items-center gap-1 rounded-xs bg-[#101114]/5 px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/75 transition-colors hover:bg-[#101114]/10 hover:text-[#101114]"
+                                title="Click to view variant stock details"
+                              >
+                                <Layers className="size-3 text-[#101114]/60" />
+                                <span>
+                                  {product.variantCount}{" "}
+                                  {product.variantCount === 1 ? "variant" : "variants"}
+                                </span>
+                                <ChevronDown
+                                  className={`size-2.5 transition-transform ${
+                                    expandedVariantId === product.id ? "rotate-180" : ""
+                                  }`}
+                                />
+                              </button>
+
+                              {/* Variant Details Popover Dropdown */}
+                              {expandedVariantId === product.id && product.variants && (
+                                <div className="animate-in fade-in zoom-in-95 absolute top-full left-0 z-40 mt-1.5 w-80 rounded-sm border border-[#101114]/15 bg-white p-3 shadow-xl duration-150">
+                                  <div className="flex items-center justify-between border-b border-[#101114]/10 pb-2">
+                                    <p className="text-xs font-semibold text-[#101114]">
+                                      Variant Stock Breakdown
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={() => setExpandedVariantId(null)}
+                                      className="text-[#101114]/40 hover:text-[#101114]"
+                                    >
+                                      <X className="size-3.5" />
+                                    </button>
+                                  </div>
+
+                                  <div className="mt-2 max-h-56 divide-y divide-[#101114]/5 overflow-y-auto pr-1 text-xs">
+                                    {product.variants.map((v) => (
+                                      <div
+                                        key={v.id}
+                                        className="flex items-center justify-between py-1.5"
+                                      >
+                                        <div>
+                                          <p className="font-mono text-[11px] font-medium text-[#101114]">
+                                            {v.sku}
+                                          </p>
+                                          <p className="text-[10px] text-[#101114]/60">
+                                            {[
+                                              v.size ? `Size: ${v.size}` : null,
+                                              v.color ? `Color: ${v.color}` : null,
+                                            ]
+                                              .filter(Boolean)
+                                              .join(" • ") || "Default"}
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <span
+                                            className={`inline-flex items-center rounded-xs px-1.5 py-0.5 text-[10px] font-semibold ${
+                                              v.stock <= 0
+                                                ? "border border-red-200 bg-red-50 text-red-700"
+                                                : v.stock <= 5
+                                                  ? "border border-amber-200 bg-amber-50 text-amber-700"
+                                                  : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                                            }`}
+                                          >
+                                            {v.stock <= 0 ? "Out of Stock" : `${v.stock} in stock`}
+                                          </span>
+                                          <p className="mt-0.5 font-mono text-[10px] text-[#101114]/70">
+                                            ৳{v.discountPrice ?? v.sellingPrice}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    {/* ── Categories ── */}
-                    <td className="px-5 py-3.5">
-                      {product.categories.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {product.categories.map((c) => (
-                            <span
-                              key={c.id}
-                              className="inline-flex rounded-xs border border-[#101114]/15 bg-[#FBF9F5] px-2 py-0.5 text-xs font-medium text-[#101114]"
-                            >
-                              {c.name}
-                            </span>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs italic">Uncategorized</span>
-                      )}
-                    </td>
+                    {/* ── Categories (Clickable Pills) ── */}
+                    {visibleColumns.categories && (
+                      <td className="px-5 py-3.5">
+                        {product.categories.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {product.categories.map((c) => {
+                              const isSelected = currentFilters.category === c.slug;
+                              return (
+                                <button
+                                  key={c.id}
+                                  type="button"
+                                  onClick={() =>
+                                    updateQuery({
+                                      category: isSelected ? "all" : c.slug,
+                                    })
+                                  }
+                                  className={`inline-flex items-center rounded-xs px-2 py-0.5 text-xs font-medium transition-colors ${
+                                    isSelected
+                                      ? "bg-[#101114] text-white shadow-2xs"
+                                      : "border border-[#101114]/15 bg-[#FBF9F5] text-[#101114] hover:border-[#101114] hover:bg-[#F3F0E8]"
+                                  }`}
+                                  title={
+                                    isSelected
+                                      ? `Clear filter: ${c.name}`
+                                      : `Filter by category: ${c.name}`
+                                  }
+                                >
+                                  {c.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-xs italic">Uncategorized</span>
+                        )}
+                      </td>
+                    )}
 
                     {/* ── Price ── */}
-                    <td className="px-5 py-3.5 tabular-nums">
-                      {hasDiscount ? (
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-[#101114]">
-                              {formatPrice(product.minDiscountPrice)}
-                            </span>
-                            <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
-                              -{discountPercent}%
+                    {visibleColumns.price && (
+                      <td className="px-5 py-3.5 tabular-nums">
+                        {hasDiscount ? (
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-[#101114]">
+                                {formatPrice(product.minDiscountPrice)}
+                              </span>
+                              <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
+                                -{discountPercent}%
+                              </span>
+                            </div>
+                            <span className="text-muted-foreground block text-xs line-through">
+                              {formatPrice(product.minSellingPrice)}
                             </span>
                           </div>
-                          <span className="text-muted-foreground block text-xs line-through">
+                        ) : (
+                          <span className="font-semibold text-[#101114]">
                             {formatPrice(product.minSellingPrice)}
                           </span>
-                        </div>
-                      ) : (
-                        <span className="font-semibold text-[#101114]">
-                          {formatPrice(product.minSellingPrice)}
-                        </span>
-                      )}
-                    </td>
+                        )}
+                      </td>
+                    )}
 
                     {/* ── Inventory Stock ── */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`size-2 rounded-full ${
-                            isOutOfStock
-                              ? "bg-red-500"
+                    {visibleColumns.stock && (
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`size-2 rounded-full ${
+                              isOutOfStock
+                                ? "bg-red-500"
+                                : isLowStock
+                                  ? "bg-amber-500"
+                                  : "bg-emerald-500"
+                            }`}
+                          />
+                          <span
+                            className={`text-xs font-semibold ${
+                              isOutOfStock
+                                ? "text-red-700"
+                                : isLowStock
+                                  ? "text-amber-800"
+                                  : "text-emerald-800"
+                            }`}
+                          >
+                            {isOutOfStock
+                              ? "Out of Stock"
                               : isLowStock
-                                ? "bg-amber-500"
-                                : "bg-emerald-500"
-                          }`}
-                        />
-                        <span
-                          className={`text-xs font-semibold ${
-                            isOutOfStock
-                              ? "text-red-700"
-                              : isLowStock
-                                ? "text-amber-800"
-                                : "text-emerald-800"
-                          }`}
-                        >
-                          {isOutOfStock
-                            ? "Out of Stock"
-                            : isLowStock
-                              ? `Low Stock (${product.totalStock})`
-                              : `In Stock (${product.totalStock})`}
-                        </span>
-                      </div>
-                    </td>
+                                ? `Low Stock (${product.totalStock})`
+                                : `In Stock (${product.totalStock})`}
+                          </span>
+                        </div>
+                      </td>
+                    )}
 
                     {/* ── Status ── */}
-                    <td className="px-5 py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-xs border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
-                          product.status === "PUBLISHED"
-                            ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                    {visibleColumns.status && (
+                      <td className="px-5 py-3.5">
+                        <span
+                          className={`inline-flex items-center rounded-xs border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
+                            product.status === "PUBLISHED"
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+                              : product.status === "DRAFT"
+                                ? "border-amber-200 bg-amber-50 text-amber-800"
+                                : "border-[#101114]/15 bg-[#F3F0E8] text-[#101114]"
+                          }`}
+                        >
+                          {product.status === "PUBLISHED"
+                            ? "Published"
                             : product.status === "DRAFT"
-                              ? "border-amber-200 bg-amber-50 text-amber-800"
-                              : "border-[#101114]/15 bg-[#F3F0E8] text-[#101114]"
-                        }`}
-                      >
-                        {product.status === "PUBLISHED"
-                          ? "Published"
-                          : product.status === "DRAFT"
-                            ? "Draft"
-                            : "Archived"}
-                      </span>
-                    </td>
+                              ? "Draft"
+                              : "Archived"}
+                        </span>
+                      </td>
+                    )}
 
                     {/* ── Actions ── */}
                     <td className="px-5 py-3.5 text-right">
@@ -596,6 +1060,16 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         >
                           <Copy className="size-3.5" />
                         </Link>
+
+                        {/* Print Barcode Price Tag */}
+                        <button
+                          type="button"
+                          onClick={() => setBarcodeModalProducts([product])}
+                          className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                          title="Print price tag barcode labels for this product"
+                        >
+                          <Printer className="size-3.5" />
+                        </button>
 
                         {/* Publish / Unpublish Toggle */}
                         <AdminMutationForm
@@ -685,6 +1159,261 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
           )}
         </div>
       )}
+
+      {/* ── Floating Bulk Action Bar ── */}
+      {selectedIds.size > 0 && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-sm border border-white/15 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl backdrop-blur-md duration-200 sm:gap-4">
+          <div className="flex items-center gap-2 font-medium">
+            <span className="flex size-5 items-center justify-center rounded-full bg-white/20 text-[11px] font-bold">
+              {selectedIds.size}
+            </span>
+            <span className="hidden sm:inline">selected</span>
+          </div>
+
+          <div className="h-4 w-px bg-white/20" />
+
+          {/* Bulk Publish */}
+          <button
+            type="button"
+            disabled={isBulkOperating}
+            onClick={() => handleBulkStatus("PUBLISHED")}
+            className="inline-flex items-center gap-1.5 rounded-xs bg-emerald-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+            title="Publish all selected products"
+          >
+            <Eye className="size-3.5" />
+            <span>Publish</span>
+          </button>
+
+          {/* Bulk Unpublish (Draft) */}
+          <button
+            type="button"
+            disabled={isBulkOperating}
+            onClick={() => handleBulkStatus("DRAFT")}
+            className="inline-flex items-center gap-1.5 rounded-xs bg-amber-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-50"
+            title="Set all selected products to Draft"
+          >
+            <EyeOff className="size-3.5" />
+            <span>Draft</span>
+          </button>
+
+          {/* Bulk Print Barcode Tags */}
+          <button
+            type="button"
+            disabled={isBulkOperating}
+            onClick={() => {
+              const selected = loadedProducts.filter((p) => selectedIds.has(p.id));
+              setBarcodeModalProducts(selected);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+            title="Print price tag barcode labels for selected products"
+          >
+            <Printer className="size-3.5" />
+            <span>Print Tags</span>
+          </button>
+
+          {/* Bulk Delete */}
+          <button
+            type="button"
+            disabled={isBulkOperating}
+            onClick={handleBulkDelete}
+            className="inline-flex items-center gap-1.5 rounded-xs bg-red-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+            title="Delete all selected products"
+          >
+            <Trash2 className="size-3.5" />
+            <span>Delete</span>
+          </button>
+
+          <div className="h-4 w-px bg-white/20" />
+
+          {/* Deselect All */}
+          <button
+            type="button"
+            disabled={isBulkOperating}
+            onClick={() => setSelectedIds(new Set())}
+            className="text-white/60 transition-colors hover:text-white"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
+      {/* ── 5. Barcode & Price Tag Printing Modal ── */}
+      {barcodeModalProducts && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
+              <div className="flex items-center gap-2">
+                <Tag className="size-4 text-[#101114]" />
+                <h3 className="text-sm font-semibold text-[#101114]">
+                  Print Price Tags & Barcodes ({barcodeModalProducts.length}{" "}
+                  {barcodeModalProducts.length === 1 ? "product" : "products"})
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBarcodeModalProducts(null)}
+                className="rounded p-1 text-[#101114]/40 hover:text-[#101114]"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Modal Settings Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
+              <div className="flex flex-wrap items-center gap-4">
+                {/* Format selection */}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-[#101114]/70">Format:</span>
+                  <select
+                    value={barcodeLabelSize}
+                    onChange={(e) =>
+                      setBarcodeLabelSize(e.target.value as "standard" | "compact" | "sheet")
+                    }
+                    className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                  >
+                    <option value="standard">50mm × 30mm (Thermal Roll)</option>
+                    <option value="compact">40mm × 25mm (Compact Tag)</option>
+                    <option value="sheet">A4 Sheet (24 Grid)</option>
+                  </select>
+                </div>
+
+                {/* Quantity mode */}
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-[#101114]/70">Quantity:</span>
+                  <select
+                    value={barcodeQuantityMode}
+                    onChange={(e) =>
+                      setBarcodeQuantityMode(e.target.value as "one-per-variant" | "by-stock")
+                    }
+                    className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                  >
+                    <option value="one-per-variant">1 Label per Variant</option>
+                    <option value="by-stock">Match Current Stock Count</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Print Action Button */}
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex h-9 items-center gap-2 rounded-sm bg-[#101114] px-4 font-semibold text-white transition-colors hover:bg-[#101114]/85"
+              >
+                <Printer className="size-3.5" />
+                <span>Print Labels Now</span>
+              </button>
+            </div>
+
+            {/* Live Tag Preview Grid */}
+            <div className="flex-1 overflow-y-auto p-5">
+              <div id="vibelock-printable-labels" className="flex flex-wrap gap-3 justify-center">
+                {barcodeModalProducts.flatMap((product) => {
+                  const variants =
+                    product.variants && product.variants.length > 0
+                      ? product.variants
+                      : [
+                          {
+                            id: product.id,
+                            sku: product.skus[0] || product.slug,
+                            size: null,
+                            color: null,
+                            sellingPrice: product.minSellingPrice ?? 0,
+                            discountPrice: product.minDiscountPrice,
+                            stock: product.totalStock,
+                          },
+                        ];
+
+                  return variants.flatMap((v) => {
+                    const count = barcodeQuantityMode === "by-stock" ? Math.max(1, v.stock) : 1;
+                    return Array.from({ length: count }, (_, idx) => (
+                      <div
+                        key={`${v.id}-${idx}`}
+                        className={`vibelock-label-card flex flex-col justify-between rounded-sm border border-dashed border-[#101114]/30 bg-white p-2 text-center text-[#101114] shadow-xs ${
+                          barcodeLabelSize === "compact"
+                            ? "h-[25mm] w-[40mm]"
+                            : barcodeLabelSize === "sheet"
+                              ? "h-[30mm] w-[48mm]"
+                              : "h-[30mm] w-[50mm]"
+                        }`}
+                      >
+                        <div className="border-b border-[#101114]/15 pb-0.5">
+                          <span className="text-[9px] font-extrabold tracking-widest uppercase">
+                            VIBELOCK
+                          </span>
+                        </div>
+                        <p className="truncate px-0.5 text-[10px] font-semibold leading-tight">
+                          {product.name}
+                        </p>
+                        <div className="flex items-center justify-between px-1 text-[9px] font-mono">
+                          <span>{v.size ? `SIZE: ${v.size}` : ""}</span>
+                          <span className="text-[11px] font-bold">
+                            ৳{v.discountPrice ?? v.sellingPrice}
+                          </span>
+                        </div>
+                        <div className="px-1 py-0.5">
+                          <BarcodeSvg value={v.sku} height={20} />
+                          <p className="font-mono text-[8px] tracking-wider text-[#101114]/80">
+                            {v.sku}
+                          </p>
+                        </div>
+                      </div>
+                    ));
+                  });
+                })}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between border-t border-[#101114]/10 bg-white px-5 py-2.5 text-xs text-[#101114]/60">
+              <span>Previewing labels before printing. Press Print Now to send to printer.</span>
+              <button
+                type="button"
+                onClick={() => setBarcodeModalProducts(null)}
+                className="font-semibold text-[#101114] hover:underline"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Print Stylesheet for Labels ── */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #vibelock-printable-labels,
+          #vibelock-printable-labels * {
+            visibility: visible !important;
+          }
+          #vibelock-printable-labels {
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            margin: 0 !important;
+            padding: 3mm !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 2mm !important;
+            justify-content: flex-start !important;
+            z-index: 999999 !important;
+          }
+          .vibelock-label-card {
+            border: 1px solid #101114 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          @page {
+            margin: 2mm;
+            size: auto;
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -27,6 +27,26 @@ describe("AdminProductsTable Component", () => {
         minSellingPrice: 1600,
         maxSellingPrice: 1600,
         minDiscountPrice: 1350,
+        variants: [
+          {
+            id: "var-1",
+            sku: "VL-TEE-BLK-M",
+            size: "M",
+            color: "Black",
+            sellingPrice: 1600,
+            discountPrice: 1350,
+            stock: 20,
+          },
+          {
+            id: "var-2",
+            sku: "VL-TEE-BLK-L",
+            size: "L",
+            color: "Black",
+            sellingPrice: 1600,
+            discountPrice: 1350,
+            stock: 12,
+          },
+        ],
         createdAt: new Date("2026-01-01"),
         updatedAt: new Date("2026-01-02"),
       },
@@ -44,6 +64,17 @@ describe("AdminProductsTable Component", () => {
         minSellingPrice: 3200,
         maxSellingPrice: 3200,
         minDiscountPrice: null,
+        variants: [
+          {
+            id: "var-3",
+            sku: "VL-HOD-GRY-L",
+            size: "L",
+            color: "Grey",
+            sellingPrice: 3200,
+            discountPrice: null,
+            stock: 0,
+          },
+        ],
         createdAt: new Date("2026-01-03"),
         updatedAt: new Date("2026-01-04"),
       },
@@ -156,4 +187,40 @@ describe("AdminProductsTable Component", () => {
 
     expect(html).toContain('loading="lazy"');
   });
+
+  test("renders keyboard shortcut badge, Export CSV button, selection checkboxes, and variant breakdown", () => {
+    const html = renderToStaticMarkup(
+      <AdminProductsTable initialData={sampleData} currentFilters={defaultFilters} />
+    );
+
+    // Keyboard shortcut '/'
+    expect(html).toContain("Press / to search");
+
+    // Export CSV button
+    expect(html).toContain("Export CSV");
+
+    // Checkboxes
+    expect(html).toContain('aria-label="Select all products"');
+    expect(html).toContain('aria-label="Select Heavyweight Graphic Tee"');
+
+    // Variant breakdown button
+    expect(html).toContain("Click to view variant stock details");
+  });
+
+  test("renders clickable category pills, column customizer, and barcode print actions", () => {
+    const html = renderToStaticMarkup(
+      <AdminProductsTable initialData={sampleData} currentFilters={defaultFilters} />
+    );
+
+    // Clickable Category Pills
+    expect(html).toContain('title="Filter by category: T-Shirts"');
+    expect(html).toContain('title="Filter by category: Hoodies"');
+
+    // Column Visibility Customizer button
+    expect(html).toContain("Columns");
+
+    // Barcode / Price Tag Printing action button in rows
+    expect(html).toContain('title="Print price tag barcode labels for this product"');
+  });
 });
+
