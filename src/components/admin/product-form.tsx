@@ -470,6 +470,14 @@ export function ProductForm({
         return saveProductAction(state, formData);
       }}
       submitLabel={product ? "Save product" : "Create product"}
+      secondaryAction={
+        <Link
+          href="/admin/products"
+          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        >
+          Cancel
+        </Link>
+      }
     >
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
@@ -518,7 +526,7 @@ export function ProductForm({
 
           <div className="flex justify-center bg-[#FAFAF9] p-4 sm:p-6">
             {/* ── Product Card Canvas matching product-card.tsx ── */}
-            <div className="group relative flex w-full max-w-[270px] flex-col overflow-hidden rounded-sm border border-[#101114]/15 bg-white p-3 shadow-xs transition-all hover:shadow-md">
+            <div className="group relative flex w-full max-w-67.5 flex-col overflow-hidden rounded-sm border border-[#101114]/15 bg-white p-3 shadow-xs transition-all hover:shadow-md">
               {/* ── Image Canvas with 2:3 Aspect Ratio ── */}
               <div
                 className="relative block w-full overflow-hidden bg-[#f2f2f2]"
@@ -1266,16 +1274,6 @@ export function ProductForm({
             <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
           </select>
         </div>
-      </div>
-
-      {/* FOOTER ACTIONS */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        <Link
-          href="/admin/products"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-        >
-          Back to products
-        </Link>
       </div>
     </AdminSaveForm>
   );

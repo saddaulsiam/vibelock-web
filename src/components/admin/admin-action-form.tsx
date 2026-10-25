@@ -35,10 +35,12 @@ export function AdminSaveForm({
   action,
   children,
   submitLabel,
+  secondaryAction,
 }: {
   action: (state: AdminActionState, formData: FormData) => Promise<AdminActionState>;
   children: React.ReactNode;
   submitLabel: string;
+  secondaryAction?: React.ReactNode;
 }) {
   const [state, formAction] = useActionState(action, initialState);
   return (
@@ -57,7 +59,10 @@ export function AdminSaveForm({
           {state.message}
         </p>
       ) : null}
-      <SubmitButton label={submitLabel} />
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 pt-4">
+        {secondaryAction ?? <div />}
+        <SubmitButton label={submitLabel} />
+      </div>
     </form>
   );
 }

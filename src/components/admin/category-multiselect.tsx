@@ -25,6 +25,7 @@ export function CategoryMultiSelect({
   const [selectedIds, setSelectedIds] = React.useState<string[]>(initialSelectedIds);
   const [query, setQuery] = React.useState("");
   const [isOpen, setIsOpen] = React.useState(false);
+  const [openUpwards, setOpenUpwards] = React.useState(false);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
@@ -65,6 +66,20 @@ export function CategoryMultiSelect({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, closeDropdown]);
+
+  // Measure space and auto-flip upwards if near bottom of viewport
+  React.useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+        setOpenUpwards(true);
+      } else {
+        setOpenUpwards(false);
+      }
+    }
+  }, [isOpen]);
 
   // Focus search input when dropdown opens
   React.useEffect(() => {
@@ -213,7 +228,11 @@ export function CategoryMultiSelect({
 
       {/* Dropdown Menu / Popover */}
       {isOpen && (
-        <div className="absolute top-full left-0 z-50 mt-1 w-full border border-[#101114]/20 bg-white shadow-xl">
+        <div
+          className={`absolute left-0 z-50 w-full border border-[#101114]/20 bg-white shadow-2xl ${
+            openUpwards ? "bottom-full mb-1" : "top-full mt-1"
+          }`}
+        >
           {/* Search Bar */}
           <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-2.5">
             <div className="relative flex items-center">
