@@ -229,8 +229,8 @@ function RegisterForm() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative hidden h-full w-full overflow-hidden bg-[#0c0d10] lg:block">
         <Image
-          src="/images/login-front-model.png"
-          alt="VibeLock Streetwear Campaign - Dhaka Youth oversized t-shirt front view"
+          src="/images/auth/login-front-model.png"
+          alt="VibeLock Register Page Image"
           fill
           priority
           sizes="50vw"
@@ -260,8 +260,8 @@ function RegisterForm() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative h-44 w-full overflow-hidden bg-[#0c0d10] sm:h-56 lg:hidden">
         <Image
-          src="/images/login-front-model.png"
-          alt="VibeLock Streetwear Campaign"
+          src="/images/auth/login-front-model.png"
+          alt="VibeLock Register Page Image"
           fill
           priority
           sizes="100vw"
@@ -279,7 +279,10 @@ function RegisterForm() {
             <ChevronLeft className="size-4" />
             <span>Back to Home</span>
           </Link>
-          <Link href="/" className="font-heading text-lg font-black tracking-wider text-[#F3F0E8] uppercase">
+          <Link
+            href="/"
+            className="font-heading text-lg font-black tracking-wider text-[#F3F0E8] uppercase"
+          >
             VIBELOCK
           </Link>
         </div>
@@ -321,7 +324,9 @@ function RegisterForm() {
                 </h2>
                 <p className="text-sm leading-relaxed text-[#777982]">
                   We sent a confirmation link to{" "}
-                  <strong className="text-[#F3F0E8]">{formData.email}</strong>. Please click the link in your email to verify your account and activate your exclusive member drops.
+                  <strong className="text-[#F3F0E8]">{formData.email}</strong>. Please click the
+                  link in your email to verify your account and activate your exclusive member
+                  drops.
                 </p>
               </div>
 
@@ -497,7 +502,9 @@ function RegisterForm() {
                     <div className="flex items-center gap-1.5 pt-0.5 text-[11px]">
                       <span
                         className={`flex size-3.5 items-center justify-center rounded-full ${
-                          hasMinLength ? "bg-[#00D9FF] text-[#101114]" : "bg-[#303137] text-[#777982]"
+                          hasMinLength
+                            ? "bg-[#00D9FF] text-[#101114]"
+                            : "bg-[#303137] text-[#777982]"
                         }`}
                       >
                         <Check className="size-2.5 stroke-[3]" />
@@ -511,13 +518,20 @@ function RegisterForm() {
                   {/* Terms & Privacy statement */}
                   <p className="text-[10px] leading-relaxed text-[#777982]">
                     By creating an account, you agree to VibeLock&apos;s{" "}
-                    <Link href="/terms" className="text-[#00D9FF] underline-offset-2 hover:underline">
+                    <Link
+                      href="/terms"
+                      className="text-[#00D9FF] underline-offset-2 hover:underline"
+                    >
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-[#00D9FF] underline-offset-2 hover:underline">
+                    <Link
+                      href="/privacy"
+                      className="text-[#00D9FF] underline-offset-2 hover:underline"
+                    >
                       Privacy Policy
-                    </Link>.
+                    </Link>
+                    .
                   </p>
 
                   {/* Primary Cyan Create Account Button */}
@@ -584,7 +598,7 @@ function RegisterForm() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             disabled={isLoading}
-                            className="h-11 border-0 bg-transparent py-2.5 text-sm text-[#F3F0E8] placeholder:text-[#5E606A] shadow-none focus-visible:ring-0"
+                            className="h-11 border-0 bg-transparent py-2.5 text-sm text-[#F3F0E8] shadow-none placeholder:text-[#5E606A] focus-visible:ring-0"
                           />
                         </div>
                         <p className="text-[11px] text-[#777982]">
@@ -646,7 +660,10 @@ function RegisterForm() {
                         </div>
                       )}
 
-                      <div className="flex justify-between gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
+                      <div
+                        className="flex justify-between gap-1.5 sm:gap-2"
+                        onPaste={handleOtpPaste}
+                      >
                         {otpDigits.map((digit, index) => (
                           <input
                             key={index}
@@ -710,9 +727,7 @@ function RegisterForm() {
                   <span className="w-full border-t border-[#303137]" />
                 </div>
                 <div className="relative flex justify-center text-[10px] tracking-widest uppercase">
-                  <span className="bg-[#101114] px-3 font-semibold text-[#777982]">
-                    OR
-                  </span>
+                  <span className="bg-[#101114] px-3 font-semibold text-[#777982]">OR</span>
                 </div>
               </div>
 

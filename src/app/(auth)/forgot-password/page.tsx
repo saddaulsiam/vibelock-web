@@ -47,8 +47,8 @@ export default function ForgotPasswordPage() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative hidden h-full w-full overflow-hidden bg-[#0c0d10] lg:block">
         <Image
-          src="/images/login-back-model.png"
-          alt="VibeLock Streetwear Campaign - Dhaka Youth"
+          src="/images/auth/login-back-model.png"
+          alt="VibeLock Forgot Password Page Image"
           fill
           priority
           sizes="50vw"
@@ -78,8 +78,8 @@ export default function ForgotPasswordPage() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative h-44 w-full overflow-hidden bg-[#0c0d10] sm:h-56 lg:hidden">
         <Image
-          src="/images/login-back-model.png"
-          alt="VibeLock Streetwear Campaign"
+          src="/images/auth/login-back-model.png"
+          alt="VibeLock Forgot Password Page Image"
           fill
           priority
           sizes="100vw"

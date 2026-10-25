@@ -190,8 +190,8 @@ function LoginForm() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative hidden h-full w-full overflow-hidden bg-[#0c0d10] lg:block">
         <Image
-          src="/images/login-back-model.png"
-          alt="VibeLock Streetwear Campaign - Dhaka Youth oversized t-shirt back logo"
+          src="/images/auth/login-back-model.png"
+          alt="VibeLock Login Page Image"
           fill
           priority
           sizes="50vw"
@@ -221,8 +221,8 @@ function LoginForm() {
       ══════════════════════════════════════════════════════ */}
       <div className="relative h-44 w-full overflow-hidden bg-[#0c0d10] sm:h-56 lg:hidden">
         <Image
-          src="/images/login-back-model.png"
-          alt="VibeLock Streetwear Campaign"
+          src="/images/auth/login-back-model.png"
+          alt="VibeLock Login Page Image"
           fill
           priority
           sizes="100vw"
@@ -240,7 +240,10 @@ function LoginForm() {
             <ChevronLeft className="size-4" />
             <span>Back to Home</span>
           </Link>
-          <Link href="/" className="font-heading text-lg font-black tracking-wider text-[#F3F0E8] uppercase">
+          <Link
+            href="/"
+            className="font-heading text-lg font-black tracking-wider text-[#F3F0E8] uppercase"
+          >
             VIBELOCK
           </Link>
         </div>
@@ -278,9 +281,7 @@ function LoginForm() {
             <h1 className="font-heading text-3xl font-black tracking-tight text-[#F3F0E8] sm:text-4xl">
               Welcome Back
             </h1>
-            <p className="text-sm font-normal text-[#777982]">
-              Log in to your VibeLock account
-            </p>
+            <p className="text-sm font-normal text-[#777982]">Log in to your VibeLock account</p>
           </div>
 
           {/* Authentication Method Switcher (Minimalist streetwear pills) */}
@@ -443,7 +444,7 @@ function LoginForm() {
                         onChange={(e) => setPhone(e.target.value)}
                         disabled={isLoading}
                         autoFocus
-                        className="h-11 border-0 bg-transparent py-2.5 text-sm text-[#F3F0E8] placeholder:text-[#5E606A] shadow-none focus-visible:ring-0"
+                        className="h-11 border-0 bg-transparent py-2.5 text-sm text-[#F3F0E8] shadow-none placeholder:text-[#5E606A] focus-visible:ring-0"
                       />
                     </div>
                     <p className="text-[11px] text-[#777982]">
@@ -572,9 +573,7 @@ function LoginForm() {
               <span className="w-full border-t border-[#303137]" />
             </div>
             <div className="relative flex justify-center text-[10px] tracking-widest uppercase">
-              <span className="bg-[#101114] px-3 font-semibold text-[#777982]">
-                OR
-              </span>
+              <span className="bg-[#101114] px-3 font-semibold text-[#777982]">OR</span>
             </div>
           </div>
 
