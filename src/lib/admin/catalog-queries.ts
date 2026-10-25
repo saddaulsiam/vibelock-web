@@ -102,6 +102,7 @@ export async function getAdminProductFormData(id?: string) {
                 costPrice: true,
                 sellingPrice: true,
                 discountPrice: true,
+                weight: true,
                 inventoryTransactions: {
                   select: { quantity: true },
                 },
@@ -127,12 +128,11 @@ export async function getAdminProductFormData(id?: string) {
             sku: variant.sku,
             size: variant.size ?? "",
             color: variant.color ?? "",
+            weight: variant.weight ? String(variant.weight) : "",
             costPrice: variant.costPrice.toFixed(2),
             sellingPrice: variant.sellingPrice.toFixed(2),
             discountPrice: variant.discountPrice?.toFixed(2) ?? "",
-            stock: String(
-              variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)
-            ),
+            stock: String(variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)),
           })),
           images: product.images,
           status: product.status as ProductStatus,

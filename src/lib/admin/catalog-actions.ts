@@ -254,6 +254,7 @@ const variantInputSchema = z.object({
     ),
   discountPrice: z.string().optional().default(""),
   stock: z.union([z.string(), z.number()]).optional().default("0"),
+  weight: z.string().optional().default(""),
 });
 
 type ProductVariantInput = z.infer<typeof variantInputSchema>;
@@ -418,6 +419,7 @@ async function parseProduct(formData: FormData) {
     color: variant.color.trim(),
     discountPrice: variant.discountPrice.trim(),
     stock: String(variant.stock ?? "0").trim(),
+    weight: variant.weight.trim(),
   }));
   const seenSkus = new Set<string>();
   const seenCombinations = new Set<string>();
@@ -557,6 +559,10 @@ export async function saveProductAction(
           sku: variant.sku || generatedSku(product.slug),
           size: variant.size || null,
           color: variant.color || null,
+          weight:
+            variant.weight && !isNaN(Number(variant.weight))
+              ? new Prisma.Decimal(variant.weight)
+              : null,
           costPrice: new Prisma.Decimal(variant.costPrice),
           sellingPrice: new Prisma.Decimal(variant.sellingPrice),
           discountPrice:

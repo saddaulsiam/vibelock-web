@@ -14,13 +14,17 @@ export type ProductImageItem = {
 
 interface ProductImageUploaderProps {
   initialImages?: { url: string; alt?: string | null; isPrimary?: boolean }[];
+  onImagesChange?: (images: { url: string; isPrimary: boolean }[]) => void;
 }
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES = 12;
 
-export function ProductImageUploader({ initialImages = [] }: ProductImageUploaderProps) {
+export function ProductImageUploader({
+  initialImages = [],
+  onImagesChange,
+}: ProductImageUploaderProps) {
   const [images, setImages] = React.useState<ProductImageItem[]>(() =>
     initialImages.map((img, index) => ({
       id: `init-${index}-${img.url}`,
@@ -28,6 +32,15 @@ export function ProductImageUploader({ initialImages = [] }: ProductImageUploade
       isExisting: true,
     }))
   );
+
+  React.useEffect(() => {
+    onImagesChange?.(
+      images.map((item, index) => ({
+        url: item.url,
+        isPrimary: index === 0,
+      }))
+    );
+  }, [images, onImagesChange]);
 
   const [useUrlInput, setUseUrlInput] = React.useState(false);
   const [externalUrlText, setExternalUrlText] = React.useState("");
