@@ -56,8 +56,8 @@ export default function ForgotPasswordPage() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#101114]" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101114] via-transparent to-black/30" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#101114]" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#101114] via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
         <div className="absolute bottom-10 left-10 z-10 max-w-xs">
@@ -85,7 +85,7 @@ export default function ForgotPasswordPage() {
           sizes="100vw"
           className="object-cover object-[center_25%]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101114] via-[#101114]/40 to-black/50" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#101114] via-[#101114]/40 to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
@@ -114,7 +114,7 @@ export default function ForgotPasswordPage() {
         <header className="hidden items-center justify-between lg:flex">
           <Link
             href="/login"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#777982] transition-colors hover:text-[#F3F0E8]"
+            className="group text-vl-grey inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#F3F0E8]"
           >
             <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Login</span>
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
             <h1 className="font-heading text-3xl font-black tracking-tight text-[#F3F0E8] sm:text-4xl">
               Forgot Password
             </h1>
-            <p className="text-sm font-normal text-[#777982]">
+            <p className="text-vl-gre text-sm font-normal">
               Enter your registered email address and we&apos;ll send you a password reset link.
             </p>
           </div>
@@ -171,7 +171,7 @@ export default function ForgotPasswordPage() {
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="pointer-events-none absolute top-3.5 left-3.5 size-4 text-[#777982]" />
+                <Mail className="text-vl-grey pointer-events-none absolute top-3.5 left-3.5 size-4" />
                 <Input
                   id="email"
                   type="email"
@@ -181,7 +181,7 @@ export default function ForgotPasswordPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
                   autoComplete="email"
-                  className="h-11 rounded-lg border-[#303137] bg-[#16171B] pl-10 text-sm text-[#F3F0E8] placeholder:text-[#5E606A] focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF]/30"
+                  className="border-vl-border h-11 rounded-lg bg-[#16171B] pl-10 text-sm text-[#F3F0E8] placeholder:text-[#5E606A] focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF]/30"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function ForgotPasswordPage() {
           </form>
 
           {/* Footer Back to Login Link */}
-          <div className="mt-8 text-center text-xs text-[#777982]">
+          <div className="text-vl-grey mt-8 text-center text-xs">
             Remember your password?{" "}
             <Link
               href="/login"

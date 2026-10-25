@@ -199,8 +199,8 @@ function LoginForm() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#101114]" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101114] via-transparent to-black/30" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#101114]" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#101114] via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
         <div className="absolute bottom-10 left-10 z-10 max-w-xs">
@@ -228,7 +228,7 @@ function LoginForm() {
           sizes="100vw"
           className="object-cover object-[center_25%]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#101114] via-[#101114]/40 to-black/50" />
+        <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-[#101114] via-[#101114]/40 to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
@@ -257,7 +257,7 @@ function LoginForm() {
         <header className="hidden items-center justify-between lg:flex">
           <Link
             href="/"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#777982] transition-colors hover:text-[#F3F0E8]"
+            className="group text-vl-grey inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#F3F0E8]"
           >
             <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Home</span>
@@ -281,11 +281,11 @@ function LoginForm() {
             <h1 className="font-heading text-3xl font-black tracking-tight text-[#F3F0E8] sm:text-4xl">
               Welcome Back
             </h1>
-            <p className="text-sm font-normal text-[#777982]">Log in to your VibeLock account</p>
+            <p className="text-vl-grey text-sm font-normal">Log in to your VibeLock account</p>
           </div>
 
           {/* Authentication Method Switcher (Minimalist streetwear pills) */}
-          <div className="mt-6 flex rounded-lg border border-[#303137]/60 bg-[#16171B] p-1">
+          <div className="border-vl-border/60 mt-6 flex rounded-lg border bg-[#16171B] p-1">
             <button
               type="button"
               onClick={() => {
@@ -581,7 +581,7 @@ function LoginForm() {
           <form action={googleSignInAction} className="w-full">
             <SubmitButton
               variant="outline"
-              className="h-11 w-full gap-2.5 rounded-lg border-[#303137] bg-[#16171B] text-xs font-bold text-[#F3F0E8] transition-all hover:border-[#777982]/60 hover:bg-[#212228]"
+              className="h-11 w-full gap-2.5 rounded-lg border-[#303137] bg-[#16171B] text-xs font-bold text-[#F3F0E8] transition-all hover:border-[#777982]/60 hover:bg-[#212228] hover:text-white"
               pendingText="Connecting to Google..."
             >
               <svg className="size-4 shrink-0" viewBox="0 0 24 24">

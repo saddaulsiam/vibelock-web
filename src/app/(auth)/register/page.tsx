@@ -735,7 +735,7 @@ function RegisterForm() {
               <form action={googleSignInAction} className="w-full">
                 <SubmitButton
                   variant="outline"
-                  className="h-10 w-full gap-2.5 rounded-lg border-[#303137] bg-[#16171B] text-xs font-bold text-[#F3F0E8] transition-all hover:border-[#777982]/60 hover:bg-[#212228]"
+                  className="h-10 w-full gap-2.5 rounded-lg border-[#303137] bg-[#16171B] text-xs font-bold text-[#F3F0E8] transition-all hover:border-[#777982]/60 hover:bg-[#212228] hover:text-white"
                   pendingText="Connecting to Google..."
                 >
                   <svg className="size-4 shrink-0" viewBox="0 0 24 24">
