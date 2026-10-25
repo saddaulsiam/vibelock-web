@@ -53,12 +53,13 @@ export function toCardProduct(
       : undefined;
 
     const secondaryImage =
-      "images" in product &&
+      product.secondaryImage?.url ??
+      ("images" in product &&
       Array.isArray((product as { images?: { url: string; isPrimary?: boolean }[] }).images)
-        ? (product as { images?: { url: string; isPrimary?: boolean }[] }).images?.find(
-            (img) => !img.isPrimary
-          )?.url
-        : undefined;
+        ? ((product as { images?: { url: string; isPrimary?: boolean }[] }).images?.find(
+            (img) => !img.isPrimary && img.url !== product.primaryImage?.url
+          )?.url ?? (product as { images?: { url: string }[] }).images?.[1]?.url)
+        : undefined);
 
     return {
       id: product.id,
@@ -136,7 +137,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
               fill
               sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               className={cn(
-                "object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105",
+                "object-cover object-center transition-all duration-500 ease-out group-hover:scale-105",
                 hasSecondaryImage && "group-hover:opacity-0"
               )}
               onError={() => setFailedImage(item.image)}

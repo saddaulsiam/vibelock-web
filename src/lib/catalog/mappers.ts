@@ -84,6 +84,9 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
   const available = mappedVariants.some((v) => v.available);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0] || null;
+  const secondaryImage =
+    product.images.find((img) => !img.isPrimary && img.url !== primaryImage?.url) ||
+    (product.images.length > 1 && product.images[1] ? product.images[1] : null);
 
   return {
     id: product.id,
@@ -92,6 +95,8 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     description: product.description,
     status: product.status,
     primaryImage: primaryImage ? mapImage(primaryImage) : null,
+    secondaryImage: secondaryImage ? mapImage(secondaryImage) : null,
+    images: product.images.map(mapImage),
     minPrice: mappedVariants.length > 0 ? minPrice : 0,
     maxPrice: mappedVariants.length > 0 ? maxPrice : 0,
     hasDiscount,

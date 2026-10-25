@@ -531,7 +531,9 @@ export function ProductForm({
                       alt={name || "Product image preview"}
                       fill
                       sizes="270px"
-                      className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                      className={`object-cover object-center transition-all duration-500 ease-out group-hover:scale-105 ${
+                        secondaryImageUrl ? "group-hover:opacity-0" : ""
+                      }`}
                       unoptimized
                     />
                     {secondaryImageUrl && (
