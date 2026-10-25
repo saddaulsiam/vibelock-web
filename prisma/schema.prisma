@@ -107,8 +107,10 @@ enum DiscountType {
 model User {
   id            String    @id @default(uuid())
   email         String    @unique
+  phone         String?   @unique
   name          String?
   emailVerified DateTime?
+  phoneVerified DateTime?
   image         String?
   passwordHash  String?
   role          Role      @default(CUSTOMER)

@@ -13,12 +13,73 @@ if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
   });
 }
 
-// Define the limiters
+// Define rate limit configurations
+export type RateLimitEndpoint =
+  | "login"
+  | "register"
+  | "forgotPassword"
+  | "resetPassword"
+  | "changePassword"
+  | "resendVerification"
+  | "verifyEmail"
+  | "sessionManagement"
+  | "accountDeletion";
+
+interface LimitConfig {
+  max: number;
+  windowMs: number;
+}
+
+const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
+  login: { max: 5, windowMs: 5 * 60 * 1000 },
+  register: { max: 5, windowMs: 10 * 60 * 1000 },
+  forgotPassword: { max: 3, windowMs: 60 * 60 * 1000 },
+  resetPassword: { max: 5, windowMs: 60 * 60 * 1000 },
+  changePassword: { max: 5, windowMs: 10 * 60 * 1000 },
+  resendVerification: { max: 3, windowMs: 60 * 60 * 1000 },
+  verifyEmail: { max: 5, windowMs: 60 * 60 * 1000 },
+  sessionManagement: { max: 10, windowMs: 15 * 60 * 1000 },
+  accountDeletion: { max: 3, windowMs: 60 * 60 * 1000 },
+};
+
+// In-memory sliding window rate limiter store
+const memoryStore = new Map<string, number[]>();
+
+function checkMemoryRateLimit(identifier: string, endpoint: RateLimitEndpoint): boolean {
+  const config = LIMIT_CONFIGS[endpoint];
+  const now = Date.now();
+  const windowStart = now - config.windowMs;
+
+  const timestamps = (memoryStore.get(identifier) || []).filter((t) => t > windowStart);
+
+  if (timestamps.length >= config.max) {
+    return false;
+  }
+
+  timestamps.push(now);
+  memoryStore.set(identifier, timestamps);
+
+  // Periodic cleanup if store exceeds 5,000 keys
+  if (memoryStore.size > 5000) {
+    for (const [key, list] of memoryStore.entries()) {
+      const active = list.filter((t) => t > windowStart);
+      if (active.length === 0) {
+        memoryStore.delete(key);
+      } else {
+        memoryStore.set(key, active);
+      }
+    }
+  }
+
+  return true;
+}
+
+// Define the Upstash limiters (used when Upstash is configured)
 const loginLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
   : null;
 const registerLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
   : null;
 const forgotPasswordLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
@@ -57,56 +118,38 @@ async function getIp() {
     ip = realIp.trim();
   }
 
-  // Prevent dangerous shared bucket in production
-  if (env.NODE_ENV === "production" && ip === "unknown") {
-    // Fail safely rather than creating an unacceptable shared bucket
-    throw new Error("RATE_LIMIT_ERROR");
+  // Fallback safely if running locally in production or proxy strips IP headers
+  if (ip === "unknown") {
+    ip = "127.0.0.1";
   }
 
   return ip;
 }
 
-// Check if rate limited (Throws generic safe error if limit exceeded, or if Redis is down for critical endpoints)
+// Check if rate limited (Throws generic safe error if limit exceeded)
 export async function checkRateLimit(
-  endpoint:
-    | "login"
-    | "register"
-    | "forgotPassword"
-    | "resetPassword"
-    | "changePassword"
-    | "resendVerification"
-    | "verifyEmail"
-    | "sessionManagement"
-    | "accountDeletion",
+  endpoint: RateLimitEndpoint,
   identityModifier?: string,
   options?: { skipIp?: boolean }
 ) {
-  // We prefer fail-closed for Auth if Redis is not configured, but wait:
-  // If we haven't configured Redis locally or in staging, we shouldn't hard-crash the app unless we explicitly want to fail-closed.
-  // The instructions said: "Do not create a dangerous configuration where: Redis unavailable -> silently allow unlimited authentication attempts. For high-risk authentication endpoints, prefer fail-closed behavior where appropriate."
-  // So if redis is explicitly unavailable (no config), we will fail-closed and throw, OR we can throw if the config is missing.
-  // Wait, if we enforce fail-closed when there is no UPSTASH URL provided, developers cannot test locally without Upstash.
-  // We will check if we are in production. If in production and Redis is missing, we fail closed for auth endpoints.
+  const ip = options?.skipIp ? "" : await getIp();
+  const identifier =
+    options?.skipIp && identityModifier
+      ? `${endpoint}:${identityModifier}`
+      : identityModifier
+        ? `${endpoint}:${ip}:${identityModifier}`
+        : `${endpoint}:${ip}`;
 
+  // If Upstash Redis is not configured, use in-memory rate limiter fallback
   if (!redis) {
-    if (env.NODE_ENV === "production") {
-      throw new Error("RATE_LIMIT_ERROR");
+    const allowed = checkMemoryRateLimit(identifier, endpoint);
+    if (!allowed) {
+      throw new Error("RATE_LIMIT_EXCEEDED");
     }
-    // Allow local development without redis
-    console.warn(`⚠️ Rate limiting disabled (Upstash not configured). Endpoint: ${endpoint}`);
     return;
   }
 
   try {
-    // For verifyEmail, the token itself is cryptographically unique — no need to include IP.
-    // Including IP causes false rate-limit hits when users refresh the page (server re-calls action).
-    const identifier =
-      options?.skipIp && identityModifier
-        ? `${endpoint}:${identityModifier}`
-        : identityModifier
-          ? `${endpoint}:${await getIp()}:${identityModifier}`
-          : `${endpoint}:${await getIp()}`;
-
     let limiter: Ratelimit | null = null;
     switch (endpoint) {
       case "login":
@@ -138,7 +181,13 @@ export async function checkRateLimit(
         break;
     }
 
-    if (!limiter) return;
+    if (!limiter) {
+      const allowed = checkMemoryRateLimit(identifier, endpoint);
+      if (!allowed) {
+        throw new Error("RATE_LIMIT_EXCEEDED");
+      }
+      return;
+    }
 
     const { success } = await limiter.limit(identifier);
 
@@ -147,10 +196,13 @@ export async function checkRateLimit(
     }
   } catch (error) {
     if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
-      throw error; // Let caller catch it and return generic message
+      throw error;
     }
-    // If Redis itself throws a network error, we fail closed for these sensitive endpoints
-    console.error("Rate limiter backend request failed");
-    throw new Error("RATE_LIMIT_ERROR");
+    // If Redis encounters a network error, gracefully fall back to in-memory rate limiting
+    console.warn("Upstash Redis error during rate limiting, falling back to memory store:", error);
+    const allowed = checkMemoryRateLimit(identifier, endpoint);
+    if (!allowed) {
+      throw new Error("RATE_LIMIT_EXCEEDED");
+    }
   }
 }

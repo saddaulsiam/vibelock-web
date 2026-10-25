@@ -24,6 +24,11 @@ vi.mock("@/lib/config/env", () => ({
   },
 }));
 
+vi.mock("@/lib/sms/client", () => ({
+  verifyOtp: vi.fn(async (phone: string, otp: string) => otp === "123456"),
+  sendOtp: vi.fn(async () => ({ success: true, devOtp: "123456" })),
+}));
+
 describe("Auth.js Configuration & JWT Strategy", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -188,4 +193,32 @@ describe("Auth.js Configuration & JWT Strategy", () => {
       emailVerified: new Date("2026-02-01T00:00:00Z"),
     });
   });
+
+  test("credentials provider authorize supports phone and OTP login", async () => {
+    const credentialsProvider = authConfig.providers.find(
+      (p: any) => typeof p === "object" && p?.id === "credentials"
+    ) as any;
+    const authorize = credentialsProvider.options?.authorize ?? credentialsProvider.authorize;
+
+    // Invalid OTP
+    expect(await authorize({ phone: "01712345678", otp: "000000" })).toBeNull();
+
+    // Valid OTP for existing user
+    vi.spyOn(prisma.user, "findUnique").mockResolvedValueOnce({
+      id: "phone-user-id",
+      name: "Phone User",
+      email: "01712345678@vibelock.bd",
+      phone: "01712345678",
+      role: "CUSTOMER",
+      phoneVerified: new Date("2026-01-01"),
+    } as any);
+
+    const user = await authorize({ phone: "01712345678", otp: "123456" });
+    expect(user).toMatchObject({
+      id: "phone-user-id",
+      name: "Phone User",
+      role: "CUSTOMER",
+    });
+  });
 });
+
