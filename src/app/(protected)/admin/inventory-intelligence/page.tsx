@@ -393,9 +393,10 @@ async function InventoryIntelligenceTable({
                   <td className="p-3 text-right">
                     <Link
                       href={`/admin/inventory/${item.id}`}
-                      className="text-primary font-medium hover:underline"
+                      className="inline-flex h-7 items-center rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-semibold text-[#101114] shadow-2xs hover:bg-[#F3F0E8]"
+                      title="View complete ledger, timeline, and PO reorder for this variant"
                     >
-                      Detail
+                      Ledger & PO →
                     </Link>
                   </td>
                 </tr>

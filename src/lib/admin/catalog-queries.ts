@@ -4,6 +4,66 @@ import { ProductStatus } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
+export type AdminProductsQueryOptions = {
+  search?: string;
+  category?: string;
+  status?: string;
+  stockStatus?: string;
+  sort?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type AdminProductVariantItem = {
+  id: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  costPrice: number;
+  sellingPrice: number;
+  discountPrice: number | null;
+  stock: number;
+};
+
+export type AdminProductItem = {
+  id: string;
+  name: string;
+  slug: string;
+  status: ProductStatus;
+  primaryImage: string | null;
+  categories: { id: string; name: string; slug: string }[];
+  categoryNames: string[];
+  variantCount: number;
+  totalStock: number;
+  skus: string[];
+  minCostPrice: number | null;
+  maxCostPrice: number | null;
+  minSellingPrice: number | null;
+  maxSellingPrice: number | null;
+  minDiscountPrice: number | null;
+  variants: AdminProductVariantItem[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
+
+export type AdminProductsResult = {
+  products: AdminProductItem[];
+  allCategories: { id: string; name: string; slug: string }[];
+  totalFiltered: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  counts: {
+    total: number;
+    published: number;
+    draft: number;
+    archived: number;
+    inStock: number;
+    lowStock: number;
+    outOfStock: number;
+  };
+};
+
 export async function getAdminCategories() {
   await requireRole("ADMIN");
   return prisma.category.findMany({
@@ -42,41 +102,184 @@ export async function getAdminCategoryFormData(id?: string) {
   return { category, categories };
 }
 
-export async function getAdminProducts() {
+export async function getAdminProducts(
+  options?: AdminProductsQueryOptions
+): Promise<AdminProductsResult> {
   await requireRole("ADMIN");
-  const products = await prisma.product.findMany({
-    orderBy: [{ updatedAt: "desc" }, { name: "asc" }],
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      status: true,
-      categories: { select: { name: true } },
-      variants: { select: { sellingPrice: true, discountPrice: true } },
-    },
-  });
-  return products.map((product) => {
-    const sellingPrices = product.variants.map((variant) => variant.sellingPrice);
-    const discountPrices = product.variants
-      .filter(
-        (variant) =>
-          variant.discountPrice !== null && variant.discountPrice.lt(variant.sellingPrice)
-      )
-      .map((variant) => variant.discountPrice!);
+
+  const search = options?.search?.trim() || "";
+  const categoryFilter = options?.category?.trim() || "all";
+  const statusFilter = options?.status?.trim() || "all";
+  const stockFilter = options?.stockStatus?.trim() || "all";
+  const sort = options?.sort?.trim() || "newest";
+  const page = Math.max(1, Number(options?.page) || 1);
+  const pageSize = Math.max(5, Math.min(100, Number(options?.pageSize) || 20));
+
+  const [allCategories, rawProducts] = await Promise.all([
+    prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true },
+    }),
+    prisma.product.findMany({
+      orderBy: [{ updatedAt: "desc" }, { createdAt: "desc" }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+          take: 1,
+          select: { url: true },
+        },
+        categories: {
+          select: { id: true, name: true, slug: true },
+        },
+        variants: {
+          select: {
+            id: true,
+            sku: true,
+            size: true,
+            color: true,
+            costPrice: true,
+            sellingPrice: true,
+            discountPrice: true,
+            inventoryTransactions: {
+              select: { quantity: true },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  const allMappedProducts: AdminProductItem[] = rawProducts.map((p) => {
+    const costPrices = p.variants.map((v) => Number(v.costPrice));
+    const sellingPrices = p.variants.map((v) => Number(v.sellingPrice));
+    const discountPrices = p.variants
+      .filter((v) => v.discountPrice !== null && v.discountPrice.lt(v.sellingPrice))
+      .map((v) => Number(v.discountPrice!));
+
+    const mappedVariants: AdminProductVariantItem[] = p.variants.map((v) => ({
+      id: v.id,
+      sku: v.sku,
+      size: v.size ?? null,
+      color: v.color ?? null,
+      costPrice: Number(v.costPrice),
+      sellingPrice: Number(v.sellingPrice),
+      discountPrice: v.discountPrice !== null ? Number(v.discountPrice) : null,
+      stock: v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0),
+    }));
+
+    const totalStock = mappedVariants.reduce((acc, v) => acc + v.stock, 0);
+
     return {
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      status: product.status,
-      categories: product.categories.map((category) => category.name),
-      minSellingPrice: sellingPrices.length
-        ? Math.min(...sellingPrices.map((price) => Number(price)))
-        : null,
-      minDiscountPrice: discountPrices.length
-        ? Math.min(...discountPrices.map((price) => Number(price)))
-        : null,
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      status: p.status,
+      primaryImage: p.images[0]?.url ?? null,
+      categories: p.categories,
+      categoryNames: p.categories.map((c) => c.name),
+      variantCount: p.variants.length,
+      totalStock,
+      skus: p.variants.map((v) => v.sku),
+      minCostPrice: costPrices.length ? Math.min(...costPrices) : null,
+      maxCostPrice: costPrices.length ? Math.max(...costPrices) : null,
+      minSellingPrice: sellingPrices.length ? Math.min(...sellingPrices) : null,
+      maxSellingPrice: sellingPrices.length ? Math.max(...sellingPrices) : null,
+      minDiscountPrice: discountPrices.length ? Math.min(...discountPrices) : null,
+      variants: mappedVariants,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
     };
   });
+
+  const counts = {
+    total: allMappedProducts.length,
+    published: allMappedProducts.filter((p) => p.status === "PUBLISHED").length,
+    draft: allMappedProducts.filter((p) => p.status === "DRAFT").length,
+    archived: allMappedProducts.filter((p) => p.status === "ARCHIVED").length,
+    inStock: allMappedProducts.filter((p) => p.totalStock > 0).length,
+    lowStock: allMappedProducts.filter((p) => p.totalStock > 0 && p.totalStock <= 5).length,
+    outOfStock: allMappedProducts.filter((p) => p.totalStock <= 0).length,
+  };
+
+  let filtered = allMappedProducts;
+
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter((p) => {
+      const matchesName = p.name.toLowerCase().includes(q);
+      const matchesSlug = p.slug.toLowerCase().includes(q);
+      const matchesSku = p.skus.some((s) => s.toLowerCase().includes(q));
+      const matchesCat = p.categoryNames.some((c) => c.toLowerCase().includes(q));
+      return matchesName || matchesSlug || matchesSku || matchesCat;
+    });
+  }
+
+  if (statusFilter && statusFilter.toUpperCase() !== "ALL") {
+    filtered = filtered.filter((p) => p.status === statusFilter.toUpperCase());
+  }
+
+  if (categoryFilter && categoryFilter.toLowerCase() !== "all") {
+    filtered = filtered.filter((p) =>
+      p.categories.some((c) => c.id === categoryFilter || c.slug === categoryFilter)
+    );
+  }
+
+  if (stockFilter && stockFilter.toLowerCase() !== "all") {
+    const sf = stockFilter.toLowerCase();
+    if (sf === "in-stock") {
+      filtered = filtered.filter((p) => p.totalStock > 0);
+    } else if (sf === "low-stock") {
+      filtered = filtered.filter((p) => p.totalStock > 0 && p.totalStock <= 5);
+    } else if (sf === "out-of-stock") {
+      filtered = filtered.filter((p) => p.totalStock <= 0);
+    }
+  }
+
+  filtered.sort((a, b) => {
+    switch (sort) {
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "updated":
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      case "name_asc":
+        return a.name.localeCompare(b.name);
+      case "name_desc":
+        return b.name.localeCompare(a.name);
+      case "price_asc":
+        return (a.minSellingPrice ?? 0) - (b.minSellingPrice ?? 0);
+      case "price_desc":
+        return (b.minSellingPrice ?? 0) - (a.minSellingPrice ?? 0);
+      case "stock_asc":
+        return a.totalStock - b.totalStock;
+      case "stock_desc":
+        return b.totalStock - a.totalStock;
+      case "newest":
+      default:
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+  });
+
+  const totalFiltered = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const offset = (currentPage - 1) * pageSize;
+  const paginatedProducts = filtered.slice(offset, offset + pageSize);
+
+  return {
+    products: paginatedProducts,
+    allCategories,
+    totalFiltered,
+    page: currentPage,
+    pageSize,
+    totalPages,
+    counts,
+  };
 }
 
 export async function getAdminProductFormData(id?: string) {
@@ -102,6 +305,10 @@ export async function getAdminProductFormData(id?: string) {
                 costPrice: true,
                 sellingPrice: true,
                 discountPrice: true,
+                weight: true,
+                inventoryTransactions: {
+                  select: { quantity: true },
+                },
               },
             },
             images: {
@@ -124,9 +331,11 @@ export async function getAdminProductFormData(id?: string) {
             sku: variant.sku,
             size: variant.size ?? "",
             color: variant.color ?? "",
+            weight: variant.weight ? String(variant.weight) : "",
             costPrice: variant.costPrice.toFixed(2),
             sellingPrice: variant.sellingPrice.toFixed(2),
             discountPrice: variant.discountPrice?.toFixed(2) ?? "",
+            stock: String(variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)),
           })),
           images: product.images,
           status: product.status as ProductStatus,

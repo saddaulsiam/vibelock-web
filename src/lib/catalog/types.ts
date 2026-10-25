@@ -32,6 +32,8 @@ export interface ProductSummary {
   description: string | null;
   status: ProductStatus;
   primaryImage: ProductImageSummary | null;
+  secondaryImage?: ProductImageSummary | null;
+  images?: ProductImageSummary[];
   minPrice: number; // Lowest effective price among variants
   maxPrice: number;
   hasDiscount: boolean;

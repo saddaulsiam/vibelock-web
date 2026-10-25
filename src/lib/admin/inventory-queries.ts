@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, type InventoryTransactionType } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
@@ -10,7 +10,31 @@ function normalizePage(page: number) {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-export type InventoryFilter = "all" | "in-stock" | "low-stock" | "out-of-stock";
+export type InventoryFilter = "all" | "in-stock" | "low-stock" | "out-of-stock" | "negative";
+
+export type AdminInventoryItem = {
+  id: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  costPrice: number;
+  sellingPrice: number;
+  discountPrice: number | null;
+  productId: string;
+  productSlug: string;
+  primaryImage: string | null;
+  product: { id: string; name: string; slug: string };
+  totalStock: number;
+  reserved: number;
+  available: number;
+};
+
+export type AdminInventoryResult = {
+  variants: AdminInventoryItem[];
+  total: number;
+  totalPages: number;
+  page: number;
+};
 
 export async function getAdminInventory({
   search,
@@ -20,7 +44,7 @@ export async function getAdminInventory({
   search?: string;
   filter?: InventoryFilter;
   page?: number;
-}) {
+}): Promise<AdminInventoryResult> {
   await requireRole("ADMIN");
 
   const normalizedPage = normalizePage(page);
@@ -34,7 +58,9 @@ export async function getAdminInventory({
         ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) BETWEEN 1 AND 5`
         : filter === "out-of-stock"
           ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= 0`
-          : Prisma.empty;
+          : filter === "negative"
+            ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) < 0 OR (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) < 0)`
+            : Prisma.empty;
   const offset = (normalizedPage - 1) * pageSize;
   const inventoryCte = Prisma.sql`
     FROM "ProductVariant"
@@ -59,7 +85,13 @@ export async function getAdminInventory({
         sku: string;
         size: string | null;
         color: string | null;
+        costPrice: number | null;
+        sellingPrice: number | null;
+        discountPrice: number | null;
+        productId: string;
         productName: string;
+        productSlug: string;
+        primaryImage: string | null;
         totalStock: number;
         reserved: number;
         available: number;
@@ -70,10 +102,21 @@ export async function getAdminInventory({
         "ProductVariant"."sku",
         "ProductVariant"."size",
         "ProductVariant"."color",
+        "ProductVariant"."costPrice"::float AS "costPrice",
+        "ProductVariant"."sellingPrice"::float AS "sellingPrice",
+        "ProductVariant"."discountPrice"::float AS "discountPrice",
+        "Product"."id" AS "productId",
         "Product"."name" AS "productName",
+        "Product"."slug" AS "productSlug",
         COALESCE(stock.total_stock, 0)::int AS "totalStock",
         COALESCE(reserved.reserved_stock, 0)::int AS reserved,
-        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available
+        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available,
+        (
+          SELECT "url" FROM "ProductImage"
+          WHERE "ProductImage"."productId" = "Product"."id"
+          ORDER BY "isPrimary" DESC, "createdAt" ASC
+          LIMIT 1
+        ) AS "primaryImage"
       ${inventoryCte}
       ORDER BY "Product"."name" ASC, "ProductVariant"."sku" ASC
       LIMIT ${pageSize} OFFSET ${offset}
@@ -91,7 +134,13 @@ export async function getAdminInventory({
       sku: item.sku,
       size: item.size,
       color: item.color,
-      product: { name: item.productName },
+      costPrice: item.costPrice ?? 0,
+      sellingPrice: item.sellingPrice ?? 0,
+      discountPrice: item.discountPrice,
+      productId: item.productId,
+      productSlug: item.productSlug,
+      primaryImage: item.primaryImage,
+      product: { id: item.productId, name: item.productName, slug: item.productSlug },
       totalStock: item.totalStock,
       reserved: item.reserved,
       available: item.available,
@@ -102,8 +151,19 @@ export async function getAdminInventory({
   };
 }
 
-export async function getAdminInventoryDetail(variantId: string, page = 1) {
+export type AdminInventoryDetailOptions = {
+  page?: number;
+  type?: InventoryTransactionType | "ALL";
+};
+
+export async function getAdminInventoryDetail(
+  variantId: string,
+  pageOrOptions: number | AdminInventoryDetailOptions = 1
+) {
   await requireRole("ADMIN");
+
+  const page = typeof pageOrOptions === "number" ? pageOrOptions : (pageOrOptions?.page ?? 1);
+  const typeFilter = typeof pageOrOptions === "object" ? pageOrOptions?.type : undefined;
 
   const normalizedPage = normalizePage(page);
   const variant = await prisma.productVariant.findUnique({
@@ -117,55 +177,101 @@ export async function getAdminInventoryDetail(variantId: string, page = 1) {
       costPrice: true,
       sellingPrice: true,
       discountPrice: true,
-      product: { select: { id: true, name: true, slug: true } },
+      product: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          images: {
+            select: { url: true, isPrimary: true },
+            orderBy: { isPrimary: "desc" },
+            take: 1,
+          },
+        },
+      },
     },
   });
   if (!variant) return null;
 
-  const [stock, reserved, transactions, transactionCount] = await Promise.all([
-    prisma.inventoryTransaction.aggregate({
-      where: { variantId },
-      _sum: { quantity: true },
-    }),
-    prisma.inventoryReservation.aggregate({
-      where: {
-        variantId,
-        status: "RESERVED",
-        expiresAt: { gt: new Date() },
-      },
-      _sum: { quantity: true },
-    }),
-    prisma.inventoryTransaction.findMany({
-      where: { variantId },
-      orderBy: { createdAt: "desc" },
-      skip: (normalizedPage - 1) * pageSize,
-      take: pageSize,
-      select: {
-        id: true,
-        type: true,
-        quantity: true,
-        referenceId: true,
-        notes: true,
-        salesChannel: true,
-        createdAt: true,
-      },
-    }),
-    prisma.inventoryTransaction.count({ where: { variantId } }),
-  ]);
+  const transactionWhere: Prisma.InventoryTransactionWhereInput = {
+    variantId,
+    ...(typeFilter && typeFilter !== "ALL" ? { type: typeFilter } : {}),
+  };
+
+  const [stock, reserved, soldAgg, restockedAgg, damagedAgg, transactions, transactionCount] =
+    await Promise.all([
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryReservation.aggregate({
+        where: {
+          variantId,
+          status: "RESERVED",
+          expiresAt: { gt: new Date() },
+        },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "SALE" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "RESTOCK" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "DAMAGE" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.findMany({
+        where: transactionWhere,
+        orderBy: { createdAt: "desc" },
+        skip: (normalizedPage - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          type: true,
+          quantity: true,
+          referenceId: true,
+          notes: true,
+          salesChannel: true,
+          createdAt: true,
+        },
+      }),
+      prisma.inventoryTransaction.count({ where: transactionWhere }),
+    ]);
 
   const totalStock = stock._sum.quantity ?? 0;
   const reservedStock = reserved._sum.quantity ?? 0;
+  const totalSold = Math.abs(soldAgg._sum.quantity ?? 0);
+  const totalRestocked = restockedAgg._sum.quantity ?? 0;
+  const totalDamaged = Math.abs(damagedAgg._sum.quantity ?? 0);
 
   return {
-    variant,
+    variant: {
+      ...variant,
+      costPrice: Number(variant.costPrice ?? 0),
+      sellingPrice: Number(variant.sellingPrice ?? 0),
+      discountPrice: variant.discountPrice ? Number(variant.discountPrice) : null,
+      weight: variant.weight ? Number(variant.weight) : null,
+      primaryImage: variant.product.images[0]?.url ?? null,
+    },
     totalStock,
     reservedStock,
     availableStock: totalStock - reservedStock,
+    totalSold,
+    totalRestocked,
+    totalDamaged,
     transactions,
-    totalPages: Math.ceil(transactionCount / pageSize),
+    totalPages: Math.max(1, Math.ceil(transactionCount / pageSize)),
     page: normalizedPage,
+    totalTransactions: transactionCount,
+    typeFilter: typeFilter || "ALL",
   };
 }
+
+export type AdminInventoryDetailResult = NonNullable<Awaited<ReturnType<typeof getAdminInventoryDetail>>>;
 
 export type InventorySummary = {
   totalPhysicalStock: number;
@@ -286,7 +392,9 @@ export async function getAdminInventoryForExport({
         ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) BETWEEN 1 AND 5`
         : filter === "out-of-stock"
           ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= 0`
-          : Prisma.empty;
+          : filter === "negative"
+            ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) < 0 OR (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) < 0)`
+            : Prisma.empty;
 
   const inventoryCte = Prisma.sql`
     FROM "ProductVariant"
