@@ -10,7 +10,31 @@ function normalizePage(page: number) {
   return Number.isInteger(page) && page > 0 ? page : 1;
 }
 
-export type InventoryFilter = "all" | "in-stock" | "low-stock" | "out-of-stock";
+export type InventoryFilter = "all" | "in-stock" | "low-stock" | "out-of-stock" | "negative";
+
+export type AdminInventoryItem = {
+  id: string;
+  sku: string;
+  size: string | null;
+  color: string | null;
+  costPrice: number;
+  sellingPrice: number;
+  discountPrice: number | null;
+  productId: string;
+  productSlug: string;
+  primaryImage: string | null;
+  product: { id: string; name: string; slug: string };
+  totalStock: number;
+  reserved: number;
+  available: number;
+};
+
+export type AdminInventoryResult = {
+  variants: AdminInventoryItem[];
+  total: number;
+  totalPages: number;
+  page: number;
+};
 
 export async function getAdminInventory({
   search,
@@ -20,7 +44,7 @@ export async function getAdminInventory({
   search?: string;
   filter?: InventoryFilter;
   page?: number;
-}) {
+}): Promise<AdminInventoryResult> {
   await requireRole("ADMIN");
 
   const normalizedPage = normalizePage(page);
@@ -34,7 +58,9 @@ export async function getAdminInventory({
         ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) BETWEEN 1 AND 5`
         : filter === "out-of-stock"
           ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= 0`
-          : Prisma.empty;
+          : filter === "negative"
+            ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) < 0 OR (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) < 0)`
+            : Prisma.empty;
   const offset = (normalizedPage - 1) * pageSize;
   const inventoryCte = Prisma.sql`
     FROM "ProductVariant"
@@ -59,7 +85,13 @@ export async function getAdminInventory({
         sku: string;
         size: string | null;
         color: string | null;
+        costPrice: number | null;
+        sellingPrice: number | null;
+        discountPrice: number | null;
+        productId: string;
         productName: string;
+        productSlug: string;
+        primaryImage: string | null;
         totalStock: number;
         reserved: number;
         available: number;
@@ -70,10 +102,21 @@ export async function getAdminInventory({
         "ProductVariant"."sku",
         "ProductVariant"."size",
         "ProductVariant"."color",
+        "ProductVariant"."costPrice"::float AS "costPrice",
+        "ProductVariant"."sellingPrice"::float AS "sellingPrice",
+        "ProductVariant"."discountPrice"::float AS "discountPrice",
+        "Product"."id" AS "productId",
         "Product"."name" AS "productName",
+        "Product"."slug" AS "productSlug",
         COALESCE(stock.total_stock, 0)::int AS "totalStock",
         COALESCE(reserved.reserved_stock, 0)::int AS reserved,
-        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available
+        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available,
+        (
+          SELECT "url" FROM "ProductImage"
+          WHERE "ProductImage"."productId" = "Product"."id"
+          ORDER BY "isPrimary" DESC, "createdAt" ASC
+          LIMIT 1
+        ) AS "primaryImage"
       ${inventoryCte}
       ORDER BY "Product"."name" ASC, "ProductVariant"."sku" ASC
       LIMIT ${pageSize} OFFSET ${offset}
@@ -91,7 +134,13 @@ export async function getAdminInventory({
       sku: item.sku,
       size: item.size,
       color: item.color,
-      product: { name: item.productName },
+      costPrice: item.costPrice ?? 0,
+      sellingPrice: item.sellingPrice ?? 0,
+      discountPrice: item.discountPrice,
+      productId: item.productId,
+      productSlug: item.productSlug,
+      primaryImage: item.primaryImage,
+      product: { id: item.productId, name: item.productName, slug: item.productSlug },
       totalStock: item.totalStock,
       reserved: item.reserved,
       available: item.available,
@@ -286,7 +335,9 @@ export async function getAdminInventoryForExport({
         ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) BETWEEN 1 AND 5`
         : filter === "out-of-stock"
           ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= 0`
-          : Prisma.empty;
+          : filter === "negative"
+            ? Prisma.sql`AND (COALESCE(stock.total_stock, 0) < 0 OR (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) < 0)`
+            : Prisma.empty;
 
   const inventoryCte = Prisma.sql`
     FROM "ProductVariant"

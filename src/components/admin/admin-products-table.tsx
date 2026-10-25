@@ -25,7 +25,9 @@ import {
   ImageOff,
   Layers,
   Loader2,
+  Minus,
   Pencil,
+  Plus,
   Printer,
   RotateCcw,
   Search,
@@ -132,8 +134,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     "standard"
   );
   const [barcodeQuantityMode, setBarcodeQuantityMode] = React.useState<
-    "one-per-variant" | "by-stock"
+    "one-per-variant" | "by-stock" | "custom"
   >("one-per-variant");
+  const [barcodeCustomQuantity, setBarcodeCustomQuantity] = React.useState<number>(5);
+  const [barcodeVariantOverrides, setBarcodeVariantOverrides] = React.useState<Record<string, number>>({});
+  const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
   // CSV Export state
   const [isExporting, setIsExporting] = React.useState(false);
@@ -1219,7 +1224,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         {/* Print Barcode Price Tag */}
                         <button
                           type="button"
-                          onClick={() => setBarcodeModalProducts([product])}
+                          onClick={() => {
+                            setBarcodeModalProducts([product]);
+                            setBarcodeVariantOverrides({});
+                            setShowVariantTuning(false);
+                          }}
                           className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
                           title="Print price tag barcode labels for this product"
                         >
@@ -1432,6 +1441,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             onClick={() => {
               const selected = loadedProducts.filter((p) => selectedIds.has(p.id));
               setBarcodeModalProducts(selected);
+              setBarcodeVariantOverrides({});
+              setShowVariantTuning(false);
             }}
             className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
             title="Print price tag barcode labels for selected products"
@@ -1490,7 +1501,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
             {/* Modal Settings Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
-              <div className="flex flex-wrap items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {/* Format selection */}
                 <div className="flex items-center gap-1.5">
                   <span className="font-semibold text-[#101114]/70">Format:</span>
@@ -1512,27 +1523,236 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                   <span className="font-semibold text-[#101114]/70">Quantity:</span>
                   <select
                     value={barcodeQuantityMode}
-                    onChange={(e) =>
-                      setBarcodeQuantityMode(e.target.value as "one-per-variant" | "by-stock")
-                    }
+                    onChange={(e) => {
+                      setBarcodeQuantityMode(
+                        e.target.value as "one-per-variant" | "by-stock" | "custom"
+                      );
+                      setBarcodeVariantOverrides({});
+                    }}
                     className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
                   >
                     <option value="one-per-variant">1 Label per Variant</option>
                     <option value="by-stock">Match Current Stock Count</option>
+                    <option value="custom">Custom Quantity</option>
                   </select>
                 </div>
+
+                {/* Custom Quantity Stepper & Presets */}
+                {barcodeQuantityMode === "custom" && (
+                  <div className="flex flex-wrap items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-2 py-1 shadow-2xs">
+                    <span className="text-[11px] font-semibold text-[#101114]/70">Copies:</span>
+                    <div className="flex items-center">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))
+                        }
+                        className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
+                        title="Decrease"
+                      >
+                        <Minus className="size-3" />
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max="500"
+                        value={barcodeCustomQuantity}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value, 10);
+                          if (!isNaN(val) && val > 0) {
+                            setBarcodeCustomQuantity(Math.min(500, val));
+                          }
+                        }}
+                        className="h-6 w-12 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))
+                        }
+                        className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
+                        title="Increase"
+                      >
+                        <Plus className="size-3" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-1 pl-1 border-l border-[#101114]/10">
+                      {[1, 2, 5, 10, 25, 50].map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          onClick={() => setBarcodeCustomQuantity(preset)}
+                          className={`rounded-xs px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
+                            barcodeCustomQuantity === preset
+                              ? "bg-[#101114] text-white"
+                              : "bg-[#F3F0E8] text-[#101114]/80 hover:bg-[#101114]/15"
+                          }`}
+                        >
+                          {preset}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Print Action Button */}
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="inline-flex h-9 items-center gap-2 rounded-sm bg-[#101114] px-4 font-semibold text-white transition-colors hover:bg-[#101114]/85"
-              >
-                <Printer className="size-3.5" />
-                <span>Print Labels Now</span>
-              </button>
+              {/* Total & Print Button */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 rounded-sm bg-[#101114]/5 px-2.5 py-1 text-xs">
+                  <span className="text-[#101114]/60">Total:</span>
+                  <span className="font-bold text-[#101114]">
+                    {barcodeModalProducts.reduce((acc, product) => {
+                      const variants =
+                        product.variants && product.variants.length > 0
+                          ? product.variants
+                          : [{ id: product.id, stock: product.totalStock }];
+
+                      const productTotal = variants.reduce((vAcc, v) => {
+                        const count =
+                          barcodeVariantOverrides[v.id] !== undefined
+                            ? barcodeVariantOverrides[v.id]
+                            : barcodeQuantityMode === "by-stock"
+                              ? Math.max(1, v.stock > 0 ? v.stock : 1)
+                              : barcodeQuantityMode === "custom"
+                                ? barcodeCustomQuantity
+                                : 1;
+                        return vAcc + count;
+                      }, 0);
+
+                      return acc + productTotal;
+                    }, 0)}
+                  </span>
+                  <span className="text-[#101114]/60">Labels</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="inline-flex h-9 items-center gap-2 rounded-sm bg-[#101114] px-4 font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85"
+                >
+                  <Printer className="size-3.5" />
+                  <span>Print Labels Now</span>
+                </button>
+              </div>
             </div>
+
+            {/* Individual Variant Fine-Tuning Drawer */}
+            {barcodeModalProducts.some((p) => (p.variants && p.variants.length > 1) || barcodeModalProducts.length > 1) && (
+              <div className="border-b border-[#101114]/10 bg-white px-5 py-2">
+                <div className="flex items-center justify-between text-xs">
+                  <button
+                    type="button"
+                    onClick={() => setShowVariantTuning(!showVariantTuning)}
+                    className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
+                  >
+                    <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant</span>
+                  </button>
+                  {Object.keys(barcodeVariantOverrides).length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setBarcodeVariantOverrides({})}
+                      className="text-[11px] text-red-600 hover:underline"
+                    >
+                      Reset variant overrides
+                    </button>
+                  )}
+                </div>
+
+                {showVariantTuning && (
+                  <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
+                    {barcodeModalProducts.flatMap((product) => {
+                      const variants =
+                        product.variants && product.variants.length > 0
+                          ? product.variants
+                          : [
+                              {
+                                id: product.id,
+                                sku: product.skus[0] || product.slug,
+                                size: null,
+                                color: null,
+                                stock: product.totalStock,
+                              },
+                            ];
+
+                      return variants.map((v) => {
+                        const count =
+                          barcodeVariantOverrides[v.id] !== undefined
+                            ? barcodeVariantOverrides[v.id]
+                            : barcodeQuantityMode === "by-stock"
+                              ? Math.max(1, v.stock > 0 ? v.stock : 1)
+                              : barcodeQuantityMode === "custom"
+                                ? barcodeCustomQuantity
+                                : 1;
+
+                        return (
+                          <div
+                            key={v.id}
+                            className="flex items-center justify-between gap-2 rounded-xs border border-[#101114]/5 bg-white px-2.5 py-1 text-xs"
+                          >
+                            <div className="min-w-0 flex-1 truncate">
+                              <span className="font-semibold text-[#101114]">{product.name}</span>
+                              <span className="ml-2 font-mono text-[10px] text-[#101114]/60">{v.sku}</span>
+                              <span className="ml-2 text-[10px] text-[#101114]/50">
+                                {[v.size ? `Size: ${v.size}` : null, v.color ? `Color: ${v.color}` : null]
+                                  .filter(Boolean)
+                                  .join(" • ") || "Default"}
+                              </span>
+                              <span className="ml-2 text-[10px] text-zinc-400">
+                                (Stock: {v.stock})
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setBarcodeVariantOverrides((prev) => ({
+                                    ...prev,
+                                    [v.id]: Math.max(1, count - 1),
+                                  }))
+                                }
+                                className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                              >
+                                <Minus className="size-2.5" />
+                              </button>
+                              <input
+                                type="number"
+                                min="1"
+                                max="500"
+                                value={count}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value, 10);
+                                  if (!isNaN(val) && val > 0) {
+                                    setBarcodeVariantOverrides((prev) => ({
+                                      ...prev,
+                                      [v.id]: Math.min(500, val),
+                                    }));
+                                  }
+                                }}
+                                className="h-5 w-10 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setBarcodeVariantOverrides((prev) => ({
+                                    ...prev,
+                                    [v.id]: Math.min(500, count + 1),
+                                  }))
+                                }
+                                className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                              >
+                                <Plus className="size-2.5" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Live Tag Preview Grid */}
             <div className="flex-1 overflow-y-auto p-5">
@@ -1554,11 +1774,19 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         ];
 
                   return variants.flatMap((v) => {
-                    const count = barcodeQuantityMode === "by-stock" ? Math.max(1, v.stock) : 1;
+                    const count =
+                      barcodeVariantOverrides[v.id] !== undefined
+                        ? barcodeVariantOverrides[v.id]
+                        : barcodeQuantityMode === "by-stock"
+                          ? Math.max(1, v.stock > 0 ? v.stock : 1)
+                          : barcodeQuantityMode === "custom"
+                            ? barcodeCustomQuantity
+                            : 1;
+
                     return Array.from({ length: count }, (_, idx) => (
                       <div
                         key={`${v.id}-${idx}`}
-                        className={`vibelock-label-card flex flex-col justify-between rounded-sm border border-dashed border-[#101114]/30 bg-white p-2 text-center text-[#101114] shadow-xs ${
+                        className={`vibelock-label-card relative flex flex-col justify-between rounded-sm border border-dashed border-[#101114]/30 bg-white p-2 text-center text-[#101114] shadow-xs ${
                           barcodeLabelSize === "compact"
                             ? "h-[25mm] w-[40mm]"
                             : barcodeLabelSize === "sheet"
@@ -1566,6 +1794,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               : "h-[30mm] w-[50mm]"
                         }`}
                       >
+                        {count > 1 && (
+                          <span className="no-print absolute top-1 right-1 text-[8px] font-mono text-[#101114]/40">
+                            #{idx + 1}
+                          </span>
+                        )}
                         <div className="border-b border-[#101114]/15 pb-0.5">
                           <span className="text-[9px] font-extrabold tracking-widest uppercase">
                             VIBELOCK
@@ -1840,6 +2073,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             border: 1px solid #101114 !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+          }
+          .no-print {
+            display: none !important;
           }
           @page {
             margin: 2mm;

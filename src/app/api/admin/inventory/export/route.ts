@@ -17,7 +17,12 @@ export function csv(rows: unknown[][]): string {
 }
 
 function parseFilter(filter: string | null): InventoryFilter {
-  if (filter === "in-stock" || filter === "low-stock" || filter === "out-of-stock") {
+  if (
+    filter === "in-stock" ||
+    filter === "low-stock" ||
+    filter === "out-of-stock" ||
+    filter === "negative"
+  ) {
     return filter;
   }
   return "all";

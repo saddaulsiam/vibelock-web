@@ -1,25 +1,29 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { AlertTriangle, Boxes, Download, Lock, PackageCheck, Coins } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { AlertTriangle, Boxes, Coins, Lock, PackageCheck, Sparkles } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import {
   getAdminInventory,
   getAdminInventorySummary,
   type InventoryFilter,
 } from "@/lib/admin/inventory-queries";
+import { AdminInventoryTable } from "@/components/admin/admin-inventory-table";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
 function currency(value: unknown) {
-  return `৳${Number(value).toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `৳${Number(value).toLocaleString("en-BD", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 function validFilter(value: string | undefined): InventoryFilter {
-  return value === "in-stock" || value === "low-stock" || value === "out-of-stock" ? value : "all";
+  return value === "in-stock" ||
+    value === "low-stock" ||
+    value === "out-of-stock" ||
+    value === "negative"
+    ? value
+    : "all";
 }
 
 async function InventorySummarySection() {
@@ -28,252 +32,138 @@ async function InventorySummarySection() {
   return (
     <div className="space-y-4">
       {summary.negativeStockCount > 0 && (
-        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600" />
-          <div>
-            <p className="font-semibold">Negative stock anomaly detected</p>
-            <p className="mt-0.5 text-red-800">
-              {summary.negativeStockCount}{" "}
-              {summary.negativeStockCount === 1 ? "variant reports" : "variants report"} negative
-              physical or available stock. Ledger transactions require review or stock adjustment
-              reconciliation.
+        <div className="flex items-start gap-3 rounded-xl border border-red-300 bg-red-50/90 p-4 text-sm text-red-950 shadow-sm backdrop-blur-sm">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600 animate-pulse" />
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-bold text-red-950">
+                Negative stock anomaly detected ({summary.negativeStockCount}{" "}
+                {summary.negativeStockCount === 1 ? "variant" : "variants"})
+              </p>
+              <Link
+                href="/admin/inventory?filter=negative"
+                className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800 hover:bg-red-200 transition"
+              >
+                Inspect negative items →
+              </Link>
+            </div>
+            <p className="mt-1 text-xs text-red-800 leading-relaxed">
+              Physical or available stock is currently below zero. Click above to view the affected
+              variants and record an audit adjustment or investigate ledger movements.
             </p>
           </div>
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Physical Stock */}
+        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
               Physical Stock
-            </CardTitle>
-            <Boxes className="text-muted-foreground size-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
-              {summary.totalPhysicalStock.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Total physical units on hand ({summary.totalVariants.toLocaleString()} variants)
-            </p>
-          </CardContent>
+            </span>
+            <span className="rounded-md bg-zinc-100 p-1.5 text-zinc-600">
+              <Boxes className="size-4" />
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black tracking-tight text-zinc-900">
+            {summary.totalPhysicalStock.toLocaleString()}
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            Across {summary.totalVariants.toLocaleString()} variants on hand
+          </p>
         </Card>
 
-        <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {/* Reserved Stock */}
+        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-amber-600 uppercase">
               Reserved Stock
-            </CardTitle>
-            <Lock className="text-muted-foreground size-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
-              {summary.totalReservedStock.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Active unexpired checkout reservations
-            </p>
-          </CardContent>
+            </span>
+            <span className="rounded-md bg-amber-50 p-1.5 text-amber-600">
+              <Lock className="size-4" />
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black tracking-tight text-amber-700">
+            {summary.totalReservedStock.toLocaleString()}
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            Held in active checkout reservations
+          </p>
         </Card>
 
-        <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {/* Available Stock */}
+        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-emerald-600 uppercase">
               Available Stock
-            </CardTitle>
-            <PackageCheck className="size-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
-              {summary.totalAvailableStock.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Physical stock minus active reservations
-            </p>
-          </CardContent>
+            </span>
+            <span className="rounded-md bg-emerald-50 p-1.5 text-emerald-600">
+              <PackageCheck className="size-4" />
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black tracking-tight text-emerald-700">
+            {summary.totalAvailableStock.toLocaleString()}
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            Ready for sale (Physical minus reserved)
+          </p>
         </Card>
 
-        <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {/* Est. Inventory Cost */}
+        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
               Est. Inventory Cost
-            </CardTitle>
-            <Coins className="size-4 text-amber-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
-              {currency(summary.estimatedCostValue)}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Estimated: positive physical stock × current variant cost (not historical batch cost)
-            </p>
-          </CardContent>
+            </span>
+            <span className="rounded-md bg-blue-50 p-1.5 text-blue-600">
+              <Coins className="size-4" />
+            </span>
+          </div>
+          <div className="mt-2 text-2xl font-black tracking-tight text-zinc-900">
+            {currency(summary.estimatedCostValue)}
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            Positive physical stock × current cost
+          </p>
         </Card>
 
-        <Card className="rounded-xl border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Low Stock Items
-            </CardTitle>
-            <AlertTriangle className="size-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight">
+        {/* Low Stock Items */}
+        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-rose-600 uppercase">
+              Stock Warnings
+            </span>
+            <span className="rounded-md bg-rose-50 p-1.5 text-rose-600">
+              <AlertTriangle className="size-4" />
+            </span>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-black tracking-tight text-rose-700">
               {summary.lowStockCount.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-xs">
-              Available stock between 1 and 5 units ({summary.outOfStockCount.toLocaleString()} out
-              of stock)
-            </p>
-          </CardContent>
+            </span>
+            <span className="text-xs font-semibold text-zinc-400">low</span>
+            <span className="text-zinc-300">/</span>
+            <span className="text-lg font-bold text-zinc-600">
+              {summary.outOfStockCount.toLocaleString()}
+            </span>
+            <span className="text-xs text-zinc-400">out</span>
+          </div>
+          <p className="mt-1 text-xs text-zinc-500">
+            1–5 units remaining or completely depleted
+          </p>
         </Card>
       </div>
     </div>
   );
 }
 
-async function InventoryTable({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
-  const search = valueOf(searchParams.q);
-  const filter = validFilter(valueOf(searchParams.filter));
-  const rawPage = Number(valueOf(searchParams.page));
-  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-  const { variants, total, totalPages } = await getAdminInventory({ search, filter, page });
-  const query = `q=${encodeURIComponent(search ?? "")}&filter=${filter}`;
-  const exportHref = `/api/admin/inventory/export?${query}`;
-
+function InventorySummarySkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <form method="get" className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center">
-          <Input
-            name="q"
-            placeholder="Search product or SKU..."
-            defaultValue={search}
-            className="max-w-md"
-          />
-          <select
-            name="filter"
-            defaultValue={filter}
-            className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
-          >
-            <option value="all">All inventory</option>
-            <option value="in-stock">In stock</option>
-            <option value="low-stock">Low stock</option>
-            <option value="out-of-stock">Out of stock</option>
-          </select>
-          <button
-            type="submit"
-            className="inline-flex h-9 items-center justify-center rounded-sm border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/90"
-          >
-            Filter
-          </button>
-        </form>
-
-        <a
-          href={exportHref}
-          download
-          className="border-input bg-background hover:bg-muted inline-flex h-9 items-center justify-center gap-2 rounded-sm border px-3 text-sm font-medium"
-          title={
-            total > 5000
-              ? "Export capped at first 5,000 matching items"
-              : "Export current inventory to CSV"
-          }
-        >
-          <Download className="size-4" />
-          Export CSV {total > 5000 ? "(Capped at 5k)" : ""}
-        </a>
-      </div>
-
-      <p className="text-muted-foreground text-sm">
-        {total} inventory {total === 1 ? "item" : "items"}
-        {total > 5000 ? " · CSV export limited to first 5,000 items" : ""}
-      </p>
-
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 border-b">
-            <tr className="text-left">
-              <th className="p-3 font-medium">Product</th>
-              <th className="p-3 font-medium">SKU / Variant</th>
-              <th className="p-3 font-medium">Stock</th>
-              <th className="p-3 font-medium">Reserved</th>
-              <th className="p-3 font-medium">Available</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 text-right font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {variants.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-muted-foreground p-10 text-center">
-                  No inventory items found.
-                </td>
-              </tr>
-            ) : (
-              variants.map((item) => {
-                const low = item.available > 0 && item.available <= 5;
-                const out = item.available <= 0;
-                return (
-                  <tr key={item.id} className="hover:bg-muted/30">
-                    <td className="p-3 font-medium">{item.product.name}</td>
-                    <td className="p-3">
-                      <div className="font-mono text-xs">{item.sku}</div>
-                      <div className="text-muted-foreground text-xs">
-                        {[item.size, item.color].filter(Boolean).join(" / ") || "Default variant"}
-                      </div>
-                    </td>
-                    <td className="p-3">{item.totalStock}</td>
-                    <td className="p-3">{item.reserved}</td>
-                    <td className="p-3 font-semibold">{item.available}</td>
-                    <td className="p-3">
-                      <Badge variant={out ? "destructive" : low ? "secondary" : "outline"}>
-                        {out ? "Out of stock" : low ? "Low stock" : "In stock"}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-right">
-                      <Link
-                        href={`/admin/inventory/${item.id}`}
-                        className="text-primary font-medium hover:underline"
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 ? (
-        <nav aria-label="Inventory pages" className="flex items-center justify-center gap-3">
-          {page > 1 ? (
-            <Link
-              href={`/admin/inventory?${query}&page=${page - 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              ←
-            </Link>
-          ) : null}
-          <span className="text-sm font-medium">
-            Page {page} of {totalPages}
-          </span>
-          {page < totalPages ? (
-            <Link
-              href={`/admin/inventory?${query}&page=${page + 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              →
-            </Link>
-          ) : null}
-        </nav>
-      ) : null}
+    <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="h-28 rounded-xl border border-zinc-200/60 bg-zinc-100/70 animate-pulse p-4" />
+      ))}
     </div>
   );
 }
@@ -284,41 +174,56 @@ export default async function AdminInventoryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const resolvedSearchParams = await searchParams;
+  const search = valueOf(resolvedSearchParams.q);
+  const filter = validFilter(valueOf(resolvedSearchParams.filter));
+  const rawPage = Number(valueOf(resolvedSearchParams.page));
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+
+  const data = await getAdminInventory({ search, filter, page });
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Inventory</h1>
-          <p className="text-muted-foreground">
-            Monitor stock, reservations, and inventory movements.
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#101114]">
+              Inventory Control Center
+            </h1>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100/90 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800 tracking-wide uppercase shadow-xs">
+              <span className="size-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              Live Ledger
+            </span>
+          </div>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Monitor real-time physical stock, checkout reservations, and execute atomic stock adjustments.
           </p>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
           <Link
             href="/admin/inventory-intelligence"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-sm border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/90"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3.5 text-xs font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-950"
           >
+            <Sparkles className="size-3.5 text-amber-500" />
             Inventory Intelligence →
           </Link>
         </div>
       </div>
 
-      <Suspense
-        fallback={
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="bg-muted/40 h-28 animate-pulse rounded-xl" />
-            ))}
-          </div>
-        }
-      >
+      {/* KPI Metrics */}
+      <Suspense fallback={<InventorySummarySkeleton />}>
         <InventorySummarySection />
       </Suspense>
 
-      <Suspense fallback={<div className="p-12 text-center">Loading inventory...</div>}>
-        <InventoryTable searchParams={resolvedSearchParams} />
-      </Suspense>
+      {/* Inventory Control Table */}
+      <AdminInventoryTable
+        initialData={data}
+        currentFilters={{
+          q: search ?? "",
+          filter,
+          page,
+        }}
+      />
     </div>
   );
 }
