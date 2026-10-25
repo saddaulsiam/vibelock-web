@@ -8,8 +8,9 @@ import { updateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
-import prisma from "@/lib/prisma/client";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
+import prisma from "@/lib/prisma/client";
+import { getAdminProducts, type AdminProductsQueryOptions } from "@/lib/admin/catalog-queries";
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Changes saved." };
@@ -729,4 +730,17 @@ export async function deleteProductAction(
   }
   refreshCatalog();
   return ok;
+}
+
+export async function loadMoreAdminProductsAction(options: AdminProductsQueryOptions) {
+  await requireRole("ADMIN");
+  const result = await getAdminProducts(options);
+  return {
+    ...result,
+    products: result.products.map((p) => ({
+      ...p,
+      createdAt: p.createdAt instanceof Date ? p.createdAt.toISOString() : String(p.createdAt),
+      updatedAt: p.updatedAt instanceof Date ? p.updatedAt.toISOString() : String(p.updatedAt),
+    })),
+  };
 }
