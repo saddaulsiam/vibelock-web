@@ -19,6 +19,7 @@ export type AdminProductVariantItem = {
   sku: string;
   size: string | null;
   color: string | null;
+  costPrice: number;
   sellingPrice: number;
   discountPrice: number | null;
   stock: number;
@@ -35,6 +36,8 @@ export type AdminProductItem = {
   variantCount: number;
   totalStock: number;
   skus: string[];
+  minCostPrice: number | null;
+  maxCostPrice: number | null;
   minSellingPrice: number | null;
   maxSellingPrice: number | null;
   minDiscountPrice: number | null;
@@ -140,6 +143,7 @@ export async function getAdminProducts(
             sku: true,
             size: true,
             color: true,
+            costPrice: true,
             sellingPrice: true,
             discountPrice: true,
             inventoryTransactions: {
@@ -152,6 +156,7 @@ export async function getAdminProducts(
   ]);
 
   const allMappedProducts: AdminProductItem[] = rawProducts.map((p) => {
+    const costPrices = p.variants.map((v) => Number(v.costPrice));
     const sellingPrices = p.variants.map((v) => Number(v.sellingPrice));
     const discountPrices = p.variants
       .filter((v) => v.discountPrice !== null && v.discountPrice.lt(v.sellingPrice))
@@ -162,6 +167,7 @@ export async function getAdminProducts(
       sku: v.sku,
       size: v.size ?? null,
       color: v.color ?? null,
+      costPrice: Number(v.costPrice),
       sellingPrice: Number(v.sellingPrice),
       discountPrice: v.discountPrice !== null ? Number(v.discountPrice) : null,
       stock: v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0),
@@ -180,6 +186,8 @@ export async function getAdminProducts(
       variantCount: p.variants.length,
       totalStock,
       skus: p.variants.map((v) => v.sku),
+      minCostPrice: costPrices.length ? Math.min(...costPrices) : null,
+      maxCostPrice: costPrices.length ? Math.max(...costPrices) : null,
       minSellingPrice: sellingPrices.length ? Math.min(...sellingPrices) : null,
       maxSellingPrice: sellingPrices.length ? Math.max(...sellingPrices) : null,
       minDiscountPrice: discountPrices.length ? Math.min(...discountPrices) : null,

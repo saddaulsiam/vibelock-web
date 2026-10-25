@@ -24,6 +24,8 @@ describe("AdminProductsTable Component", () => {
         variantCount: 4,
         totalStock: 32,
         skus: ["VL-TEE-BLK-M", "VL-TEE-BLK-L"],
+        minCostPrice: 850,
+        maxCostPrice: 850,
         minSellingPrice: 1600,
         maxSellingPrice: 1600,
         minDiscountPrice: 1350,
@@ -33,6 +35,7 @@ describe("AdminProductsTable Component", () => {
             sku: "VL-TEE-BLK-M",
             size: "M",
             color: "Black",
+            costPrice: 850,
             sellingPrice: 1600,
             discountPrice: 1350,
             stock: 20,
@@ -42,6 +45,7 @@ describe("AdminProductsTable Component", () => {
             sku: "VL-TEE-BLK-L",
             size: "L",
             color: "Black",
+            costPrice: 850,
             sellingPrice: 1600,
             discountPrice: 1350,
             stock: 12,
@@ -61,6 +65,8 @@ describe("AdminProductsTable Component", () => {
         variantCount: 3,
         totalStock: 0,
         skus: ["VL-HOD-GRY-L"],
+        minCostPrice: 1800,
+        maxCostPrice: 1800,
         minSellingPrice: 3200,
         maxSellingPrice: 3200,
         minDiscountPrice: null,
@@ -70,6 +76,7 @@ describe("AdminProductsTable Component", () => {
             sku: "VL-HOD-GRY-L",
             size: "L",
             color: "Grey",
+            costPrice: 1800,
             sellingPrice: 3200,
             discountPrice: null,
             stock: 0,
@@ -221,6 +228,31 @@ describe("AdminProductsTable Component", () => {
 
     // Barcode / Price Tag Printing action button in rows
     expect(html).toContain('title="Print price tag barcode labels for this product"');
+
+    // Quick edit price & discount button in rows
+    expect(html).toContain('title="Quick edit price &amp; discount"');
+  });
+
+  test("renders low stock visual indicator and REORDER badge for low stock items", () => {
+    const lowStockData: AdminProductsResult = {
+      ...sampleData,
+      products: [
+        {
+          ...sampleData.products[0],
+          id: "prod-low",
+          name: "Low Stock Tee",
+          totalStock: 3,
+        },
+      ],
+      totalFiltered: 1,
+    };
+
+    const html = renderToStaticMarkup(
+      <AdminProductsTable initialData={lowStockData} currentFilters={defaultFilters} />
+    );
+
+    expect(html).toContain("Low Stock (3)");
+    expect(html).toContain("REORDER");
+    expect(html).toContain("animate-ping");
   });
 });
-

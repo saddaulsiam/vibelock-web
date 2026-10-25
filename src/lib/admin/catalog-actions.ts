@@ -891,3 +891,98 @@ export async function exportAdminProductsCsvAction(
     filename: `vibelock-products-${dateStr}.csv`,
   };
 }
+
+export async function bulkAssignProductCategoryAction(
+  productIds: string[],
+  categoryId: string,
+  mode: "add" | "replace" = "add"
+): Promise<AdminActionState> {
+  await requireRole("ADMIN");
+  if (!Array.isArray(productIds) || productIds.length === 0) {
+    return { error: "No products selected." };
+  }
+  if (!categoryId) {
+    return { error: "Please select a category." };
+  }
+
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+    select: { id: true, name: true },
+  });
+  if (!category) {
+    return { error: "Category not found." };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    for (const pid of productIds) {
+      if (mode === "replace") {
+        await tx.product.update({
+          where: { id: pid },
+          data: {
+            categories: {
+              set: [{ id: categoryId }],
+            },
+          },
+        });
+      } else {
+        await tx.product.update({
+          where: { id: pid },
+          data: {
+            categories: {
+              connect: [{ id: categoryId }],
+            },
+          },
+        });
+      }
+    }
+  });
+
+  refreshCatalog();
+  return {
+    error: null,
+    message: `Assigned category "${category.name}" to ${productIds.length} product(s).`,
+  };
+}
+
+export async function quickUpdateProductPricesAction(
+  productId: string,
+  prices: { sellingPrice: number; discountPrice: number | null }
+): Promise<AdminActionState> {
+  await requireRole("ADMIN");
+  if (!productId) return { error: "Missing product ID." };
+
+  const sellingPrice = Number(prices.sellingPrice);
+  if (isNaN(sellingPrice) || sellingPrice < 0) {
+    return { error: "Selling price must be a valid non-negative number." };
+  }
+
+  let discountPrice: Prisma.Decimal | null = null;
+  if (
+    prices.discountPrice !== null &&
+    prices.discountPrice !== undefined &&
+    prices.discountPrice !== ("" as unknown as number)
+  ) {
+    const discNum = Number(prices.discountPrice);
+    if (isNaN(discNum) || discNum < 0) {
+      return { error: "Discount price must be a non-negative number." };
+    }
+    if (discNum >= sellingPrice) {
+      return { error: "Discount price must be lower than selling price." };
+    }
+    discountPrice = new Prisma.Decimal(discNum);
+  }
+
+  await prisma.productVariant.updateMany({
+    where: { productId },
+    data: {
+      sellingPrice: new Prisma.Decimal(sellingPrice),
+      discountPrice,
+    },
+  });
+
+  refreshCatalog();
+  return {
+    error: null,
+    message: "Product prices updated successfully.",
+  };
+}

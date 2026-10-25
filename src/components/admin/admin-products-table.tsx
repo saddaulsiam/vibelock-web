@@ -2,11 +2,13 @@
 
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
 import {
+  bulkAssignProductCategoryAction,
   bulkDeleteProductsAction,
   bulkUpdateProductStatusAction,
   deleteProductAction,
   exportAdminProductsCsvAction,
   loadMoreAdminProductsAction,
+  quickUpdateProductPricesAction,
   toggleProductPublishedAction,
 } from "@/lib/admin/catalog-actions";
 import type { AdminProductItem, AdminProductsResult } from "@/lib/admin/catalog-queries";
@@ -136,6 +138,30 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   // CSV Export state
   const [isExporting, setIsExporting] = React.useState(false);
 
+  // Quick Price Edit state
+  const [priceEditProduct, setPriceEditProduct] = React.useState<AdminProductItem | null>(null);
+  const [priceForm, setPriceForm] = React.useState<{ sellingPrice: string; discountPrice: string }>(
+    {
+      sellingPrice: "",
+      discountPrice: "",
+    }
+  );
+  const [isUpdatingPrice, setIsUpdatingPrice] = React.useState(false);
+  const [priceError, setPriceError] = React.useState<string | null>(null);
+
+  // Bulk Category Assign state
+  const [showBulkCategoryMenu, setShowBulkCategoryMenu] = React.useState(false);
+  const [selectedBulkCategoryId, setSelectedBulkCategoryId] = React.useState<string>("");
+  const [bulkCategoryMode, setBulkCategoryMode] = React.useState<"add" | "replace">("add");
+  const [isBulkCategoryApplying, setIsBulkCategoryApplying] = React.useState(false);
+
+  // Barcode Scanner auto-detection state & buffer
+  const [scannedIndicator, setScannedIndicator] = React.useState<string | null>(null);
+  const scannerBufferRef = React.useRef<{ text: string; times: number[] }>({
+    text: "",
+    times: [],
+  });
+
   // Adjust state during render when initialData or filters change (React standard pattern)
   const [prevInitialData, setPrevInitialData] = React.useState(initialData);
   if (prevInitialData !== initialData) {
@@ -153,12 +179,62 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     setSearchTerm(currentFilters.q);
   }
 
-  // Keyboard shortcut '/' to focus search input, 'Escape' to blur
+  // Helper to update URL search params
+  const updateQuery = React.useCallback(
+    (updates: Record<string, string | null>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [key, val] of Object.entries(updates)) {
+        if (!val || val === "all" || val === "ALL") {
+          params.delete(key);
+        } else {
+          params.set(key, val);
+        }
+      }
+      params.delete("page");
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [pathname, router, searchParams]
+  );
+
+  // Keyboard shortcut '/' to focus search input, 'Escape' to blur, and hardware barcode scanner auto-detect
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const isInput =
         target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
+
+      const now = Date.now();
+      const buf = scannerBufferRef.current;
+
+      // Reset buffer if more than 70ms passed since last keystroke
+      if (buf.times.length > 0 && now - buf.times[buf.times.length - 1] > 70) {
+        buf.text = "";
+        buf.times = [];
+      }
+
+      if (e.key === "Enter") {
+        if (buf.text.length >= 3) {
+          const deltas = buf.times.slice(1).map((t, idx) => t - buf.times[idx]);
+          const avgDelta =
+            deltas.length > 0 ? deltas.reduce((a, b) => a + b, 0) / deltas.length : 100;
+          if (avgDelta < 50) {
+            e.preventDefault();
+            const scanned = buf.text.trim();
+            buf.text = "";
+            buf.times = [];
+            setSearchTerm(scanned);
+            updateQuery({ q: scanned });
+            setScannedIndicator(`Scanned Barcode: ${scanned}`);
+            setTimeout(() => setScannedIndicator(null), 4000);
+            return;
+          }
+        }
+        buf.text = "";
+        buf.times = [];
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        buf.text += e.key;
+        buf.times.push(now);
+      }
 
       if (e.key === "/" && !isInput) {
         e.preventDefault();
@@ -171,7 +247,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [updateQuery]);
 
   // Multi-select helpers
   const isAllSelected =
@@ -242,6 +318,72 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     }
   };
 
+  const handleBulkAssignCategory = async () => {
+    if (selectedIds.size === 0 || !selectedBulkCategoryId || isBulkCategoryApplying) return;
+    setIsBulkCategoryApplying(true);
+    try {
+      const res = await bulkAssignProductCategoryAction(
+        Array.from(selectedIds),
+        selectedBulkCategoryId,
+        bulkCategoryMode
+      );
+      if (res.error) {
+        alert(res.error);
+      } else {
+        setBulkFeedback(res.message || "Categories updated.");
+        setShowBulkCategoryMenu(false);
+        setSelectedBulkCategoryId("");
+        setSelectedIds(new Set());
+        router.refresh();
+      }
+    } catch {
+      alert("Failed to assign category.");
+    } finally {
+      setIsBulkCategoryApplying(false);
+    }
+  };
+
+  const handleSaveQuickPrice = async () => {
+    if (!priceEditProduct || isUpdatingPrice) return;
+    setPriceError(null);
+    setIsUpdatingPrice(true);
+    try {
+      const sNum = Number(priceForm.sellingPrice);
+      const dNum = priceForm.discountPrice ? Number(priceForm.discountPrice) : null;
+      const res = await quickUpdateProductPricesAction(priceEditProduct.id, {
+        sellingPrice: sNum,
+        discountPrice: dNum,
+      });
+      if (res.error) {
+        setPriceError(res.error);
+      } else {
+        setLoadedProducts((prev) =>
+          prev.map((p) => {
+            if (p.id !== priceEditProduct.id) return p;
+            return {
+              ...p,
+              minSellingPrice: sNum,
+              maxSellingPrice: sNum,
+              minDiscountPrice: dNum,
+              variants: p.variants.map((v) => ({
+                ...v,
+                sellingPrice: sNum,
+                discountPrice: dNum,
+              })),
+            };
+          })
+        );
+        setBulkFeedback(`Updated prices for "${priceEditProduct.name}".`);
+        setPriceEditProduct(null);
+        router.refresh();
+      }
+    } catch {
+      setPriceError("Failed to update prices.");
+    } finally {
+      setIsUpdatingPrice(false);
+    }
+  };
+
   const handleExportCsv = async () => {
     if (isExporting) return;
     setIsExporting(true);
@@ -275,23 +417,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       setIsExporting(false);
     }
   };
-
-  // Helper to update URL search params
-  const updateQuery = React.useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      for (const [key, val] of Object.entries(updates)) {
-        if (!val || val === "all" || val === "ALL") {
-          params.delete(key);
-        } else {
-          params.set(key, val);
-        }
-      }
-      params.delete("page");
-      router.replace(`${pathname}?${params.toString()}`);
-    },
-    [pathname, router, searchParams]
-  );
 
   // Debounced search input handler
   const handleSearchChange = (val: string) => {
@@ -601,8 +726,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             </button>
 
             {showColumnMenu && (
-              <div className="animate-in fade-in zoom-in-95 absolute right-0 top-full z-40 mt-1.5 w-44 rounded-sm border border-[#101114]/15 bg-white p-2 shadow-xl duration-150">
-                <div className="border-b border-[#101114]/10 pb-1.5 mb-1.5 flex items-center justify-between">
+              <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-44 rounded-sm border border-[#101114]/15 bg-white p-2 shadow-xl duration-150">
+                <div className="mb-1.5 flex items-center justify-between border-b border-[#101114]/10 pb-1.5">
                   <p className="text-[11px] font-semibold text-[#101114]">Visible Columns</p>
                   <button
                     type="button"
@@ -621,7 +746,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                   ].map((col) => (
                     <label
                       key={col.key}
-                      className="flex items-center gap-2 rounded px-1.5 py-1 hover:bg-[#F3F0E8] cursor-pointer"
+                      className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-[#F3F0E8]"
                     >
                       <input
                         type="checkbox"
@@ -632,7 +757,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             [col.key]: !prev[col.key as keyof typeof visibleColumns],
                           }))
                         }
-                        className="size-3.5 rounded-xs accent-[#101114] cursor-pointer"
+                        className="size-3.5 cursor-pointer rounded-xs accent-[#101114]"
                       />
                       <span className="text-[#101114]">{col.label}</span>
                     </label>
@@ -956,7 +1081,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             })}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground text-xs italic">Uncategorized</span>
+                          <span className="text-muted-foreground text-xs italic">
+                            Uncategorized
+                          </span>
                         )}
                       </td>
                     )}
@@ -964,25 +1091,45 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     {/* ── Price ── */}
                     {visibleColumns.price && (
                       <td className="px-5 py-3.5 tabular-nums">
-                        {hasDiscount ? (
-                          <div className="space-y-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[#101114]">
-                                {formatPrice(product.minDiscountPrice)}
-                              </span>
-                              <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
-                                -{discountPercent}%
+                        <div className="group/price flex items-center justify-between gap-1.5">
+                          {hasDiscount ? (
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-[#101114]">
+                                  {formatPrice(product.minDiscountPrice)}
+                                </span>
+                                <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
+                                  -{discountPercent}%
+                                </span>
+                              </div>
+                              <span className="text-muted-foreground block text-xs line-through">
+                                {formatPrice(product.minSellingPrice)}
                               </span>
                             </div>
-                            <span className="text-muted-foreground block text-xs line-through">
+                          ) : (
+                            <span className="font-semibold text-[#101114]">
                               {formatPrice(product.minSellingPrice)}
                             </span>
-                          </div>
-                        ) : (
-                          <span className="font-semibold text-[#101114]">
-                            {formatPrice(product.minSellingPrice)}
-                          </span>
-                        )}
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPriceEditProduct(product);
+                              setPriceForm({
+                                sellingPrice: String(product.minSellingPrice ?? ""),
+                                discountPrice: product.minDiscountPrice
+                                  ? String(product.minDiscountPrice)
+                                  : "",
+                              });
+                              setPriceError(null);
+                            }}
+                            className="rounded p-1 text-[#101114]/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:bg-[#101114]/10 hover:text-[#101114] focus:opacity-100"
+                            title="Quick edit price & discount"
+                          >
+                            <Pencil className="size-3" />
+                          </button>
+                        </div>
                       </td>
                     )}
 
@@ -990,15 +1137,18 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     {visibleColumns.stock && (
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-1.5">
-                          <span
-                            className={`size-2 rounded-full ${
-                              isOutOfStock
-                                ? "bg-red-500"
-                                : isLowStock
-                                  ? "bg-amber-500"
-                                  : "bg-emerald-500"
-                            }`}
-                          />
+                          {isLowStock ? (
+                            <span className="relative flex size-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                              <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`size-2 rounded-full ${
+                                isOutOfStock ? "bg-red-500" : "bg-emerald-500"
+                              }`}
+                            />
+                          )}
                           <span
                             className={`text-xs font-semibold ${
                               isOutOfStock
@@ -1014,6 +1164,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                 ? `Low Stock (${product.totalStock})`
                                 : `In Stock (${product.totalStock})`}
                           </span>
+                          {isLowStock && (
+                            <span className="rounded-2xs py-0.2 bg-amber-100 px-1 text-[9px] font-extrabold text-amber-800">
+                              REORDER
+                            </span>
+                          )}
                         </div>
                       </td>
                     )}
@@ -1196,6 +1351,80 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             <span>Draft</span>
           </button>
 
+          {/* Bulk Assign Category */}
+          <div className="relative">
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={() => setShowBulkCategoryMenu(!showBulkCategoryMenu)}
+              className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+              title="Assign category to selected products"
+            >
+              <Tag className="size-3.5" />
+              <span>Category</span>
+              <ChevronDown className="size-3" />
+            </button>
+
+            {showBulkCategoryMenu && (
+              <div className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 mb-2 w-64 rounded-sm border border-white/20 bg-[#101114] p-3 text-white shadow-2xl">
+                <p className="text-[11px] font-semibold text-white/90">Bulk Assign Category</p>
+                <select
+                  value={selectedBulkCategoryId}
+                  onChange={(e) => setSelectedBulkCategoryId(e.target.value)}
+                  className="mt-1.5 h-8 w-full rounded-sm border border-white/20 bg-[#1e2024] px-2 text-xs text-white"
+                >
+                  <option value="">Select category...</option>
+                  {allCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+
+                <div className="mt-2.5 flex items-center justify-between gap-2 text-[10px] text-white/70">
+                  <label className="flex cursor-pointer items-center gap-1">
+                    <input
+                      type="radio"
+                      name="bulkCatMode"
+                      checked={bulkCategoryMode === "add"}
+                      onChange={() => setBulkCategoryMode("add")}
+                      className="accent-[#00D9FF]"
+                    />
+                    Add
+                  </label>
+                  <label className="flex cursor-pointer items-center gap-1">
+                    <input
+                      type="radio"
+                      name="bulkCatMode"
+                      checked={bulkCategoryMode === "replace"}
+                      onChange={() => setBulkCategoryMode("replace")}
+                      className="accent-[#00D9FF]"
+                    />
+                    Replace All
+                  </label>
+                </div>
+
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-white/10 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowBulkCategoryMenu(false)}
+                    className="px-2 py-1 text-[11px] text-white/60 hover:text-white"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!selectedBulkCategoryId || isBulkCategoryApplying}
+                    onClick={handleBulkAssignCategory}
+                    className="rounded-xs bg-[#00D9FF] px-2.5 py-1 text-[11px] font-bold text-black hover:bg-[#00D9FF]/90 disabled:opacity-50"
+                  >
+                    {isBulkCategoryApplying ? "Applying..." : "Apply"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Bulk Print Barcode Tags */}
           <button
             type="button"
@@ -1239,7 +1468,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
       {/* ── 5. Barcode & Price Tag Printing Modal ── */}
       {barcodeModalProducts && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
           <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
@@ -1307,7 +1536,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
             {/* Live Tag Preview Grid */}
             <div className="flex-1 overflow-y-auto p-5">
-              <div id="vibelock-printable-labels" className="flex flex-wrap gap-3 justify-center">
+              <div id="vibelock-printable-labels" className="flex flex-wrap justify-center gap-3">
                 {barcodeModalProducts.flatMap((product) => {
                   const variants =
                     product.variants && product.variants.length > 0
@@ -1342,10 +1571,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             VIBELOCK
                           </span>
                         </div>
-                        <p className="truncate px-0.5 text-[10px] font-semibold leading-tight">
+                        <p className="truncate px-0.5 text-[10px] leading-tight font-semibold">
                           {product.name}
                         </p>
-                        <div className="flex items-center justify-between px-1 text-[9px] font-mono">
+                        <div className="flex items-center justify-between px-1 font-mono text-[9px]">
                           <span>{v.size ? `SIZE: ${v.size}` : ""}</span>
                           <span className="text-[11px] font-bold">
                             ৳{v.discountPrice ?? v.sellingPrice}
@@ -1376,6 +1605,210 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── 6. Quick Price & Discount Edit Modal ── */}
+      {priceEditProduct && (
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
+          <div className="w-full max-w-md rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
+              <div className="flex items-center gap-2">
+                <Tag className="size-4 text-[#101114]" />
+                <h3 className="text-sm font-semibold text-[#101114]">
+                  Quick Price & Discount Edit
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPriceEditProduct(null)}
+                className="rounded p-1 text-[#101114]/40 hover:text-[#101114]"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="space-y-4 p-5">
+              <div className="flex items-center gap-3 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-3">
+                {priceEditProduct.primaryImage ? (
+                  <div className="relative size-10 shrink-0 overflow-hidden rounded-xs border border-[#101114]/15 bg-white">
+                    <Image
+                      src={priceEditProduct.primaryImage}
+                      alt={priceEditProduct.name}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : null}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold text-[#101114]">
+                    {priceEditProduct.name}
+                  </p>
+                  <p className="font-mono text-[10px] text-[#101114]/60">
+                    /{priceEditProduct.slug} • {priceEditProduct.variantCount} variant(s)
+                  </p>
+                </div>
+              </div>
+
+              {priceError && (
+                <div className="rounded-sm border border-red-300 bg-red-50 p-2.5 text-xs text-red-800">
+                  {priceError}
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {/* Cost Price (কেনা দাম - Disabled / Read-only) */}
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-semibold text-[#101114]">Cost Price</label>
+                    <span className="text-[10px] font-medium text-[#101114]/50">
+                      🔒 Disabled (Main Price / No Change)
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    disabled
+                    readOnly
+                    value={
+                      priceEditProduct.minCostPrice !== null
+                        ? priceEditProduct.minCostPrice === priceEditProduct.maxCostPrice
+                          ? `৳${priceEditProduct.minCostPrice}`
+                          : `৳${priceEditProduct.minCostPrice} – ৳${priceEditProduct.maxCostPrice}`
+                        : "৳0"
+                    }
+                    className="mt-1 h-9 w-full cursor-not-allowed rounded-sm border border-[#101114]/15 bg-[#F3F0E8]/70 px-3 text-xs font-semibold text-[#101114]/70 select-none"
+                    title="Cost price cannot be edited here. Change it from the full product edit page."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#101114]">
+                    Selling Price (BDT ৳) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={priceForm.sellingPrice}
+                    onChange={(e) =>
+                      setPriceForm((prev) => ({ ...prev, sellingPrice: e.target.value }))
+                    }
+                    placeholder="e.g. 1600"
+                    className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-medium text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#101114]">
+                    Discount Price (BDT ৳){" "}
+                    <span className="font-normal text-[#101114]/60">(Optional)</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    value={priceForm.discountPrice}
+                    onChange={(e) =>
+                      setPriceForm((prev) => ({ ...prev, discountPrice: e.target.value }))
+                    }
+                    placeholder="Leave blank for regular price"
+                    className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-medium text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                  />
+                </div>
+
+                {/* Live Savings calculation */}
+                {(() => {
+                  const s = Number(priceForm.sellingPrice);
+                  const d = Number(priceForm.discountPrice);
+                  if (s > 0 && d > 0 && d < s) {
+                    const save = s - d;
+                    const pct = Math.round((save / s) * 100);
+                    return (
+                      <div className="flex items-center justify-between rounded-xs border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs text-emerald-800">
+                        <span>
+                          Customer saves: <strong>৳{save}</strong>
+                        </span>
+                        <span className="rounded-2xs bg-emerald-200 px-1.5 py-0.5 text-[10px] font-bold text-emerald-900">
+                          -{pct}% OFF
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                {/* Profit Margin / Below Cost Warning */}
+                {(() => {
+                  const effectivePrice =
+                    Number(priceForm.discountPrice) || Number(priceForm.sellingPrice);
+                  const cost = priceEditProduct.minCostPrice ?? 0;
+                  if (cost > 0 && effectivePrice > 0) {
+                    const profit = effectivePrice - cost;
+                    const profitMargin = Math.round((profit / effectivePrice) * 100);
+                    const isLoss = profit < 0;
+                    return (
+                      <div
+                        className={`flex items-center justify-between rounded-xs border px-3 py-1.5 text-xs ${
+                          isLoss
+                            ? "border-red-300 bg-red-50 text-red-800"
+                            : "border-blue-200 bg-blue-50 text-blue-900"
+                        }`}
+                      >
+                        <span>
+                          {isLoss ? "⚠️ Selling below cost:" : "Est. Profit over Cost:"}{" "}
+                          <strong>{isLoss ? `-৳${Math.abs(profit)}` : `৳${profit}`}</strong>
+                        </span>
+                        <span
+                          className={`rounded-2xs px-1.5 py-0.5 text-[10px] font-bold ${
+                            isLoss ? "bg-red-200 text-red-900" : "bg-blue-200 text-blue-900"
+                          }`}
+                        >
+                          {profitMargin}% margin
+                        </span>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+              </div>
+
+              <p className="text-[11px] leading-relaxed text-[#101114]/50">
+                Note: Updating the price will apply to all variants of this product.
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
+              <button
+                type="button"
+                onClick={() => setPriceEditProduct(null)}
+                className="rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isUpdatingPrice || !priceForm.sellingPrice}
+                onClick={handleSaveQuickPrice}
+                className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-1.5 font-semibold text-white transition-colors hover:bg-[#101114]/85 disabled:opacity-50"
+              >
+                {isUpdatingPrice ? <Loader2 className="size-3.5 animate-spin" /> : null}
+                <span>Save Prices</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 7. Barcode Scanner Auto-Detection Toast Indicator ── */}
+      {scannedIndicator && (
+        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-[#00D9FF]/40 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
+          <span className="flex size-2 animate-ping rounded-full bg-[#00D9FF]" />
+          <span className="font-semibold text-[#00D9FF]">⚡ Scanner Active:</span>
+          <span>{scannedIndicator}</span>
         </div>
       )}
 
