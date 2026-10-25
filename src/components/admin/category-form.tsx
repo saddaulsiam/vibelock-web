@@ -3,9 +3,19 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ImagePlus, Trash2, Upload, Globe } from "lucide-react";
+import { Globe, ImagePlus, Sparkles, Trash2, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/admin-action-form";
 import { saveCategoryAction } from "@/lib/admin/catalog-actions";
+
+const slugify = (value: string) =>
+  value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
 type CategoryFormValues = {
   id: string;
@@ -23,11 +33,24 @@ export function CategoryForm({
   category: CategoryFormValues | null;
   categories: { id: string; name: string }[];
 }) {
+  const [name, setName] = React.useState(category?.name ?? "");
+  const [slug, setSlug] = React.useState(category?.slug ?? "");
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(category?.imageUrl ?? null);
   const [isRemoved, setIsRemoved] = React.useState(false);
   const [useUrlInput, setUseUrlInput] = React.useState(false);
   const [externalUrl, setExternalUrl] = React.useState(category?.imageUrl ?? "");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleGenerateSlug = () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      toast.error("Please enter a category name first to generate a slug.");
+      return;
+    }
+    const generated = slugify(trimmed);
+    setSlug(generated);
+    toast.success("Slug generated from category name!");
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,25 +92,41 @@ export function CategoryForm({
           name="name"
           required
           maxLength={120}
-          defaultValue={category?.name ?? ""}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           autoComplete="off"
         />
       </label>
 
-      {/* Category Slug */}
-      <label className="block text-sm font-medium text-[#101114]">
-        Slug{" "}
-        <span className="text-muted-foreground font-normal">
-          (leave blank to generate from name)
-        </span>
+      {/* Category Slug with Generate Button */}
+      <div>
+        <div className="flex items-center justify-between">
+          <label htmlFor="category-slug" className="block text-sm font-medium text-[#101114]">
+            Slug{" "}
+            <span className="text-muted-foreground text-xs font-normal">
+              (leave blank to generate from name)
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={handleGenerateSlug}
+            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+          >
+            <Sparkles className="size-3.5 text-[#00D9FF]" />
+            Generate from name
+          </button>
+        </div>
         <input
+          id="category-slug"
           className={fieldClass}
           name="slug"
           maxLength={160}
-          defaultValue={category?.slug ?? ""}
+          value={slug}
+          onChange={(e) => setSlug(e.target.value)}
+          placeholder="e.g. streetwear-apparel"
           autoComplete="off"
         />
-      </label>
+      </div>
 
       {/* Category Hero / Cover Image */}
       <fieldset className="space-y-3 border border-[#101114]/15 bg-[#FBF9F5] p-4 sm:p-5">

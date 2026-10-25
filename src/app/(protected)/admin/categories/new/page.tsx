@@ -5,7 +5,7 @@ import { getAdminCategoryFormData } from "@/lib/admin/catalog-queries";
 export default async function NewAdminCategoryPage() {
   const { categories } = await getAdminCategoryFormData();
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       <header>
         <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
           Catalog / Categories

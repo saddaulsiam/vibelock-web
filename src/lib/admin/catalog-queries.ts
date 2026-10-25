@@ -102,6 +102,9 @@ export async function getAdminProductFormData(id?: string) {
                 costPrice: true,
                 sellingPrice: true,
                 discountPrice: true,
+                inventoryTransactions: {
+                  select: { quantity: true },
+                },
               },
             },
             images: {
@@ -127,6 +130,9 @@ export async function getAdminProductFormData(id?: string) {
             costPrice: variant.costPrice.toFixed(2),
             sellingPrice: variant.sellingPrice.toFixed(2),
             discountPrice: variant.discountPrice?.toFixed(2) ?? "",
+            stock: String(
+              variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)
+            ),
           })),
           images: product.images,
           status: product.status as ProductStatus,

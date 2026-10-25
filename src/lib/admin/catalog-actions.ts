@@ -253,6 +253,7 @@ const variantInputSchema = z.object({
       "Selling price must be a non-negative amount with up to two decimals."
     ),
   discountPrice: z.string().optional().default(""),
+  stock: z.union([z.string(), z.number()]).optional().default("0"),
 });
 
 type ProductVariantInput = z.infer<typeof variantInputSchema>;
@@ -268,7 +269,7 @@ type ProductValues = {
   imageUrls: string[];
 };
 
-function parseProduct(formData: FormData) {
+async function parseProduct(formData: FormData) {
   const rawName = String(formData.get("name") ?? "");
   const parsed = productSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
@@ -290,13 +291,20 @@ function parseProduct(formData: FormData) {
     .min(1, "Add at least one product variant.")
     .max(100, "A product can have at most 100 variants.")
     .safeParse(rawVariants);
-  const rawImageUrls = String(formData.get("imageUrls") ?? "")
-    .split(/\r?\n/)
+
+  // 1. Parse string image URLs (existing or external)
+  const rawImageUrls = formData
+    .getAll("imageUrls")
+    .flatMap((val) => String(val).split(/\r?\n/))
     .map((url) => url.trim())
     .filter(Boolean);
-  if (rawImageUrls.length > 12) return { error: "A product can have at most 12 images." } as const;
+
   const imageUrls: string[] = [];
   for (const rawUrl of rawImageUrls) {
+    if (rawUrl.startsWith("/uploads/")) {
+      if (!imageUrls.includes(rawUrl)) imageUrls.push(rawUrl);
+      continue;
+    }
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(rawUrl);
@@ -307,6 +315,88 @@ function parseProduct(formData: FormData) {
       return { error: "Every image must be a valid HTTP or HTTPS URL." } as const;
     }
     if (!imageUrls.includes(parsedUrl.toString())) imageUrls.push(parsedUrl.toString());
+  }
+
+  // 2. Upload any local image files (like in Category upload)
+  const rawFiles = [...formData.getAll("imageFiles"), ...formData.getAll("imageFile")];
+  const uploadedUrls: string[] = [];
+  for (const item of rawFiles) {
+    if (item && typeof item === "object" && "size" in item && (item as File).size > 0) {
+      const file = item as File;
+      if (file.size > 5 * 1024 * 1024) {
+        return { error: `Image file "${file.name}" size must be under 5MB.` } as const;
+      }
+      const allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
+      if (!allowedMimes.includes(file.type)) {
+        return {
+          error: `Only JPG, PNG, WebP, GIF, or AVIF image files are supported (${file.name}).`,
+        } as const;
+      }
+
+      if (isCloudinaryConfigured()) {
+        const uploadRes = await uploadToCloudinary(file, "vibelock/products");
+        if (!uploadRes.success) {
+          return { error: `Cloudinary upload failed: ${uploadRes.error}` } as const;
+        }
+        uploadedUrls.push(uploadRes.url);
+      } else {
+        const ext =
+          file.type === "image/png"
+            ? "png"
+            : file.type === "image/webp"
+              ? "webp"
+              : file.type === "image/gif"
+                ? "gif"
+                : file.type === "image/avif"
+                  ? "avif"
+                  : "jpg";
+        const slugPrefix = slug.success ? slug.data : "item";
+        const fileName = `prod-${slugPrefix}-${Date.now()}-${randomUUID().slice(0, 6)}.${ext}`;
+        const uploadDir = path.join(process.cwd(), "public", "uploads", "products");
+        await fs.mkdir(uploadDir, { recursive: true });
+        const buffer = Buffer.from(await file.arrayBuffer());
+        await fs.writeFile(path.join(uploadDir, fileName), buffer);
+        uploadedUrls.push(`/uploads/products/${fileName}`);
+      }
+    }
+  }
+
+  // 3. Assemble final image URLs according to imageManifest if provided
+  let finalImageUrls: string[] = [];
+  const manifestRaw = String(formData.get("imageManifest") ?? "");
+  if (manifestRaw) {
+    try {
+      const manifest = JSON.parse(manifestRaw) as Array<{
+        type: "url" | "file";
+        value?: string;
+        fileIndex?: number;
+      }>;
+      if (Array.isArray(manifest)) {
+        for (const entry of manifest) {
+          if (entry.type === "url" && entry.value && imageUrls.includes(entry.value)) {
+            finalImageUrls.push(entry.value);
+          } else if (
+            entry.type === "file" &&
+            typeof entry.fileIndex === "number" &&
+            uploadedUrls[entry.fileIndex]
+          ) {
+            finalImageUrls.push(uploadedUrls[entry.fileIndex]);
+          }
+        }
+      }
+    } catch {
+      // Ignore manifest JSON errors and fallback
+    }
+  }
+
+  if (finalImageUrls.length === 0) {
+    finalImageUrls = [...imageUrls, ...uploadedUrls];
+  }
+  // Deduplicate while maintaining sequence
+  finalImageUrls = Array.from(new Set(finalImageUrls));
+
+  if (finalImageUrls.length > 12) {
+    return { error: "A product can have at most 12 images." } as const;
   }
 
   if (!parsed.success || !slug.success || !variantsParsed.success) {
@@ -327,6 +417,7 @@ function parseProduct(formData: FormData) {
     size: variant.size.trim(),
     color: variant.color.trim(),
     discountPrice: variant.discountPrice.trim(),
+    stock: String(variant.stock ?? "0").trim(),
   }));
   const seenSkus = new Set<string>();
   const seenCombinations = new Set<string>();
@@ -361,7 +452,7 @@ function parseProduct(formData: FormData) {
       ...parsed.data,
       slug: slug.data,
       variants,
-      imageUrls,
+      imageUrls: finalImageUrls,
     } satisfies ProductValues,
   } as const;
 }
@@ -381,7 +472,7 @@ export async function saveProductAction(
   formData: FormData
 ): Promise<AdminActionState> {
   await requireRole("ADMIN");
-  const parsed = parseProduct(formData);
+  const parsed = await parseProduct(formData);
   if ("error" in parsed) return { error: parsed.error ?? null };
   const product = parsed.data;
   if (!(await validateCategories(product.categoryIds)))
@@ -471,13 +562,63 @@ export async function saveProductAction(
           discountPrice:
             variant.discountPrice === "" ? null : new Prisma.Decimal(variant.discountPrice),
         };
-        if (variant.id) {
+        let variantId = variant.id;
+        if (variantId) {
           await tx.productVariant.update({
-            where: { id: variant.id, productId },
+            where: { id: variantId, productId },
             data,
           });
         } else {
-          await tx.productVariant.create({ data: { ...data, productId } });
+          const created = await tx.productVariant.create({ data: { ...data, productId } });
+          variantId = created.id;
+        }
+
+        const requestedStock = parseInt(String(variant.stock ?? ""), 10);
+        if (!isNaN(requestedStock) && requestedStock >= 0) {
+          const existingStockAgg = await tx.inventoryTransaction.aggregate({
+            where: { variantId },
+            _sum: { quantity: true },
+          });
+          const currentStock = existingStockAgg._sum.quantity ?? 0;
+          const diff = requestedStock - currentStock;
+
+          if (diff > 0) {
+            await tx.inventoryTransaction.create({
+              data: {
+                variantId,
+                type: "RESTOCK",
+                quantity: diff,
+                referenceId: randomUUID(),
+                notes: variant.id
+                  ? "Stock adjustment from product edit"
+                  : "Initial stock upon product creation",
+              },
+            });
+          } else if (diff < 0) {
+            const reservedAgg = await tx.inventoryReservation.aggregate({
+              where: {
+                variantId,
+                status: "RESERVED",
+                expiresAt: { gt: new Date() },
+              },
+              _sum: { quantity: true },
+            });
+            const reservedStock = reservedAgg._sum.quantity ?? 0;
+            if (currentStock + diff < reservedStock) {
+              throw new Error(
+                `Stock for ${variant.sku || "variant"} cannot be reduced below reserved quantity (${reservedStock}).`
+              );
+            }
+            await tx.inventoryTransaction.create({
+              data: {
+                variantId,
+                type: "ADJUSTMENT",
+                quantity: diff,
+                referenceId: randomUUID(),
+                notes: "Stock adjustment from product form",
+              },
+            });
+          }
         }
       }
 
@@ -509,6 +650,8 @@ export async function saveProductAction(
     };
   }
   refreshCatalog();
+  updateTag("admin-inventory");
+  revalidatePath("/admin/inventory");
   revalidatePath("/admin");
   return ok;
 }
