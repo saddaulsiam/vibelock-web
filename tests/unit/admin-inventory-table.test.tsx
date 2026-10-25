@@ -183,6 +183,7 @@ describe("AdminInventoryTable Component", () => {
     expect(html).toContain("Adjust");
     expect(html).toContain("Print barcode price tag for this variant");
     expect(html).toContain("Export CSV");
+    expect(html).toContain("Stocktake Audit");
   });
 
   test("renders empty state when no items match", () => {

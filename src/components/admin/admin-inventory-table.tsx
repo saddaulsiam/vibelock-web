@@ -4,6 +4,8 @@ import {
   bulkAdjustInventoryAction,
   loadMoreAdminInventoryAction,
   quickAdjustInventoryAction,
+  reconcileStocktakeAction,
+  type StocktakeReconcileItem,
 } from "@/lib/admin/inventory-actions";
 import type {
   AdminInventoryItem,
@@ -14,26 +16,34 @@ import type { InventoryTransactionType } from "@prisma/client";
 import {
   AlertTriangle,
   ArrowRight,
+  Barcode,
   Boxes,
   Check,
+  CheckCircle2,
   Copy,
   Download,
   ExternalLink,
+  Factory,
+  FileSpreadsheet,
   ImageOff,
   Loader2,
   Lock,
   Minus,
   Plus,
   Printer,
+  RefreshCw,
   Search,
   SlidersHorizontal,
   Tag,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
+import { AdminInventoryPoModal } from "@/components/admin/admin-inventory-po-modal";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";
@@ -77,6 +87,45 @@ function BarcodeSvg({ value, height = 28 }: { value: string; height?: number }) 
       })}
     </svg>
   );
+}
+
+function playStocktakeBeep(type: "success" | "warning" | "error") {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === "success") {
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(1200, ctx.currentTime);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.09);
+    } else if (type === "warning") {
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(650, ctx.currentTime);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.18);
+    } else {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(280, ctx.currentTime);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.25);
+    }
+  } catch {
+    // Audio context not allowed or unsupported
+  }
 }
 
 const COMMON_REASONS: Record<InventoryTransactionType, string[]> = {
@@ -168,6 +217,26 @@ export function AdminInventoryTable({
   const [barcodeItemOverrides, setBarcodeItemOverrides] = React.useState<Record<string, number>>({});
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
+  // Rapid Stocktake / Physical Audit Mode state
+  const [showStocktakeModal, setShowStocktakeModal] = React.useState(false);
+  const [stocktakeScans, setStocktakeScans] = React.useState<
+    Map<string, { item: AdminInventoryItem; count: number; notes: string }>
+  >(new Map());
+  const [stocktakeInput, setStocktakeInput] = React.useState("");
+  const [stocktakeSound, setStocktakeSound] = React.useState(true);
+  const [stocktakeFeedback, setStocktakeFeedback] = React.useState<{
+    type: "success" | "warning" | "error";
+    text: string;
+  } | null>(null);
+  const [isReconciling, setIsReconciling] = React.useState(false);
+  const [showReconcileConfirm, setShowReconcileConfirm] = React.useState(false);
+  const [auditNote, setAuditNote] = React.useState("Physical stocktake audit reconciliation");
+  const stocktakeInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Supplier Purchase Order (PO) & Reorder Sheet Modal state
+  const [showPoModal, setShowPoModal] = React.useState(false);
+  const [poInitialItems, setPoInitialItems] = React.useState<AdminInventoryItem[]>([]);
+
   // Hardware Barcode Scanner Detection buffer & indicator
   const [scannedIndicator, setScannedIndicator] = React.useState<string | null>(null);
   const scannerBufferRef = React.useRef<{ text: string; times: number[] }>({
@@ -212,6 +281,49 @@ export function AdminInventoryTable({
     [pathname, router, searchParams]
   );
 
+  // Handler for scanning an item in stocktake mode
+  const handleScanVariant = React.useCallback(
+    (query: string) => {
+      const q = query.trim().toLowerCase();
+      if (!q) return;
+
+      const found = loadedVariants.find(
+        (v) =>
+          v.sku.toLowerCase() === q ||
+          v.product.name.toLowerCase() === q ||
+          v.sku.toLowerCase().includes(q)
+      );
+
+      if (found) {
+        setStocktakeScans((prev) => {
+          const next = new Map(prev);
+          const existing = next.get(found.id);
+          const newCount = existing ? existing.count + 1 : 1;
+          next.set(found.id, {
+            item: found,
+            count: newCount,
+            notes: existing ? existing.notes : "",
+          });
+          return next;
+        });
+
+        if (stocktakeSound) playStocktakeBeep("success");
+        setStocktakeFeedback({
+          type: "success",
+          text: `Scanned: ${found.sku} (${found.product.name})`,
+        });
+      } else {
+        if (stocktakeSound) playStocktakeBeep("error");
+        setStocktakeFeedback({
+          type: "error",
+          text: `Barcode / SKU "${query}" not found in current inventory catalog.`,
+        });
+      }
+      setStocktakeInput("");
+    },
+    [loadedVariants, stocktakeSound]
+  );
+
   // Keyboard shortcut '/' to focus search input, 'Escape' to blur, and hardware barcode scanner auto-detect
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -237,10 +349,15 @@ export function AdminInventoryTable({
             const scanned = buf.text.trim();
             buf.text = "";
             buf.times = [];
-            setSearchTerm(scanned);
-            updateQuery({ q: scanned });
-            setScannedIndicator(`Scanned SKU: ${scanned}`);
-            setTimeout(() => setScannedIndicator(null), 4000);
+
+            if (showStocktakeModal) {
+              handleScanVariant(scanned);
+            } else {
+              setSearchTerm(scanned);
+              updateQuery({ q: scanned });
+              setScannedIndicator(`Scanned SKU: ${scanned}`);
+              setTimeout(() => setScannedIndicator(null), 4000);
+            }
             return;
           }
         }
@@ -251,7 +368,7 @@ export function AdminInventoryTable({
         buf.times.push(now);
       }
 
-      if (e.key === "/" && !isInput) {
+      if (e.key === "/" && !isInput && !showStocktakeModal) {
         e.preventDefault();
         searchInputRef.current?.focus();
         searchInputRef.current?.select();
@@ -262,7 +379,133 @@ export function AdminInventoryTable({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [updateQuery]);
+  }, [handleScanVariant, showStocktakeModal, updateQuery]);
+
+  // Execute Stocktake Reconciliation
+  const handleExecuteReconcile = async () => {
+    if (isReconciling || stocktakeScans.size === 0) return;
+
+    const items: StocktakeReconcileItem[] = Array.from(stocktakeScans.values()).map(
+      ({ item, count, notes }) => ({
+        variantId: item.id,
+        scannedQuantity: count,
+        expectedQuantity: item.totalStock,
+        notes,
+      })
+    );
+
+    const discrepancies = items.filter((i) => i.scannedQuantity !== i.expectedQuantity);
+    if (discrepancies.length === 0) {
+      alert("All audited items match system stock perfectly! No adjustments required.");
+      setShowReconcileConfirm(false);
+      setShowStocktakeModal(false);
+      return;
+    }
+
+    setIsReconciling(true);
+    try {
+      const res = await reconcileStocktakeAction({
+        items,
+        auditNote: auditNote.trim() || "Physical stocktake audit reconciliation",
+      });
+
+      if (res.error) {
+        alert(res.error);
+      } else {
+        // Optimistically update loadedVariants
+        const scanMap = new Map(
+          Array.from(stocktakeScans.values()).map((s) => [s.item.id, s.count])
+        );
+        setLoadedVariants((prev) =>
+          prev.map((v) => {
+            if (!scanMap.has(v.id)) return v;
+            const newPhysical = scanMap.get(v.id)!;
+            return {
+              ...v,
+              totalStock: newPhysical,
+              available: newPhysical - v.reserved,
+            };
+          })
+        );
+
+        if (stocktakeSound) playStocktakeBeep("success");
+        setFeedbackMessage(res.message || "Stocktake reconciliation completed.");
+        setShowReconcileConfirm(false);
+        setShowStocktakeModal(false);
+        setStocktakeScans(new Map());
+        router.refresh();
+      }
+    } catch {
+      alert("Failed to reconcile stocktake. Please try again.");
+    } finally {
+      setIsReconciling(false);
+    }
+  };
+
+  // Export Stocktake Audit CSV
+  const handleExportStocktakeCsv = () => {
+    if (stocktakeScans.size === 0) {
+      alert("No scanned items to export.");
+      return;
+    }
+
+    const rows = [
+      [
+        "Product Name",
+        "SKU",
+        "Size",
+        "Color",
+        "System Physical Stock",
+        "Audited Physical Count",
+        "Variance (Delta)",
+        "Audit Status",
+        "Notes",
+      ],
+    ];
+
+    Array.from(stocktakeScans.values()).forEach(({ item, count, notes }) => {
+      const delta = count - item.totalStock;
+      const status = delta === 0 ? "Matched" : delta < 0 ? "Missing / Shrinkage" : "Surplus";
+      rows.push([
+        item.product.name,
+        item.sku,
+        item.size ?? "—",
+        item.color ?? "—",
+        String(item.totalStock),
+        String(count),
+        delta > 0 ? `+${delta}` : String(delta),
+        status,
+        notes || "",
+      ]);
+    });
+
+    const csvContent =
+      "\uFEFF" +
+      rows
+        .map((r) =>
+          r
+            .map((cell) => {
+              const text = String(cell);
+              const safe = /^\s*[=+\-@]/.test(text) ? `'${text}` : text;
+              return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+            })
+            .join(",")
+        )
+        .join("\r\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute(
+      "download",
+      `vibelock-stocktake-audit-${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Infinite Scroll Handler
   const handleLoadMore = React.useCallback(async () => {
@@ -577,6 +820,34 @@ export function AdminInventoryTable({
 
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Purchase Order (PO) / Reorder Sheet Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setPoInitialItems([]);
+              setShowPoModal(true);
+            }}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            title="Generate Supplier Purchase Order / Factory Reorder Sheet"
+          >
+            <Factory className="size-4 text-[#101114]/70" />
+            <span>Purchase Order (PO)</span>
+          </button>
+
+          {/* Rapid Stocktake / Audit Mode Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setShowStocktakeModal(true);
+              setStocktakeFeedback(null);
+            }}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-emerald-600/30 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500"
+            title="Open Rapid Barcode Stocktaking & Physical Audit Station"
+          >
+            <Barcode className="size-4 text-emerald-700" />
+            <span>Stocktake Audit</span>
+          </button>
+
           {/* Export to CSV Button */}
           <a
             href={`/api/admin/inventory/export?q=${encodeURIComponent(currentFilters.q)}&filter=${currentFilters.filter}`}
@@ -920,6 +1191,19 @@ export function AdminInventoryTable({
                           <Printer className="size-3.5" />
                         </button>
 
+                        {/* Add to PO / Reorder Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPoInitialItems([item]);
+                            setShowPoModal(true);
+                          }}
+                          className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                          title="Add variant to Supplier Purchase Order / Reorder Sheet"
+                        >
+                          <Factory className="size-3.5 text-amber-700" />
+                        </button>
+
                         {/* History Link */}
                         <Link
                           href={`/admin/inventory/${item.id}`}
@@ -1020,6 +1304,22 @@ export function AdminInventoryTable({
           >
             <Printer className="size-3.5" />
             <span>Print Tags</span>
+          </button>
+
+          {/* Bulk Create Purchase Order (PO) */}
+          <button
+            type="button"
+            disabled={isSubmittingBulkAdjust}
+            onClick={() => {
+              const selected = loadedVariants.filter((v) => selectedIds.has(v.id));
+              setPoInitialItems(selected);
+              setShowPoModal(true);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+            title="Create Supplier Purchase Order for selected variants"
+          >
+            <Factory className="size-3.5" />
+            <span>Create PO ({selectedIds.size})</span>
           </button>
 
           <div className="h-4 w-px bg-white/20" />
@@ -1658,6 +1958,502 @@ export function AdminInventoryTable({
         </div>
       )}
 
+      {/* ── 9. Rapid Barcode Stocktake & Physical Audit Modal ── */}
+      {showStocktakeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 bg-[#101114] px-5 py-3 text-white">
+              <div className="flex items-center gap-2.5">
+                <span className="rounded bg-emerald-500/20 p-1 text-emerald-400">
+                  <Barcode className="size-4.5" />
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold tracking-tight text-white">
+                      Rapid Stocktake & Physical Audit Station
+                    </h3>
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+                      Live Audit
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-white/60">
+                    Scan garments with barcode scanner or manual count to detect discrepancies.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Sound Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setStocktakeSound(!stocktakeSound)}
+                  className={`inline-flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs font-medium transition-colors ${
+                    stocktakeSound
+                      ? "bg-white/10 text-emerald-300 hover:bg-white/20"
+                      : "bg-white/5 text-white/50 hover:bg-white/10"
+                  }`}
+                  title={stocktakeSound ? "Mute scan sound" : "Enable scan sound"}
+                >
+                  {stocktakeSound ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
+                  <span>{stocktakeSound ? "Beep On" : "Muted"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowStocktakeModal(false)}
+                  className="rounded p-1 text-white/60 transition-colors hover:text-white"
+                  title="Close audit station"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scanner Input Station & Manual Adder Bar */}
+            <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-4">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
+                {/* Rapid Scanner Input */}
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (stocktakeInput.trim()) {
+                      handleScanVariant(stocktakeInput);
+                    }
+                  }}
+                  className="relative flex-1"
+                >
+                  <Barcode className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-emerald-700" />
+                  <input
+                    ref={stocktakeInputRef}
+                    type="text"
+                    autoFocus
+                    value={stocktakeInput}
+                    onChange={(e) => setStocktakeInput(e.target.value)}
+                    placeholder="Scan barcode tag or type SKU (press Enter)..."
+                    className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-20 pl-9 font-mono text-xs text-[#101114] shadow-xs outline-none focus:border-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-xs bg-[#101114] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#101114]/85"
+                  >
+                    Scan / Add
+                  </button>
+                </form>
+
+                {/* Dropdown manual selector for items without readable barcodes */}
+                <div className="sm:w-72">
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleScanVariant(e.target.value);
+                        e.target.value = "";
+                      }
+                    }}
+                    defaultValue=""
+                    className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] shadow-xs outline-none focus:border-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500"
+                  >
+                    <option value="">Or pick variant manually...</option>
+                    {loadedVariants.map((v) => (
+                      <option key={v.id} value={v.sku}>
+                        {v.sku} - {v.product.name} ({[v.size, v.color].filter(Boolean).join("/")})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Scan Feedback Banner */}
+              {stocktakeFeedback && (
+                <div
+                  className={`mt-2.5 flex items-center justify-between rounded-sm px-3 py-1.5 text-xs font-medium animate-in fade-in duration-150 ${
+                    stocktakeFeedback.type === "success"
+                      ? "border border-emerald-300 bg-emerald-100 text-emerald-900"
+                      : "border border-rose-300 bg-rose-100 text-rose-900"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    {stocktakeFeedback.type === "success" ? (
+                      <CheckCircle2 className="size-3.5 text-emerald-700" />
+                    ) : (
+                      <AlertTriangle className="size-3.5 text-rose-700" />
+                    )}
+                    <span>{stocktakeFeedback.text}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setStocktakeFeedback(null)}
+                    className="text-current opacity-70 hover:opacity-100"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Audit KPI Overview Bar */}
+            <div className="grid grid-cols-2 gap-2 border-b border-[#101114]/10 bg-white p-3 sm:grid-cols-4 sm:gap-4 sm:px-5">
+              <div className="rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2.5">
+                <span className="text-[10px] font-bold text-zinc-500 uppercase">Total Scanned</span>
+                <div className="mt-0.5 text-xl font-black text-[#101114]">
+                  {Array.from(stocktakeScans.values()).reduce((acc, s) => acc + s.count, 0)} units
+                </div>
+                <span className="text-[10px] text-zinc-400">
+                  Across {stocktakeScans.size} unique variants
+                </span>
+              </div>
+
+              <div className="rounded-sm border border-emerald-200 bg-emerald-50/60 p-2.5">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase">Matched (0 Delta)</span>
+                <div className="mt-0.5 text-xl font-black text-emerald-800">
+                  {Array.from(stocktakeScans.values()).filter((s) => s.count === s.item.totalStock).length}
+                </div>
+                <span className="text-[10px] text-emerald-600">Stock matches physical count</span>
+              </div>
+
+              <div className="rounded-sm border border-rose-200 bg-rose-50/60 p-2.5">
+                <span className="text-[10px] font-bold text-rose-700 uppercase">Missing / Shrinkage</span>
+                <div className="mt-0.5 text-xl font-black text-rose-800">
+                  {
+                    Array.from(stocktakeScans.values()).filter((s) => s.count < s.item.totalStock)
+                      .length
+                  }
+                </div>
+                <span className="text-[10px] text-rose-600">
+                  {Array.from(stocktakeScans.values()).reduce(
+                    (acc, s) => acc + (s.count < s.item.totalStock ? s.item.totalStock - s.count : 0),
+                    0
+                  )}{" "}
+                  units missing
+                </span>
+              </div>
+
+              <div className="rounded-sm border border-blue-200 bg-blue-50/60 p-2.5">
+                <span className="text-[10px] font-bold text-blue-700 uppercase">Surplus / Unrecorded</span>
+                <div className="mt-0.5 text-xl font-black text-blue-800">
+                  {
+                    Array.from(stocktakeScans.values()).filter((s) => s.count > s.item.totalStock)
+                      .length
+                  }
+                </div>
+                <span className="text-[10px] text-blue-600">
+                  +{Array.from(stocktakeScans.values()).reduce(
+                    (acc, s) => acc + (s.count > s.item.totalStock ? s.count - s.item.totalStock : 0),
+                    0
+                  )}{" "}
+                  units extra
+                </span>
+              </div>
+            </div>
+
+            {/* Scanned Items Audit Table */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+              {stocktakeScans.size === 0 ? (
+                <div className="flex h-64 flex-col items-center justify-center gap-2.5 rounded-sm border border-dashed border-[#101114]/20 p-8 text-center">
+                  <div className="flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                    <Barcode className="size-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-[#101114]">No items scanned yet</h4>
+                  <p className="max-w-md text-xs text-[#101114]/60">
+                    Aim your wireless/USB barcode scanner at clothing price tags, or pick items from the
+                    dropdown to start auditing store inventory.
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#F3F0E8]/70 text-[11px] font-semibold text-[#101114]/70 uppercase">
+                      <tr>
+                        <th className="px-4 py-2.5">Product & Variant</th>
+                        <th className="px-3 py-2.5 font-mono">SKU</th>
+                        <th className="px-3 py-2.5 text-center font-mono">System Stock</th>
+                        <th className="px-3 py-2.5 text-center font-mono">Audited Count</th>
+                        <th className="px-3 py-2.5 text-center font-mono">Variance</th>
+                        <th className="px-3 py-2.5">Audit Note</th>
+                        <th className="px-3 py-2.5 text-right">Remove</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#101114]/5">
+                      {Array.from(stocktakeScans.values()).map(({ item, count, notes }) => {
+                        const delta = count - item.totalStock;
+                        const isMatch = delta === 0;
+                        const isMissing = delta < 0;
+
+                        return (
+                          <tr
+                            key={item.id}
+                            className={`transition-colors ${
+                              isMissing ? "bg-rose-50/30" : isMatch ? "bg-white" : "bg-blue-50/30"
+                            }`}
+                          >
+                            <td className="px-4 py-3">
+                              <div className="font-semibold text-[#101114]">{item.product.name}</div>
+                              <div className="text-[10px] text-zinc-500">
+                                {[item.size ? `Size: ${item.size}` : null, item.color ? `Color: ${item.color}` : null]
+                                  .filter(Boolean)
+                                  .join(" • ") || "Default variant"}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 font-mono font-medium text-[#101114]">{item.sku}</td>
+                            <td className="px-3 py-3 text-center font-mono font-bold text-zinc-600">
+                              {item.totalStock}
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <div className="inline-flex items-center gap-1 rounded-sm border border-[#101114]/15 bg-white p-0.5 shadow-2xs">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setStocktakeScans((prev) => {
+                                      const next = new Map(prev);
+                                      const existing = next.get(item.id);
+                                      if (existing && existing.count > 0) {
+                                        next.set(item.id, {
+                                          ...existing,
+                                          count: existing.count - 1,
+                                        });
+                                      }
+                                      return next;
+                                    })
+                                  }
+                                  className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                                  title="Decrease count"
+                                >
+                                  <Minus className="size-2.5" />
+                                </button>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="5000"
+                                  value={count}
+                                  onChange={(e) => {
+                                    const val = parseInt(e.target.value, 10);
+                                    if (!isNaN(val) && val >= 0) {
+                                      setStocktakeScans((prev) => {
+                                        const next = new Map(prev);
+                                        const existing = next.get(item.id);
+                                        if (existing) {
+                                          next.set(item.id, {
+                                            ...existing,
+                                            count: val,
+                                          });
+                                        }
+                                        return next;
+                                      });
+                                    }
+                                  }}
+                                  className="h-5 w-12 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setStocktakeScans((prev) => {
+                                      const next = new Map(prev);
+                                      const existing = next.get(item.id);
+                                      if (existing) {
+                                        next.set(item.id, {
+                                          ...existing,
+                                          count: existing.count + 1,
+                                        });
+                                      }
+                                      return next;
+                                    })
+                                  }
+                                  className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                                  title="Increase count"
+                                >
+                                  <Plus className="size-2.5" />
+                                </button>
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              {isMatch ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                                  Matched
+                                </span>
+                              ) : isMissing ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
+                                  {delta} (Missing)
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
+                                  +{delta} (Surplus)
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-3">
+                              <input
+                                type="text"
+                                placeholder="Audit note..."
+                                value={notes}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setStocktakeScans((prev) => {
+                                    const next = new Map(prev);
+                                    const existing = next.get(item.id);
+                                    if (existing) {
+                                      next.set(item.id, {
+                                        ...existing,
+                                        notes: val,
+                                      });
+                                    }
+                                    return next;
+                                  });
+                                }}
+                                className="h-7 w-full min-w-28 rounded-xs border border-[#101114]/15 bg-white px-2 text-[11px] outline-none focus:border-[#101114]"
+                              />
+                            </td>
+                            <td className="px-3 py-3 text-right">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setStocktakeScans((prev) => {
+                                    const next = new Map(prev);
+                                    next.delete(item.id);
+                                    return next;
+                                  })
+                                }
+                                className="rounded p-1 text-[#101114]/40 hover:bg-rose-50 hover:text-rose-600"
+                                title="Remove from current stocktake"
+                              >
+                                <X className="size-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Reconciliation Confirmation Drawer */}
+            {showReconcileConfirm && (
+              <div className="border-t border-amber-300 bg-amber-50/90 p-4 animate-in slide-in-from-bottom-2 duration-150">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
+                      <AlertTriangle className="size-4 text-amber-600" />
+                      <span>Confirm Stock Ledger Adjustments</span>
+                    </div>
+                    <p className="mt-0.5 text-xs text-amber-800">
+                      Reconciling will atomically adjust{" "}
+                      <strong>
+                        {
+                          Array.from(stocktakeScans.values()).filter(
+                            (s) => s.count !== s.item.totalStock
+                          ).length
+                        }
+                      </strong>{" "}
+                      variance variants in the inventory ledger.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={auditNote}
+                      onChange={(e) => setAuditNote(e.target.value)}
+                      placeholder="Audit reason / ledger note..."
+                      className="h-8 rounded-sm border border-amber-300 bg-white px-2.5 text-xs text-[#101114] outline-none"
+                    />
+                    <button
+                      type="button"
+                      disabled={isReconciling}
+                      onClick={() => setShowReconcileConfirm(false)}
+                      className="inline-flex h-8 items-center rounded-sm border border-amber-300 bg-white px-3 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isReconciling}
+                      onClick={handleExecuteReconcile}
+                      className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-emerald-700 px-4 text-xs font-semibold text-white shadow-xs hover:bg-emerald-600 disabled:opacity-50"
+                    >
+                      {isReconciling ? (
+                        <>
+                          <Loader2 className="size-3 animate-spin" />
+                          <span>Reconciling...</span>
+                        </>
+                      ) : (
+                        <span>Confirm & Apply Ledger Changes</span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Bottom Controls */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 bg-white px-5 py-3 text-xs">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      stocktakeScans.size > 0 &&
+                      !confirm("Clear all scanned items in this stocktake session?")
+                    ) {
+                      return;
+                    }
+                    setStocktakeScans(new Map());
+                    setStocktakeFeedback(null);
+                  }}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-rose-50 hover:text-rose-700"
+                >
+                  <RefreshCw className="size-3.5" />
+                  <span>Clear Session</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportStocktakeCsv}
+                  disabled={stocktakeScans.size === 0}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] disabled:opacity-50"
+                >
+                  <FileSpreadsheet className="size-3.5 text-emerald-700" />
+                  <span>Export Audit CSV</span>
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowStocktakeModal(false)}
+                  className="inline-flex h-9 items-center rounded-sm border border-[#101114]/20 bg-white px-4 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
+                >
+                  Close
+                </button>
+
+                <button
+                  type="button"
+                  disabled={
+                    stocktakeScans.size === 0 ||
+                    Array.from(stocktakeScans.values()).filter(
+                      (s) => s.count !== s.item.totalStock
+                    ).length === 0
+                  }
+                  onClick={() => setShowReconcileConfirm(true)}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-emerald-700 px-4 font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Check className="size-3.5" />
+                  <span>
+                    Reconcile Discrepancies (
+                    {
+                      Array.from(stocktakeScans.values()).filter(
+                        (s) => s.count !== s.item.totalStock
+                      ).length
+                    }
+                    )
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 9. Barcode Scanner Auto-Detection Toast Indicator ── */}
       {scannedIndicator && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-[#00D9FF]/40 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl animate-in slide-in-from-top-3 fade-in duration-200">
@@ -1666,6 +2462,15 @@ export function AdminInventoryTable({
           <span>{scannedIndicator}</span>
         </div>
       )}
+
+      {/* ── Supplier Purchase Order (PO) & Reorder Sheet Modal ── */}
+      <AdminInventoryPoModal
+        key={poInitialItems.map((i) => i.id).join(",") || "po-modal"}
+        isOpen={showPoModal}
+        onClose={() => setShowPoModal(false)}
+        initialItems={poInitialItems}
+        availableVariants={loadedVariants}
+      />
 
       {/* ── Print Stylesheet for Labels ── */}
       <style>{`

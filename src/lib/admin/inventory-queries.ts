@@ -1,6 +1,6 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
+import { Prisma, type InventoryTransactionType } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
@@ -151,8 +151,19 @@ export async function getAdminInventory({
   };
 }
 
-export async function getAdminInventoryDetail(variantId: string, page = 1) {
+export type AdminInventoryDetailOptions = {
+  page?: number;
+  type?: InventoryTransactionType | "ALL";
+};
+
+export async function getAdminInventoryDetail(
+  variantId: string,
+  pageOrOptions: number | AdminInventoryDetailOptions = 1
+) {
   await requireRole("ADMIN");
+
+  const page = typeof pageOrOptions === "number" ? pageOrOptions : (pageOrOptions?.page ?? 1);
+  const typeFilter = typeof pageOrOptions === "object" ? pageOrOptions?.type : undefined;
 
   const normalizedPage = normalizePage(page);
   const variant = await prisma.productVariant.findUnique({
@@ -166,55 +177,101 @@ export async function getAdminInventoryDetail(variantId: string, page = 1) {
       costPrice: true,
       sellingPrice: true,
       discountPrice: true,
-      product: { select: { id: true, name: true, slug: true } },
+      product: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          images: {
+            select: { url: true, isPrimary: true },
+            orderBy: { isPrimary: "desc" },
+            take: 1,
+          },
+        },
+      },
     },
   });
   if (!variant) return null;
 
-  const [stock, reserved, transactions, transactionCount] = await Promise.all([
-    prisma.inventoryTransaction.aggregate({
-      where: { variantId },
-      _sum: { quantity: true },
-    }),
-    prisma.inventoryReservation.aggregate({
-      where: {
-        variantId,
-        status: "RESERVED",
-        expiresAt: { gt: new Date() },
-      },
-      _sum: { quantity: true },
-    }),
-    prisma.inventoryTransaction.findMany({
-      where: { variantId },
-      orderBy: { createdAt: "desc" },
-      skip: (normalizedPage - 1) * pageSize,
-      take: pageSize,
-      select: {
-        id: true,
-        type: true,
-        quantity: true,
-        referenceId: true,
-        notes: true,
-        salesChannel: true,
-        createdAt: true,
-      },
-    }),
-    prisma.inventoryTransaction.count({ where: { variantId } }),
-  ]);
+  const transactionWhere: Prisma.InventoryTransactionWhereInput = {
+    variantId,
+    ...(typeFilter && typeFilter !== "ALL" ? { type: typeFilter } : {}),
+  };
+
+  const [stock, reserved, soldAgg, restockedAgg, damagedAgg, transactions, transactionCount] =
+    await Promise.all([
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryReservation.aggregate({
+        where: {
+          variantId,
+          status: "RESERVED",
+          expiresAt: { gt: new Date() },
+        },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "SALE" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "RESTOCK" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.aggregate({
+        where: { variantId, type: "DAMAGE" },
+        _sum: { quantity: true },
+      }),
+      prisma.inventoryTransaction.findMany({
+        where: transactionWhere,
+        orderBy: { createdAt: "desc" },
+        skip: (normalizedPage - 1) * pageSize,
+        take: pageSize,
+        select: {
+          id: true,
+          type: true,
+          quantity: true,
+          referenceId: true,
+          notes: true,
+          salesChannel: true,
+          createdAt: true,
+        },
+      }),
+      prisma.inventoryTransaction.count({ where: transactionWhere }),
+    ]);
 
   const totalStock = stock._sum.quantity ?? 0;
   const reservedStock = reserved._sum.quantity ?? 0;
+  const totalSold = Math.abs(soldAgg._sum.quantity ?? 0);
+  const totalRestocked = restockedAgg._sum.quantity ?? 0;
+  const totalDamaged = Math.abs(damagedAgg._sum.quantity ?? 0);
 
   return {
-    variant,
+    variant: {
+      ...variant,
+      costPrice: Number(variant.costPrice ?? 0),
+      sellingPrice: Number(variant.sellingPrice ?? 0),
+      discountPrice: variant.discountPrice ? Number(variant.discountPrice) : null,
+      weight: variant.weight ? Number(variant.weight) : null,
+      primaryImage: variant.product.images[0]?.url ?? null,
+    },
     totalStock,
     reservedStock,
     availableStock: totalStock - reservedStock,
+    totalSold,
+    totalRestocked,
+    totalDamaged,
     transactions,
-    totalPages: Math.ceil(transactionCount / pageSize),
+    totalPages: Math.max(1, Math.ceil(transactionCount / pageSize)),
     page: normalizedPage,
+    totalTransactions: transactionCount,
+    typeFilter: typeFilter || "ALL",
   };
 }
+
+export type AdminInventoryDetailResult = NonNullable<Awaited<ReturnType<typeof getAdminInventoryDetail>>>;
 
 export type InventorySummary = {
   totalPhysicalStock: number;

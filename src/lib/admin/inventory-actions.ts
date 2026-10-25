@@ -265,3 +265,199 @@ export async function loadMoreAdminInventoryAction(options: {
   return getAdminInventory(options);
 }
 
+export type StocktakeReconcileItem = {
+  variantId: string;
+  scannedQuantity: number;
+  expectedQuantity: number;
+  notes?: string;
+};
+
+export async function reconcileStocktakeAction({
+  items,
+  auditNote,
+}: {
+  items: StocktakeReconcileItem[];
+  auditNote?: string;
+}): Promise<InventoryActionState> {
+  await requireRole("ADMIN");
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return { error: "No stocktake items provided to reconcile." };
+  }
+
+  // Filter items where there is a non-zero discrepancy (scanned != expected)
+  const discrepancies = items.filter(
+    (item) => item.scannedQuantity !== item.expectedQuantity
+  );
+
+  if (discrepancies.length === 0) {
+    return {
+      error: null,
+      message: "All scanned items match system stock perfectly! No adjustments required.",
+    };
+  }
+
+  const cleanNote = (auditNote || "Physical stocktake audit reconciliation").trim();
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      for (const item of discrepancies) {
+        await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id = ${item.variantId} FOR UPDATE`;
+        const variant = await tx.productVariant.findUnique({
+          where: { id: item.variantId },
+          select: { id: true, sku: true },
+        });
+        if (!variant) continue;
+
+        const [stock, reserved] = await Promise.all([
+          tx.inventoryTransaction.aggregate({
+            where: { variantId: item.variantId },
+            _sum: { quantity: true },
+          }),
+          tx.inventoryReservation.aggregate({
+            where: {
+              variantId: item.variantId,
+              status: "RESERVED",
+              expiresAt: { gt: new Date() },
+            },
+            _sum: { quantity: true },
+          }),
+        ]);
+
+        const currentPhysical = stock._sum.quantity ?? 0;
+        const currentReserved = reserved._sum.quantity ?? 0;
+        const delta = item.scannedQuantity - currentPhysical;
+
+        if (delta === 0) continue;
+
+        // Ensure physical stock does not drop below unexpired reservation count
+        if (currentPhysical + delta < currentReserved) {
+          throw new Error(
+            `Reconciliation for ${variant.sku} would reduce physical stock to ${currentPhysical + delta}, which is below active checkout reservations (${currentReserved}).`
+          );
+        }
+
+        const note = item.notes?.trim()
+          ? `${cleanNote}: ${item.notes.trim()} (Audit: ${currentPhysical} -> ${item.scannedQuantity})`
+          : `${cleanNote} (Audit: ${currentPhysical} -> ${item.scannedQuantity})`;
+
+        await tx.inventoryTransaction.create({
+          data: {
+            variantId: item.variantId,
+            type: "ADJUSTMENT",
+            quantity: delta,
+            referenceId: crypto.randomUUID(),
+            notes: note,
+          },
+        });
+      }
+    });
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Stocktake reconciliation failed.",
+    };
+  }
+
+  updateTag("admin-inventory");
+  revalidatePath("/admin/inventory");
+  return {
+    error: null,
+    message: `Successfully reconciled ${discrepancies.length} discrepancy variant(s).`,
+  };
+}
+
+export interface ReorderSuggestionItem {
+  id: string;
+  sku: string;
+  productName: string;
+  size: string | null;
+  color: string | null;
+  primaryImage: string | null;
+  totalStock: number;
+  reserved: number;
+  available: number;
+  costPrice: number;
+  sellingPrice: number;
+}
+
+export async function getReorderSuggestionsAction(threshold = 5): Promise<{
+  error: string | null;
+  items: ReorderSuggestionItem[];
+}> {
+  await requireRole("ADMIN");
+
+  try {
+    const rawItems = await prisma.$queryRaw<
+      {
+        id: string;
+        sku: string;
+        size: string | null;
+        color: string | null;
+        costPrice: number | null;
+        sellingPrice: number | null;
+        productName: string;
+        primaryImage: string | null;
+        totalStock: number;
+        reserved: number;
+        available: number;
+      }[]
+    >(Prisma.sql`
+      SELECT
+        "ProductVariant"."id",
+        "ProductVariant"."sku",
+        "ProductVariant"."size",
+        "ProductVariant"."color",
+        "ProductVariant"."costPrice"::float AS "costPrice",
+        "ProductVariant"."sellingPrice"::float AS "sellingPrice",
+        "Product"."name" AS "productName",
+        COALESCE(stock.total_stock, 0)::int AS "totalStock",
+        COALESCE(reserved.reserved_stock, 0)::int AS reserved,
+        (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0))::int AS available,
+        (
+          SELECT "url" FROM "ProductImage"
+          WHERE "ProductImage"."productId" = "Product"."id"
+          ORDER BY "isPrimary" DESC, "createdAt" ASC
+          LIMIT 1
+        ) AS "primaryImage"
+      FROM "ProductVariant"
+      INNER JOIN "Product" ON "Product"."id" = "ProductVariant"."productId"
+      LEFT JOIN (
+        SELECT "variantId", SUM(quantity)::int AS total_stock
+        FROM "InventoryTransaction"
+        GROUP BY "variantId"
+      ) stock ON stock."variantId" = "ProductVariant"."id"
+      LEFT JOIN (
+        SELECT "variantId", SUM(quantity)::int AS reserved_stock
+        FROM "InventoryReservation"
+        WHERE status = 'RESERVED'::"ReservationStatus" AND "expiresAt" > (NOW() AT TIME ZONE 'UTC')
+        GROUP BY "variantId"
+      ) reserved ON reserved."variantId" = "ProductVariant"."id"
+      WHERE (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) <= ${threshold}
+      ORDER BY (COALESCE(stock.total_stock, 0) - COALESCE(reserved.reserved_stock, 0)) ASC, "Product"."name" ASC
+      LIMIT 200
+    `);
+
+    return {
+      error: null,
+      items: rawItems.map((item) => ({
+        id: item.id,
+        sku: item.sku,
+        productName: item.productName,
+        size: item.size,
+        color: item.color,
+        primaryImage: item.primaryImage,
+        totalStock: item.totalStock,
+        reserved: item.reserved,
+        available: item.available,
+        costPrice: item.costPrice ?? 0,
+        sellingPrice: item.sellingPrice ?? 0,
+      })),
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to load reorder suggestions.",
+      items: [],
+    };
+  }
+}
+
