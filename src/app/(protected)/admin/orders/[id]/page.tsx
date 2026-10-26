@@ -33,6 +33,8 @@ import {
 import { OrderLifecycleStepper } from "@/components/admin/order-lifecycle-stepper";
 import { OrderPickPackChecklist } from "@/components/admin/order-pick-pack-checklist";
 import { OrderSmartActions } from "@/components/admin/order-smart-actions";
+import { OrderCustomerRiskCard } from "@/components/admin/order-customer-risk-card";
+import { getCustomerRiskProfile } from "@/lib/admin/customer-risk";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);
@@ -66,6 +68,13 @@ export default async function AdminOrderPage({
   if (!order) {
     notFound();
   }
+
+  const customerRiskProfile = await getCustomerRiskProfile({
+    phone: order.customerPhone,
+    email: order.customerEmail,
+    userId: order.userId,
+    currentOrderId: order.id,
+  });
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -209,8 +218,21 @@ export default async function AdminOrderPage({
 
       {/* ── Main Order Grid Layout ── */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left Column (Items & Packing Audit, Delivery Destination, Customer, Audit Trail) */}
+        {/* Left Column (Customer Risk, Items & Packing Audit, Delivery Destination, Customer, Audit Trail) */}
         <div className="space-y-6 lg:col-span-2">
+          {/* Customer Trust & Fraud Prevention Intelligence Card (Steadfast Courier API + VibeLock History) */}
+          <div className="print:hidden">
+            <OrderCustomerRiskCard
+              initialProfile={customerRiskProfile}
+              orderNumber={order.orderNumber}
+              customerName={order.customerName}
+              customerPhone={order.customerPhone}
+              customerEmail={order.customerEmail}
+              userId={order.userId}
+              orderId={order.id}
+            />
+          </div>
+
           {/* Interactive Pick & Pack Order Items Verification */}
           <OrderPickPackChecklist orderId={order.id} items={order.items} />
 

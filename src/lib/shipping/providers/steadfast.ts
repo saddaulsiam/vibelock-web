@@ -276,4 +276,131 @@ export class SteadfastCourierProvider implements ShippingProvider {
       error: "Steadfast cancellation is not supported by the verified API contract.",
     };
   }
+
+  /**
+   * Retrieves customer delivery history and fraud risk metrics via GET /fraud_check/{phone}
+   */
+  async checkCustomerRisk(phone: string): Promise<SteadfastCustomerRiskResult> {
+    const cleanPhone = normalizeBdPhone(phone);
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return {
+        success: false,
+        totalParcels: 0,
+        totalDelivered: 0,
+        totalCancelled: 0,
+        deliveryRatio: 0,
+        cancellationRatio: 0,
+        fraudReportsCount: 0,
+        riskLevel: "UNKNOWN",
+        error: "Invalid or missing phone number.",
+      };
+    }
+
+    try {
+      const { response, payload } = await this.request(
+        `/fraud_check/${encodeURIComponent(cleanPhone)}`,
+        { method: "GET" }
+      );
+
+      const body = record(payload);
+      if (!response.ok || !body) {
+        return {
+          success: false,
+          phone: cleanPhone,
+          totalParcels: 0,
+          totalDelivered: 0,
+          totalCancelled: 0,
+          deliveryRatio: 0,
+          cancellationRatio: 0,
+          fraudReportsCount: 0,
+          riskLevel: "UNKNOWN",
+          error: "Steadfast fraud check failed.",
+        };
+      }
+
+      // Handle diverse response field namings across Steadfast / Packzy API versions
+      const totalParcels =
+        Number(body.total_parcels ?? body.Total_parcels ?? body.total_orders ?? 0) || 0;
+      const totalDelivered =
+        Number(body.total_delivered ?? body.Total_delivered ?? 0) || 0;
+      const totalCancelled =
+        Number(body.total_cancelled ?? body.Total_cancelled ?? body.total_returned ?? 0) || 0;
+
+      // Extract fraud reports if any
+      const rawReports = Array.isArray(body.total_fraud_reports)
+        ? body.total_fraud_reports
+        : Array.isArray(body.fraud_reports)
+        ? body.fraud_reports
+        : [];
+      const fraudReportsCount =
+        typeof body.total_fraud_reports === "number"
+          ? body.total_fraud_reports
+          : rawReports.length;
+
+      // Delivery ratio calculation
+      let deliveryRatio = 0;
+      if (typeof body.delivery_ratio === "number" && !isNaN(body.delivery_ratio)) {
+        deliveryRatio = Math.round(body.delivery_ratio);
+      } else if (totalParcels > 0) {
+        deliveryRatio = Math.round((totalDelivered / totalParcels) * 100);
+      }
+
+      let cancellationRatio = 0;
+      if (typeof body.cancellation_ratio === "number" && !isNaN(body.cancellation_ratio)) {
+        cancellationRatio = Math.round(body.cancellation_ratio);
+      } else if (totalParcels > 0) {
+        cancellationRatio = Math.round((totalCancelled / totalParcels) * 100);
+      }
+
+      let riskLevel: "LOW" | "MODERATE" | "HIGH" | "UNKNOWN" = "UNKNOWN";
+      if (totalParcels === 0) {
+        riskLevel = "UNKNOWN";
+      } else if (fraudReportsCount > 0 || deliveryRatio < 60 || cancellationRatio >= 40) {
+        riskLevel = "HIGH";
+      } else if (deliveryRatio >= 85 && cancellationRatio <= 15) {
+        riskLevel = "LOW";
+      } else {
+        riskLevel = "MODERATE";
+      }
+
+      return {
+        success: true,
+        phone: cleanPhone,
+        totalParcels,
+        totalDelivered,
+        totalCancelled,
+        deliveryRatio,
+        cancellationRatio,
+        fraudReportsCount,
+        riskLevel,
+      };
+    } catch (err) {
+      console.warn("[SteadfastProvider] Fraud check error:", err);
+      return {
+        success: false,
+        phone: cleanPhone,
+        totalParcels: 0,
+        totalDelivered: 0,
+        totalCancelled: 0,
+        deliveryRatio: 0,
+        cancellationRatio: 0,
+        fraudReportsCount: 0,
+        riskLevel: "UNKNOWN",
+        error: err instanceof Error ? err.message : "Failed to connect to Steadfast fraud check API.",
+      };
+    }
+  }
+}
+
+export interface SteadfastCustomerRiskResult {
+  success: boolean;
+  phone?: string;
+  totalParcels: number;
+  totalDelivered: number;
+  totalCancelled: number;
+  deliveryRatio: number;
+  cancellationRatio: number;
+  fraudReportsCount: number;
+  riskLevel: "LOW" | "MODERATE" | "HIGH" | "UNKNOWN";
+  error?: string;
 }

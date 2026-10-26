@@ -391,3 +391,20 @@ export async function bulkUpdateOrderStatusAction(input: {
   return { success: updatedCount > 0, updatedCount, errors };
 }
 
+export async function checkCustomerRiskAction(input: {
+  phone?: string | null;
+  email?: string | null;
+  userId?: string | null;
+  currentOrderId?: string | null;
+}) {
+  await requireRole("ADMIN", { throw: true });
+  const { getCustomerRiskProfile } = await import("@/lib/admin/customer-risk");
+  try {
+    const profile = await getCustomerRiskProfile(input);
+    return { success: true, profile };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to query customer risk profile.";
+    return { success: false, error: message };
+  }
+}
+
