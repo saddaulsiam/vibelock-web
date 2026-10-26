@@ -21,6 +21,11 @@ export interface AdminOrderItem {
   shippingCity: string;
   itemCount: number;
   createdAt: string;
+  shipment?: {
+    provider: string;
+    trackingNumber: string | null;
+    status: string;
+  } | null;
 }
 
 export interface AdminOrdersResult {
@@ -96,6 +101,13 @@ export async function getAdminOrders({
         customerPhone: true,
         shippingCity: true,
         createdAt: true,
+        shipment: {
+          select: {
+            provider: true,
+            trackingNumber: true,
+            status: true,
+          },
+        },
         _count: {
           select: {
             items: true,
@@ -144,6 +156,13 @@ export async function getAdminOrders({
     shippingCity: order.shippingCity,
     itemCount: order._count.items,
     createdAt: order.createdAt.toISOString(),
+    shipment: order.shipment
+      ? {
+          provider: order.shipment.provider,
+          trackingNumber: order.shipment.trackingNumber,
+          status: order.shipment.status,
+        }
+      : null,
   }));
 
   return {

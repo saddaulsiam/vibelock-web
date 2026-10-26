@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AlertTriangle, Boxes, Clock, Coins, Flame, Info, TrendingDown } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import {
   getAdminInventoryIntelligence,
   type InventoryIntelligenceWindow,
@@ -9,6 +8,8 @@ import {
   type InventoryIntelligenceSummary,
 } from "@/lib/admin/inventory-intelligence-queries";
 import { AdminInventoryIntelligenceTable } from "@/components/admin/admin-inventory-intelligence-table";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -35,7 +36,7 @@ function InventoryIntelligenceSummaryCards({
     <div className="space-y-4">
       {summary.negativeStockCount > 0 && (
         <div className="flex items-start gap-3 rounded-xl border border-red-300 bg-red-50/90 p-4 text-sm text-red-950 shadow-sm backdrop-blur-sm">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-red-600 animate-pulse" />
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 animate-pulse text-red-600" />
           <div className="flex-1">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="font-bold text-red-950">
@@ -44,13 +45,14 @@ function InventoryIntelligenceSummaryCards({
               </p>
               <Link
                 href="/admin/inventory?filter=negative"
-                className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800 hover:bg-red-200 transition"
+                className="inline-flex items-center gap-1 rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-800 transition hover:bg-red-200"
               >
                 Inspect negative items →
               </Link>
             </div>
-            <p className="mt-1 text-xs text-red-800 leading-relaxed">
-              Variant reports negative physical or available stock. Review transaction ledger and apply adjustments.
+            <p className="mt-1 text-xs leading-relaxed text-red-800">
+              Variant reports negative physical or available stock. Review transaction ledger and
+              apply adjustments.
             </p>
           </div>
         </div>
@@ -64,128 +66,68 @@ function InventoryIntelligenceSummaryCards({
               Missing cost price notice ({summary.missingCostCount}{" "}
               {summary.missingCostCount === 1 ? "variant" : "variants"})
             </p>
-            <p className="mt-1 text-xs text-amber-800 leading-relaxed">
-              Cost price is unrecorded. Valuation treats them safely as ৳0.00 rather than inflating working capital metrics.
+            <p className="mt-1 text-xs leading-relaxed text-amber-800">
+              Cost price is unrecorded. Valuation treats them safely as ৳0.00 rather than inflating
+              working capital metrics.
             </p>
           </div>
         </div>
       )}
 
-      <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-5">
+      <AdminKpiGrid columns={5}>
+        {/* Available Units */}
+        <AdminKpiCard
+          label="Available Units"
+          value={summary.totalAvailableStock.toLocaleString()}
+          description={`Across ${summary.totalVariants} variants (${summary.totalPhysicalStock.toLocaleString()} phys)`}
+          icon={Boxes}
+          tone="neutral"
+          alert={true}
+        />
+
         {/* Available Capital */}
-        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold tracking-wider text-emerald-600 uppercase">
-              Available Capital
-            </span>
-            <span className="rounded-md bg-emerald-50 p-1.5 text-emerald-600">
-              <Coins className="size-4" />
-            </span>
-          </div>
-          <div className="mt-2 text-2xl font-black tracking-tight text-zinc-900">
-            {formatBdt(summary.totalAvailableCostValue)}
-          </div>
-          <p className="mt-1 text-xs text-zinc-500">
-            At cost (Phys: {formatBdt(summary.totalPhysicalCostValue)})
-          </p>
-        </Card>
+        <AdminKpiCard
+          label="Available Capital"
+          value={formatBdt(summary.totalAvailableCostValue)}
+          description={`At cost (Phys: ${formatBdt(summary.totalPhysicalCostValue)})`}
+          icon={Coins}
+          tone="emerald"
+          alert={true}
+        />
 
-        {/* Stock Units */}
-        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
-              Available Units
-            </span>
-            <span className="rounded-md bg-zinc-100 p-1.5 text-zinc-600">
-              <Boxes className="size-4" />
-            </span>
-          </div>
-          <div className="mt-2 text-2xl font-black tracking-tight text-zinc-900">
-            {summary.totalAvailableStock.toLocaleString()}
-          </div>
-          <p className="mt-1 text-xs text-zinc-500">
-            Across {summary.totalVariants} variants ({summary.totalPhysicalStock.toLocaleString()} phys)
-          </p>
-        </Card>
-
-        {/* Stockout Alert */}
-        <Card
-          className={`relative overflow-hidden rounded-xl border p-4 shadow-sm transition hover:shadow-md ${
-            summary.stockoutRiskCount > 0
-              ? "border-rose-300 bg-rose-50/40"
-              : "border-zinc-200/90 bg-white"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span
-              className={`text-[11px] font-bold tracking-wider uppercase ${
-                summary.stockoutRiskCount > 0 ? "text-rose-700" : "text-zinc-500"
-              }`}
-            >
-              Stockout Risk
-            </span>
-            <span
-              className={`rounded-md p-1.5 ${
-                summary.stockoutRiskCount > 0
-                  ? "bg-rose-100 text-rose-600 animate-pulse"
-                  : "bg-zinc-100 text-zinc-500"
-              }`}
-            >
-              <Flame className="size-4" />
-            </span>
-          </div>
-          <div
-            className={`mt-2 text-2xl font-black tracking-tight ${
-              summary.stockoutRiskCount > 0 ? "text-rose-700" : "text-zinc-900"
-            }`}
-          >
-            {summary.stockoutRiskCount.toLocaleString()}
-          </div>
-          <p
-            className={`mt-1 text-xs ${
-              summary.stockoutRiskCount > 0 ? "text-rose-600" : "text-zinc-500"
-            }`}
-          >
-            Will run out in &le;14 days based on daily velocity
-          </p>
-        </Card>
+        {/* Stockout Risk */}
+        <AdminKpiCard
+          label="Stockout Risk"
+          value={summary.stockoutRiskCount.toLocaleString()}
+          description="Will run out in ≤14 days based on daily velocity"
+          icon={Flame}
+          tone="rose"
+          alert={true}
+          href="/admin/inventory-intelligence?status=stockout-risk"
+        />
 
         {/* Dead Stock */}
-        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold tracking-wider text-amber-600 uppercase">
-              Dead Stock
-            </span>
-            <span className="rounded-md bg-amber-50 p-1.5 text-amber-600">
-              <TrendingDown className="size-4" />
-            </span>
-          </div>
-          <div className="mt-2 text-2xl font-black tracking-tight text-amber-700">
-            {summary.deadStockCount.toLocaleString()}
-          </div>
-          <p className="mt-1 text-xs text-zinc-500">
-            0 sales in {window}, in-stock, &gt;14d since inflow
-          </p>
-        </Card>
+        <AdminKpiCard
+          label="Dead Stock"
+          value={summary.deadStockCount.toLocaleString()}
+          description={`0 sales in ${window}, in-stock, >14d since inflow`}
+          icon={TrendingDown}
+          tone="amber"
+          alert={true}
+          href="/admin/inventory-intelligence?status=dead-stock"
+        />
 
         {/* Slow Moving */}
-        <Card className="relative overflow-hidden rounded-xl border border-zinc-200/90 bg-white p-4 shadow-sm transition hover:shadow-md">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold tracking-wider text-yellow-700 uppercase">
-              Slow Moving
-            </span>
-            <span className="rounded-md bg-yellow-50 p-1.5 text-yellow-700">
-              <Clock className="size-4" />
-            </span>
-          </div>
-          <div className="mt-2 text-2xl font-black tracking-tight text-yellow-800">
-            {summary.slowMovingCount.toLocaleString()}
-          </div>
-          <p className="mt-1 text-xs text-zinc-500">
-            Supply pace exceeds 180 days runout
-          </p>
-        </Card>
-      </div>
+        <AdminKpiCard
+          label="Slow Moving"
+          value={summary.slowMovingCount.toLocaleString()}
+          description="Supply pace exceeds 180 days runout"
+          icon={Clock}
+          tone="amber"
+          alert={true}
+          href="/admin/inventory-intelligence?status=slow-moving"
+        />
+      </AdminKpiGrid>
     </div>
   );
 }
@@ -235,32 +177,22 @@ export default async function AdminInventoryIntelligencePage({
   });
 
   return (
-    <div className="space-y-6">
-      {/* Header matching Inventory Control Center */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#101114]">
-              Inventory Intelligence
-            </h1>
-            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-100/90 px-2.5 py-0.5 text-[11px] font-bold text-cyan-900 tracking-wide uppercase shadow-xs">
-              <span className="size-1.5 rounded-full bg-cyan-500 animate-pulse" />
-              Velocity Engine
-            </span>
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Track sales velocity, critical stockout runout alerts, dead stock risk, and capital allocation.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/admin/inventory"
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3.5 text-xs font-semibold text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-950"
-          >
-            &larr; Standard Inventory
-          </Link>
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+      {/* Harmonized Page Header */}
+      <AdminPageHeader
+        eyebrow="Analytics / Velocity"
+        title="Inventory Intelligence"
+        badgeLabel="Velocity Engine"
+        badgeVariant="cyan"
+        description="Track sales velocity, critical stockout runout alerts, dead stock risk, and capital allocation."
+      >
+        <Link
+          href="/admin/inventory"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        >
+          <span>&larr; Standard Inventory</span>
+        </Link>
+      </AdminPageHeader>
 
       {/* KPI Summary Cards */}
       <InventoryIntelligenceSummaryCards summary={data.summary} window={window} />
@@ -283,22 +215,22 @@ export default async function AdminInventoryIntelligencePage({
           <Info className="size-4 text-[#00D9FF]" />
           <span>Inventory Intelligence Rules &amp; Explanations</span>
         </div>
-        <ul className="mt-2 grid gap-1.5 sm:grid-cols-2 text-zinc-600">
+        <ul className="mt-2 grid gap-1.5 text-zinc-600 sm:grid-cols-2">
           <li>
-            &bull; <strong className="text-zinc-900">Stockout Risk:</strong> Available stock will run out in &le;14 days at
-            current daily sales velocity.
+            &bull; <strong className="text-zinc-900">Stockout Risk:</strong> Available stock will
+            run out in &le;14 days at current daily sales velocity.
           </li>
           <li>
-            &bull; <strong className="text-zinc-900">Suggested Restock:</strong> Units needed to provide a 30-day sales buffer
-            based on trailing net velocity.
+            &bull; <strong className="text-zinc-900">Suggested Restock:</strong> Units needed to
+            provide a 30-day sales buffer based on trailing net velocity.
           </li>
           <li>
-            &bull; <strong className="text-zinc-900">Dead Stock:</strong> Has positive stock, zero net sales in the trailing
-            window, and &gt;14 days since inflow.
+            &bull; <strong className="text-zinc-900">Dead Stock:</strong> Has positive stock, zero
+            net sales in the trailing window, and &gt;14 days since inflow.
           </li>
           <li>
-            &bull; <strong className="text-zinc-900">Slow Moving:</strong> Projected days of supply exceeds 180 days
-            (six-month holding burden).
+            &bull; <strong className="text-zinc-900">Slow Moving:</strong> Projected days of supply
+            exceeds 180 days (six-month holding burden).
           </li>
         </ul>
       </div>

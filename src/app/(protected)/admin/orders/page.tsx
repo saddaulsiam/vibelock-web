@@ -1,7 +1,8 @@
 import { CheckCircle2, Clock, Package, ShoppingBag } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminOrders } from "@/lib/admin/order-queries";
 import { AdminOrdersTable } from "@/components/admin/admin-orders-table";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
 import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
@@ -23,15 +24,13 @@ export default async function AdminOrdersPage({
 
   const rawPaymentStatus = valueOf(params.paymentStatus);
   const paymentStatus =
-    rawPaymentStatus &&
-    Object.values(PaymentStatus).includes(rawPaymentStatus as PaymentStatus)
+    rawPaymentStatus && Object.values(PaymentStatus).includes(rawPaymentStatus as PaymentStatus)
       ? (rawPaymentStatus as PaymentStatus)
       : undefined;
 
   const rawPaymentMethod = valueOf(params.paymentMethod);
   const paymentMethod =
-    rawPaymentMethod &&
-    Object.values(PaymentMethod).includes(rawPaymentMethod as PaymentMethod)
+    rawPaymentMethod && Object.values(PaymentMethod).includes(rawPaymentMethod as PaymentMethod)
       ? (rawPaymentMethod as PaymentMethod)
       : undefined;
 
@@ -49,136 +48,78 @@ export default async function AdminOrdersPage({
   });
 
   const pendingCount = data.statusCounts.PENDING ?? 0;
-  const processingCount =
-    (data.statusCounts.CONFIRMED ?? 0) + (data.statusCounts.PROCESSING ?? 0);
+  const processingCount = (data.statusCounts.CONFIRMED ?? 0) + (data.statusCounts.PROCESSING ?? 0);
   const inTransitCount = data.statusCounts.SHIPPED ?? 0;
   const deliveredCount = data.statusCounts.DELIVERED ?? 0;
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
-      {/* Page Header */}
-      <header className="flex flex-col gap-4 border-b border-[#101114]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
-            Operations / Sales
-          </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
-            Order Management
-          </h1>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Review incoming customer orders, manage fulfillment stages, verify payments, and inspect
-            audit trails.
-          </p>
-        </div>
-      </header>
+      {/* Harmonized Page Header */}
+      <AdminPageHeader
+        eyebrow="Operations / Sales"
+        title="Order Management"
+        badgeLabel="Live Dispatch"
+        badgeVariant="emerald"
+        description="Review incoming customer orders, manage fulfillment stages, verify payments, and inspect audit trails."
+      />
 
       {/* Operational KPI Metric Cards */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Orders */}
-        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Total Orders
-            </CardTitle>
-            <ShoppingBag className="size-4 text-[#101114]" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-[#101114]">
-              {data.statusCounts.ALL.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Lifetime orders across all sales channels
-            </p>
-          </CardContent>
-        </Card>
+      <AdminKpiGrid columns={4}>
+        <AdminKpiCard
+          label="Total Orders"
+          value={data.statusCounts.ALL.toLocaleString()}
+          description="Lifetime orders across all sales channels"
+          icon={ShoppingBag}
+          tone="neutral"
+          alert={true}
+          href="/admin/orders"
+        />
 
-        {/* Pending Confirmation */}
-        <Card
-          className={`rounded-sm border shadow-none ${
-            pendingCount > 0 ? "border-amber-300 bg-amber-50/40" : "border-[#101114]/10 bg-white"
-          }`}
-        >
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle
-              className={`text-xs font-semibold tracking-wider uppercase ${
-                pendingCount > 0 ? "text-amber-800" : "text-muted-foreground"
-              }`}
-            >
-              Pending Confirmation
-            </CardTitle>
-            <Clock
-              className={`size-4 ${pendingCount > 0 ? "text-amber-600" : "text-neutral-400"}`}
-            />
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold tracking-tight ${
-                pendingCount > 0 ? "text-amber-800" : "text-[#101114]"
-              }`}
-            >
-              {pendingCount.toLocaleString()}
-            </div>
-            <p
-              className={`mt-1 text-[11px] ${
-                pendingCount > 0 ? "font-medium text-amber-700" : "text-muted-foreground"
-              }`}
-            >
-              {pendingCount > 0
-                ? "Requires merchant review or customer call"
-                : "No pending orders waiting"}
-            </p>
-          </CardContent>
-        </Card>
+        <AdminKpiCard
+          label="Pending Confirmation"
+          value={pendingCount.toLocaleString()}
+          description={
+            pendingCount > 0
+              ? "Requires merchant review or customer call"
+              : "No pending orders waiting"
+          }
+          icon={Clock}
+          tone="amber"
+          alert={true}
+          href="/admin/orders?status=PENDING"
+        />
 
-        {/* Processing / In Fulfillment */}
-        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              In Fulfillment
-            </CardTitle>
-            <Package className="size-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-[#101114]">
-              {processingCount.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Confirmed or packaging ({inTransitCount} in transit)
-            </p>
-          </CardContent>
-        </Card>
+        <AdminKpiCard
+          label="In Fulfillment"
+          value={processingCount.toLocaleString()}
+          description={`Confirmed or packaging (${inTransitCount} in transit)`}
+          icon={Package}
+          tone="blue"
+          alert={true}
+          href="/admin/orders?status=CONFIRMED"
+        />
 
-        {/* Delivered Orders */}
-        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Completed Orders
-            </CardTitle>
-            <CheckCircle2 className="size-4 text-emerald-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold tracking-tight text-emerald-800">
-              {deliveredCount.toLocaleString()}
-            </div>
-            <p className="text-muted-foreground mt-1 text-[11px]">
-              Successfully delivered to customers
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <AdminKpiCard
+          label="Completed Orders"
+          value={deliveredCount.toLocaleString()}
+          description="Successfully delivered to customers"
+          icon={CheckCircle2}
+          tone="emerald"
+          alert={true}
+          href="/admin/orders?status=DELIVERED"
+        />
+      </AdminKpiGrid>
 
       {/* Main Interactive Table */}
-      <Card className="rounded-sm border border-[#101114]/10 bg-white p-4 shadow-none sm:p-5">
-        <AdminOrdersTable
-          initialData={data}
-          currentFilters={{
-            q,
-            status: rawStatus,
-            paymentStatus: rawPaymentStatus,
-            paymentMethod: rawPaymentMethod,
-          }}
-        />
-      </Card>
+      <AdminOrdersTable
+        initialData={data}
+        currentFilters={{
+          q,
+          status: rawStatus,
+          paymentStatus: rawPaymentStatus,
+          paymentMethod: rawPaymentMethod,
+        }}
+      />
     </div>
   );
 }

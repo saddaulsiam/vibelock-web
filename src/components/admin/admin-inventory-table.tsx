@@ -32,7 +32,6 @@ import {
   Plus,
   Printer,
   RefreshCw,
-  Search,
   SlidersHorizontal,
   Tag,
   Volume2,
@@ -46,6 +45,10 @@ import * as React from "react";
 import { AdminInventoryPoModal } from "@/components/admin/admin-inventory-po-modal";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import {
+  AdminTableSearchInput,
+  ADMIN_TABLE_CLASSES,
+} from "@/components/admin/admin-table-controls";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";
@@ -720,10 +723,10 @@ export function AdminInventoryTable({
         <button
           type="button"
           onClick={() => updateQuery({ filter: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.filter === "all"
-              ? "bg-[#101114] text-white shadow-2xs"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-[#F3F0E8]"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
           <Boxes className="size-3.5" />
@@ -733,10 +736,10 @@ export function AdminInventoryTable({
         <button
           type="button"
           onClick={() => updateQuery({ filter: "in-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.filter === "in-stock"
-              ? "bg-emerald-800 text-white shadow-2xs"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-emerald-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
           <span className="size-1.5 rounded-full bg-emerald-500" />
@@ -746,10 +749,10 @@ export function AdminInventoryTable({
         <button
           type="button"
           onClick={() => updateQuery({ filter: "low-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.filter === "low-stock"
-              ? "bg-amber-800 text-white shadow-2xs"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-amber-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
           <AlertTriangle className="size-3 text-amber-500" />
@@ -759,13 +762,13 @@ export function AdminInventoryTable({
         <button
           type="button"
           onClick={() => updateQuery({ filter: "out-of-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.filter === "out-of-stock"
-              ? "bg-red-800 text-white shadow-2xs"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-red-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          <span className="size-1.5 rounded-full bg-red-500" />
+          <span className="size-1.5 rounded-full bg-rose-500" />
           <span>Out of Stock (0)</span>
         </button>
 
@@ -773,10 +776,10 @@ export function AdminInventoryTable({
           <button
             type="button"
             onClick={() => updateQuery({ filter: "negative" })}
-            className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-bold transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none ${
               currentFilters.filter === "negative"
                 ? "bg-red-900 text-white shadow-2xs"
-                : "border border-red-300 bg-red-100 text-red-900 hover:bg-red-200"
+                : "border border-red-300 bg-red-50 text-red-900 hover:bg-red-100"
             }`}
           >
             <AlertTriangle className="size-3.5 animate-pulse text-red-600" />
@@ -787,7 +790,7 @@ export function AdminInventoryTable({
 
       {/* ── Optional Feedback Notice ── */}
       {feedbackMessage && (
-        <div className="flex items-center justify-between rounded-sm border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-900">
+        <div className="flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-900">
           <span>{feedbackMessage}</span>
           <button
             type="button"
@@ -802,34 +805,13 @@ export function AdminInventoryTable({
       {/* ── 2. Search & Toolbar Controls ── */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search Bar with '/' shortcut */}
-        <div className="relative max-w-lg flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#101114]/40" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by SKU, product name, size, or color..."
-            className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-          />
-          {searchTerm ? (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-[#101114]/40 hover:text-[#101114]"
-              title="Clear search"
-            >
-              <X className="size-3.5" />
-            </button>
-          ) : (
-            <kbd
-              className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-[#101114]/20 bg-[#F3F0E8] px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/60 sm:inline-flex"
-              title="Press / to search"
-            >
-              /
-            </kbd>
-          )}
-        </div>
+        <AdminTableSearchInput
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onClear={handleClearSearch}
+          placeholder="Search by SKU, product name, size, or color..."
+          inputRef={searchInputRef}
+        />
 
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
@@ -840,10 +822,10 @@ export function AdminInventoryTable({
               setPoInitialItems([]);
               setShowPoModal(true);
             }}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             title="Generate Supplier Purchase Order / Factory Reorder Sheet"
           >
-            <Factory className="size-4 text-[#101114]/70" />
+            <Factory className="size-4 text-neutral-500" />
             <span>Purchase Order (PO)</span>
           </button>
 
@@ -854,7 +836,7 @@ export function AdminInventoryTable({
               setShowStocktakeModal(true);
               setStocktakeFeedback(null);
             }}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-emerald-600/30 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-emerald-600/30 bg-emerald-50 px-3.5 text-xs font-semibold text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
             title="Open Rapid Barcode Stocktaking & Physical Audit Station"
           >
             <Barcode className="size-4 text-emerald-700" />
@@ -882,17 +864,17 @@ export function AdminInventoryTable({
           <a
             href={`/api/admin/inventory/export?q=${encodeURIComponent(currentFilters.q)}&filter=${currentFilters.filter}`}
             download
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             title="Export filtered inventory to CSV"
           >
-            <Download className="size-3.5 text-[#101114]/70" />
+            <Download className="size-3.5 text-neutral-500" />
             <span className="hidden sm:inline">Export CSV</span>
           </a>
 
           {/* Intelligence Dashboard Link */}
           <Link
             href="/admin/inventory-intelligence"
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114] bg-[#101114] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             <span>Intelligence</span>
             <ArrowRight className="size-3.5" />
@@ -938,10 +920,19 @@ export function AdminInventoryTable({
         </div>
       )}
 
+      {/* Meta Counter */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+        <p>
+          Showing <strong className="text-neutral-900">{loadedVariants.length}</strong> of{" "}
+          <strong className="text-neutral-900">{initialData.total}</strong>{" "}
+          {initialData.total === 1 ? "variant" : "variants"}
+        </p>
+      </div>
+
       {/* ── 3. Inventory Table ── */}
-      <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
-        <table className="w-full border-collapse text-left text-xs text-[#101114]">
-          <thead className="border-b border-[#101114]/10 bg-[#FBF9F5] text-[11px] font-semibold tracking-wider text-[#101114]/70 uppercase">
+      <div className={ADMIN_TABLE_CLASSES.container}>
+        <table className={ADMIN_TABLE_CLASSES.table}>
+          <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
               <th className="w-10 px-4 py-3 text-center">
                 <input

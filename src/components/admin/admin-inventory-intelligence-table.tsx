@@ -3,10 +3,14 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Check, Copy, Download, Flame, Package, Search, X } from "lucide-react";
+import { ArrowRight, Check, Copy, Download, Flame, Package, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import {
+  AdminTableSearchInput,
+  ADMIN_TABLE_CLASSES,
+} from "@/components/admin/admin-table-controls";
 import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory-actions";
 import type {
   InventoryIntelligenceItem,
@@ -209,8 +213,7 @@ export function AdminInventoryIntelligenceTable({
     [pathname, router, searchParams]
   );
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+  const handleSearchChange = (val: string) => {
     setSearchTerm(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -309,35 +312,41 @@ export function AdminInventoryIntelligenceTable({
 
   return (
     <div className="space-y-4">
-      {/* Quick Status Filter Tabs with modern pill styling */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-zinc-200/90 pb-3">
+      {/* Quick Status Filter Tabs matching Inventory Control Center */}
+      <div className="flex flex-wrap items-center gap-1.5 text-xs">
         {tabs.map((tab) => {
           const isActive = currentFilters.status === tab.key;
+          const dotColor =
+            tab.key === "stockout-risk"
+              ? "bg-rose-500"
+              : tab.key === "dead"
+                ? "bg-amber-500"
+                : tab.key === "slow"
+                  ? "bg-amber-400"
+                  : tab.key === "healthy"
+                    ? "bg-emerald-500"
+                    : tab.key === "out-of-stock"
+                      ? "bg-rose-600"
+                      : tab.key === "negative"
+                        ? "bg-red-600 animate-pulse"
+                        : undefined;
+
           return (
             <button
               key={tab.key}
               type="button"
               onClick={() => handleStatusTab(tab.key)}
-              className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
                 isActive
-                  ? "bg-[#101114] text-white shadow-xs"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200/70 hover:text-zinc-950"
+                  ? "bg-[#101114] font-semibold text-white shadow-2xs"
+                  : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
               }`}
             >
+              {dotColor && <span className={`size-1.5 shrink-0 rounded-full ${dotColor}`} />}
               <span>{tab.label}</span>
               {typeof tab.count === "number" && (
-                <span
-                  className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : tab.badgeVariant === "urgent" && tab.count > 0
-                        ? "bg-rose-100 text-rose-700"
-                        : tab.badgeVariant === "warning" && tab.count > 0
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-zinc-200 text-zinc-700"
-                  }`}
-                >
-                  {tab.count}
+                <span className={`text-[11px] ${isActive ? "text-white/80" : "text-neutral-500"}`}>
+                  ({tab.count})
                 </span>
               )}
             </button>
@@ -349,38 +358,20 @@ export function AdminInventoryIntelligenceTable({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex flex-1 flex-wrap items-center gap-2.5">
           {/* Search bar with / hotkey */}
-          <div className="relative max-w-sm flex-1">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              placeholder="Search product or SKU..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="h-10 w-full rounded-lg border border-zinc-200 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-zinc-400 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-            />
-            {searchTerm ? (
-              <button
-                type="button"
-                onClick={handleClearSearch}
-                className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-zinc-400 hover:text-zinc-900"
-                aria-label="Clear search"
-              >
-                <X className="size-3.5" />
-              </button>
-            ) : (
-              <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 sm:inline-flex">
-                /
-              </kbd>
-            )}
-          </div>
+          <AdminTableSearchInput
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onClear={handleClearSearch}
+            placeholder="Search product or SKU..."
+            inputRef={searchInputRef}
+          />
 
           {/* Window selector */}
           <select
             value={activeWindow}
             onChange={handleWindowChange}
             aria-label="Trailing sales velocity window"
-            className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className={ADMIN_TABLE_CLASSES.select}
           >
             <option value="30d">Trailing 30 Days</option>
             <option value="60d">Trailing 60 Days</option>
@@ -392,7 +383,7 @@ export function AdminInventoryIntelligenceTable({
             value={currentFilters.sort}
             onChange={handleSortChange}
             aria-label="Sort inventory intelligence"
-            className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className={ADMIN_TABLE_CLASSES.select}
           >
             <option value="valuation">Sort: Capital Value</option>
             <option value="runout">Sort: Days of Supply (Urgent)</option>
@@ -423,10 +414,10 @@ export function AdminInventoryIntelligenceTable({
           <a
             href={exportHref}
             download
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3.5 text-xs font-semibold text-zinc-800 shadow-2xs transition-colors hover:bg-zinc-50 hover:text-zinc-950"
+            className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Download CSV of current inventory intelligence"
           >
-            <Download className="size-3.5 text-zinc-600" />
+            <Download className="size-3.5 text-neutral-500" />
             <span>Export CSV</span>
           </a>
         </div>
@@ -461,9 +452,9 @@ export function AdminInventoryIntelligenceTable({
       </div>
 
       {/* Fresh, Clean Data Table matching Inventory Control Center */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-200/90 bg-white shadow-sm">
-        <table className="w-full border-collapse text-left text-xs text-[#101114]">
-          <thead className="border-b border-zinc-200 bg-zinc-50/80 text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
+      <div className={ADMIN_TABLE_CLASSES.container}>
+        <table className={ADMIN_TABLE_CLASSES.table}>
+          <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
               <th className="min-w-[180px] px-4 py-3">Product & Variant</th>
               {visibleColumns.stock && (

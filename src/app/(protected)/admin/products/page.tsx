@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, CheckCircle2, Layers, PackageX, Plus } from "lucide-react";
 import { getAdminProducts } from "@/lib/admin/catalog-queries";
 import { AdminProductsTable } from "@/components/admin/admin-products-table";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
 
 export default async function AdminProductsPage({
   searchParams,
@@ -36,50 +37,78 @@ export default async function AdminProductsPage({
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
-      <header className="flex flex-col gap-4 border-b border-[#101114]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
-            Catalog / Products
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
-            Products
-          </h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Search, filter, manage inventory stock, pricing, and publication status for all catalog
-            items.
-          </p>
-        </div>
+      {/* Harmonized Page Header */}
+      <AdminPageHeader
+        eyebrow="Catalog / Products"
+        title="Products"
+        badgeLabel="Catalog Engine"
+        badgeVariant="blue"
+        description="Search, filter, manage inventory stock, pricing, and publication status for all catalog items."
+      >
         <Link
           href="/admin/products/new"
-          className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#101114] px-4 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
         >
-          <Plus className="size-4" aria-hidden="true" /> New product
+          <Plus className="size-4" aria-hidden="true" />
+          <span>New product</span>
         </Link>
-      </header>
+      </AdminPageHeader>
 
-      <Card className="overflow-visible rounded-sm border-[#101114]/10 bg-white shadow-none">
-        <CardHeader className="border-b border-[#101114]/10 px-4 py-4 sm:px-5">
-          <CardTitle className="text-base text-[#101114]">
-            Catalog Inventory{" "}
-            <span className="text-muted-foreground ml-1 font-normal">
-              ({data.counts.total} items)
-            </span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-5">
-          <AdminProductsTable
-            initialData={data}
-            currentFilters={{
-              q,
-              category,
-              status,
-              stock,
-              sort,
-              page,
-            }}
-          />
-        </CardContent>
-      </Card>
+      {/* Operational KPI Metric Cards */}
+      <AdminKpiGrid columns={4}>
+        <AdminKpiCard
+          label="Total Products"
+          value={data.counts.total.toLocaleString()}
+          description={`Across ${data.allCategories.length} catalog categories`}
+          icon={Layers}
+          tone="neutral"
+          alert={true}
+          href="/admin/products"
+        />
+
+        <AdminKpiCard
+          label="Active / Published"
+          value={data.counts.published.toLocaleString()}
+          description={`${data.counts.draft} draft, ${data.counts.archived} archived`}
+          icon={CheckCircle2}
+          tone="emerald"
+          alert={true}
+          href="/admin/products?status=PUBLISHED"
+        />
+
+        <AdminKpiCard
+          label="Low Stock Alert"
+          value={data.counts.lowStock.toLocaleString()}
+          description="Items at or near reorder threshold"
+          icon={AlertTriangle}
+          tone="amber"
+          alert={true}
+          href="/admin/products?stock=low-stock"
+        />
+
+        <AdminKpiCard
+          label="Out of Stock"
+          value={data.counts.outOfStock.toLocaleString()}
+          description="Catalog items with 0 available stock"
+          icon={PackageX}
+          tone="rose"
+          alert={true}
+          href="/admin/products?stock=out-of-stock"
+        />
+      </AdminKpiGrid>
+
+      {/* Main Interactive Table */}
+      <AdminProductsTable
+        initialData={data}
+        currentFilters={{
+          q,
+          category,
+          status,
+          stock,
+          sort,
+          page,
+        }}
+      />
     </div>
   );
 }

@@ -102,9 +102,9 @@ describe("AdminOrdersTable Component Unit Tests", () => {
     expect(html).toContain("Delivered");
 
     // Pending count is 1
-    expect(html).toContain(">1<");
+    expect(html).toContain("(1)");
     // All count is 2
-    expect(html).toContain(">2<");
+    expect(html).toContain("(2)");
   });
 
   test("renders payment method pills and status badges", () => {
@@ -164,4 +164,45 @@ describe("AdminOrdersTable Component Unit Tests", () => {
     // Verify sentinel element exists for IntersectionObserver
     expect(html).toContain('aria-hidden="true"');
   });
+
+  test("renders sales channel badges, phone, whatsapp direct link, and quick confirm button", () => {
+    const dataWithShipment: AdminOrdersResult = {
+      ...sampleData,
+      orders: [
+        {
+          ...sampleData.orders[0],
+          salesChannel: "POS",
+          shipment: {
+            provider: "STEADFAST",
+            trackingNumber: "ST-889900",
+            status: "IN_TRANSIT",
+          },
+        },
+      ],
+      total: 1,
+    };
+
+    const html = renderToStaticMarkup(
+      <AdminOrdersTable initialData={dataWithShipment} currentFilters={{}} />
+    );
+
+    // Sales channel badge
+    expect(html).toContain("POS");
+
+    // Tel and WhatsApp links
+    expect(html).toContain('href="tel:01700000000"');
+    expect(html).toContain('href="https://wa.me/8801700000000?text=');
+
+    // Courier tracking info
+    expect(html).toContain("STEADFAST");
+    expect(html).toContain("ST-889900");
+
+    // Quick Confirm button for PENDING order
+    expect(html).toContain("Confirm");
+
+    // Column visibility customizer
+    expect(html).toContain("Columns");
+    expect(html).toContain('title="Customize visible columns"');
+  });
 });
+
