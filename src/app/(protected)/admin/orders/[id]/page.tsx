@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import {
   ArrowLeft,
   Banknote,
-  Clock,
   CreditCard,
   Mail,
   MapPin,
@@ -34,6 +33,9 @@ import { OrderLifecycleStepper } from "@/components/admin/order-lifecycle-steppe
 import { OrderPickPackChecklist } from "@/components/admin/order-pick-pack-checklist";
 import { OrderSmartActions } from "@/components/admin/order-smart-actions";
 import { OrderCustomerRiskCard } from "@/components/admin/order-customer-risk-card";
+import { OrderCopyButton } from "@/components/admin/order-copy-button";
+import { OrderStaffNotes } from "@/components/admin/order-staff-notes";
+import { OrderMobileActionBar } from "@/components/admin/order-mobile-action-bar";
 import { getCustomerRiskProfile } from "@/lib/admin/customer-risk";
 
 function formatBdt(value: unknown): string {
@@ -76,10 +78,20 @@ export default async function AdminOrderPage({
     currentOrderId: order.id,
   });
 
+  const fullDeliveryAddress = [
+    order.customerName ? `Recipient: ${order.customerName}` : null,
+    order.customerPhone ? `Phone: ${order.customerPhone}` : null,
+    `Address: ${order.shippingStreet}`,
+    [order.shippingCity, order.shippingState, order.shippingZip].filter(Boolean).join(", "),
+    order.shippingCountry,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+    <div className="mx-auto w-full max-w-[100rem] space-y-6 pb-24 lg:pb-6">
       {/* ── Printable Invoice Header (Hidden on screen, visible only when printing) ── */}
       <div className="hidden border-b-2 border-black pb-4 print:block">
         <div className="flex items-center justify-between">
@@ -112,6 +124,13 @@ export default async function AdminOrderPage({
               <h1 className="text-2xl font-black tracking-tight text-neutral-900 sm:text-3xl">
                 Order #{order.orderNumber}
               </h1>
+              <OrderCopyButton
+                text={order.orderNumber}
+                variant="pill"
+                label="Copy #"
+                successMessage="Order number copied"
+                title="Copy order number"
+              />
               {getSalesChannelBadge(order.salesChannel)}
             </div>
 
@@ -249,6 +268,13 @@ export default async function AdminOrderPage({
                     Delivery Destination
                   </h3>
                 </div>
+                <OrderCopyButton
+                  text={fullDeliveryAddress}
+                  variant="pill"
+                  label="Copy Full Address"
+                  successMessage="Full delivery address copied"
+                  title="Copy formatted name, phone & address block"
+                />
               </div>
 
               <div className="space-y-2 text-xs">
@@ -262,9 +288,16 @@ export default async function AdminOrderPage({
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-                    Street Address
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
+                      Street Address
+                    </span>
+                    <OrderCopyButton
+                      text={order.shippingStreet}
+                      successMessage="Street address copied"
+                      title="Copy street address"
+                    />
+                  </div>
                   <p className="mt-0.5 text-neutral-700 leading-relaxed">
                     {order.shippingStreet}
                   </p>
@@ -319,9 +352,18 @@ export default async function AdminOrderPage({
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-                    Email Address
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
+                      Email Address
+                    </span>
+                    {order.customerEmail ? (
+                      <OrderCopyButton
+                        text={order.customerEmail}
+                        successMessage="Email address copied"
+                        title="Copy email address"
+                      />
+                    ) : null}
+                  </div>
                   <div className="mt-0.5 flex items-center gap-2 font-medium text-neutral-900">
                     <Mail className="size-3.5 text-neutral-400" />
                     <a
@@ -334,15 +376,25 @@ export default async function AdminOrderPage({
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
-                    Phone Number
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
+                      Phone Number
+                    </span>
+                    {order.customerPhone ? (
+                      <OrderCopyButton
+                        text={order.customerPhone}
+                        successMessage="Phone number copied"
+                        title="Copy phone number"
+                      />
+                    ) : null}
+                  </div>
                   <div className="mt-0.5 flex items-center gap-2 font-medium text-neutral-900">
                     <Phone className="size-3.5 text-neutral-400" />
                     {order.customerPhone ? (
                       <a
                         href={`tel:${order.customerPhone}`}
-                        className="hover:text-blue-600 hover:underline"
+                        className="font-mono text-xs font-bold text-neutral-900 hover:text-blue-600 hover:underline"
+                        title="Click to launch phone dialer"
                       >
                         {order.customerPhone}
                       </a>
@@ -417,61 +469,14 @@ export default async function AdminOrderPage({
             </div>
           ) : null}
 
-          {/* Audit History Timeline */}
-          <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs print:hidden">
-            <div className="mb-4 flex items-center justify-between border-b border-neutral-100 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-neutral-900">Order Audit History</h3>
-                <p className="text-xs text-neutral-500">
-                  Chronological record of status transitions and updates
-                </p>
-              </div>
-              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-700">
-                {order.history.length} {order.history.length === 1 ? "entry" : "entries"}
-              </span>
-            </div>
-
-            {order.history.length === 0 ? (
-              <p className="text-xs text-neutral-400">No audit history recorded yet.</p>
-            ) : (
-              <div className="relative space-y-4 before:absolute before:top-2 before:bottom-2 before:left-3.5 before:w-0.5 before:bg-neutral-200">
-                {order.history.map((entry) => {
-                  const isPayment = entry.notes?.startsWith("[PAYMENT UPDATE]");
-                  return (
-                    <div key={entry.id} className="relative flex items-start gap-3.5 pl-1 text-xs">
-                      <div className="relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border border-neutral-300 bg-white shadow-2xs">
-                        {isPayment ? (
-                          <CreditCard className="size-3 text-blue-600" />
-                        ) : (
-                          <Clock className="size-3 text-neutral-600" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1 rounded-lg border border-neutral-100 bg-neutral-50/70 p-3">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="font-bold text-neutral-900">
-                            {isPayment ? "Payment Status Updated" : `Fulfillment Status: ${entry.status}`}
-                          </p>
-                          <span className="text-[11px] font-medium text-neutral-500">
-                            {formatDate(new Date(entry.createdAt))}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-neutral-600 leading-relaxed">
-                          {entry.notes || "No details provided."}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Staff Internal Notes & Comprehensive Activity Log */}
+          <OrderStaffNotes orderId={order.id} history={order.history} />
         </div>
 
         {/* Right Column (Order Management, Financials, Shipment Dispatch) */}
         <div className="space-y-6 lg:sticky lg:top-6 self-start">
           {/* Shopify-Grade 1-Click Smart Action Hub (Sticky Top) */}
-          <div className="print:hidden">
+          <div id="smart-fulfillment-hub" className="print:hidden scroll-mt-6">
             <OrderSmartActions
               order={{
                 id: order.id,
@@ -562,7 +567,7 @@ export default async function AdminOrderPage({
           </div>
 
           {/* Shipment Dispatch Status Card */}
-          <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
+          <div id="courier-dispatch-card" className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs scroll-mt-6">
             <div className="mb-3.5 flex items-center justify-between border-b border-neutral-100 pb-2.5">
               <div className="flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
@@ -602,22 +607,29 @@ export default async function AdminOrderPage({
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-500">Tracking Code</span>
                   {order.shipment.trackingNumber ? (
-                    order.shipment.provider === "steadfast" ? (
-                      <a
-                        href={`https://steadfast.com.bd/t/${order.shipment.trackingNumber}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 font-mono text-xs font-bold text-blue-600 hover:underline"
-                        title="Open Steadfast live tracking portal"
-                      >
-                        <span>{order.shipment.trackingNumber}</span>
-                        <ExternalLink className="size-3" />
-                      </a>
-                    ) : (
-                      <span className="font-mono text-xs font-bold text-neutral-900">
-                        {order.shipment.trackingNumber}
-                      </span>
-                    )
+                    <div className="flex items-center gap-1.5">
+                      {order.shipment.provider === "steadfast" ? (
+                        <a
+                          href={`https://steadfast.com.bd/t/${order.shipment.trackingNumber}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 font-mono text-xs font-bold text-blue-600 hover:underline"
+                          title="Open Steadfast live tracking portal"
+                        >
+                          <span>{order.shipment.trackingNumber}</span>
+                          <ExternalLink className="size-3" />
+                        </a>
+                      ) : (
+                        <span className="font-mono text-xs font-bold text-neutral-900">
+                          {order.shipment.trackingNumber}
+                        </span>
+                      )}
+                      <OrderCopyButton
+                        text={order.shipment.trackingNumber}
+                        successMessage="Tracking number copied"
+                        title="Copy tracking code"
+                      />
+                    </div>
                   ) : (
                     <span className="font-mono text-xs font-bold text-neutral-400">
                       Pending Assignment
@@ -628,9 +640,16 @@ export default async function AdminOrderPage({
                 {order.shipment.providerShipmentId ? (
                   <div className="flex items-center justify-between text-[11px] text-neutral-500">
                     <span>Steadfast CID</span>
-                    <span className="font-mono font-medium text-neutral-700">
-                      #{order.shipment.providerShipmentId}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-mono font-medium text-neutral-700">
+                        #{order.shipment.providerShipmentId}
+                      </span>
+                      <OrderCopyButton
+                        text={order.shipment.providerShipmentId}
+                        successMessage="Consignment ID copied"
+                        title="Copy Steadfast CID"
+                      />
+                    </div>
                   </div>
                 ) : null}
 
@@ -669,6 +688,18 @@ export default async function AdminOrderPage({
           </div>
         </div>
       </div>
+
+      {/* ── Mobile/Tablet Sticky Floating Bottom Action Bar (Fixed Thumb Zone) ── */}
+      <OrderMobileActionBar
+        order={{
+          id: order.id,
+          orderNumber: order.orderNumber,
+          status: order.status,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          shipment: order.shipment,
+        }}
+      />
     </div>
   );
 }

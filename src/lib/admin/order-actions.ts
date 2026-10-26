@@ -69,8 +69,8 @@ export async function updateOrderStatusAction(
         if (order.status === "CANCELLED") {
           throw new Error("Cancelled orders cannot be changed.");
         }
-        if (order.status !== "PENDING") {
-          throw new Error("Only pending orders can be cancelled.");
+        if (order.status !== "PENDING" && order.status !== "CONFIRMED") {
+          throw new Error("Only pending or confirmed orders prior to shipment can be cancelled.");
         }
         if (order.shipment) {
           throw new Error("Orders cannot be cancelled after shipment processing has started.");
@@ -407,4 +407,63 @@ export async function checkCustomerRiskAction(input: {
     return { success: false, error: message };
   }
 }
+
+export async function addOrderNoteAction(input: {
+  orderId: string;
+  note: string;
+}): Promise<{ success: boolean; error?: string; message?: string }> {
+  const admin = await requireRole("ADMIN", { throw: true });
+  const { orderId, note } = input;
+
+  const trimmed = note?.trim();
+  if (!trimmed) {
+    return { success: false, error: "Note content cannot be empty." };
+  }
+
+  if (trimmed.length > 1000) {
+    return { success: false, error: "Note cannot exceed 1000 characters." };
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true },
+    });
+
+    if (!order) {
+      return { success: false, error: "Order not found." };
+    }
+
+    const authorName = admin.name || admin.email || "Staff";
+    const formattedNote = `[STAFF NOTE by ${authorName}] ${trimmed}`;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.orderHistory.create({
+        data: {
+          orderId,
+          status: order.status,
+          notes: formattedNote,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "ORDER_NOTE_ADDED",
+          entityType: "Order",
+          entityId: orderId,
+          metadata: { note: trimmed, author: authorName },
+        },
+      });
+    });
+
+    revalidatePath("/admin/orders");
+    revalidatePath(`/admin/orders/${orderId}`);
+    return { success: true, message: "Internal note saved successfully." };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to save note.";
+    return { success: false, error: message };
+  }
+}
+
 

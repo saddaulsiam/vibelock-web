@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, CheckCircle2, PackageCheck, ShoppingBag } from "lucide-react";
+import { Check, CheckCircle2, PackageCheck, ShoppingBag, Shirt, X } from "lucide-react";
 
 interface OrderItemData {
   id: string;
@@ -12,6 +12,7 @@ interface OrderItemData {
   quantity: number;
   unitPrice: unknown;
   lineTotal: unknown;
+  imageUrl?: string | null;
 }
 
 function formatBdt(value: unknown): string {
@@ -47,6 +48,20 @@ export function OrderPickPackChecklist({
       return [];
     }
   });
+
+  const [hoveredPreview, setHoveredPreview] = React.useState<{
+    url: string;
+    name: string;
+    sku: string;
+    top: number;
+    left: number;
+  } | null>(null);
+
+  const [activeModalImage, setActiveModalImage] = React.useState<{
+    url: string;
+    name: string;
+    sku: string;
+  } | null>(null);
 
   const toggleItemPacked = (id: string) => {
     setPackedIds((prev) => {
@@ -173,29 +188,75 @@ export function OrderPickPackChecklist({
                     </button>
                   </td>
 
-                  {/* Product Details */}
+                  {/* Product Details with Thumbnail & Warehouse Hover Zoom */}
                   <td className="px-5 py-3.5">
-                    <div
-                      className={`font-semibold ${
-                        isPacked ? "text-neutral-900" : "text-neutral-900"
-                      }`}
-                    >
-                      {item.productName}
-                    </div>
-                    {item.size || item.color ? (
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {item.size ? (
-                          <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
-                            Size: {item.size}
-                          </span>
-                        ) : null}
-                        {item.color ? (
-                          <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
-                            Color: {item.color}
-                          </span>
+                    <div className="flex items-center gap-3">
+                      {item.imageUrl ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActiveModalImage({
+                              url: item.imageUrl!,
+                              name: item.productName,
+                              sku: item.sku,
+                            })
+                          }
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const previewHeight = 270;
+                            const padding = 16;
+                            let top = rect.top - 20;
+                            if (top + previewHeight > window.innerHeight - padding) {
+                              top = window.innerHeight - previewHeight - padding;
+                            }
+                            if (top < padding) {
+                              top = padding;
+                            }
+                            setHoveredPreview({
+                              url: item.imageUrl!,
+                              name: item.productName,
+                              sku: item.sku,
+                              top,
+                              left: rect.right + 12,
+                            });
+                          }}
+                          onMouseLeave={() => setHoveredPreview(null)}
+                          className="relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-neutral-200/90 transition hover:border-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
+                          title="Hover for quick preview &middot; Click to enlarge"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.imageUrl}
+                            alt={item.productName}
+                            className="size-full object-cover"
+                          />
+                        </button>
+                      ) : (
+                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-neutral-400">
+                          <Shirt className="size-5 text-neutral-300" />
+                        </div>
+                      )}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-neutral-900 leading-snug">
+                          {item.productName}
+                        </div>
+                        {item.size || item.color ? (
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            {item.size ? (
+                              <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+                                Size: {item.size}
+                              </span>
+                            ) : null}
+                            {item.color ? (
+                              <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+                                Color: {item.color}
+                              </span>
+                            ) : null}
+                          </div>
                         ) : null}
                       </div>
-                    ) : null}
+                    </div>
                   </td>
 
                   <td className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">
@@ -219,6 +280,68 @@ export function OrderPickPackChecklist({
           </tbody>
         </table>
       </div>
+
+      {/* ── Fixed Floating Hover Preview (Immune to overflow-hidden / overflow-x-auto) ── */}
+      {hoveredPreview && (
+        <div
+          className="pointer-events-none fixed z-[9999] w-56 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          style={{
+            top: `${hoveredPreview.top}px`,
+            left: `${hoveredPreview.left}px`,
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={hoveredPreview.url}
+            alt={hoveredPreview.name}
+            className="aspect-square w-full rounded-lg object-cover bg-neutral-50 shadow-inner"
+          />
+          <p className="mt-2 line-clamp-2 text-xs font-bold text-neutral-900 leading-snug">
+            {hoveredPreview.name}
+          </p>
+          <p className="mt-0.5 font-mono text-[10px] text-neutral-500">
+            SKU: {hoveredPreview.sku}
+          </p>
+          <span className="mt-1.5 block text-[10px] font-semibold text-neutral-400">
+            Click thumbnail to view fullscreen
+          </span>
+        </div>
+      )}
+
+      {/* ── Fullscreen Lightbox Modal on Click ── */}
+      {activeModalImage && (
+        <div
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          onClick={() => setActiveModalImage(null)}
+        >
+          <div
+            className="relative max-w-lg w-full rounded-2xl bg-white p-5 shadow-2xl animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <div>
+                <h4 className="text-sm font-bold text-neutral-900">{activeModalImage.name}</h4>
+                <p className="font-mono text-xs text-neutral-500">SKU: {activeModalImage.sku}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveModalImage(null)}
+                className="size-7 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition hover:bg-neutral-200"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="mt-4 overflow-hidden rounded-xl bg-neutral-50 border border-neutral-100">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={activeModalImage.url}
+                alt={activeModalImage.name}
+                className="max-h-[70vh] w-full object-contain mx-auto"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

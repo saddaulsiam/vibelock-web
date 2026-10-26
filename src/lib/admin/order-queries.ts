@@ -205,5 +205,67 @@ export async function getAdminOrderById(id: string) {
 
   if (!order) return null;
 
-  return order;
+  // Retrieve primary product image for each item SKU to assist warehouse packaging
+  const skus = Array.from(new Set(order.items.map((i) => i.sku).filter(Boolean)));
+  const variants =
+    skus.length > 0
+      ? await prisma.productVariant.findMany({
+          where: { sku: { in: skus } },
+          select: {
+            sku: true,
+            product: {
+              select: {
+                images: {
+                  orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+                  take: 1,
+                  select: { url: true },
+                },
+              },
+            },
+          },
+        })
+      : [];
+
+  const skuImageMap = new Map<string, string>();
+  for (const v of variants) {
+    const firstImg = v.product.images[0]?.url;
+    if (firstImg) {
+      skuImageMap.set(v.sku, firstImg);
+    }
+  }
+
+  // Fallback lookup by product name if any item didn't match SKU
+  const missingProductNames = order.items
+    .filter((i) => !skuImageMap.has(i.sku) && i.productName)
+    .map((i) => i.productName);
+
+  if (missingProductNames.length > 0) {
+    const fallbackProducts = await prisma.product.findMany({
+      where: { name: { in: missingProductNames } },
+      select: {
+        name: true,
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+          take: 1,
+          select: { url: true },
+        },
+      },
+    });
+    for (const p of fallbackProducts) {
+      const img = p.images[0]?.url;
+      if (img) {
+        skuImageMap.set(p.name, img);
+      }
+    }
+  }
+
+  const itemsWithImages = order.items.map((item) => ({
+    ...item,
+    imageUrl: skuImageMap.get(item.sku) || skuImageMap.get(item.productName) || null,
+  }));
+
+  return {
+    ...order,
+    items: itemsWithImages,
+  };
 }

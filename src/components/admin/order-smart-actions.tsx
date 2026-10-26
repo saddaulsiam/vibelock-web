@@ -25,6 +25,7 @@ import {
   CreateShipmentForm,
 } from "@/components/admin/order-action-forms";
 import { OrderThermalLabelModal } from "@/components/admin/order-thermal-label-modal";
+import { OrderCancelModal } from "@/components/admin/order-cancel-modal";
 
 interface SmartActionOrderProps {
   id: string;
@@ -90,6 +91,7 @@ function SmartActionButton({
 
 export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
   const [showThermalModal, setShowThermalModal] = React.useState(false);
+  const [showCancelModal, setShowCancelModal] = React.useState(false);
   const [showWhatsAppMenu, setShowWhatsAppMenu] = React.useState(false);
   const [showManualOverride, setShowManualOverride] = React.useState(false);
   const [state, formAction] = useActionState(updateOrderStatusAction, { error: null });
@@ -341,31 +343,19 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
           </div>
         </div>
 
-        {/* Secondary: Safe Cancellation button if order is PENDING */}
-        {order.status === "PENDING" && (
+        {/* Structured Cancellation & Inventory Restock trigger */}
+        {(order.status === "PENDING" || order.status === "CONFIRMED") && !order.shipment ? (
           <div className="mt-3 border-t border-neutral-100 pt-2.5 text-center">
-            <form action={formAction}>
-              <input type="hidden" name="id" value={order.id} />
-              <input type="hidden" name="status" value="CANCELLED" />
-              <input
-                type="hidden"
-                name="notes"
-                value="Cancelled by merchant upon customer request."
-              />
-              <button
-                type="submit"
-                onClick={(e) => {
-                  if (!confirm("Are you sure you want to cancel this order? This will release reserved inventory.")) {
-                    e.preventDefault();
-                  }
-                }}
-                className="text-xs font-semibold text-rose-600 hover:text-rose-800 hover:underline"
-              >
-                ✕ Cancel This Order
-              </button>
-            </form>
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(true)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 transition hover:text-rose-800 hover:underline"
+            >
+              <XCircle className="size-3.5" />
+              <span>Cancel &amp; Restock Order</span>
+            </button>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ── Manual Override & Payment Accordion ── */}
@@ -425,6 +415,14 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
         }}
         isOpen={showThermalModal}
         onClose={() => setShowThermalModal(false)}
+      />
+
+      {/* ── Structured Cancellation & Inventory Restock Modal ── */}
+      <OrderCancelModal
+        orderId={order.id}
+        orderNumber={order.orderNumber}
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
       />
     </div>
   );
