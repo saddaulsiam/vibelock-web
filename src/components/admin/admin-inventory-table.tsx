@@ -45,6 +45,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { AdminInventoryPoModal } from "@/components/admin/admin-inventory-po-modal";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
+import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";
@@ -185,6 +186,37 @@ export function AdminInventoryTable({
   const [hasMore, setHasMore] = React.useState(
     (initialData.page || 1) < initialData.totalPages
   );
+
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = React.useState({
+    sku: true,
+    physical: true,
+    reserved: true,
+    available: true,
+    pricing: true,
+    health: true,
+  });
+
+  const inventoryColumnOptions = React.useMemo(
+    () => [
+      { key: "sku" as const, label: "SKU" },
+      { key: "physical" as const, label: "Physical Stock" },
+      { key: "reserved" as const, label: "Reserved Stock" },
+      { key: "available" as const, label: "Available Stock" },
+      { key: "pricing" as const, label: "Pricing (Cost / Sell)" },
+      { key: "health" as const, label: "Stock Health" },
+    ],
+    []
+  );
+
+  const visibleColumnCount =
+    3 +
+    (visibleColumns.sku ? 1 : 0) +
+    (visibleColumns.physical ? 1 : 0) +
+    (visibleColumns.reserved ? 1 : 0) +
+    (visibleColumns.available ? 1 : 0) +
+    (visibleColumns.pricing ? 1 : 0) +
+    (visibleColumns.health ? 1 : 0);
 
   // Multi-select state
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -841,6 +873,25 @@ export function AdminInventoryTable({
             <span className="hidden sm:inline">Export CSV</span>
           </a>
 
+          {/* Column Visibility Customizer */}
+          <AdminTableColumnVisibility
+            columns={inventoryColumnOptions}
+            visibleColumns={visibleColumns}
+            onChange={(key, val) =>
+              setVisibleColumns((prev) => ({ ...prev, [key]: val }))
+            }
+            onReset={() =>
+              setVisibleColumns({
+                sku: true,
+                physical: true,
+                reserved: true,
+                available: true,
+                pricing: true,
+                health: true,
+              })
+            }
+          />
+
           {/* Intelligence Dashboard Link */}
           <Link
             href="/admin/inventory-intelligence"
@@ -905,19 +956,19 @@ export function AdminInventoryTable({
                 />
               </th>
               <th className="px-5 py-3">Product & Variant</th>
-              <th className="px-5 py-3">SKU</th>
-              <th className="px-5 py-3 text-center">Physical</th>
-              <th className="px-5 py-3 text-center">Reserved</th>
-              <th className="px-5 py-3 text-center">Available</th>
-              <th className="px-5 py-3">Pricing (Cost / Sell)</th>
-              <th className="px-5 py-3">Stock Health</th>
+              {visibleColumns.sku && <th className="px-5 py-3">SKU</th>}
+              {visibleColumns.physical && <th className="px-5 py-3 text-center">Physical</th>}
+              {visibleColumns.reserved && <th className="px-5 py-3 text-center">Reserved</th>}
+              {visibleColumns.available && <th className="px-5 py-3 text-center">Available</th>}
+              {visibleColumns.pricing && <th className="px-5 py-3">Pricing (Cost / Sell)</th>}
+              {visibleColumns.health && <th className="px-5 py-3">Stock Health</th>}
               <th className="px-5 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#101114]/5">
             {loadedVariants.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-5 py-12 text-center">
+                <td colSpan={visibleColumnCount} className="px-5 py-12 text-center">
                   <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
                     <Boxes className="size-8 text-[#101114]/30" />
                     <p className="text-sm font-semibold text-[#101114]">
@@ -1036,117 +1087,129 @@ export function AdminInventoryTable({
                     </td>
 
                     {/* SKU with 1-click copy */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-[#101114]">
-                        <span>{item.sku}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopySku(item.sku)}
-                          className="rounded p-1 text-[#101114]/40 hover:bg-[#101114]/10 hover:text-[#101114]"
-                          title="Copy SKU to clipboard"
-                        >
-                          {copiedSku === item.sku ? (
-                            <Check className="size-3 text-emerald-600" />
-                          ) : (
-                            <Copy className="size-3" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
+                    {visibleColumns.sku && (
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-[#101114]">
+                          <span>{item.sku}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopySku(item.sku)}
+                            className="rounded p-1 text-[#101114]/40 hover:bg-[#101114]/10 hover:text-[#101114]"
+                            title="Copy SKU to clipboard"
+                          >
+                            {copiedSku === item.sku ? (
+                              <Check className="size-3 text-emerald-600" />
+                            ) : (
+                              <Copy className="size-3" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    )}
 
                     {/* Physical Stock */}
-                    <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
-                      <span className={item.totalStock < 0 ? "text-red-700" : "text-[#101114]"}>
-                        {item.totalStock}
-                      </span>
-                    </td>
+                    {visibleColumns.physical && (
+                      <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
+                        <span className={item.totalStock < 0 ? "text-red-700" : "text-[#101114]"}>
+                          {item.totalStock}
+                        </span>
+                      </td>
+                    )}
 
                     {/* Reserved Stock */}
-                    <td className="px-5 py-3.5 text-center font-mono text-xs tabular-nums">
-                      {item.reserved > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded-2xs bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800 border border-amber-200">
-                          <Lock className="size-2.5" />
-                          {item.reserved}
-                        </span>
-                      ) : (
-                        <span className="text-[#101114]/40">0</span>
-                      )}
-                    </td>
-
-                    {/* Available Stock */}
-                    <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
-                      <span
-                        className={
-                          isNegative
-                            ? "text-red-700 font-extrabold"
-                            : isOutOfStock
-                              ? "text-red-600"
-                              : isLowStock
-                                ? "text-amber-700 font-extrabold"
-                                : "text-emerald-700 font-extrabold"
-                        }
-                      >
-                        {item.available}
-                      </span>
-                    </td>
-
-                    {/* Pricing (Cost / Selling) */}
-                    <td className="px-5 py-3.5 tabular-nums text-xs">
-                      <div className="space-y-0.5">
-                        <div className="font-semibold text-[#101114]">
-                          {formatCurrency(item.sellingPrice)}
-                        </div>
-                        <div className="text-[10px] text-[#101114]/50">
-                          Cost: {formatCurrency(item.costPrice)}
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* Stock Health Status */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-1.5">
-                        {isLowStock ? (
-                          <span className="relative flex size-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                            <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
+                    {visibleColumns.reserved && (
+                      <td className="px-5 py-3.5 text-center font-mono text-xs tabular-nums">
+                        {item.reserved > 0 ? (
+                          <span className="inline-flex items-center gap-1 rounded-2xs bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800 border border-amber-200">
+                            <Lock className="size-2.5" />
+                            {item.reserved}
                           </span>
                         ) : (
-                          <span
-                            className={`size-2 rounded-full ${
-                              isNegative
-                                ? "bg-red-700"
-                                : isOutOfStock
-                                  ? "bg-red-500"
-                                  : "bg-emerald-500"
-                            }`}
-                          />
+                          <span className="text-[#101114]/40">0</span>
                         )}
+                      </td>
+                    )}
+
+                    {/* Available Stock */}
+                    {visibleColumns.available && (
+                      <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
                         <span
-                          className={`text-xs font-semibold ${
+                          className={
                             isNegative
-                              ? "text-red-800"
+                              ? "text-red-700 font-extrabold"
                               : isOutOfStock
-                                ? "text-red-700"
+                                ? "text-red-600"
                                 : isLowStock
-                                  ? "text-amber-800"
-                                  : "text-emerald-800"
-                          }`}
+                                  ? "text-amber-700 font-extrabold"
+                                  : "text-emerald-700 font-extrabold"
+                          }
                         >
-                          {isNegative
-                            ? "Negative Stock"
-                            : isOutOfStock
-                              ? "Out of Stock"
-                              : isLowStock
-                                ? "Low Stock"
-                                : "In Stock"}
+                          {item.available}
                         </span>
-                        {isLowStock && (
-                          <span className="rounded-2xs bg-amber-100 px-1 py-0.2 text-[9px] font-extrabold text-amber-800">
-                            REORDER
+                      </td>
+                    )}
+
+                    {/* Pricing (Cost / Selling) */}
+                    {visibleColumns.pricing && (
+                      <td className="px-5 py-3.5 tabular-nums text-xs">
+                        <div className="space-y-0.5">
+                          <div className="font-semibold text-[#101114]">
+                            {formatCurrency(item.sellingPrice)}
+                          </div>
+                          <div className="text-[10px] text-[#101114]/50">
+                            Cost: {formatCurrency(item.costPrice)}
+                          </div>
+                        </div>
+                      </td>
+                    )}
+
+                    {/* Stock Health Status */}
+                    {visibleColumns.health && (
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1.5">
+                          {isLowStock ? (
+                            <span className="relative flex size-2">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                              <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
+                            </span>
+                          ) : (
+                            <span
+                              className={`size-2 rounded-full ${
+                                isNegative
+                                  ? "bg-red-700"
+                                  : isOutOfStock
+                                    ? "bg-red-500"
+                                    : "bg-emerald-500"
+                              }`}
+                            />
+                          )}
+                          <span
+                            className={`text-xs font-semibold ${
+                              isNegative
+                                ? "text-red-800"
+                                : isOutOfStock
+                                  ? "text-red-700"
+                                  : isLowStock
+                                    ? "text-amber-800"
+                                    : "text-emerald-800"
+                            }`}
+                          >
+                            {isNegative
+                              ? "Negative Stock"
+                              : isOutOfStock
+                                ? "Out of Stock"
+                                : isLowStock
+                                  ? "Low Stock"
+                                  : "In Stock"}
                           </span>
-                        )}
-                      </div>
-                    </td>
+                          {isLowStock && (
+                            <span className="rounded-2xs bg-amber-100 px-1 py-0.2 text-[9px] font-extrabold text-amber-800">
+                              REORDER
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    )}
 
                     {/* Actions */}
                     <td className="px-5 py-3.5 text-right">
