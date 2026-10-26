@@ -4,11 +4,9 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
-  AlertCircle,
   Banknote,
   Check,
   CheckCircle2,
-  Clock,
   Copy,
   CreditCard,
   Download,
@@ -19,7 +17,6 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
 import {
@@ -74,114 +71,11 @@ function formatWhatsAppUrl(
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
-export function getOrderStatusBadge(status: OrderStatus) {
-  switch (status) {
-    case "PENDING":
-      return (
-        <Badge
-          variant="outline"
-          className="border-amber-300 bg-amber-50 font-semibold text-amber-800"
-        >
-          <Clock className="mr-1 size-3 text-amber-600" /> Pending
-        </Badge>
-      );
-    case "CONFIRMED":
-      return (
-        <Badge variant="outline" className="border-blue-300 bg-blue-50 font-semibold text-blue-800">
-          <CheckCircle2 className="mr-1 size-3 text-blue-600" /> Confirmed
-        </Badge>
-      );
-    case "PROCESSING":
-      return (
-        <Badge
-          variant="outline"
-          className="border-indigo-300 bg-indigo-50 font-semibold text-indigo-800"
-        >
-          <Package className="mr-1 size-3 text-indigo-600" /> Processing
-        </Badge>
-      );
-    case "SHIPPED":
-      return (
-        <Badge
-          variant="outline"
-          className="border-purple-300 bg-purple-50 font-semibold text-purple-800"
-        >
-          <Truck className="mr-1 size-3 text-purple-600" /> Shipped
-        </Badge>
-      );
-    case "DELIVERED":
-      return (
-        <Badge
-          variant="outline"
-          className="border-emerald-300 bg-emerald-50 font-semibold text-emerald-800"
-        >
-          <CheckCircle2 className="mr-1 size-3 text-emerald-600" /> Delivered
-        </Badge>
-      );
-    case "CANCELLED":
-      return (
-        <Badge variant="outline" className="border-neutral-300 bg-neutral-100 text-neutral-700">
-          Cancelled
-        </Badge>
-      );
-    case "RETURN_REQUESTED":
-    case "RETURN_PROCESSING":
-    case "RETURNED":
-      return (
-        <Badge
-          variant="outline"
-          className="border-orange-300 bg-orange-50 font-semibold text-orange-800"
-        >
-          <AlertCircle className="mr-1 size-3 text-orange-600" /> Return (
-          {status.replace("RETURN_", "")})
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-}
-
-export function getPaymentStatusBadge(status: PaymentStatus) {
-  switch (status) {
-    case "SUCCESS":
-      return (
-        <Badge
-          variant="outline"
-          className="border-emerald-300 bg-emerald-50 font-medium text-emerald-800"
-        >
-          Paid
-        </Badge>
-      );
-    case "PENDING":
-    case "INITIATED":
-      return (
-        <Badge
-          variant="outline"
-          className="border-amber-300 bg-amber-50 font-medium text-amber-800"
-        >
-          Unpaid
-        </Badge>
-      );
-    case "FAILED":
-      return (
-        <Badge variant="outline" className="border-rose-300 bg-rose-50 font-medium text-rose-800">
-          Failed
-        </Badge>
-      );
-    case "REFUNDED":
-    case "PARTIALLY_REFUNDED":
-      return (
-        <Badge
-          variant="outline"
-          className="border-neutral-300 bg-neutral-50 font-medium text-neutral-700"
-        >
-          Refunded
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-}
+import {
+  getOrderStatusBadge,
+  getPaymentStatusBadge,
+} from "@/components/admin/admin-order-badges";
+export { getOrderStatusBadge, getPaymentStatusBadge };
 
 interface AdminOrdersTableProps {
   initialData: AdminOrdersResult;

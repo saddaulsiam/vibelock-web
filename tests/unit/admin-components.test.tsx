@@ -104,5 +104,110 @@ describe("Admin Reusable UI Components", () => {
     expect(html).toContain('placeholder="Search items..."');
     expect(html).toContain("/");
   });
+
+  test("renders order badges and formats WhatsApp URL correctly", async () => {
+    const { getOrderStatusBadge, getPaymentStatusBadge, generateWhatsAppUrl } = await import(
+      "@/components/admin/admin-order-badges"
+    );
+
+    const pendingBadge = renderToStaticMarkup(getOrderStatusBadge("PENDING"));
+    expect(pendingBadge).toContain("Pending");
+
+    const paidBadge = renderToStaticMarkup(getPaymentStatusBadge("SUCCESS"));
+    expect(paidBadge).toContain("Paid");
+
+    const waUrl = generateWhatsAppUrl("01711111111", "VL-100", "Siam");
+    expect(waUrl).toBe("https://wa.me/8801711111111?text=Hello%20Siam%2C%20regarding%20your%20VibeLock%20order%20%23VL-100%3A%20");
+  });
+
+  test("renders OrderLifecycleStepper with stages and cancelled states", async () => {
+    const { OrderLifecycleStepper } = await import(
+      "@/components/admin/order-lifecycle-stepper"
+    );
+
+    const pendingHtml = renderToStaticMarkup(
+      <OrderLifecycleStepper
+        currentStatus="PENDING"
+        createdAt={new Date("2026-10-26T10:00:00Z")}
+        orderHistory={[]}
+      />
+    );
+    expect(pendingHtml).toContain("Order Placed");
+    expect(pendingHtml).toContain("Step 1 of 5");
+    expect(pendingHtml).toContain("Confirmed");
+
+    const cancelledHtml = renderToStaticMarkup(
+      <OrderLifecycleStepper
+        currentStatus="CANCELLED"
+        createdAt={new Date("2026-10-26T10:00:00Z")}
+        orderHistory={[{ status: "CANCELLED", createdAt: new Date("2026-10-26T10:30:00Z"), notes: "Customer requested cancellation" }]}
+      />
+    );
+    expect(cancelledHtml).toContain("Order Lifecycle: Cancelled");
+    expect(cancelledHtml).toContain("Customer requested cancellation");
+  });
+
+  test("renders OrderPickPackChecklist with items and progress", async () => {
+    const { OrderPickPackChecklist } = await import(
+      "@/components/admin/order-pick-pack-checklist"
+    );
+
+    const html = renderToStaticMarkup(
+      <OrderPickPackChecklist
+        orderId="test-order-1"
+        items={[
+          {
+            id: "item-1",
+            productName: "Vintage Denim Jacket",
+            size: "L",
+            color: "Blue",
+            sku: "VDJ-L-BLU",
+            quantity: 2,
+            unitPrice: 2500,
+            lineTotal: 5000,
+          },
+        ]}
+      />
+    );
+
+    expect(html).toContain("Vintage Denim Jacket");
+    expect(html).toContain("VDJ-L-BLU");
+    expect(html).toContain("Size: L");
+    expect(html).toContain("৳5,000.00");
+  });
+
+  test("renders OrderThermalLabelModal with barcode and COD tag", async () => {
+    const { OrderThermalLabelModal } = await import(
+      "@/components/admin/order-thermal-label-modal"
+    );
+
+    const html = renderToStaticMarkup(
+      <OrderThermalLabelModal
+        isOpen={true}
+        onClose={vi.fn()}
+        order={{
+          orderNumber: "VL-9999",
+          customerName: "Rahim Ahmed",
+          customerPhone: "01812345678",
+          shippingStreet: "Road 12, Banani",
+          shippingCity: "Dhaka",
+          paymentMethod: "COD",
+          paymentStatus: "PENDING",
+          total: 3500,
+          itemCount: 2,
+          courierProvider: "Steadfast",
+          trackingNumber: "ST-88231",
+        }}
+      />
+    );
+
+    expect(html).toContain("VibeLock Apparel");
+    expect(html).toContain("Rahim Ahmed");
+    expect(html).toContain("01812345678");
+    expect(html).toContain("CASH ON DELIVERY (COD)");
+    expect(html).toContain("৳3,500.00");
+    expect(html).toContain("VL-9999");
+  });
 });
+
 

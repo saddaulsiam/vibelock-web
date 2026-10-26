@@ -54,8 +54,12 @@ export class ShippingService {
         referenceId: localShipment.id,
         note: `VibeLock order ${order.orderNumber}`,
       });
-    } catch {
-      console.error("[ShippingService] Provider shipment creation request failed");
+    } catch (err) {
+      console.error("[ShippingService] Provider shipment creation request failed:", err);
+      if (err instanceof Error && err.message.includes("not configured")) {
+        await prisma.shipment.delete({ where: { id: localShipment.id } }).catch(() => {});
+        throw err;
+      }
       // DO NOT update to FAILED on unknown result. Keep it as PENDING to avoid duplicate creation.
       // If we mark it failed and retry, we might create a duplicate shipment on the provider.
       await prisma.shipment.update({
