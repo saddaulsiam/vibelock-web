@@ -222,3 +222,10 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* Avoid Next.js dev server overlay covering mobile bottom action bars during testing */
+@media (max-width: 1023px) {
+  nextjs-portal {
+    display: none !important;
+  }
+}
+
