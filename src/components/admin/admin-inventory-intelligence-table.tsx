@@ -3,10 +3,13 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Download, Flame, Package, Search, X } from "lucide-react";
+import { ArrowRight, Check, Copy, Download, Flame, Package, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
+import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory-actions";
 import type {
+  InventoryIntelligenceItem,
   InventoryIntelligenceResult,
   InventoryIntelligenceSort,
   InventoryIntelligenceStatus,
@@ -27,34 +30,50 @@ function formatBdt(value: number | null | undefined): string {
 export function getStatusBadge(status: InventoryIntelligenceStatus) {
   switch (status) {
     case "NEGATIVE":
-      return <Badge variant="destructive">Negative stock</Badge>;
+      return (
+        <Badge variant="destructive" className="text-[10px] font-bold tracking-wide uppercase">
+          Negative stock
+        </Badge>
+      );
     case "OUT_OF_STOCK":
       return (
-        <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">
+        <Badge
+          variant="outline"
+          className="border-red-300 bg-red-50 text-[10px] font-semibold text-red-700"
+        >
           Out of stock
         </Badge>
       );
     case "STOCKOUT_RISK":
       return (
-        <Badge className="border border-rose-300 bg-rose-100 font-semibold text-rose-800 hover:bg-rose-100">
-          <Flame className="mr-1 size-3 text-rose-600" /> Stockout Risk (&le;14d)
+        <Badge className="border border-rose-300 bg-rose-100 text-[10px] font-bold text-rose-800 hover:bg-rose-100">
+          <Flame className="mr-1 size-3 animate-pulse text-rose-600" /> Stockout Risk (&le;14d)
         </Badge>
       );
     case "DEAD":
       return (
-        <Badge variant="outline" className="border-amber-400 bg-amber-50 text-amber-800">
+        <Badge
+          variant="outline"
+          className="border-amber-300 bg-amber-50 text-[10px] font-semibold text-amber-800"
+        >
           Dead stock (&gt;14d)
         </Badge>
       );
     case "SLOW":
       return (
-        <Badge variant="outline" className="border-yellow-300 bg-yellow-50 text-yellow-800">
+        <Badge
+          variant="outline"
+          className="border-yellow-300 bg-yellow-50 text-[10px] font-semibold text-yellow-800"
+        >
           Slow moving (&gt;180d)
         </Badge>
       );
     case "HEALTHY":
       return (
-        <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-800">
+        <Badge
+          variant="outline"
+          className="border-emerald-300 bg-emerald-50 text-[10px] font-semibold text-emerald-800"
+        >
           Healthy
         </Badge>
       );
@@ -83,8 +102,95 @@ export function AdminInventoryIntelligenceTable({
   const [searchTerm, setSearchTerm] = React.useState(currentFilters.q ?? "");
   const [isPending, startTransition] = React.useTransition();
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
 
-  const { items, total, totalPages, summary, window } = initialData;
+  const { total, summary, window: activeWindow } = initialData;
+
+  // Infinite scroll state
+  const [additionalItems, setAdditionalItems] = React.useState<InventoryIntelligenceItem[]>([]);
+  const [prevItems, setPrevItems] = React.useState<InventoryIntelligenceItem[]>(initialData.items);
+  const [currentPage, setCurrentPage] = React.useState<number>(1);
+  const [isLoadingMore, setIsLoadingMore] = React.useState<boolean>(false);
+  const [copiedSku, setCopiedSku] = React.useState<string | null>(null);
+
+  // Column visibility state
+  const [visibleColumns, setVisibleColumns] = React.useState({
+    stock: true,
+    capital: true,
+    velocity: true,
+    daysOfSupply: true,
+    restock: true,
+    status: true,
+  });
+
+  const intelligenceColumnOptions = React.useMemo(
+    () => [
+      { key: "stock" as const, label: "Available Stock" },
+      { key: "capital" as const, label: "Available Capital" },
+      { key: "velocity" as const, label: "Daily Velocity" },
+      { key: "daysOfSupply" as const, label: "Days of Supply" },
+      { key: "restock" as const, label: "Suggested Restock" },
+      { key: "status" as const, label: "Health Status" },
+    ],
+    []
+  );
+
+  const visibleColumnCount =
+    2 +
+    (visibleColumns.stock ? 1 : 0) +
+    (visibleColumns.capital ? 1 : 0) +
+    (visibleColumns.velocity ? 1 : 0) +
+    (visibleColumns.daysOfSupply ? 1 : 0) +
+    (visibleColumns.restock ? 1 : 0) +
+    (visibleColumns.status ? 1 : 0);
+
+  // When initialData.items changes due to search/tab switch, reset additional items during render
+  if (initialData.items !== prevItems) {
+    setPrevItems(initialData.items);
+    setAdditionalItems([]);
+    setCurrentPage(1);
+  }
+
+  const loadedItems = React.useMemo(() => {
+    const existingIds = new Set(initialData.items.map((i) => i.id));
+    return [...initialData.items, ...additionalItems.filter((i) => !existingIds.has(i.id))];
+  }, [initialData.items, additionalItems]);
+
+  const hasMore = loadedItems.length < total;
+
+  const handleLoadMore = React.useCallback(async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    try {
+      const nextPage = currentPage + 1;
+      const res = await loadMoreAdminInventoryIntelligenceAction({
+        search: currentFilters.q,
+        window: currentFilters.window,
+        status: currentFilters.status,
+        sort: currentFilters.sort,
+        page: nextPage,
+        pageSize: 20,
+      });
+
+      if (res && res.items.length > 0) {
+        setAdditionalItems((prev) => [...prev, ...res.items]);
+        setCurrentPage(nextPage);
+      }
+    } catch (err) {
+      console.error("Failed to load more intelligence items:", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [currentPage, currentFilters, hasMore, isLoadingMore]);
+
+  const handleCopySku = (sku: string) => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(sku).then(() => {
+        setCopiedSku(sku);
+        setTimeout(() => setCopiedSku(null), 2000);
+      });
+    }
+  };
 
   const updateUrlParams = React.useCallback(
     (updates: Record<string, string | number | null | undefined>) => {
@@ -129,10 +235,26 @@ export function AdminInventoryIntelligenceTable({
     updateUrlParams({ sort: e.target.value, page: 1 });
   };
 
+  // Keyboard shortcut '/' to focus search input
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // Build CSV export href
   const exportQuery = new URLSearchParams();
   if (searchTerm) exportQuery.set("q", searchTerm);
-  if (window !== "90d") exportQuery.set("window", window);
+  if (activeWindow !== "90d") exportQuery.set("window", activeWindow);
   if (currentFilters.status !== "all") exportQuery.set("status", currentFilters.status);
   if (currentFilters.sort !== "valuation") exportQuery.set("sort", currentFilters.sort);
   const exportQueryString = exportQuery.toString();
@@ -179,7 +301,7 @@ export function AdminInventoryIntelligenceTable({
   if (summary.negativeStockCount > 0) {
     tabs.push({
       key: "negative",
-      label: "Negative",
+      label: "Negative Anomaly",
       count: summary.negativeStockCount,
       badgeVariant: "urgent",
     });
@@ -187,8 +309,8 @@ export function AdminInventoryIntelligenceTable({
 
   return (
     <div className="space-y-4">
-      {/* Quick Status Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-[#101114]/10 pb-3">
+      {/* Quick Status Filter Tabs with modern pill styling */}
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-zinc-200/90 pb-3">
         {tabs.map((tab) => {
           const isActive = currentFilters.status === tab.key;
           return (
@@ -196,10 +318,10 @@ export function AdminInventoryIntelligenceTable({
               key={tab.key}
               type="button"
               onClick={() => handleStatusTab(tab.key)}
-              className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+              className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
                 isActive
-                  ? "bg-[#101114] text-white shadow-2xs"
-                  : "bg-[#F3F0E8] text-[#101114]/80 hover:bg-[#101114]/10 hover:text-[#101114]"
+                  ? "bg-[#101114] text-white shadow-xs"
+                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200/70 hover:text-zinc-950"
               }`}
             >
               <span>{tab.label}</span>
@@ -207,12 +329,12 @@ export function AdminInventoryIntelligenceTable({
                 <span
                   className={`inline-flex size-5 items-center justify-center rounded-full text-[10px] font-bold ${
                     isActive
-                      ? "bg-white text-[#101114]"
+                      ? "bg-white/20 text-white"
                       : tab.badgeVariant === "urgent" && tab.count > 0
-                        ? "bg-rose-600 text-white"
+                        ? "bg-rose-100 text-rose-700"
                         : tab.badgeVariant === "warning" && tab.count > 0
-                          ? "bg-amber-600 text-white"
-                          : "bg-[#101114]/15 text-[#101114]"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-zinc-200 text-zinc-700"
                   }`}
                 >
                   {tab.count}
@@ -223,46 +345,54 @@ export function AdminInventoryIntelligenceTable({
         })}
       </div>
 
-      {/* Search, Window, Sort, and Export Bar */}
+      {/* Search, Window, Sort, and Export Controls */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative w-full sm:w-64">
-            <Search className="text-muted-foreground absolute top-2.5 left-3 size-4" />
-            <Input
+        <div className="flex flex-1 flex-wrap items-center gap-2.5">
+          {/* Search bar with / hotkey */}
+          <div className="relative max-w-sm flex-1">
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
+            <input
+              ref={searchInputRef}
               type="text"
               placeholder="Search product or SKU..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="pr-8 pl-9"
+              className="h-10 w-full rounded-lg border border-zinc-200 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-zinc-400 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
             />
-            {searchTerm && (
+            {searchTerm ? (
               <button
                 type="button"
                 onClick={handleClearSearch}
-                className="text-muted-foreground hover:text-foreground absolute top-2.5 right-2.5"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-zinc-400 hover:text-zinc-900"
                 aria-label="Clear search"
               >
-                <X className="size-4" />
+                <X className="size-3.5" />
               </button>
+            ) : (
+              <kbd className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-500 sm:inline-flex">
+                /
+              </kbd>
             )}
           </div>
 
+          {/* Window selector */}
           <select
-            value={window}
+            value={activeWindow}
             onChange={handleWindowChange}
             aria-label="Trailing sales velocity window"
-            className="border-input h-9 rounded-sm border bg-white px-3 text-xs font-medium text-[#101114] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             <option value="30d">Trailing 30 Days</option>
             <option value="60d">Trailing 60 Days</option>
             <option value="90d">Trailing 90 Days</option>
           </select>
 
+          {/* Sort selector */}
           <select
             value={currentFilters.sort}
             onChange={handleSortChange}
             aria-label="Sort inventory intelligence"
-            className="border-input h-9 rounded-sm border bg-white px-3 text-xs font-medium text-[#101114] shadow-2xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className="h-10 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             <option value="valuation">Sort: Capital Value</option>
             <option value="runout">Sort: Days of Supply (Urgent)</option>
@@ -273,172 +403,274 @@ export function AdminInventoryIntelligenceTable({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Column Visibility Customizer */}
+          <AdminTableColumnVisibility
+            columns={intelligenceColumnOptions}
+            visibleColumns={visibleColumns}
+            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
+            onReset={() =>
+              setVisibleColumns({
+                stock: true,
+                capital: true,
+                velocity: true,
+                daysOfSupply: true,
+                restock: true,
+                status: true,
+              })
+            }
+          />
+
           <a
             href={exportHref}
             download
-            className="border-input bg-background hover:bg-muted inline-flex h-9 items-center justify-center gap-2 rounded-sm border px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors"
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3.5 text-xs font-semibold text-zinc-800 shadow-2xs transition-colors hover:bg-zinc-50 hover:text-zinc-950"
             title="Download CSV of current inventory intelligence"
           >
-            <Download className="size-3.5" />
-            Export CSV
+            <Download className="size-3.5 text-zinc-600" />
+            <span>Export CSV</span>
           </a>
         </div>
       </div>
 
-      {/* Meta counters */}
-      <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 text-xs">
+      {/* Meta counters & active filter pills */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-500">
+        <div className="flex flex-wrap items-center gap-2">
+          <span>
+            Showing <strong className="text-zinc-900">{loadedItems.length}</strong> of{" "}
+            <strong className="text-zinc-900">{total}</strong>{" "}
+            {total === 1 ? "variant" : "variants"}
+            {isPending ? " (Updating...)" : ""}
+          </span>
+          {currentFilters.status !== "all" && (
+            <span className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-800">
+              Status: {currentFilters.status}
+              <button
+                type="button"
+                onClick={() => updateUrlParams({ status: null, page: 1 })}
+                className="text-zinc-500 hover:text-zinc-900"
+              >
+                <X className="size-3" />
+              </button>
+            </span>
+          )}
+        </div>
         <p>
-          Showing {items.length} of {total} {total === 1 ? "variant" : "variants"}
-          {isPending ? " (Updating...)" : ""}
-        </p>
-        <p>
-          Calculated using trailing <strong>{window}</strong> net sales (sales &minus; returns).
+          Calculated using trailing <strong className="text-zinc-800">{activeWindow}</strong> net
+          sales (sales &minus; returns).
         </p>
       </div>
 
-      {/* Data Table */}
-      <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-[#101114]/10 bg-[#F3F0E8]/50">
-            <tr className="text-left text-xs font-semibold tracking-wider text-[#101114]/80 uppercase">
-              <th className="p-3">SKU / Product</th>
-              <th className="p-3 text-right">Available Stock</th>
-              <th className="p-3 text-right">Available Capital</th>
-              <th className="p-3 text-right">Daily Velocity</th>
-              <th className="p-3 text-right">Days of Supply</th>
-              <th className="p-3 text-right">Suggested Restock (30d)</th>
-              <th className="p-3 text-center">Status</th>
-              <th className="p-3 text-right">Action</th>
+      {/* Fresh, Clean Data Table matching Inventory Control Center */}
+      <div className="overflow-x-auto rounded-xl border border-zinc-200/90 bg-white shadow-sm">
+        <table className="w-full border-collapse text-left text-xs text-[#101114]">
+          <thead className="border-b border-zinc-200 bg-zinc-50/80 text-[11px] font-bold tracking-wider text-zinc-500 uppercase">
+            <tr>
+              <th className="min-w-[180px] px-4 py-3">Product & Variant</th>
+              {visibleColumns.stock && (
+                <th className="px-3 py-3 text-center whitespace-nowrap">Available Stock</th>
+              )}
+              {visibleColumns.capital && (
+                <th className="px-3 py-3 text-right whitespace-nowrap">Available Capital</th>
+              )}
+              {visibleColumns.velocity && (
+                <th className="px-3 py-3 text-center whitespace-nowrap">Daily Velocity</th>
+              )}
+              {visibleColumns.daysOfSupply && (
+                <th className="px-3 py-3 text-center whitespace-nowrap">Days of Supply</th>
+              )}
+              {visibleColumns.restock && (
+                <th className="px-3 py-3 text-right whitespace-nowrap">Suggested Restock (30d)</th>
+              )}
+              {visibleColumns.status && (
+                <th className="px-3 py-3 text-center whitespace-nowrap">Health Status</th>
+              )}
+              <th className="min-w-[95px] px-4 py-3 text-right whitespace-nowrap">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#101114]/5">
-            {items.length === 0 ? (
+          <tbody className="divide-y divide-zinc-100">
+            {loadedItems.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-muted-foreground p-12 text-center">
-                  <Package className="mx-auto mb-2 size-8 text-neutral-400" />
-                  <p className="font-semibold text-neutral-700">No inventory variants found</p>
-                  <p className="mt-1 text-xs text-neutral-500">
-                    Try adjusting your search terms or filter selections.
-                  </p>
+                <td colSpan={visibleColumnCount} className="px-5 py-12 text-center">
+                  <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
+                    <Package className="size-8 text-zinc-400" />
+                    <p className="text-sm font-semibold text-zinc-900">
+                      No inventory intelligence variants found
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      Try adjusting your search terms or clearing active status filters.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => updateUrlParams({ q: null, status: null, page: 1 })}
+                      className="mt-2 inline-flex h-8 items-center rounded-lg bg-[#101114] px-3 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
                 </td>
               </tr>
             ) : (
-              items.map((item) => {
+              loadedItems.map((item) => {
                 const isUrgent = item.status === "STOCKOUT_RISK" || item.status === "OUT_OF_STOCK";
 
                 return (
                   <tr
                     key={item.id}
-                    className={`transition-colors hover:bg-neutral-50 ${
-                      item.status === "STOCKOUT_RISK" ? "bg-rose-50/30" : ""
+                    className={`transition-colors hover:bg-zinc-50/70 ${
+                      item.status === "STOCKOUT_RISK" ? "bg-rose-50/30 hover:bg-rose-50/50" : ""
                     }`}
                   >
-                    {/* SKU & Product */}
-                    <td className="p-3">
-                      <div className="font-mono text-xs font-semibold text-[#101114]">
-                        {item.sku}
-                      </div>
-                      <div className="line-clamp-1 font-medium text-neutral-900">
+                    {/* Product & Variant with SKU at bottom */}
+                    <td className="min-w-[180px] px-4 py-3">
+                      <div className="line-clamp-1 font-semibold text-zinc-900">
                         {item.productName}
                       </div>
-                      <div className="text-muted-foreground text-xs">
-                        {[item.size, item.color].filter(Boolean).join(" / ") || "Standard"}
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        <span className="inline-flex items-center rounded-sm border border-zinc-200/80 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700">
+                          {[
+                            item.size ? `Size: ${item.size}` : null,
+                            item.color ? `Color: ${item.color}` : null,
+                          ]
+                            .filter(Boolean)
+                            .join(" • ") || "Default"}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1 font-mono text-[11px] text-zinc-500">
+                        <span className="max-w-[220px] truncate" title={item.sku}>
+                          {item.sku}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopySku(item.sku)}
+                          className="rounded p-0.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-800"
+                          title="Copy SKU to clipboard"
+                        >
+                          {copiedSku === item.sku ? (
+                            <Check className="size-2.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="size-2.5" />
+                          )}
+                        </button>
                       </div>
                     </td>
 
                     {/* Available Stock */}
-                    <td className="p-3 text-right">
-                      <div
-                        className={`font-semibold ${
-                          item.availableStock <= 0
-                            ? "text-rose-600"
-                            : item.status === "STOCKOUT_RISK"
-                              ? "text-rose-700"
-                              : "text-neutral-900"
-                        }`}
-                      >
-                        {item.availableStock.toLocaleString()}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        {item.physicalStock} phys ({item.reservedStock} res)
-                      </div>
-                    </td>
+                    {visibleColumns.stock && (
+                      <td className="px-3 py-3 text-center font-mono text-xs whitespace-nowrap tabular-nums">
+                        <div
+                          className={`font-bold ${
+                            item.availableStock <= 0
+                              ? "font-extrabold text-rose-600"
+                              : item.status === "STOCKOUT_RISK"
+                                ? "font-extrabold text-rose-700"
+                                : "font-extrabold text-zinc-900"
+                          }`}
+                        >
+                          {item.availableStock.toLocaleString()}
+                        </div>
+                        <div className="text-[11px] text-zinc-500">
+                          {item.physicalStock} phys ({item.reservedStock} res)
+                        </div>
+                      </td>
+                    )}
 
-                    {/* Capital Value */}
-                    <td className="p-3 text-right">
-                      <div className="font-semibold text-neutral-900">
-                        {formatBdt(item.availableCostValue)}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        Cost: {item.costUnavailable ? "N/A" : formatBdt(item.costPrice)}
-                      </div>
-                    </td>
+                    {/* Available Capital */}
+                    {visibleColumns.capital && (
+                      <td className="px-3 py-3 text-right whitespace-nowrap tabular-nums">
+                        <div className="font-semibold text-zinc-900">
+                          {formatBdt(item.availableCostValue)}
+                        </div>
+                        <div className="text-[11px] text-zinc-500">
+                          Cost: {item.costUnavailable ? "N/A" : formatBdt(item.costPrice)}
+                        </div>
+                      </td>
+                    )}
 
-                    {/* Velocity */}
-                    <td className="p-3 text-right">
-                      <div className="font-mono text-xs font-semibold text-neutral-900">
-                        {item.dailyVelocity > 0 ? `${item.dailyVelocity.toFixed(2)}/d` : "0.00/d"}
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        {item.netRetainedUnits} units ({item.soldUnits} sold &minus;{" "}
-                        {item.returnedUnits} ret)
-                      </div>
-                    </td>
+                    {/* Daily Velocity */}
+                    {visibleColumns.velocity && (
+                      <td className="px-3 py-3 text-center font-mono text-xs whitespace-nowrap tabular-nums">
+                        <div className="font-bold text-zinc-900">
+                          {item.dailyVelocity > 0 ? `${item.dailyVelocity.toFixed(2)}/d` : "0.00/d"}
+                        </div>
+                        <div className="text-[11px] text-zinc-500">
+                          {item.netRetainedUnits} units ({item.soldUnits} sold &minus;{" "}
+                          {item.returnedUnits} ret)
+                        </div>
+                      </td>
+                    )}
 
                     {/* Days of Supply */}
-                    <td className="p-3 text-right">
-                      {item.daysOfSupply !== null ? (
-                        <div>
-                          <span
-                            className={`font-semibold ${
-                              item.daysOfSupply <= 14
-                                ? "text-rose-600"
-                                : item.daysOfSupply > 180
-                                  ? "text-amber-700"
-                                  : "text-neutral-900"
-                            }`}
-                          >
-                            {Math.round(item.daysOfSupply)} days
-                          </span>
-                          <div className="text-muted-foreground text-[11px]">
-                            {item.daysOfSupply <= 7 ? "Stockout critical" : "Runout pace"}
+                    {visibleColumns.daysOfSupply && (
+                      <td className="px-3 py-3 text-center whitespace-nowrap tabular-nums">
+                        {item.daysOfSupply !== null ? (
+                          <div className="flex flex-col items-center">
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                                item.daysOfSupply <= 14
+                                  ? "border border-rose-200 bg-rose-100 text-rose-700"
+                                  : item.daysOfSupply > 180
+                                    ? "border border-amber-200 bg-amber-100 text-amber-800"
+                                    : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                              }`}
+                            >
+                              {item.daysOfSupply <= 14 && (
+                                <Flame className="size-3 text-rose-600" />
+                              )}
+                              {Math.round(item.daysOfSupply)} days
+                            </span>
+                            <span className="mt-0.5 text-[10px] text-zinc-500">
+                              {item.daysOfSupply <= 7
+                                ? "Stockout critical"
+                                : item.daysOfSupply <= 14
+                                  ? "Risk window"
+                                  : "Runout pace"}
+                            </span>
                           </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </td>
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
+                      </td>
+                    )}
 
                     {/* Suggested Restock */}
-                    <td className="p-3 text-right">
-                      {item.suggestedRestockQty !== null && item.suggestedRestockQty > 0 ? (
-                        <div className="font-semibold text-rose-700">
-                          +{item.suggestedRestockQty.toLocaleString()} units
-                          <div className="text-[11px] font-normal text-rose-600">
-                            Covers 30d sales
+                    {visibleColumns.restock && (
+                      <td className="px-3 py-3 text-right whitespace-nowrap tabular-nums">
+                        {item.suggestedRestockQty !== null && item.suggestedRestockQty > 0 ? (
+                          <div className="font-semibold text-rose-700">
+                            +{item.suggestedRestockQty.toLocaleString()} units
+                            <div className="text-[11px] font-normal text-rose-600">
+                              Covers 30d sales
+                            </div>
                           </div>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
-                    </td>
+                        ) : (
+                          <span className="text-xs text-zinc-400">—</span>
+                        )}
+                      </td>
+                    )}
 
-                    {/* Status Badge */}
-                    <td className="p-3 text-center">{getStatusBadge(item.status)}</td>
+                    {/* Health Status Badge */}
+                    {visibleColumns.status && (
+                      <td className="px-3 py-3 text-center whitespace-nowrap">
+                        {getStatusBadge(item.status)}
+                      </td>
+                    )}
 
                     {/* Action */}
-                    <td className="p-3 text-right">
-                      <Link
-                        href={`/admin/inventory/${item.id}`}
-                        className={`inline-flex h-7 items-center rounded-sm px-2.5 text-xs font-semibold shadow-2xs transition-colors ${
-                          isUrgent
-                            ? "bg-[#101114] text-white hover:bg-[#101114]/85"
-                            : "border border-[#101114]/20 bg-white text-[#101114] hover:bg-[#F3F0E8]"
-                        }`}
-                        title="View inventory transactions, adjustments, and supplier purchase orders"
-                      >
-                        {isUrgent ? "Restock →" : "Ledger →"}
-                      </Link>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end">
+                        <Link
+                          href={`/admin/inventory/${item.id}`}
+                          className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
+                            isUrgent
+                              ? "bg-[#101114] text-white hover:bg-[#101114]/85"
+                              : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
+                          }`}
+                          title="View inventory transactions, adjustments, and supplier purchase orders"
+                        >
+                          <span>{isUrgent ? "Restock" : "Ledger"}</span>
+                          <ArrowRight className="size-3.5 shrink-0" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -448,35 +680,18 @@ export function AdminInventoryIntelligenceTable({
         </table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <nav
-          aria-label="Inventory intelligence pages"
-          className="flex items-center justify-center gap-3 pt-2"
-        >
-          {currentFilters.page > 1 ? (
-            <button
-              type="button"
-              onClick={() => updateUrlParams({ page: currentFilters.page - 1 })}
-              className="inline-flex size-9 items-center justify-center rounded-sm border border-[#101114]/20 bg-white text-sm font-semibold transition-colors hover:bg-[#F3F0E8]"
-            >
-              &larr;
-            </button>
-          ) : null}
-          <span className="text-xs font-medium text-[#101114]">
-            Page {currentFilters.page} of {totalPages}
-          </span>
-          {currentFilters.page < totalPages ? (
-            <button
-              type="button"
-              onClick={() => updateUrlParams({ page: currentFilters.page + 1 })}
-              className="inline-flex size-9 items-center justify-center rounded-sm border border-[#101114]/20 bg-white text-sm font-semibold transition-colors hover:bg-[#F3F0E8]"
-            >
-              &rarr;
-            </button>
-          ) : null}
-        </nav>
-      )}
+      {/* Infinite Scroll Sentinel & Load More Controls matching Inventory Control Center */}
+      <AdminTableInfiniteScroll
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
+        loadedCount={loadedItems.length}
+        totalCount={total}
+        itemName="inventory variants"
+        filterSummary={
+          summary.totalVariants !== total ? `filtered from ${summary.totalVariants} total` : null
+        }
+      />
     </div>
   );
 }

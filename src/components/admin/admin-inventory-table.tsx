@@ -183,9 +183,7 @@ export function AdminInventoryTable({
   );
   const [currentPage, setCurrentPage] = React.useState(initialData.page || 1);
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState(
-    (initialData.page || 1) < initialData.totalPages
-  );
+  const [hasMore, setHasMore] = React.useState((initialData.page || 1) < initialData.totalPages);
 
   // Column visibility state
   const [visibleColumns, setVisibleColumns] = React.useState({
@@ -238,7 +236,9 @@ export function AdminInventoryTable({
   const [isSubmittingBulkAdjust, setIsSubmittingBulkAdjust] = React.useState(false);
 
   // Barcode / Price Tag Printing Modal state
-  const [barcodeModalItems, setBarcodeModalItems] = React.useState<AdminInventoryItem[] | null>(null);
+  const [barcodeModalItems, setBarcodeModalItems] = React.useState<AdminInventoryItem[] | null>(
+    null
+  );
   const [barcodeLabelSize, setBarcodeLabelSize] = React.useState<"standard" | "compact" | "sheet">(
     "standard"
   );
@@ -246,7 +246,9 @@ export function AdminInventoryTable({
     "one-per-variant" | "by-stock" | "custom"
   >("one-per-variant");
   const [barcodeCustomQuantity, setBarcodeCustomQuantity] = React.useState<number>(5);
-  const [barcodeItemOverrides, setBarcodeItemOverrides] = React.useState<Record<string, number>>({});
+  const [barcodeItemOverrides, setBarcodeItemOverrides] = React.useState<Record<string, number>>(
+    {}
+  );
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
   // Rapid Stocktake / Physical Audit Mode state
@@ -375,7 +377,8 @@ export function AdminInventoryTable({
       if (e.key === "Enter") {
         if (buf.text.length >= 3) {
           const deltas = buf.times.slice(1).map((t, idx) => t - buf.times[idx]);
-          const avgDelta = deltas.length > 0 ? deltas.reduce((a, b) => a + b, 0) / deltas.length : 100;
+          const avgDelta =
+            deltas.length > 0 ? deltas.reduce((a, b) => a + b, 0) / deltas.length : 100;
           if (avgDelta < 50) {
             e.preventDefault();
             const scanned = buf.text.trim();
@@ -655,9 +658,7 @@ export function AdminInventoryTable({
             };
           })
         );
-        setFeedbackMessage(
-          `Adjusted ${adjustingItem.sku} by ${qty > 0 ? `+${qty}` : qty} units.`
-        );
+        setFeedbackMessage(`Adjusted ${adjustingItem.sku} by ${qty > 0 ? `+${qty}` : qty} units.`);
         setAdjustingItem(null);
         router.refresh();
       }
@@ -710,9 +711,7 @@ export function AdminInventoryTable({
     setAdjustError(null);
   };
 
-  const hasNegativeAnomaly = loadedVariants.some(
-    (v) => v.totalStock < 0 || v.available < 0
-  );
+  const hasNegativeAnomaly = loadedVariants.some((v) => v.totalStock < 0 || v.available < 0);
 
   return (
     <div className="space-y-4">
@@ -780,7 +779,7 @@ export function AdminInventoryTable({
                 : "border border-red-300 bg-red-100 text-red-900 hover:bg-red-200"
             }`}
           >
-            <AlertTriangle className="size-3.5 text-red-600 animate-pulse" />
+            <AlertTriangle className="size-3.5 animate-pulse text-red-600" />
             <span>Negative Anomaly</span>
           </button>
         )}
@@ -862,24 +861,11 @@ export function AdminInventoryTable({
             <span>Stocktake Audit</span>
           </button>
 
-          {/* Export to CSV Button */}
-          <a
-            href={`/api/admin/inventory/export?q=${encodeURIComponent(currentFilters.q)}&filter=${currentFilters.filter}`}
-            download
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-            title="Export filtered inventory to CSV"
-          >
-            <Download className="size-3.5 text-[#101114]/70" />
-            <span className="hidden sm:inline">Export CSV</span>
-          </a>
-
           {/* Column Visibility Customizer */}
           <AdminTableColumnVisibility
             columns={inventoryColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) =>
-              setVisibleColumns((prev) => ({ ...prev, [key]: val }))
-            }
+            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
             onReset={() =>
               setVisibleColumns({
                 sku: true,
@@ -891,6 +877,17 @@ export function AdminInventoryTable({
               })
             }
           />
+
+          {/* Export to CSV Button */}
+          <a
+            href={`/api/admin/inventory/export?q=${encodeURIComponent(currentFilters.q)}&filter=${currentFilters.filter}`}
+            download
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            title="Export filtered inventory to CSV"
+          >
+            <Download className="size-3.5 text-[#101114]/70" />
+            <span className="hidden sm:inline">Export CSV</span>
+          </a>
 
           {/* Intelligence Dashboard Link */}
           <Link
@@ -944,7 +941,7 @@ export function AdminInventoryTable({
       {/* ── 3. Inventory Table ── */}
       <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
         <table className="w-full border-collapse text-left text-xs text-[#101114]">
-          <thead className="border-b border-[#101114]/10 bg-[#FBF9F5] text-[11px] font-semibold uppercase tracking-wider text-[#101114]/70">
+          <thead className="border-b border-[#101114]/10 bg-[#FBF9F5] text-[11px] font-semibold tracking-wider text-[#101114]/70 uppercase">
             <tr>
               <th className="w-10 px-4 py-3 text-center">
                 <input
@@ -1055,9 +1052,7 @@ export function AdminInventoryTable({
                               <p className="mt-1.5 truncate text-xs font-semibold text-[#101114]">
                                 {item.product.name}
                               </p>
-                              <p className="text-[10px] text-[#101114]/60 font-mono">
-                                {item.sku}
-                              </p>
+                              <p className="font-mono text-[10px] text-[#101114]/60">{item.sku}</p>
                             </div>
                           )}
                         </div>
@@ -1071,13 +1066,16 @@ export function AdminInventoryTable({
                             {item.product.name}
                           </Link>
                           <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                            <span className="inline-flex items-center rounded-2xs border border-[#101114]/15 bg-[#FBF9F5] px-1.5 py-0.2 text-[10px] font-semibold text-[#101114]">
-                              {[item.size ? `Size: ${item.size}` : null, item.color ? `Color: ${item.color}` : null]
+                            <span className="rounded-2xs py-0.2 inline-flex items-center border border-[#101114]/15 bg-[#FBF9F5] px-1.5 text-[10px] font-semibold text-[#101114]">
+                              {[
+                                item.size ? `Size: ${item.size}` : null,
+                                item.color ? `Color: ${item.color}` : null,
+                              ]
                                 .filter(Boolean)
                                 .join(" • ") || "Default"}
                             </span>
                             {item.product.slug && (
-                              <span className="text-[10px] text-[#101114]/50 font-mono">
+                              <span className="font-mono text-[10px] text-[#101114]/50">
                                 /{item.product.slug}
                               </span>
                             )}
@@ -1120,7 +1118,7 @@ export function AdminInventoryTable({
                     {visibleColumns.reserved && (
                       <td className="px-5 py-3.5 text-center font-mono text-xs tabular-nums">
                         {item.reserved > 0 ? (
-                          <span className="inline-flex items-center gap-1 rounded-2xs bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800 border border-amber-200">
+                          <span className="rounded-2xs inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800">
                             <Lock className="size-2.5" />
                             {item.reserved}
                           </span>
@@ -1136,12 +1134,12 @@ export function AdminInventoryTable({
                         <span
                           className={
                             isNegative
-                              ? "text-red-700 font-extrabold"
+                              ? "font-extrabold text-red-700"
                               : isOutOfStock
                                 ? "text-red-600"
                                 : isLowStock
-                                  ? "text-amber-700 font-extrabold"
-                                  : "text-emerald-700 font-extrabold"
+                                  ? "font-extrabold text-amber-700"
+                                  : "font-extrabold text-emerald-700"
                           }
                         >
                           {item.available}
@@ -1151,7 +1149,7 @@ export function AdminInventoryTable({
 
                     {/* Pricing (Cost / Selling) */}
                     {visibleColumns.pricing && (
-                      <td className="px-5 py-3.5 tabular-nums text-xs">
+                      <td className="px-5 py-3.5 text-xs tabular-nums">
                         <div className="space-y-0.5">
                           <div className="font-semibold text-[#101114]">
                             {formatCurrency(item.sellingPrice)}
@@ -1203,7 +1201,7 @@ export function AdminInventoryTable({
                                   : "In Stock"}
                           </span>
                           {isLowStock && (
-                            <span className="rounded-2xs bg-amber-100 px-1 py-0.2 text-[9px] font-extrabold text-amber-800">
+                            <span className="rounded-2xs py-0.2 bg-amber-100 px-1 text-[9px] font-extrabold text-amber-800">
                               REORDER
                             </span>
                           )}
@@ -1222,7 +1220,7 @@ export function AdminInventoryTable({
                           title="Quick adjust stock for this variant"
                         >
                           <Plus className="size-3 text-emerald-600" />
-                          <Minus className="size-3 text-red-600 -ml-1" />
+                          <Minus className="-ml-1 size-3 text-red-600" />
                           <span>Adjust</span>
                         </button>
 
@@ -1349,7 +1347,7 @@ export function AdminInventoryTable({
 
       {/* ── 6. Quick Stock Adjust Modal ── */}
       {adjustingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
           <div className="w-full max-w-lg rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
@@ -1369,7 +1367,7 @@ export function AdminInventoryTable({
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 space-y-4">
+            <div className="space-y-4 p-5">
               {/* Product Info Snapshot */}
               <div className="flex items-center gap-3 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-3">
                 {adjustingItem.primaryImage ? (
@@ -1387,8 +1385,14 @@ export function AdminInventoryTable({
                   <p className="truncate text-xs font-semibold text-[#101114]">
                     {adjustingItem.product.name}
                   </p>
-                  <p className="text-[10px] text-[#101114]/60 font-mono mt-0.5">
-                    {adjustingItem.sku} • {[adjustingItem.size ? `Size: ${adjustingItem.size}` : null, adjustingItem.color ? `Color: ${adjustingItem.color}` : null].filter(Boolean).join(" / ") || "Default"}
+                  <p className="mt-0.5 font-mono text-[10px] text-[#101114]/60">
+                    {adjustingItem.sku} •{" "}
+                    {[
+                      adjustingItem.size ? `Size: ${adjustingItem.size}` : null,
+                      adjustingItem.color ? `Color: ${adjustingItem.color}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" / ") || "Default"}
                   </p>
                 </div>
               </div>
@@ -1396,15 +1400,15 @@ export function AdminInventoryTable({
               {/* Stock Snapshot Cards */}
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
                 <div className="rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
-                  <p className="text-[10px] text-[#101114]/60 uppercase font-semibold">Physical</p>
+                  <p className="text-[10px] font-semibold text-[#101114]/60 uppercase">Physical</p>
                   <p className="text-base font-bold text-[#101114]">{adjustingItem.totalStock}</p>
                 </div>
                 <div className="rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
-                  <p className="text-[10px] text-[#101114]/60 uppercase font-semibold">Reserved</p>
+                  <p className="text-[10px] font-semibold text-[#101114]/60 uppercase">Reserved</p>
                   <p className="text-base font-bold text-amber-800">{adjustingItem.reserved}</p>
                 </div>
                 <div className="rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
-                  <p className="text-[10px] text-[#101114]/60 uppercase font-semibold">Available</p>
+                  <p className="text-[10px] font-semibold text-[#101114]/60 uppercase">Available</p>
                   <p className="text-base font-bold text-emerald-800">{adjustingItem.available}</p>
                 </div>
               </div>
@@ -1512,9 +1516,7 @@ export function AdminInventoryTable({
                           {adjustingItem.totalStock} → {projectedTotal}
                         </strong>
                       </span>
-                      <span className="font-bold">
-                        Available: {projectedAvail}
-                      </span>
+                      <span className="font-bold">Available: {projectedAvail}</span>
                     </div>
                   );
                 }
@@ -1574,7 +1576,7 @@ export function AdminInventoryTable({
 
       {/* ── 7. Bulk Stock Adjust Modal ── */}
       {showBulkAdjustModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
           <div className="w-full max-w-md rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
               <h3 className="text-sm font-semibold text-[#101114]">
@@ -1589,7 +1591,7 @@ export function AdminInventoryTable({
               </button>
             </div>
 
-            <div className="p-5 space-y-4 text-xs">
+            <div className="space-y-4 p-5 text-xs">
               <div>
                 <label className="block font-semibold text-[#101114]">Type</label>
                 <select
@@ -1604,7 +1606,9 @@ export function AdminInventoryTable({
               </div>
 
               <div>
-                <label className="block font-semibold text-[#101114]">Quantity to apply to each variant</label>
+                <label className="block font-semibold text-[#101114]">
+                  Quantity to apply to each variant
+                </label>
                 <input
                   type="number"
                   step="1"
@@ -1651,7 +1655,7 @@ export function AdminInventoryTable({
 
       {/* ── 8. Barcode & Price Tag Printing Modal ── */}
       {barcodeModalItems && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
           <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
@@ -1714,9 +1718,7 @@ export function AdminInventoryTable({
                     <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Decrease"
                       >
@@ -1737,9 +1739,7 @@ export function AdminInventoryTable({
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Increase"
                       >
@@ -1747,7 +1747,7 @@ export function AdminInventoryTable({
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1 pl-1 border-l border-[#101114]/10">
+                    <div className="flex items-center gap-1 border-l border-[#101114]/10 pl-1">
                       {[1, 2, 5, 10, 25, 50].map((preset) => (
                         <button
                           key={preset}
@@ -1808,7 +1808,10 @@ export function AdminInventoryTable({
                     onClick={() => setShowVariantTuning(!showVariantTuning)}
                     className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
                   >
-                    <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant ({barcodeModalItems.length})</span>
+                    <span>
+                      {showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant (
+                      {barcodeModalItems.length})
+                    </span>
                   </button>
                   {Object.keys(barcodeItemOverrides).length > 0 && (
                     <button
@@ -1822,7 +1825,7 @@ export function AdminInventoryTable({
                 </div>
 
                 {showVariantTuning && (
-                  <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
+                  <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
                     {barcodeModalItems.map((item) => {
                       const count =
                         barcodeItemOverrides[item.id] !== undefined
@@ -1839,10 +1842,17 @@ export function AdminInventoryTable({
                           className="flex items-center justify-between gap-2 rounded-xs border border-[#101114]/5 bg-white px-2.5 py-1 text-xs"
                         >
                           <div className="min-w-0 flex-1 truncate">
-                            <span className="font-semibold text-[#101114]">{item.product.name}</span>
-                            <span className="ml-2 font-mono text-[10px] text-[#101114]/60">{item.sku}</span>
+                            <span className="font-semibold text-[#101114]">
+                              {item.product.name}
+                            </span>
+                            <span className="ml-2 font-mono text-[10px] text-[#101114]/60">
+                              {item.sku}
+                            </span>
                             <span className="ml-2 text-[10px] text-[#101114]/50">
-                              {[item.size ? `Size: ${item.size}` : null, item.color ? `Color: ${item.color}` : null]
+                              {[
+                                item.size ? `Size: ${item.size}` : null,
+                                item.color ? `Color: ${item.color}` : null,
+                              ]
                                 .filter(Boolean)
                                 .join(" • ") || "Default"}
                             </span>
@@ -1851,7 +1861,7 @@ export function AdminInventoryTable({
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
+                          <div className="flex shrink-0 items-center gap-1">
                             <button
                               type="button"
                               onClick={() =>
@@ -1903,7 +1913,10 @@ export function AdminInventoryTable({
 
             {/* Live Tag Preview Grid */}
             <div className="flex-1 overflow-y-auto p-5">
-              <div id="vibelock-inventory-printable-labels" className="flex flex-wrap gap-3 justify-center">
+              <div
+                id="vibelock-inventory-printable-labels"
+                className="flex flex-wrap justify-center gap-3"
+              >
                 {barcodeModalItems.flatMap((item) => {
                   const count =
                     barcodeItemOverrides[item.id] !== undefined
@@ -1926,7 +1939,7 @@ export function AdminInventoryTable({
                       }`}
                     >
                       {count > 1 && (
-                        <span className="no-print absolute top-1 right-1 text-[8px] font-mono text-[#101114]/40">
+                        <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-[#101114]/40">
                           #{idx + 1}
                         </span>
                       )}
@@ -1935,10 +1948,10 @@ export function AdminInventoryTable({
                           VIBELOCK
                         </span>
                       </div>
-                      <p className="truncate px-0.5 text-[10px] font-semibold leading-tight">
+                      <p className="truncate px-0.5 text-[10px] leading-tight font-semibold">
                         {item.product.name}
                       </p>
-                      <div className="flex items-center justify-between px-1 text-[9px] font-mono">
+                      <div className="flex items-center justify-between px-1 font-mono text-[9px]">
                         <span>{item.size ? `SIZE: ${item.size}` : ""}</span>
                         <span className="text-[11px] font-bold">
                           ৳{item.discountPrice ?? item.sellingPrice}
@@ -1957,7 +1970,9 @@ export function AdminInventoryTable({
             </div>
 
             <div className="flex items-center justify-between border-t border-[#101114]/10 bg-white px-5 py-2.5 text-xs text-[#101114]/60">
-              <span>Previewing labels before printing. Press Print Labels Now to send to printer.</span>
+              <span>
+                Previewing labels before printing. Press Print Labels Now to send to printer.
+              </span>
               <button
                 type="button"
                 onClick={() => setBarcodeModalItems(null)}
@@ -1972,7 +1987,7 @@ export function AdminInventoryTable({
 
       {/* ── 9. Rapid Barcode Stocktake & Physical Audit Modal ── */}
       {showStocktakeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150">
           <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 bg-[#101114] px-5 py-3 text-white">
@@ -1985,7 +2000,7 @@ export function AdminInventoryTable({
                     <h3 className="text-sm font-bold tracking-tight text-white">
                       Rapid Stocktake & Physical Audit Station
                     </h3>
-                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+                    <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold tracking-wider text-emerald-300 uppercase">
                       Live Audit
                     </span>
                   </div>
@@ -2007,7 +2022,11 @@ export function AdminInventoryTable({
                   }`}
                   title={stocktakeSound ? "Mute scan sound" : "Enable scan sound"}
                 >
-                  {stocktakeSound ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
+                  {stocktakeSound ? (
+                    <Volume2 className="size-3.5" />
+                  ) : (
+                    <VolumeX className="size-3.5" />
+                  )}
                   <span>{stocktakeSound ? "Beep On" : "Muted"}</span>
                 </button>
 
@@ -2078,7 +2097,7 @@ export function AdminInventoryTable({
               {/* Scan Feedback Banner */}
               {stocktakeFeedback && (
                 <div
-                  className={`mt-2.5 flex items-center justify-between rounded-sm px-3 py-1.5 text-xs font-medium animate-in fade-in duration-150 ${
+                  className={`animate-in fade-in mt-2.5 flex items-center justify-between rounded-sm px-3 py-1.5 text-xs font-medium duration-150 ${
                     stocktakeFeedback.type === "success"
                       ? "border border-emerald-300 bg-emerald-100 text-emerald-900"
                       : "border border-rose-300 bg-rose-100 text-rose-900"
@@ -2116,15 +2135,22 @@ export function AdminInventoryTable({
               </div>
 
               <div className="rounded-sm border border-emerald-200 bg-emerald-50/60 p-2.5">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase">Matched (0 Delta)</span>
+                <span className="text-[10px] font-bold text-emerald-700 uppercase">
+                  Matched (0 Delta)
+                </span>
                 <div className="mt-0.5 text-xl font-black text-emerald-800">
-                  {Array.from(stocktakeScans.values()).filter((s) => s.count === s.item.totalStock).length}
+                  {
+                    Array.from(stocktakeScans.values()).filter((s) => s.count === s.item.totalStock)
+                      .length
+                  }
                 </div>
                 <span className="text-[10px] text-emerald-600">Stock matches physical count</span>
               </div>
 
               <div className="rounded-sm border border-rose-200 bg-rose-50/60 p-2.5">
-                <span className="text-[10px] font-bold text-rose-700 uppercase">Missing / Shrinkage</span>
+                <span className="text-[10px] font-bold text-rose-700 uppercase">
+                  Missing / Shrinkage
+                </span>
                 <div className="mt-0.5 text-xl font-black text-rose-800">
                   {
                     Array.from(stocktakeScans.values()).filter((s) => s.count < s.item.totalStock)
@@ -2133,7 +2159,8 @@ export function AdminInventoryTable({
                 </div>
                 <span className="text-[10px] text-rose-600">
                   {Array.from(stocktakeScans.values()).reduce(
-                    (acc, s) => acc + (s.count < s.item.totalStock ? s.item.totalStock - s.count : 0),
+                    (acc, s) =>
+                      acc + (s.count < s.item.totalStock ? s.item.totalStock - s.count : 0),
                     0
                   )}{" "}
                   units missing
@@ -2141,7 +2168,9 @@ export function AdminInventoryTable({
               </div>
 
               <div className="rounded-sm border border-blue-200 bg-blue-50/60 p-2.5">
-                <span className="text-[10px] font-bold text-blue-700 uppercase">Surplus / Unrecorded</span>
+                <span className="text-[10px] font-bold text-blue-700 uppercase">
+                  Surplus / Unrecorded
+                </span>
                 <div className="mt-0.5 text-xl font-black text-blue-800">
                   {
                     Array.from(stocktakeScans.values()).filter((s) => s.count > s.item.totalStock)
@@ -2149,8 +2178,10 @@ export function AdminInventoryTable({
                   }
                 </div>
                 <span className="text-[10px] text-blue-600">
-                  +{Array.from(stocktakeScans.values()).reduce(
-                    (acc, s) => acc + (s.count > s.item.totalStock ? s.count - s.item.totalStock : 0),
+                  +
+                  {Array.from(stocktakeScans.values()).reduce(
+                    (acc, s) =>
+                      acc + (s.count > s.item.totalStock ? s.count - s.item.totalStock : 0),
                     0
                   )}{" "}
                   units extra
@@ -2167,8 +2198,8 @@ export function AdminInventoryTable({
                   </div>
                   <h4 className="text-sm font-bold text-[#101114]">No items scanned yet</h4>
                   <p className="max-w-md text-xs text-[#101114]/60">
-                    Aim your wireless/USB barcode scanner at clothing price tags, or pick items from the
-                    dropdown to start auditing store inventory.
+                    Aim your wireless/USB barcode scanner at clothing price tags, or pick items from
+                    the dropdown to start auditing store inventory.
                   </p>
                 </div>
               ) : (
@@ -2199,14 +2230,21 @@ export function AdminInventoryTable({
                             }`}
                           >
                             <td className="px-4 py-3">
-                              <div className="font-semibold text-[#101114]">{item.product.name}</div>
+                              <div className="font-semibold text-[#101114]">
+                                {item.product.name}
+                              </div>
                               <div className="text-[10px] text-zinc-500">
-                                {[item.size ? `Size: ${item.size}` : null, item.color ? `Color: ${item.color}` : null]
+                                {[
+                                  item.size ? `Size: ${item.size}` : null,
+                                  item.color ? `Color: ${item.color}` : null,
+                                ]
                                   .filter(Boolean)
                                   .join(" • ") || "Default variant"}
                               </div>
                             </td>
-                            <td className="px-3 py-3 font-mono font-medium text-[#101114]">{item.sku}</td>
+                            <td className="px-3 py-3 font-mono font-medium text-[#101114]">
+                              {item.sku}
+                            </td>
                             <td className="px-3 py-3 text-center font-mono font-bold text-zinc-600">
                               {item.totalStock}
                             </td>
@@ -2341,10 +2379,10 @@ export function AdminInventoryTable({
 
             {/* Reconciliation Confirmation Drawer */}
             {showReconcileConfirm && (
-              <div className="border-t border-amber-300 bg-amber-50/90 p-4 animate-in slide-in-from-bottom-2 duration-150">
+              <div className="animate-in slide-in-from-bottom-2 border-t border-amber-300 bg-amber-50/90 p-4 duration-150">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <div className="flex items-center gap-1.5 font-bold text-amber-950 text-xs">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-950">
                       <AlertTriangle className="size-4 text-amber-600" />
                       <span>Confirm Stock Ledger Adjustments</span>
                     </div>
@@ -2442,9 +2480,8 @@ export function AdminInventoryTable({
                   type="button"
                   disabled={
                     stocktakeScans.size === 0 ||
-                    Array.from(stocktakeScans.values()).filter(
-                      (s) => s.count !== s.item.totalStock
-                    ).length === 0
+                    Array.from(stocktakeScans.values()).filter((s) => s.count !== s.item.totalStock)
+                      .length === 0
                   }
                   onClick={() => setShowReconcileConfirm(true)}
                   className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-emerald-700 px-4 font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
@@ -2468,8 +2505,8 @@ export function AdminInventoryTable({
 
       {/* ── 9. Barcode Scanner Auto-Detection Toast Indicator ── */}
       {scannedIndicator && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-[#00D9FF]/40 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl animate-in slide-in-from-top-3 fade-in duration-200">
-          <span className="flex size-2 rounded-full bg-[#00D9FF] animate-ping" />
+        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-[#00D9FF]/40 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
+          <span className="flex size-2 animate-ping rounded-full bg-[#00D9FF]" />
           <span className="font-semibold text-[#00D9FF]">⚡ Scanner Active:</span>
           <span>{scannedIndicator}</span>
         </div>
