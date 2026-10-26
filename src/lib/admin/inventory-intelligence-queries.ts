@@ -6,15 +6,28 @@ import prisma from "@/lib/prisma/client";
 
 export const DEAD_STOCK_GRACE_DAYS = 14;
 export const SLOW_MOVING_DAYS_OF_SUPPLY = 180;
+export const CRITICAL_STOCKOUT_DAYS = 14;
 export const INVENTORY_INTELLIGENCE_EXPORT_LIMIT = 5000;
 
 export type InventoryIntelligenceWindow = "30d" | "60d" | "90d";
 export type InventoryIntelligenceStatusFilter =
-  "all" | "negative" | "out-of-stock" | "dead" | "slow" | "healthy";
+  | "all"
+  | "negative"
+  | "out-of-stock"
+  | "stockout-risk"
+  | "dead"
+  | "slow"
+  | "healthy";
 
 export type InventoryIntelligenceSort = "valuation" | "stock" | "velocity" | "age" | "runout";
 
-export type InventoryIntelligenceStatus = "NEGATIVE" | "OUT_OF_STOCK" | "DEAD" | "SLOW" | "HEALTHY";
+export type InventoryIntelligenceStatus =
+  | "NEGATIVE"
+  | "OUT_OF_STOCK"
+  | "STOCKOUT_RISK"
+  | "DEAD"
+  | "SLOW"
+  | "HEALTHY";
 
 const WINDOW_DAYS: Record<InventoryIntelligenceWindow, number> = {
   "30d": 30,
@@ -29,6 +42,7 @@ export interface InventoryIntelligenceSummary {
   totalAvailableCostValue: number;
   negativeStockCount: number;
   outOfStockCount: number;
+  stockoutRiskCount: number;
   deadStockCount: number;
   slowMovingCount: number;
   healthyCount: number;
@@ -58,6 +72,7 @@ export interface InventoryIntelligenceItem {
   lastInflowAt: Date | null;
   daysSinceLastInflow: number | null;
   daysOfSupply: number | null;
+  suggestedRestockQty: number | null;
   status: InventoryIntelligenceStatus;
 }
 
@@ -90,6 +105,7 @@ function parseStatusFilter(status?: string): InventoryIntelligenceStatusFilter {
   if (
     status === "negative" ||
     status === "out-of-stock" ||
+    status === "stockout-risk" ||
     status === "dead" ||
     status === "slow" ||
     status === "healthy"
@@ -112,7 +128,7 @@ function parseSort(sort?: string): InventoryIntelligenceSort {
   return "valuation";
 }
 
-interface RawIntelligenceRow {
+export interface RawIntelligenceRow {
   id: string;
   sku: string;
   size: string | null;
@@ -129,7 +145,7 @@ interface RawIntelligenceRow {
   lastInflowAt: Date | null;
 }
 
-function processIntelligenceRow(
+export function processIntelligenceRow(
   row: RawIntelligenceRow,
   asOf: Date,
   windowDays: number
@@ -168,14 +184,17 @@ function processIntelligenceRow(
   // Explicit priority order:
   // 1. Negative physical stock
   // 2. Out of stock (availableStock <= 0)
-  // 3. Dead stock (available > 0, netRetained == 0, reliable inflow > 14 days)
-  // 4. Slow moving (available > 0, daysOfSupply > 180)
-  // 5. Healthy
+  // 3. Stockout Risk (available > 0, dailyVelocity > 0, daysOfSupply !== null && daysOfSupply <= CRITICAL_STOCKOUT_DAYS)
+  // 4. Dead stock (available > 0, netRetained == 0, reliable inflow > 14 days)
+  // 5. Slow moving (available > 0, daysOfSupply > 180)
+  // 6. Healthy
   let status: InventoryIntelligenceStatus = "HEALTHY";
   if (physical < 0) {
     status = "NEGATIVE";
   } else if (available <= 0) {
     status = "OUT_OF_STOCK";
+  } else if (daysOfSupply !== null && daysOfSupply <= CRITICAL_STOCKOUT_DAYS) {
+    status = "STOCKOUT_RISK";
   } else if (
     netRetainedUnits === 0 &&
     row.lastInflowAt !== null &&
@@ -187,6 +206,13 @@ function processIntelligenceRow(
     status = "SLOW";
   } else {
     status = "HEALTHY";
+  }
+
+  // Calculate suggested restock quantity for 30 days buffer coverage
+  let suggestedRestockQty: number | null = null;
+  if ((status === "STOCKOUT_RISK" || status === "OUT_OF_STOCK") && dailyVelocity > 0) {
+    const targetUnits = Math.ceil(dailyVelocity * 30);
+    suggestedRestockQty = Math.max(0, targetUnits - Math.max(0, available));
   }
 
   return {
@@ -211,6 +237,7 @@ function processIntelligenceRow(
     lastInflowAt: row.lastInflowAt ? new Date(row.lastInflowAt) : null,
     daysSinceLastInflow,
     daysOfSupply,
+    suggestedRestockQty,
     status,
   };
 }
@@ -301,7 +328,7 @@ async function fetchRawIntelligenceData(asOf: Date, windowDays: number) {
   return prisma.$queryRaw<RawIntelligenceRow[]>(query);
 }
 
-function calculateSummary(items: InventoryIntelligenceItem[]): InventoryIntelligenceSummary {
+export function calculateSummary(items: InventoryIntelligenceItem[]): InventoryIntelligenceSummary {
   return items.reduce(
     (acc, item) => {
       acc.totalPhysicalStock += item.physicalStock;
@@ -311,6 +338,7 @@ function calculateSummary(items: InventoryIntelligenceItem[]): InventoryIntellig
 
       if (item.status === "NEGATIVE") acc.negativeStockCount++;
       if (item.status === "OUT_OF_STOCK") acc.outOfStockCount++;
+      if (item.status === "STOCKOUT_RISK") acc.stockoutRiskCount++;
       if (item.status === "DEAD") acc.deadStockCount++;
       if (item.status === "SLOW") acc.slowMovingCount++;
       if (item.status === "HEALTHY") acc.healthyCount++;
@@ -325,6 +353,7 @@ function calculateSummary(items: InventoryIntelligenceItem[]): InventoryIntellig
       totalAvailableCostValue: 0,
       negativeStockCount: 0,
       outOfStockCount: 0,
+      stockoutRiskCount: 0,
       deadStockCount: 0,
       slowMovingCount: 0,
       healthyCount: 0,
@@ -334,7 +363,7 @@ function calculateSummary(items: InventoryIntelligenceItem[]): InventoryIntellig
   );
 }
 
-function filterAndSortItems(
+export function filterAndSortItems(
   items: InventoryIntelligenceItem[],
   options: {
     search?: string;
@@ -361,6 +390,7 @@ function filterAndSortItems(
     > = {
       negative: "NEGATIVE",
       "out-of-stock": "OUT_OF_STOCK",
+      "stockout-risk": "STOCKOUT_RISK",
       dead: "DEAD",
       slow: "SLOW",
       healthy: "HEALTHY",
