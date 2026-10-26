@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
+import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import {
   bulkAssignProductCategoryAction,
   bulkDeleteProductsAction,
@@ -107,7 +108,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   );
   const [currentPage, setCurrentPage] = React.useState<number>(initialData.page || 1);
   const [isLoadingMore, setIsLoadingMore] = React.useState<boolean>(false);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   // Multi-select & Bulk actions state
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -137,7 +137,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     "one-per-variant" | "by-stock" | "custom"
   >("one-per-variant");
   const [barcodeCustomQuantity, setBarcodeCustomQuantity] = React.useState<number>(5);
-  const [barcodeVariantOverrides, setBarcodeVariantOverrides] = React.useState<Record<string, number>>({});
+  const [barcodeVariantOverrides, setBarcodeVariantOverrides] = React.useState<
+    Record<string, number>
+  >({});
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
   // CSV Export state
@@ -475,29 +477,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       setIsLoadingMore(false);
     }
   }, [isLoadingMore, loadedProducts.length, totalFiltered, currentPage, currentFilters, pageSize]);
-
-  // Infinite scroll observer: trigger handleLoadMore when sentinel enters viewport
-  React.useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting && hasMore && !isLoadingMore) {
-          handleLoadMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "300px",
-        threshold: 0,
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleLoadMore, hasMore, isLoadingMore]);
 
   const hasActiveFilters =
     Boolean(currentFilters.q) ||
@@ -1280,49 +1259,15 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       </div>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
-      {totalFiltered > 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 border-t border-[#101114]/10 pt-4 pb-2">
-          {/* Sentinel for IntersectionObserver to trigger infinite scroll */}
-          <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
-
-          {hasMore ? (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-5 py-2 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin text-[#101114]" />
-                    <span>Loading more products...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Load more products</span>
-                    <span className="text-muted-foreground font-normal">
-                      • Showing {loadedProducts.length} of {totalFiltered}
-                    </span>
-                  </>
-                )}
-              </button>
-              <p className="text-muted-foreground text-[11px]">
-                Scroll down or click the button above to load more items
-              </p>
-            </div>
-          ) : (
-            <div className="text-muted-foreground flex items-center justify-center gap-1.5 py-2 text-xs">
-              <span className="font-semibold text-emerald-600">✓</span>
-              <span>
-                All <strong className="text-[#101114]">{loadedProducts.length}</strong> products
-                loaded
-                {hasActiveFilters && ` (filtered from ${counts.total} total)`}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+      <AdminTableInfiniteScroll
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
+        loadedCount={loadedProducts.length}
+        totalCount={totalFiltered}
+        itemName="products"
+        filterSummary={hasActiveFilters ? `filtered from ${counts.total} total` : null}
+      />
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
@@ -1544,9 +1489,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Decrease"
                       >
@@ -1567,9 +1510,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Increase"
                       >
@@ -1577,7 +1518,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1 pl-1 border-l border-[#101114]/10">
+                    <div className="flex items-center gap-1 border-l border-[#101114]/10 pl-1">
                       {[1, 2, 5, 10, 25, 50].map((preset) => (
                         <button
                           key={preset}
@@ -1638,7 +1579,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             </div>
 
             {/* Individual Variant Fine-Tuning Drawer */}
-            {barcodeModalProducts.some((p) => (p.variants && p.variants.length > 1) || barcodeModalProducts.length > 1) && (
+            {barcodeModalProducts.some(
+              (p) => (p.variants && p.variants.length > 1) || barcodeModalProducts.length > 1
+            ) && (
               <div className="border-b border-[#101114]/10 bg-white px-5 py-2">
                 <div className="flex items-center justify-between text-xs">
                   <button
@@ -1646,7 +1589,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     onClick={() => setShowVariantTuning(!showVariantTuning)}
                     className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
                   >
-                    <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant</span>
+                    <span>
+                      {showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant
+                    </span>
                   </button>
                   {Object.keys(barcodeVariantOverrides).length > 0 && (
                     <button
@@ -1660,7 +1605,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 </div>
 
                 {showVariantTuning && (
-                  <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
+                  <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
                     {barcodeModalProducts.flatMap((product) => {
                       const variants =
                         product.variants && product.variants.length > 0
@@ -1692,9 +1637,14 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           >
                             <div className="min-w-0 flex-1 truncate">
                               <span className="font-semibold text-[#101114]">{product.name}</span>
-                              <span className="ml-2 font-mono text-[10px] text-[#101114]/60">{v.sku}</span>
+                              <span className="ml-2 font-mono text-[10px] text-[#101114]/60">
+                                {v.sku}
+                              </span>
                               <span className="ml-2 text-[10px] text-[#101114]/50">
-                                {[v.size ? `Size: ${v.size}` : null, v.color ? `Color: ${v.color}` : null]
+                                {[
+                                  v.size ? `Size: ${v.size}` : null,
+                                  v.color ? `Color: ${v.color}` : null,
+                                ]
                                   .filter(Boolean)
                                   .join(" • ") || "Default"}
                               </span>
@@ -1703,7 +1653,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1 shrink-0">
+                            <div className="flex shrink-0 items-center gap-1">
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1795,7 +1745,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         }`}
                       >
                         {count > 1 && (
-                          <span className="no-print absolute top-1 right-1 text-[8px] font-mono text-[#101114]/40">
+                          <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-[#101114]/40">
                             #{idx + 1}
                           </span>
                         )}

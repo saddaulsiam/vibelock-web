@@ -1,11 +1,12 @@
 "use server";
 
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 import { updateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { getAdminOrders, type AdminOrdersResult } from "@/lib/admin/order-queries";
 import {
   getAuthoritativePaymentStatus,
   getOrderStatusTransitionError,
@@ -237,4 +238,16 @@ export async function updateOrderPaymentStatusAction(
 
   refreshOrders();
   return ok;
+}
+
+export async function loadMoreAdminOrdersAction(options: {
+  status?: OrderStatus;
+  paymentStatus?: PaymentStatus;
+  paymentMethod?: PaymentMethod;
+  search?: string;
+  page: number;
+  limit?: number;
+}): Promise<AdminOrdersResult> {
+  await requireRole("ADMIN");
+  return getAdminOrders(options);
 }

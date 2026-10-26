@@ -44,6 +44,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { AdminInventoryPoModal } from "@/components/admin/admin-inventory-po-modal";
+import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";
@@ -184,7 +185,6 @@ export function AdminInventoryTable({
   const [hasMore, setHasMore] = React.useState(
     (initialData.page || 1) < initialData.totalPages
   );
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   // Multi-select state
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -531,24 +531,6 @@ export function AdminInventoryTable({
       setIsLoadingMore(false);
     }
   }, [currentPage, currentFilters, hasMore, isLoadingMore]);
-
-  // Setup IntersectionObserver for auto-infinite scroll
-  React.useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          handleLoadMore();
-        }
-      },
-      { rootMargin: "350px 0px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleLoadMore, hasMore, isLoadingMore]);
 
   // Debounced search handler
   const handleSearchChange = (val: string) => {
@@ -1223,47 +1205,14 @@ export function AdminInventoryTable({
       </div>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
-      {initialData.total > 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 border-t border-[#101114]/10 pt-4 pb-2">
-          <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
-
-          {hasMore ? (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-5 py-2 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin text-[#101114]" />
-                    <span>Loading more items...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Load more items</span>
-                    <span className="text-muted-foreground font-normal">
-                      • Showing {loadedVariants.length} of {initialData.total}
-                    </span>
-                  </>
-                )}
-              </button>
-              <p className="text-muted-foreground text-[11px]">
-                Scroll down or click the button above to load more items
-              </p>
-            </div>
-          ) : (
-            <div className="text-muted-foreground flex items-center justify-center gap-1.5 py-2 text-xs">
-              <span className="font-semibold text-emerald-600">✓</span>
-              <span>
-                All <strong className="text-[#101114]">{loadedVariants.length}</strong> inventory
-                variants loaded
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+      <AdminTableInfiniteScroll
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
+        loadedCount={loadedVariants.length}
+        totalCount={initialData.total}
+        itemName="inventory variants"
+      />
 
       {/* ── 5. Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (

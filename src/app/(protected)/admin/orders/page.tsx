@@ -1,139 +1,11 @@
-import { Suspense } from "react";
+import { CheckCircle2, Clock, Package, ShoppingBag } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminOrders } from "@/lib/admin/order-queries";
-import { OrderStatus } from "@prisma/client";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { AdminOrdersTable } from "@/components/admin/admin-orders-table";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
 
-async function OrdersTable({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const resolvedSearchParams = await searchParams;
-  const status = (resolvedSearchParams.status as OrderStatus) || undefined;
-  const search = (resolvedSearchParams.q as string) || undefined;
-  const page = Number(resolvedSearchParams.page) || 1;
-
-  const { orders, totalPages } = await getAdminOrders({
-    status,
-    search,
-    page,
-  });
-
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="flex w-full flex-col gap-4 sm:w-auto sm:flex-row">
-          <Input
-            name="q"
-            placeholder="Search order #, email, name..."
-            defaultValue={search}
-            className="max-w-sm"
-          />
-          <Select defaultValue={status}>
-            <SelectTrigger className="w-45">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-              <SelectItem value="PROCESSING">Processing</SelectItem>
-              <SelectItem value="SHIPPED">Shipped</SelectItem>
-              <SelectItem value="DELIVERED">Delivered</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 border-b">
-            <tr className="text-left">
-              <th className="p-3 font-medium">Order #</th>
-              <th className="p-3 font-medium">Customer</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 font-medium">Payment</th>
-              <th className="p-3 font-medium">Total</th>
-              <th className="p-3 font-medium">Date</th>
-              <th className="p-3 text-right font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {orders.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-muted-foreground p-8 text-center">
-                  No orders found.
-                </td>
-              </tr>
-            ) : (
-              orders.map((order) => (
-                <tr key={order.id} className="hover:bg-muted/30">
-                  <td className="p-3 font-medium">{order.orderNumber}</td>
-                  <td className="p-3">
-                    <div className="flex flex-col">
-                      <span>{order.customerName || "Guest"}</span>
-                      <span className="text-muted-foreground text-xs">{order.customerEmail}</span>
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <Badge variant={order.status === "CANCELLED" ? "destructive" : "outline"}>
-                      {order.status}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <Badge variant="secondary">{order.paymentStatus}</Badge>
-                  </td>
-                  <td className="p-3">${Number(order.total).toFixed(2)}</td>
-                  <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
-                  <td className="p-3 text-right">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="text-primary text-sm font-medium hover:underline"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-3">
-          {page > 1 && (
-            <Link
-              href={`?page=${page - 1}`}
-              className="border-border hover:bg-muted inline-flex size-10 items-center justify-center rounded-sm border transition-colors"
-            >
-              ←
-            </Link>
-          )}
-          <span className="text-sm font-medium">
-            Page {page} of {totalPages}
-          </span>
-          {page < totalPages && (
-            <Link
-              href={`?page=${page + 1}`}
-              className="border-border hover:bg-muted inline-flex size-10 items-center justify-center rounded-sm border transition-colors"
-            >
-              →
-            </Link>
-          )}
-        </div>
-      )}
-    </div>
-  );
+function valueOf(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 export default async function AdminOrdersPage({
@@ -141,14 +13,172 @@ export default async function AdminOrdersPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const params = await searchParams;
+
+  const rawStatus = valueOf(params.status);
+  const status =
+    rawStatus && Object.values(OrderStatus).includes(rawStatus as OrderStatus)
+      ? (rawStatus as OrderStatus)
+      : undefined;
+
+  const rawPaymentStatus = valueOf(params.paymentStatus);
+  const paymentStatus =
+    rawPaymentStatus &&
+    Object.values(PaymentStatus).includes(rawPaymentStatus as PaymentStatus)
+      ? (rawPaymentStatus as PaymentStatus)
+      : undefined;
+
+  const rawPaymentMethod = valueOf(params.paymentMethod);
+  const paymentMethod =
+    rawPaymentMethod &&
+    Object.values(PaymentMethod).includes(rawPaymentMethod as PaymentMethod)
+      ? (rawPaymentMethod as PaymentMethod)
+      : undefined;
+
+  const q = valueOf(params.q);
+  const rawPage = Number(valueOf(params.page));
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+
+  const data = await getAdminOrders({
+    status,
+    paymentStatus,
+    paymentMethod,
+    search: q,
+    page,
+    limit: 20,
+  });
+
+  const pendingCount = data.statusCounts.PENDING ?? 0;
+  const processingCount =
+    (data.statusCounts.CONFIRMED ?? 0) + (data.statusCounts.PROCESSING ?? 0);
+  const inTransitCount = data.statusCounts.SHIPPED ?? 0;
+  const deliveredCount = data.statusCounts.DELIVERED ?? 0;
+
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Order Management</h1>
+    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+      {/* Page Header */}
+      <header className="flex flex-col gap-4 border-b border-[#101114]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
+            Operations / Sales
+          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
+            Order Management
+          </h1>
+          <p className="text-muted-foreground mt-2 text-sm leading-6">
+            Review incoming customer orders, manage fulfillment stages, verify payments, and inspect
+            audit trails.
+          </p>
+        </div>
+      </header>
+
+      {/* Operational KPI Metric Cards */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Total Orders */}
+        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              Total Orders
+            </CardTitle>
+            <ShoppingBag className="size-4 text-[#101114]" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight text-[#101114]">
+              {data.statusCounts.ALL.toLocaleString()}
+            </div>
+            <p className="text-muted-foreground mt-1 text-[11px]">
+              Lifetime orders across all sales channels
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Pending Confirmation */}
+        <Card
+          className={`rounded-sm border shadow-none ${
+            pendingCount > 0 ? "border-amber-300 bg-amber-50/40" : "border-[#101114]/10 bg-white"
+          }`}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle
+              className={`text-xs font-semibold tracking-wider uppercase ${
+                pendingCount > 0 ? "text-amber-800" : "text-muted-foreground"
+              }`}
+            >
+              Pending Confirmation
+            </CardTitle>
+            <Clock
+              className={`size-4 ${pendingCount > 0 ? "text-amber-600" : "text-neutral-400"}`}
+            />
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-2xl font-bold tracking-tight ${
+                pendingCount > 0 ? "text-amber-800" : "text-[#101114]"
+              }`}
+            >
+              {pendingCount.toLocaleString()}
+            </div>
+            <p
+              className={`mt-1 text-[11px] ${
+                pendingCount > 0 ? "font-medium text-amber-700" : "text-muted-foreground"
+              }`}
+            >
+              {pendingCount > 0
+                ? "Requires merchant review or customer call"
+                : "No pending orders waiting"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Processing / In Fulfillment */}
+        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              In Fulfillment
+            </CardTitle>
+            <Package className="size-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight text-[#101114]">
+              {processingCount.toLocaleString()}
+            </div>
+            <p className="text-muted-foreground mt-1 text-[11px]">
+              Confirmed or packaging ({inTransitCount} in transit)
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Delivered Orders */}
+        <Card className="rounded-sm border border-[#101114]/10 bg-white shadow-none">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              Completed Orders
+            </CardTitle>
+            <CheckCircle2 className="size-4 text-emerald-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold tracking-tight text-emerald-800">
+              {deliveredCount.toLocaleString()}
+            </div>
+            <p className="text-muted-foreground mt-1 text-[11px]">
+              Successfully delivered to customers
+            </p>
+          </CardContent>
+        </Card>
       </div>
-      <Suspense fallback={<div className="flex justify-center p-12">Loading orders...</div>}>
-        <OrdersTable searchParams={searchParams} />
-      </Suspense>
+
+      {/* Main Interactive Table */}
+      <Card className="rounded-sm border border-[#101114]/10 bg-white p-4 shadow-none sm:p-5">
+        <AdminOrdersTable
+          initialData={data}
+          currentFilters={{
+            q,
+            status: rawStatus,
+            paymentStatus: rawPaymentStatus,
+            paymentMethod: rawPaymentMethod,
+          }}
+        />
+      </Card>
     </div>
   );
 }
