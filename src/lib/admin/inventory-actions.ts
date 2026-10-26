@@ -7,6 +7,12 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { getAdminInventory, type InventoryFilter } from "@/lib/admin/inventory-queries";
+import {
+  getAdminInventoryIntelligence,
+  type InventoryIntelligenceWindow,
+  type InventoryIntelligenceStatusFilter,
+  type InventoryIntelligenceSort,
+} from "@/lib/admin/inventory-intelligence-queries";
 
 const adjustmentSchema = z.object({
   variantId: z.string().uuid(),
@@ -263,6 +269,18 @@ export async function loadMoreAdminInventoryAction(options: {
 }) {
   await requireRole("ADMIN");
   return getAdminInventory(options);
+}
+
+export async function loadMoreAdminInventoryIntelligenceAction(options?: {
+  window?: InventoryIntelligenceWindow;
+  status?: InventoryIntelligenceStatusFilter;
+  search?: string;
+  sort?: InventoryIntelligenceSort;
+  page?: number;
+  pageSize?: number;
+}) {
+  await requireRole("ADMIN");
+  return getAdminInventoryIntelligence(options);
 }
 
 export type StocktakeReconcileItem = {

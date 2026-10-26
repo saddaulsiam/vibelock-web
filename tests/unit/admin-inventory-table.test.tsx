@@ -203,4 +203,16 @@ describe("AdminInventoryTable Component", () => {
 
     expect(html).toContain("No inventory items match your search");
   });
+
+  test("renders customize visible columns option button", () => {
+    const html = renderToStaticMarkup(
+      <AdminInventoryTable
+        initialData={sampleData}
+        currentFilters={{ q: "", filter: "all", page: 1 }}
+      />
+    );
+
+    expect(html).toContain("Columns");
+    expect(html).toContain('title="Customize visible columns"');
+  });
 });

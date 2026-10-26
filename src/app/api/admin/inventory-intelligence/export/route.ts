@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
       "Daily Velocity",
       "Days Since Last Inflow",
       "Days of Supply",
+      "Suggested Restock (30d)",
       "Status",
     ];
 
@@ -84,6 +85,7 @@ export async function GET(request: NextRequest) {
         item.dailyVelocity.toFixed(4),
         item.daysSinceLastInflow !== null ? item.daysSinceLastInflow : "Unavailable",
         item.daysOfSupply !== null ? item.daysOfSupply.toFixed(1) : "Unavailable",
+        item.suggestedRestockQty !== null ? item.suggestedRestockQty : "—",
         item.status,
       ]);
     }

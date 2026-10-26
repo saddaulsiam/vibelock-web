@@ -1,6 +1,11 @@
 "use client";
 
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
+import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
+import {
+  AdminTableSearchInput,
+  ADMIN_TABLE_CLASSES,
+} from "@/components/admin/admin-table-controls";
 import {
   bulkAssignProductCategoryAction,
   bulkDeleteProductsAction,
@@ -30,7 +35,6 @@ import {
   Plus,
   Printer,
   RotateCcw,
-  Search,
   Tag,
   Trash2,
   X,
@@ -107,7 +111,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   );
   const [currentPage, setCurrentPage] = React.useState<number>(initialData.page || 1);
   const [isLoadingMore, setIsLoadingMore] = React.useState<boolean>(false);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
   // Multi-select & Bulk actions state
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -137,7 +140,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     "one-per-variant" | "by-stock" | "custom"
   >("one-per-variant");
   const [barcodeCustomQuantity, setBarcodeCustomQuantity] = React.useState<number>(5);
-  const [barcodeVariantOverrides, setBarcodeVariantOverrides] = React.useState<Record<string, number>>({});
+  const [barcodeVariantOverrides, setBarcodeVariantOverrides] = React.useState<
+    Record<string, number>
+  >({});
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
   // CSV Export state
@@ -476,29 +481,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
     }
   }, [isLoadingMore, loadedProducts.length, totalFiltered, currentPage, currentFilters, pageSize]);
 
-  // Infinite scroll observer: trigger handleLoadMore when sentinel enters viewport
-  React.useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting && hasMore && !isLoadingMore) {
-          handleLoadMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "300px",
-        threshold: 0,
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [handleLoadMore, hasMore, isLoadingMore]);
-
   const hasActiveFilters =
     Boolean(currentFilters.q) ||
     currentFilters.category !== "all" ||
@@ -509,88 +491,129 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   return (
     <div className="space-y-4">
       {/* ── 1. Top Quick-Filter Status Tabs ── */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-[#101114]/10 pb-3 text-xs">
+      <div className="flex flex-wrap items-center gap-1.5 text-xs">
         <button
           type="button"
           onClick={() => updateQuery({ status: "all", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.status === "all" && currentFilters.stock === "all"
-              ? "bg-[#101114] text-white"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-[#F3F0E8]"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          All Products
-          <span className="opacity-70">({counts.total})</span>
+          <Layers className="size-3.5" />
+          <span>All Products</span>
+          <span
+            className={
+              currentFilters.status === "all" && currentFilters.stock === "all"
+                ? "text-white/80"
+                : "text-neutral-500"
+            }
+          >
+            ({counts.total})
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => updateQuery({ status: "PUBLISHED", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.status === "PUBLISHED" && currentFilters.stock === "all"
-              ? "bg-emerald-800 text-white"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-emerald-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          <span className="size-1.5 rounded-full bg-emerald-500" />
-          Published
-          <span className="opacity-70">({counts.published})</span>
+          <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
+          <span>Published</span>
+          <span
+            className={
+              currentFilters.status === "PUBLISHED" && currentFilters.stock === "all"
+                ? "text-white/80"
+                : "text-neutral-500"
+            }
+          >
+            ({counts.published})
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => updateQuery({ status: "DRAFT", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.status === "DRAFT" && currentFilters.stock === "all"
-              ? "bg-amber-800 text-white"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-amber-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          <span className="size-1.5 rounded-full bg-amber-500" />
-          Drafts
-          <span className="opacity-70">({counts.draft})</span>
+          <span className="size-1.5 shrink-0 rounded-full bg-amber-500" />
+          <span>Drafts</span>
+          <span
+            className={
+              currentFilters.status === "DRAFT" && currentFilters.stock === "all"
+                ? "text-white/80"
+                : "text-neutral-500"
+            }
+          >
+            ({counts.draft})
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => updateQuery({ stock: "low-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.stock === "low-stock"
-              ? "bg-amber-700 text-white"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-amber-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          <AlertTriangle className="size-3 text-amber-500" />
-          Low Stock
-          <span className="opacity-70">({counts.lowStock})</span>
+          <AlertTriangle className="size-3 shrink-0 text-amber-500" />
+          <span>Low Stock</span>
+          <span
+            className={currentFilters.stock === "low-stock" ? "text-white/80" : "text-neutral-500"}
+          >
+            ({counts.lowStock})
+          </span>
         </button>
 
         <button
           type="button"
           onClick={() => updateQuery({ stock: "out-of-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
             currentFilters.stock === "out-of-stock"
-              ? "bg-red-800 text-white"
-              : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-red-50"
+              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
-          <span className="size-1.5 rounded-full bg-red-500" />
-          Out of Stock
-          <span className="opacity-70">({counts.outOfStock})</span>
+          <span className="size-1.5 shrink-0 rounded-full bg-rose-500" />
+          <span>Out of Stock</span>
+          <span
+            className={
+              currentFilters.stock === "out-of-stock" ? "text-white/80" : "text-neutral-500"
+            }
+          >
+            ({counts.outOfStock})
+          </span>
         </button>
 
         {counts.archived > 0 && (
           <button
             type="button"
             onClick={() => updateQuery({ status: "ARCHIVED", stock: "all" })}
-            className={`inline-flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
               currentFilters.status === "ARCHIVED"
-                ? "bg-[#101114] text-white"
-                : "border border-[#101114]/15 bg-white text-[#101114] hover:bg-[#F3F0E8]"
+                ? "bg-[#101114] font-semibold text-white shadow-2xs"
+                : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
             }`}
           >
-            Archived
-            <span className="opacity-70">({counts.archived})</span>
+            <span>Archived</span>
+            <span
+              className={
+                currentFilters.status === "ARCHIVED" ? "text-white/80" : "text-neutral-500"
+              }
+            >
+              ({counts.archived})
+            </span>
           </button>
         )}
       </div>
@@ -612,34 +635,13 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       {/* ── 2. Search & Filter Controls Toolbar ── */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* Search Bar with '/' shortcut */}
-        <div className="relative max-w-lg flex-1">
-          <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#101114]/40" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchTerm}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            placeholder="Search by product name, slug, SKU, or category..."
-            className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-          />
-          {searchTerm ? (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-[#101114]/40 hover:text-[#101114]"
-              title="Clear search"
-            >
-              <X className="size-3.5" />
-            </button>
-          ) : (
-            <kbd
-              className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-[#101114]/20 bg-[#F3F0E8] px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/60 sm:inline-flex"
-              title="Press / to search"
-            >
-              /
-            </kbd>
-          )}
-        </div>
+        <AdminTableSearchInput
+          value={searchTerm}
+          onChange={handleSearchChange}
+          onClear={handleClearSearch}
+          placeholder="Search by product name, slug, SKU, or category..."
+          inputRef={searchInputRef}
+        />
 
         {/* Filter, Sort & Export Dropdowns */}
         <div className="flex flex-wrap items-center gap-2">
@@ -648,7 +650,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             <select
               value={currentFilters.category}
               onChange={(e) => updateQuery({ category: e.target.value })}
-              className="h-10 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] transition-colors outline-none hover:border-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className={ADMIN_TABLE_CLASSES.select}
             >
               <option value="all">All Categories</option>
               {allCategories.map((c) => (
@@ -663,7 +665,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
           <select
             value={currentFilters.stock}
             onChange={(e) => updateQuery({ stock: e.target.value })}
-            className="h-10 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] transition-colors outline-none hover:border-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className={ADMIN_TABLE_CLASSES.select}
           >
             <option value="all">All Stock Levels</option>
             <option value="in-stock">In Stock (&gt;0)</option>
@@ -675,7 +677,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
           <select
             value={currentFilters.status}
             onChange={(e) => updateQuery({ status: e.target.value })}
-            className="h-10 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] transition-colors outline-none hover:border-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+            className={ADMIN_TABLE_CLASSES.select}
           >
             <option value="all">All Statuses</option>
             <option value="PUBLISHED">Published</option>
@@ -688,7 +690,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             <select
               value={currentFilters.sort}
               onChange={(e) => updateQuery({ sort: e.target.value })}
-              className="h-10 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-medium text-[#101114] transition-colors outline-none hover:border-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className={ADMIN_TABLE_CLASSES.select}
             >
               <option value="newest">Sort: Newest First</option>
               <option value="updated">Sort: Recently Updated</option>
@@ -707,13 +709,13 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             type="button"
             disabled={isExporting}
             onClick={handleExportCsv}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:opacity-50"
+            className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export filtered catalog to CSV"
           >
             {isExporting ? (
               <Loader2 className="size-3.5 animate-spin" />
             ) : (
-              <Download className="size-3.5 text-[#101114]/70" />
+              <Download className="size-3.5 text-neutral-500" />
             )}
             <span className="hidden sm:inline">Export CSV</span>
           </button>
@@ -723,26 +725,28 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             <button
               type="button"
               onClick={() => setShowColumnMenu(!showColumnMenu)}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className={ADMIN_TABLE_CLASSES.buttonSecondary}
               title="Customize visible columns"
             >
-              <Columns3 className="size-3.5 text-[#101114]/70" />
+              <Columns3 className="size-3.5 text-neutral-500" />
               <span className="hidden sm:inline">Columns</span>
             </button>
 
             {showColumnMenu && (
-              <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-44 rounded-sm border border-[#101114]/15 bg-white p-2 shadow-xl duration-150">
-                <div className="mb-1.5 flex items-center justify-between border-b border-[#101114]/10 pb-1.5">
-                  <p className="text-[11px] font-semibold text-[#101114]">Visible Columns</p>
+              <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-48 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-xl duration-150">
+                <div className="mb-1.5 flex items-center justify-between border-b border-neutral-100 pb-1.5">
+                  <p className="text-[11px] font-bold tracking-wider text-neutral-600 uppercase">
+                    Visible Columns
+                  </p>
                   <button
                     type="button"
                     onClick={() => setShowColumnMenu(false)}
-                    className="text-[#101114]/40 hover:text-[#101114]"
+                    className="rounded p-0.5 text-neutral-400 transition hover:text-neutral-700"
                   >
-                    <X className="size-3" />
+                    <X className="size-3.5" />
                   </button>
                 </div>
-                <div className="space-y-1 text-xs">
+                <div className="space-y-0.5 text-xs">
                   {[
                     { key: "categories", label: "Categories" },
                     { key: "price", label: "Price" },
@@ -751,8 +755,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                   ].map((col) => (
                     <label
                       key={col.key}
-                      className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-[#F3F0E8]"
+                      className="flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors hover:bg-neutral-50"
                     >
+                      <span className="text-neutral-800 select-none">{col.label}</span>
                       <input
                         type="checkbox"
                         checked={visibleColumns[col.key as keyof typeof visibleColumns]}
@@ -764,7 +769,6 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         }
                         className="size-3.5 cursor-pointer rounded-xs accent-[#101114]"
                       />
-                      <span className="text-[#101114]">{col.label}</span>
                     </label>
                   ))}
                 </div>
@@ -778,7 +782,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
               type="button"
               onClick={handleResetFilters}
               title="Reset all filters"
-              className="inline-flex h-10 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-medium text-red-700 transition-colors hover:border-red-300 hover:bg-red-50"
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50/50 px-3 text-xs font-semibold text-red-700 transition-colors hover:border-red-300 hover:bg-red-100"
             >
               <RotateCcw className="size-3.5" /> Reset
             </button>
@@ -786,10 +790,19 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
         </div>
       </div>
 
+      {/* Meta Counter */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+        <p>
+          Showing <strong className="text-neutral-900">{loadedProducts.length}</strong> of{" "}
+          <strong className="text-neutral-900">{totalFiltered}</strong>{" "}
+          {totalFiltered === 1 ? "product" : "products"}
+        </p>
+      </div>
+
       {/* ── 3. Products Data Table ── */}
-      <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
-        <table className="w-full min-w-5xl text-left text-sm">
-          <thead className="bg-[#F3F0E8]/70 text-[11px] font-semibold tracking-wider text-[#101114]/70 uppercase">
+      <div className={ADMIN_TABLE_CLASSES.container}>
+        <table className={ADMIN_TABLE_CLASSES.table}>
+          <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
               <th scope="col" className="w-10 px-4 py-3 text-center">
                 <input
@@ -1280,49 +1293,15 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       </div>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
-      {totalFiltered > 0 && (
-        <div className="flex flex-col items-center justify-center gap-3 border-t border-[#101114]/10 pt-4 pb-2">
-          {/* Sentinel for IntersectionObserver to trigger infinite scroll */}
-          <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
-
-          {hasMore ? (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-5 py-2 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin text-[#101114]" />
-                    <span>Loading more products...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Load more products</span>
-                    <span className="text-muted-foreground font-normal">
-                      • Showing {loadedProducts.length} of {totalFiltered}
-                    </span>
-                  </>
-                )}
-              </button>
-              <p className="text-muted-foreground text-[11px]">
-                Scroll down or click the button above to load more items
-              </p>
-            </div>
-          ) : (
-            <div className="text-muted-foreground flex items-center justify-center gap-1.5 py-2 text-xs">
-              <span className="font-semibold text-emerald-600">✓</span>
-              <span>
-                All <strong className="text-[#101114]">{loadedProducts.length}</strong> products
-                loaded
-                {hasActiveFilters && ` (filtered from ${counts.total} total)`}
-              </span>
-            </div>
-          )}
-        </div>
-      )}
+      <AdminTableInfiniteScroll
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={handleLoadMore}
+        loadedCount={loadedProducts.length}
+        totalCount={totalFiltered}
+        itemName="products"
+        filterSummary={hasActiveFilters ? `filtered from ${counts.total} total` : null}
+      />
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
@@ -1544,9 +1523,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     <div className="flex items-center">
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Decrease"
                       >
@@ -1567,9 +1544,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       />
                       <button
                         type="button"
-                        onClick={() =>
-                          setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))
-                        }
+                        onClick={() => setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))}
                         className="flex size-6 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] transition-colors hover:bg-[#101114]/15"
                         title="Increase"
                       >
@@ -1577,7 +1552,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-1 pl-1 border-l border-[#101114]/10">
+                    <div className="flex items-center gap-1 border-l border-[#101114]/10 pl-1">
                       {[1, 2, 5, 10, 25, 50].map((preset) => (
                         <button
                           key={preset}
@@ -1638,7 +1613,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
             </div>
 
             {/* Individual Variant Fine-Tuning Drawer */}
-            {barcodeModalProducts.some((p) => (p.variants && p.variants.length > 1) || barcodeModalProducts.length > 1) && (
+            {barcodeModalProducts.some(
+              (p) => (p.variants && p.variants.length > 1) || barcodeModalProducts.length > 1
+            ) && (
               <div className="border-b border-[#101114]/10 bg-white px-5 py-2">
                 <div className="flex items-center justify-between text-xs">
                   <button
@@ -1646,7 +1623,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     onClick={() => setShowVariantTuning(!showVariantTuning)}
                     className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
                   >
-                    <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant</span>
+                    <span>
+                      {showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant
+                    </span>
                   </button>
                   {Object.keys(barcodeVariantOverrides).length > 0 && (
                     <button
@@ -1660,7 +1639,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 </div>
 
                 {showVariantTuning && (
-                  <div className="mt-2 max-h-36 overflow-y-auto space-y-1.5 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
+                  <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2">
                     {barcodeModalProducts.flatMap((product) => {
                       const variants =
                         product.variants && product.variants.length > 0
@@ -1692,9 +1671,14 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           >
                             <div className="min-w-0 flex-1 truncate">
                               <span className="font-semibold text-[#101114]">{product.name}</span>
-                              <span className="ml-2 font-mono text-[10px] text-[#101114]/60">{v.sku}</span>
+                              <span className="ml-2 font-mono text-[10px] text-[#101114]/60">
+                                {v.sku}
+                              </span>
                               <span className="ml-2 text-[10px] text-[#101114]/50">
-                                {[v.size ? `Size: ${v.size}` : null, v.color ? `Color: ${v.color}` : null]
+                                {[
+                                  v.size ? `Size: ${v.size}` : null,
+                                  v.color ? `Color: ${v.color}` : null,
+                                ]
                                   .filter(Boolean)
                                   .join(" • ") || "Default"}
                               </span>
@@ -1703,7 +1687,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               </span>
                             </div>
 
-                            <div className="flex items-center gap-1 shrink-0">
+                            <div className="flex shrink-0 items-center gap-1">
                               <button
                                 type="button"
                                 onClick={() =>
@@ -1795,7 +1779,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         }`}
                       >
                         {count > 1 && (
-                          <span className="no-print absolute top-1 right-1 text-[8px] font-mono text-[#101114]/40">
+                          <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-[#101114]/40">
                             #{idx + 1}
                           </span>
                         )}
