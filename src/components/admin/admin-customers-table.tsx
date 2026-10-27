@@ -12,6 +12,7 @@ import {
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
+import { CustomerCreateModal } from "@/components/admin/customer-create-modal";
 import { loadMoreAdminCustomersAction } from "@/lib/admin/customer-actions";
 import type {
   AdminCustomerListItem,
@@ -31,6 +32,7 @@ import {
   Sparkles,
   User,
   UserCheck,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -120,6 +122,7 @@ export function AdminCustomersTable({
   const [searchTerm, setSearchTerm] = React.useState(currentSearch);
   const [prevSearchProp, setPrevSearchProp] = React.useState(currentSearch);
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
 
   // Column Visibility State
   const [visibleColumns, setVisibleColumns] = React.useState<Record<CustomerColumnKey, boolean>>({
@@ -376,6 +379,16 @@ export function AdminCustomersTable({
           >
             <Download className="size-3.5 text-neutral-500" />
             <span>Export CSV</span>
+          </button>
+
+          {/* Add Customer Modal Trigger */}
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-neutral-800 transition"
+          >
+            <UserPlus className="size-3.5" />
+            <span>Add Customer</span>
           </button>
         </div>
       </div>
@@ -733,6 +746,12 @@ export function AdminCustomersTable({
           />
         </>
       )}
+
+      {/* Manual Customer Creation Modal */}
+      <CustomerCreateModal
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+      />
     </div>
   );
 }

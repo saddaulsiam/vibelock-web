@@ -1,23 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  Mail,
-  Phone,
   ShoppingBag,
   CheckCircle2,
   DollarSign,
   XCircle,
   RotateCcw,
-  MessageCircle,
   ChevronRight,
   MapPin,
   Sparkles,
   UserCheck,
   User,
+  Ban,
+  Lock,
 } from "lucide-react";
 import { getAdminCustomerById } from "@/lib/admin/customer-queries";
 import { CustomerBackButton } from "@/components/admin/customer-back-button";
 import { CustomerRiskWidget } from "@/components/admin/customer-risk-widget";
+import { CustomerDetailHeaderActions } from "@/components/admin/customer-detail-header-actions";
+import { CustomerPreferencesCard } from "@/components/admin/customer-preferences-card";
+import { CustomerStaffNotes } from "@/components/admin/customer-staff-notes";
+import { CustomerSecurityCard } from "@/components/admin/customer-security-card";
+import { CustomerAbandonedCartCard } from "@/components/admin/customer-abandoned-cart-card";
+import { CustomerReviewsCard } from "@/components/admin/customer-reviews-card";
+import { CustomerTimelineCard } from "@/components/admin/customer-timeline-card";
 import {
   AdminOrderStatusBadge,
   AdminPaymentStatusBadge,
@@ -52,20 +58,6 @@ function getInitials(name: string | null, email: string): string {
   return email.slice(0, 2).toUpperCase();
 }
 
-function generateWhatsAppUrl(phone: string, customerName?: string | null): string {
-  let clean = phone.replace(/\D/g, "");
-  if (clean.startsWith("880")) {
-    // BD full country code
-  } else if (clean.startsWith("0")) {
-    clean = "88" + clean;
-  } else if (clean.length === 10) {
-    clean = "880" + clean;
-  }
-  const greeting = customerName ? `Hello ${customerName}` : "Hello";
-  const msg = `${greeting}, thank you for contacting VibeLock! `;
-  return `https://wa.me/${clean}?text=${encodeURIComponent(msg)}`;
-}
-
 export default async function AdminCustomerDetailsPage({
   params,
   searchParams,
@@ -80,7 +72,22 @@ export default async function AdminCustomerDetailsPage({
 
   if (!result) notFound();
 
-  const { customer, orders, riskProfile, summary, totalOrderPages } = result;
+  const {
+    customer,
+    orders,
+    riskProfile,
+    preferences,
+    staffNotes,
+    abandonedCart,
+    reviews,
+    timeline,
+    isCodBlocked,
+    codBlockReason,
+    isAccountSuspended,
+    suspensionReason,
+    summary,
+    totalOrderPages,
+  } = result;
   const initials = getInitials(customer.name, customer.email);
 
   const isVip = summary.totalOrders >= 3 || summary.totalSpent >= 10000;
@@ -88,6 +95,42 @@ export default async function AdminCustomerDetailsPage({
 
   return (
     <div className="space-y-6">
+      {/* Account Suspended Alert Banner */}
+      {isAccountSuspended && (
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50/90 p-4 text-amber-900 shadow-2xs">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white shadow-xs">
+            <Lock className="size-5" />
+          </div>
+          <div className="text-xs">
+            <div className="font-bold text-amber-950 text-sm">
+              Customer Account Login Suspended
+            </div>
+            <p className="mt-0.5 leading-relaxed text-amber-800">
+              This account has been suspended by store administration. Storefront login and checkout are blocked.
+              {suspensionReason ? ` (Reason: ${suspensionReason})` : ""}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* COD Restricted Alert Banner */}
+      {isCodBlocked && (
+        <div className="flex items-start gap-3 rounded-2xl border border-rose-300 bg-rose-50/90 p-4 text-rose-900 shadow-2xs">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-rose-600 text-white shadow-xs">
+            <Ban className="size-5" />
+          </div>
+          <div className="text-xs">
+            <div className="font-bold text-rose-950 text-sm">
+              Cash on Delivery (COD) Privilege Suspended
+            </div>
+            <p className="mt-0.5 leading-relaxed text-rose-800">
+              This customer is restricted from placing COD orders due to high return risk or administrative hold. Online advance payment is required for all orders.
+              {codBlockReason ? ` (Reason: ${codBlockReason})` : ""}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* 1. Header & Back Navigation */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200/80 pb-4">
         <div>
@@ -120,36 +163,13 @@ export default async function AdminCustomerDetailsPage({
           <p className="mt-1 text-xs text-neutral-500 font-mono">{customer.email}</p>
         </div>
 
-        {/* Quick Contact & Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {customer.phone && (
-            <>
-              <a
-                href={generateWhatsAppUrl(customer.phone, customer.name)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition"
-              >
-                <MessageCircle className="size-3.5 text-emerald-600" />
-                <span>WhatsApp</span>
-              </a>
-              <a
-                href={`tel:${customer.phone}`}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
-              >
-                <Phone className="size-3.5 text-blue-600" />
-                <span>Call Phone</span>
-              </a>
-            </>
-          )}
-          <a
-            href={`mailto:${customer.email}`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
-          >
-            <Mail className="size-3.5 text-neutral-500" />
-            <span>Email</span>
-          </a>
-        </div>
+        {/* Header Actions: Edit Profile, Smart WhatsApp CRM, Phone, Email */}
+        <CustomerDetailHeaderActions
+          customer={customer}
+          preferredSize={preferences.preferredSize}
+          totalOrders={summary.totalOrders}
+          totalSpent={summary.totalSpent}
+        />
       </div>
 
       {/* 2. Customer Summary Metric Cards */}
@@ -206,7 +226,17 @@ export default async function AdminCustomerDetailsPage({
         </div>
       </div>
 
-      {/* 3. Customer Info Card & Courier Risk Intelligence */}
+      {/* 3. Customer Shopping Preferences & Size Insights */}
+      <CustomerPreferencesCard preferences={preferences} />
+
+      {/* 4. Active & Abandoned Shopping Cart Recovery */}
+      <CustomerAbandonedCartCard
+        cart={abandonedCart}
+        customerPhone={customer.phone}
+        customerName={customer.name}
+      />
+
+      {/* 4. Customer Info Card & Courier Risk Intelligence */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Customer Information Card */}
         <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
@@ -277,6 +307,9 @@ export default async function AdminCustomerDetailsPage({
           <CustomerRiskWidget
             initialProfile={riskProfile}
             customerPhone={customer.phone}
+            customerId={customer.id}
+            isCodBlocked={isCodBlocked}
+            codBlockReason={codBlockReason}
           />
         </div>
       </div>
@@ -323,7 +356,26 @@ export default async function AdminCustomerDetailsPage({
         )}
       </div>
 
-      {/* 5. Complete Order History */}
+      {/* 6. Product Reviews & Ratings History */}
+      <CustomerReviewsCard reviews={reviews} />
+
+      {/* 7. Internal Staff Notes */}
+      <CustomerStaffNotes customerId={customer.id} notes={staffNotes} />
+
+      {/* 8. Account Security & Administrative Controls */}
+      <CustomerSecurityCard
+        customerId={customer.id}
+        customerName={customer.name}
+        customerEmail={customer.email}
+        orderCount={summary.totalOrders}
+        isAccountSuspended={isAccountSuspended}
+        suspensionReason={suspensionReason}
+      />
+
+      {/* 9. Unified 360° Activity Timeline */}
+      <CustomerTimelineCard timeline={timeline} />
+
+      {/* 7. Complete Order History */}
       <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
           <div className="flex items-center gap-2">
