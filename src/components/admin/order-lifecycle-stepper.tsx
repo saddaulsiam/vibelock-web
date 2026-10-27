@@ -1,15 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  CheckCircle2,
-  Clock,
-  Package,
-  Truck,
-  Check,
-  XCircle,
-  RotateCcw,
-} from "lucide-react";
+import { CheckCircle2, Clock, Package, Truck, Check, XCircle, RotateCcw } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
 
 interface OrderHistoryEntry {
@@ -126,7 +118,8 @@ export function OrderLifecycleStepper({
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-rose-700">
-                {cancelledEntry?.notes || "Order was cancelled and inventory reservations were safely released."}
+                {cancelledEntry?.notes ||
+                  "Order was cancelled and inventory reservations were safely released."}
               </p>
             </div>
           </div>
@@ -149,13 +142,16 @@ export function OrderLifecycleStepper({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-amber-950">Order Lifecycle: Return Process Active</h3>
+              <h3 className="text-sm font-bold text-amber-950">
+                Order Lifecycle: Return Process Active
+              </h3>
               <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900 uppercase">
                 {currentStatus.replace("RETURN_", "")}
               </span>
             </div>
             <p className="mt-0.5 text-xs text-amber-800">
-              Customer has requested a return. Inspect goods upon return arrival before issuing refund.
+              Customer has requested a return. Inspect goods upon return arrival before issuing
+              refund.
             </p>
           </div>
         </div>
@@ -194,7 +190,7 @@ export function OrderLifecycleStepper({
                 {/* Connecting Line (drawn to the next step) */}
                 {idx < STEPS.length - 1 ? (
                   <div
-                    className={`absolute top-4 left-1/2 -z-0 h-0.5 w-full -translate-y-1/2 transition-colors duration-300 ${
+                    className={`absolute top-4 left-1/2 h-0.5 w-full -translate-y-1/2 transition-colors duration-300 ${
                       idx < activeIndex ? "bg-emerald-500" : "bg-neutral-200"
                     }`}
                   />
@@ -202,11 +198,11 @@ export function OrderLifecycleStepper({
 
                 {/* Step Circle Icon */}
                 <div
-                  className={`relative z-10 flex size-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${
+                  className={`relative z-0 flex size-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${
                     isCompleted
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
                       : isCurrent
-                        ? "border-neutral-900 bg-neutral-900 text-white ring-4 ring-neutral-900/10 shadow-sm"
+                        ? "border-neutral-900 bg-neutral-900 text-white shadow-sm ring-4 ring-neutral-900/10"
                         : "border-neutral-300 bg-white text-neutral-400"
                   }`}
                 >

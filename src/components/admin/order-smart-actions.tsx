@@ -16,6 +16,7 @@ import {
   Settings2,
   Sparkles,
   Loader2,
+  X,
 } from "lucide-react";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { updateOrderStatusAction } from "@/lib/admin/order-actions";
@@ -96,6 +97,18 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
   const [showManualOverride, setShowManualOverride] = React.useState(false);
   const [state, formAction] = useActionState(updateOrderStatusAction, { error: null });
 
+  // Close WhatsApp menu on Escape key
+  React.useEffect(() => {
+    if (!showWhatsAppMenu) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowWhatsAppMenu(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showWhatsAppMenu]);
+
   // Format phone for WhatsApp
   const cleanPhone = (order.customerPhone || "").replace(/\D/g, "");
   const formattedPhone = cleanPhone.startsWith("880")
@@ -129,6 +142,10 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
     {
       title: "ঠিকানা যাচাইকরণ (Address Check)",
       text: `হ্যালো ${order.customerName || "Customer"}, VibeLock থেকে যোগাযোগ করছি।\nআপনার অর্ডার #${order.orderNumber}-এর ডেলিভারি ঠিকানা:\n${order.shippingStreet}, ${order.shippingCity}।\nঠিকানা ও ফোন নম্বর ঠিক আছে কি না একটু কনফার্ম করবেন? ধন্যবাদ!`,
+    },
+    {
+      title: "অর্ডার বাতিল ও রিফান্ড নোটিশ (Cancellation Notice)",
+      text: `${greeting}! অত্যন্ত দুঃখের সাথে জানাচ্ছি যে আপনার VibeLock অর্ডার #${order.orderNumber}-টি বাতিল করা হয়েছে। যদি কোনো অগ্রিম পেমেন্ট করে থাকেন, তবে দ্রুত রিফান্ড সমন্বয় করা হবে। যেকোনো তথ্যের জন্য আমাদের সাথে যোগাযোগ করতে পারেন। ধন্যবাদ!`,
     },
   ];
 
@@ -319,26 +336,48 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
 
             {/* WhatsApp Templates Dropdown */}
             {showWhatsAppMenu && (
-              <div className="absolute right-0 bottom-full z-30 mb-1 w-72 rounded-xl border border-neutral-200 bg-white p-2 shadow-xl">
-                <span className="block px-2 py-1 text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
-                  1-Click Bengali Templates
-                </span>
-                <div className="space-y-1">
-                  {whatsappTemplates.map((tmpl, idx) => (
+              <>
+                {/* Click-outside backdrop to dismiss */}
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setShowWhatsAppMenu(false)}
+                  aria-hidden="true"
+                />
+
+                <div className="animate-in fade-in zoom-in-95 duration-150 absolute right-0 bottom-full z-30 mb-1.5 w-72 sm:w-80 rounded-xl border border-neutral-200 bg-white p-2.5 shadow-xl">
+                  {/* Header with Title and Close (X) button */}
+                  <div className="mb-2 flex items-center justify-between border-b border-neutral-100 px-1 pb-1.5">
+                    <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
+                      1-Click Bengali CRM Templates
+                    </span>
                     <button
-                      key={idx}
                       type="button"
-                      onClick={() => openWhatsApp(tmpl.text)}
-                      className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50"
+                      onClick={() => setShowWhatsAppMenu(false)}
+                      className="flex size-5 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+                      title="Close menu (Esc)"
+                      aria-label="Close WhatsApp templates menu"
                     >
-                      <p className="text-xs font-bold text-neutral-900">{tmpl.title}</p>
-                      <p className="line-clamp-2 mt-0.5 text-[10px] text-neutral-500">
-                        {tmpl.text}
-                      </p>
+                      <X className="size-3.5" />
                     </button>
-                  ))}
+                  </div>
+
+                  <div className="space-y-1 max-h-72 overflow-y-auto">
+                    {whatsappTemplates.map((tmpl, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => openWhatsApp(tmpl.text)}
+                        className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                      >
+                        <p className="text-xs font-bold text-neutral-900">{tmpl.title}</p>
+                        <p className="line-clamp-2 mt-0.5 text-[10px] text-neutral-500">
+                          {tmpl.text}
+                        </p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>

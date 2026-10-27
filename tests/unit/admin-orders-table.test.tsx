@@ -204,5 +204,53 @@ describe("AdminOrdersTable Component Unit Tests", () => {
     expect(html).toContain("Columns");
     expect(html).toContain('title="Customize visible columns"');
   });
+
+  test("renders date range filter and sales channel dropdown filter options", () => {
+    const html = renderToStaticMarkup(
+      <AdminOrdersTable initialData={sampleData} currentFilters={{}} />
+    );
+
+    // Date range filter options
+    expect(html).toContain("All Time");
+    expect(html).toContain("Today (Live)");
+    expect(html).toContain("Yesterday");
+    expect(html).toContain("Last 7 Days");
+    expect(html).toContain("Last 30 Days");
+
+    // Sales channel filter options
+    expect(html).toContain("All Channels");
+    expect(html).toContain("Online Store (WEB)");
+    expect(html).toContain("POS Counter");
+  });
+
+  test("renders items summary, mobile card view, and reset filters button when filtered", () => {
+    const dataWithSummary: AdminOrdersResult = {
+      ...sampleData,
+      orders: [
+        {
+          ...sampleData.orders[0],
+          itemsSummary: "Oversized Tee (L) × 2",
+        },
+      ],
+      total: 1,
+    };
+
+    const html = renderToStaticMarkup(
+      <AdminOrdersTable
+        initialData={dataWithSummary}
+        currentFilters={{ q: "01700000000", status: "PENDING" }}
+      />
+    );
+
+    // Items summary preview
+    expect(html).toContain("Oversized Tee (L) × 2");
+
+    // Active filter reset button
+    expect(html).toContain("Reset filters");
+
+    // Mobile cards layout container
+    expect(html).toContain("md:hidden");
+    expect(html).toContain("View Details");
+  });
 });
 

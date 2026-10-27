@@ -1,9 +1,9 @@
 import { CheckCircle2, Clock, Package, ShoppingBag } from "lucide-react";
-import { getAdminOrders } from "@/lib/admin/order-queries";
+import { getAdminOrders, type AdminOrderDateRange } from "@/lib/admin/order-queries";
 import { AdminOrdersTable } from "@/components/admin/admin-orders-table";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
@@ -34,6 +34,17 @@ export default async function AdminOrdersPage({
       ? (rawPaymentMethod as PaymentMethod)
       : undefined;
 
+  const rawSalesChannel = valueOf(params.salesChannel);
+  const salesChannel =
+    rawSalesChannel && Object.values(SalesChannel).includes(rawSalesChannel as SalesChannel)
+      ? (rawSalesChannel as SalesChannel)
+      : undefined;
+
+  const rawDateRange = valueOf(params.dateRange);
+  const dateRange = ["today", "yesterday", "7d", "30d"].includes(rawDateRange as string)
+    ? (rawDateRange as AdminOrderDateRange)
+    : undefined;
+
   const q = valueOf(params.q);
   const rawPage = Number(valueOf(params.page));
   const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
@@ -42,6 +53,8 @@ export default async function AdminOrdersPage({
     status,
     paymentStatus,
     paymentMethod,
+    salesChannel,
+    dateRange,
     search: q,
     page,
     limit: 20,
@@ -118,6 +131,8 @@ export default async function AdminOrdersPage({
           status: rawStatus,
           paymentStatus: rawPaymentStatus,
           paymentMethod: rawPaymentMethod,
+          salesChannel: rawSalesChannel,
+          dateRange: rawDateRange,
         }}
       />
     </div>
