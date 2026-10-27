@@ -43,9 +43,20 @@ export function CustomerAbandonedCartCard({
 
   const formattedPhone = cleanPhone(customerPhone);
 
+  function getCleanCustomerName(name?: string | null): string {
+    if (!name) return "";
+    const trimmed = name.trim();
+    const lower = trimmed.toLowerCase();
+    if (!trimmed || lower === "undefined" || lower === "null" || lower === "customer") {
+      return "";
+    }
+    return trimmed;
+  }
+
   // Keep WhatsApp message template in polite Bengali as requested
   const generateDefaultCartRecoveryMessage = () => {
-    const name = customerName || "Customer";
+    const name = getCleanCustomerName(customerName);
+    const greeting = name ? `আসসালামু আলাইকুম ${name}! 👋` : "আসসালামু আলাইকুম! 👋";
     const itemListText = cart.items
       .map(
         (item) =>
@@ -55,9 +66,9 @@ export function CustomerAbandonedCartCard({
       )
       .join("\n");
 
-    return `আসসালামু আলাইকুম ${name}! 👋\n\nআপনি VibeLock-এ আপনার ব্যাগে কিছু প্রিমিয়াম ড্রপ-শোল্ডার আইটেম সিলেক্ট করেছিলেন:\n${itemListText}\n\nমোট মূল্য: ${formatCurrency(
+    return `${greeting}\n\nআপনি VibeLock-এ আপনার ব্যাগে কিছু প্রিমিয়াম ড্রপ-শোল্ডার আইটেম সিলেক্ট করেছিলেন:\n${itemListText}\n\nমোট মূল্য: ${formatCurrency(
       cart.subtotal
-    )}\n\nস্টক শেষ হওয়ার আগেই আপনার অর্ডারটি সম্পূর্ণ করতে এই লিংকে ক্লিক করুন:\nhttps://vibelock.com/cart\n\nকোনো সাইজ কনফিউশন বা প্রশ্ন থাকলে আমাদের সরাসরি এখানে রিপ্লাই দিতে পারেন! 🖤\n- VibeLock Streetwear Team`;
+    )}\n\nস্টক শেষ হওয়ার আগেই আপনার অর্ডারটি সম্পূর্ণ করতে এই লিংকে ক্লিক করুন:\nhttps://vibelock.bd/cart\n\nকোনো সাইজ কনফিউশন বা প্রশ্ন থাকলে আমাদের সরাসরি এখানে রিপ্লাই দিতে পারেন! 🖤\n- VibeLock Streetwear Team`;
   };
 
   const handleOpenRecoveryModal = () => {
@@ -74,7 +85,7 @@ export function CustomerAbandonedCartCard({
 
   if (!cart.hasCart || cart.items.length === 0) {
     return (
-      <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-3">
+      <div className="space-y-3 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
         <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
           <div className="flex items-center gap-2">
             <div className="flex size-7 items-center justify-center rounded-lg bg-neutral-100 text-neutral-500">
@@ -89,7 +100,7 @@ export function CustomerAbandonedCartCard({
             Cart Empty
           </span>
         </div>
-        <p className="text-xs text-neutral-400 italic py-2">
+        <p className="py-2 text-xs text-neutral-400 italic">
           No active or abandoned cart items for this customer at this time.
         </p>
       </div>
@@ -97,7 +108,7 @@ export function CustomerAbandonedCartCard({
   }
 
   return (
-    <div className="rounded-xl border-2 border-amber-300 bg-linear-to-b from-amber-50/40 via-white to-white p-5 shadow-xs space-y-4">
+    <div className="space-y-4 rounded-xl border-2 border-amber-300 bg-linear-to-b from-amber-50/40 via-white to-white p-5 shadow-xs">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
         <div className="flex items-center gap-2.5">
@@ -107,7 +118,7 @@ export function CustomerAbandonedCartCard({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-black text-amber-950">Abandoned Cart</h2>
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900 border border-amber-300">
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-900">
                 <Sparkles className="size-2.5 text-amber-600" /> High Recovery Opportunity
               </span>
             </div>
@@ -122,7 +133,7 @@ export function CustomerAbandonedCartCard({
           {formattedPhone ? (
             <button
               onClick={handleOpenRecoveryModal}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700 transition"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700"
             >
               <MessageCircle className="size-3.5 fill-white/20" />
               <span>Send WhatsApp Recovery</span>
@@ -136,20 +147,20 @@ export function CustomerAbandonedCartCard({
       </div>
 
       {/* Cart Meta */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs bg-amber-100/50 rounded-lg p-2.5 border border-amber-200/60">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200/60 bg-amber-100/50 p-2.5 text-xs">
         <div className="flex items-center gap-4">
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider">
+            <span className="text-[10px] font-bold tracking-wider text-amber-800 uppercase">
               Total Items
             </span>
-            <div className="font-extrabold text-neutral-900 text-sm">{cart.totalItems} pcs</div>
+            <div className="text-sm font-extrabold text-neutral-900">{cart.totalItems} pcs</div>
           </div>
           <div className="h-6 w-px bg-amber-200" />
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider">
+            <span className="text-[10px] font-bold tracking-wider text-amber-800 uppercase">
               Cart Value
             </span>
-            <div className="font-black text-emerald-700 text-sm">
+            <div className="text-sm font-black text-emerald-700">
               {formatCurrency(cart.subtotal)}
             </div>
           </div>
@@ -175,19 +186,19 @@ export function CustomerAbandonedCartCard({
 
       {/* Cart Items List */}
       <div className="space-y-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 block">
+        <span className="block text-[11px] font-bold tracking-wider text-neutral-500 uppercase">
           Cart Items ({cart.items.length})
         </span>
 
-        <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200/80 bg-white overflow-hidden">
+        <div className="divide-y divide-neutral-100 overflow-hidden rounded-lg border border-neutral-200/80 bg-white">
           {cart.items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between p-3 gap-3 hover:bg-neutral-50/60 transition"
+              className="flex items-center justify-between gap-3 p-3 transition hover:bg-neutral-50/60"
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex min-w-0 items-center gap-3">
                 {/* Thumbnail */}
-                <div className="relative size-12 shrink-0 rounded-md border border-neutral-200 overflow-hidden bg-neutral-100 flex items-center justify-center">
+                <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-neutral-200 bg-neutral-100">
                   {item.imageUrl ? (
                     <Image
                       src={item.imageUrl}
@@ -204,13 +215,13 @@ export function CustomerAbandonedCartCard({
                 {/* Details */}
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-neutral-900 truncate">
+                    <span className="truncate text-xs font-bold text-neutral-900">
                       {item.productName}
                     </span>
                     <Link
                       href={`/products/${item.productSlug}`}
                       target="_blank"
-                      className="text-neutral-400 hover:text-neutral-700 transition"
+                      className="text-neutral-400 transition hover:text-neutral-700"
                     >
                       <ExternalLink className="size-3" />
                     </Link>
@@ -218,26 +229,26 @@ export function CustomerAbandonedCartCard({
 
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
                     {item.size && (
-                      <span className="rounded bg-neutral-100 px-1.5 py-0.2 font-semibold text-neutral-800 border border-neutral-200">
+                      <span className="py-0.2 rounded border border-neutral-200 bg-neutral-100 px-1.5 font-semibold text-neutral-800">
                         Size: {item.size}
                       </span>
                     )}
                     {item.color && (
-                      <span className="rounded bg-neutral-100 px-1.5 py-0.2 font-semibold text-neutral-700 border border-neutral-200">
+                      <span className="py-0.2 rounded border border-neutral-200 bg-neutral-100 px-1.5 font-semibold text-neutral-700">
                         {item.color}
                       </span>
                     )}
-                    <span className="font-mono text-neutral-400 text-[10px]">SKU: {item.sku}</span>
+                    <span className="font-mono text-[10px] text-neutral-400">SKU: {item.sku}</span>
                   </div>
                 </div>
               </div>
 
               {/* Price & Quantity */}
-              <div className="text-right shrink-0">
-                <div className="font-bold text-xs text-neutral-900">
+              <div className="shrink-0 text-right">
+                <div className="text-xs font-bold text-neutral-900">
                   {formatCurrency(item.price * item.quantity)}
                 </div>
-                <div className="text-[10px] text-neutral-500 font-medium">
+                <div className="text-[10px] font-medium text-neutral-500">
                   {formatCurrency(item.price)} × {item.quantity}
                 </div>
               </div>
@@ -249,14 +260,14 @@ export function CustomerAbandonedCartCard({
       {/* Recovery Preview & Confirmation Modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl space-y-4">
+          <div className="w-full max-w-lg space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-600 text-white">
                   <MessageCircle className="size-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-neutral-900">
+                  <h3 className="text-sm font-bold text-neutral-900">
                     WhatsApp Cart Recovery Preview
                   </h3>
                   <p className="text-xs text-neutral-500">
@@ -280,16 +291,16 @@ export function CustomerAbandonedCartCard({
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 rows={9}
-                className="w-full rounded-xl border border-neutral-300 p-3 text-xs leading-relaxed font-sans text-neutral-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                className="w-full rounded-xl border border-neutral-300 p-3 font-sans text-xs leading-relaxed text-neutral-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
               />
             </div>
 
-            <div className="rounded-lg bg-emerald-50/60 p-2.5 text-[11px] text-emerald-800 border border-emerald-200/60">
+            <div className="rounded-lg border border-emerald-200/60 bg-emerald-50/60 p-2.5 text-[11px] text-emerald-800">
               💡 Clicking will open WhatsApp with this prefilled message to{" "}
               <strong>{customerPhone}</strong>.
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-neutral-100">
+            <div className="flex items-center justify-end gap-2 border-t border-neutral-100 pt-2">
               <button
                 type="button"
                 onClick={() => setIsPreviewOpen(false)}
