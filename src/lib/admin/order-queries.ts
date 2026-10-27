@@ -1,8 +1,10 @@
 import "server-only";
 
-import { OrderStatus, PaymentMethod, PaymentStatus, Prisma } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus, Prisma, SalesChannel } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+
+export type AdminOrderDateRange = "today" | "yesterday" | "7d" | "30d";
 
 export interface AdminOrderItem {
   id: string;
@@ -20,6 +22,7 @@ export interface AdminOrderItem {
   customerPhone: string | null;
   shippingCity: string;
   itemCount: number;
+  itemsSummary?: string;
   createdAt: string;
   shipment?: {
     provider: string;
@@ -41,6 +44,8 @@ export async function getAdminOrders({
   status,
   paymentStatus,
   paymentMethod,
+  salesChannel,
+  dateRange,
   search,
   page = 1,
   limit = 20,
@@ -48,6 +53,8 @@ export async function getAdminOrders({
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
   paymentMethod?: PaymentMethod;
+  salesChannel?: SalesChannel;
+  dateRange?: AdminOrderDateRange;
   search?: string;
   page?: number;
   limit?: number;
@@ -66,6 +73,28 @@ export async function getAdminOrders({
 
   if (paymentMethod) {
     where.paymentMethod = paymentMethod;
+  }
+
+  if (salesChannel) {
+    where.salesChannel = salesChannel;
+  }
+
+  if (dateRange) {
+    const now = new Date();
+    if (dateRange === "today") {
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      where.createdAt = { gte: startOfToday };
+    } else if (dateRange === "yesterday") {
+      const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+      const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      where.createdAt = { gte: startOfYesterday, lt: endOfYesterday };
+    } else if (dateRange === "7d") {
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: sevenDaysAgo };
+    } else if (dateRange === "30d") {
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      where.createdAt = { gte: thirtyDaysAgo };
+    }
   }
 
   if (search && search.trim()) {
@@ -101,6 +130,14 @@ export async function getAdminOrders({
         customerPhone: true,
         shippingCity: true,
         createdAt: true,
+        items: {
+          take: 3,
+          select: {
+            productName: true,
+            size: true,
+            quantity: true,
+          },
+        },
         shipment: {
           select: {
             provider: true,
@@ -155,6 +192,14 @@ export async function getAdminOrders({
     customerPhone: order.customerPhone,
     shippingCity: order.shippingCity,
     itemCount: order._count.items,
+    itemsSummary: order.items
+      .map(
+        (i) =>
+          `${i.productName}${i.size ? ` (${i.size})` : ""}${
+            i.quantity > 1 ? ` ×${i.quantity}` : ""
+          }`
+      )
+      .join(", "),
     createdAt: order.createdAt.toISOString(),
     shipment: order.shipment
       ? {

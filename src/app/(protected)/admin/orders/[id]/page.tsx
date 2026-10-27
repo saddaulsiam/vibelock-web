@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
-  ArrowLeft,
   Banknote,
   CreditCard,
   Mail,
@@ -10,6 +9,7 @@ import {
   Phone,
   RotateCcw,
   ShieldCheck,
+  TrendingUp,
   Truck,
   User,
   ExternalLink,
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { OrderBackButton } from "@/components/admin/order-back-button";
 import {
   CreateShipmentForm,
   RefreshShipmentStatusButton,
@@ -89,6 +90,16 @@ export default async function AdminOrderPage({
     .join("\n");
 
   const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCostPrice = order.items.reduce(
+    (sum, item) => sum + Number(item.costPrice || 0) * item.quantity,
+    0
+  );
+  const netMerchandiseRevenue = Number(order.subtotal) - Number(order.discount);
+  const estimatedGrossProfit = netMerchandiseRevenue - totalCostPrice;
+  const marginPercentage =
+    netMerchandiseRevenue > 0
+      ? Math.round((estimatedGrossProfit / netMerchandiseRevenue) * 100)
+      : 0;
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6 pb-24 lg:pb-6">
@@ -111,13 +122,7 @@ export default async function AdminOrderPage({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="mb-2.5 flex items-center gap-2">
-              <Link
-                href="/admin/orders"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
-              >
-                <ArrowLeft className="size-3.5" />
-                <span>Back to Orders</span>
-              </Link>
+              <OrderBackButton />
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
@@ -538,6 +543,54 @@ export default async function AdminOrderPage({
                 <span className="text-lg text-neutral-900">{formatBdt(order.total)}</span>
               </div>
             </div>
+
+            {/* COD Cash to Collect Banner */}
+            {order.paymentMethod === "COD" && (
+              <div className="mt-3.5 rounded-lg border border-emerald-300 bg-emerald-50/70 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Banknote className="size-4 text-emerald-700" />
+                    <span className="text-xs font-bold text-emerald-950">Cash to Collect (COD)</span>
+                  </div>
+                  <span className="text-sm font-black text-emerald-900">
+                    {order.paymentStatus === "SUCCESS" ? "Collected ✓" : formatBdt(order.total)}
+                  </span>
+                </div>
+                <p className="mt-1 text-[10px] text-emerald-700">
+                  {order.paymentStatus === "SUCCESS"
+                    ? "Payment reconciled and verified."
+                    : "Courier delivery rider will collect this exact cash amount upon delivery."}
+                </p>
+              </div>
+            )}
+
+            {/* Estimated Gross Margin Breakdown for Admin */}
+            {totalCostPrice > 0 && (
+              <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-500">Goods Wholesale Cost</span>
+                  <span className="font-semibold text-neutral-800">{formatBdt(totalCostPrice)}</span>
+                </div>
+                <div className="mt-1.5 flex items-center justify-between border-t border-neutral-200/60 pt-1.5">
+                  <div className="flex items-center gap-1 text-neutral-600">
+                    <TrendingUp className="size-3 text-emerald-600" />
+                    <span>Est. Gross Profit</span>
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`font-bold ${
+                        estimatedGrossProfit >= 0 ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {formatBdt(estimatedGrossProfit)}
+                    </span>
+                    <span className="ml-1 text-[10px] font-semibold text-neutral-500">
+                      ({marginPercentage}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Payment Transactions Details (if recorded) */}
             {order.payments && order.payments.length > 0 ? (

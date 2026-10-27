@@ -14,6 +14,7 @@ import {
   MessageCircle,
   Package,
   Phone,
+  RotateCcw,
   Truck,
   X,
 } from "lucide-react";
@@ -23,8 +24,13 @@ import {
   AdminTableSearchInput,
   ADMIN_TABLE_CLASSES,
 } from "@/components/admin/admin-table-controls";
-import type { AdminOrderItem, AdminOrdersResult } from "@/lib/admin/order-queries";
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { cn } from "@/lib/utils";
+import type {
+  AdminOrderDateRange,
+  AdminOrderItem,
+  AdminOrdersResult,
+} from "@/lib/admin/order-queries";
+import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 import {
   bulkUpdateOrderStatusAction,
   loadMoreAdminOrdersAction,
@@ -84,6 +90,8 @@ interface AdminOrdersTableProps {
     status?: string;
     paymentStatus?: string;
     paymentMethod?: string;
+    salesChannel?: string;
+    dateRange?: string;
   };
 }
 
@@ -282,6 +290,12 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
         paymentMethod: currentFilters.paymentMethod
           ? (currentFilters.paymentMethod as PaymentMethod)
           : undefined,
+        salesChannel: currentFilters.salesChannel
+          ? (currentFilters.salesChannel as SalesChannel)
+          : undefined,
+        dateRange: currentFilters.dateRange
+          ? (currentFilters.dateRange as AdminOrderDateRange)
+          : undefined,
         page: nextPage,
         limit: 20,
       });
@@ -337,6 +351,35 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
 
   const handlePaymentMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateUrlParams({ paymentMethod: e.target.value });
+  };
+
+  const handleSalesChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateUrlParams({ salesChannel: e.target.value });
+  };
+
+  const handleDateRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    updateUrlParams({ dateRange: e.target.value });
+  };
+
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+      (currentFilters.status && currentFilters.status !== "ALL") ||
+      currentFilters.paymentStatus ||
+      currentFilters.paymentMethod ||
+      currentFilters.salesChannel ||
+      currentFilters.dateRange
+  );
+
+  const handleClearAllFilters = () => {
+    setSearchTerm("");
+    updateUrlParams({
+      q: null,
+      status: null,
+      paymentStatus: null,
+      paymentMethod: null,
+      salesChannel: null,
+      dateRange: null,
+    });
   };
 
   // Safe client-side CSV export (honors active multi-selection if present)
@@ -549,6 +592,32 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
             inputRef={searchInputRef}
           />
 
+          {/* Date Range Filter */}
+          <select
+            value={currentFilters.dateRange || "ALL"}
+            onChange={handleDateRangeChange}
+            aria-label="Filter by date range"
+            className={ADMIN_TABLE_CLASSES.select}
+          >
+            <option value="ALL">All Time</option>
+            <option value="today">Today (Live)</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+          </select>
+
+          {/* Sales Channel Filter */}
+          <select
+            value={currentFilters.salesChannel || "ALL"}
+            onChange={handleSalesChannelChange}
+            aria-label="Filter by sales channel"
+            className={ADMIN_TABLE_CLASSES.select}
+          >
+            <option value="ALL">All Channels</option>
+            <option value="WEBSITE">Online Store (WEB)</option>
+            <option value="POS">POS Counter</option>
+          </select>
+
           {/* Payment Status Filter */}
           <select
             value={currentFilters.paymentStatus || "ALL"}
@@ -608,17 +677,31 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
         </div>
       </div>
 
-      {/* Meta Counter */}
+      {/* Meta Counter & Active Filter Reset */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <p>
-          Showing <strong className="text-neutral-900">{loadedOrders.length}</strong> of{" "}
-          <strong className="text-neutral-900">{total}</strong> {total === 1 ? "order" : "orders"}
-          {isPending ? " (Filtering...)" : ""}
-        </p>
+        <div className="flex items-center gap-2">
+          <p>
+            Showing <strong className="text-neutral-900">{loadedOrders.length}</strong> of{" "}
+            <strong className="text-neutral-900">{total}</strong>{" "}
+            {total === 1 ? "order" : "orders"}
+            {isPending ? " (Filtering...)" : ""}
+          </p>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearAllFilters}
+              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
+              title="Reset all active filters"
+            >
+              <RotateCcw className="size-3" />
+              <span>Reset filters</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Orders Table */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
+      {/* Orders Table (Desktop & Tablet) */}
+      <div className={cn(ADMIN_TABLE_CLASSES.container, "hidden md:block")}>
         <table className={ADMIN_TABLE_CLASSES.table}>
           <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
@@ -662,6 +745,16 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                   <p className="mt-1 text-xs text-neutral-500">
                     Try adjusting your search query or filter options.
                   </p>
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={handleClearAllFilters}
+                      className="mt-3.5 inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition hover:bg-neutral-50"
+                    >
+                      <RotateCcw className="size-3.5 text-neutral-500" />
+                      <span>Reset All Filters</span>
+                    </button>
+                  )}
                 </td>
               </tr>
             ) : (
@@ -757,11 +850,21 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
 
                     {/* Items */}
                     {visibleColumns.items && (
-                      <td className="px-3 py-3 text-center whitespace-nowrap">
-                        <span className="inline-flex items-center gap-1 rounded-sm bg-[#F3F0E8] px-2 py-0.5 text-xs font-semibold text-[#101114]">
-                          <Package className="size-3 text-neutral-600" />
-                          {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
-                        </span>
+                      <td className="px-3 py-3 text-center">
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="inline-flex items-center gap-1 rounded-sm bg-[#F3F0E8] px-2 py-0.5 text-xs font-semibold text-[#101114]">
+                            <Package className="size-3 text-neutral-600" />
+                            {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
+                          </span>
+                          {order.itemsSummary ? (
+                            <span
+                              className="block max-w-[150px] truncate text-[10px] text-neutral-500 hover:text-neutral-900 transition-colors"
+                              title={order.itemsSummary}
+                            >
+                              {order.itemsSummary}
+                            </span>
+                          ) : null}
+                        </div>
                       </td>
                     )}
 
@@ -889,6 +992,203 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* ── Mobile View: High-Efficiency Order Cards (< md) ── */}
+      <div className="space-y-3 md:hidden">
+        {loadedOrders.length === 0 ? (
+          <div className="rounded-xl border border-neutral-200/90 bg-white p-8 text-center text-neutral-500 shadow-2xs">
+            <Package className="mx-auto mb-2 size-8 text-neutral-400" />
+            <p className="font-semibold text-neutral-700">No orders found</p>
+            <p className="mt-1 text-xs text-neutral-500">
+              Try adjusting your search query or filter options.
+            </p>
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={handleClearAllFilters}
+                className="mt-3.5 inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition hover:bg-neutral-50"
+              >
+                <RotateCcw className="size-3.5 text-neutral-500" />
+                <span>Reset All Filters</span>
+              </button>
+            )}
+          </div>
+        ) : (
+          loadedOrders.map((order) => {
+            const isSelected = selectedIds.has(order.id);
+            return (
+              <div
+                key={order.id}
+                className={`rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs transition-colors ${
+                  isSelected ? "bg-amber-50/40 border-amber-300" : ""
+                }`}
+              >
+                {/* Header: Checkbox, Order #, Channel & Status */}
+                <div className="flex items-start justify-between gap-2 border-b border-neutral-100 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(order.id)}
+                      aria-label={`Select order ${order.orderNumber}`}
+                      className="size-4 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
+                    />
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <Link
+                          href={`/admin/orders/${order.id}`}
+                          className="font-mono text-xs font-bold text-[#101114] hover:text-[#00D9FF] hover:underline"
+                        >
+                          #{order.orderNumber}
+                        </Link>
+                        <span
+                          className={`rounded-2xs py-0.2 inline-flex items-center px-1.5 text-[9px] font-bold tracking-wider uppercase ${
+                            order.salesChannel === "POS"
+                              ? "border border-purple-200 bg-purple-50 text-purple-700"
+                              : "border border-blue-200 bg-blue-50 text-blue-700"
+                          }`}
+                        >
+                          {order.salesChannel === "POS" ? "POS" : "WEB"}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-neutral-500">
+                        {formatDate(order.createdAt)}
+                      </div>
+                    </div>
+                  </div>
+                  <div>{getOrderStatusBadge(order.status)}</div>
+                </div>
+
+                {/* Customer Info & Direct Quick Contacts */}
+                <div className="mt-2.5 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-bold text-neutral-900">
+                      {order.customerName || "Guest Customer"}
+                    </p>
+                    <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-500">
+                      {order.shippingCity && (
+                        <span className="rounded-xs bg-neutral-100 px-1 py-0.2 text-[10px] font-medium text-neutral-600">
+                          {order.shippingCity}
+                        </span>
+                      )}
+                      <span className="font-mono">{order.customerPhone}</span>
+                    </div>
+                  </div>
+
+                  {order.customerPhone && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a
+                        href={`tel:${order.customerPhone}`}
+                        className="flex size-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
+                        title="Call customer"
+                      >
+                        <Phone className="size-3" />
+                      </a>
+                      <a
+                        href={formatWhatsAppUrl(
+                          order.customerPhone,
+                          order.orderNumber,
+                          order.customerName
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex size-7 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                        title="WhatsApp chat"
+                      >
+                        <MessageCircle className="size-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Items & Payment Strip */}
+                <div className="mt-3 flex items-center justify-between rounded-lg bg-neutral-50/80 p-2 text-xs">
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <Package className="size-3 text-neutral-500" />
+                      <span className="font-semibold text-neutral-800">
+                        {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
+                      </span>
+                    </div>
+                    {order.itemsSummary ? (
+                      <p className="mt-0.5 max-w-[170px] truncate text-[10px] text-neutral-500">
+                        {order.itemsSummary}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <div className="text-right">
+                    <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
+                    <div className="flex items-center justify-end gap-1 text-[10px]">
+                      <span className="font-semibold text-neutral-600">{order.paymentMethod}</span>
+                      <span>&middot;</span>
+                      <span
+                        className={
+                          order.paymentStatus === "SUCCESS"
+                            ? "text-emerald-700 font-bold"
+                            : "text-amber-700"
+                        }
+                      >
+                        {order.paymentStatus}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Courier info (if dispatched) */}
+                {order.shipment ? (
+                  <div className="mt-2 flex items-center justify-between text-[11px] text-neutral-600">
+                    <span className="inline-flex items-center gap-1 font-semibold text-purple-700">
+                      <Truck className="size-3" />
+                      {order.shipment.provider}
+                    </span>
+                    {order.shipment.trackingNumber && (
+                      <span className="font-mono text-[10px] text-neutral-500">
+                        Trk: {order.shipment.trackingNumber}
+                      </span>
+                    )}
+                  </div>
+                ) : null}
+
+                {/* Actions Footer */}
+                <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-100 pt-2.5">
+                  {order.status === "PENDING" && (
+                    <button
+                      type="button"
+                      disabled={updatingOrderId === order.id}
+                      onClick={() => handleQuickStatus(order.id, "CONFIRMED")}
+                      className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      <CheckCircle2 className="size-3.5" />
+                      <span>{updatingOrderId === order.id ? "..." : "Confirm"}</span>
+                    </button>
+                  )}
+
+                  {order.status === "CONFIRMED" && (
+                    <button
+                      type="button"
+                      disabled={updatingOrderId === order.id}
+                      onClick={() => handleQuickStatus(order.id, "PROCESSING")}
+                      className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 disabled:opacity-50"
+                    >
+                      <Package className="size-3.5 text-indigo-600" />
+                      <span>{updatingOrderId === order.id ? "..." : "Pack"}</span>
+                    </button>
+                  )}
+
+                  <Link
+                    href={`/admin/orders/${order.id}`}
+                    className="inline-flex h-8 items-center gap-1 rounded-lg border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs hover:bg-[#F3F0E8]"
+                  >
+                    <Eye className="size-3.5" />
+                    <span>View Details</span>
+                  </Link>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}

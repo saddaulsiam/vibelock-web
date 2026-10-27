@@ -1,12 +1,16 @@
 "use server";
 
-import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 import { updateTag } from "next/cache";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { getAdminOrders, type AdminOrdersResult } from "@/lib/admin/order-queries";
+import {
+  getAdminOrders,
+  type AdminOrdersResult,
+  type AdminOrderDateRange,
+} from "@/lib/admin/order-queries";
 import {
   getAuthoritativePaymentStatus,
   getOrderStatusTransitionError,
@@ -244,6 +248,8 @@ export async function loadMoreAdminOrdersAction(options: {
   status?: OrderStatus;
   paymentStatus?: PaymentStatus;
   paymentMethod?: PaymentMethod;
+  salesChannel?: SalesChannel;
+  dateRange?: AdminOrderDateRange;
   search?: string;
   page: number;
   limit?: number;
