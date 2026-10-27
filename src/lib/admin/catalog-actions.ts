@@ -164,6 +164,11 @@ export async function saveCategoryAction(
     finalImageUrl = rawImageUrl;
   }
 
+  const sortOrderRaw = formData.get("sortOrder");
+  const sortOrder =
+    sortOrderRaw !== null && !isNaN(Number(sortOrderRaw)) ? Number(sortOrderRaw) : 0;
+  const isActive = formData.get("isActive") !== "false";
+
   try {
     if (id) {
       const existing = await prisma.category.findUnique({
@@ -179,6 +184,8 @@ export async function saveCategoryAction(
           description: description || null,
           imageUrl: finalImageUrl !== undefined ? finalImageUrl : existing.imageUrl,
           parentId: parentId ?? null,
+          isActive,
+          sortOrder,
         },
       });
     } else {
@@ -189,6 +196,8 @@ export async function saveCategoryAction(
           description: description || null,
           imageUrl: finalImageUrl ?? null,
           parentId: parentId ?? null,
+          isActive,
+          sortOrder,
         },
       });
     }
@@ -200,6 +209,28 @@ export async function saveCategoryAction(
 
   refreshCatalog();
   return ok;
+}
+
+export async function toggleCategoryStatusAction(
+  id: string,
+  currentActive: boolean
+): Promise<AdminActionState> {
+  await requireRole("ADMIN");
+  try {
+    await prisma.category.update({
+      where: { id },
+      data: { isActive: !currentActive },
+    });
+    refreshCatalog();
+    return {
+      error: null,
+      message: `Category is now ${!currentActive ? "Active" : "Hidden"}.`,
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to toggle category status.",
+    };
+  }
 }
 
 export async function deleteCategoryAction(

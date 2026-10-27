@@ -102,7 +102,8 @@ export const getCategories = async (): Promise<CategorySummary[]> => {
   const queryFn = unstable_cache(
     async (): Promise<CategorySummary[]> => {
       const categories = await prisma.category.findMany({
-        orderBy: { name: "asc" },
+        where: { isActive: true },
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       });
 
       // As with the published catalog, an empty result may predate data being

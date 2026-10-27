@@ -15,6 +15,8 @@ describe("AdminCategoriesTable", () => {
       imageUrl: "https://example.com/tshirt.jpg",
       parentId: null,
       parent: null,
+      isActive: true,
+      sortOrder: 1,
       _count: { products: 12, children: 2 },
     },
     {
@@ -25,6 +27,8 @@ describe("AdminCategoriesTable", () => {
       imageUrl: null,
       parentId: "cat-1",
       parent: { name: "T-Shirts" },
+      isActive: false,
+      sortOrder: 2,
       _count: { products: 5, children: 0 },
     },
     {
@@ -35,11 +39,13 @@ describe("AdminCategoriesTable", () => {
       imageUrl: null,
       parentId: null,
       parent: null,
+      isActive: true,
+      sortOrder: 3,
       _count: { products: 0, children: 0 },
     },
   ];
 
-  test("renders all categories with names, slugs, and badges", () => {
+  test("renders all categories with names, slugs, priority, and badges", () => {
     const html = renderToStaticMarkup(
       <AdminCategoriesTable initialCategories={mockCategories} />
     );
@@ -56,13 +62,19 @@ describe("AdminCategoriesTable", () => {
     expect(html).toContain("Root Department");
     expect(html).toContain("T-Shirts");
 
+    // Sort Order priority
+    expect(html).toContain("#1");
+    expect(html).toContain("#2");
+    expect(html).toContain("#3");
+
     // Product counts
     expect(html).toContain("12 products");
     expect(html).toContain("5 products");
     expect(html).toContain("0 products");
 
-    // Children count
-    expect(html).toContain("2 sub-tiers");
+    // Storefront Status badges
+    expect(html).toContain("Active Live");
+    expect(html).toContain("Hidden / Draft");
 
     // Actions
     expect(html).toContain("Edit");

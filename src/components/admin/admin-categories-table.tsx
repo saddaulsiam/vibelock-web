@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Folder,
   FolderTree,
+  Loader2,
   Package,
   Pencil,
   RotateCcw,
@@ -18,7 +19,10 @@ import {
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
-import { deleteCategoryAction } from "@/lib/admin/catalog-actions";
+import {
+  deleteCategoryAction,
+  toggleCategoryStatusAction,
+} from "@/lib/admin/catalog-actions";
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
 
 export type AdminCategoryListItem = {
@@ -29,19 +33,36 @@ export type AdminCategoryListItem = {
   imageUrl: string | null;
   parentId: string | null;
   parent: { name: string } | null;
+  isActive: boolean;
+  sortOrder: number;
   _count: { products: number; children: number };
 };
 
-export type CategoryFilterTab = "all" | "root" | "sub" | "with_products" | "empty";
+export type CategoryFilterTab =
+  | "all"
+  | "active"
+  | "hidden"
+  | "root"
+  | "sub"
+  | "with_products"
+  | "empty";
 
 export function AdminCategoriesTable({
   initialCategories,
 }: {
   initialCategories: AdminCategoryListItem[];
 }) {
+  const [categories, setCategories] = React.useState(initialCategories);
+  const [prevInitial, setPrevInitial] = React.useState(initialCategories);
   const [search, setSearch] = React.useState("");
   const [activeTab, setActiveTab] = React.useState<CategoryFilterTab>("all");
+  const [togglingId, setTogglingId] = React.useState<string | null>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  if (initialCategories !== prevInitial) {
+    setPrevInitial(initialCategories);
+    setCategories(initialCategories);
+  }
 
   // Keyboard shortcut '/' to focus search
   React.useEffect(() => {
@@ -59,12 +80,41 @@ export function AdminCategoriesTable({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Quick 1-click status toggle
+  const handleToggleStatus = async (id: string, currentActive: boolean) => {
+    setTogglingId(id);
+    // Optimistic update
+    setCategories((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, isActive: !currentActive } : c))
+    );
+    try {
+      const res = await toggleCategoryStatusAction(id, currentActive);
+      if (res.error) {
+        // Revert on error
+        setCategories((prev) =>
+          prev.map((c) => (c.id === id ? { ...c, isActive: currentActive } : c))
+        );
+      }
+    } catch {
+      // Revert on error
+      setCategories((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isActive: currentActive } : c))
+      );
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   // Filtered categories
   const filteredCategories = React.useMemo(() => {
-    let result = initialCategories;
+    let result = categories;
 
     // Filter by tab
-    if (activeTab === "root") {
+    if (activeTab === "active") {
+      result = result.filter((c) => c.isActive);
+    } else if (activeTab === "hidden") {
+      result = result.filter((c) => !c.isActive);
+    } else if (activeTab === "root") {
       result = result.filter((c) => !c.parentId);
     } else if (activeTab === "sub") {
       result = result.filter((c) => Boolean(c.parentId));
@@ -87,37 +137,43 @@ export function AdminCategoriesTable({
     }
 
     return result;
-  }, [initialCategories, activeTab, search]);
+  }, [categories, activeTab, search]);
 
   const tabs: AdminTableTabItem<CategoryFilterTab>[] = [
     {
       key: "all",
       label: "All Categories",
-      count: initialCategories.length,
+      count: categories.length,
+    },
+    {
+      key: "active",
+      label: "Active Live",
+      count: categories.filter((c) => c.isActive).length,
+      dotColor: "bg-emerald-500",
+    },
+    {
+      key: "hidden",
+      label: "Hidden / Draft",
+      count: categories.filter((c) => !c.isActive).length,
+      dotColor: "bg-neutral-400",
     },
     {
       key: "root",
       label: "Root Departments",
-      count: initialCategories.filter((c) => !c.parentId).length,
+      count: categories.filter((c) => !c.parentId).length,
       dotColor: "bg-blue-500",
     },
     {
       key: "sub",
       label: "Sub-Categories",
-      count: initialCategories.filter((c) => Boolean(c.parentId)).length,
+      count: categories.filter((c) => Boolean(c.parentId)).length,
       dotColor: "bg-amber-500",
     },
     {
       key: "with_products",
       label: "With Products",
-      count: initialCategories.filter((c) => c._count.products > 0).length,
-      dotColor: "bg-emerald-500",
-    },
-    {
-      key: "empty",
-      label: "Unassigned (0)",
-      count: initialCategories.filter((c) => c._count.products === 0).length,
-      dotColor: "bg-neutral-400",
+      count: categories.filter((c) => c._count.products > 0).length,
+      dotColor: "bg-cyan-500",
     },
   ];
 
@@ -168,7 +224,7 @@ export function AdminCategoriesTable({
           </span>{" "}
           of{" "}
           <span className="font-semibold text-neutral-900">
-            {initialCategories.length}
+            {categories.length}
           </span>{" "}
           categories
         </div>
@@ -180,16 +236,17 @@ export function AdminCategoriesTable({
           <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
               <th className="px-4 py-3.5">Category</th>
-              <th className="px-4 py-3.5">Hierarchy / Tier</th>
+              <th className="px-4 py-3.5">Hierarchy</th>
+              <th className="px-4 py-3.5 text-center">Priority</th>
               <th className="px-4 py-3.5">Catalog Products</th>
-              <th className="px-4 py-3.5">Child Categories</th>
+              <th className="px-4 py-3.5">Storefront Visibility</th>
               <th className="px-4 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className={ADMIN_TABLE_CLASSES.tbody}>
             {filteredCategories.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-14 text-center">
+                <td colSpan={6} className="py-14 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <FolderTree className="size-10 text-neutral-300" />
                     <p className="text-sm font-semibold text-neutral-800">
@@ -228,6 +285,7 @@ export function AdminCategoriesTable({
                 const hasProducts = category._count.products > 0;
                 const hasChildren = category._count.children > 0;
                 const canDelete = !hasProducts && !hasChildren;
+                const isToggling = togglingId === category.id;
 
                 return (
                   <tr key={category.id} className={ADMIN_TABLE_CLASSES.tr}>
@@ -280,6 +338,13 @@ export function AdminCategoriesTable({
                       )}
                     </td>
 
+                    {/* Merchandising Priority / Sort Order */}
+                    <td className="px-4 py-3.5 text-center">
+                      <span className="inline-flex items-center rounded-md border border-neutral-200/80 bg-neutral-100/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-neutral-700">
+                        #{category.sortOrder}
+                      </span>
+                    </td>
+
                     {/* Catalog Products */}
                     <td className="px-4 py-3.5">
                       {hasProducts ? (
@@ -299,16 +364,34 @@ export function AdminCategoriesTable({
                       )}
                     </td>
 
-                    {/* Children / Sub-categories */}
+                    {/* Storefront Visibility Toggle */}
                     <td className="px-4 py-3.5">
-                      {hasChildren ? (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-800 shadow-2xs">
-                          <FolderTree className="size-3 text-amber-600" />
-                          <span>{category._count.children} sub-tier{category._count.children === 1 ? "" : "s"}</span>
-                        </span>
-                      ) : (
-                        <span className="text-neutral-400">—</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleToggleStatus(category.id, category.isActive)
+                          }
+                          disabled={isToggling}
+                          title={`Click to ${category.isActive ? "hide from" : "publish to"} storefront`}
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                            category.isActive
+                              ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                              : "border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                          }`}
+                        >
+                          {isToggling ? (
+                            <Loader2 className="size-2.5 animate-spin" />
+                          ) : (
+                            <span
+                              className={`size-1.5 rounded-full ${
+                                category.isActive ? "bg-emerald-500" : "bg-neutral-400"
+                              }`}
+                            />
+                          )}
+                          <span>{category.isActive ? "Active Live" : "Hidden / Draft"}</span>
+                        </button>
+                      </div>
                     </td>
 
                     {/* Actions */}

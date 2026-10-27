@@ -67,7 +67,7 @@ export type AdminProductsResult = {
 export async function getAdminCategories() {
   await requireRole("ADMIN");
   return prisma.category.findMany({
-    orderBy: [{ name: "asc" }, { slug: "asc" }],
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: {
       id: true,
       name: true,
@@ -76,6 +76,8 @@ export async function getAdminCategories() {
       imageUrl: true,
       parentId: true,
       parent: { select: { name: true } },
+      isActive: true,
+      sortOrder: true,
       _count: { select: { products: true, children: true } },
     },
   });
@@ -94,10 +96,12 @@ export async function getAdminCategoryFormData(id?: string) {
             description: true,
             imageUrl: true,
             parentId: true,
+            isActive: true,
+            sortOrder: true,
           },
         })
       : Promise.resolve(null),
-    prisma.category.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }),
+    prisma.category.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
   ]);
   return { category, categories };
 }
