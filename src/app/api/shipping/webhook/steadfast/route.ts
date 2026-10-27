@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
 
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${shipment.orderId}`);
-    revalidatePath(`/admin/shipping/shipments/${shipment.id}`);
+    revalidatePath("/admin/shipping");
 
     return NextResponse.json({
       success: true,

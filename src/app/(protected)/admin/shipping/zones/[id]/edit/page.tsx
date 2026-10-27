@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import { ShippingZoneForm } from "@/components/admin/shipping-forms";
 import { getAdminShippingZone } from "@/lib/admin/shipping-queries";
 
@@ -12,22 +14,26 @@ export default async function EditShippingZonePage({
   const { id } = await params;
   const zone = await getAdminShippingZone(id);
   if (!zone) notFound();
+
   return (
-    <div className="max-w-2xl space-y-6">
-      <Link
-        href="/admin/shipping/zones"
-        className="text-primary text-sm font-medium hover:underline"
+    <div className="mx-auto w-full max-w-2xl space-y-6">
+      <AdminPageHeader
+        eyebrow="Logistics / Configuration"
+        title={`Edit ${zone.name}`}
+        description="Modify geographical delivery boundary and assigned country codes."
       >
-        ← Back to zones
-      </Link>
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit shipping zone</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ShippingZoneForm zone={zone} />
-        </CardContent>
-      </Card>
+        <Link
+          href="/admin/shipping/zones"
+          className={ADMIN_TABLE_CLASSES.buttonSecondary}
+        >
+          <ArrowLeft className="size-3.5" />
+          <span>Back to Zones</span>
+        </Link>
+      </AdminPageHeader>
+
+      <div className="rounded-xl border border-neutral-200/90 bg-white p-6 shadow-2xs">
+        <ShippingZoneForm zone={zone} />
+      </div>
     </div>
   );
 }

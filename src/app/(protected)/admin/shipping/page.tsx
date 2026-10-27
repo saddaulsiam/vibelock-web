@@ -1,129 +1,18 @@
-import Link from "next/link";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminShipmentsTable } from "@/components/admin/admin-shipments-table";
+import { ShippingSubNav } from "@/components/admin/shipping-sub-nav";
+import {
+  getAdminShipments,
+  getAdminShippingOverviewKPIs,
+  type ShipmentFilter,
+  type ShipmentProviderFilter,
+} from "@/lib/admin/shipping-queries";
+import { AlertTriangle, Banknote, CheckCircle2, Truck } from "lucide-react";
 import { Suspense } from "react";
-import { Badge } from "@/components/ui/badge";
-import { getAdminShippingOverview } from "@/lib/admin/shipping-queries";
 
-function valueOf(value: string | string[] | undefined) {
+function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
-}
-
-async function ShipmentTable({
-  searchParams,
-}: {
-  searchParams: Record<string, string | string[] | undefined>;
-}) {
-  const rawPage = Number(valueOf(searchParams.page));
-  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-  const { shipments, totalPages } = await getAdminShippingOverview(page);
-  return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-3">
-        <Link href="/admin/shipping/zones" className="border px-4 py-2 text-sm font-medium">
-          Manage zones
-        </Link>
-        <Link href="/admin/shipping/methods" className="border px-4 py-2 text-sm font-medium">
-          Manage methods
-        </Link>
-      </div>
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 border-b">
-            <tr className="text-left">
-              <th className="p-3 font-medium">Order</th>
-              <th className="p-3 font-medium">Customer</th>
-              <th className="p-3 font-medium">Method</th>
-              <th className="p-3 font-medium">Provider / tracking</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 font-medium">Created</th>
-              <th className="p-3 text-right font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {shipments.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="text-muted-foreground p-10 text-center">
-                  No shipments found.
-                </td>
-              </tr>
-            ) : (
-              shipments.map((shipment) => (
-                <tr key={shipment.id}>
-                  <td className="p-3 font-medium">
-                    <Link
-                      href={`/admin/orders/${shipment.order.id}`}
-                      className="text-primary hover:underline"
-                    >
-                      {shipment.order.orderNumber}
-                    </Link>
-                  </td>
-                  <td className="p-3">
-                    <div>{shipment.order.customerName || "Guest"}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {shipment.order.customerEmail}
-                    </div>
-                  </td>
-                  <td className="p-3">{shipment.order.shippingMethodName}</td>
-                  <td className="p-3">
-                    <div>{shipment.provider}</div>
-                    <div className="text-muted-foreground font-mono text-xs">
-                      {shipment.trackingNumber ||
-                        shipment.providerShipmentId ||
-                        "Pending provider reference"}
-                    </div>
-                  </td>
-                  <td className="p-3">
-                    <Badge
-                      variant={
-                        shipment.status === "FAILED" || shipment.status === "CANCELLED"
-                          ? "destructive"
-                          : "outline"
-                      }
-                    >
-                      {shipment.status}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    {new Date(shipment.createdAt).toLocaleDateString("en-BD")}
-                  </td>
-                  <td className="p-3 text-right">
-                    <Link
-                      href={`/admin/shipping/shipments/${shipment.id}`}
-                      className="text-primary font-medium hover:underline"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      {totalPages > 1 ? (
-        <nav aria-label="Shipment pages" className="flex items-center justify-center gap-3">
-          {page > 1 ? (
-            <Link
-              href={`/admin/shipping?page=${page - 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              ←
-            </Link>
-          ) : null}
-          <span className="text-sm font-medium">
-            Page {page} of {totalPages}
-          </span>
-          {page < totalPages ? (
-            <Link
-              href={`/admin/shipping?page=${page + 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              →
-            </Link>
-          ) : null}
-        </nav>
-      ) : null}
-    </div>
-  );
 }
 
 export default async function AdminShippingPage({
@@ -131,16 +20,110 @@ export default async function AdminShippingPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const params = await searchParams;
+  const q = valueOf(params.q);
+  const rawFilter = valueOf(params.filter);
+  const filter: ShipmentFilter = ["all", "in_transit", "delivered", "returned", "pending"].includes(
+    rawFilter as string
+  )
+    ? (rawFilter as ShipmentFilter)
+    : "all";
+
+  const rawProvider = valueOf(params.provider);
+  const provider: ShipmentProviderFilter = ["ALL", "STEADFAST", "MANUAL", "PATHAO"].includes(
+    rawProvider as string
+  )
+    ? (rawProvider as ShipmentProviderFilter)
+    : "ALL";
+
+  const [kpis, shipmentsData] = await Promise.all([
+    getAdminShippingOverviewKPIs(),
+    getAdminShipments({
+      search: q,
+      filter,
+      provider: provider !== "ALL" ? provider : undefined,
+      page: 1,
+      pageSize: 20,
+    }),
+  ]);
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Shipping</h1>
-        <p className="text-muted-foreground">
-          Manage shipping configuration and existing shipments.
-        </p>
-      </div>
-      <Suspense fallback={<div className="p-12 text-center">Loading shipments...</div>}>
-        <ShipmentTable searchParams={await searchParams} />
+    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+      {/* ── Page Header ── */}
+      <AdminPageHeader
+        eyebrow="Logistics & Delivery"
+        title="Delivery Logistics"
+        badgeLabel="Steadfast Courier Integrated"
+        badgeVariant="emerald"
+        description="Track live parcel consignments, Steadfast API tracking sync, monitor pending COD collections, and configure delivery zones & rates."
+      />
+
+      {/* ── Unified Logistics Sub-Navigation ── */}
+      <ShippingSubNav activeTab="shipments" />
+
+      {/* ── KPI Overview Cards ── */}
+      <AdminKpiGrid columns={4}>
+        <AdminKpiCard
+          label="Active In Transit"
+          value={kpis.inTransitCount.toLocaleString()}
+          description={`${kpis.providerBreakdown.steadfast} Steadfast • ${kpis.providerBreakdown.manual} Manual/In-House`}
+          icon={Truck}
+          tone="blue"
+          alert={true}
+          href="/admin/shipping?filter=in_transit"
+        />
+
+        <AdminKpiCard
+          label="Delivered / Success Rate"
+          value={kpis.deliveredCount.toLocaleString()}
+          description={`${kpis.successRate}% parcel fulfillment success rate`}
+          icon={CheckCircle2}
+          tone="emerald"
+          alert={true}
+          href="/admin/shipping?filter=delivered"
+        />
+
+        <AdminKpiCard
+          label="RTO & Return Alerts"
+          value={kpis.returnedOrFailedCount.toLocaleString()}
+          description={
+            kpis.returnedOrFailedCount > 0
+              ? "Requires parcel inspection & inventory restock"
+              : "Zero failed or returned parcels"
+          }
+          icon={AlertTriangle}
+          tone="rose"
+          alert={kpis.returnedOrFailedCount > 0}
+          href="/admin/shipping?filter=returned"
+        />
+
+        <AdminKpiCard
+          label="Pending COD Remittance"
+          value={`৳${Math.round(kpis.pendingCodAmount).toLocaleString()}`}
+          description="Cash on Delivery awaiting courier remittance settlement"
+          icon={Banknote}
+          tone="amber"
+          alert={kpis.pendingCodAmount > 0}
+          href="/admin/shipping?filter=in_transit"
+        />
+      </AdminKpiGrid>
+
+      {/* ── Shipments Table Component with Infinite Scroll ── */}
+      <Suspense
+        fallback={
+          <div className="p-12 text-center text-sm text-neutral-500">
+            Loading delivery logistics...
+          </div>
+        }
+      >
+        <AdminShipmentsTable
+          initialShipments={shipmentsData.shipments}
+          total={shipmentsData.total}
+          segmentCounts={shipmentsData.segmentCounts}
+          currentSearch={q || ""}
+          currentFilter={filter}
+          currentProvider={provider}
+        />
       </Suspense>
     </div>
   );

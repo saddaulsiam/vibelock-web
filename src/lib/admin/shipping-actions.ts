@@ -9,6 +9,8 @@ import prisma from "@/lib/prisma/client";
 import { ShippingService } from "@/lib/shipping/service";
 import { adminCreateShipmentAction } from "@/lib/shipping/actions";
 import { getShippingProvider } from "@/lib/shipping/provider";
+import { getAdminShipments } from "./shipping-queries";
+import { type ShipmentFilter } from "./shipping-shared";
 
 export type ShippingActionState = { error: string | null; message?: string };
 
@@ -196,7 +198,6 @@ export async function refreshShipmentStatusAction(
   }
 
   refreshShipping();
-  revalidatePath(`/admin/shipping/shipments/${parsed.data}`);
   revalidatePath("/admin/orders");
   return { error: null, message: "Shipment status refreshed." };
 }
@@ -216,4 +217,55 @@ export async function createShipmentAction(
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${parsed.data}`);
   return { error: null, message: "Shipment created successfully." };
+}
+
+export async function loadMoreAdminShipmentsAction(options: {
+  search?: string;
+  filter?: ShipmentFilter;
+  provider?: string;
+  page: number;
+  pageSize?: number;
+}) {
+  await requireRole("ADMIN");
+  return getAdminShipments(options);
+}
+
+export async function syncSingleShipmentAction(shipmentId: string): Promise<{
+  success: boolean;
+  message: string;
+  status?: ShipmentStatus;
+}> {
+  await requireRole("ADMIN");
+  const parsed = id.safeParse(shipmentId);
+  if (!parsed.success) return { success: false, message: "Invalid shipment ID" };
+
+  try {
+    const shipment = await prisma.shipment.findUnique({
+      where: { id: parsed.data },
+      select: { provider: true, providerShipmentId: true, status: true },
+    });
+    if (!shipment) return { success: false, message: "Shipment not found." };
+    if (!shipment.providerShipmentId) {
+      return { success: false, message: "No courier tracking/consignment ID found." };
+    }
+
+    const provider = getShippingProvider();
+    if (shipment.provider !== provider.name) {
+      return {
+        success: false,
+        message: `Courier provider mismatch (configured: ${provider.name}, parcel: ${shipment.provider}).`,
+      };
+    }
+
+    const updated = await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+    refreshShipping();
+    return {
+      success: true,
+      message: `Status synced: ${updated.status}`,
+      status: updated.status,
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Sync failed";
+    return { success: false, message: msg };
+  }
 }
