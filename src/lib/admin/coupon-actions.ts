@@ -238,3 +238,91 @@ export async function loadMoreAdminCouponsAction(options: {
   return getAdminCoupons(options);
 }
 
+export async function bulkUpdateCouponStatusAction(
+  ids: string[],
+  isActive: boolean
+): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
+  await requireRole("ADMIN");
+
+  if (!ids || ids.length === 0) {
+    return { success: false, error: "No coupons selected." };
+  }
+
+  try {
+    const res = await prisma.coupon.updateMany({
+      where: { id: { in: ids } },
+      data: { isActive },
+    });
+
+    refreshCoupons();
+    return { success: true, updatedCount: res.count };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to update selected coupons.";
+    console.error("[CouponActions] bulkUpdateCouponStatusAction error:", err);
+    return { success: false, error: msg };
+  }
+}
+
+export async function bulkDeleteCouponsAction(
+  ids: string[]
+): Promise<{
+  success: boolean;
+  deletedCount: number;
+  deactivatedCount: number;
+  message?: string;
+  error?: string;
+}> {
+  await requireRole("ADMIN");
+
+  if (!ids || ids.length === 0) {
+    return { success: false, deletedCount: 0, deactivatedCount: 0, error: "No coupons selected." };
+  }
+
+  try {
+    const coupons = await prisma.coupon.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, usageCount: true },
+    });
+
+    const unusedIds = coupons.filter((c) => c.usageCount === 0).map((c) => c.id);
+    const usedIds = coupons.filter((c) => c.usageCount > 0).map((c) => c.id);
+
+    let deletedCount = 0;
+    if (unusedIds.length > 0) {
+      const delRes = await prisma.coupon.deleteMany({
+        where: { id: { in: unusedIds } },
+      });
+      deletedCount = delRes.count;
+    }
+
+    let deactivatedCount = 0;
+    if (usedIds.length > 0) {
+      const updateRes = await prisma.coupon.updateMany({
+        where: { id: { in: usedIds } },
+        data: { isActive: false },
+      });
+      deactivatedCount = updateRes.count;
+    }
+
+    refreshCoupons();
+
+    const parts: string[] = [];
+    if (deletedCount > 0) parts.push(`Deleted ${deletedCount} unused coupon(s)`);
+    if (deactivatedCount > 0)
+      parts.push(
+        `Deactivated ${deactivatedCount} coupon(s) (preserved because they have order redemption history)`
+      );
+
+    return {
+      success: true,
+      deletedCount,
+      deactivatedCount,
+      message: parts.join(". ") || "Completed.",
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to delete selected coupons.";
+    console.error("[CouponActions] bulkDeleteCouponsAction error:", err);
+    return { success: false, deletedCount: 0, deactivatedCount: 0, error: msg };
+  }
+}
+

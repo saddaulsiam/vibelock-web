@@ -1,8 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowLeft } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import { ShippingMethodForm } from "@/components/admin/shipping-forms";
-import { getAdminShippingMethod, getAdminShippingZonesForForm } from "@/lib/admin/shipping-queries";
+import {
+  getAdminShippingMethod,
+  getAdminShippingZonesForForm,
+} from "@/lib/admin/shipping-queries";
 
 export default async function EditShippingMethodPage({
   params,
@@ -15,22 +20,26 @@ export default async function EditShippingMethodPage({
     getAdminShippingZonesForForm(),
   ]);
   if (!method) notFound();
+
   return (
-    <div className="max-w-2xl space-y-6">
-      <Link
-        href="/admin/shipping/methods"
-        className="text-primary text-sm font-medium hover:underline"
+    <div className="mx-auto w-full max-w-2xl space-y-6">
+      <AdminPageHeader
+        eyebrow="Logistics / Rates"
+        title={`Edit ${method.name}`}
+        description="Update pricing and assigned zone for this checkout delivery option."
       >
-        ← Back to methods
-      </Link>
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit shipping method</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ShippingMethodForm method={method} zones={zones} />
-        </CardContent>
-      </Card>
+        <Link
+          href="/admin/shipping/methods"
+          className={ADMIN_TABLE_CLASSES.buttonSecondary}
+        >
+          <ArrowLeft className="size-3.5" />
+          <span>Back to Methods</span>
+        </Link>
+      </AdminPageHeader>
+
+      <div className="rounded-xl border border-neutral-200/90 bg-white p-6 shadow-2xs">
+        <ShippingMethodForm method={method} zones={zones} />
+      </div>
     </div>
   );
 }

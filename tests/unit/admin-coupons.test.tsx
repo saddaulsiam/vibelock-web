@@ -148,6 +148,9 @@ describe("Admin Coupons & Discounts Module", () => {
       expect(html).toContain("Customize visible columns");
       expect(html).toContain("Export CSV");
       expect(html).toContain("Create Coupon");
+      // Verify bulk selection checkboxes
+      expect(html).toContain('aria-label="Select all coupons"');
+      expect(html).toContain('aria-label="Select coupon VIP20"');
       // Verify infinite scroll loaded count indicator when all loaded
       expect(html).toContain("All ");
       expect(html).toContain("coupons loaded");
