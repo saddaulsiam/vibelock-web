@@ -123,7 +123,17 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
     minimumFractionDigits: 2,
   })}`;
 
-  const greeting = order.customerName ? `আসসালামু আলাইকুম ${order.customerName}` : "আসসালামু আলাইকুম";
+  const cleanCustomerName = (order.customerName || "").trim();
+  const validCustomerName =
+    cleanCustomerName &&
+    cleanCustomerName.toLowerCase() !== "undefined" &&
+    cleanCustomerName.toLowerCase() !== "null" &&
+    cleanCustomerName.toLowerCase() !== "customer"
+      ? cleanCustomerName
+      : "";
+
+  const greeting = validCustomerName ? `আসসালামু আলাইকুম ${validCustomerName}` : "আসসালামু আলাইকুম";
+  const helloGreeting = validCustomerName ? `হ্যালো ${validCustomerName}!` : "হ্যালো!";
 
   // Pre-formatted Bengali e-commerce CRM templates
   const whatsappTemplates = [
@@ -133,7 +143,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
     },
     {
       title: "কুরিয়ার ডিসপ্যাচ ও ট্র্যাকিং (Dispatch Update)",
-      text: `হ্যালো ${order.customerName || "Customer"}! আপনার VibeLock অর্ডার #${order.orderNumber}-টি কুরিয়ারে (${
+      text: `${helloGreeting} আপনার VibeLock অর্ডার #${order.orderNumber}-টি কুরিয়ারে (${
         order.shipment?.provider || "Steadfast Courier"
       }) ডিসপ্যাচ করা হয়েছে।\nট্র্যাকিং কোড: ${
         order.shipment?.trackingNumber || "Pending"
@@ -141,7 +151,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
     },
     {
       title: "ঠিকানা যাচাইকরণ (Address Check)",
-      text: `হ্যালো ${order.customerName || "Customer"}, VibeLock থেকে যোগাযোগ করছি।\nআপনার অর্ডার #${order.orderNumber}-এর ডেলিভারি ঠিকানা:\n${order.shippingStreet}, ${order.shippingCity}।\nঠিকানা ও ফোন নম্বর ঠিক আছে কি না একটু কনফার্ম করবেন? ধন্যবাদ!`,
+      text: `${validCustomerName ? `হ্যালো ${validCustomerName},` : "হ্যালো,"} VibeLock থেকে যোগাযোগ করছি।\nআপনার অর্ডার #${order.orderNumber}-এর ডেলিভারি ঠিকানা:\n${order.shippingStreet}, ${order.shippingCity}।\nঠিকানা ও ফোন নম্বর ঠিক আছে কি না একটু কনফার্ম করবেন? ধন্যবাদ!`,
     },
     {
       title: "অর্ডার বাতিল ও রিফান্ড নোটিশ (Cancellation Notice)",

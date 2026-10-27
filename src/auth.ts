@@ -177,6 +177,21 @@ export const authConfig: NextAuthConfig = {
           return null;
         }
 
+        // Check if customer account is suspended
+        const suspension = await prisma.auditLog.findFirst({
+          where: {
+            entityType: "Customer",
+            entityId: user.id,
+            action: { in: ["CUSTOMER_ACCOUNT_SUSPENDED", "CUSTOMER_ACCOUNT_ACTIVATED"] },
+          },
+          orderBy: { createdAt: "desc" },
+          select: { action: true },
+        });
+
+        if (suspension?.action === "CUSTOMER_ACCOUNT_SUSPENDED") {
+          return null;
+        }
+
         return {
           id: user.id,
           name: user.name,

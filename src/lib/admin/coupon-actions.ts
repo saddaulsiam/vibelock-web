@@ -162,3 +162,79 @@ export async function saveCouponAction(
     message: id ? "Coupon updated successfully." : "Coupon created successfully.",
   };
 }
+
+export async function toggleCouponStatusAction(
+  id: string
+): Promise<{ success: boolean; newStatus?: boolean; error?: string }> {
+  await requireRole("ADMIN");
+
+  try {
+    const existing = await prisma.coupon.findUnique({
+      where: { id },
+      select: { id: true, isActive: true },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Coupon not found." };
+    }
+
+    const updated = await prisma.coupon.update({
+      where: { id },
+      data: { isActive: !existing.isActive },
+      select: { isActive: true },
+    });
+
+    refreshCoupons();
+    return { success: true, newStatus: updated.isActive };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to toggle coupon status.";
+    console.error("[CouponActions] toggleCouponStatusAction error:", err);
+    return { success: false, error: msg };
+  }
+}
+
+export async function deleteCouponAction(
+  id: string
+): Promise<{ success: boolean; error?: string }> {
+  await requireRole("ADMIN");
+
+  try {
+    const existing = await prisma.coupon.findUnique({
+      where: { id },
+      select: { id: true, code: true, usageCount: true },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Coupon not found or already deleted." };
+    }
+
+    // Safety constraint: Never delete a coupon that has redemptions
+    if (existing.usageCount > 0) {
+      return {
+        success: false,
+        error: `Coupon "${existing.code}" has been used ${existing.usageCount} time(s). Historical order auditing requires preserving this coupon. Please pause or deactivate it instead.`,
+      };
+    }
+
+    await prisma.coupon.delete({ where: { id } });
+
+    refreshCoupons();
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to delete coupon.";
+    console.error("[CouponActions] deleteCouponAction error:", err);
+    return { success: false, error: msg };
+  }
+}
+
+export async function loadMoreAdminCouponsAction(options: {
+  search?: string;
+  filter?: import("./coupon-shared").CouponFilter;
+  type?: DiscountType;
+  page: number;
+}) {
+  await requireRole("ADMIN");
+  const { getAdminCoupons } = await import("./coupon-queries");
+  return getAdminCoupons(options);
+}
+
