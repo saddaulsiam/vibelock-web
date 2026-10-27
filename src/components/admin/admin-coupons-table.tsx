@@ -13,7 +13,12 @@ import {
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { CouponCreateModal } from "@/components/admin/coupon-create-modal";
 import { CouponDeleteModal } from "@/components/admin/coupon-delete-modal";
-import { loadMoreAdminCouponsAction, toggleCouponStatusAction } from "@/lib/admin/coupon-actions";
+import {
+  bulkDeleteCouponsAction,
+  bulkUpdateCouponStatusAction,
+  loadMoreAdminCouponsAction,
+  toggleCouponStatusAction,
+} from "@/lib/admin/coupon-actions";
 import {
   couponStatus,
   type AdminCouponListItem,
@@ -22,6 +27,7 @@ import {
 import { DiscountType } from "@prisma/client";
 import {
   Check,
+  CheckCircle2,
   Copy,
   Download,
   Edit,
@@ -32,6 +38,7 @@ import {
   RotateCcw,
   Tag,
   Trash2,
+  X,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
@@ -111,6 +118,21 @@ export function AdminCouponsTable({
   const [searchTerm, setSearchTerm] = useState(currentSearch);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkOperating, setIsBulkOperating] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  // Auto-dismiss operational feedback after 4s
+  useEffect(() => {
+    if (!feedbackMessage) return;
+    const t = setTimeout(() => setFeedbackMessage(null), 4000);
+    return () => clearTimeout(t);
+  }, [feedbackMessage]);
+
   // Column Visibility State
   const [visibleColumns, setVisibleColumns] = useState<Record<CouponColumnKey, boolean>>({
     benefit: true,
@@ -120,7 +142,7 @@ export function AdminCouponsTable({
   });
 
   const visibleColumnCount =
-    2 +
+    3 + // Checkbox + Code + Actions
     (visibleColumns.benefit ? 1 : 0) +
     (visibleColumns.usage ? 1 : 0) +
     (visibleColumns.validity ? 1 : 0) +
@@ -135,11 +157,12 @@ export function AdminCouponsTable({
   const [pageNumber, setPageNumber] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // When initialCoupons updates due to search or filter change, reset additional items
+  // When initialCoupons updates due to search or filter change, reset additional items & selection
   if (initialCoupons !== prevCoupons) {
     setPrevCoupons(initialCoupons);
     setAdditionalCoupons([]);
     setPageNumber(1);
+    setSelectedIds(new Set());
   }
 
   // Combine initial slice with any infinite-scroll loaded coupons
@@ -292,11 +315,131 @@ export function AdminCouponsTable({
 
   const handleClearAllFilters = () => {
     setSearchTerm("");
+    setSelectedIds(new Set());
     router.push("/admin/coupons");
   };
 
+  // Selection logic
+  const isAllSelected =
+    couponsList.length > 0 && couponsList.every((c) => selectedIds.has(c.id));
+
+  const handleToggleSelectAll = () => {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(couponsList.map((c) => c.id)));
+    }
+  };
+
+  const handleToggleRow = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // Bulk activate selected coupons
+  const handleBulkActivate = async () => {
+    if (selectedIds.size === 0 || isBulkOperating) return;
+    setIsBulkOperating(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const res = await bulkUpdateCouponStatusAction(ids, true);
+      if (res.success) {
+        setStatusOverrides((prev) => {
+          const next = { ...prev };
+          ids.forEach((id) => {
+            next[id] = true;
+          });
+          return next;
+        });
+        setFeedbackMessage({
+          type: "success",
+          text: `Activated ${res.updatedCount ?? ids.length} coupon(s).`,
+        });
+        router.refresh();
+      } else {
+        setFeedbackMessage({ type: "error", text: res.error || "Failed to activate coupons." });
+      }
+    } catch {
+      setFeedbackMessage({ type: "error", text: "Failed to activate selected coupons." });
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
+  // Bulk pause selected coupons
+  const handleBulkPause = async () => {
+    if (selectedIds.size === 0 || isBulkOperating) return;
+    setIsBulkOperating(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const res = await bulkUpdateCouponStatusAction(ids, false);
+      if (res.success) {
+        setStatusOverrides((prev) => {
+          const next = { ...prev };
+          ids.forEach((id) => {
+            next[id] = false;
+          });
+          return next;
+        });
+        setFeedbackMessage({
+          type: "success",
+          text: `Paused ${res.updatedCount ?? ids.length} coupon(s).`,
+        });
+        router.refresh();
+      } else {
+        setFeedbackMessage({ type: "error", text: res.error || "Failed to pause coupons." });
+      }
+    } catch {
+      setFeedbackMessage({ type: "error", text: "Failed to pause selected coupons." });
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
+  // Bulk export selected coupons to CSV
+  const handleBulkExportCsv = () => {
+    const selected = couponsList.filter((c) => selectedIds.has(c.id));
+    if (selected.length === 0) return;
+    exportCsv(selected);
+  };
+
+  // Bulk delete selected coupons (audited)
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0 || isBulkOperating) return;
+    const confirmMessage = `Are you sure you want to delete ${selectedIds.size} selected coupon(s)? Coupons with existing order redemptions will be safely deactivated instead of deleted to protect order audit trails.`;
+    if (typeof window !== "undefined" && !window.confirm(confirmMessage)) return;
+
+    setIsBulkOperating(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const res = await bulkDeleteCouponsAction(ids);
+      if (res.success) {
+        setFeedbackMessage({
+          type: "success",
+          text: res.message || `Processed ${ids.length} coupon(s).`,
+        });
+        setSelectedIds(new Set());
+        router.refresh();
+      } else {
+        setFeedbackMessage({
+          type: "error",
+          text: res.error || "Failed to delete selected coupons.",
+        });
+      }
+    } catch {
+      setFeedbackMessage({ type: "error", text: "Failed to delete selected coupons." });
+    } finally {
+      setIsBulkOperating(false);
+    }
+  };
+
   // CSV Export with formula injection defense (matches other tables)
-  const exportCsv = () => {
+  const exportCsv = (itemsToExport?: AdminCouponListItem[]) => {
+    const list = itemsToExport && itemsToExport.length > 0 ? itemsToExport : couponsList;
     const safeCell = (val: unknown) => {
       const text = String(val ?? "");
       const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
@@ -316,7 +459,7 @@ export function AdminCouponsTable({
       "Created Date",
     ];
 
-    const rows = couponsList.map((c) => {
+    const rows = list.map((c) => {
       const status = couponStatus(c);
       return [
         safeCell(c.code),
@@ -427,7 +570,7 @@ export function AdminCouponsTable({
 
           <button
             type="button"
-            onClick={exportCsv}
+            onClick={() => exportCsv()}
             disabled={couponsList.length === 0}
             className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export coupons to CSV"
@@ -472,12 +615,122 @@ export function AdminCouponsTable({
         </div>
       </div>
 
+      {/* ── Floating / Sticky Bulk Action Bar ── */}
+      {selectedIds.size > 0 && (
+        <div className="animate-in fade-in slide-in-from-top-1 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-300 bg-purple-50/95 px-4 py-2.5 text-xs font-medium text-purple-950 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-purple-900">
+              {selectedIds.size} {selectedIds.size === 1 ? "coupon" : "coupons"} selected
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Bulk Activate */}
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={handleBulkActivate}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-700 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-emerald-800 disabled:opacity-50"
+            >
+              {isBulkOperating ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="size-3.5" />
+              )}
+              <span>Activate Selected</span>
+            </button>
+
+            {/* Bulk Pause */}
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={handleBulkPause}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-50"
+            >
+              {isBulkOperating ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Power className="size-3.5" />
+              )}
+              <span>Pause Selected</span>
+            </button>
+
+            {/* Export Selected to CSV */}
+            <button
+              type="button"
+              onClick={handleBulkExportCsv}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 text-xs font-semibold text-purple-950 shadow-2xs hover:bg-purple-100/50"
+            >
+              <Download className="size-3.5" />
+              <span>Export Selected CSV</span>
+            </button>
+
+            {/* Bulk Delete */}
+            <button
+              type="button"
+              disabled={isBulkOperating}
+              onClick={handleBulkDelete}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-50 disabled:opacity-50"
+            >
+              <Trash2 className="size-3.5 text-rose-600" />
+              <span>Delete Selected</span>
+            </button>
+
+            {/* Clear Selection */}
+            <button
+              type="button"
+              onClick={() => setSelectedIds(new Set())}
+              className="text-xs text-neutral-600 underline-offset-2 hover:underline cursor-pointer"
+            >
+              Deselect All
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Operational Feedback Toast / Alert Banner ── */}
+      {feedbackMessage && (
+        <div
+          className={`animate-in fade-in flex items-center justify-between rounded-xl border px-4 py-2.5 text-xs font-medium shadow-2xs ${
+            feedbackMessage.type === "error"
+              ? "border-rose-300 bg-rose-50 text-rose-950"
+              : "border-emerald-300 bg-emerald-50 text-emerald-950"
+          }`}
+        >
+          <div className="flex items-center gap-1.5">
+            {feedbackMessage.type === "error" ? (
+              <X className="size-4 text-rose-700" />
+            ) : (
+              <Check className="size-4 text-emerald-700" />
+            )}
+            <span>{feedbackMessage.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedbackMessage(null)}
+            className="text-neutral-500 hover:text-neutral-900 cursor-pointer"
+            aria-label="Dismiss message"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* ── 4. Coupons Data Table (Desktop & Tablet) ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>
         <table className={ADMIN_TABLE_CLASSES.table}>
           <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
-              <th className="py-3.5 pr-3 pl-5">Coupon Code</th>
+              <th className="py-3.5 pr-2 pl-4 w-10 text-center">
+                <input
+                  type="checkbox"
+                  checked={isAllSelected}
+                  onChange={handleToggleSelectAll}
+                  aria-label="Select all coupons"
+                  className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                />
+              </th>
+              <th className="py-3.5 pr-3 pl-2">Coupon Code</th>
               {visibleColumns.benefit && <th className="px-3 py-3.5">Discount Benefit</th>}
               {visibleColumns.usage && <th className="px-3 py-3.5">Usage / Redemptions</th>}
               {visibleColumns.validity && <th className="px-3 py-3.5">Validity Schedule</th>}
@@ -516,15 +769,30 @@ export function AdminCouponsTable({
                 const status = couponStatus(coupon);
                 const validity = getValidityNote(coupon.startDate, coupon.endDate);
                 const isToggling = togglingId === coupon.id;
+                const isSelected = selectedIds.has(coupon.id);
                 const usagePercent =
                   coupon.usageLimit && coupon.usageLimit > 0
                     ? Math.min(100, Math.round((coupon.usageCount / coupon.usageLimit) * 100))
                     : null;
 
                 return (
-                  <tr key={coupon.id} className={ADMIN_TABLE_CLASSES.tr}>
+                  <tr
+                    key={coupon.id}
+                    className={`${ADMIN_TABLE_CLASSES.tr} ${isSelected ? "bg-purple-50/50" : ""}`}
+                  >
+                    {/* 0. Row Checkbox */}
+                    <td className="py-4 pr-2 pl-4 w-10 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleRow(coupon.id)}
+                        aria-label={`Select coupon ${coupon.code}`}
+                        className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                      />
+                    </td>
+
                     {/* 1. Code & Copy */}
-                    <td className="py-4 pr-3 pl-5">
+                    <td className="py-4 pr-3 pl-2">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2.5 py-1 font-mono text-xs font-black tracking-wider text-purple-900 shadow-2xs">
                           {coupon.code}
@@ -730,14 +998,24 @@ export function AdminCouponsTable({
             const status = couponStatus(coupon);
             const validity = getValidityNote(coupon.startDate, coupon.endDate);
             const isToggling = togglingId === coupon.id;
+            const isSelected = selectedIds.has(coupon.id);
 
             return (
               <div
                 key={coupon.id}
-                className="space-y-3 rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs"
+                className={`space-y-3 rounded-xl border bg-white p-4 shadow-2xs transition ${
+                  isSelected ? "border-purple-300 ring-1 ring-purple-300 bg-purple-50/20" : "border-neutral-200/90"
+                }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleRow(coupon.id)}
+                      aria-label={`Select coupon ${coupon.code}`}
+                      className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer mr-0.5"
+                    />
                     <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 font-mono text-xs font-black tracking-wider text-purple-900">
                       {coupon.code}
                     </span>
