@@ -123,6 +123,23 @@ export function AdminCustomersTable({
   const [prevSearchProp, setPrevSearchProp] = React.useState(currentSearch);
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // Focus search input with '/' keyboard shortcut (matches orders, coupons & products tables)
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes((e.target as HTMLElement)?.tagName)
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Column Visibility State
   const [visibleColumns, setVisibleColumns] = React.useState<Record<CustomerColumnKey, boolean>>({
@@ -330,22 +347,23 @@ export function AdminCustomersTable({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form onSubmit={handleSearchSubmit} className="max-w-md flex-1">
           <AdminTableSearchInput
+            inputRef={searchInputRef}
             value={searchTerm}
             onChange={handleSearchChange}
             onClear={handleClearSearch}
-            placeholder="Search customer name, email, or phone (press Enter)..."
+            placeholder="Search customer name, email, or phone (press / to focus)..."
           />
         </form>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Sort Dropdown */}
-          <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 py-1.5 shadow-2xs">
-            <ArrowUpDown className="size-3.5 text-neutral-500" />
+          <div className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors hover:border-neutral-300 focus-within:ring-2 focus-within:ring-[#00D9FF]">
+            <ArrowUpDown className="size-3.5 shrink-0 text-neutral-500" />
             <select
               aria-label="Sort customers"
               value={currentSort}
               onChange={(e) => updateFilters({ sort: e.target.value as CustomerSortBy })}
-              className="cursor-pointer bg-transparent text-xs font-semibold text-neutral-700 focus:outline-none"
+              className="cursor-pointer bg-transparent text-xs font-semibold text-neutral-800 outline-none focus:outline-none"
             >
               <option value="newest">Sort: Newest Joined</option>
               <option value="spent">Sort: Highest Spent (LTV)</option>
@@ -359,6 +377,7 @@ export function AdminCustomersTable({
             columns={customerColumnOptions}
             visibleColumns={visibleColumns}
             onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
+            buttonClassName={ADMIN_TABLE_CLASSES.buttonSecondary}
             onReset={() =>
               setVisibleColumns({
                 contact: true,
@@ -385,7 +404,7 @@ export function AdminCustomersTable({
           <button
             type="button"
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-neutral-800 transition"
+            className={ADMIN_TABLE_CLASSES.buttonPrimary}
           >
             <UserPlus className="size-3.5" />
             <span>Add Customer</span>

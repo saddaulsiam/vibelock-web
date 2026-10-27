@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, Tag } from "lucide-react";
 import { CouponForm } from "@/components/admin/coupon-form";
 import { getAdminCouponById } from "@/lib/admin/coupon-queries";
 
@@ -8,23 +8,38 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const coupon = await getAdminCouponById(id);
   if (!coupon) notFound();
+
   return (
     <div className="max-w-3xl space-y-6">
+      {/* Back button & Breadcrumb */}
       <div>
-        <Link href="/admin/coupons" className="text-primary text-sm font-medium hover:underline">
-          ← Back to coupons
+        <Link
+          href="/admin/coupons"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition"
+        >
+          <ChevronLeft className="size-4" />
+          <span>Back to Coupons</span>
         </Link>
-        <h1 className="mt-3 text-3xl font-bold tracking-tight">Edit coupon</h1>
+        <div className="mt-3 flex items-center gap-2.5">
+          <div className="flex size-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700 ring-1 ring-purple-200">
+            <Tag className="size-4" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-[#101114]">
+              Edit Coupon: <span className="font-mono text-purple-900">{coupon.code}</span>
+            </h1>
+            <p className="text-xs text-neutral-500">
+              Update discount value, usage limits, or active dates. Historical order calculations
+              remain immutable.
+            </p>
+          </div>
+        </div>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>{coupon.code}</CardTitle>
-          <CardDescription>Historical order totals are never changed by edits.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CouponForm coupon={coupon} />
-        </CardContent>
-      </Card>
+
+      {/* Main Container */}
+      <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-2xs">
+        <CouponForm coupon={coupon} />
+      </div>
     </div>
   );
 }

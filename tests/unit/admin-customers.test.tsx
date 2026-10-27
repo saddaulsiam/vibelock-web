@@ -197,7 +197,7 @@ describe("Admin Customers Module Unit Tests", () => {
     expect(html).toContain("Showing 4 of 10");
   });
 
-  test("renders AdminTableColumnVisibility and Add Customer buttons in toolbar", () => {
+  test("renders search input with / shortcut and unified h-10 toolbar buttons", () => {
     const html = renderToStaticMarkup(
       <AdminCustomersTable
         customers={sampleCustomers}
@@ -208,10 +208,18 @@ describe("Admin Customers Module Unit Tests", () => {
       />
     );
 
+    // Verify search input with / shortcut
+    expect(html).toContain("press / to focus");
+
+    // Verify all 4 toolbar controls
+    expect(html).toContain("Sort: Newest Joined");
     expect(html).toContain("Columns");
     expect(html).toContain("Customize visible columns");
     expect(html).toContain("Export CSV");
     expect(html).toContain("Add Customer");
+
+    // Verify unified h-10 sizing class
+    expect(html).toContain("h-10");
   });
 
   test("CustomerRiskWidget renders Steadfast courier stats and COD control", () => {
