@@ -307,9 +307,12 @@ export function AdminCategoriesTable({
                         </div>
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-neutral-900">
+                            <Link
+                              href={`/admin/categories/${category.id}`}
+                              className="font-semibold text-neutral-900 hover:text-black hover:underline"
+                            >
                               {category.name}
-                            </span>
+                            </Link>
                           </div>
                           <div className="font-mono text-[11px] text-neutral-400">
                             /{category.slug}
@@ -349,18 +352,23 @@ export function AdminCategoriesTable({
                     <td className="px-4 py-3.5">
                       {hasProducts ? (
                         <Link
-                          href={`/admin/products?category=${category.slug}`}
-                          title={`View all ${category._count.products} products in ${category.name}`}
+                          href={`/admin/categories/${category.id}`}
+                          title={`Manage ${category._count.products} products in ${category.name}`}
                           className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 hover:text-emerald-950 transition-colors"
                         >
                           <Package className="size-3 text-emerald-600" />
                           <span>{category._count.products} products</span>
-                          <span className="text-[10px] text-emerald-600">↗</span>
+                          <span className="text-[10px] text-emerald-600">→</span>
                         </Link>
                       ) : (
-                        <span className="inline-flex items-center rounded-md border border-neutral-200 bg-neutral-50 px-2 py-0.5 text-xs text-neutral-500">
-                          0 products
-                        </span>
+                        <Link
+                          href={`/admin/categories/${category.id}`}
+                          title={`Assign products to ${category.name}`}
+                          className="inline-flex items-center gap-1 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-1 text-xs text-neutral-500 hover:border-neutral-400 hover:text-neutral-800 transition-colors"
+                        >
+                          <span>0 products</span>
+                          <span className="text-[10px] text-neutral-400">+</span>
+                        </Link>
                       )}
                     </td>
 
@@ -407,6 +415,16 @@ export function AdminCategoriesTable({
                         >
                           <ExternalLink className="size-3.5" />
                         </a>
+
+                        {/* Category Hub (Products) */}
+                        <Link
+                          href={`/admin/categories/${category.id}`}
+                          title={`Manage products in ${category.name}`}
+                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                        >
+                          <Package className="size-3 text-neutral-500" />
+                          <span>Products</span>
+                        </Link>
 
                         {/* Edit Button */}
                         <Link

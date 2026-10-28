@@ -348,3 +348,224 @@ export async function getAdminProductFormData(id?: string) {
     categories,
   };
 }
+
+export type CategoryAssignedProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  status: ProductStatus;
+  primaryImage: string | null;
+  categoryNames: string[];
+  variantCount: number;
+  totalStock: number;
+  minSellingPrice: number | null;
+  minDiscountPrice: number | null;
+};
+
+export type CategoryAvailableProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  status: ProductStatus;
+  primaryImage: string | null;
+  categoryNames: string[];
+  totalStock: number;
+  minSellingPrice: number | null;
+};
+
+export type AdminCategoryDetail = {
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    imageUrl: string | null;
+    isActive: boolean;
+    sortOrder: number;
+    parentId: string | null;
+    parent: { id: string; name: string; slug: string } | null;
+    children: {
+      id: string;
+      name: string;
+      slug: string;
+      isActive: boolean;
+      sortOrder: number;
+      productCount: number;
+    }[];
+  };
+  products: CategoryAssignedProduct[];
+  metrics: {
+    totalProducts: number;
+    totalStockUnits: number;
+    inStockCount: number;
+    outOfStockCount: number;
+    publishedCount: number;
+    subCategoryCount: number;
+  };
+};
+
+export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryDetail | null> {
+  await requireRole("ADMIN");
+
+  const raw = await prisma.category.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      imageUrl: true,
+      isActive: true,
+      sortOrder: true,
+      parentId: true,
+      parent: { select: { id: true, name: true, slug: true } },
+      children: {
+        orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          isActive: true,
+          sortOrder: true,
+          _count: { select: { products: true } },
+        },
+      },
+      products: {
+        orderBy: { name: "asc" },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true,
+          images: {
+            orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+            take: 1,
+            select: { url: true },
+          },
+          categories: { select: { name: true } },
+          variants: {
+            select: {
+              id: true,
+              sellingPrice: true,
+              discountPrice: true,
+              inventoryTransactions: { select: { quantity: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!raw) return null;
+
+  const products: CategoryAssignedProduct[] = raw.products.map((p) => {
+    const sellingPrices = p.variants.map((v) => Number(v.sellingPrice));
+    const discountPrices = p.variants
+      .filter((v) => v.discountPrice !== null && v.discountPrice.lt(v.sellingPrice))
+      .map((v) => Number(v.discountPrice!));
+
+    const totalStock = p.variants.reduce(
+      (sum, v) => sum + v.inventoryTransactions.reduce((txSum, tx) => txSum + tx.quantity, 0),
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      status: p.status,
+      primaryImage: p.images[0]?.url ?? null,
+      categoryNames: p.categories.map((c) => c.name),
+      variantCount: p.variants.length,
+      totalStock,
+      minSellingPrice: sellingPrices.length ? Math.min(...sellingPrices) : null,
+      minDiscountPrice: discountPrices.length ? Math.min(...discountPrices) : null,
+    };
+  });
+
+  const totalStockUnits = products.reduce((acc, p) => acc + p.totalStock, 0);
+
+  return {
+    category: {
+      id: raw.id,
+      name: raw.name,
+      slug: raw.slug,
+      description: raw.description,
+      imageUrl: raw.imageUrl,
+      isActive: raw.isActive,
+      sortOrder: raw.sortOrder,
+      parentId: raw.parentId,
+      parent: raw.parent,
+      children: raw.children.map((c) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        isActive: c.isActive,
+        sortOrder: c.sortOrder,
+        productCount: c._count.products,
+      })),
+    },
+    products,
+    metrics: {
+      totalProducts: products.length,
+      totalStockUnits,
+      inStockCount: products.filter((p) => p.totalStock > 0).length,
+      outOfStockCount: products.filter((p) => p.totalStock <= 0).length,
+      publishedCount: products.filter((p) => p.status === "PUBLISHED").length,
+      subCategoryCount: raw.children.length,
+    },
+  };
+}
+
+export async function getAdminAvailableProductsForCategory(
+  categoryId: string
+): Promise<CategoryAvailableProduct[]> {
+  await requireRole("ADMIN");
+
+  const raw = await prisma.product.findMany({
+    where: {
+      categories: {
+        none: { id: categoryId },
+      },
+    },
+    orderBy: { name: "asc" },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      status: true,
+      images: {
+        orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+        take: 1,
+        select: { url: true },
+      },
+      categories: { select: { name: true } },
+      variants: {
+        select: {
+          id: true,
+          sellingPrice: true,
+          inventoryTransactions: { select: { quantity: true } },
+        },
+      },
+    },
+  });
+
+  return raw.map((p) => {
+    const sellingPrices = p.variants.map((v) => Number(v.sellingPrice));
+    const totalStock = p.variants.reduce(
+      (sum, v) => sum + v.inventoryTransactions.reduce((txSum, tx) => txSum + tx.quantity, 0),
+      0
+    );
+
+    return {
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      status: p.status,
+      primaryImage: p.images[0]?.url ?? null,
+      categoryNames: p.categories.map((c) => c.name),
+      totalStock,
+      minSellingPrice: sellingPrices.length ? Math.min(...sellingPrices) : null,
+    };
+  });
+}

@@ -259,6 +259,57 @@ export async function deleteCategoryAction(
   return ok;
 }
 
+export async function assignProductsToCategoryAction(
+  categoryId: string,
+  productIds: string[]
+): Promise<AdminActionState> {
+  await requireRole("ADMIN");
+  if (!categoryId || !productIds.length) {
+    return { error: "No products selected." };
+  }
+  try {
+    await prisma.category.update({
+      where: { id: categoryId },
+      data: {
+        products: {
+          connect: productIds.map((id) => ({ id })),
+        },
+      },
+    });
+    refreshCatalog();
+    revalidatePath(`/admin/categories/${categoryId}`);
+    return { error: null, message: `${productIds.length} product(s) assigned successfully.` };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to assign products to category.",
+    };
+  }
+}
+
+export async function removeProductFromCategoryAction(
+  categoryId: string,
+  productId: string
+): Promise<AdminActionState> {
+  await requireRole("ADMIN");
+  try {
+    await prisma.category.update({
+      where: { id: categoryId },
+      data: {
+        products: {
+          disconnect: { id: productId },
+        },
+      },
+    });
+    refreshCatalog();
+    revalidatePath(`/admin/categories/${categoryId}`);
+    return { error: null, message: "Product removed from category." };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to remove product from category.",
+    };
+  }
+}
+
 const productSchema = z.object({
   id: z.string().uuid().optional(),
   name: nameField,
