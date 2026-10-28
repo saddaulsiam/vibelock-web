@@ -1,130 +1,77 @@
-import { AdminMutationForm } from "@/components/admin/admin-action-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { deleteCategoryAction } from "@/lib/admin/catalog-actions";
-import { getAdminCategories } from "@/lib/admin/catalog-queries";
-import { FolderPlus, Pencil } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { Folder, FolderPlus, Layers, Package, Plus } from "lucide-react";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminCategoriesTable } from "@/components/admin/admin-categories-table";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import { getAdminCategories } from "@/lib/admin/catalog-queries";
 
 export default async function AdminCategoriesPage() {
   const categories = await getAdminCategories();
+
+  const totalCategories = categories.length;
+  const totalProducts = categories.reduce((sum, c) => sum + c._count.products, 0);
+  const rootCategories = categories.filter((c) => !c.parentId).length;
+  const subCategories = categories.filter((c) => Boolean(c.parentId)).length;
+
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
-      <header className="flex flex-col gap-4 border-b border-[#101114]/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
-            Catalog / Taxonomy
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
-            Categories
-          </h2>
-          <p className="text-muted-foreground mt-2 text-sm leading-6">
-            Organize published catalog products with category names, slugs, and optional parent
-            categories.
-          </p>
-        </div>
+      {/* ── Page Header ── */}
+      <AdminPageHeader
+        eyebrow="Catalog / Taxonomy"
+        title="Category Taxonomy"
+        badgeLabel="Catalog Hierarchy"
+        badgeVariant="blue"
+        description="Structure catalog navigation, manage parent/child hierarchy, monitor product counts, and curate category assets."
+      >
         <Link
           href="/admin/categories/new"
-          className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className={ADMIN_TABLE_CLASSES.buttonPrimary}
         >
-          <FolderPlus className="size-4" aria-hidden="true" /> New category
+          <Plus className="size-3.5" />
+          <span>New Category</span>
         </Link>
-      </header>
-      <Card className="overflow-hidden rounded-sm border-[#101114]/10 bg-white shadow-none">
-        <CardHeader className="border-b border-[#101114]/10 px-4 py-4 sm:px-5">
-          <CardTitle className="text-base text-[#101114]">
-            All categories{" "}
-            <span className="text-muted-foreground ml-1 font-normal">({categories.length})</span>
-          </CardTitle>
-        </CardHeader>
-        {categories.length === 0 ? (
-          <CardContent className="px-4 py-14 text-center sm:px-5">
-            <h3 className="text-sm font-semibold text-[#101114]">No categories yet</h3>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Create a category to organize products.
-            </p>
-          </CardContent>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-184 text-left text-sm">
-              <thead className="text-muted-foreground bg-[#F3F0E8]/70 text-xs tracking-wide uppercase">
-                <tr>
-                  <th scope="col" className="px-5 py-3">
-                    Category
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Parent
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Products
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Children
-                  </th>
-                  <th scope="col" className="px-5 py-3">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#101114]/10">
-                {categories.map((category) => (
-                  <tr key={category.id} className="align-top">
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3.5">
-                        {category.imageUrl ? (
-                          <div className="relative size-12 shrink-0 overflow-hidden rounded border border-[#101114]/15 bg-black/5">
-                            <Image
-                              src={category.imageUrl}
-                              alt={category.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ) : null}
-                        <div>
-                          <p className="font-semibold text-[#101114]">{category.name}</p>
-                          <p className="text-muted-foreground mt-0.5 text-xs">/{category.slug}</p>
-                          {category.description ? (
-                            <p className="text-muted-foreground mt-1 max-w-md text-xs">
-                              {category.description}
-                            </p>
-                          ) : null}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-muted-foreground px-5 py-4">
-                      {category.parent?.name ?? "—"}
-                    </td>
-                    <td className="px-5 py-4 text-[#101114] tabular-nums">
-                      {category._count.products}
-                    </td>
-                    <td className="px-5 py-4 text-[#101114] tabular-nums">
-                      {category._count.children}
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-col items-start gap-3">
-                        <Link
-                          href={`/admin/categories/${category.id}/edit`}
-                          className="inline-flex min-h-9 items-center gap-2 border border-[#101114]/20 px-3 text-sm font-medium text-[#101114] hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-                        >
-                          <Pencil className="size-4" aria-hidden="true" /> Edit
-                        </Link>
-                        <AdminMutationForm
-                          action={deleteCategoryAction}
-                          id={category.id}
-                          label="Delete"
-                          destructive
-                          confirmMessage={`Delete category “${category.name}”? This is allowed only when it has no products or child categories.`}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+      </AdminPageHeader>
+
+      {/* ── KPI Overview Cards ── */}
+      <AdminKpiGrid columns={4}>
+        <AdminKpiCard
+          label="Total Categories"
+          value={totalCategories.toLocaleString()}
+          description="Active catalog departments"
+          icon={Layers}
+          tone="neutral"
+          alert={true}
+        />
+        <AdminKpiCard
+          label="Catalog Products"
+          value={totalProducts.toLocaleString()}
+          description="Assigned across categories"
+          icon={Package}
+          tone="emerald"
+          alert={true}
+          href="/admin/products"
+        />
+        <AdminKpiCard
+          label="Root Departments"
+          value={rootCategories.toLocaleString()}
+          description="Top-level primary tiers"
+          icon={Folder}
+          tone="blue"
+          alert={true}
+        />
+        <AdminKpiCard
+          label="Sub-Categories"
+          value={subCategories.toLocaleString()}
+          description="Nested child category nodes"
+          icon={FolderPlus}
+          tone="amber"
+          alert={true}
+        />
+      </AdminKpiGrid>
+
+      {/* ── Categories Table Component ── */}
+      <AdminCategoriesTable initialCategories={categories} />
     </div>
   );
 }

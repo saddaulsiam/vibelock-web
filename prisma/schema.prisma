@@ -223,11 +223,16 @@ model Category {
   parentId    String?
   parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryToCategory")
+  isActive    Boolean    @default(true)
+  sortOrder   Int        @default(0)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   products Product[]
   banners  Banner[] @relation("BannerCategories")
+
+  @@index([sortOrder])
+  @@index([isActive])
 }
 
 model Product {

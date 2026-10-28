@@ -48,6 +48,8 @@ type CategoryFormValues = {
   description: string | null;
   imageUrl?: string | null;
   parentId: string | null;
+  isActive?: boolean;
+  sortOrder?: number;
 };
 
 export function CategoryForm({
@@ -61,6 +63,8 @@ export function CategoryForm({
   const [slug, setSlug] = React.useState(category?.slug ?? "");
   const [description, setDescription] = React.useState(category?.description ?? "");
   const [parentId, setParentId] = React.useState(category?.parentId ?? "");
+  const [isActive, setIsActive] = React.useState(category?.isActive ?? true);
+  const [sortOrder, setSortOrder] = React.useState(category?.sortOrder ?? 0);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(Boolean(category?.slug));
   const [isDirty, setIsDirty] = React.useState(false);
 
@@ -477,6 +481,67 @@ export function CategoryForm({
             <p>
               • <strong>Sub-category:</strong> Groups under the selected parent category in dropdown
               menus and filter drawers.
+            </p>
+          </div>
+        </div>
+
+        {/* Display Priority & Merchandising */}
+        <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+              Display Priority (Sort Order)
+            </label>
+            <input
+              type="number"
+              name="sortOrder"
+              value={sortOrder}
+              onChange={(e) => {
+                setSortOrder(Number(e.target.value));
+                setIsDirty(true);
+              }}
+              min="0"
+              className={fieldClass}
+              placeholder="0"
+            />
+            <p className="text-muted-foreground mt-1 text-xs">
+              Lower numbers appear first in the navigation menu (0, 1, 2...).
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+              Storefront Visibility
+            </label>
+            <div className="flex h-11 items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3.5">
+              <span className="text-xs font-semibold text-neutral-800">
+                {isActive ? "Active at Storefront" : "Hidden / Draft"}
+              </span>
+              <input
+                type="hidden"
+                name="isActive"
+                value={isActive ? "true" : "false"}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setIsActive((prev) => !prev);
+                  setIsDirty(true);
+                }}
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isActive ? "bg-emerald-600" : "bg-neutral-300"
+                }`}
+                role="switch"
+                aria-checked={isActive}
+              >
+                <span
+                  className={`pointer-events-none inline-block size-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    isActive ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+            <p className="text-muted-foreground mt-1 text-xs">
+              Toggle whether customers can view and filter this category.
             </p>
           </div>
         </div>
