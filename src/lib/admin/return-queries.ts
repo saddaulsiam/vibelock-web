@@ -301,6 +301,20 @@ export async function getAdminReturnById(id: string) {
       0
     ),
     auditLogs,
+    storeCreditVouchers: auditLogs
+      .filter((l) => l.action === "STORE_CREDIT_ISSUED")
+      .map((l) => {
+        const meta = (l.metadata as Record<string, unknown> | null) || {};
+        return {
+          id: l.id,
+          code: String(meta.couponCode || ""),
+          voucherAmount: Number(meta.voucherAmount || 0),
+          originalAmount: Number(meta.originalAmount || 0),
+          bonusAmount: Number(meta.bonusAmount || 0),
+          issuedAt: l.createdAt.toISOString(),
+          issuedBy: l.actor?.name || l.actor?.email || "System Admin",
+        };
+      }),
     reverseLogistics: (() => {
       const log = auditLogs.find((l) => l.action === "RETURN_PICKUP_BOOKED");
       const meta = (log?.metadata as Record<string, unknown> | null) || null;

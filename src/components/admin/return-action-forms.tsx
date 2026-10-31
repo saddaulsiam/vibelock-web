@@ -1,7 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
-import { Truck, ExternalLink, Printer, CheckCircle2, Loader2 } from "lucide-react";
+import { useActionState, useState } from "react";
+import {
+  Truck,
+  ExternalLink,
+  Printer,
+  CheckCircle2,
+  Loader2,
+  Gift,
+  CreditCard,
+  Sparkles,
+  ShieldAlert,
+} from "lucide-react";
 import type { AdminReturnActionState } from "@/lib/admin/return-actions";
 import type { ReturnReverseLogistics } from "@/lib/admin/return-queries";
 import { OrderCopyButton } from "@/components/admin/order-copy-button";
@@ -28,41 +38,295 @@ function ActionResult({ state }: { state: AdminReturnActionState }) {
 export function ReturnStatusForm({
   id,
   statuses,
+  items = [],
   action,
 }: {
   id: string;
   statuses: string[];
+  items?: { id: string; productName: string; sku: string; quantity: number }[];
   action: Action;
 }) {
   const [state, formAction, pending] = useActionState(action, initialState);
+  const [currentStatus, setCurrentStatus] = useState(statuses[0] || "");
+  const [itemGrading, setItemGrading] = useState<Record<string, "RESELLABLE" | "DAMAGED">>({});
+
+  const isCompletedSelected = currentStatus === "COMPLETED";
 
   return (
-    <form action={formAction} className="space-y-3">
+    <form action={formAction} className="space-y-3.5">
       <input type="hidden" name="id" value={id} />
-      <select
-        name="status"
-        className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-      >
-        {statuses.map((status) => (
-          <option key={status} value={status}>
-            {status}
-          </option>
-        ))}
-      </select>
-      <textarea
-        name="notes"
-        placeholder="Optional internal note"
-        className="border-input flex min-h-20 w-full rounded-md border bg-transparent px-3 py-2 text-sm"
-      />
+      <div>
+        <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+          Next Status Transition
+        </label>
+        <select
+          name="status"
+          value={currentStatus}
+          onChange={(e) => setCurrentStatus(e.target.value)}
+          className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-semibold text-neutral-900 shadow-2xs"
+        >
+          {statuses.map((status) => (
+            <option key={status} value={status}>
+              {status}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* QC Quality Grading Section (Visible when transitioning to COMPLETED) */}
+      {isCompletedSelected && items.length > 0 && (
+        <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-3.5 space-y-3">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-purple-950 uppercase tracking-wide">
+            <ShieldAlert className="size-4 text-purple-700" />
+            <span>Warehouse QC Quality Grading</span>
+          </div>
+          <p className="text-[11px] text-purple-800 leading-snug">
+            Grade each returned item below. Resellable items return to active sellable stock; damaged/defective items are diverted to the Damaged Ledger (0 stock added).
+          </p>
+
+          <div className="space-y-2 pt-1">
+            {items.map((it) => {
+              const currentGrade = itemGrading[it.id] || "RESELLABLE";
+              return (
+                <div
+                  key={it.id}
+                  className="rounded-lg border border-neutral-200 bg-white p-2.5 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-neutral-900 truncate">{it.productName}</p>
+                    <p className="font-mono text-[11px] text-neutral-500">
+                      SKU: {it.sku} &bull; Qty: {it.quantity}
+                    </p>
+                  </div>
+
+                  <input
+                    type="hidden"
+                    name={`item_grade_${it.id}`}
+                    value={currentGrade}
+                  />
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setItemGrading((prev) => ({ ...prev, [it.id]: "RESELLABLE" }))
+                      }
+                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
+                        currentGrade === "RESELLABLE"
+                          ? "bg-emerald-600 text-white shadow-2xs"
+                          : "border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100"
+                      }`}
+                    >
+                      ✓ Resellable (Grade A)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setItemGrading((prev) => ({ ...prev, [it.id]: "DAMAGED" }))
+                      }
+                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
+                        currentGrade === "DAMAGED"
+                          ? "bg-rose-600 text-white shadow-2xs"
+                          : "border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100"
+                      }`}
+                    >
+                      ⚠ Damaged / Defect
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+          Internal Note (Optional)
+        </label>
+        <textarea
+          name="notes"
+          placeholder="Optional internal QC or handover note..."
+          className="border-input flex min-h-18 w-full rounded-lg border bg-white px-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 shadow-2xs"
+        />
+      </div>
+
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex min-h-10 items-center justify-center border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white disabled:opacity-60"
+        className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-60 transition"
       >
-        {pending ? "Updating..." : "Update return"}
+        {pending ? "Updating Status..." : "Update Return Status"}
       </button>
       <ActionResult state={state} />
     </form>
+  );
+}
+
+export function StoreCreditRefundForm({
+  returnId,
+  maxRequestedAmount,
+  creditAction,
+  cashAction,
+}: {
+  returnId: string;
+  maxRequestedAmount: number;
+  creditAction: Action;
+  cashAction: Action;
+}) {
+  const [tab, setTab] = useState<"CREDIT" | "CASH">("CREDIT");
+  const [customAmount, setCustomAmount] = useState<string>(String(maxRequestedAmount || ""));
+
+  const [creditState, creditFormAction, creditPending] = useActionState(
+    creditAction,
+    initialState
+  );
+  const [cashState, cashFormAction, cashPending] = useActionState(cashAction, initialState);
+
+  const baseNum = Number(customAmount) > 0 ? Number(customAmount) : maxRequestedAmount;
+  const bonusNum = Math.round(baseNum * 0.05 * 100) / 100;
+  const totalVoucherNum = Math.round((baseNum + bonusNum) * 100) / 100;
+
+  return (
+    <div className="space-y-4">
+      {/* Mode Switcher Tabs */}
+      <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-100/70 p-1 text-xs">
+        <button
+          type="button"
+          onClick={() => setTab("CREDIT")}
+          className={`flex items-center justify-center gap-1.5 rounded-md py-2 font-bold transition ${
+            tab === "CREDIT"
+              ? "bg-white text-emerald-950 shadow-2xs"
+              : "text-neutral-600 hover:text-neutral-900"
+          }`}
+        >
+          <Gift className="size-3.5 text-emerald-600" />
+          <span>105% Store Credit (Recommended)</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("CASH")}
+          className={`flex items-center justify-center gap-1.5 rounded-md py-2 font-bold transition ${
+            tab === "CASH"
+              ? "bg-white text-neutral-950 shadow-2xs"
+              : "text-neutral-600 hover:text-neutral-900"
+          }`}
+        >
+          <CreditCard className="size-3.5 text-neutral-600" />
+          <span>Cash / Gateway (100%)</span>
+        </button>
+      </div>
+
+      {tab === "CREDIT" ? (
+        <form action={creditFormAction} className="space-y-3.5">
+          <input type="hidden" name="returnId" value={returnId} />
+
+          <div>
+            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+              Merchandise Refund Base (৳)
+            </label>
+            <input
+              name="amount"
+              type="number"
+              min="1"
+              max={maxRequestedAmount}
+              step="0.01"
+              value={customAmount}
+              onChange={(e) => setCustomAmount(e.target.value)}
+              required
+              className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-bold text-neutral-900 shadow-2xs"
+            />
+          </div>
+
+          {/* 105% Bonus Calculation Card */}
+          <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-3.5 space-y-2">
+            <div className="flex items-center justify-between text-xs text-emerald-950">
+              <span>Return Value:</span>
+              <span className="font-semibold">৳ {baseNum.toLocaleString("en-BD")}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs text-emerald-800">
+              <span className="flex items-center gap-1">
+                <Sparkles className="size-3.5 text-emerald-600" />
+                <span>VibeLock 5% Store Bonus:</span>
+              </span>
+              <span className="font-bold">+৳ {bonusNum.toLocaleString("en-BD")}</span>
+            </div>
+            <div className="border-t border-emerald-200/80 pt-2 flex items-center justify-between text-sm font-black text-emerald-950">
+              <span>Total Store Voucher:</span>
+              <span className="text-base text-emerald-700">
+                ৳ {totalVoucherNum.toLocaleString("en-BD")}
+              </span>
+            </div>
+            <p className="text-[11px] text-emerald-800/80 leading-snug pt-1">
+              Generates a single-use promo voucher valid for 180 days with zero minimum spend. Automatically emails &amp; SMS-notifies customer.
+            </p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={creditPending || baseNum <= 0}
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-60 transition"
+          >
+            {creditPending ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                <span>Issuing 105% Store Credit...</span>
+              </>
+            ) : (
+              <>
+                <Gift className="size-3.5" />
+                <span>Issue ৳ {totalVoucherNum.toLocaleString("en-BD")} Store Credit Voucher</span>
+              </>
+            )}
+          </button>
+          <ActionResult state={creditState} />
+        </form>
+      ) : (
+        <form action={cashFormAction} className="space-y-3">
+          <input type="hidden" name="returnId" value={returnId} />
+          <div>
+            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+              Refund Amount (৳)
+            </label>
+            <input
+              name="amount"
+              type="number"
+              min="0.01"
+              max={maxRequestedAmount}
+              step="0.01"
+              defaultValue={maxRequestedAmount}
+              required
+              placeholder="Amount (৳)"
+              className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-bold text-neutral-900 shadow-2xs"
+            />
+          </div>
+
+          <div>
+            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+              Refund Reason (Optional)
+            </label>
+            <input
+              name="reason"
+              maxLength={500}
+              placeholder="e.g. Return item inspected and approved"
+              className="border-input flex h-9 w-full rounded-lg border bg-white px-3 text-xs text-neutral-900 shadow-2xs"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={cashPending}
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-60 transition"
+          >
+            {cashPending ? "Creating..." : "Create Pending Gateway Refund"}
+          </button>
+          <p className="text-muted-foreground text-[11px]">
+            Creates a pending refund to be settled via payment gateway.
+          </p>
+          <ActionResult state={cashState} />
+        </form>
+      )}
+    </div>
   );
 }
 

@@ -9,6 +9,12 @@ import { RefundService } from "@/lib/refunds/service";
 import { ReturnService } from "@/lib/returns/service";
 import { getAdminReturns } from "@/lib/admin/return-queries";
 import { getShippingProvider } from "@/lib/shipping/provider";
+import {
+  notifyReturnApproved,
+  notifyReturnReceived,
+  notifyStoreCreditIssued,
+  notifyCashRefundProcessed,
+} from "@/lib/email/return-emails";
 
 export type AdminReturnActionState = { error: string | null; message?: string };
 
@@ -85,15 +91,41 @@ export async function updateReturnStatusAction(
 
   const { id, status, notes } = parsed.data;
 
+  // Quality Grading map for returned items (resellable vs damaged)
+  const gradingMap: Record<string, "RESELLABLE" | "DAMAGED"> = {};
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("item_grade_") && (value === "RESELLABLE" || value === "DAMAGED")) {
+      const itemId = key.replace("item_grade_", "");
+      gradingMap[itemId] = value;
+    }
+  }
+
+  const rawGrading = formData.get("grading");
+  if (typeof rawGrading === "string" && rawGrading.trim()) {
+    try {
+      const parsedGrading = JSON.parse(rawGrading);
+      Object.assign(gradingMap, parsedGrading);
+    } catch {
+      // ignore
+    }
+  }
+
+  let customerToNotify: {
+    email: string;
+    name?: string | null;
+    phone?: string | null;
+    orderNumber: string;
+  } | null = null;
+
   try {
-    await prisma.$transaction(async (tx) => {
+    customerToNotify = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "ReturnRequest" WHERE id = ${id} FOR UPDATE`;
       const request = await tx.returnRequest.findUnique({
         where: { id },
         include: { order: true, items: { include: { orderItem: true } } },
       });
       if (!request) throw new Error("Return request not found.");
-      if (request.status === status) return;
+      if (request.status === status) return null;
       if (!transitions[request.status].includes(status)) {
         throw new Error("That return status transition is not allowed.");
       }
@@ -101,7 +133,7 @@ export async function updateReturnStatusAction(
       await tx.returnRequest.update({ where: { id }, data: { status } });
 
       if (status === "COMPLETED") {
-        await new ReturnService().processReturnRestock(id, tx);
+        await new ReturnService().processReturnRestock(id, tx, gradingMap);
       }
 
       await tx.orderHistory.create({
@@ -117,14 +149,36 @@ export async function updateReturnStatusAction(
           action: "RETURN_STATUS_CHANGED",
           entityType: "ReturnRequest",
           entityId: id,
-          metadata: { from: request.status, to: status, notes: notes ?? null },
+          metadata: {
+            from: request.status,
+            to: status,
+            notes: notes ?? null,
+            grading: Object.keys(gradingMap).length > 0 ? gradingMap : undefined,
+          },
         },
       });
+
+      return {
+        email: request.order.customerEmail,
+        name: request.order.customerName,
+        phone: request.order.customerPhone,
+        orderNumber: request.order.orderNumber,
+      };
     });
   } catch (error) {
     return {
       error: knownError(error) ?? "The return status could not be updated. Please try again.",
     };
+  }
+
+  // Dispatch real-time email & SMS notification when parcel is received at warehouse
+  if (customerToNotify && status === "RECEIVED") {
+    await notifyReturnReceived({
+      customerEmail: customerToNotify.email,
+      customerName: customerToNotify.name,
+      customerPhone: customerToNotify.phone,
+      orderNumber: customerToNotify.orderNumber,
+    });
   }
 
   refreshReturns();
@@ -253,6 +307,22 @@ export async function processReturnRefundAction(
         metadata: { returnId: request.id },
       },
     });
+
+    // Notify customer of cash refund
+    const fullOrder = await prisma.order.findUnique({
+      where: { id: request.orderId },
+      select: { customerEmail: true, customerName: true, customerPhone: true, orderNumber: true },
+    });
+    if (fullOrder) {
+      await notifyCashRefundProcessed({
+        customerEmail: fullOrder.customerEmail,
+        customerName: fullOrder.customerName,
+        customerPhone: fullOrder.customerPhone,
+        orderNumber: fullOrder.orderNumber,
+        amount: Number(refund.amount),
+        gateway: "Payment Provider",
+      });
+    }
   } catch (error) {
     return { error: knownError(error) ?? "The refund could not be processed. Please try again." };
   }
@@ -379,6 +449,16 @@ export async function bookSteadfastReturnPickupAction(
     });
 
     refreshReturns();
+
+    // Send real-time notification to customer (Email & SMS)
+    await notifyReturnApproved({
+      customerEmail: request.order.customerEmail,
+      customerName: request.order.customerName,
+      customerPhone: request.order.customerPhone,
+      orderNumber: request.order.orderNumber,
+      trackingCode: dispatchRes.trackingNumber,
+    });
+
     return {
       error: null,
       message: `Steadfast pickup booked! Consignment #${dispatchRes.providerShipmentId}, Tracking: ${dispatchRes.trackingNumber}`,
@@ -386,5 +466,174 @@ export async function bookSteadfastReturnPickupAction(
   } catch (err) {
     console.error("[bookSteadfastReturnPickupAction] error:", err);
     return { error: "Failed to book return pickup. Please try again." };
+  }
+}
+
+const storeCreditSchema = z.object({
+  returnId: z.string().uuid(),
+  amount: z
+    .string()
+    .trim()
+    .regex(/^\d{1,10}(?:\.\d{1,2})?$/, "Enter a valid refund amount.")
+    .optional(),
+  grading: z.string().optional(),
+});
+
+export async function issueStoreCreditRefundAction(
+  _previous: AdminReturnActionState,
+  formData: FormData
+): Promise<AdminReturnActionState> {
+  const admin = await requireRole("ADMIN", { throw: true });
+
+  const returnId = String(formData.get("returnId") ?? "");
+  const amountStr = String(formData.get("amount") ?? "");
+  const parsed = storeCreditSchema.safeParse({
+    returnId,
+    amount: amountStr || undefined,
+  });
+
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  // Parse item grading map
+  const gradingMap: Record<string, "RESELLABLE" | "DAMAGED"> = {};
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith("item_grade_") && (value === "RESELLABLE" || value === "DAMAGED")) {
+      const itemId = key.replace("item_grade_", "");
+      gradingMap[itemId] = value;
+    }
+  }
+
+  const rawGrading = formData.get("grading");
+  if (typeof rawGrading === "string" && rawGrading.trim()) {
+    try {
+      const parsedGrading = JSON.parse(rawGrading);
+      Object.assign(gradingMap, parsedGrading);
+    } catch {
+      // ignore
+    }
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "ReturnRequest" WHERE id = ${returnId} FOR UPDATE`;
+      const request = await tx.returnRequest.findUnique({
+        where: { id: returnId },
+        include: {
+          order: true,
+          items: { include: { orderItem: true } },
+        },
+      });
+
+      if (!request) throw new Error("Return request not found.");
+      if (request.status === "REJECTED") {
+        throw new Error("Cannot issue store credit for a rejected return.");
+      }
+
+      const requestedAmount = request.items.reduce(
+        (sum, item) => sum + Number(item.orderItem.unitPrice) * item.quantity,
+        0
+      );
+
+      const baseAmount = parsed.data.amount ? Number(parsed.data.amount) : requestedAmount;
+      if (baseAmount <= 0) {
+        throw new Error("Store credit amount must be greater than zero.");
+      }
+      if (baseAmount > requestedAmount) {
+        throw new Error("Store credit amount cannot exceed requested return value.");
+      }
+
+      // Calculate 105% value (5% bonus)
+      const bonusRate = 0.05;
+      const finalOriginalAmount = baseAmount;
+      const finalBonusAmount = Math.round(baseAmount * bonusRate * 100) / 100;
+      const finalVoucherAmount = Math.round((baseAmount + finalBonusAmount) * 100) / 100;
+
+      // Generate a unique single-use coupon code
+      const randomSuffix = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const generatedCouponCode = `VL-CREDIT-${randomSuffix}`;
+
+      // 1. Create the single-use 105% Coupon
+      await tx.coupon.create({
+        data: {
+          code: generatedCouponCode,
+          discountType: "FIXED",
+          discountValue: finalVoucherAmount,
+          usageLimit: 1,
+          minOrderValue: null,
+          isActive: true,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 180 days
+        },
+      });
+
+      // 2. Mark ReturnRequest as COMPLETED
+      await tx.returnRequest.update({
+        where: { id: returnId },
+        data: { status: "COMPLETED" },
+      });
+
+      // 3. Process Inventory Restock with Quality Grading
+      await new ReturnService().processReturnRestock(returnId, tx, gradingMap);
+
+      // 4. Log Audit & Order History
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "STORE_CREDIT_ISSUED",
+          entityType: "ReturnRequest",
+          entityId: returnId,
+          metadata: {
+            couponCode: generatedCouponCode,
+            originalAmount: finalOriginalAmount,
+            voucherAmount: finalVoucherAmount,
+            bonusAmount: finalBonusAmount,
+            grading: Object.keys(gradingMap).length > 0 ? gradingMap : undefined,
+          },
+        },
+      });
+
+      await tx.orderHistory.create({
+        data: {
+          orderId: request.orderId,
+          status: request.order.status,
+          notes: `[STORE CREDIT] 105% Store Credit voucher issued: ${generatedCouponCode} (Value: ৳${finalVoucherAmount.toLocaleString("en-BD")}, incl. ৳${finalBonusAmount.toLocaleString("en-BD")} bonus).`,
+        },
+      });
+
+      return {
+        couponCode: generatedCouponCode,
+        voucherAmount: finalVoucherAmount,
+        bonusAmount: finalBonusAmount,
+        customer: {
+          email: request.order.customerEmail,
+          name: request.order.customerName,
+          phone: request.order.customerPhone,
+          orderNumber: request.order.orderNumber,
+        },
+      };
+    });
+
+    // 5. Notify customer via Email & SMS
+    if (result?.customer) {
+      await notifyStoreCreditIssued({
+        customerEmail: result.customer.email,
+        customerName: result.customer.name,
+        customerPhone: result.customer.phone,
+        orderNumber: result.customer.orderNumber,
+        couponCode: result.couponCode,
+        voucherAmount: result.voucherAmount,
+        bonusAmount: result.bonusAmount,
+      });
+    }
+
+    refreshReturns();
+    return {
+      error: null,
+      message: `105% Store Credit voucher ${result?.couponCode} (৳${result?.voucherAmount.toLocaleString("en-BD")}) successfully issued! Sent to customer.`,
+    };
+  } catch (error) {
+    return {
+      error: knownError(error) ?? "Failed to issue store credit voucher. Please try again.",
+    };
   }
 }

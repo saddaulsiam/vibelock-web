@@ -16,6 +16,7 @@ import {
   History,
   ShieldCheck,
   Image as ImageIcon,
+  Gift,
 } from "lucide-react";
 import { getAdminReturnById } from "@/lib/admin/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
@@ -24,13 +25,14 @@ import {
   processReturnRefundAction,
   updateReturnStatusAction,
   bookSteadfastReturnPickupAction,
+  issueStoreCreditRefundAction,
 } from "@/lib/admin/return-actions";
 import {
   ProcessRefundForm,
-  RefundForm,
   ReturnStatusForm,
   ReturnSteadfastPickupCard,
   ReturnSteadfastHeaderAction,
+  StoreCreditRefundForm,
 } from "@/components/admin/return-action-forms";
 import { OrderCopyButton } from "@/components/admin/order-copy-button";
 import { generateWhatsAppUrl } from "@/components/admin/admin-order-badges";
@@ -351,12 +353,41 @@ export default async function AdminReturnDetailPage({
               </div>
             </div>
 
-            {refunds.length === 0 ? (
+            {refunds.length === 0 && (!request.storeCreditVouchers || request.storeCreditVouchers.length === 0) ? (
               <p className="text-xs text-neutral-400 italic">
-                No refunds have been processed for this return request yet.
+                No refunds or store vouchers have been processed for this return request yet.
               </p>
             ) : (
               <div className="space-y-3">
+                {/* Issued 105% Store Credit Vouchers */}
+                {request.storeCreditVouchers?.map((voucher) => (
+                  <div
+                    key={voucher.id}
+                    className="flex flex-col gap-2 rounded-lg border border-emerald-300 bg-emerald-50/50 p-3.5 text-xs shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-black text-xs text-neutral-900 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                          {voucher.code}
+                        </span>
+                        <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
+                          105% STORE CREDIT
+                        </span>
+                      </div>
+                      <OrderCopyButton text={voucher.code} label="Copy Voucher" />
+                    </div>
+                    <div className="flex items-center justify-between text-neutral-700">
+                      <span>
+                        Value: <strong>{formatBdt(voucher.voucherAmount)}</strong>{" "}
+                        <span className="text-[11px] text-emerald-700">
+                          (Includes {formatBdt(voucher.bonusAmount)} Bonus)
+                        </span>
+                      </span>
+                      <span className="text-[11px] text-neutral-500">{formatDate(voucher.issuedAt)}</span>
+                    </div>
+                  </div>
+                ))}
+
                 {refunds.map((refund) => (
                   <div
                     key={refund.id}
@@ -645,31 +676,42 @@ export default async function AdminReturnDetailPage({
               <ReturnStatusForm
                 id={request.id}
                 statuses={nextStatuses[request.status]}
+                items={request.items.map((i) => ({
+                  id: i.id,
+                  productName: i.orderItem.productName,
+                  sku: i.orderItem.sku,
+                  quantity: i.quantity,
+                }))}
                 action={updateReturnStatusAction}
               />
             </div>
           )}
 
-          {/* Create Refund Action */}
+          {/* Refund & Store Credit Settlement Console */}
           {(request.status === "RECEIVED" || request.status === "COMPLETED") && (
-            <div className="rounded-xl border border-emerald-300 bg-emerald-50/50 p-5 shadow-2xs">
+            <div className="rounded-xl border border-emerald-300 bg-emerald-50/40 p-5 shadow-2xs">
               <div className="mb-3.5 flex items-center justify-between border-b border-emerald-200 pb-2.5">
                 <div className="flex items-center gap-2">
                   <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
-                    <CreditCard className="size-4" />
+                    <Gift className="size-4 text-emerald-700" />
                   </div>
                   <div>
                     <h3 className="text-xs font-bold tracking-wider text-emerald-950 uppercase">
-                      Create Payment Refund
+                      Issue Refund / 105% Store Credit
                     </h3>
                     <p className="text-[10px] text-emerald-700">
-                      Max requested: {formatBdt(request.requestedAmount)}
+                      Eligible requested: {formatBdt(request.requestedAmount)}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <RefundForm returnId={request.id} action={initiateReturnRefundAction} />
+              <StoreCreditRefundForm
+                returnId={request.id}
+                maxRequestedAmount={request.requestedAmount}
+                creditAction={issueStoreCreditRefundAction}
+                cashAction={initiateReturnRefundAction}
+              />
             </div>
           )}
         </div>

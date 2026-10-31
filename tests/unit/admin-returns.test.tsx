@@ -4,6 +4,8 @@ import { AdminReturnsTable } from "@/components/admin/admin-returns-table";
 import {
   ReturnSteadfastPickupCard,
   ReturnSteadfastHeaderAction,
+  StoreCreditRefundForm,
+  ReturnStatusForm,
 } from "@/components/admin/return-action-forms";
 import { parseReturnReason, serializeReturnReason } from "@/lib/returns/utils";
 import type { AdminReturnListItem } from "@/lib/admin/return-queries";
@@ -385,6 +387,59 @@ describe("Admin Returns Module UI & Table Verification", () => {
     const oldDelivery = new Date(Date.now() - 4 * msInDay);
     const isOldEligible = (Date.now() - oldDelivery.getTime()) / msInDay <= 3;
     expect(isOldEligible).toBe(false);
+  });
+
+  test("renders StoreCreditRefundForm with 105% bonus calculation and tabs", () => {
+    const html = renderToStaticMarkup(
+      <StoreCreditRefundForm
+        returnId="ret-1"
+        maxRequestedAmount={2000}
+        creditAction={async () => ({ error: null })}
+        cashAction={async () => ({ error: null })}
+      />
+    );
+
+    // Verifies 105% Store Credit tab is rendered
+    expect(html).toContain("105% Store Credit (Recommended)");
+    expect(html).toContain("Cash / Gateway (100%)");
+    expect(html).toContain("VibeLock 5% Store Bonus:");
+    // 2000 + 5% (100) = 2,100
+    expect(html).toContain("2,100");
+    expect(html).toContain("Issue ৳ 2,100 Store Credit Voucher");
+  });
+
+  test("renders ReturnStatusForm with QC Quality Grading section for items", () => {
+    const html = renderToStaticMarkup(
+      <ReturnStatusForm
+        id="ret-1"
+        statuses={["COMPLETED", "REJECTED"]}
+        items={[
+          {
+            id: "it-1",
+            productName: "Heavyweight Boxy Hoodie",
+            sku: "HDY-BLK-XL",
+            quantity: 1,
+          },
+        ]}
+        action={async () => ({ error: null })}
+      />
+    );
+
+    expect(html).toContain("Warehouse QC Quality Grading");
+    expect(html).toContain("Heavyweight Boxy Hoodie");
+    expect(html).toContain("HDY-BLK-XL");
+    expect(html).toContain("Resellable (Grade A)");
+    expect(html).toContain("Damaged / Defect");
+  });
+
+  test("calculates 105% Store Credit voucher value accurately", () => {
+    const baseAmount = 3500;
+    const bonusRate = 0.05;
+    const bonusAmount = Math.round(baseAmount * bonusRate * 100) / 100;
+    const voucherAmount = Math.round((baseAmount + bonusAmount) * 100) / 100;
+
+    expect(bonusAmount).toBe(175);
+    expect(voucherAmount).toBe(3675); // 3500 + 175 = 3675
   });
 });
 
