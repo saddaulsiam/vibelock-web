@@ -4,7 +4,7 @@ import {
   AdminTableFilterSelect,
   AdminTableMetaBar,
   buildFilterUrl,
-} from "@/components/admin/admin-table-controls";
+} from "@/components/admin/shared";
 import {
   buildCsvContent,
   exportToCsv,

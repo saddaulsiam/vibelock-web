@@ -2,9 +2,9 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ReturnRequestStatus } from "@prisma/client";
 import { ShoppingBag, ArrowUpRight } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminPageHeader } from "@/components/admin/shared";
 import { getAdminReturns } from "@/lib/admin/return-queries";
-import { AdminReturnsTable } from "@/components/admin/admin-returns-table";
+import { AdminReturnsTable } from "@/components/admin/returns";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

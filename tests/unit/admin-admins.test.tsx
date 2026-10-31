@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminUsersTable } from "@/components/admin/admin-users-table";
+import { AdminUsersTable } from "@/components/admin/users";
 import { AdminUserListItem, AdminUserStats } from "@/lib/admin/admin-user-queries";
 
 // Mock next/navigation

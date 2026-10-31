@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import { AdminTableColumnVisibility } from "@/components/admin/shared";
 
 describe("AdminTableColumnVisibility Component Unit Tests", () => {
   const sampleColumns = [

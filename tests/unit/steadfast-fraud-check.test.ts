@@ -15,7 +15,7 @@ vi.mock("@/lib/config/env", () => ({
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
-import { OrderCustomerRiskCard } from "@/components/admin/order-customer-risk-card";
+import { OrderCustomerRiskCard } from "@/components/admin/orders";
 import type { CombinedCustomerRiskProfile } from "@/lib/admin/customer-risk";
 
 describe("Steadfast Courier Fraud Check & Risk Intelligence", () => {

@@ -1,8 +1,8 @@
 import { CheckCircle2, Clock, Package, ShoppingBag } from "lucide-react";
 import { getAdminOrders, type AdminOrderDateRange } from "@/lib/admin/order-queries";
-import { AdminOrdersTable } from "@/components/admin/admin-orders-table";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+import { AdminOrdersTable } from "@/components/admin/orders/admin-orders-table";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 
 function valueOf(value: string | string[] | undefined): string | undefined {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ProductForm } from "@/components/admin/product-form";
+import { ProductForm } from "@/components/admin/products";
 
 // Mock next/navigation & next/image
 vi.mock("next/navigation", () => ({

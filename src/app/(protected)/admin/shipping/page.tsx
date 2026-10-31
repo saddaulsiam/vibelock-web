@@ -1,7 +1,6 @@
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminShipmentsTable } from "@/components/admin/admin-shipments-table";
-import { ShippingSubNav } from "@/components/admin/shipping-sub-nav";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminShipmentsTable, ShippingSubNav } from "@/components/admin/shipping";
 import {
   getAdminShipments,
   getAdminShippingOverviewKPIs,

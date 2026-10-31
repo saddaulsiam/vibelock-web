@@ -1,12 +1,12 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminReturnsTable } from "@/components/admin/admin-returns-table";
 import {
+  AdminReturnsTable,
   ReturnSteadfastPickupCard,
   ReturnSteadfastHeaderAction,
   StoreCreditRefundForm,
   ReturnStatusForm,
-} from "@/components/admin/return-action-forms";
+} from "@/components/admin/returns";
 import { parseReturnReason, serializeReturnReason } from "@/lib/returns/utils";
 import type { AdminReturnListItem } from "@/lib/admin/return-queries";
 

@@ -15,20 +15,22 @@ import {
   Lock,
 } from "lucide-react";
 import { getAdminCustomerById } from "@/lib/admin/customer-queries";
-import { CustomerBackButton } from "@/components/admin/customer-back-button";
-import { CustomerRiskWidget } from "@/components/admin/customer-risk-widget";
-import { CustomerDetailHeaderActions } from "@/components/admin/customer-detail-header-actions";
-import { CustomerPreferencesCard } from "@/components/admin/customer-preferences-card";
-import { CustomerStaffNotes } from "@/components/admin/customer-staff-notes";
-import { CustomerSecurityCard } from "@/components/admin/customer-security-card";
-import { CustomerAbandonedCartCard } from "@/components/admin/customer-abandoned-cart-card";
-import { CustomerReviewsCard } from "@/components/admin/customer-reviews-card";
-import { CustomerTimelineCard } from "@/components/admin/customer-timeline-card";
+import {
+  CustomerAbandonedCartCard,
+  CustomerBackButton,
+  CustomerDetailHeaderActions,
+  CustomerPreferencesCard,
+  CustomerReviewsCard,
+  CustomerRiskWidget,
+  CustomerSecurityCard,
+  CustomerStaffNotes,
+  CustomerTimelineCard,
+} from "@/components/admin/customers";
 import {
   AdminOrderStatusBadge,
   AdminPaymentStatusBadge,
   getSalesChannelBadge,
-} from "@/components/admin/admin-order-badges";
+} from "@/components/admin/orders/admin-order-badges";
 
 function currency(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);

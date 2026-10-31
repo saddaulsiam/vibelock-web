@@ -17,7 +17,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import {
   CANCELLATION_REASONS,
   OrderCancelModal,
-} from "@/components/admin/order-cancel-modal";
+} from "@/components/admin/orders";
 
 describe("Structured Order Cancellation and Inventory Restock", () => {
   test("defines comprehensive structured cancellation reasons for BD D2C streetwear", () => {

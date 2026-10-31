@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Copy } from "lucide-react";
-import { ProductForm } from "@/components/admin/product-form";
+import { ProductForm } from "@/components/admin/products";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminProductFormData } from "@/lib/admin/catalog-queries";
 

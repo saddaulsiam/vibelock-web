@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CategorySearchableSelect } from "@/components/admin/category-select";
+import { CategorySearchableSelect } from "@/components/admin/categories";
 
 describe("CategorySearchableSelect component", () => {
   const sampleCategories = [

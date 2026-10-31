@@ -1,6 +1,6 @@
-import { AdminCustomersTable } from "@/components/admin/admin-customers-table";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminCustomersTable } from "@/components/admin/customers/admin-customers-table";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminCustomers,
   getAdminCustomerSummaryKPIs,

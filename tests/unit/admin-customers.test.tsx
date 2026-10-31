@@ -1,16 +1,18 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminCustomersTable } from "@/components/admin/admin-customers-table";
-import { CustomerRiskWidget } from "@/components/admin/customer-risk-widget";
-import { CustomerCreateModal } from "@/components/admin/customer-create-modal";
-import { CustomerEditModal } from "@/components/admin/customer-edit-modal";
-import { CustomerPreferencesCard } from "@/components/admin/customer-preferences-card";
-import { CustomerStaffNotes } from "@/components/admin/customer-staff-notes";
-import { CustomerSmartCrmActions } from "@/components/admin/customer-smart-crm-actions";
-import { CustomerSecurityCard } from "@/components/admin/customer-security-card";
-import { CustomerAbandonedCartCard } from "@/components/admin/customer-abandoned-cart-card";
-import { CustomerReviewsCard } from "@/components/admin/customer-reviews-card";
-import { CustomerTimelineCard } from "@/components/admin/customer-timeline-card";
+import {
+  AdminCustomersTable,
+  CustomerAbandonedCartCard,
+  CustomerCreateModal,
+  CustomerEditModal,
+  CustomerPreferencesCard,
+  CustomerReviewsCard,
+  CustomerRiskWidget,
+  CustomerSecurityCard,
+  CustomerSmartCrmActions,
+  CustomerStaffNotes,
+  CustomerTimelineCard,
+} from "@/components/admin/customers";
 import type {
   AdminCustomerListItem,
   AdminCustomerPreferences,

@@ -2,8 +2,9 @@ import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
   AdminCategoriesTable,
+  CategoryProductsManager,
   type AdminCategoryListItem,
-} from "@/components/admin/admin-categories-table";
+} from "@/components/admin/categories";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -106,7 +107,6 @@ describe("AdminCategoriesTable", () => {
   });
 });
 
-import { CategoryProductsManager } from "@/components/admin/category-products-manager";
 import { ProductStatus } from "@prisma/client";
 
 describe("CategoryProductsManager", () => {

@@ -1,8 +1,8 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminTableTabs, AdminTableSearchInput } from "@/components/admin/admin-table-controls";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminTableTabs, AdminTableSearchInput } from "@/components/admin/shared";
 import { Boxes, Package } from "lucide-react";
 
 describe("Admin Reusable UI Components", () => {
@@ -107,7 +107,7 @@ describe("Admin Reusable UI Components", () => {
 
   test("renders order badges and formats WhatsApp URL correctly", async () => {
     const { getOrderStatusBadge, getPaymentStatusBadge, generateWhatsAppUrl } = await import(
-      "@/components/admin/admin-order-badges"
+      "@/components/admin/orders/admin-order-badges"
     );
 
     const pendingBadge = renderToStaticMarkup(getOrderStatusBadge("PENDING"));
@@ -122,7 +122,7 @@ describe("Admin Reusable UI Components", () => {
 
   test("renders OrderLifecycleStepper with stages and cancelled states", async () => {
     const { OrderLifecycleStepper } = await import(
-      "@/components/admin/order-lifecycle-stepper"
+      "@/components/admin/orders/order-lifecycle-stepper"
     );
 
     const pendingHtml = renderToStaticMarkup(
@@ -149,7 +149,7 @@ describe("Admin Reusable UI Components", () => {
 
   test("renders OrderPickPackChecklist with items and progress", async () => {
     const { OrderPickPackChecklist } = await import(
-      "@/components/admin/order-pick-pack-checklist"
+      "@/components/admin/orders/order-pick-pack-checklist"
     );
 
     const html = renderToStaticMarkup(
@@ -178,7 +178,7 @@ describe("Admin Reusable UI Components", () => {
 
   test("renders OrderThermalLabelModal with barcode and COD tag", async () => {
     const { OrderThermalLabelModal } = await import(
-      "@/components/admin/order-thermal-label-modal"
+      "@/components/admin/orders/order-thermal-label-modal"
     );
 
     const html = renderToStaticMarkup(

@@ -34,9 +34,11 @@ import {
   ReturnSteadfastPickupCard,
   ReturnSteadfastHeaderAction,
   StoreCreditRefundForm,
-} from "@/components/admin/return-action-forms";
-import { OrderCopyButton } from "@/components/admin/order-copy-button";
-import { generateWhatsAppUrl } from "@/components/admin/admin-order-badges";
+} from "@/components/admin/returns";
+import {
+  OrderCopyButton,
+  generateWhatsAppUrl,
+} from "@/components/admin/orders";
 import type { ReturnRequestStatus } from "@prisma/client";
 
 const nextStatuses: Record<string, string[]> = {

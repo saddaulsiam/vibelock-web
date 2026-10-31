@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Edit, Globe, MapPin, Plus, RotateCcw, Truck } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { ShippingSubNav } from "@/components/admin/shipping-sub-nav";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { ShippingSubNav } from "@/components/admin/shipping";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import { getAdminShippingZones } from "@/lib/admin/shipping-queries";
 

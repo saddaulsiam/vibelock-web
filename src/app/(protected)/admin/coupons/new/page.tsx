@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Tag } from "lucide-react";
-import { CouponForm } from "@/components/admin/coupon-form";
+import { CouponForm } from "@/components/admin/coupons/coupon-form";
 import { getAdminCouponFormData } from "@/lib/admin/coupon-queries";
 
 export default async function NewCouponPage() {

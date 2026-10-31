@@ -17,26 +17,24 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { OrderBackButton } from "@/components/admin/order-back-button";
 import {
   CreateShipmentForm,
   RefreshShipmentStatusButton,
-} from "@/components/admin/order-action-forms";
-import { OrderPrintButton } from "@/components/admin/order-print-button";
-import { getAdminOrderById } from "@/lib/admin/order-queries";
-import {
+  OrderBackButton,
+  OrderPrintButton,
   getOrderStatusBadge,
   getPaymentStatusBadge,
   getSalesChannelBadge,
   generateWhatsAppUrl,
-} from "@/components/admin/admin-order-badges";
-import { OrderLifecycleStepper } from "@/components/admin/order-lifecycle-stepper";
-import { OrderPickPackChecklist } from "@/components/admin/order-pick-pack-checklist";
-import { OrderSmartActions } from "@/components/admin/order-smart-actions";
-import { OrderCustomerRiskCard } from "@/components/admin/order-customer-risk-card";
-import { OrderCopyButton } from "@/components/admin/order-copy-button";
-import { OrderStaffNotes } from "@/components/admin/order-staff-notes";
-import { OrderMobileActionBar } from "@/components/admin/order-mobile-action-bar";
+  OrderLifecycleStepper,
+  OrderPickPackChecklist,
+  OrderSmartActions,
+  OrderCustomerRiskCard,
+  OrderCopyButton,
+  OrderStaffNotes,
+  OrderMobileActionBar,
+} from "@/components/admin/orders";
+import { getAdminOrderById } from "@/lib/admin/order-queries";
 import { getCustomerRiskProfile } from "@/lib/admin/customer-risk";
 
 function formatBdt(value: unknown): string {

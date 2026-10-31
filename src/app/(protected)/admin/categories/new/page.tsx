@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { CategoryForm } from "@/components/admin/category-form";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { CategoryForm } from "@/components/admin/categories";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import { getAdminCategoryFormData } from "@/lib/admin/catalog-queries";
 

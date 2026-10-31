@@ -23,15 +23,15 @@ vi.mock("@/lib/admin/order-actions", () => ({
 
 import { renderToStaticMarkup } from "react-dom/server";
 import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
-import { OrderCustomerRiskCard } from "@/components/admin/order-customer-risk-card";
-import { OrderPickPackChecklist } from "@/components/admin/order-pick-pack-checklist";
-import { OrderCopyButton } from "@/components/admin/order-copy-button";
-import { OrderStaffNotes } from "@/components/admin/order-staff-notes";
-import { OrderMobileActionBar } from "@/components/admin/order-mobile-action-bar";
 import {
   CANCELLATION_REASONS,
   OrderCancelModal,
-} from "@/components/admin/order-cancel-modal";
+  OrderCopyButton,
+  OrderCustomerRiskCard,
+  OrderMobileActionBar,
+  OrderPickPackChecklist,
+  OrderStaffNotes,
+} from "@/components/admin/orders";
 
 describe("DEEP VERIFICATION: All 6 Admin Order Features", () => {
   beforeEach(() => {
@@ -190,7 +190,7 @@ describe("DEEP VERIFICATION: All 6 Admin Order Features", () => {
         })
       );
 
-      expect(html).toContain("title=\"Copy customer phone number\"");
+      expect(html).toContain('title="Copy customer phone number"');
       expect(html).toContain("<button");
     });
 
@@ -261,10 +261,10 @@ describe("DEEP VERIFICATION: All 6 Admin Order Features", () => {
         })
       );
 
-      expect(html).toContain("href=\"tel:01711112222\"");
+      expect(html).toContain('href="tel:01711112222"');
       expect(html).toContain("wa.me/8801711112222");
       expect(html).toContain("Confirm Order");
-      expect(html).toContain("title=\"Cancel order and restock inventory\"");
+      expect(html).toContain('title="Cancel order and restock inventory"');
     });
 
     test("renders Move to Packing action for CONFIRMED order", () => {

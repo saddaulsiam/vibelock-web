@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminInventoryDetail } from "@/components/admin/admin-inventory-detail";
+import { AdminInventoryDetail } from "@/components/admin/inventory/admin-inventory-detail";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory-queries";
 
 // Mock next/navigation

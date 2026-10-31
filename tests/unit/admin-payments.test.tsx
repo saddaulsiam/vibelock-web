@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminPaymentsTable } from "@/components/admin/admin-payments-table";
+import { AdminPaymentsTable } from "@/components/admin/payments";
 import { AdminPaymentListItem } from "@/lib/admin/payment-queries";
 
 // Mock next/navigation

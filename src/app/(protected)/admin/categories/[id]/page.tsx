@@ -12,9 +12,9 @@ import {
   Plus,
   Sparkles,
 } from "lucide-react";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { CategoryProductsManager } from "@/components/admin/category-products-manager";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { CategoryProductsManager } from "@/components/admin/categories";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
   getAdminAvailableProductsForCategory,

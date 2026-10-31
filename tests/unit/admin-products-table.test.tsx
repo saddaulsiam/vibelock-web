@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminProductsTable } from "@/components/admin/admin-products-table";
+import { AdminProductsTable } from "@/components/admin/products";
 import type { AdminProductsResult } from "@/lib/admin/catalog-queries";
 
 // Mock next/navigation

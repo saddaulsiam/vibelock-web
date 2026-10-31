@@ -1,10 +1,12 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Prisma } from "@prisma/client";
-import { AdminCouponsTable } from "@/components/admin/admin-coupons-table";
-import { CouponCreateModal } from "@/components/admin/coupon-create-modal";
-import { CouponDeleteModal } from "@/components/admin/coupon-delete-modal";
-import { CouponForm } from "@/components/admin/coupon-form";
+import {
+  AdminCouponsTable,
+  CouponCreateModal,
+  CouponDeleteModal,
+  CouponForm,
+} from "@/components/admin/coupons";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupon-shared";
 
 // Mock next/navigation

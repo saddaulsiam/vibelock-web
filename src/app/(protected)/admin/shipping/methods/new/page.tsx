@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft, Plus } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminPageHeader } from "@/components/admin/shared";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
-import { ShippingMethodForm } from "@/components/admin/shipping-forms";
+import { ShippingMethodForm } from "@/components/admin/shipping";
 import { getAdminShippingZonesForForm } from "@/lib/admin/shipping-queries";
 
 export default async function NewShippingMethodPage() {

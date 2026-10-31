@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ShipmentStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
-import { AdminShipmentsTable } from "@/components/admin/admin-shipments-table";
+import { AdminShipmentsTable } from "@/components/admin/shipping";
 import {
   isShipmentInTransit,
   isShipmentReturnedOrFailed,
@@ -200,7 +200,7 @@ describe("Admin Shipping & Delivery Logistics Module", () => {
 
   describe("ShippingSubNav", () => {
     test("renders all three sub navigation tabs with correct links", async () => {
-      const { ShippingSubNav } = await import("@/components/admin/shipping-sub-nav");
+      const { ShippingSubNav } = await import("@/components/admin/shipping");
       const html = renderToStaticMarkup(<ShippingSubNav activeTab="shipments" />);
 
       expect(html).toContain("Live Shipments &amp; Dispatch");

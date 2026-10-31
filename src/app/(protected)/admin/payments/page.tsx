@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/auth/authorization";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
   getAdminPayments,
   getAdminPaymentStats,
 } from "@/lib/admin/payment-queries";
-import { AdminPaymentsTable } from "@/components/admin/admin-payments-table";
+import { AdminPaymentsTable } from "@/components/admin/payments";
 import {
   CheckCircle2,
   Clock,

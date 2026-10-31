@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
-import { AdminMobileNavigation, AdminSidebar } from "@/components/admin/admin-navigation";
+import { AdminMobileNavigation, AdminSidebar } from "@/components/admin/shared";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Enforce ADMIN role

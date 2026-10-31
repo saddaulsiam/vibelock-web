@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
+import { AdminTableInfiniteScroll } from "@/components/admin/shared";
 
 describe("AdminTableInfiniteScroll Component Unit Tests", () => {
   test("renders nothing if totalCount is 0", () => {

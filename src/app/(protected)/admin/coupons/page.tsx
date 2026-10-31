@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 import { DiscountType } from "@prisma/client";
-import { AdminCouponsTable } from "@/components/admin/admin-coupons-table";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminCouponsTable } from "@/components/admin/coupons/admin-coupons-table";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
 import prisma from "@/lib/prisma/client";
 import {
   getAdminCoupons,

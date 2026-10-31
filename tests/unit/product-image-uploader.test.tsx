@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ProductImageUploader } from "@/components/admin/product-image-uploader";
+import { ProductImageUploader } from "@/components/admin/products";
 
 describe("ProductImageUploader component", () => {
   const sampleImages = [
