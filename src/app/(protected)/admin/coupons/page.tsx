@@ -3,6 +3,7 @@ import { DiscountType } from "@prisma/client";
 import { AdminCouponsTable } from "@/components/admin/admin-coupons-table";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import prisma from "@/lib/prisma/client";
 import {
   getAdminCoupons,
   getAdminCouponsSummaryKPIs,
@@ -70,12 +71,19 @@ async function CouponsContent({
   const type = Object.values(DiscountType).includes(typeValue as DiscountType)
     ? (typeValue as DiscountType)
     : undefined;
-  const { coupons, total, segmentCounts } = await getAdminCoupons({
-    search,
-    filter,
-    type,
-    page: 1,
-  });
+  const [{ coupons, total, segmentCounts }, allCategories] = await Promise.all([
+    getAdminCoupons({
+      search,
+      filter,
+      type,
+      page: 1,
+    }),
+    prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { id: true, name: true, slug: true },
+    }),
+  ]);
 
   return (
     <AdminCouponsTable
@@ -85,6 +93,7 @@ async function CouponsContent({
       currentFilter={filter}
       currentType={type}
       segmentCounts={segmentCounts}
+      allCategories={allCategories}
     />
   );
 }

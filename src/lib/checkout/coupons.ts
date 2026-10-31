@@ -7,6 +7,11 @@ export class CouponError extends Error {
   }
 }
 
+export interface CouponTargetCategory {
+  id: string;
+  name: string;
+}
+
 export interface CouponData {
   id: string;
   code: string;
@@ -18,9 +23,46 @@ export interface CouponData {
   isActive: boolean;
   startDate: Date | null;
   endDate: Date | null;
+  categories?: CouponTargetCategory[];
 }
 
-export function validateCouponRules(coupon: CouponData, subtotal: number, now = new Date()) {
+export interface CartItemCategoryInfo {
+  price: number;
+  quantity: number;
+  categoryIds: string[];
+}
+
+export function getEligibleSubtotal(
+  coupon: { categories?: CouponTargetCategory[] },
+  items: CartItemCategoryInfo[]
+): { eligibleSubtotal: number; hasEligibleItems: boolean } {
+  const targetCategories = coupon.categories ?? [];
+  if (targetCategories.length === 0) {
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    return { eligibleSubtotal: subtotal, hasEligibleItems: items.length > 0 };
+  }
+
+  const targetCategoryIds = new Set(targetCategories.map((c) => c.id));
+  let eligibleSubtotal = 0;
+  let hasEligibleItems = false;
+
+  for (const item of items) {
+    const isTargeted = item.categoryIds.some((catId) => targetCategoryIds.has(catId));
+    if (isTargeted) {
+      eligibleSubtotal += item.price * item.quantity;
+      hasEligibleItems = true;
+    }
+  }
+
+  return { eligibleSubtotal, hasEligibleItems };
+}
+
+export function validateCouponRules(
+  coupon: CouponData,
+  subtotal: number,
+  now = new Date(),
+  eligibleCategoryCheck?: { hasEligibleItems: boolean }
+) {
   if (!coupon.isActive) {
     throw new CouponError("This coupon is not active.");
   }
@@ -37,6 +79,14 @@ export function validateCouponRules(coupon: CouponData, subtotal: number, now = 
     throw new CouponError(
       `Minimum order value of ${Number(coupon.minOrderValue).toFixed(0)} BDT required for this coupon.`
     );
+  }
+  if (coupon.categories && coupon.categories.length > 0) {
+    if (eligibleCategoryCheck && !eligibleCategoryCheck.hasEligibleItems) {
+      const categoryNames = coupon.categories.map((c) => c.name).join(", ");
+      throw new CouponError(
+        `This coupon only applies to items in the following categories: ${categoryNames}. Your cart does not contain any eligible items.`
+      );
+    }
   }
 }
 

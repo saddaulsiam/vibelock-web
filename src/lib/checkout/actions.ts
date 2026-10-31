@@ -7,7 +7,13 @@ import prisma from "@/lib/prisma/client";
 import { checkoutSchema } from "./validation";
 import { getCart } from "@/lib/cart/queries";
 import crypto from "crypto";
-import { CouponError, calculateCouponDiscount, validateCouponRules } from "./coupons";
+import {
+  CouponError,
+  calculateCouponDiscount,
+  validateCouponRules,
+  getEligibleSubtotal,
+  type CartItemCategoryInfo,
+} from "./coupons";
 import type { DiscountType } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
@@ -45,15 +51,47 @@ export async function validateCouponAction(code: string) {
 
   const coupon = await prisma.coupon.findUnique({
     where: { code: normalizedCode },
+    include: {
+      categories: { select: { id: true, name: true } },
+    },
   });
 
   if (!coupon) {
     return { success: false, error: "Invalid coupon code." };
   }
 
+  // Fetch product category mapping for the cart items
+  const variantIds = cart.items.map((i) => i.variantId);
+  const variantsWithCategories = await prisma.productVariant.findMany({
+    where: { id: { in: variantIds } },
+    select: {
+      id: true,
+      product: {
+        select: {
+          categories: { select: { id: true } },
+        },
+      },
+    },
+  });
+
+  const variantCategoryMap = new Map<string, string[]>();
+  for (const v of variantsWithCategories) {
+    variantCategoryMap.set(
+      v.id,
+      v.product.categories.map((c) => c.id)
+    );
+  }
+
+  const cartItemCategories: CartItemCategoryInfo[] = cart.items.map((item) => ({
+    price: item.variant.effectivePrice,
+    quantity: item.quantity,
+    categoryIds: variantCategoryMap.get(item.variantId) ?? [],
+  }));
+
   try {
-    validateCouponRules(coupon, cartSubtotal);
-    const discountAmount = calculateCouponDiscount(coupon, cartSubtotal);
+    const { eligibleSubtotal, hasEligibleItems } = getEligibleSubtotal(coupon, cartItemCategories);
+    validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems });
+    const discountAmount = calculateCouponDiscount(coupon, eligibleSubtotal);
 
     return {
       success: true,
@@ -234,7 +272,11 @@ export async function createOrderAction(
               include: {
                 variant: {
                   include: {
-                    product: true,
+                    product: {
+                      include: {
+                        categories: { select: { id: true, name: true } },
+                      },
+                    },
                     inventoryTransactions: true,
                     inventoryReservations: {
                       where: {
@@ -337,8 +379,31 @@ export async function createOrderAction(
           }
 
           const coupon = lockedCoupons[0];
-          validateCouponRules(coupon, orderSubtotal);
-          const discountAmount = calculateCouponDiscount(coupon, orderSubtotal);
+
+          // Fetch category targeting for this coupon
+          const couponCategories = await tx.category.findMany({
+            where: { coupons: { some: { id: coupon.id } } },
+            select: { id: true, name: true },
+          });
+
+          const couponWithCategories = {
+            ...coupon,
+            categories: couponCategories,
+          };
+
+          const orderItemCategories: CartItemCategoryInfo[] = dbCart.items.map((item) => ({
+            price: Number(item.variant.discountPrice ?? item.variant.sellingPrice),
+            quantity: item.quantity,
+            categoryIds: item.variant.product.categories.map((c) => c.id),
+          }));
+
+          const { eligibleSubtotal, hasEligibleItems } = getEligibleSubtotal(
+            couponWithCategories,
+            orderItemCategories
+          );
+
+          validateCouponRules(couponWithCategories, orderSubtotal, new Date(), { hasEligibleItems });
+          const discountAmount = calculateCouponDiscount(couponWithCategories, eligibleSubtotal);
 
           await tx.coupon.update({
             where: { id: coupon.id },

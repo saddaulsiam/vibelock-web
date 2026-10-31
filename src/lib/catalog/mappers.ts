@@ -25,6 +25,8 @@ export function mapCategory(category: Category): CategorySummary {
     slug: category.slug,
     description: category.description,
     imageUrl: category.imageUrl,
+    metaTitle: category.metaTitle ?? null,
+    metaDescription: category.metaDescription ?? null,
   };
 }
 
@@ -94,6 +96,7 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     slug: product.slug,
     description: product.description,
     status: product.status,
+    isFeatured: Boolean((product as unknown as { isFeatured?: boolean }).isFeatured),
     primaryImage: primaryImage ? mapImage(primaryImage) : null,
     secondaryImage: secondaryImage ? mapImage(secondaryImage) : null,
     images: product.images.map(mapImage),

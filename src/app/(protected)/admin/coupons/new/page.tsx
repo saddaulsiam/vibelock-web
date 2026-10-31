@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { ChevronLeft, Tag } from "lucide-react";
 import { CouponForm } from "@/components/admin/coupon-form";
+import { getAdminCouponFormData } from "@/lib/admin/coupon-queries";
 
-export default function NewCouponPage() {
+export default async function NewCouponPage() {
+  const { allCategories } = await getAdminCouponFormData();
+
   return (
     <div className="max-w-3xl space-y-6">
       {/* Back button & Breadcrumb */}
@@ -21,7 +24,7 @@ export default function NewCouponPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#101114]">Create New Coupon</h1>
             <p className="text-xs text-neutral-500">
-              Configure code, discount percentage or fixed amount, and redemption constraints.
+              Configure code, discount percentage or fixed amount, category targeting, and redemption constraints.
             </p>
           </div>
         </div>
@@ -29,7 +32,7 @@ export default function NewCouponPage() {
 
       {/* Main Container */}
       <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-2xs">
-        <CouponForm />
+        <CouponForm categories={allCategories} />
       </div>
     </div>
   );

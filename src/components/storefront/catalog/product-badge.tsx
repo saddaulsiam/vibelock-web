@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 interface ProductBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   label: string;
-  variant?: "default" | "sale" | "new";
+  variant?: "default" | "sale" | "new" | "featured";
 }
 
 export function ProductBadge({
@@ -19,6 +19,7 @@ export function ProductBadge({
         variant === "default" && "bg-[#101114] text-white",
         variant === "sale" && "bg-[#E50010] text-white",
         variant === "new" && "bg-[#E50010] text-white",
+        variant === "featured" && "bg-amber-400 text-[#101114] font-black",
         className
       )}
       {...props}

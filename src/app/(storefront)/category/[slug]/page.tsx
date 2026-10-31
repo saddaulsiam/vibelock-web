@@ -23,15 +23,18 @@ export async function generateMetadata({
 
   if (!category) return {};
 
+  const title = category.metaTitle?.trim() || category.name;
   const description =
-    category.description || `Browse the latest ${category.name} collection at VibeLock.`;
+    category.metaDescription?.trim() ||
+    category.description ||
+    `Browse the latest ${category.name} collection at VibeLock.`;
 
   return {
-    title: category.name,
+    title,
     description,
     alternates: { canonical: `${SITE_URL}/category/${category.slug}` },
     openGraph: {
-      title: `${category.name} | VibeLock`,
+      title: `${title} | VibeLock`,
       description,
       url: `${SITE_URL}/category/${category.slug}`,
     },
