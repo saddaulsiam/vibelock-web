@@ -1,40 +1,41 @@
 "use client";
 
-import * as React from "react";
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ReturnRequestStatus } from "@prisma/client";
-import {
-  RotateCcw,
-  Clock,
-  Truck,
-  PackageCheck,
-  CheckCircle2,
-  XCircle,
-  Eye,
-  MessageSquare,
-  Phone,
-  ShoppingBag,
-  Inbox,
-  Camera,
-} from "lucide-react";
-import { parseReturnReason } from "@/lib/returns/utils";
-import {
-  AdminTableTabs,
-  AdminTableSearchInput,
-  type AdminTableTabItem,
-  ADMIN_TABLE_CLASSES,
-} from "@/components/admin/admin-table-controls";
+import { generateWhatsAppUrl } from "@/components/admin/admin-order-badges";
 import {
   AdminTableColumnVisibility,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
+import {
+  ADMIN_TABLE_CLASSES,
+  AdminTableSearchInput,
+  AdminTableTabs,
+  type AdminTableTabItem,
+} from "@/components/admin/admin-table-controls";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { OrderCopyButton } from "@/components/admin/order-copy-button";
-import { generateWhatsAppUrl } from "@/components/admin/admin-order-badges";
 import { loadMoreAdminReturnsAction } from "@/lib/admin/return-actions";
 import type { AdminReturnListItem } from "@/lib/admin/return-queries";
+import { parseReturnReason } from "@/lib/returns/utils";
+import { ReturnRequestStatus } from "@prisma/client";
+import {
+  Camera,
+  CheckCircle2,
+  Clock,
+  Download,
+  Eye,
+  Inbox,
+  MessageSquare,
+  PackageCheck,
+  Phone,
+  RotateCcw,
+  ShoppingBag,
+  Truck,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type ReturnColumnKey = "customer" | "items" | "reason" | "financials" | "status" | "dates";
 
@@ -227,6 +228,60 @@ export function AdminReturnsTable({
     });
   };
 
+  const hasActiveFilters = Boolean(
+    searchValue.trim() || Boolean(currentStatus)
+  );
+
+  const handleClearAllFilters = () => {
+    setSearchValue("");
+    router.push("/admin/returns");
+  };
+
+  const exportCsv = () => {
+    const safeCell = (val: unknown) => {
+      const text = String(val ?? "");
+      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
+      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
+    };
+
+    const headers = [
+      "Return ID",
+      "Order Number",
+      "Customer Name",
+      "Customer Email",
+      "Customer Phone",
+      "Status",
+      "Return Reason",
+      "Requested Amount (BDT)",
+      "Reverse Tracking Code",
+      "Created Date",
+    ];
+
+    const rows = returns.map((r) => [
+      safeCell(r.id),
+      safeCell(r.order.orderNumber),
+      safeCell(r.order.customerName || "Customer"),
+      safeCell(r.order.customerEmail),
+      safeCell(r.order.customerPhone || ""),
+      safeCell(r.status),
+      safeCell(r.reason || ""),
+      safeCell(r.requestedAmount),
+      safeCell(r.reverseLogistics?.trackingCode || ""),
+      safeCell(new Date(r.createdAt).toISOString().slice(0, 10)),
+    ]);
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `vibelock-returns-${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Load more via infinite scroll
   const handleLoadMore = useCallback(async () => {
     if (isLoadingMore || returns.length >= total) return;
@@ -351,7 +406,41 @@ export function AdminReturnsTable({
               onChange={handleColumnChange}
               onReset={handleColumnReset}
             />
+
+            {/* Export CSV Button */}
+            <button
+              type="button"
+              onClick={exportCsv}
+              disabled={returns.length === 0}
+              className={ADMIN_TABLE_CLASSES.buttonSecondary}
+              title="Export filtered returns to CSV"
+            >
+              <Download className="size-3.5 text-neutral-500" />
+              <span className="hidden sm:inline">Export CSV</span>
+            </button>
           </div>
+        </div>
+      </div>
+
+      {/* Meta Counter & Active Filter Reset */}
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
+        <div className="flex items-center gap-2">
+          <p>
+            Showing <strong className="text-neutral-900">{returns.length}</strong> of{" "}
+            <strong className="text-neutral-900">{total}</strong>{" "}
+            {total === 1 ? "return request" : "return requests"}
+          </p>
+          {hasActiveFilters && (
+            <button
+              type="button"
+              onClick={handleClearAllFilters}
+              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
+              title="Reset all active filters"
+            >
+              <RotateCcw className="size-3" />
+              <span>Reset filters</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -363,29 +452,17 @@ export function AdminReturnsTable({
               <tr>
                 <th className="py-3.5 pr-3 pl-4">Order &amp; Return</th>
 
-                {visibleColumns.customer && (
-                  <th className="px-3 py-3.5">Customer &amp; Contact</th>
-                )}
+                {visibleColumns.customer && <th className="px-3 py-3.5">Customer &amp; Contact</th>}
 
-                {visibleColumns.items && (
-                  <th className="px-3 py-3.5">Returned Items</th>
-                )}
+                {visibleColumns.items && <th className="px-3 py-3.5">Returned Items</th>}
 
-                {visibleColumns.reason && (
-                  <th className="px-3 py-3.5">Reason</th>
-                )}
+                {visibleColumns.reason && <th className="px-3 py-3.5">Reason</th>}
 
-                {visibleColumns.financials && (
-                  <th className="px-3 py-3.5">Refund Estimate</th>
-                )}
+                {visibleColumns.financials && <th className="px-3 py-3.5">Refund Estimate</th>}
 
-                {visibleColumns.status && (
-                  <th className="px-3 py-3.5">Status</th>
-                )}
+                {visibleColumns.status && <th className="px-3 py-3.5">Status</th>}
 
-                {visibleColumns.dates && (
-                  <th className="px-3 py-3.5">Requested</th>
-                )}
+                {visibleColumns.dates && <th className="px-3 py-3.5">Requested</th>}
 
                 <th className="py-3.5 pr-4 pl-3 text-right">Actions</th>
               </tr>
@@ -399,7 +476,9 @@ export function AdminReturnsTable({
                       <div className="flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
                         <Inbox className="size-6" />
                       </div>
-                      <h4 className="text-sm font-bold text-neutral-800">No return requests found</h4>
+                      <h4 className="text-sm font-bold text-neutral-800">
+                        No return requests found
+                      </h4>
                       <p className="max-w-sm text-xs text-neutral-500">
                         {currentSearch || currentStatus
                           ? "Try adjusting your search keywords or switching status tabs."
@@ -409,7 +488,7 @@ export function AdminReturnsTable({
                         <button
                           type="button"
                           onClick={() => router.push("/admin/returns")}
-                          className="mt-2 inline-flex h-8 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition"
+                          className="mt-2 inline-flex h-8 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
                         >
                           Clear Filters
                         </button>
@@ -428,16 +507,13 @@ export function AdminReturnsTable({
                     : null;
 
                   return (
-                    <tr
-                      key={ret.id}
-                      className="group transition-colors hover:bg-neutral-50/70"
-                    >
+                    <tr key={ret.id} className="group transition-colors hover:bg-neutral-50/70">
                       {/* Order & Return ID */}
                       <td className="py-3.5 pr-3 pl-4">
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/admin/orders/${ret.order.id}`}
-                            className="font-mono text-xs font-black text-neutral-900 hover:text-blue-600 hover:underline transition"
+                            className="font-mono text-xs font-black text-neutral-900 transition hover:text-blue-600 hover:underline"
                             title="Open full order details"
                           >
                             #{ret.order.orderNumber}
@@ -461,14 +537,14 @@ export function AdminReturnsTable({
                           <p className="font-bold text-neutral-900">
                             {ret.order.customerName || "Guest Customer"}
                           </p>
-                          <p className="text-[11px] text-neutral-500 truncate max-w-[180px]">
+                          <p className="max-w-[180px] truncate text-[11px] text-neutral-500">
                             {ret.order.customerEmail}
                           </p>
                           {ret.order.customerPhone && (
                             <div className="mt-1.5 flex items-center gap-2 text-[11px]">
                               <a
                                 href={`tel:${ret.order.customerPhone}`}
-                                className="inline-flex items-center gap-1 text-neutral-600 hover:text-neutral-900 transition"
+                                className="inline-flex items-center gap-1 text-neutral-600 transition hover:text-neutral-900"
                               >
                                 <Phone className="size-3 text-neutral-400" />
                                 <span>{ret.order.customerPhone}</span>
@@ -478,7 +554,7 @@ export function AdminReturnsTable({
                                   href={whatsAppUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition"
+                                  className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-800 transition hover:bg-emerald-100"
                                   title="Chat with customer on WhatsApp"
                                 >
                                   <MessageSquare className="size-2.5 text-emerald-600" />
@@ -496,19 +572,31 @@ export function AdminReturnsTable({
                           <div className="space-y-1">
                             <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-700">
                               <ShoppingBag className="size-2.5" />
-                              {ret.totalQuantity} item{ret.totalQuantity === 1 ? "" : "s"} ({ret.items.length} line{ret.items.length === 1 ? "" : "s"})
+                              {ret.totalQuantity} item{ret.totalQuantity === 1 ? "" : "s"} (
+                              {ret.items.length} line{ret.items.length === 1 ? "" : "s"})
                             </span>
                             <div className="space-y-1">
                               {ret.items.map((it) => (
-                                <div key={it.id} className="text-[11px] text-neutral-800 font-medium truncate max-w-[220px]">
+                                <div
+                                  key={it.id}
+                                  className="max-w-[220px] truncate text-[11px] font-medium text-neutral-800"
+                                >
                                   <div>
                                     {it.orderItem.productName}
                                     {it.orderItem.size && (
-                                      <span className="text-neutral-500 font-normal"> ({it.orderItem.size})</span>
+                                      <span className="font-normal text-neutral-500">
+                                        {" "}
+                                        ({it.orderItem.size})
+                                      </span>
                                     )}
-                                    <span className="text-neutral-500 font-semibold"> ×{it.quantity}</span>
+                                    <span className="font-semibold text-neutral-500">
+                                      {" "}
+                                      ×{it.quantity}
+                                    </span>
                                   </div>
-                                  <span className="block font-mono text-[10px] text-neutral-400">{it.orderItem.sku}</span>
+                                  <span className="block font-mono text-[10px] text-neutral-400">
+                                    {it.orderItem.sku}
+                                  </span>
                                 </div>
                               ))}
                             </div>
@@ -539,7 +627,7 @@ export function AdminReturnsTable({
                                 )}
                               </div>
                             ) : (
-                              <span className="text-neutral-400 text-[11px]">No reason stated</span>
+                              <span className="text-[11px] text-neutral-400">No reason stated</span>
                             );
                           })()}
                         </td>
@@ -548,10 +636,10 @@ export function AdminReturnsTable({
                       {/* Financials */}
                       {visibleColumns.financials && (
                         <td className="px-3 py-3.5">
-                          <p className="font-black text-neutral-900 text-sm">
+                          <p className="text-sm font-black text-neutral-900">
                             {formatBdt(ret.requestedAmount)}
                           </p>
-                          <p className="text-[10px] text-neutral-500 mt-0.5">
+                          <p className="mt-0.5 text-[10px] text-neutral-500">
                             Order Total: {formatBdt(ret.order.total)}
                           </p>
                         </td>
@@ -567,7 +655,7 @@ export function AdminReturnsTable({
                                 href={ret.reverseLogistics.trackingUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded bg-cyan-50 px-1.5 py-0.5 text-[10px] font-bold text-cyan-900 border border-cyan-200 hover:bg-cyan-100 transition"
+                                className="inline-flex items-center gap-1 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-bold text-cyan-900 transition hover:bg-cyan-100"
                                 title="Live Steadfast Reverse Tracking"
                               >
                                 <Truck className="size-2.5 text-cyan-700" />
@@ -580,7 +668,7 @@ export function AdminReturnsTable({
 
                       {/* Dates */}
                       {visibleColumns.dates && (
-                        <td className="px-3 py-3.5 whitespace-nowrap text-neutral-600 text-[11px]">
+                        <td className="px-3 py-3.5 text-[11px] whitespace-nowrap text-neutral-600">
                           {formatDate(ret.createdAt)}
                         </td>
                       )}
@@ -591,7 +679,7 @@ export function AdminReturnsTable({
                           {ret.status === "APPROVED" && !ret.reverseLogistics && (
                             <Link
                               href={`/admin/returns/${ret.id}#steadfast-pickup`}
-                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition"
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800 shadow-2xs transition hover:bg-emerald-100"
                               title="Book Steadfast Return Pickup"
                             >
                               <Truck className="size-3.5 text-emerald-600" />
@@ -600,7 +688,7 @@ export function AdminReturnsTable({
                           )}
                           <Link
                             href={`/admin/returns/${ret.id}`}
-                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800 transition"
+                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
                             title="Review return items, update status, and process refund"
                           >
                             <Eye className="size-3.5" />
