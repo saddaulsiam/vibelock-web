@@ -129,3 +129,41 @@ export function AdminTableColumnVisibility<T extends string = string>({
     </div>
   );
 }
+
+/**
+ * Reusable React hook for managing Admin table column visibility state and reset behaviors.
+ */
+export function useAdminTableColumns<T extends string>(
+  columns: readonly ColumnOption<T>[] | ColumnOption<T>[],
+  initialVisibility?: Partial<Record<T, boolean>>
+) {
+  const getDefaultVisibility = React.useCallback(() => {
+    const state = {} as Record<T, boolean>;
+    for (const col of columns) {
+      state[col.key] = initialVisibility?.[col.key] ?? true;
+    }
+    return state;
+  }, [columns, initialVisibility]);
+
+  const [visibleColumns, setVisibleColumns] = React.useState<Record<T, boolean>>(getDefaultVisibility);
+
+  const handleColumnChange = React.useCallback((key: T, value: boolean) => {
+    setVisibleColumns((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleColumnReset = React.useCallback(() => {
+    setVisibleColumns(getDefaultVisibility());
+  }, [getDefaultVisibility]);
+
+  const totalVisibleCols = React.useMemo(() => {
+    return Object.values(visibleColumns).filter(Boolean).length;
+  }, [visibleColumns]);
+
+  return {
+    visibleColumns,
+    handleColumnChange,
+    handleColumnReset,
+    totalVisibleCols,
+    setVisibleColumns,
+  };
+}

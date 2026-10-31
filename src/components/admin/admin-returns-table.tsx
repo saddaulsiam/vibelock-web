@@ -3,16 +3,19 @@
 import { generateWhatsAppUrl } from "@/components/admin/admin-order-badges";
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { OrderCopyButton } from "@/components/admin/order-copy-button";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import { loadMoreAdminReturnsAction } from "@/lib/admin/return-actions";
 import type { AdminReturnListItem } from "@/lib/admin/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
@@ -162,15 +165,9 @@ export function AdminReturnsTable({
 
   const hasMore = returns.length < total;
 
-  // Column visibility state
-  const [visibleColumns, setVisibleColumns] = useState<Record<ReturnColumnKey, boolean>>({
-    customer: true,
-    items: true,
-    reason: true,
-    financials: true,
-    status: true,
-    dates: true,
-  });
+  // Column visibility hook
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(returnColumnOptions);
 
   // Debounce search update to URL query params
   useEffect(() => {
@@ -213,21 +210,6 @@ export function AdminReturnsTable({
     router.push(`/admin/returns?${params.toString()}`);
   };
 
-  const handleColumnChange = (key: ReturnColumnKey, val: boolean) => {
-    setVisibleColumns((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const handleColumnReset = () => {
-    setVisibleColumns({
-      customer: true,
-      items: true,
-      reason: true,
-      financials: true,
-      status: true,
-      dates: true,
-    });
-  };
-
   const hasActiveFilters = Boolean(
     searchValue.trim() || Boolean(currentStatus)
   );
@@ -237,49 +219,34 @@ export function AdminReturnsTable({
     router.push("/admin/returns");
   };
 
-  const exportCsv = () => {
-    const safeCell = (val: unknown) => {
-      const text = String(val ?? "");
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
-
-    const headers = [
-      "Return ID",
-      "Order Number",
-      "Customer Name",
-      "Customer Email",
-      "Customer Phone",
-      "Status",
-      "Return Reason",
-      "Requested Amount (BDT)",
-      "Reverse Tracking Code",
-      "Created Date",
-    ];
-
-    const rows = returns.map((r) => [
-      safeCell(r.id),
-      safeCell(r.order.orderNumber),
-      safeCell(r.order.customerName || "Customer"),
-      safeCell(r.order.customerEmail),
-      safeCell(r.order.customerPhone || ""),
-      safeCell(r.status),
-      safeCell(r.reason || ""),
-      safeCell(r.requestedAmount),
-      safeCell(r.reverseLogistics?.trackingCode || ""),
-      safeCell(new Date(r.createdAt).toISOString().slice(0, 10)),
-    ]);
-
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `vibelock-returns-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExportCsv = () => {
+    exportToCsv({
+      filename: `vibelock-returns-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Return ID",
+        "Order Number",
+        "Customer Name",
+        "Customer Email",
+        "Customer Phone",
+        "Status",
+        "Return Reason",
+        "Requested Amount (BDT)",
+        "Reverse Tracking Code",
+        "Created Date",
+      ],
+      rows: returns.map((r) => [
+        r.id,
+        r.order.orderNumber,
+        r.order.customerName || "Customer",
+        r.order.customerEmail,
+        r.order.customerPhone || "",
+        r.status,
+        r.reason || "",
+        r.requestedAmount,
+        r.reverseLogistics?.trackingCode || "",
+        new Date(r.createdAt).toISOString().slice(0, 10),
+      ]),
+    });
   };
 
   // Load more via infinite scroll
@@ -410,7 +377,7 @@ export function AdminReturnsTable({
             {/* Export CSV Button */}
             <button
               type="button"
-              onClick={exportCsv}
+              onClick={handleExportCsv}
               disabled={returns.length === 0}
               className={ADMIN_TABLE_CLASSES.buttonSecondary}
               title="Export filtered returns to CSV"
@@ -423,26 +390,14 @@ export function AdminReturnsTable({
       </div>
 
       {/* Meta Counter & Active Filter Reset */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <div className="flex items-center gap-2">
-          <p>
-            Showing <strong className="text-neutral-900">{returns.length}</strong> of{" "}
-            <strong className="text-neutral-900">{total}</strong>{" "}
-            {total === 1 ? "return request" : "return requests"}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClearAllFilters}
-              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
-              title="Reset all active filters"
-            >
-              <RotateCcw className="size-3" />
-              <span>Reset filters</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={returns.length}
+        totalFiltered={total}
+        totalCount={statusCounts.ALL}
+        itemName="return request"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleClearAllFilters}
+      />
 
       {/* ── 3. Returns Table Container ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>
@@ -471,7 +426,7 @@ export function AdminReturnsTable({
             <tbody className="divide-y divide-neutral-100 bg-white">
               {returns.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
+                  <td colSpan={totalVisibleCols + 2} className="py-16 text-center">
                     <div className="flex flex-col items-center justify-center gap-2">
                       <div className="flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
                         <Inbox className="size-6" />

@@ -3,10 +3,12 @@
 import { AdminOrderStatusBadge } from "@/components/admin/admin-order-badges";
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
@@ -14,6 +16,7 @@ import {
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { CustomerCreateModal } from "@/components/admin/customer-create-modal";
 import { loadMoreAdminCustomersAction } from "@/lib/admin/customer-actions";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import type {
   AdminCustomerListItem,
   CustomerSegment,
@@ -141,14 +144,9 @@ export function AdminCustomersTable({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Column Visibility State
-  const [visibleColumns, setVisibleColumns] = React.useState<Record<CustomerColumnKey, boolean>>({
-    contact: true,
-    tier: true,
-    orders: true,
-    spent: true,
-    latestOrder: true,
-  });
+  // Column Visibility Hook
+  const { visibleColumns, handleColumnChange, handleColumnReset } =
+    useAdminTableColumns(customerColumnOptions);
 
   // Infinite Scroll State
   const [additionalCustomers, setAdditionalCustomers] = React.useState<AdminCustomerListItem[]>([]);
@@ -265,47 +263,29 @@ export function AdminCustomersTable({
   };
 
   const exportCsv = () => {
-    const safeCell = (val: unknown) => {
-      const text = String(val ?? "");
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
-
-    const headers = [
-      "Customer Name",
-      "Email",
-      "Phone",
-      "Segment Tier",
-      "Total Orders",
-      "Paid Order Value (BDT)",
-      "Latest Order Date",
-      "Joined Date",
-    ];
-
-    const rows = loadedCustomers.map((c) => [
-      safeCell(c.name || "Unnamed Customer"),
-      safeCell(c.email),
-      safeCell(c.phone || ""),
-      safeCell(c.tier),
-      safeCell(c.orderCount),
-      safeCell(c.paidOrderValue),
-      safeCell(c.latestOrderDate ? new Date(c.latestOrderDate).toISOString().slice(0, 10) : ""),
-      safeCell(new Date(c.createdAt).toISOString().slice(0, 10)),
-    ]);
-
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `vibelock-customers-${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    exportToCsv({
+      filename: `vibelock-customers-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Customer Name",
+        "Email",
+        "Phone",
+        "Segment Tier",
+        "Total Orders",
+        "Paid Order Value (BDT)",
+        "Latest Order Date",
+        "Joined Date",
+      ],
+      rows: loadedCustomers.map((c) => [
+        c.name || "Unnamed Customer",
+        c.email,
+        c.phone || "",
+        c.tier,
+        c.orderCount,
+        c.paidOrderValue,
+        c.latestOrderDate ? new Date(c.latestOrderDate).toISOString().slice(0, 10) : "",
+        new Date(c.createdAt).toISOString().slice(0, 10),
+      ]),
+    });
   };
 
   const tabs: AdminTableTabItem<CustomerSegment>[] = [
@@ -376,17 +356,9 @@ export function AdminCustomersTable({
           <AdminTableColumnVisibility
             columns={customerColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
+            onChange={handleColumnChange}
             buttonClassName={ADMIN_TABLE_CLASSES.buttonSecondary}
-            onReset={() =>
-              setVisibleColumns({
-                contact: true,
-                tier: true,
-                orders: true,
-                spent: true,
-                latestOrder: true,
-              })
-            }
+            onReset={handleColumnReset}
           />
 
           {/* Export CSV Button */}
@@ -413,25 +385,16 @@ export function AdminCustomersTable({
       </div>
 
       {/* Meta Counter & Active Filter Reset */}
-      <div className="flex items-center justify-between text-xs text-neutral-500">
-        <div>
-          Showing <span className="font-semibold text-neutral-900">{loadedCustomers.length}</span> of{" "}
-          <span className="font-semibold text-neutral-900">{total}</span> customers
-        </div>
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={() => {
-              setSearchTerm("");
-              router.push("/admin/customers");
-            }}
-            className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-600 hover:text-neutral-900 hover:underline"
-          >
-            <RotateCcw className="size-3" />
-            <span>Reset filters</span>
-          </button>
-        )}
-      </div>
+      <AdminTableMetaBar
+        currentCount={loadedCustomers.length}
+        totalFiltered={total}
+        itemName="customer"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={() => {
+          setSearchTerm("");
+          router.push("/admin/customers");
+        }}
+      />
 
       {/* 3. Empty State */}
       {loadedCustomers.length === 0 ? (

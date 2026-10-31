@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import {
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
@@ -192,43 +193,29 @@ export function AdminCategoriesTable({
 
       {/* ── Search Bar & Filter Controls ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2.5">
+        <div className="w-full sm:max-w-md">
           <AdminTableSearchInput
             inputRef={searchInputRef}
             value={search}
             onChange={setSearch}
             onClear={() => setSearch("")}
             placeholder="Search category name, slug, or parent... (Press / to focus)"
-            className="w-full sm:max-w-md"
           />
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={() => {
-                setSearch("");
-                setActiveTab("all");
-              }}
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors"
-            >
-              <RotateCcw className="size-3.5" />
-              Reset filters
-            </button>
-          )}
-        </div>
-
-        <div className="text-xs text-neutral-500">
-          Showing{" "}
-          <span className="font-semibold text-neutral-900">
-            {filteredCategories.length}
-          </span>{" "}
-          of{" "}
-          <span className="font-semibold text-neutral-900">
-            {categories.length}
-          </span>{" "}
-          categories
         </div>
       </div>
+
+      {/* ── Meta Counter & Active Filter Reset ── */}
+      <AdminTableMetaBar
+        currentCount={filteredCategories.length}
+        totalFiltered={categories.length}
+        itemName="category"
+        pluralItemName="categories"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={() => {
+          setSearch("");
+          setActiveTab("all");
+        }}
+      />
 
       {/* ── Categories Table Card ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>

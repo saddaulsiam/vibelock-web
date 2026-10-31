@@ -44,7 +44,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { AdminInventoryPoModal } from "@/components/admin/admin-inventory-po-modal";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
-import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import {
+  AdminTableColumnVisibility,
+  useAdminTableColumns,
+} from "@/components/admin/admin-table-column-visibility";
 import {
   AdminTableSearchInput,
   ADMIN_TABLE_CLASSES,
@@ -188,16 +191,7 @@ export function AdminInventoryTable({
   const [isLoadingMore, setIsLoadingMore] = React.useState(false);
   const [hasMore, setHasMore] = React.useState((initialData.page || 1) < initialData.totalPages);
 
-  // Column visibility state
-  const [visibleColumns, setVisibleColumns] = React.useState({
-    sku: true,
-    physical: true,
-    reserved: true,
-    available: true,
-    pricing: true,
-    health: true,
-  });
-
+  // Column visibility hook
   const inventoryColumnOptions = React.useMemo(
     () => [
       { key: "sku" as const, label: "SKU" },
@@ -210,14 +204,10 @@ export function AdminInventoryTable({
     []
   );
 
-  const visibleColumnCount =
-    3 +
-    (visibleColumns.sku ? 1 : 0) +
-    (visibleColumns.physical ? 1 : 0) +
-    (visibleColumns.reserved ? 1 : 0) +
-    (visibleColumns.available ? 1 : 0) +
-    (visibleColumns.pricing ? 1 : 0) +
-    (visibleColumns.health ? 1 : 0);
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(inventoryColumnOptions);
+
+  const visibleColumnCount = 3 + totalVisibleCols;
 
   // Multi-select state
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -847,17 +837,8 @@ export function AdminInventoryTable({
           <AdminTableColumnVisibility
             columns={inventoryColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
-            onReset={() =>
-              setVisibleColumns({
-                sku: true,
-                physical: true,
-                reserved: true,
-                available: true,
-                pricing: true,
-                health: true,
-              })
-            }
+            onChange={handleColumnChange}
+            onReset={handleColumnReset}
           />
 
           {/* Export to CSV Button */}

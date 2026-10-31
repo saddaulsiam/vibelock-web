@@ -6,10 +6,15 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Check, Copy, Download, Flame, Package, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
-import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
+import {
+  AdminTableColumnVisibility,
+  useAdminTableColumns,
+} from "@/components/admin/admin-table-column-visibility";
 import {
   AdminTableSearchInput,
+  AdminTableTabs,
   ADMIN_TABLE_CLASSES,
+  type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
 import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory-actions";
 import type {
@@ -117,16 +122,7 @@ export function AdminInventoryIntelligenceTable({
   const [isLoadingMore, setIsLoadingMore] = React.useState<boolean>(false);
   const [copiedSku, setCopiedSku] = React.useState<string | null>(null);
 
-  // Column visibility state
-  const [visibleColumns, setVisibleColumns] = React.useState({
-    stock: true,
-    capital: true,
-    velocity: true,
-    daysOfSupply: true,
-    restock: true,
-    status: true,
-  });
-
+  // Column visibility hook
   const intelligenceColumnOptions = React.useMemo(
     () => [
       { key: "stock" as const, label: "Available Stock" },
@@ -139,14 +135,10 @@ export function AdminInventoryIntelligenceTable({
     []
   );
 
-  const visibleColumnCount =
-    2 +
-    (visibleColumns.stock ? 1 : 0) +
-    (visibleColumns.capital ? 1 : 0) +
-    (visibleColumns.velocity ? 1 : 0) +
-    (visibleColumns.daysOfSupply ? 1 : 0) +
-    (visibleColumns.restock ? 1 : 0) +
-    (visibleColumns.status ? 1 : 0);
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(intelligenceColumnOptions);
+
+  const visibleColumnCount = 2 + totalVisibleCols;
 
   // When initialData.items changes due to search/tab switch, reset additional items during render
   if (initialData.items !== prevItems) {
@@ -263,41 +255,37 @@ export function AdminInventoryIntelligenceTable({
   const exportQueryString = exportQuery.toString();
   const exportHref = `/api/admin/inventory-intelligence/export${exportQueryString ? `?${exportQueryString}` : ""}`;
 
-  const tabs: {
-    key: InventoryIntelligenceStatusFilter;
-    label: string;
-    count?: number;
-    badgeVariant?: "urgent" | "warning" | "default";
-  }[] = [
+  const tabs: AdminTableTabItem<InventoryIntelligenceStatusFilter>[] = [
     { key: "all", label: "All Items", count: summary.totalVariants },
     {
       key: "stockout-risk",
       label: "Stockout Risk",
       count: summary.stockoutRiskCount,
-      badgeVariant: "urgent",
+      dotColor: "bg-rose-500",
     },
     {
       key: "dead",
       label: "Dead Stock",
       count: summary.deadStockCount,
-      badgeVariant: "warning",
+      dotColor: "bg-amber-500",
     },
     {
       key: "slow",
       label: "Slow Moving",
       count: summary.slowMovingCount,
-      badgeVariant: "default",
+      dotColor: "bg-amber-400",
     },
     {
       key: "healthy",
       label: "Healthy",
       count: summary.healthyCount,
+      dotColor: "bg-emerald-500",
     },
     {
       key: "out-of-stock",
       label: "Out of Stock",
       count: summary.outOfStockCount,
-      badgeVariant: "urgent",
+      dotColor: "bg-rose-600",
     },
   ];
 
@@ -306,53 +294,18 @@ export function AdminInventoryIntelligenceTable({
       key: "negative",
       label: "Negative Anomaly",
       count: summary.negativeStockCount,
-      badgeVariant: "urgent",
+      dotColor: "bg-red-600 animate-pulse",
     });
   }
 
   return (
     <div className="space-y-4">
-      {/* Quick Status Filter Tabs matching Inventory Control Center */}
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        {tabs.map((tab) => {
-          const isActive = currentFilters.status === tab.key;
-          const dotColor =
-            tab.key === "stockout-risk"
-              ? "bg-rose-500"
-              : tab.key === "dead"
-                ? "bg-amber-500"
-                : tab.key === "slow"
-                  ? "bg-amber-400"
-                  : tab.key === "healthy"
-                    ? "bg-emerald-500"
-                    : tab.key === "out-of-stock"
-                      ? "bg-rose-600"
-                      : tab.key === "negative"
-                        ? "bg-red-600 animate-pulse"
-                        : undefined;
-
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => handleStatusTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
-                isActive
-                  ? "bg-[#101114] font-semibold text-white shadow-2xs"
-                  : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-              }`}
-            >
-              {dotColor && <span className={`size-1.5 shrink-0 rounded-full ${dotColor}`} />}
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && (
-                <span className={`text-[11px] ${isActive ? "text-white/80" : "text-neutral-500"}`}>
-                  ({tab.count})
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Quick Status Filter Tabs */}
+      <AdminTableTabs<InventoryIntelligenceStatusFilter>
+        tabs={tabs}
+        activeKey={currentFilters.status}
+        onChange={handleStatusTab}
+      />
 
       {/* Search, Window, Sort, and Export Controls */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -398,17 +351,8 @@ export function AdminInventoryIntelligenceTable({
           <AdminTableColumnVisibility
             columns={intelligenceColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
-            onReset={() =>
-              setVisibleColumns({
-                stock: true,
-                capital: true,
-                velocity: true,
-                daysOfSupply: true,
-                restock: true,
-                status: true,
-              })
-            }
+            onChange={handleColumnChange}
+            onReset={handleColumnReset}
           />
 
           <a

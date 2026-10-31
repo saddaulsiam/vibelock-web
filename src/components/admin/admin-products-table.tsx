@@ -3,6 +3,12 @@
 import { AdminMutationForm } from "@/components/admin/admin-action-form";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import {
+  AdminTableColumnVisibility,
+  useAdminTableColumns,
+  type ColumnOption,
+} from "@/components/admin/admin-table-column-visibility";
+import {
+  AdminTableMetaBar,
   AdminTableSearchInput,
   ADMIN_TABLE_CLASSES,
 } from "@/components/admin/admin-table-controls";
@@ -21,7 +27,6 @@ import {
   AlertTriangle,
   Boxes,
   ChevronDown,
-  Columns3,
   Copy,
   Download,
   ExternalLink,
@@ -120,14 +125,20 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
   // Variant breakdown popover state
   const [expandedVariantId, setExpandedVariantId] = React.useState<string | null>(null);
 
-  // Column visibility state
-  const [visibleColumns, setVisibleColumns] = React.useState({
-    categories: true,
-    price: true,
-    stock: true,
-    status: true,
-  });
-  const [showColumnMenu, setShowColumnMenu] = React.useState(false);
+  // Column visibility hook
+  const productColumnOptions: ColumnOption<"categories" | "price" | "stock" | "status">[] =
+    React.useMemo(
+      () => [
+        { key: "categories", label: "Categories" },
+        { key: "price", label: "Price" },
+        { key: "stock", label: "Inventory Stock" },
+        { key: "status", label: "Status" },
+      ],
+      []
+    );
+
+  const { visibleColumns, handleColumnChange, handleColumnReset } =
+    useAdminTableColumns(productColumnOptions);
 
   // Barcode / Price Tag Modal state
   const [barcodeModalProducts, setBarcodeModalProducts] = React.useState<AdminProductItem[] | null>(
@@ -721,83 +732,23 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
           </button>
 
           {/* Column Visibility Customizer */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setShowColumnMenu(!showColumnMenu)}
-              className={ADMIN_TABLE_CLASSES.buttonSecondary}
-              title="Customize visible columns"
-            >
-              <Columns3 className="size-3.5 text-neutral-500" />
-              <span className="hidden sm:inline">Columns</span>
-            </button>
-
-            {showColumnMenu && (
-              <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-48 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-xl duration-150">
-                <div className="mb-1.5 flex items-center justify-between border-b border-neutral-100 pb-1.5">
-                  <p className="text-[11px] font-bold tracking-wider text-neutral-600 uppercase">
-                    Visible Columns
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowColumnMenu(false)}
-                    className="rounded p-0.5 text-neutral-400 transition hover:text-neutral-700"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-                <div className="space-y-0.5 text-xs">
-                  {[
-                    { key: "categories", label: "Categories" },
-                    { key: "price", label: "Price" },
-                    { key: "stock", label: "Inventory Stock" },
-                    { key: "status", label: "Status" },
-                  ].map((col) => (
-                    <label
-                      key={col.key}
-                      className="flex cursor-pointer items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors hover:bg-neutral-50"
-                    >
-                      <span className="text-neutral-800 select-none">{col.label}</span>
-                      <input
-                        type="checkbox"
-                        checked={visibleColumns[col.key as keyof typeof visibleColumns]}
-                        onChange={() =>
-                          setVisibleColumns((prev) => ({
-                            ...prev,
-                            [col.key]: !prev[col.key as keyof typeof visibleColumns],
-                          }))
-                        }
-                        className="size-3.5 cursor-pointer rounded-xs accent-[#101114]"
-                      />
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Reset Filters Button */}
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              title="Reset all filters"
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50/50 px-3 text-xs font-semibold text-red-700 transition-colors hover:border-red-300 hover:bg-red-100"
-            >
-              <RotateCcw className="size-3.5" /> Reset
-            </button>
-          )}
+          <AdminTableColumnVisibility
+            columns={productColumnOptions}
+            visibleColumns={visibleColumns}
+            onChange={handleColumnChange}
+            onReset={handleColumnReset}
+          />
         </div>
       </div>
 
-      {/* Meta Counter */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <p>
-          Showing <strong className="text-neutral-900">{loadedProducts.length}</strong> of{" "}
-          <strong className="text-neutral-900">{totalFiltered}</strong>{" "}
-          {totalFiltered === 1 ? "product" : "products"}
-        </p>
-      </div>
+      {/* Meta Counter & Active Filter Reset */}
+      <AdminTableMetaBar
+        currentCount={loadedProducts.length}
+        totalFiltered={totalFiltered}
+        itemName="product"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleResetFilters}
+      />
 
       {/* ── 3. Products Data Table ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>

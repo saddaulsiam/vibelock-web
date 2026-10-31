@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, X } from "lucide-react";
+import { RotateCcw, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AdminTableTabItem<T extends string = string> {
@@ -106,6 +106,67 @@ export function AdminTableSearchInput({
           /
         </kbd>
       )}
+    </div>
+  );
+}
+
+export interface AdminTableMetaBarProps {
+  currentCount: number;
+  totalFiltered: number;
+  totalCount?: number;
+  itemName?: string;
+  pluralItemName?: string;
+  hasActiveFilters?: boolean;
+  onResetFilters?: () => void;
+  className?: string;
+  actionSlot?: React.ReactNode;
+}
+
+/**
+ * Reusable table counter and active filter reset bar for all Admin tables.
+ */
+export function AdminTableMetaBar({
+  currentCount,
+  totalFiltered,
+  totalCount,
+  itemName = "item",
+  pluralItemName,
+  hasActiveFilters = false,
+  onResetFilters,
+  className,
+  actionSlot,
+}: AdminTableMetaBarProps) {
+  const displayPlural = pluralItemName ?? `${itemName}s`;
+  const nameLabel = totalFiltered === 1 ? itemName : displayPlural;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500",
+        className
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <p>
+          Showing <span className="font-semibold text-neutral-900">{currentCount}</span> of{" "}
+          <span className="font-semibold text-neutral-900">{totalFiltered}</span>{" "}
+          {nameLabel}
+          {typeof totalCount === "number" &&
+            totalFiltered !== totalCount &&
+            ` (filtered from ${totalCount})`}
+        </p>
+        {hasActiveFilters && onResetFilters && (
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
+          >
+            <RotateCcw className="size-3" />
+            Reset filters
+          </button>
+        )}
+      </div>
+      {actionSlot && <div>{actionSlot}</div>}
     </div>
   );
 }

@@ -19,11 +19,18 @@ import {
   X,
 } from "lucide-react";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
-import { AdminTableColumnVisibility } from "@/components/admin/admin-table-column-visibility";
 import {
-  AdminTableSearchInput,
+  AdminTableColumnVisibility,
+  useAdminTableColumns,
+} from "@/components/admin/admin-table-column-visibility";
+import {
   ADMIN_TABLE_CLASSES,
+  AdminTableMetaBar,
+  AdminTableSearchInput,
+  AdminTableTabs,
+  type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import { cn } from "@/lib/utils";
 import type {
   AdminOrderDateRange,
@@ -101,7 +108,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
   const searchParams = useSearchParams();
 
   const [searchTerm, setSearchTerm] = React.useState(currentFilters.q ?? "");
-  const [isPending, startTransition] = React.useTransition();
+  const [, startTransition] = React.useTransition();
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -121,16 +128,6 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
   // Column visibility state
-  const [visibleColumns, setVisibleColumns] = React.useState({
-    date: true,
-    customer: true,
-    items: true,
-    total: true,
-    payment: true,
-    shipment: true,
-    status: true,
-  });
-
   const orderColumnOptions = React.useMemo(
     () => [
       { key: "date" as const, label: "Date & Channel" },
@@ -144,15 +141,10 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
     []
   );
 
-  const visibleColumnCount =
-    2 +
-    (visibleColumns.date ? 1 : 0) +
-    (visibleColumns.customer ? 1 : 0) +
-    (visibleColumns.items ? 1 : 0) +
-    (visibleColumns.total ? 1 : 0) +
-    (visibleColumns.payment ? 1 : 0) +
-    (visibleColumns.shipment ? 1 : 0) +
-    (visibleColumns.status ? 1 : 0);
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(orderColumnOptions);
+
+  const visibleColumnCount = 2 + totalVisibleCols;
 
   // Focus search input with '/' keyboard shortcut
   React.useEffect(() => {
@@ -384,64 +376,47 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
 
   // Safe client-side CSV export (honors active multi-selection if present)
   const exportCsv = () => {
-    const safeCell = (val: unknown) => {
-      if (val === null || val === undefined) return "";
-      const text = String(val);
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
-
-    const headers = [
-      "Order Number",
-      "Date",
-      "Sales Channel",
-      "Customer Name",
-      "Customer Email",
-      "Customer Phone",
-      "City",
-      "Items Count",
-      "Total (BDT)",
-      "Payment Method",
-      "Payment Status",
-      "Courier Provider",
-      "Tracking Number",
-      "Order Status",
-    ];
-
     const targetOrders =
       selectedIds.size > 0 ? loadedOrders.filter((o) => selectedIds.has(o.id)) : loadedOrders;
 
-    const rows = targetOrders.map((o) => [
-      safeCell(o.orderNumber),
-      safeCell(o.createdAt),
-      safeCell(o.salesChannel),
-      safeCell(o.customerName ?? "Guest"),
-      safeCell(o.customerEmail),
-      safeCell(o.customerPhone ?? ""),
-      safeCell(o.shippingCity),
-      safeCell(o.itemCount),
-      safeCell(o.total),
-      safeCell(o.paymentMethod),
-      safeCell(o.paymentStatus),
-      safeCell(o.shipment?.provider ?? ""),
-      safeCell(o.shipment?.trackingNumber ?? ""),
-      safeCell(o.status),
-    ]);
-
-    const csvContent = "﻿" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `vibelock-orders-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    exportToCsv({
+      filename: `vibelock-orders-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Order Number",
+        "Date",
+        "Sales Channel",
+        "Customer Name",
+        "Customer Email",
+        "Customer Phone",
+        "City",
+        "Items Count",
+        "Total (BDT)",
+        "Payment Method",
+        "Payment Status",
+        "Courier Provider",
+        "Tracking Number",
+        "Order Status",
+      ],
+      rows: targetOrders.map((o) => [
+        o.orderNumber,
+        o.createdAt,
+        o.salesChannel,
+        o.customerName ?? "Guest",
+        o.customerEmail,
+        o.customerPhone ?? "",
+        o.shippingCity,
+        o.itemCount,
+        o.total,
+        o.paymentMethod,
+        o.paymentStatus,
+        o.shipment?.provider ?? "",
+        o.shipment?.trackingNumber ?? "",
+        o.status,
+      ]),
+    });
   };
 
-  const tabs: { key: string; label: string; count?: number; dotColor?: string }[] = [
+  const tabs: AdminTableTabItem<string>[] = [
     { key: "ALL", label: "All Orders", count: statusCounts.ALL },
     {
       key: "PENDING",
@@ -480,34 +455,12 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
 
   return (
     <div className="space-y-4">
-      {/* Status Filter Tabs matching Inventory style */}
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        {tabs.map((tab) => {
-          const isActive = activeStatus === tab.key;
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => handleStatusTab(tab.key)}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
-                isActive
-                  ? "bg-[#101114] font-semibold text-white shadow-2xs"
-                  : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-              }`}
-            >
-              {tab.dotColor && (
-                <span className={`size-1.5 shrink-0 rounded-full ${tab.dotColor}`} />
-              )}
-              <span>{tab.label}</span>
-              {typeof tab.count === "number" && (
-                <span className={`text-[11px] ${isActive ? "text-white/80" : "text-neutral-500"}`}>
-                  ({tab.count})
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      {/* Status Filter Tabs */}
+      <AdminTableTabs
+        tabs={tabs}
+        activeKey={activeStatus}
+        onChange={handleStatusTab}
+      />
 
       {/* Floating / Sticky Bulk Action Bar */}
       {selectedIds.size > 0 && (
@@ -650,18 +603,8 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
           <AdminTableColumnVisibility
             columns={orderColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
-            onReset={() =>
-              setVisibleColumns({
-                date: true,
-                customer: true,
-                items: true,
-                total: true,
-                payment: true,
-                shipment: true,
-                status: true,
-              })
-            }
+            onChange={handleColumnChange}
+            onReset={handleColumnReset}
           />
 
           <button
@@ -678,27 +621,13 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
       </div>
 
       {/* Meta Counter & Active Filter Reset */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <div className="flex items-center gap-2">
-          <p>
-            Showing <strong className="text-neutral-900">{loadedOrders.length}</strong> of{" "}
-            <strong className="text-neutral-900">{total}</strong>{" "}
-            {total === 1 ? "order" : "orders"}
-            {isPending ? " (Filtering...)" : ""}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClearAllFilters}
-              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
-              title="Reset all active filters"
-            >
-              <RotateCcw className="size-3" />
-              <span>Reset filters</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={loadedOrders.length}
+        totalFiltered={total}
+        itemName="order"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleClearAllFilters}
+      />
 
       {/* Orders Table (Desktop & Tablet) */}
       <div className={cn(ADMIN_TABLE_CLASSES.container, "hidden md:block")}>

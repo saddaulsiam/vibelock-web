@@ -6,6 +6,7 @@ import { PaymentStatus } from "@prisma/client";
 import { AdminPaymentListItem } from "@/lib/admin/payment-queries";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabItem,
   AdminTableTabs,
@@ -13,8 +14,10 @@ import {
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import { Badge } from "@/components/ui/badge";
 import {
   Banknote,
@@ -60,32 +63,9 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
   const [visibleCount, setVisibleCount] = useState(25);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Column Visibility State
-  const [visibleColumns, setVisibleColumns] = useState<Record<PaymentColumnKey, boolean>>({
-    ref: true,
-    order: true,
-    customer: true,
-    method: true,
-    amount: true,
-    status: true,
-    date: true,
-  });
-
-  const handleColumnChange = (key: PaymentColumnKey, val: boolean) => {
-    setVisibleColumns((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const handleColumnReset = () => {
-    setVisibleColumns({
-      ref: true,
-      order: true,
-      customer: true,
-      method: true,
-      amount: true,
-      status: true,
-      date: true,
-    });
-  };
+  // Column Visibility Hook
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(paymentColumnOptions);
 
   // When filters or search change, reset pagination
   const [prevSearch, setPrevSearch] = useState(search);
@@ -280,54 +260,36 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     setVisibleCount(25);
   };
 
-  const exportCsv = () => {
-    const safeCell = (val: unknown) => {
-      const text = String(val ?? "");
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
-
-    const headers = [
-      "Transaction ID",
-      "Merchant Ref",
-      "Order Number",
-      "Customer Name",
-      "Customer Email",
-      "Customer Phone",
-      "Gateway",
-      "Amount (BDT)",
-      "Status",
-      "Refunded Amount",
-      "Date",
-    ];
-
-    const rows = filteredPayments.map((p) => [
-      safeCell(p.gatewayTransactionId || ""),
-      safeCell(p.merchantReferenceId || ""),
-      safeCell(p.orderNumber),
-      safeCell(p.customerName),
-      safeCell(p.customerEmail),
-      safeCell(p.customerPhone || ""),
-      safeCell(p.gateway),
-      safeCell(p.amount),
-      safeCell(p.status),
-      safeCell(p.refundedAmount),
-      safeCell(new Date(p.createdAt).toISOString().replace("T", " ").slice(0, 19)),
-    ]);
-
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `vibelock-payments-${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExportCsv = () => {
+    exportToCsv({
+      filename: `vibelock-payments-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Transaction ID",
+        "Merchant Ref",
+        "Order Number",
+        "Customer Name",
+        "Customer Email",
+        "Customer Phone",
+        "Gateway",
+        "Amount (BDT)",
+        "Status",
+        "Refunded Amount",
+        "Date",
+      ],
+      rows: filteredPayments.map((p) => [
+        p.gatewayTransactionId || "",
+        p.merchantReferenceId || "",
+        p.orderNumber,
+        p.customerName,
+        p.customerEmail,
+        p.customerPhone || "",
+        p.gateway,
+        p.amount,
+        p.status,
+        p.refundedAmount,
+        new Date(p.createdAt).toISOString().replace("T", " ").slice(0, 19),
+      ]),
+    });
   };
 
   return (
@@ -380,7 +342,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
           {/* Export CSV Button */}
           <button
             type="button"
-            onClick={exportCsv}
+            onClick={handleExportCsv}
             disabled={filteredPayments.length === 0}
             className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export filtered transactions to CSV"
@@ -392,26 +354,14 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       </div>
 
       {/* Meta Counter & Active Filter Reset */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <div className="flex items-center gap-2">
-          <p>
-            Showing <strong className="text-neutral-900">{visiblePayments.length}</strong> of{" "}
-            <strong className="text-neutral-900">{filteredPayments.length}</strong>{" "}
-            {filteredPayments.length === 1 ? "transaction" : "transactions"}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
-              title="Reset all active filters"
-            >
-              <RotateCcw className="size-3" />
-              <span>Reset filters</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={visiblePayments.length}
+        totalFiltered={filteredPayments.length}
+        totalCount={initialPayments.length}
+        itemName="transaction"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleResetFilters}
+      />
 
       {/* ── Transactions Table ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>
@@ -432,7 +382,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
             {filteredPayments.length === 0 ? (
               <tr>
                 <td
-                  colSpan={Object.values(visibleColumns).filter(Boolean).length + 1}
+                  colSpan={totalVisibleCols + 1}
                   className="px-4 py-8 text-center text-xs text-neutral-500"
                 >
                   No payment transactions found matching the selected filters.

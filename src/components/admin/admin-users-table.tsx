@@ -13,6 +13,7 @@ import {
 } from "@/lib/admin/admin-user-actions";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabItem,
   AdminTableTabs,
@@ -20,8 +21,10 @@ import {
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import {
   Dialog,
   DialogContent,
@@ -38,7 +41,6 @@ import {
   Mail,
   Phone,
   Plus,
-  RotateCcw,
   Shield,
   ShieldAlert,
   ShieldCheck,
@@ -73,26 +75,9 @@ export function AdminUsersTable({
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Column Visibility State
-  const [visibleColumns, setVisibleColumns] = useState<Record<UserColumnKey, boolean>>({
-    member: true,
-    contact: true,
-    role: true,
-    date: true,
-  });
-
-  const handleColumnChange = (key: UserColumnKey, val: boolean) => {
-    setVisibleColumns((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const handleColumnReset = () => {
-    setVisibleColumns({
-      member: true,
-      contact: true,
-      role: true,
-      date: true,
-    });
-  };
+  // Column Visibility Hook
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(userColumnOptions);
 
   // When filters or search change, reset pagination
   const [prevSearch, setPrevSearch] = useState(search);
@@ -159,52 +144,27 @@ export function AdminUsersTable({
     setVisibleCount(25);
   };
 
-  const exportCsv = () => {
-    const safeCell = (val: unknown) => {
-      const text = String(val ?? "");
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
-
-    const headers = [
-      "User ID",
-      "Name",
-      "Email",
-      "Phone",
-      "Role",
-      "Created Date",
-    ];
-
-    const rows = filteredUsers.map((u) => [
-      safeCell(u.id),
-      safeCell(u.name || ""),
-      safeCell(u.email),
-      safeCell(u.phone || ""),
-      safeCell(u.role),
-      safeCell(new Date(u.createdAt).toISOString().replace("T", " ").slice(0, 19)),
-    ]);
-
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute(
-      "download",
-      `vibelock-staff-admins-${new Date().toISOString().slice(0, 10)}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExportCsv = () => {
+    exportToCsv({
+      filename: `vibelock-staff-admins-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "User ID",
+        "Name",
+        "Email",
+        "Phone",
+        "Role",
+        "Created Date",
+      ],
+      rows: filteredUsers.map((u) => [
+        u.id,
+        u.name || "",
+        u.email,
+        u.phone || "",
+        u.role,
+        new Date(u.createdAt).toISOString().replace("T", " ").slice(0, 19),
+      ]),
+    });
   };
-
-  const totalVisibleCols =
-    (visibleColumns.member ? 1 : 0) +
-    (visibleColumns.contact ? 1 : 0) +
-    (visibleColumns.role ? 1 : 0) +
-    (visibleColumns.date ? 1 : 0) +
-    1; // Role Action column
 
   const handleRoleChange = (userId: string, targetRole: Role) => {
     setActionError(null);
@@ -326,7 +286,7 @@ export function AdminUsersTable({
           {/* Export CSV Button */}
           <button
             type="button"
-            onClick={exportCsv}
+            onClick={handleExportCsv}
             disabled={filteredUsers.length === 0}
             className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export filtered staff/admins to CSV"
@@ -455,26 +415,14 @@ export function AdminUsersTable({
       </div>
 
       {/* Meta Counter & Active Filter Reset */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <div className="flex items-center gap-2">
-          <p>
-            Showing <span className="font-semibold text-neutral-900">{visibleUsers.length}</span> of{" "}
-            <span className="font-semibold text-neutral-900">{filteredUsers.length}</span>{" "}
-            {filteredUsers.length === 1 ? "member" : "members"}
-            {filteredUsers.length !== initialUsers.length && ` (filtered from ${initialUsers.length})`}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors"
-            >
-              <RotateCcw className="size-3" />
-              Reset filters
-            </button>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={visibleUsers.length}
+        totalFiltered={filteredUsers.length}
+        totalCount={initialUsers.length}
+        itemName="member"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleResetFilters}
+      />
 
       {/* ── Table Container ── */}
       <div className={ADMIN_TABLE_CLASSES.container}>

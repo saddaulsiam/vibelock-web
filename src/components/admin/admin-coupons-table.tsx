@@ -2,10 +2,12 @@
 
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
@@ -24,6 +26,7 @@ import {
   type AdminCouponListItem,
   type CouponFilter,
 } from "@/lib/admin/coupon-shared";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import { DiscountType } from "@prisma/client";
 import {
   Check,
@@ -35,7 +38,6 @@ import {
   MessageCircle,
   Plus,
   Power,
-  RotateCcw,
   Tag,
   Trash2,
   X,
@@ -135,20 +137,11 @@ export function AdminCouponsTable({
     return () => clearTimeout(t);
   }, [feedbackMessage]);
 
-  // Column Visibility State
-  const [visibleColumns, setVisibleColumns] = useState<Record<CouponColumnKey, boolean>>({
-    benefit: true,
-    usage: true,
-    validity: true,
-    status: true,
-  });
+  // Column Visibility Hook
+  const { visibleColumns, handleColumnChange, handleColumnReset, totalVisibleCols } =
+    useAdminTableColumns(couponColumnOptions);
 
-  const visibleColumnCount =
-    3 + // Checkbox + Code + Actions
-    (visibleColumns.benefit ? 1 : 0) +
-    (visibleColumns.usage ? 1 : 0) +
-    (visibleColumns.validity ? 1 : 0) +
-    (visibleColumns.status ? 1 : 0);
+  const visibleColumnCount = 3 + totalVisibleCols; // Checkbox + Code + Actions + visible cols
 
   // Status overrides for instantaneous UI feedback without cascading useEffect
   const [statusOverrides, setStatusOverrides] = useState<Record<string, boolean>>({});
@@ -442,51 +435,37 @@ export function AdminCouponsTable({
   // CSV Export with formula injection defense (matches other tables)
   const exportCsv = (itemsToExport?: AdminCouponListItem[]) => {
     const list = itemsToExport && itemsToExport.length > 0 ? itemsToExport : couponsList;
-    const safeCell = (val: unknown) => {
-      const text = String(val ?? "");
-      const sanitized = /^[=+\-@]/.test(text) ? `'${text}` : text;
-      return /[",\n\r]/.test(sanitized) ? `"${sanitized.replace(/"/g, '""')}"` : sanitized;
-    };
 
-    const headers = [
-      "Coupon Code",
-      "Discount Type",
-      "Discount Value",
-      "Min Order Value",
-      "Usage Count",
-      "Usage Limit",
-      "Status",
-      "Start Date",
-      "End Date",
-      "Created Date",
-    ];
-
-    const rows = list.map((c) => {
-      const status = couponStatus(c);
-      return [
-        safeCell(c.code),
-        safeCell(c.discountType),
-        safeCell(c.discountValue),
-        safeCell(c.minOrderValue ?? ""),
-        safeCell(c.usageCount),
-        safeCell(c.usageLimit ?? "Unlimited"),
-        safeCell(status),
-        safeCell(c.startDate ? new Date(c.startDate).toISOString().slice(0, 10) : ""),
-        safeCell(c.endDate ? new Date(c.endDate).toISOString().slice(0, 10) : ""),
-        safeCell(new Date(c.createdAt).toISOString().slice(0, 10)),
-      ];
+    exportToCsv({
+      filename: `vibelock-coupons-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Coupon Code",
+        "Discount Type",
+        "Discount Value",
+        "Min Order Value",
+        "Usage Count",
+        "Usage Limit",
+        "Status",
+        "Start Date",
+        "End Date",
+        "Created Date",
+      ],
+      rows: list.map((c) => {
+        const status = couponStatus(c);
+        return [
+          c.code,
+          c.discountType,
+          c.discountValue,
+          c.minOrderValue ?? "",
+          c.usageCount,
+          c.usageLimit ?? "Unlimited",
+          status,
+          c.startDate ? new Date(c.startDate).toISOString().slice(0, 10) : "",
+          c.endDate ? new Date(c.endDate).toISOString().slice(0, 10) : "",
+          new Date(c.createdAt).toISOString().slice(0, 10),
+        ];
+      }),
     });
-
-    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r) => r.join(","))].join("\r\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `vibelock-coupons-${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   // Tab definitions
@@ -558,16 +537,9 @@ export function AdminCouponsTable({
           <AdminTableColumnVisibility
             columns={couponColumnOptions}
             visibleColumns={visibleColumns}
-            onChange={(key, val) => setVisibleColumns((prev) => ({ ...prev, [key]: val }))}
+            onChange={handleColumnChange}
             buttonClassName={ADMIN_TABLE_CLASSES.buttonSecondary}
-            onReset={() =>
-              setVisibleColumns({
-                benefit: true,
-                usage: true,
-                validity: true,
-                status: true,
-              })
-            }
+            onReset={handleColumnReset}
           />
 
           <button
@@ -596,26 +568,13 @@ export function AdminCouponsTable({
       </div>
 
       {/* ── 3. Meta Counter & Active Filter Reset (Matches Orders Table) ── */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500">
-        <div className="flex items-center gap-2">
-          <p>
-            Showing <strong className="text-neutral-900">{couponsList.length}</strong> of{" "}
-            <strong className="text-neutral-900">{total}</strong>{" "}
-            {total === 1 ? "coupon" : "coupons"}
-          </p>
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleClearAllFilters}
-              className="inline-flex items-center gap-1 font-semibold text-[#101114] hover:text-[#00D9FF] hover:underline"
-              title="Reset all active filters"
-            >
-              <RotateCcw className="size-3" />
-              <span>Reset filters</span>
-            </button>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={couponsList.length}
+        totalFiltered={total}
+        itemName="coupon"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleClearAllFilters}
+      />
 
       {/* ── Floating / Sticky Bulk Action Bar ── */}
       {selectedIds.size > 0 && (

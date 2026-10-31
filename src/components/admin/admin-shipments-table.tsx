@@ -2,10 +2,12 @@
 
 import {
   AdminTableColumnVisibility,
+  useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
@@ -22,6 +24,7 @@ import {
   type ShipmentProviderFilter,
 } from "@/lib/admin/shipping-shared";
 import { ShipmentStatus } from "@prisma/client";
+import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import {
   Check,
   Copy,
@@ -110,16 +113,6 @@ function generateShipmentWhatsAppUrl(
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
 
-function escapeCsvField(val: unknown): string {
-  if (val === null || val === undefined) return '""';
-  let str = String(val).trim();
-  // Defend against CSV Formula Injection
-  if (/^[=+@-]/i.test(str)) {
-    str = `'` + str;
-  }
-  return `"${str.replace(/"/g, '""')}"`;
-}
-
 export function AdminShipmentsTable({
   initialShipments,
   total,
@@ -163,24 +156,10 @@ export function AdminShipmentsTable({
 
   // Selection & Columns
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const defaultVisibleColumns: Record<ShipmentColumnKey, boolean> = {
-    customer: true,
-    courier: true,
-    method: true,
-    amounts: true,
-    status: true,
-    dates: true,
-  };
-  const [visibleColumns, setVisibleColumns] =
-    useState<Record<ShipmentColumnKey, boolean>>(defaultVisibleColumns);
 
-  const handleColumnChange = (key: ShipmentColumnKey, val: boolean) => {
-    setVisibleColumns((prev) => ({ ...prev, [key]: val }));
-  };
-
-  const handleColumnReset = () => {
-    setVisibleColumns(defaultVisibleColumns);
-  };
+  // Column Visibility Hook
+  const { visibleColumns, handleColumnChange, handleColumnReset } =
+    useAdminTableColumns(shipmentColumnOptions);
 
   // Row action feedback
   const [copiedTrackingId, setCopiedTrackingId] = useState<string | null>(null);
@@ -315,55 +294,45 @@ export function AdminShipmentsTable({
       itemsToExport ??
       (selectedIds.size > 0 ? shipments.filter((s) => selectedIds.has(s.id)) : shipments);
 
-    const headers = [
-      "Order Number",
-      "Customer Name",
-      "Customer Phone",
-      "Customer Email",
-      "Provider",
-      "Consignment ID",
-      "Tracking Number",
-      "Shipping Method",
-      "Shipping Amount (BDT)",
-      "Order Total (BDT)",
-      "Payment Method",
-      "Payment Status",
-      "Shipment Status",
-      "Created At",
-      "Shipped At",
-      "Delivered At",
-    ];
-
-    const rows = data.map((s) => [
-      escapeCsvField(s.orderNumber),
-      escapeCsvField(s.customerName || "Guest"),
-      escapeCsvField(s.customerPhone || ""),
-      escapeCsvField(s.customerEmail),
-      escapeCsvField(s.provider),
-      escapeCsvField(s.providerShipmentId || ""),
-      escapeCsvField(s.trackingNumber || ""),
-      escapeCsvField(s.shippingMethodName),
-      escapeCsvField(s.shippingAmount),
-      escapeCsvField(s.orderTotal),
-      escapeCsvField(s.paymentMethod),
-      escapeCsvField(s.paymentStatus),
-      escapeCsvField(s.status),
-      escapeCsvField(new Date(s.createdAt).toISOString()),
-      escapeCsvField(s.shippedAt ? new Date(s.shippedAt).toISOString() : ""),
-      escapeCsvField(s.deliveredAt ? new Date(s.deliveredAt).toISOString() : ""),
-    ]);
-
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    const today = new Date().toISOString().split("T")[0];
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `vibelock-shipments-${today}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    exportToCsv({
+      filename: `vibelock-shipments-${new Date().toISOString().slice(0, 10)}`,
+      headers: [
+        "Order Number",
+        "Customer Name",
+        "Customer Phone",
+        "Customer Email",
+        "Provider",
+        "Consignment ID",
+        "Tracking Number",
+        "Shipping Method",
+        "Shipping Amount (BDT)",
+        "Order Total (BDT)",
+        "Payment Method",
+        "Payment Status",
+        "Shipment Status",
+        "Created At",
+        "Shipped At",
+        "Delivered At",
+      ],
+      rows: data.map((s) => [
+        s.orderNumber,
+        s.customerName || "Guest",
+        s.customerPhone || "",
+        s.customerEmail,
+        s.provider,
+        s.providerShipmentId || "",
+        s.trackingNumber || "",
+        s.shippingMethodName,
+        s.shippingAmount,
+        s.orderTotal,
+        s.paymentMethod,
+        s.paymentStatus,
+        s.status,
+        new Date(s.createdAt).toISOString(),
+        s.shippedAt ? new Date(s.shippedAt).toISOString() : "",
+        s.deliveredAt ? new Date(s.deliveredAt).toISOString() : "",
+      ]),
+    });
   };
 
   // Status tabs definition
@@ -463,22 +432,16 @@ export function AdminShipmentsTable({
       </div>
 
       {/* ── Result Counter & Active Filters Indicator ── */}
-      <div className="flex items-center justify-between text-xs text-neutral-500">
-        <div>
-          Showing <span className="font-semibold text-neutral-900">{shipments.length}</span> of{" "}
-          <span className="font-semibold text-neutral-900">{total}</span> shipments
-          {currentFilter !== "all" && (
-            <span className="ml-1.5 inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700">
-              Filtered: {tabs.find((t) => t.key === currentFilter)?.label}
-            </span>
-          )}
-          {currentProvider !== "ALL" && (
-            <span className="ml-1.5 inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700">
-              Provider: {currentProvider}
-            </span>
-          )}
-        </div>
-      </div>
+      <AdminTableMetaBar
+        currentCount={shipments.length}
+        totalFiltered={total}
+        itemName="shipment"
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={() => {
+          setSearchValue("");
+          updateQueryParams({ q: "", filter: "all", provider: "ALL" });
+        }}
+      />
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
