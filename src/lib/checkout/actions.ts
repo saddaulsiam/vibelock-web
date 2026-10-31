@@ -405,12 +405,16 @@ export async function createOrderAction(
           validateCouponRules(couponWithCategories, orderSubtotal, new Date(), { hasEligibleItems });
           const discountAmount = calculateCouponDiscount(couponWithCategories, eligibleSubtotal);
 
+          const willExhaust =
+            coupon.usageLimit !== null && coupon.usageCount + 1 >= coupon.usageLimit;
+
           await tx.coupon.update({
             where: { id: coupon.id },
             data: {
               usageCount: {
                 increment: 1,
               },
+              ...(willExhaust ? { isActive: false } : {}),
             },
           });
 

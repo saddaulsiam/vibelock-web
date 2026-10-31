@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Image as ImageIcon,
   Gift,
+  Lock,
 } from "lucide-react";
 import { getAdminReturnById } from "@/lib/admin/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
@@ -687,33 +688,74 @@ export default async function AdminReturnDetailPage({
             </div>
           )}
 
-          {/* Refund & Store Credit Settlement Console */}
-          {(request.status === "RECEIVED" || request.status === "COMPLETED") && (
-            <div className="rounded-xl border border-emerald-300 bg-emerald-50/40 p-5 shadow-2xs">
-              <div className="mb-3.5 flex items-center justify-between border-b border-emerald-200 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
-                    <Gift className="size-4 text-emerald-700" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold tracking-wider text-emerald-950 uppercase">
-                      Issue Refund / 105% Store Credit
-                    </h3>
-                    <p className="text-[10px] text-emerald-700">
-                      Eligible requested: {formatBdt(request.requestedAmount)}
-                    </p>
-                  </div>
-                </div>
-              </div>
+          {/* Refund & Store Credit Settlement Console (Strict 1-Time Limit) */}
+          {(request.status === "RECEIVED" || request.status === "COMPLETED") &&
+            (() => {
+              const isStoreCreditSettled = Boolean(
+                request.storeCreditVouchers && request.storeCreditVouchers.length > 0
+              );
+              const isCashRefundSettled = refunds.some(
+                (r) => r.status === "SUCCESS" || r.status === "PENDING"
+              );
+              const isFullySettled = isStoreCreditSettled || isCashRefundSettled;
 
-              <StoreCreditRefundForm
-                returnId={request.id}
-                maxRequestedAmount={request.requestedAmount}
-                creditAction={issueStoreCreditRefundAction}
-                cashAction={initiateReturnRefundAction}
-              />
-            </div>
-          )}
+              if (isFullySettled) {
+                return (
+                  <div className="rounded-xl border border-emerald-300 bg-emerald-50/70 p-5 shadow-2xs">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white shadow-2xs">
+                        <CheckCircle2 className="size-4.5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold tracking-wider text-emerald-950 uppercase">
+                          Return Fully Settled
+                        </h3>
+                        <p className="text-[11px] text-emerald-800 leading-snug mt-0.5">
+                          {isStoreCreditSettled
+                            ? "105% Store Credit voucher has been issued. Duplicate settlement is strictly locked."
+                            : "Payment refund has been initiated or completed. Duplicate settlement is strictly locked."}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3.5 flex items-center justify-between rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs">
+                      <span className="text-neutral-500 font-medium">Settlement Status:</span>
+                      <span className="inline-flex items-center gap-1 font-bold text-emerald-800">
+                        <Lock className="size-3 text-emerald-600" />
+                        <span>LOCKED &bull; 1-TIME LIMIT ENFORCED</span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="rounded-xl border border-emerald-300 bg-emerald-50/40 p-5 shadow-2xs">
+                  <div className="mb-3.5 flex items-center justify-between border-b border-emerald-200 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+                        <Gift className="size-4 text-emerald-700" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold tracking-wider text-emerald-950 uppercase">
+                          Issue Refund / 105% Store Credit
+                        </h3>
+                        <p className="text-[10px] text-emerald-700">
+                          Eligible requested: {formatBdt(request.requestedAmount)} (1-Time limit)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <StoreCreditRefundForm
+                    returnId={request.id}
+                    maxRequestedAmount={request.requestedAmount}
+                    creditAction={issueStoreCreditRefundAction}
+                    cashAction={initiateReturnRefundAction}
+                  />
+                </div>
+              );
+            })()}
         </div>
       </div>
     </div>

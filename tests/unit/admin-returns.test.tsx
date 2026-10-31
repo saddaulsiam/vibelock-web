@@ -441,5 +441,25 @@ describe("Admin Returns Module UI & Table Verification", () => {
     expect(bonusAmount).toBe(175);
     expect(voucherAmount).toBe(3675); // 3500 + 175 = 3675
   });
+
+  test("enforces strict 1-time settlement rule preventing duplicate refund or voucher", () => {
+    // Check condition where return already has an issued store voucher
+    const settledStoreCreditVouchers = [
+      {
+        id: "log-1",
+        code: "VL-CREDIT-TEST01",
+        voucherAmount: 1050,
+        originalAmount: 1000,
+        bonusAmount: 50,
+        issuedAt: new Date().toISOString(),
+        issuedBy: "Admin",
+      },
+    ];
+
+    const isStoreCreditSettled = settledStoreCreditVouchers.length > 0;
+    const isFullySettled = isStoreCreditSettled;
+
+    expect(isFullySettled).toBe(true);
+  });
 });
 

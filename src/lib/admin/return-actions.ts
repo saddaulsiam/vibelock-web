@@ -68,6 +68,11 @@ function knownError(error: unknown) {
         "Refund amount must be greater than zero.",
         "That refund does not belong to this return.",
         "A refund has already been initiated for this return.",
+        "A store credit voucher has already been issued for this return.",
+        "A refund has already been initiated or processed for this return.",
+        "Cannot issue store credit for a rejected return.",
+        "Store credit amount must be greater than zero.",
+        "Store credit amount cannot exceed requested return value.",
       ].includes(error.message)
     ) {
       return error.message;
@@ -235,6 +240,17 @@ export async function initiateReturnRefundAction(
       });
       if (existingRefundAudit)
         throw new Error("A refund has already been initiated for this return.");
+
+      const existingCredit = await tx.auditLog.findFirst({
+        where: {
+          entityType: "ReturnRequest",
+          entityId: request.id,
+          action: "STORE_CREDIT_ISSUED",
+        },
+        select: { id: true },
+      });
+      if (existingCredit)
+        throw new Error("A store credit voucher has already been issued for this return.");
 
       const refundable = await new RefundService().getRefundableAmount(payment.id, tx);
       if (amount.lte(0)) throw new Error("Refund amount must be greater than zero.");
@@ -527,6 +543,30 @@ export async function issueStoreCreditRefundAction(
       if (!request) throw new Error("Return request not found.");
       if (request.status === "REJECTED") {
         throw new Error("Cannot issue store credit for a rejected return.");
+      }
+
+      // Enforce 1-Time Limit: Prevent duplicate store credit or double refund
+      const existingCredit = await tx.auditLog.findFirst({
+        where: {
+          entityType: "ReturnRequest",
+          entityId: returnId,
+          action: "STORE_CREDIT_ISSUED",
+        },
+        select: { id: true },
+      });
+      if (existingCredit) {
+        throw new Error("A store credit voucher has already been issued for this return.");
+      }
+
+      const existingRefundAudit = await tx.auditLog.findFirst({
+        where: {
+          entityType: "Refund",
+          metadata: { path: ["returnId"], equals: returnId },
+        },
+        select: { id: true },
+      });
+      if (existingRefundAudit) {
+        throw new Error("A refund has already been initiated or processed for this return.");
       }
 
       const requestedAmount = request.items.reduce(
