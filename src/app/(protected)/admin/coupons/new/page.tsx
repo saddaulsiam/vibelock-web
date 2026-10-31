@@ -7,12 +7,12 @@ export default async function NewCouponPage() {
   const { allCategories } = await getAdminCouponFormData();
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="mx-auto max-w-3xl space-y-6">
       {/* Back button & Breadcrumb */}
       <div>
         <Link
           href="/admin/coupons"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 transition hover:text-neutral-900"
         >
           <ChevronLeft className="size-4" />
           <span>Back to Coupons</span>
@@ -24,7 +24,8 @@ export default async function NewCouponPage() {
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#101114]">Create New Coupon</h1>
             <p className="text-xs text-neutral-500">
-              Configure code, discount percentage or fixed amount, category targeting, and redemption constraints.
+              Configure code, discount percentage or fixed amount, category targeting, and
+              redemption constraints.
             </p>
           </div>
         </div>

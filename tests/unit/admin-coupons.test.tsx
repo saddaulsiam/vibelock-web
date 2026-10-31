@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { AdminCouponsTable } from "@/components/admin/admin-coupons-table";
 import { CouponCreateModal } from "@/components/admin/coupon-create-modal";
 import { CouponDeleteModal } from "@/components/admin/coupon-delete-modal";
+import { CouponForm } from "@/components/admin/coupon-form";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupon-shared";
 
 // Mock next/navigation
@@ -210,6 +211,37 @@ describe("Admin Coupons & Discounts Module", () => {
     test("does not render when isOpen is false", () => {
       const html = renderToStaticMarkup(<CouponCreateModal isOpen={false} onClose={() => {}} />);
       expect(html).toBe("");
+    });
+
+    test("renders CouponForm with CategoryMultiSelect target categories", () => {
+      const html = renderToStaticMarkup(
+        <CouponForm
+          categories={[
+            { id: "cat-1", name: "T-Shirts", slug: "t-shirts" },
+            { id: "cat-2", name: "Hoodies", slug: "hoodies" },
+          ]}
+        />
+      );
+
+      expect(html).toContain("Target Categories");
+      expect(html).toContain("Select categories (leave empty for storewide discount)...");
+      expect(html).toContain("Storewide:");
+    });
+
+    test("renders CouponForm in edit mode targeting specific category", () => {
+      const html = renderToStaticMarkup(
+        <CouponForm
+          coupon={sampleCoupons[0]}
+          categories={[
+            { id: "cat-1", name: "T-Shirts", slug: "t-shirts" },
+            { id: "cat-2", name: "Hoodies", slug: "hoodies" },
+          ]}
+        />
+      );
+
+      expect(html).toContain("Target Categories");
+      expect(html).toContain('<input type="hidden" name="categoryIds" value="cat-1"/>');
+      expect(html).toContain("Targeted:");
     });
   });
 

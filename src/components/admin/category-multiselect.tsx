@@ -14,6 +14,7 @@ interface CategoryMultiSelectProps {
   initialSelectedIds?: string[];
   name?: string;
   placeholder?: string;
+  onChange?: (selectedIds: string[]) => void;
 }
 
 export function CategoryMultiSelect({
@@ -21,6 +22,7 @@ export function CategoryMultiSelect({
   initialSelectedIds = [],
   name = "categoryIds",
   placeholder = "Select categories...",
+  onChange,
 }: CategoryMultiSelectProps) {
   const [selectedIds, setSelectedIds] = React.useState<string[]>(initialSelectedIds);
   const [query, setQuery] = React.useState("");
@@ -29,6 +31,11 @@ export function CategoryMultiSelect({
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  const updateSelected = (next: string[]) => {
+    setSelectedIds(next);
+    onChange?.(next);
+  };
 
   const closeDropdown = React.useCallback(() => {
     setIsOpen(false);
@@ -103,29 +110,33 @@ export function CategoryMultiSelect({
   }, [categories, query]);
 
   const toggleCategory = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((item) => item !== id)
+      : [...selectedIds, id];
+    updateSelected(next);
   };
 
   const removeCategory = (id: string, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setSelectedIds((prev) => prev.filter((item) => item !== id));
+    const next = selectedIds.filter((item) => item !== id);
+    updateSelected(next);
   };
 
   const clearAll = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setSelectedIds([]);
+    updateSelected([]);
   };
 
   const selectAllFiltered = () => {
     const filteredIds = filteredCategories.map((c) => c.id);
-    setSelectedIds((prev) => Array.from(new Set([...prev, ...filteredIds])));
+    const next = Array.from(new Set([...selectedIds, ...filteredIds]));
+    updateSelected(next);
   };
 
   const deselectAllFiltered = () => {
     const filteredIdsSet = new Set(filteredCategories.map((c) => c.id));
-    setSelectedIds((prev) => prev.filter((id) => !filteredIdsSet.has(id)));
+    const next = selectedIds.filter((id) => !filteredIdsSet.has(id));
+    updateSelected(next);
   };
 
   const areAllFilteredSelected =
@@ -318,7 +329,7 @@ export function CategoryMultiSelect({
                           : "border-[#101114]/30 bg-white"
                       }`}
                     >
-                      {isSelected && <Check className="size-3 stroke-[3]" />}
+                      {isSelected && <Check className="size-3 stroke-3" />}
                     </div>
                     <span>{category.name}</span>
                   </div>
