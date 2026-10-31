@@ -14,11 +14,11 @@ import {
   AlertCircle,
   Dices,
   CheckCircle2,
-  Check,
   Layers,
 } from "lucide-react";
 import { DiscountType } from "@prisma/client";
 import { saveCouponAction } from "@/lib/admin/coupon-actions";
+import { CategoryMultiSelect } from "@/components/admin/category-multiselect";
 
 interface CouponToEditData {
   id: string;
@@ -77,20 +77,13 @@ function CouponCreateDialog({
   const [discountValue, setDiscountValue] = useState(
     couponToEdit?.discountValue?.toString() ?? "10"
   );
-  const [minOrderValue, setMinOrderValue] = useState(
-    couponToEdit?.minOrderValue?.toString() ?? ""
-  );
-  const [usageLimit, setUsageLimit] = useState(
-    couponToEdit?.usageLimit?.toString() ?? ""
-  );
+  const [minOrderValue, setMinOrderValue] = useState(couponToEdit?.minOrderValue?.toString() ?? "");
+  const [usageLimit, setUsageLimit] = useState(couponToEdit?.usageLimit?.toString() ?? "");
   const [startDate, setStartDate] = useState(toLocalIso(couponToEdit?.startDate));
   const [endDate, setEndDate] = useState(toLocalIso(couponToEdit?.endDate));
   const [isActive, setIsActive] = useState(couponToEdit?.isActive ?? true);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
     couponToEdit?.categories?.map((c) => c.id) ?? []
-  );
-  const [targetMode, setTargetMode] = useState<"STOREWIDE" | "SPECIFIC">(
-    couponToEdit?.categories && couponToEdit.categories.length > 0 ? "SPECIFIC" : "STOREWIDE"
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -110,11 +103,9 @@ function CouponCreateDialog({
     if (isActive) formData.set("isActive", "on");
     if (startDate) formData.set("startDate", startDate);
     if (endDate) formData.set("endDate", endDate);
-    if (targetMode === "SPECIFIC") {
-      selectedCategoryIds.forEach((catId) => {
-        formData.append("categoryIds", catId);
-      });
-    }
+    selectedCategoryIds.forEach((catId) => {
+      formData.append("categoryIds", catId);
+    });
 
     startTransition(async () => {
       const result = await saveCouponAction({ error: null }, formData);
@@ -142,7 +133,7 @@ function CouponCreateDialog({
       />
 
       {/* Modal Dialog */}
-      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl transition-all">
+      <div className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl transition-all">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-100 pb-4">
           <div className="flex items-center gap-2.5">
@@ -164,7 +155,7 @@ function CouponCreateDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="flex size-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition"
+            className="flex size-8 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
           >
             <X className="size-4" />
           </button>
@@ -175,15 +166,15 @@ function CouponCreateDialog({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 text-purple-600" />
-              <span className="text-xs font-bold uppercase tracking-wider text-purple-900">
+              <span className="text-xs font-bold tracking-wider text-purple-900 uppercase">
                 Live Customer Preview
               </span>
             </div>
             <span
               className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                 isActive
-                  ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                  : "bg-neutral-100 text-neutral-600 border border-neutral-200"
+                  ? "border border-emerald-300 bg-emerald-100 text-emerald-800"
+                  : "border border-neutral-200 bg-neutral-100 text-neutral-600"
               }`}
             >
               {isActive ? "Active on Checkout" : "Paused"}
@@ -202,7 +193,7 @@ function CouponCreateDialog({
                     : `৳${discountValue || 0} OFF`}
                 </div>
                 <div className="text-[11px] text-neutral-500">
-                  {targetMode === "SPECIFIC" && selectedCategoryIds.length > 0 ? (
+                  {selectedCategoryIds.length > 0 ? (
                     <span className="font-semibold text-purple-700">
                       🎯 Valid only for:{" "}
                       {categories
@@ -210,8 +201,6 @@ function CouponCreateDialog({
                         .map((c) => c.name)
                         .join(", ")}
                     </span>
-                  ) : targetMode === "SPECIFIC" ? (
-                    <span className="text-amber-600 font-medium">Select target categories below</span>
                   ) : minOrderValue && Number(minOrderValue) > 0 ? (
                     `Min order: ৳${Number(minOrderValue).toLocaleString()} (Storewide)`
                   ) : (
@@ -272,7 +261,7 @@ function CouponCreateDialog({
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
                 placeholder="e.g. VIP20 or EID15"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 font-mono text-xs font-bold tracking-wider text-neutral-900 uppercase focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 font-mono text-xs font-bold tracking-wider text-neutral-900 uppercase focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
               <p className="mt-1 text-[10px] text-neutral-400">
                 Letters, numbers, hyphens or underscores (3-50 chars).
@@ -324,7 +313,7 @@ function CouponCreateDialog({
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
                 placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 200"}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
             </div>
 
@@ -340,7 +329,7 @@ function CouponCreateDialog({
                 value={minOrderValue}
                 onChange={(e) => setMinOrderValue(e.target.value)}
                 placeholder="e.g. 1500 (Leave empty for no minimum)"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
             </div>
 
@@ -356,7 +345,7 @@ function CouponCreateDialog({
                 value={usageLimit}
                 onChange={(e) => setUsageLimit(e.target.value)}
                 placeholder="e.g. 100 (Leave empty for unlimited)"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
             </div>
 
@@ -386,7 +375,7 @@ function CouponCreateDialog({
                 type="datetime-local"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
             </div>
 
@@ -400,126 +389,40 @@ function CouponCreateDialog({
                 type="datetime-local"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
+                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Category Targeting Section */}
-          <div className="rounded-xl border border-neutral-200/90 bg-neutral-50/50 p-4 space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <div className="flex items-center gap-2">
-                  <Layers className="size-4 text-neutral-700" />
-                  <label className="text-xs font-bold text-neutral-800">
-                    Category Targeting
-                  </label>
-                </div>
-                <p className="text-[11px] text-neutral-500 mt-0.5">
-                  Limit discount to specific categories or apply storewide.
-                </p>
+          <div className="space-y-3 rounded-xl border border-neutral-200/90 bg-neutral-50/50 p-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Layers className="size-4 text-neutral-700" />
+                <label className="text-xs font-bold text-neutral-800">Category Targeting</label>
               </div>
-              <div className="flex items-center rounded-lg border border-neutral-200 bg-white p-1 shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTargetMode("STOREWIDE");
-                    setSelectedCategoryIds([]);
-                  }}
-                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
-                    targetMode === "STOREWIDE"
-                      ? "bg-[#101114] text-white shadow-2xs"
-                      : "text-neutral-600 hover:text-neutral-900"
-                  }`}
-                >
-                  Storewide (All)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTargetMode("SPECIFIC")}
-                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
-                    targetMode === "SPECIFIC"
-                      ? "bg-[#101114] text-white shadow-2xs"
-                      : "text-neutral-600 hover:text-neutral-900"
-                  }`}
-                >
-                  Specific Categories
-                </button>
-              </div>
+              <p className="mt-0.5 text-[11px] text-neutral-500">
+                Select one or more store categories to target. Leave empty to apply storewide across all products.
+              </p>
             </div>
 
-            {targetMode === "STOREWIDE" ? (
-              <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-2.5 text-xs text-neutral-500">
-                ✨ Applies to <strong>all products</strong> across the entire catalog.
+            <CategoryMultiSelect
+              categories={categories}
+              initialSelectedIds={couponToEdit?.categories?.map((c) => c.id) ?? []}
+              name="categoryIds"
+              placeholder="Select categories (leave empty for storewide discount)..."
+              onChange={setSelectedCategoryIds}
+            />
+
+            {selectedCategoryIds.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-2.5 text-xs text-neutral-600">
+                ✨ <strong>Storewide:</strong> Applies to <strong>all products</strong> across the entire catalog.
               </div>
             ) : (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-neutral-600">
-                    {selectedCategoryIds.length} of {categories.length} selected
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCategoryIds(categories.map((c) => c.id))}
-                      className="font-medium text-purple-600 hover:underline"
-                    >
-                      Select all
-                    </button>
-                    <span className="text-neutral-300">•</span>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCategoryIds([])}
-                      className="font-medium text-neutral-500 hover:underline"
-                    >
-                      Clear all
-                    </button>
-                  </div>
-                </div>
-
-                {categories.length === 0 ? (
-                  <p className="text-xs text-neutral-500">No active categories found.</p>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto p-1">
-                    {categories.map((category) => {
-                      const isSelected = selectedCategoryIds.includes(category.id);
-                      return (
-                        <button
-                          key={category.id}
-                          type="button"
-                          onClick={() => {
-                            setSelectedCategoryIds((prev) =>
-                              isSelected
-                                ? prev.filter((id) => id !== category.id)
-                                : [...prev, category.id]
-                            );
-                          }}
-                          className={`flex items-center gap-2 rounded-lg border p-2 text-left text-xs font-semibold transition ${
-                            isSelected
-                              ? "border-[#101114] bg-[#101114] text-white shadow-2xs"
-                              : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50"
-                          }`}
-                        >
-                          <div
-                            className={`flex size-3.5 shrink-0 items-center justify-center rounded border transition ${
-                              isSelected
-                                ? "border-white bg-white text-[#101114]"
-                                : "border-neutral-300 bg-white"
-                            }`}
-                          >
-                            {isSelected && <Check className="size-2.5 stroke-[3]" />}
-                          </div>
-                          <span className="truncate">{category.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-                {selectedCategoryIds.length === 0 && (
-                  <p className="text-[11px] text-amber-600 font-medium">
-                    ⚠️ Please select at least one category, or switch to &quot;Storewide&quot;.
-                  </p>
-                )}
+              <div className="rounded-lg border border-purple-200 bg-purple-50/60 p-2.5 text-xs text-purple-900">
+                🎯 <strong>Targeted:</strong> Applies only to eligible items in the{" "}
+                <strong>{selectedCategoryIds.length}</strong> selected categor
+                {selectedCategoryIds.length === 1 ? "y" : "ies"}.
               </div>
             )}
           </div>
@@ -530,14 +433,14 @@ function CouponCreateDialog({
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition"
+              className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-5 text-xs font-bold text-white shadow-xs hover:bg-neutral-800 disabled:opacity-50 transition"
+              className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-5 text-xs font-bold text-white shadow-xs transition hover:bg-neutral-800 disabled:opacity-50"
             >
               {isPending ? (
                 <>

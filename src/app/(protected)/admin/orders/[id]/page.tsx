@@ -258,7 +258,20 @@ export default async function AdminOrderPage({
           </div>
 
           {/* Interactive Pick & Pack Order Items Verification */}
-          <OrderPickPackChecklist orderId={order.id} items={order.items} />
+          <OrderPickPackChecklist
+            orderId={order.id}
+            items={order.items.map((item) => ({
+              id: item.id,
+              productName: item.productName,
+              size: item.size,
+              color: item.color,
+              sku: item.sku,
+              quantity: item.quantity,
+              unitPrice: Number(item.unitPrice),
+              lineTotal: Number(item.lineTotal),
+              imageUrl: item.imageUrl,
+            }))}
+          />
 
           {/* Delivery & Customer Profile Cards */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -497,7 +510,15 @@ export default async function AdminOrderPage({
                 shippingState: order.shippingState,
                 shippingZip: order.shippingZip,
                 itemCount: totalQuantity,
-                shipment: order.shipment,
+                shipment: order.shipment
+                  ? {
+                      id: order.shipment.id,
+                      provider: order.shipment.provider,
+                      trackingNumber: order.shipment.trackingNumber,
+                      providerShipmentId: order.shipment.providerShipmentId,
+                      status: order.shipment.status,
+                    }
+                  : null,
               }}
             />
           </div>
@@ -750,7 +771,14 @@ export default async function AdminOrderPage({
           status: order.status,
           customerName: order.customerName,
           customerPhone: order.customerPhone,
-          shipment: order.shipment,
+          shipment: order.shipment
+            ? {
+                id: order.shipment.id,
+                provider: order.shipment.provider,
+                trackingNumber: order.shipment.trackingNumber,
+                status: order.shipment.status,
+              }
+            : null,
         }}
       />
     </div>

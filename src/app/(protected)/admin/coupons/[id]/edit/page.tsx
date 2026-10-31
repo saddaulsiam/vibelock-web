@@ -15,7 +15,7 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
       <div>
         <Link
           href="/admin/coupons"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 transition hover:text-neutral-900"
         >
           <ChevronLeft className="size-4" />
           <span>Back to Coupons</span>
@@ -29,8 +29,8 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
               Edit Coupon: <span className="font-mono text-purple-900">{coupon.code}</span>
             </h1>
             <p className="text-xs text-neutral-500">
-              Update discount value, category targeting, usage limits, or active dates. Historical order calculations
-              remain immutable.
+              Update discount value, category targeting, usage limits, or active dates. Historical
+              order calculations remain immutable.
             </p>
           </div>
         </div>
