@@ -61,15 +61,16 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
   );
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
-  React.useEffect(() => {
-    if (items) {
-      setBarcodeLabelSize("standard");
-      setBarcodeQuantityMode("one-per-variant");
-      setBarcodeCustomQuantity(5);
-      setBarcodeItemOverrides({});
-      setShowVariantTuning(false);
-    }
-  }, [items]);
+  const [prevItemsKey, setPrevItemsKey] = React.useState<string | null>(null);
+  const currentKey = items ? items.map((i) => i.id).join(",") : null;
+  if (items && prevItemsKey !== currentKey) {
+    setPrevItemsKey(currentKey);
+    setBarcodeLabelSize("standard");
+    setBarcodeQuantityMode("one-per-variant");
+    setBarcodeCustomQuantity(5);
+    setBarcodeItemOverrides({});
+    setShowVariantTuning(false);
+  }
 
   if (!items) return null;
 

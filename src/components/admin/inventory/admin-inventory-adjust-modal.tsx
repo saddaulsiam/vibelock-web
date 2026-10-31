@@ -51,14 +51,14 @@ export function AdminInventoryAdjustModal({
   const [isSubmittingAdjust, setIsSubmittingAdjust] = React.useState(false);
   const [adjustError, setAdjustError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (item) {
-      setAdjustType("RESTOCK");
-      setAdjustQuantity("10");
-      setAdjustReason("Factory batch restock");
-      setAdjustError(null);
-    }
-  }, [item]);
+  const [prevItemId, setPrevItemId] = React.useState<string | null>(null);
+  if (item && prevItemId !== item.id) {
+    setPrevItemId(item.id);
+    setAdjustType("RESTOCK");
+    setAdjustQuantity("10");
+    setAdjustReason("Factory batch restock");
+    setAdjustError(null);
+  }
 
   if (!item) return null;
 

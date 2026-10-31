@@ -53,15 +53,16 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
   >({});
   const [showVariantTuning, setShowVariantTuning] = React.useState<boolean>(false);
 
-  React.useEffect(() => {
-    if (products) {
-      setBarcodeLabelSize("standard");
-      setBarcodeQuantityMode("one-per-variant");
-      setBarcodeCustomQuantity(5);
-      setBarcodeVariantOverrides({});
-      setShowVariantTuning(false);
-    }
-  }, [products]);
+  const [prevProductsKey, setPrevProductsKey] = React.useState<string | null>(null);
+  const currentKey = products ? products.map((p) => p.id).join(",") : null;
+  if (products && prevProductsKey !== currentKey) {
+    setPrevProductsKey(currentKey);
+    setBarcodeLabelSize("standard");
+    setBarcodeQuantityMode("one-per-variant");
+    setBarcodeCustomQuantity(5);
+    setBarcodeVariantOverrides({});
+    setShowVariantTuning(false);
+  }
 
   if (!products) return null;
 

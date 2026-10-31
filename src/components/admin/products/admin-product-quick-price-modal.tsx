@@ -26,16 +26,16 @@ export function AdminProductQuickPriceModal({
   const [isUpdatingPrice, setIsUpdatingPrice] = React.useState(false);
   const [priceError, setPriceError] = React.useState<string | null>(null);
 
-  React.useEffect(() => {
-    if (product) {
-      setPriceForm({
-        sellingPrice: product.minSellingPrice !== null ? String(product.minSellingPrice) : "",
-        discountPrice: product.minDiscountPrice !== null ? String(product.minDiscountPrice) : "",
-      });
-      setPriceError(null);
-      setIsUpdatingPrice(false);
-    }
-  }, [product]);
+  const [prevProductId, setPrevProductId] = React.useState<string | null>(null);
+  if (product && prevProductId !== product.id) {
+    setPrevProductId(product.id);
+    setPriceForm({
+      sellingPrice: product.minSellingPrice !== null ? String(product.minSellingPrice) : "",
+      discountPrice: product.minDiscountPrice !== null ? String(product.minDiscountPrice) : "",
+    });
+    setPriceError(null);
+    setIsUpdatingPrice(false);
+  }
 
   if (!product) return null;
 
