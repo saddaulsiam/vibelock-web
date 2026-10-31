@@ -14,6 +14,14 @@ import {
   ADMIN_TABLE_CLASSES,
 } from "@/components/admin/admin-table-controls";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   bulkAssignProductCategoryAction,
   bulkDeleteProductsAction,
   bulkUpdateProductStatusAction,
@@ -748,91 +756,78 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       />
 
       {/* ── 3. Products Data Table ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th scope="col" className="w-10 px-4 py-3 text-center">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={handleToggleSelectAll}
-                  aria-label="Select all products"
-                  className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
-                />
-              </th>
-              <th scope="col" className="px-5 py-3">
-                Product
-              </th>
-              {visibleColumns.categories && (
-                <th scope="col" className="px-5 py-3">
-                  Categories
-                </th>
-              )}
-              {visibleColumns.price && (
-                <th scope="col" className="px-5 py-3">
-                  Price
-                </th>
-              )}
-              {visibleColumns.stock && (
-                <th scope="col" className="px-5 py-3">
-                  Inventory Stock
-                </th>
-              )}
-              {visibleColumns.status && (
-                <th scope="col" className="px-5 py-3">
-                  Status
-                </th>
-              )}
-              <th scope="col" className="px-5 py-3 text-right">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#101114]/10">
-            {loadedProducts.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={
-                    2 +
-                    (visibleColumns.categories ? 1 : 0) +
-                    (visibleColumns.price ? 1 : 0) +
-                    (visibleColumns.stock ? 1 : 0) +
-                    (visibleColumns.status ? 1 : 0) +
-                    1
-                  }
-                  className="px-5 py-14 text-center"
-                >
-                  <div className="mx-auto max-w-sm space-y-3">
-                    <Boxes className="mx-auto size-8 text-[#101114]/30" />
-                    <h3 className="text-sm font-semibold text-[#101114]">
-                      {hasActiveFilters ? "No products match your filters" : "No products yet"}
-                    </h3>
-                    <p className="text-muted-foreground text-xs leading-5">
-                      {hasActiveFilters
-                        ? "Try clearing your search query or loosening your filters to see more catalog items."
-                        : "Create your first product to begin building the VibeLock streetwear catalog."}
-                    </p>
-                    {hasActiveFilters ? (
-                      <button
-                        type="button"
-                        onClick={handleResetFilters}
-                        className="inline-flex items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
-                      >
-                        <RotateCcw className="size-3.5" /> Clear all filters
-                      </button>
-                    ) : (
-                      <Link
-                        href="/admin/products/new"
-                        className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-2 text-xs font-semibold text-white hover:bg-[#101114]/85"
-                      >
-                        Create product
-                      </Link>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10 px-4 text-center">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={handleToggleSelectAll}
+                aria-label="Select all products"
+                className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+              />
+            </TableHead>
+            <TableHead>Product</TableHead>
+            {visibleColumns.categories && (
+              <TableHead>Categories</TableHead>
+            )}
+            {visibleColumns.price && (
+              <TableHead>Price</TableHead>
+            )}
+            {visibleColumns.stock && (
+              <TableHead>Inventory Stock</TableHead>
+            )}
+            {visibleColumns.status && (
+              <TableHead>Status</TableHead>
+            )}
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loadedProducts.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={
+                  2 +
+                  (visibleColumns.categories ? 1 : 0) +
+                  (visibleColumns.price ? 1 : 0) +
+                  (visibleColumns.stock ? 1 : 0) +
+                  (visibleColumns.status ? 1 : 0) +
+                  1
+                }
+                className="px-5 py-14 text-center"
+              >
+                <div className="mx-auto max-w-sm space-y-3">
+                  <Boxes className="mx-auto size-8 text-[#101114]/30" />
+                  <h3 className="text-sm font-semibold text-[#101114]">
+                    {hasActiveFilters ? "No products match your filters" : "No products yet"}
+                  </h3>
+                  <p className="text-muted-foreground text-xs leading-5">
+                    {hasActiveFilters
+                      ? "Try clearing your search query or loosening your filters to see more catalog items."
+                      : "Create your first product to begin building the VibeLock streetwear catalog."}
+                  </p>
+                  {hasActiveFilters ? (
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="inline-flex items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+                    >
+                      <RotateCcw className="size-3.5" /> Clear all filters
+                    </button>
+                  ) : (
+                    <Link
+                      href="/admin/products/new"
+                      className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-2 text-xs font-semibold text-white hover:bg-[#101114]/85"
+                    >
+                      Create product
+                    </Link>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
               loadedProducts.map((product) => {
                 const hasDiscount =
                   product.minDiscountPrice !== null &&
@@ -853,12 +848,12 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 const isSelected = selectedIds.has(product.id);
 
                 return (
-                  <tr
+                  <TableRow
                     key={product.id}
-                    className={`transition-colors ${isSelected ? "bg-[#F3F0E8]/50" : "hover:bg-[#FAFAF9]"}`}
+                    className={isSelected ? "bg-[#F3F0E8]/50" : undefined}
                   >
                     {/* ── Selection Checkbox ── */}
-                    <td className="w-10 px-4 py-3.5 text-center">
+                    <TableCell className="w-10 px-4 text-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -866,10 +861,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         aria-label={`Select ${product.name}`}
                         className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
                       />
-                    </td>
+                    </TableCell>
 
                     {/* ── Product Info & Thumbnail ── */}
-                    <td className="px-5 py-3.5">
+                    <TableCell>
                       <div className="flex items-center gap-3.5">
                         {/* Thumbnail with High-Res Hover Preview */}
                         <div className="group/thumb relative size-12 shrink-0">
@@ -1012,11 +1007,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           </div>
                         </div>
                       </div>
-                    </td>
+                    </TableCell>
 
                     {/* ── Categories (Clickable Pills) ── */}
                     {visibleColumns.categories && (
-                      <td className="px-5 py-3.5">
+                      <TableCell className="px-5 py-3.5">
                         {product.categories.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {product.categories.map((c) => {
@@ -1051,12 +1046,12 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             Uncategorized
                           </span>
                         )}
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* ── Price ── */}
                     {visibleColumns.price && (
-                      <td className="px-5 py-3.5 tabular-nums">
+                      <TableCell className="px-5 py-3.5 tabular-nums">
                         <div className="group/price flex items-center justify-between gap-1.5">
                           {hasDiscount ? (
                             <div className="space-y-0.5">
@@ -1096,12 +1091,12 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             <Pencil className="size-3" />
                           </button>
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* ── Inventory Stock ── */}
                     {visibleColumns.stock && (
-                      <td className="px-5 py-3.5">
+                      <TableCell className="px-5 py-3.5">
                         <div className="flex items-center gap-1.5">
                           {isLowStock ? (
                             <span className="relative flex size-2">
@@ -1136,12 +1131,12 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             </span>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* ── Status ── */}
                     {visibleColumns.status && (
-                      <td className="px-5 py-3.5">
+                      <TableCell className="px-5 py-3.5">
                         <span
                           className={`inline-flex items-center rounded-xs border px-2 py-0.5 text-[11px] font-semibold tracking-wide ${
                             product.status === "PUBLISHED"
@@ -1157,11 +1152,11 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               ? "Draft"
                               : "Archived"}
                         </span>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* ── Actions ── */}
-                    <td className="px-5 py-3.5 text-right">
+                    <TableCell className="px-5 py-3.5 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Edit Link */}
                         <Link
@@ -1231,14 +1226,13 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           </a>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
       <AdminTableInfiniteScroll

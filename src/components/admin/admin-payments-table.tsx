@@ -19,6 +19,14 @@ import {
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import {
   Banknote,
@@ -363,142 +371,140 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       />
 
       {/* ── Transactions Table ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              {visibleColumns.ref && <th className="px-4 py-3">Transaction / Ref</th>}
-              {visibleColumns.order && <th className="px-4 py-3">Order Number</th>}
-              {visibleColumns.customer && <th className="px-4 py-3">Customer</th>}
-              {visibleColumns.method && <th className="px-4 py-3">Method</th>}
-              {visibleColumns.amount && <th className="px-4 py-3 text-right">Amount</th>}
-              {visibleColumns.status && <th className="px-4 py-3">Payment Status</th>}
-              {visibleColumns.date && <th className="px-4 py-3">Date</th>}
-              <th className="px-4 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className={ADMIN_TABLE_CLASSES.tbody}>
-            {filteredPayments.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={totalVisibleCols + 1}
-                  className="px-4 py-8 text-center text-xs text-neutral-500"
-                >
-                  No payment transactions found matching the selected filters.
-                </td>
-              </tr>
-            ) : (
-              visiblePayments.map((p) => {
-                const trxDisplay =
-                  p.gatewayTransactionId || p.merchantReferenceId || p.id.slice(0, 8);
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {visibleColumns.ref && <TableHead>Transaction / Ref</TableHead>}
+            {visibleColumns.order && <TableHead>Order Number</TableHead>}
+            {visibleColumns.customer && <TableHead>Customer</TableHead>}
+            {visibleColumns.method && <TableHead>Method</TableHead>}
+            {visibleColumns.amount && <TableHead className="text-right">Amount</TableHead>}
+            {visibleColumns.status && <TableHead>Payment Status</TableHead>}
+            {visibleColumns.date && <TableHead>Date</TableHead>}
+            <TableHead className="text-right">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredPayments.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={totalVisibleCols + 1}
+                className="py-8 text-center text-xs text-neutral-500"
+              >
+                No payment transactions found matching the selected filters.
+              </TableCell>
+            </TableRow>
+          ) : (
+            visiblePayments.map((p) => {
+              const trxDisplay =
+                p.gatewayTransactionId || p.merchantReferenceId || p.id.slice(0, 8);
 
-                return (
-                  <tr key={p.id} className={ADMIN_TABLE_CLASSES.tr}>
-                    {/* Transaction Reference */}
-                    {visibleColumns.ref && (
-                      <td className="px-4 py-3">
-                        <div>
-                          <p className="font-mono text-xs font-semibold text-neutral-900">
-                            {trxDisplay}
-                          </p>
-                          {p.gatewayTransactionId && p.merchantReferenceId && (
-                            <p className="font-mono text-[10px] text-neutral-400">
-                              Ref: {p.merchantReferenceId}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Order Reference */}
-                    {visibleColumns.order && (
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/admin/orders/${p.orderId}`}
-                          className="font-semibold text-neutral-900 hover:text-[#00B4D8] hover:underline"
-                        >
-                          {p.orderNumber}
-                        </Link>
-                      </td>
-                    )}
-
-                    {/* Customer */}
-                    {visibleColumns.customer && (
-                      <td className="px-4 py-3">
-                        <div>
-                          <p className="font-medium text-xs text-neutral-900">
-                            {p.customerName}
-                          </p>
-                          <p className="text-[11px] text-neutral-500 flex items-center gap-1">
-                            <Mail className="size-3 text-neutral-400" />
-                            {p.customerEmail}
-                          </p>
-                          {p.customerPhone && (
-                            <p className="text-[10px] text-neutral-400 flex items-center gap-1">
-                              <Phone className="size-2.5 text-neutral-400" />
-                              {p.customerPhone}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Method / Gateway */}
-                    {visibleColumns.method && (
-                      <td className="px-4 py-3">{getGatewayBadge(p.gateway)}</td>
-                    )}
-
-                    {/* Amount */}
-                    {visibleColumns.amount && (
-                      <td className="px-4 py-3 text-right font-semibold text-xs text-neutral-900">
-                        {formatCurrency(p.amount)}
-                        {p.refundedAmount > 0 && (
-                          <p className="text-[10px] font-normal text-purple-600">
-                            Refunded: {formatCurrency(p.refundedAmount)}
+              return (
+                <TableRow key={p.id}>
+                  {/* Transaction Reference */}
+                  {visibleColumns.ref && (
+                    <TableCell>
+                      <div>
+                        <p className="font-mono text-xs font-semibold text-neutral-900">
+                          {trxDisplay}
+                        </p>
+                        {p.gatewayTransactionId && p.merchantReferenceId && (
+                          <p className="font-mono text-[10px] text-neutral-400">
+                            Ref: {p.merchantReferenceId}
                           </p>
                         )}
-                      </td>
-                    )}
+                      </div>
+                    </TableCell>
+                  )}
 
-                    {/* Status */}
-                    {visibleColumns.status && (
-                      <td className="px-4 py-3">{getStatusBadge(p.status)}</td>
-                    )}
-
-                    {/* Date */}
-                    {visibleColumns.date && (
-                      <td className="px-4 py-3 text-xs text-neutral-500 whitespace-nowrap">
-                        {new Date(p.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                        <p className="text-[10px] text-neutral-400">
-                          {new Date(p.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                      </td>
-                    )}
-
-                    {/* Action */}
-                    <td className="px-4 py-3 text-right">
+                  {/* Order Reference */}
+                  {visibleColumns.order && (
+                    <TableCell>
                       <Link
                         href={`/admin/orders/${p.orderId}`}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-700 hover:text-neutral-950 hover:underline"
+                        className="font-semibold text-neutral-900 hover:text-[#00B4D8] hover:underline"
                       >
-                        <span>Order</span>
-                        <ExternalLink className="size-3" />
+                        {p.orderNumber}
                       </Link>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Customer */}
+                  {visibleColumns.customer && (
+                    <TableCell>
+                      <div>
+                        <p className="font-medium text-xs text-neutral-900">
+                          {p.customerName}
+                        </p>
+                        <p className="text-[11px] text-neutral-500 flex items-center gap-1">
+                          <Mail className="size-3 text-neutral-400" />
+                          {p.customerEmail}
+                        </p>
+                        {p.customerPhone && (
+                          <p className="text-[10px] text-neutral-400 flex items-center gap-1">
+                            <Phone className="size-2.5 text-neutral-400" />
+                            {p.customerPhone}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Method / Gateway */}
+                  {visibleColumns.method && (
+                    <TableCell>{getGatewayBadge(p.gateway)}</TableCell>
+                  )}
+
+                  {/* Amount */}
+                  {visibleColumns.amount && (
+                    <TableCell className="text-right font-semibold text-xs text-neutral-900">
+                      {formatCurrency(p.amount)}
+                      {p.refundedAmount > 0 && (
+                        <p className="text-[10px] font-normal text-purple-600">
+                          Refunded: {formatCurrency(p.refundedAmount)}
+                        </p>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Status */}
+                  {visibleColumns.status && (
+                    <TableCell>{getStatusBadge(p.status)}</TableCell>
+                  )}
+
+                  {/* Date */}
+                  {visibleColumns.date && (
+                    <TableCell className="text-xs text-neutral-500 whitespace-nowrap">
+                      {new Date(p.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      <p className="text-[10px] text-neutral-400">
+                        {new Date(p.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </TableCell>
+                  )}
+
+                  {/* Action */}
+                  <TableCell className="text-right">
+                    <Link
+                      href={`/admin/orders/${p.orderId}`}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-neutral-700 hover:text-neutral-950 hover:underline"
+                    >
+                      <span>Order</span>
+                      <ExternalLink className="size-3" />
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}
       <AdminTableInfiniteScroll

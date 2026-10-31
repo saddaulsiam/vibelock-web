@@ -19,7 +19,14 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   deleteCategoryAction,
   toggleCategoryStatusAction,
@@ -218,86 +225,85 @@ export function AdminCategoriesTable({
       />
 
       {/* ── Categories Table Card ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="px-4 py-3.5">Category</th>
-              <th className="px-4 py-3.5">Hierarchy</th>
-              <th className="px-4 py-3.5 text-center">Priority</th>
-              <th className="px-4 py-3.5">Catalog Products</th>
-              <th className="px-4 py-3.5">Storefront Visibility</th>
-              <th className="px-4 py-3.5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className={ADMIN_TABLE_CLASSES.tbody}>
-            {filteredCategories.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-14 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <FolderTree className="size-10 text-neutral-300" />
-                    <p className="text-sm font-semibold text-neutral-800">
-                      No categories found
-                    </p>
-                    <p className="max-w-xs text-xs text-neutral-500">
-                      {hasActiveFilters
-                        ? "Try clearing your search query or filter settings to see more categories."
-                        : "Create your first category to start organizing products."}
-                    </p>
-                    {hasActiveFilters ? (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearch("");
-                          setActiveTab("all");
-                        }}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
-                      >
-                        <RotateCcw className="size-3" />
-                        Clear filters
-                      </button>
-                    ) : (
-                      <Link
-                        href="/admin/categories/new"
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
-                      >
-                        Create Category
-                      </Link>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              filteredCategories.map((category) => {
-                const hasProducts = category._count.products > 0;
-                const hasChildren = category._count.children > 0;
-                const canDelete = !hasProducts && !hasChildren;
-                const isToggling = togglingId === category.id;
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Category</TableHead>
+            <TableHead>Hierarchy</TableHead>
+            <TableHead className="text-center">Priority</TableHead>
+            <TableHead>Catalog Products</TableHead>
+            <TableHead>Storefront Visibility</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredCategories.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="py-14 text-center">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <FolderTree className="size-10 text-neutral-300" />
+                  <p className="text-sm font-semibold text-neutral-800">
+                    No categories found
+                  </p>
+                  <p className="max-w-xs text-xs text-neutral-500">
+                    {hasActiveFilters
+                      ? "Try clearing your search query or filter settings to see more categories."
+                      : "Create your first category to start organizing products."}
+                  </p>
+                  {hasActiveFilters ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearch("");
+                        setActiveTab("all");
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <RotateCcw className="size-3" />
+                      Clear filters
+                    </button>
+                  ) : (
+                    <Link
+                      href="/admin/categories/new"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                    >
+                      Create Category
+                    </Link>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            filteredCategories.map((category) => {
+              const hasProducts = category._count.products > 0;
+              const hasChildren = category._count.children > 0;
+              const canDelete = !hasProducts && !hasChildren;
+              const isToggling = togglingId === category.id;
 
-                return (
-                  <tr key={category.id} className={ADMIN_TABLE_CLASSES.tr}>
-                    {/* Category Name & Thumbnail */}
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 flex items-center justify-center shadow-2xs">
-                          {category.imageUrl ? (
-                            <Image
-                              src={category.imageUrl}
-                              alt={category.name}
-                              fill
-                              sizes="44px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <Folder className="size-5 text-neutral-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <Link
-                              href={`/admin/categories/${category.id}`}
-                              className="font-semibold text-neutral-900 hover:text-black hover:underline"
-                            >
+              return (
+                <TableRow key={category.id}>
+                  {/* Category Name & Thumbnail */}
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 flex items-center justify-center shadow-2xs">
+                        {category.imageUrl ? (
+                          <Image
+                            src={category.imageUrl}
+                            alt={category.name}
+                            fill
+                            sizes="44px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <Folder className="size-5 text-neutral-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/admin/categories/${category.id}`}
+                            className="font-semibold text-neutral-900 hover:text-black hover:underline"
+                          >
                               {category.name}
                             </Link>
                           </div>
@@ -311,10 +317,10 @@ export function AdminCategoriesTable({
                           )}
                         </div>
                       </div>
-                    </td>
+                    </TableCell>
 
                     {/* Hierarchy / Parent */}
-                    <td className="px-4 py-3.5">
+                    <TableCell>
                       {category.parent ? (
                         <div className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200/90 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-700 shadow-2xs">
                           <Folder className="size-3 text-neutral-400" />
@@ -326,17 +332,17 @@ export function AdminCategoriesTable({
                           Root Department
                         </span>
                       )}
-                    </td>
+                    </TableCell>
 
                     {/* Merchandising Priority / Sort Order */}
-                    <td className="px-4 py-3.5 text-center">
+                    <TableCell className="text-center">
                       <span className="inline-flex items-center rounded-md border border-neutral-200/80 bg-neutral-100/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-neutral-700">
                         #{category.sortOrder}
                       </span>
-                    </td>
+                    </TableCell>
 
                     {/* Catalog Products */}
-                    <td className="px-4 py-3.5">
+                    <TableCell>
                       {hasProducts ? (
                         <Link
                           href={`/admin/categories/${category.id}`}
@@ -357,10 +363,10 @@ export function AdminCategoriesTable({
                           <span className="text-[10px] text-neutral-400">+</span>
                         </Link>
                       )}
-                    </td>
+                    </TableCell>
 
                     {/* Storefront Visibility Toggle */}
-                    <td className="px-4 py-3.5">
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -387,10 +393,10 @@ export function AdminCategoriesTable({
                           <span>{category.isActive ? "Active Live" : "Hidden / Draft"}</span>
                         </button>
                       </div>
-                    </td>
+                    </TableCell>
 
                     {/* Actions */}
-                    <td className="px-4 py-3.5 text-right">
+                    <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Storefront Link */}
                         <a
@@ -443,14 +449,13 @@ export function AdminCategoriesTable({
                           </span>
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
-      </div>
+        </TableBody>
+      </Table>
     </div>
   );
 }

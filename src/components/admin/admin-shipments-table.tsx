@@ -13,6 +13,14 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import {
   loadMoreAdminShipmentsAction,
@@ -475,296 +483,292 @@ export function AdminShipmentsTable({
       )}
 
       {/* ── Main Shipments Table ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="w-10 px-3 py-3.5 text-center">
-                <input
-                  type="checkbox"
-                  checked={
-                    shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))
-                  }
-                  onChange={(e) => handleSelectAll(e.target.checked)}
-                  aria-label="Select all shipments"
-                  className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
-                />
-              </th>
-              <th className="px-3.5 py-3.5">Order</th>
-              {visibleColumns.customer && <th className="px-3.5 py-3.5">Customer & Phone</th>}
-              {visibleColumns.courier && (
-                <th className="px-3.5 py-3.5">Courier & Tracking</th>
-              )}
-              {visibleColumns.method && <th className="px-3.5 py-3.5">Method</th>}
-              {visibleColumns.amounts && <th className="px-3.5 py-3.5">Amounts & COD</th>}
-              {visibleColumns.status && <th className="px-3.5 py-3.5">Status</th>}
-              {visibleColumns.dates && <th className="px-3.5 py-3.5">Timeline</th>}
-              <th className="px-3.5 py-3.5 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className={ADMIN_TABLE_CLASSES.tbody}>
-            {shipments.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-14 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-2">
-                    <Truck className="size-10 text-neutral-300" />
-                    <p className="text-sm font-semibold text-neutral-800">No shipments found</p>
-                    <p className="max-w-xs text-xs text-neutral-500">
-                      {hasActiveFilters
-                        ? "Try clearing your search query or filter settings to see more parcels."
-                        : "Orders ready for dispatch will appear here once booked."}
-                    </p>
-                    {hasActiveFilters && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSearchValue("");
-                          updateQueryParams({ q: "", filter: "all", provider: "ALL" });
-                        }}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10 px-3 text-center">
+              <input
+                type="checkbox"
+                checked={
+                  shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))
+                }
+                onChange={(e) => handleSelectAll(e.target.checked)}
+                aria-label="Select all shipments"
+                className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+              />
+            </TableHead>
+            <TableHead>Order</TableHead>
+            {visibleColumns.customer && <TableHead>Customer & Phone</TableHead>}
+            {visibleColumns.courier && (
+              <TableHead>Courier & Tracking</TableHead>
+            )}
+            {visibleColumns.method && <TableHead>Method</TableHead>}
+            {visibleColumns.amounts && <TableHead>Amounts & COD</TableHead>}
+            {visibleColumns.status && <TableHead>Status</TableHead>}
+            {visibleColumns.dates && <TableHead>Timeline</TableHead>}
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {shipments.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={9} className="py-14 text-center">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <Truck className="size-10 text-neutral-300" />
+                  <p className="text-sm font-semibold text-neutral-800">No shipments found</p>
+                  <p className="max-w-xs text-xs text-neutral-500">
+                    {hasActiveFilters
+                      ? "Try clearing your search query or filter settings to see more parcels."
+                      : "Orders ready for dispatch will appear here once booked."}
+                  </p>
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchValue("");
+                        updateQueryParams({ q: "", filter: "all", provider: "ALL" });
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                    >
+                      <RotateCcw className="size-3" />
+                      Clear filters
+                    </button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            shipments.map((shipment) => {
+              const isSelected = selectedIds.has(shipment.id);
+              const statusBadge = getShipmentStatusBadgeInfo(shipment.status);
+              const isSteadfast = shipment.provider.toUpperCase().includes("STEADFAST");
+              const isSyncing = syncingId === shipment.id;
+              const feedback = syncNotice?.id === shipment.id ? syncNotice : null;
+              const waUrl = generateShipmentWhatsAppUrl(
+                shipment.customerPhone,
+                shipment.orderNumber,
+                shipment.customerName,
+                shipment.trackingNumber,
+                shipment.provider,
+                shipment.status
+              );
+
+              return (
+                <TableRow
+                  key={shipment.id}
+                  className={isSelected ? "bg-cyan-50/40" : undefined}
+                >
+                  {/* Row Checkbox */}
+                  <TableCell className="w-10 px-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(shipment.id)}
+                      aria-label={`Select shipment for order ${shipment.orderNumber}`}
+                      className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+                    />
+                  </TableCell>
+
+                  {/* Order Column */}
+                  <TableCell>
+                    <div className="font-semibold text-neutral-900">
+                      <Link
+                        href={`/admin/orders/${shipment.orderId}`}
+                        className="hover:text-primary hover:underline"
                       >
-                        <RotateCcw className="size-3" />
-                        Clear filters
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              shipments.map((shipment) => {
-                const isSelected = selectedIds.has(shipment.id);
-                const statusBadge = getShipmentStatusBadgeInfo(shipment.status);
-                const isSteadfast = shipment.provider.toUpperCase().includes("STEADFAST");
-                const isSyncing = syncingId === shipment.id;
-                const feedback = syncNotice?.id === shipment.id ? syncNotice : null;
-                const waUrl = generateShipmentWhatsAppUrl(
-                  shipment.customerPhone,
-                  shipment.orderNumber,
-                  shipment.customerName,
-                  shipment.trackingNumber,
-                  shipment.provider,
-                  shipment.status
-                );
+                        {shipment.orderNumber}
+                      </Link>
+                    </div>
+                    <span className="text-[10px] text-neutral-400">
+                      {shipment.paymentMethod} • {shipment.paymentStatus}
+                    </span>
+                  </TableCell>
 
-                return (
-                  <tr
-                    key={shipment.id}
-                    className={`${ADMIN_TABLE_CLASSES.tr} ${
-                      isSelected ? "bg-cyan-50/40" : ""
-                    }`}
-                  >
-                    {/* Row Checkbox */}
-                    <td className="w-10 px-3 py-3 text-center">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggleSelect(shipment.id)}
-                        aria-label={`Select shipment for order ${shipment.orderNumber}`}
-                        className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
-                      />
-                    </td>
-
-                    {/* Order Column */}
-                    <td className="px-3.5 py-3">
-                      <div className="font-semibold text-neutral-900">
-                        <Link
-                          href={`/admin/orders/${shipment.orderId}`}
-                          className="hover:text-primary hover:underline"
-                        >
-                          {shipment.orderNumber}
-                        </Link>
+                  {/* Customer Column */}
+                  {visibleColumns.customer && (
+                    <TableCell>
+                      <div className="font-medium text-neutral-900">
+                        {shipment.customerName || "Guest Customer"}
                       </div>
-                      <span className="text-[10px] text-neutral-400">
-                        {shipment.paymentMethod} • {shipment.paymentStatus}
-                      </span>
-                    </td>
-
-                    {/* Customer Column */}
-                    {visibleColumns.customer && (
-                      <td className="px-3.5 py-3">
-                        <div className="font-medium text-neutral-900">
-                          {shipment.customerName || "Guest Customer"}
+                      {shipment.customerPhone && (
+                        <div className="font-mono text-[11px] text-neutral-500">
+                          {shipment.customerPhone}
                         </div>
-                        {shipment.customerPhone && (
-                          <div className="font-mono text-[11px] text-neutral-500">
-                            {shipment.customerPhone}
-                          </div>
-                        )}
-                      </td>
-                    )}
+                      )}
+                    </TableCell>
+                  )}
 
-                    {/* Courier & Tracking Column */}
-                    {visibleColumns.courier && (
-                      <td className="px-3.5 py-3">
-                        <div className="flex items-center gap-1.5">
+                  {/* Courier & Tracking Column */}
+                  {visibleColumns.courier && (
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+                            isSteadfast
+                              ? "border border-amber-200/90 bg-amber-50 text-amber-900 shadow-2xs"
+                              : "border border-neutral-200 bg-neutral-100 text-neutral-800"
+                          }`}
+                        >
                           <span
-                            className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
-                              isSteadfast
-                                ? "border border-amber-200/90 bg-amber-50 text-amber-900 shadow-2xs"
-                                : "border border-neutral-200 bg-neutral-100 text-neutral-800"
+                            className={`size-1.5 rounded-full ${
+                              isSteadfast ? "bg-amber-500" : "bg-neutral-500"
+                            }`}
+                          />
+                          {shipment.provider}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center gap-1">
+                        {shipment.trackingNumber || shipment.providerShipmentId ? (
+                          <>
+                            <span className="font-mono text-[11px] font-medium text-neutral-800">
+                              {shipment.trackingNumber || shipment.providerShipmentId}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleCopyTracking(
+                                  shipment.id,
+                                  shipment.trackingNumber || shipment.providerShipmentId
+                                )
+                              }
+                              title="Copy tracking number"
+                              className="rounded p-1 text-neutral-400 hover:text-neutral-700 transition-colors"
+                            >
+                              {copiedTrackingId === shipment.id ? (
+                                <Check className="size-3 text-emerald-600" />
+                              ) : (
+                                <Copy className="size-3" />
+                              )}
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-neutral-400 italic">
+                            Pending assignment
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Method Column */}
+                  {visibleColumns.method && (
+                    <TableCell>
+                      <span className="font-medium text-neutral-800">
+                        {shipment.shippingMethodName || "Standard Shipping"}
+                      </span>
+                    </TableCell>
+                  )}
+
+                  {/* Amounts Column */}
+                  {visibleColumns.amounts && (
+                    <TableCell>
+                      <div className="font-medium text-neutral-900">
+                        {formatCurrency(shipment.shippingAmount)}
+                        <span className="text-[10px] text-neutral-400 ml-1">fee</span>
+                      </div>
+                      <div className="text-[11px] text-neutral-500">
+                        Total: {formatCurrency(shipment.orderTotal)}
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Status Column */}
+                  {visibleColumns.status && (
+                    <TableCell>
+                      <div className="flex flex-col gap-1 items-start">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${statusBadge.badgeClass}`}
+                        >
+                          <span className={`size-1.5 rounded-full ${statusBadge.dotColor}`} />
+                          {statusBadge.label}
+                        </span>
+
+                        {/* Live sync inline feedback */}
+                        {feedback && (
+                          <span
+                            className={`text-[10px] font-medium ${
+                              feedback.isError ? "text-rose-600" : "text-emerald-600"
                             }`}
                           >
-                            <span
-                              className={`size-1.5 rounded-full ${
-                                isSteadfast ? "bg-amber-500" : "bg-neutral-500"
-                              }`}
-                            />
-                            {shipment.provider}
+                            {feedback.msg}
                           </span>
-                        </div>
-                        <div className="mt-1 flex items-center gap-1">
-                          {shipment.trackingNumber || shipment.providerShipmentId ? (
-                            <>
-                              <span className="font-mono text-[11px] font-medium text-neutral-800">
-                                {shipment.trackingNumber || shipment.providerShipmentId}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  handleCopyTracking(
-                                    shipment.id,
-                                    shipment.trackingNumber || shipment.providerShipmentId
-                                  )
-                                }
-                                title="Copy tracking number"
-                                className="rounded p-1 text-neutral-400 hover:text-neutral-700 transition-colors"
-                              >
-                                {copiedTrackingId === shipment.id ? (
-                                  <Check className="size-3 text-emerald-600" />
-                                ) : (
-                                  <Copy className="size-3" />
-                                )}
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-[11px] text-neutral-400 italic">
-                              Pending assignment
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Method Column */}
-                    {visibleColumns.method && (
-                      <td className="px-3.5 py-3">
-                        <span className="font-medium text-neutral-800">
-                          {shipment.shippingMethodName || "Standard Shipping"}
-                        </span>
-                      </td>
-                    )}
-
-                    {/* Amounts Column */}
-                    {visibleColumns.amounts && (
-                      <td className="px-3.5 py-3">
-                        <div className="font-medium text-neutral-900">
-                          {formatCurrency(shipment.shippingAmount)}
-                          <span className="text-[10px] text-neutral-400 ml-1">fee</span>
-                        </div>
-                        <div className="text-[11px] text-neutral-500">
-                          Total: {formatCurrency(shipment.orderTotal)}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Status Column */}
-                    {visibleColumns.status && (
-                      <td className="px-3.5 py-3">
-                        <div className="flex flex-col gap-1 items-start">
-                          <span
-                            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${statusBadge.badgeClass}`}
-                          >
-                            <span className={`size-1.5 rounded-full ${statusBadge.dotColor}`} />
-                            {statusBadge.label}
-                          </span>
-
-                          {/* Live sync inline feedback */}
-                          {feedback && (
-                            <span
-                              className={`text-[10px] font-medium ${
-                                feedback.isError ? "text-rose-600" : "text-emerald-600"
-                              }`}
-                            >
-                              {feedback.msg}
-                            </span>
-                          )}
-
-                          {shipment.failureReason && (
-                            <span className="text-[10px] text-rose-600 max-w-[180px] truncate" title={shipment.failureReason}>
-                              {shipment.failureReason}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Dates Column */}
-                    {visibleColumns.dates && (
-                      <td className="px-3.5 py-3 text-[11px] text-neutral-500">
-                        <div>Created: {formatDate(shipment.createdAt)}</div>
-                        {shipment.deliveredAt ? (
-                          <div className="text-emerald-700 font-medium">
-                            Delivered: {formatDate(shipment.deliveredAt)}
-                          </div>
-                        ) : shipment.shippedAt ? (
-                          <div>Dispatched: {formatDate(shipment.shippedAt)}</div>
-                        ) : null}
-                      </td>
-                    )}
-
-                    {/* Action Buttons Column */}
-                    <td className="px-3.5 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {/* 1-Click Steadfast Sync Button */}
-                        {isSteadfast && shipment.providerShipmentId && (
-                          <button
-                            type="button"
-                            onClick={() => handleSyncShipment(shipment.id)}
-                            disabled={isSyncing}
-                            title="Sync live status from Steadfast"
-                            aria-label="Sync live status from Steadfast"
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50"
-                          >
-                            {isSyncing ? (
-                              <Loader2 className="size-3.5 animate-spin text-amber-600" />
-                            ) : (
-                              <RefreshCw className="size-3.5" />
-                            )}
-                          </button>
                         )}
 
-                        {/* 1-Click WhatsApp Parcel Alert */}
-                        {waUrl ? (
-                          <a
-                            href={waUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Send parcel status update via WhatsApp"
-                            aria-label="Send parcel update via WhatsApp"
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-                          >
-                            <MessageCircle className="size-3.5" />
-                          </a>
-                        ) : null}
-
-                        {/* View Shipment in Order Link */}
-                        <Link
-                          href={`/admin/orders/${shipment.orderId}#courier-dispatch-card`}
-                          title="View order and courier dispatch details"
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
-                        >
-                          <Eye className="size-3.5 text-neutral-500" />
-                          <span>View</span>
-                        </Link>
+                        {shipment.failureReason && (
+                          <span className="text-[10px] text-rose-600 max-w-[180px] truncate" title={shipment.failureReason}>
+                            {shipment.failureReason}
+                          </span>
+                        )}
                       </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Dates Column */}
+                  {visibleColumns.dates && (
+                    <TableCell className="text-[11px] text-neutral-500">
+                      <div>Created: {formatDate(shipment.createdAt)}</div>
+                      {shipment.deliveredAt ? (
+                        <div className="text-emerald-700 font-medium">
+                          Delivered: {formatDate(shipment.deliveredAt)}
+                        </div>
+                      ) : shipment.shippedAt ? (
+                        <div>Dispatched: {formatDate(shipment.shippedAt)}</div>
+                      ) : null}
+                    </TableCell>
+                  )}
+
+                  {/* Action Buttons Column */}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {/* 1-Click Steadfast Sync Button */}
+                      {isSteadfast && shipment.providerShipmentId && (
+                        <button
+                          type="button"
+                          onClick={() => handleSyncShipment(shipment.id)}
+                          disabled={isSyncing}
+                          title="Sync live status from Steadfast"
+                          aria-label="Sync live status from Steadfast"
+                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50"
+                        >
+                          {isSyncing ? (
+                            <Loader2 className="size-3.5 animate-spin text-amber-600" />
+                          ) : (
+                            <RefreshCw className="size-3.5" />
+                          )}
+                        </button>
+                      )}
+
+                      {/* 1-Click WhatsApp Parcel Alert */}
+                      {waUrl ? (
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Send parcel status update via WhatsApp"
+                          aria-label="Send parcel update via WhatsApp"
+                          className="inline-flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        >
+                          <MessageCircle className="size-3.5" />
+                        </a>
+                      ) : null}
+
+                      {/* View Shipment in Order Link */}
+                      <Link
+                        href={`/admin/orders/${shipment.orderId}#courier-dispatch-card`}
+                        title="View order and courier dispatch details"
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                      >
+                        <Eye className="size-3.5 text-neutral-500" />
+                        <span>View</span>
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* ── Infinite Scroll Sentinel & Loader ── */}
       <AdminTableInfiniteScroll

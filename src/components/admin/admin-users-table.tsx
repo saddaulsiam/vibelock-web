@@ -26,6 +26,14 @@ import {
 } from "@/components/admin/admin-table-column-visibility";
 import { exportToCsv } from "@/lib/admin/admin-csv-export";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -425,114 +433,112 @@ export function AdminUsersTable({
       />
 
       {/* ── Table Container ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              {visibleColumns.member && <th className="px-4 py-3">Member</th>}
-              {visibleColumns.contact && <th className="px-4 py-3">Contact</th>}
-              {visibleColumns.role && <th className="px-4 py-3">Assigned Role</th>}
-              {visibleColumns.date && <th className="px-4 py-3">Joined Date</th>}
-              <th className="px-4 py-3 text-right">Role Action</th>
-            </tr>
-          </thead>
-          <tbody className={ADMIN_TABLE_CLASSES.tbody}>
-            {filteredUsers.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={Math.max(1, totalVisibleCols)}
-                  className="px-4 py-8 text-center text-xs text-neutral-500"
-                >
-                  No staff or administrators found matching the criteria.
-                </td>
-              </tr>
-            ) : (
-              visibleUsers.map((user) => {
-                const isCurrent = user.id === currentAdminId;
-                const initials = (user.name || user.email)
-                  .substring(0, 2)
-                  .toUpperCase();
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {visibleColumns.member && <TableHead>Member</TableHead>}
+            {visibleColumns.contact && <TableHead>Contact</TableHead>}
+            {visibleColumns.role && <TableHead>Assigned Role</TableHead>}
+            {visibleColumns.date && <TableHead>Joined Date</TableHead>}
+            <TableHead className="text-right">Role Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredUsers.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={Math.max(1, totalVisibleCols)}
+                className="py-8 text-center text-xs text-neutral-500"
+              >
+                No staff or administrators found matching the criteria.
+              </TableCell>
+            </TableRow>
+          ) : (
+            visibleUsers.map((user) => {
+              const isCurrent = user.id === currentAdminId;
+              const initials = (user.name || user.email)
+                .substring(0, 2)
+                .toUpperCase();
 
-                return (
-                  <tr key={user.id} className={ADMIN_TABLE_CLASSES.tr}>
-                    {/* User Info */}
-                    {visibleColumns.member && (
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#101114] text-xs font-bold text-white">
-                            {initials}
-                          </div>
-                          <div className="min-w-0">
-                            <p className="truncate text-xs font-semibold text-neutral-900 flex items-center gap-1.5">
-                              {user.name || "Unnamed User"}
-                              {isCurrent && (
-                                <span className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] font-normal text-neutral-600">
-                                  You
-                                </span>
-                              )}
-                            </p>
-                            <p className="truncate text-[11px] text-neutral-500 flex items-center gap-1">
-                              <Mail className="size-3 text-neutral-400" />
-                              {user.email}
-                            </p>
-                          </div>
+              return (
+                <TableRow key={user.id}>
+                  {/* User Info */}
+                  {visibleColumns.member && (
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#101114] text-xs font-bold text-white">
+                          {initials}
                         </div>
-                      </td>
-                    )}
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-semibold text-neutral-900 flex items-center gap-1.5">
+                            {user.name || "Unnamed User"}
+                            {isCurrent && (
+                              <span className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] font-normal text-neutral-600">
+                                You
+                              </span>
+                            )}
+                          </p>
+                          <p className="truncate text-[11px] text-neutral-500 flex items-center gap-1">
+                            <Mail className="size-3 text-neutral-400" />
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
 
-                    {/* Contact */}
-                    {visibleColumns.contact && (
-                      <td className="px-4 py-3 text-xs text-neutral-600">
-                        {user.phone ? (
-                          <span className="flex items-center gap-1">
-                            <Phone className="size-3 text-neutral-400" />
-                            {user.phone}
-                          </span>
-                        ) : (
-                          <span className="text-neutral-400">—</span>
-                        )}
-                      </td>
-                    )}
+                  {/* Contact */}
+                  {visibleColumns.contact && (
+                    <TableCell className="text-xs text-neutral-600">
+                      {user.phone ? (
+                        <span className="flex items-center gap-1">
+                          <Phone className="size-3 text-neutral-400" />
+                          {user.phone}
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">—</span>
+                      )}
+                    </TableCell>
+                  )}
 
-                    {/* Role Badge */}
-                    {visibleColumns.role && (
-                      <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
-                    )}
+                  {/* Role Badge */}
+                  {visibleColumns.role && (
+                    <TableCell>{getRoleBadge(user.role)}</TableCell>
+                  )}
 
-                    {/* Joined Date */}
-                    {visibleColumns.date && (
-                      <td className="px-4 py-3 text-xs text-neutral-500">
-                        {new Date(user.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </td>
-                    )}
+                  {/* Joined Date */}
+                  {visibleColumns.date && (
+                    <TableCell className="text-xs text-neutral-500">
+                      {new Date(user.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </TableCell>
+                  )}
 
-                    {/* Action Dropdown */}
-                    <td className="px-4 py-3 text-right">
-                      <select
-                        disabled={isPending}
-                        value={user.role}
-                        onChange={(e) =>
-                          handleRoleChange(user.id, e.target.value as Role)
-                        }
-                        className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                      >
-                        <option value="ADMIN">ADMIN</option>
-                        <option value="MANAGER">MANAGER</option>
-                        <option value="STAFF">STAFF</option>
-                        <option value="CUSTOMER">Demote to CUSTOMER</option>
-                      </select>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                  {/* Action Dropdown */}
+                  <TableCell className="text-right">
+                    <select
+                      disabled={isPending}
+                      value={user.role}
+                      onChange={(e) =>
+                        handleRoleChange(user.id, e.target.value as Role)
+                      }
+                      className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    >
+                      <option value="ADMIN">ADMIN</option>
+                      <option value="MANAGER">MANAGER</option>
+                      <option value="STAFF">STAFF</option>
+                      <option value="CUSTOMER">Demote to CUSTOMER</option>
+                    </select>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}
       <AdminTableInfiniteScroll

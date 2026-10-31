@@ -17,6 +17,14 @@ import {
   ADMIN_TABLE_CLASSES,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory-actions";
 import type {
   InventoryIntelligenceItem,
@@ -389,224 +397,222 @@ export function AdminInventoryIntelligenceTable({
       </div>
 
       {/* Fresh, Clean Data Table matching Inventory Control Center */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="min-w-[180px] px-4 py-3">Product & Variant</th>
-              {visibleColumns.stock && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Available Stock</th>
-              )}
-              {visibleColumns.capital && (
-                <th className="px-3 py-3 text-right whitespace-nowrap">Available Capital</th>
-              )}
-              {visibleColumns.velocity && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Daily Velocity</th>
-              )}
-              {visibleColumns.daysOfSupply && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Days of Supply</th>
-              )}
-              {visibleColumns.restock && (
-                <th className="px-3 py-3 text-right whitespace-nowrap">Suggested Restock (30d)</th>
-              )}
-              {visibleColumns.status && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Health Status</th>
-              )}
-              <th className="min-w-[95px] px-4 py-3 text-right whitespace-nowrap">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100">
-            {loadedItems.length === 0 ? (
-              <tr>
-                <td colSpan={visibleColumnCount} className="px-5 py-12 text-center">
-                  <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
-                    <Package className="size-8 text-zinc-400" />
-                    <p className="text-sm font-semibold text-zinc-900">
-                      No inventory intelligence variants found
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      Try adjusting your search terms or clearing active status filters.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => updateUrlParams({ q: null, status: null, page: 1 })}
-                      className="mt-2 inline-flex h-8 items-center rounded-lg bg-[#101114] px-3 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
-                    >
-                      Clear all filters
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              loadedItems.map((item) => {
-                const isUrgent = item.status === "STOCKOUT_RISK" || item.status === "OUT_OF_STOCK";
-
-                return (
-                  <tr
-                    key={item.id}
-                    className={`transition-colors hover:bg-zinc-50/70 ${
-                      item.status === "STOCKOUT_RISK" ? "bg-rose-50/30 hover:bg-rose-50/50" : ""
-                    }`}
-                  >
-                    {/* Product & Variant with SKU at bottom */}
-                    <td className="min-w-[180px] px-4 py-3">
-                      <div className="line-clamp-1 font-semibold text-zinc-900">
-                        {item.productName}
-                      </div>
-                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        <span className="inline-flex items-center rounded-sm border border-zinc-200/80 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700">
-                          {[
-                            item.size ? `Size: ${item.size}` : null,
-                            item.color ? `Color: ${item.color}` : null,
-                          ]
-                            .filter(Boolean)
-                            .join(" • ") || "Default"}
-                        </span>
-                      </div>
-                      <div className="mt-1 flex items-center gap-1 font-mono text-[11px] text-zinc-500">
-                        <span className="max-w-[220px] truncate" title={item.sku}>
-                          {item.sku}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopySku(item.sku)}
-                          className="rounded p-0.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-800"
-                          title="Copy SKU to clipboard"
-                        >
-                          {copiedSku === item.sku ? (
-                            <Check className="size-2.5 text-emerald-600" />
-                          ) : (
-                            <Copy className="size-2.5" />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-
-                    {/* Available Stock */}
-                    {visibleColumns.stock && (
-                      <td className="px-3 py-3 text-center font-mono text-xs whitespace-nowrap tabular-nums">
-                        <div
-                          className={`font-bold ${
-                            item.availableStock <= 0
-                              ? "font-extrabold text-rose-600"
-                              : item.status === "STOCKOUT_RISK"
-                                ? "font-extrabold text-rose-700"
-                                : "font-extrabold text-zinc-900"
-                          }`}
-                        >
-                          {item.availableStock.toLocaleString()}
-                        </div>
-                        <div className="text-[11px] text-zinc-500">
-                          {item.physicalStock} phys ({item.reservedStock} res)
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Available Capital */}
-                    {visibleColumns.capital && (
-                      <td className="px-3 py-3 text-right whitespace-nowrap tabular-nums">
-                        <div className="font-semibold text-zinc-900">
-                          {formatBdt(item.availableCostValue)}
-                        </div>
-                        <div className="text-[11px] text-zinc-500">
-                          Cost: {item.costUnavailable ? "N/A" : formatBdt(item.costPrice)}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Daily Velocity */}
-                    {visibleColumns.velocity && (
-                      <td className="px-3 py-3 text-center font-mono text-xs whitespace-nowrap tabular-nums">
-                        <div className="font-bold text-zinc-900">
-                          {item.dailyVelocity > 0 ? `${item.dailyVelocity.toFixed(2)}/d` : "0.00/d"}
-                        </div>
-                        <div className="text-[11px] text-zinc-500">
-                          {item.netRetainedUnits} units ({item.soldUnits} sold &minus;{" "}
-                          {item.returnedUnits} ret)
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Days of Supply */}
-                    {visibleColumns.daysOfSupply && (
-                      <td className="px-3 py-3 text-center whitespace-nowrap tabular-nums">
-                        {item.daysOfSupply !== null ? (
-                          <div className="flex flex-col items-center">
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
-                                item.daysOfSupply <= 14
-                                  ? "border border-rose-200 bg-rose-100 text-rose-700"
-                                  : item.daysOfSupply > 180
-                                    ? "border border-amber-200 bg-amber-100 text-amber-800"
-                                    : "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                              }`}
-                            >
-                              {item.daysOfSupply <= 14 && (
-                                <Flame className="size-3 text-rose-600" />
-                              )}
-                              {Math.round(item.daysOfSupply)} days
-                            </span>
-                            <span className="mt-0.5 text-[10px] text-zinc-500">
-                              {item.daysOfSupply <= 7
-                                ? "Stockout critical"
-                                : item.daysOfSupply <= 14
-                                  ? "Risk window"
-                                  : "Runout pace"}
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-zinc-400">—</span>
-                        )}
-                      </td>
-                    )}
-
-                    {/* Suggested Restock */}
-                    {visibleColumns.restock && (
-                      <td className="px-3 py-3 text-right whitespace-nowrap tabular-nums">
-                        {item.suggestedRestockQty !== null && item.suggestedRestockQty > 0 ? (
-                          <div className="font-semibold text-rose-700">
-                            +{item.suggestedRestockQty.toLocaleString()} units
-                            <div className="text-[11px] font-normal text-rose-600">
-                              Covers 30d sales
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-zinc-400">—</span>
-                        )}
-                      </td>
-                    )}
-
-                    {/* Health Status Badge */}
-                    {visibleColumns.status && (
-                      <td className="px-3 py-3 text-center whitespace-nowrap">
-                        {getStatusBadge(item.status)}
-                      </td>
-                    )}
-
-                    {/* Action */}
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
-                      <div className="flex items-center justify-end">
-                        <Link
-                          href={`/admin/inventory/${item.id}`}
-                          className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
-                            isUrgent
-                              ? "bg-[#101114] text-white hover:bg-[#101114]/85"
-                              : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
-                          }`}
-                          title="View inventory transactions, adjustments, and supplier purchase orders"
-                        >
-                          <span>{isUrgent ? "Restock" : "Ledger"}</span>
-                          <ArrowRight className="size-3.5 shrink-0" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="min-w-[180px]">Product & Variant</TableHead>
+            {visibleColumns.stock && (
+              <TableHead className="text-center whitespace-nowrap">Available Stock</TableHead>
             )}
-          </tbody>
-        </table>
-      </div>
+            {visibleColumns.capital && (
+              <TableHead className="text-right whitespace-nowrap">Available Capital</TableHead>
+            )}
+            {visibleColumns.velocity && (
+              <TableHead className="text-center whitespace-nowrap">Daily Velocity</TableHead>
+            )}
+            {visibleColumns.daysOfSupply && (
+              <TableHead className="text-center whitespace-nowrap">Days of Supply</TableHead>
+            )}
+            {visibleColumns.restock && (
+              <TableHead className="text-right whitespace-nowrap">Suggested Restock (30d)</TableHead>
+            )}
+            {visibleColumns.status && (
+              <TableHead className="text-center whitespace-nowrap">Health Status</TableHead>
+            )}
+            <TableHead className="min-w-[95px] text-right whitespace-nowrap">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loadedItems.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={visibleColumnCount} className="px-5 py-12 text-center">
+                <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
+                  <Package className="size-8 text-zinc-400" />
+                  <p className="text-sm font-semibold text-zinc-900">
+                    No inventory intelligence variants found
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    Try adjusting your search terms or clearing active status filters.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => updateUrlParams({ q: null, status: null, page: 1 })}
+                    className="mt-2 inline-flex h-8 items-center rounded-lg bg-[#101114] px-3 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            loadedItems.map((item) => {
+              const isUrgent = item.status === "STOCKOUT_RISK" || item.status === "OUT_OF_STOCK";
+
+              return (
+                <TableRow
+                  key={item.id}
+                  className={
+                    item.status === "STOCKOUT_RISK" ? "bg-rose-50/30 hover:bg-rose-50/50" : undefined
+                  }
+                >
+                  {/* Product & Variant with SKU at bottom */}
+                  <TableCell className="min-w-[180px]">
+                    <div className="line-clamp-1 font-semibold text-zinc-900">
+                      {item.productName}
+                    </div>
+                    <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                      <span className="inline-flex items-center rounded-sm border border-zinc-200/80 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-700">
+                        {[
+                          item.size ? `Size: ${item.size}` : null,
+                          item.color ? `Color: ${item.color}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" • ") || "Default"}
+                      </span>
+                    </div>
+                    <div className="mt-1 flex items-center gap-1 font-mono text-[11px] text-zinc-500">
+                      <span className="max-w-[220px] truncate" title={item.sku}>
+                        {item.sku}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopySku(item.sku)}
+                        className="rounded p-0.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-800"
+                        title="Copy SKU to clipboard"
+                      >
+                        {copiedSku === item.sku ? (
+                          <Check className="size-2.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="size-2.5" />
+                        )}
+                      </button>
+                    </div>
+                  </TableCell>
+
+                  {/* Available Stock */}
+                  {visibleColumns.stock && (
+                    <TableCell className="text-center font-mono text-xs whitespace-nowrap tabular-nums">
+                      <div
+                        className={`font-bold ${
+                          item.availableStock <= 0
+                            ? "font-extrabold text-rose-600"
+                            : item.status === "STOCKOUT_RISK"
+                              ? "font-extrabold text-rose-700"
+                              : "font-extrabold text-zinc-900"
+                        }`}
+                      >
+                        {item.availableStock.toLocaleString()}
+                      </div>
+                      <div className="text-[11px] text-zinc-500">
+                        {item.physicalStock} phys ({item.reservedStock} res)
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Available Capital */}
+                  {visibleColumns.capital && (
+                    <TableCell className="text-right whitespace-nowrap tabular-nums">
+                      <div className="font-semibold text-zinc-900">
+                        {formatBdt(item.availableCostValue)}
+                      </div>
+                      <div className="text-[11px] text-zinc-500">
+                        Cost: {item.costUnavailable ? "N/A" : formatBdt(item.costPrice)}
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Daily Velocity */}
+                  {visibleColumns.velocity && (
+                    <TableCell className="text-center font-mono text-xs whitespace-nowrap tabular-nums">
+                      <div className="font-bold text-zinc-900">
+                        {item.dailyVelocity > 0 ? `${item.dailyVelocity.toFixed(2)}/d` : "0.00/d"}
+                      </div>
+                      <div className="text-[11px] text-zinc-500">
+                        {item.netRetainedUnits} units ({item.soldUnits} sold &minus;{" "}
+                        {item.returnedUnits} ret)
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Days of Supply */}
+                  {visibleColumns.daysOfSupply && (
+                    <TableCell className="text-center whitespace-nowrap tabular-nums">
+                      {item.daysOfSupply !== null ? (
+                        <div className="flex flex-col items-center">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold ${
+                              item.daysOfSupply <= 14
+                                ? "border border-rose-200 bg-rose-100 text-rose-700"
+                                : item.daysOfSupply > 180
+                                  ? "border border-amber-200 bg-amber-100 text-amber-800"
+                                  : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                            }`}
+                          >
+                            {item.daysOfSupply <= 14 && (
+                              <Flame className="size-3 text-rose-600" />
+                            )}
+                            {Math.round(item.daysOfSupply)} days
+                          </span>
+                          <span className="mt-0.5 text-[10px] text-zinc-500">
+                            {item.daysOfSupply <= 7
+                              ? "Stockout critical"
+                              : item.daysOfSupply <= 14
+                                ? "Risk window"
+                                : "Runout pace"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-zinc-400">—</span>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Suggested Restock */}
+                  {visibleColumns.restock && (
+                    <TableCell className="text-right whitespace-nowrap tabular-nums">
+                      {item.suggestedRestockQty !== null && item.suggestedRestockQty > 0 ? (
+                        <div className="font-semibold text-rose-700">
+                          +{item.suggestedRestockQty.toLocaleString()} units
+                          <div className="text-[11px] font-normal text-rose-600">
+                            Covers 30d sales
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-zinc-400">—</span>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Health Status Badge */}
+                  {visibleColumns.status && (
+                    <TableCell className="text-center whitespace-nowrap">
+                      {getStatusBadge(item.status)}
+                    </TableCell>
+                  )}
+
+                  {/* Action */}
+                  <TableCell className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end">
+                      <Link
+                        href={`/admin/inventory/${item.id}`}
+                        className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
+                          isUrgent
+                            ? "bg-[#101114] text-white hover:bg-[#101114]/85"
+                            : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
+                        }`}
+                        title="View inventory transactions, adjustments, and supplier purchase orders"
+                      >
+                        <span>{isUrgent ? "Restock" : "Ledger"}</span>
+                        <ArrowRight className="size-3.5 shrink-0" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* Infinite Scroll Sentinel & Load More Controls matching Inventory Control Center */}
       <AdminTableInfiniteScroll

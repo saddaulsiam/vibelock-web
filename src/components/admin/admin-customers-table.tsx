@@ -14,6 +14,14 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { CustomerCreateModal } from "@/components/admin/customer-create-modal";
 import { loadMoreAdminCustomersAction } from "@/lib/admin/customer-actions";
@@ -423,33 +431,33 @@ export function AdminCustomersTable({
         </div>
       ) : (
         <>
-          {/* 4. Desktop Table View (hidden md:block) using ADMIN_TABLE_CLASSES */}
-          <div className="hidden overflow-hidden rounded-xl border border-neutral-200/90 bg-white shadow-2xs md:block">
-            <table className={ADMIN_TABLE_CLASSES.table}>
-              <thead className={ADMIN_TABLE_CLASSES.thead}>
-                <tr>
-                  <th className="px-4 py-3">Customer</th>
-                  {visibleColumns.contact && <th className="px-4 py-3">Contact</th>}
-                  {visibleColumns.tier && <th className="px-4 py-3">Segment Tier</th>}
-                  {visibleColumns.orders && <th className="px-4 py-3 text-center">Orders</th>}
-                  {visibleColumns.spent && <th className="px-4 py-3">Lifetime Spent</th>}
-                  {visibleColumns.latestOrder && <th className="px-4 py-3">Latest Order</th>}
-                  <th className="px-4 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className={ADMIN_TABLE_CLASSES.tbody}>
+          {/* 4. Desktop Table View (hidden md:block) */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Customer</TableHead>
+                  {visibleColumns.contact && <TableHead>Contact</TableHead>}
+                  {visibleColumns.tier && <TableHead>Segment Tier</TableHead>}
+                  {visibleColumns.orders && <TableHead className="text-center">Orders</TableHead>}
+                  {visibleColumns.spent && <TableHead>Lifetime Spent</TableHead>}
+                  {visibleColumns.latestOrder && <TableHead>Latest Order</TableHead>}
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {loadedCustomers.map((c) => {
                   const initials = getInitials(c.name, c.email);
                   const isCopied = copiedId === c.id;
 
                   return (
-                    <tr
+                    <TableRow
                       key={c.id}
-                      className={ADMIN_TABLE_CLASSES.tr + " group cursor-pointer"}
+                      className="group cursor-pointer"
                       onClick={() => router.push(`/admin/customers/${c.id}`)}
                     >
                       {/* Customer Identity (Always Visible) */}
-                      <td className="px-4 py-3">
+                      <TableCell>
                         <div className="flex items-center gap-3">
                           <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-700 ring-2 ring-neutral-200/70">
                             {initials}
@@ -461,11 +469,11 @@ export function AdminCustomersTable({
                             <div className="font-mono text-xs text-neutral-500">{c.email}</div>
                           </div>
                         </div>
-                      </td>
+                      </TableCell>
 
                       {/* Phone & Contact Shortcuts */}
                       {visibleColumns.contact && (
-                        <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           {c.phone ? (
                             <div className="flex items-center gap-1.5">
                               <span className="font-mono text-xs text-neutral-800">{c.phone}</span>
@@ -494,12 +502,12 @@ export function AdminCustomersTable({
                           ) : (
                             <span className="text-xs italic text-neutral-400">No phone</span>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Tier Badge */}
                       {visibleColumns.tier && (
-                        <td className="px-4 py-3">
+                        <TableCell>
                           {c.tier === "VIP" && (
                             <span className="inline-flex items-center gap-1 rounded-full border border-emerald-300 bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
                               <Sparkles className="size-3 text-emerald-600" /> VIP Buyer
@@ -520,21 +528,21 @@ export function AdminCustomersTable({
                               <User className="size-3 text-neutral-400" /> Lead
                             </span>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Orders Count */}
                       {visibleColumns.orders && (
-                        <td className="px-4 py-3 text-center">
+                        <TableCell className="text-center">
                           <span className="inline-flex items-center justify-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-bold text-neutral-800">
                             {c.orderCount}
                           </span>
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Lifetime Spent (LTV) */}
                       {visibleColumns.spent && (
-                        <td className="px-4 py-3">
+                        <TableCell>
                           <div className="font-bold text-neutral-900">
                             {formatBdt(c.paidOrderValue)}
                           </div>
@@ -543,12 +551,12 @@ export function AdminCustomersTable({
                               Avg {formatBdt(Math.round(c.paidOrderValue / c.orderCount))}
                             </div>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Latest Order */}
                       {visibleColumns.latestOrder && (
-                        <td className="px-4 py-3">
+                        <TableCell>
                           {c.latestOrderDate ? (
                             <div>
                               <div className="text-xs font-medium text-neutral-800">
@@ -563,11 +571,11 @@ export function AdminCustomersTable({
                           ) : (
                             <span className="text-xs text-neutral-400">Never ordered</span>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Action (Always Visible) */}
-                      <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         <Link
                           href={`/admin/customers/${c.id}`}
                           className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
@@ -575,12 +583,12 @@ export function AdminCustomersTable({
                           <span>View</span>
                           <ChevronRight className="size-3 text-neutral-400" />
                         </Link>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
           {/* 5. Mobile Cards View (md:hidden) */}

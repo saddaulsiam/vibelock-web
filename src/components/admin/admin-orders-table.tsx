@@ -31,8 +31,15 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { exportToCsv } from "@/lib/admin/admin-csv-export";
-import { cn } from "@/lib/utils";
 import type {
   AdminOrderDateRange,
   AdminOrderItem,
@@ -623,11 +630,11 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
       />
 
       {/* Orders Table (Desktop & Tablet) */}
-      <div className={cn(ADMIN_TABLE_CLASSES.container, "hidden md:block")}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="w-10 px-4 py-3 text-center">
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10 px-4 text-center">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
@@ -635,33 +642,33 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                   aria-label="Select all orders"
                   className="size-3.5 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
                 />
-              </th>
+              </TableHead>
               {visibleColumns.date && (
-                <th className="min-w-[130px] px-3 py-3">Order # &amp; Date</th>
+                <TableHead className="min-w-[130px]">Order # &amp; Date</TableHead>
               )}
               {visibleColumns.customer && (
-                <th className="min-w-[180px] px-3 py-3">Customer &amp; Contact</th>
+                <TableHead className="min-w-[180px]">Customer &amp; Contact</TableHead>
               )}
               {visibleColumns.items && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Items</th>
+                <TableHead className="text-center whitespace-nowrap">Items</TableHead>
               )}
               {visibleColumns.total && (
-                <th className="px-3 py-3 text-right whitespace-nowrap">Total Amount</th>
+                <TableHead className="text-right whitespace-nowrap">Total Amount</TableHead>
               )}
-              {visibleColumns.payment && <th className="px-3 py-3 whitespace-nowrap">Payment</th>}
+              {visibleColumns.payment && <TableHead className="whitespace-nowrap">Payment</TableHead>}
               {visibleColumns.shipment && (
-                <th className="min-w-[140px] px-3 py-3">Courier &amp; Tracking</th>
+                <TableHead className="min-w-[140px]">Courier &amp; Tracking</TableHead>
               )}
               {visibleColumns.status && (
-                <th className="px-3 py-3 text-center whitespace-nowrap">Order Status</th>
+                <TableHead className="text-center whitespace-nowrap">Order Status</TableHead>
               )}
-              <th className="min-w-[110px] px-4 py-3 text-right whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#101114]/5">
+              <TableHead className="min-w-[110px] text-right whitespace-nowrap">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loadedOrders.length === 0 ? (
-              <tr>
-                <td colSpan={visibleColumnCount} className="p-12 text-center text-neutral-500">
+              <TableRow>
+                <TableCell colSpan={visibleColumnCount} className="p-12 text-center text-neutral-500">
                   <Package className="mx-auto mb-2 size-8 text-neutral-400" />
                   <p className="font-semibold text-neutral-700">No orders found</p>
                   <p className="mt-1 text-xs text-neutral-500">
@@ -677,20 +684,18 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                       <span>Reset All Filters</span>
                     </button>
                   )}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               loadedOrders.map((order) => {
                 const isSelected = selectedIds.has(order.id);
                 return (
-                  <tr
+                  <TableRow
                     key={order.id}
-                    className={`transition-colors hover:bg-neutral-50/70 ${
-                      isSelected ? "bg-amber-50/40" : ""
-                    }`}
+                    className={isSelected ? "bg-amber-50/40" : undefined}
                   >
                     {/* Row Checkbox */}
-                    <td className="px-4 py-3 text-center">
+                    <TableCell className="px-4 text-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -698,11 +703,11 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                         aria-label={`Select order ${order.orderNumber}`}
                         className="size-3.5 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
                       />
-                    </td>
+                    </TableCell>
 
                     {/* Order # and Date */}
                     {visibleColumns.date && (
-                      <td className="px-3 py-3">
+                      <TableCell>
                         <div className="flex flex-wrap items-center gap-1.5">
                           <Link
                             href={`/admin/orders/${order.id}`}
@@ -723,12 +728,12 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                         <div className="mt-0.5 text-[11px] text-neutral-500">
                           {formatDate(order.createdAt)}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Customer Info with WhatsApp and Phone 1-click links */}
                     {visibleColumns.customer && (
-                      <td className="px-3 py-3">
+                      <TableCell>
                         <div className="font-semibold text-neutral-900">
                           {order.customerName || "Guest Customer"}
                         </div>
@@ -767,12 +772,12 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                             </span>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Items */}
                     {visibleColumns.items && (
-                      <td className="px-3 py-3 text-center">
+                      <TableCell className="text-center">
                         <div className="flex flex-col items-center gap-0.5">
                           <span className="inline-flex items-center gap-1 rounded-sm bg-[#F3F0E8] px-2 py-0.5 text-xs font-semibold text-[#101114]">
                             <Package className="size-3 text-neutral-600" />
@@ -787,24 +792,24 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                             </span>
                           ) : null}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Total Amount in BDT */}
                     {visibleColumns.total && (
-                      <td className="px-3 py-3 text-right whitespace-nowrap tabular-nums">
+                      <TableCell className="text-right whitespace-nowrap tabular-nums">
                         <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
                         {order.discount > 0 && (
                           <div className="text-[10px] text-neutral-500">
                             Saved {formatBdt(order.discount)}
                           </div>
                         )}
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Payment */}
                     {visibleColumns.payment && (
-                      <td className="px-3 py-3 whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <span className="inline-flex items-center gap-1 rounded-xs bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-800">
                             {order.paymentMethod === "COD" ? (
@@ -819,12 +824,12 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                           </span>
                           {getPaymentStatusBadge(order.paymentStatus)}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Courier Provider & Tracking */}
                     {visibleColumns.shipment && (
-                      <td className="px-3 py-3">
+                      <TableCell>
                         {order.shipment ? (
                           <div className="space-y-1">
                             <div className="flex items-center gap-1.5">
@@ -859,18 +864,18 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                         ) : (
                           <span className="text-xs text-neutral-400">—</span>
                         )}
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Order Status */}
                     {visibleColumns.status && (
-                      <td className="px-3 py-3 text-center whitespace-nowrap">
+                      <TableCell className="text-center whitespace-nowrap">
                         {getOrderStatusBadge(order.status)}
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* Quick Action & View link */}
-                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                    <TableCell className="text-right whitespace-nowrap">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* 1-Click Status Quick Actions */}
                         {order.status === "PENDING" && (
@@ -907,13 +912,13 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                           <span>View</span>
                         </Link>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* ── Mobile View: High-Efficiency Order Cards (< md) ── */}

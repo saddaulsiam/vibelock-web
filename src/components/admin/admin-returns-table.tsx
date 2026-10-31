@@ -16,6 +16,14 @@ import {
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { OrderCopyButton } from "@/components/admin/order-copy-button";
 import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { loadMoreAdminReturnsAction } from "@/lib/admin/return-actions";
 import type { AdminReturnListItem } from "@/lib/admin/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
@@ -400,58 +408,49 @@ export function AdminReturnsTable({
       />
 
       {/* ── 3. Returns Table Container ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-neutral-200/80 bg-neutral-50/90 text-[11px] font-bold tracking-wider text-neutral-600 uppercase">
-              <tr>
-                <th className="py-3.5 pr-3 pl-4">Order &amp; Return</th>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Order &amp; Return</TableHead>
+            {visibleColumns.customer && <TableHead>Customer &amp; Contact</TableHead>}
+            {visibleColumns.items && <TableHead>Returned Items</TableHead>}
+            {visibleColumns.reason && <TableHead>Reason</TableHead>}
+            {visibleColumns.financials && <TableHead>Refund Estimate</TableHead>}
+            {visibleColumns.status && <TableHead>Status</TableHead>}
+            {visibleColumns.dates && <TableHead>Requested</TableHead>}
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
 
-                {visibleColumns.customer && <th className="px-3 py-3.5">Customer &amp; Contact</th>}
-
-                {visibleColumns.items && <th className="px-3 py-3.5">Returned Items</th>}
-
-                {visibleColumns.reason && <th className="px-3 py-3.5">Reason</th>}
-
-                {visibleColumns.financials && <th className="px-3 py-3.5">Refund Estimate</th>}
-
-                {visibleColumns.status && <th className="px-3 py-3.5">Status</th>}
-
-                {visibleColumns.dates && <th className="px-3 py-3.5">Requested</th>}
-
-                <th className="py-3.5 pr-4 pl-3 text-right">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-neutral-100 bg-white">
-              {returns.length === 0 ? (
-                <tr>
-                  <td colSpan={totalVisibleCols + 2} className="py-16 text-center">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
-                        <Inbox className="size-6" />
-                      </div>
-                      <h4 className="text-sm font-bold text-neutral-800">
-                        No return requests found
-                      </h4>
-                      <p className="max-w-sm text-xs text-neutral-500">
-                        {currentSearch || currentStatus
-                          ? "Try adjusting your search keywords or switching status tabs."
-                          : "Customer return requests will appear here once submitted."}
-                      </p>
-                      {(currentSearch || currentStatus) && (
-                        <button
-                          type="button"
-                          onClick={() => router.push("/admin/returns")}
-                          className="mt-2 inline-flex h-8 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
-                        >
-                          Clear Filters
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ) : (
+        <TableBody>
+          {returns.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={totalVisibleCols + 2} className="py-16 text-center">
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
+                    <Inbox className="size-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-neutral-800">
+                    No return requests found
+                  </h4>
+                  <p className="max-w-sm text-xs text-neutral-500">
+                    {currentSearch || currentStatus
+                      ? "Try adjusting your search keywords or switching status tabs."
+                      : "Customer return requests will appear here once submitted."}
+                  </p>
+                  {(currentSearch || currentStatus) && (
+                    <button
+                      type="button"
+                      onClick={() => router.push("/admin/returns")}
+                      className="mt-2 inline-flex h-8 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
                 returns.map((ret) => {
                   const whatsAppUrl = ret.order.customerPhone
                     ? generateWhatsAppUrl(
@@ -462,9 +461,9 @@ export function AdminReturnsTable({
                     : null;
 
                   return (
-                    <tr key={ret.id} className="group transition-colors hover:bg-neutral-50/70">
+                    <TableRow key={ret.id} className="group">
                       {/* Order & Return ID */}
-                      <td className="py-3.5 pr-3 pl-4">
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/admin/orders/${ret.order.id}`}
@@ -484,11 +483,11 @@ export function AdminReturnsTable({
                           <span>Return ID:</span>
                           <span className="text-neutral-500">{ret.id.slice(0, 8)}...</span>
                         </div>
-                      </td>
+                      </TableCell>
 
                       {/* Customer & Contact */}
                       {visibleColumns.customer && (
-                        <td className="px-3 py-3.5">
+                        <TableCell>
                           <p className="font-bold text-neutral-900">
                             {ret.order.customerName || "Guest Customer"}
                           </p>
@@ -518,12 +517,12 @@ export function AdminReturnsTable({
                               )}
                             </div>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Returned Items */}
                       {visibleColumns.items && (
-                        <td className="px-3 py-3.5">
+                        <TableCell>
                           <div className="space-y-1">
                             <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-700">
                               <ShoppingBag className="size-2.5" />
@@ -556,12 +555,12 @@ export function AdminReturnsTable({
                               ))}
                             </div>
                           </div>
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Reason */}
                       {visibleColumns.reason && (
-                        <td className="px-3 py-3.5">
+                        <TableCell>
                           {(() => {
                             const parsed = parseReturnReason(ret.reason);
                             return ret.reason ? (
@@ -585,24 +584,24 @@ export function AdminReturnsTable({
                               <span className="text-[11px] text-neutral-400">No reason stated</span>
                             );
                           })()}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Financials */}
                       {visibleColumns.financials && (
-                        <td className="px-3 py-3.5">
+                        <TableCell>
                           <p className="text-sm font-black text-neutral-900">
                             {formatBdt(ret.requestedAmount)}
                           </p>
                           <p className="mt-0.5 text-[10px] text-neutral-500">
                             Order Total: {formatBdt(ret.order.total)}
                           </p>
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Status */}
                       {visibleColumns.status && (
-                        <td className="px-3 py-3.5 whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap">
                           {getReturnStatusBadge(ret.status)}
                           {ret.reverseLogistics?.trackingCode && (
                             <div className="mt-1">
@@ -618,18 +617,18 @@ export function AdminReturnsTable({
                               </a>
                             </div>
                           )}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Dates */}
                       {visibleColumns.dates && (
-                        <td className="px-3 py-3.5 text-[11px] whitespace-nowrap text-neutral-600">
+                        <TableCell className="text-[11px] whitespace-nowrap text-neutral-600">
                           {formatDate(ret.createdAt)}
-                        </td>
+                        </TableCell>
                       )}
 
                       {/* Actions */}
-                      <td className="py-3.5 pr-4 pl-3 text-right whitespace-nowrap">
+                      <TableCell className="text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-1.5">
                           {ret.status === "APPROVED" && !ret.reverseLogistics && (
                             <Link
@@ -650,15 +649,13 @@ export function AdminReturnsTable({
                             <span>Review &amp; Process</span>
                           </Link>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        </TableBody>
+      </Table>
 
       {/* ── 4. Unified Infinite Scroll Sentinel & Pagination Controls ── */}
       <AdminTableInfiniteScroll

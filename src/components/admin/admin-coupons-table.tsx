@@ -13,6 +13,14 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/admin-table-controls";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { AdminTableInfiniteScroll } from "@/components/admin/admin-table-infinite-scroll";
 import { CouponCreateModal } from "@/components/admin/coupon-create-modal";
 import { CouponDeleteModal } from "@/components/admin/coupon-delete-modal";
@@ -316,8 +324,7 @@ export function AdminCouponsTable({
   };
 
   // Selection logic
-  const isAllSelected =
-    couponsList.length > 0 && couponsList.every((c) => selectedIds.has(c.id));
+  const isAllSelected = couponsList.length > 0 && couponsList.every((c) => selectedIds.has(c.id));
 
   const handleToggleSelectAll = () => {
     if (isAllSelected) {
@@ -642,7 +649,7 @@ export function AdminCouponsTable({
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="text-xs text-neutral-600 underline-offset-2 hover:underline cursor-pointer"
+              className="cursor-pointer text-xs text-neutral-600 underline-offset-2 hover:underline"
             >
               Deselect All
             </button>
@@ -670,7 +677,7 @@ export function AdminCouponsTable({
           <button
             type="button"
             onClick={() => setFeedbackMessage(null)}
-            className="text-neutral-500 hover:text-neutral-900 cursor-pointer"
+            className="cursor-pointer text-neutral-500 hover:text-neutral-900"
             aria-label="Dismiss message"
           >
             <X className="size-3.5" />
@@ -679,31 +686,31 @@ export function AdminCouponsTable({
       )}
 
       {/* ── 4. Coupons Data Table (Desktop & Tablet) ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="py-3.5 pr-2 pl-4 w-10 text-center">
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10 text-center">
                 <input
                   type="checkbox"
                   checked={isAllSelected}
                   onChange={handleToggleSelectAll}
                   aria-label="Select all coupons"
-                  className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                  className="size-4 cursor-pointer rounded border-neutral-300 text-purple-600 focus:ring-purple-500"
                 />
-              </th>
-              <th className="py-3.5 pr-3 pl-2">Coupon Code</th>
-              {visibleColumns.benefit && <th className="px-3 py-3.5">Discount Benefit</th>}
-              {visibleColumns.usage && <th className="px-3 py-3.5">Usage / Redemptions</th>}
-              {visibleColumns.validity && <th className="px-3 py-3.5">Validity Schedule</th>}
-              {visibleColumns.status && <th className="px-3 py-3.5">Status</th>}
-              <th className="py-3.5 pr-5 text-right">Quick Actions</th>
-            </tr>
-          </thead>
-          <tbody className={ADMIN_TABLE_CLASSES.tbody}>
+              </TableHead>
+              <TableHead>Coupon Code</TableHead>
+              {visibleColumns.benefit && <TableHead>Discount Benefit</TableHead>}
+              {visibleColumns.usage && <TableHead>Usage / Redemptions</TableHead>}
+              {visibleColumns.validity && <TableHead>Validity Schedule</TableHead>}
+              {visibleColumns.status && <TableHead>Status</TableHead>}
+              <TableHead className="text-right">Quick Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {couponsList.length === 0 ? (
-              <tr>
-                <td colSpan={visibleColumnCount} className="py-16 text-center">
+              <TableRow>
+                <TableCell colSpan={visibleColumnCount} className="py-16 text-center">
                   <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-purple-50 text-purple-600 ring-4 ring-purple-50">
                     <Tag className="size-6" />
                   </div>
@@ -724,8 +731,8 @@ export function AdminCouponsTable({
                     <Plus className="size-3.5" />
                     <span>Create Coupon</span>
                   </button>
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               couponsList.map((coupon) => {
                 const status = couponStatus(coupon);
@@ -738,23 +745,23 @@ export function AdminCouponsTable({
                     : null;
 
                 return (
-                  <tr
+                  <TableRow
                     key={coupon.id}
-                    className={`${ADMIN_TABLE_CLASSES.tr} ${isSelected ? "bg-purple-50/50" : ""}`}
+                    className={isSelected ? "bg-purple-50/50" : undefined}
                   >
                     {/* 0. Row Checkbox */}
-                    <td className="py-4 pr-2 pl-4 w-10 text-center">
+                    <TableCell className="w-10 text-center">
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleToggleRow(coupon.id)}
                         aria-label={`Select coupon ${coupon.code}`}
-                        className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                        className="size-4 cursor-pointer rounded border-neutral-300 text-purple-600 focus:ring-purple-500"
                       />
-                    </td>
+                    </TableCell>
 
                     {/* 1. Code & Copy */}
-                    <td className="py-4 pr-3 pl-2">
+                    <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2.5 py-1 font-mono text-xs font-black tracking-wider text-purple-900 shadow-2xs">
                           {coupon.code}
@@ -775,11 +782,11 @@ export function AdminCouponsTable({
                       <span className="mt-1 block text-[10px] text-neutral-400">
                         Created {formatDate(coupon.createdAt)}
                       </span>
-                    </td>
+                    </TableCell>
 
                     {/* 2. Discount Benefit */}
                     {visibleColumns.benefit && (
-                      <td className="px-3 py-4">
+                      <TableCell>
                         <div className="flex items-center gap-1.5">
                           <span className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800">
                             {coupon.discountType === "PERCENTAGE"
@@ -805,12 +812,12 @@ export function AdminCouponsTable({
                             <span className="text-[10px] text-neutral-400">Storewide</span>
                           )}
                         </div>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* 3. Usage / Redemptions Meter */}
                     {visibleColumns.usage && (
-                      <td className="px-3 py-4">
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-neutral-900">
                             {coupon.usageCount.toLocaleString()}
@@ -843,12 +850,12 @@ export function AdminCouponsTable({
                             Unlimited uses
                           </span>
                         )}
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* 4. Validity Schedule */}
                     {visibleColumns.validity && (
-                      <td className="px-3 py-4">
+                      <TableCell>
                         <div
                           className={`font-semibold ${
                             validity.tone === "expired"
@@ -863,12 +870,12 @@ export function AdminCouponsTable({
                         <span className="mt-0.5 block text-[10px] text-neutral-400">
                           {coupon.startDate ? `From ${formatDate(coupon.startDate)}` : "Immediate"}
                         </span>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* 5. Status Badge */}
                     {visibleColumns.status && (
-                      <td className="px-3 py-4">
+                      <TableCell>
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
                             status === "ACTIVE"
@@ -893,11 +900,11 @@ export function AdminCouponsTable({
                           />
                           <span>{status}</span>
                         </span>
-                      </td>
+                      </TableCell>
                     )}
 
                     {/* 6. Quick Action Hub */}
-                    <td className="py-4 pr-5 text-right">
+                    <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Quick Active Toggle */}
                         <button
@@ -953,13 +960,13 @@ export function AdminCouponsTable({
                           <Trash2 className="size-3.5" />
                         </button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* ── 5. Mobile Responsive Cards View ── */}
@@ -979,7 +986,9 @@ export function AdminCouponsTable({
               <div
                 key={coupon.id}
                 className={`space-y-3 rounded-xl border bg-white p-4 shadow-2xs transition ${
-                  isSelected ? "border-purple-300 ring-1 ring-purple-300 bg-purple-50/20" : "border-neutral-200/90"
+                  isSelected
+                    ? "border-purple-300 bg-purple-50/20 ring-1 ring-purple-300"
+                    : "border-neutral-200/90"
                 }`}
               >
                 <div className="flex items-start justify-between">
@@ -989,7 +998,7 @@ export function AdminCouponsTable({
                       checked={isSelected}
                       onChange={() => handleToggleRow(coupon.id)}
                       aria-label={`Select coupon ${coupon.code}`}
-                      className="size-4 rounded border-neutral-300 text-purple-600 focus:ring-purple-500 cursor-pointer mr-0.5"
+                      className="mr-0.5 size-4 cursor-pointer rounded border-neutral-300 text-purple-600 focus:ring-purple-500"
                     />
                     <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 font-mono text-xs font-black tracking-wider text-purple-900">
                       {coupon.code}
@@ -1031,11 +1040,9 @@ export function AdminCouponsTable({
                     </span>
                     <span className="mt-0.5 block">
                       {coupon.categories && coupon.categories.length > 0 ? (
-                        <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.2 text-[9px] font-semibold text-purple-700">
+                        <span className="py-0.2 inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 text-[9px] font-semibold text-purple-700">
                           {coupon.categories[0].name}
-                          {coupon.categories.length > 1
-                            ? ` +${coupon.categories.length - 1}`
-                            : ""}
+                          {coupon.categories.length > 1 ? ` +${coupon.categories.length - 1}` : ""}
                         </span>
                       ) : (
                         <span className="text-[9px] text-neutral-400">Storewide</span>

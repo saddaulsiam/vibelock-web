@@ -48,10 +48,15 @@ import {
   AdminTableColumnVisibility,
   useAdminTableColumns,
 } from "@/components/admin/admin-table-column-visibility";
+import { AdminTableSearchInput } from "@/components/admin/admin-table-controls";
 import {
-  AdminTableSearchInput,
-  ADMIN_TABLE_CLASSES,
-} from "@/components/admin/admin-table-controls";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";
@@ -911,331 +916,329 @@ export function AdminInventoryTable({
       </div>
 
       {/* ── 3. Inventory Table ── */}
-      <div className={ADMIN_TABLE_CLASSES.container}>
-        <table className={ADMIN_TABLE_CLASSES.table}>
-          <thead className={ADMIN_TABLE_CLASSES.thead}>
-            <tr>
-              <th className="w-10 px-4 py-3 text-center">
-                <input
-                  type="checkbox"
-                  checked={isAllSelected}
-                  onChange={handleToggleSelectAll}
-                  aria-label="Select all inventory items"
-                  className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
-                />
-              </th>
-              <th className="px-5 py-3">Product & Variant</th>
-              {visibleColumns.sku && <th className="px-5 py-3">SKU</th>}
-              {visibleColumns.physical && <th className="px-5 py-3 text-center">Physical</th>}
-              {visibleColumns.reserved && <th className="px-5 py-3 text-center">Reserved</th>}
-              {visibleColumns.available && <th className="px-5 py-3 text-center">Available</th>}
-              {visibleColumns.pricing && <th className="px-5 py-3">Pricing (Cost / Sell)</th>}
-              {visibleColumns.health && <th className="px-5 py-3">Stock Health</th>}
-              <th className="px-5 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#101114]/5">
-            {loadedVariants.length === 0 ? (
-              <tr>
-                <td colSpan={visibleColumnCount} className="px-5 py-12 text-center">
-                  <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
-                    <Boxes className="size-8 text-[#101114]/30" />
-                    <p className="text-sm font-semibold text-[#101114]">
-                      No inventory items match your search
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      Try searching for a different SKU, variant attribute, or clear active filters.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => updateQuery({ q: null, filter: "all" })}
-                      className="mt-2 inline-flex h-8 items-center rounded-sm bg-[#101114] px-3 font-semibold text-white hover:bg-[#101114]/85"
-                    >
-                      Clear all filters
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              loadedVariants.map((item) => {
-                const isSelected = selectedIds.has(item.id);
-                const isNegative = item.totalStock < 0 || item.available < 0;
-                const isOutOfStock = item.available <= 0 && !isNegative;
-                const isLowStock = item.available > 0 && item.available <= 5;
-
-                return (
-                  <tr
-                    key={item.id}
-                    className={`transition-colors ${
-                      isSelected
-                        ? "bg-[#F3F0E8]/70"
-                        : isNegative
-                          ? "bg-red-50/50 hover:bg-red-50"
-                          : "hover:bg-[#FBF9F5]"
-                    }`}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10 px-4 text-center">
+              <input
+                type="checkbox"
+                checked={isAllSelected}
+                onChange={handleToggleSelectAll}
+                aria-label="Select all inventory items"
+                className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+              />
+            </TableHead>
+            <TableHead>Product & Variant</TableHead>
+            {visibleColumns.sku && <TableHead>SKU</TableHead>}
+            {visibleColumns.physical && <TableHead className="text-center">Physical</TableHead>}
+            {visibleColumns.reserved && <TableHead className="text-center">Reserved</TableHead>}
+            {visibleColumns.available && <TableHead className="text-center">Available</TableHead>}
+            {visibleColumns.pricing && <TableHead>Pricing (Cost / Sell)</TableHead>}
+            {visibleColumns.health && <TableHead>Stock Health</TableHead>}
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {loadedVariants.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={visibleColumnCount} className="px-5 py-12 text-center">
+                <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
+                  <Boxes className="size-8 text-[#101114]/30" />
+                  <p className="text-sm font-semibold text-[#101114]">
+                    No inventory items match your search
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Try searching for a different SKU, variant attribute, or clear active filters.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => updateQuery({ q: null, filter: "all" })}
+                    className="mt-2 inline-flex h-8 items-center rounded-sm bg-[#101114] px-3 font-semibold text-white hover:bg-[#101114]/85"
                   >
-                    {/* Checkbox */}
-                    <td className="w-10 px-4 py-3.5 text-center">
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => handleToggleSelect(item.id)}
-                        aria-label={`Select ${item.sku}`}
-                        className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
-                      />
-                    </td>
+                    Clear all filters
+                  </button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ) : (
+            loadedVariants.map((item) => {
+              const isSelected = selectedIds.has(item.id);
+              const isNegative = item.totalStock < 0 || item.available < 0;
+              const isOutOfStock = item.available <= 0 && !isNegative;
+              const isLowStock = item.available > 0 && item.available <= 5;
 
-                    {/* Product & Variant Attributes */}
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        {/* Thumbnail with Hover Zoom */}
-                        <div className="group/thumb relative size-11 shrink-0">
-                          <div className="relative size-11 overflow-hidden rounded-sm border border-[#101114]/15 bg-[#F2F2F2]">
-                            {item.primaryImage ? (
-                              <Image
-                                src={item.primaryImage}
-                                alt={item.product.name}
-                                fill
-                                sizes="44px"
-                                loading="lazy"
-                                className="object-cover object-center"
-                                unoptimized={item.primaryImage.startsWith("blob:")}
-                              />
-                            ) : (
-                              <div className="flex size-full items-center justify-center text-[#101114]/25">
-                                <ImageOff className="size-4" />
-                              </div>
-                            )}
-                          </div>
+              return (
+                <TableRow
+                  key={item.id}
+                  className={
+                    isSelected
+                      ? "bg-[#F3F0E8]/70"
+                      : isNegative
+                        ? "bg-red-50/50 hover:bg-red-50"
+                        : undefined
+                  }
+                >
+                  {/* Checkbox */}
+                  <TableCell className="w-10 px-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleToggleSelect(item.id)}
+                      aria-label={`Select ${item.sku}`}
+                      className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+                    />
+                  </TableCell>
 
-                          {/* Hover preview card */}
-                          {item.primaryImage && (
-                            <div className="pointer-events-none absolute top-0 left-13 z-50 hidden w-48 rounded-sm border border-[#101114]/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
-                              <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-[#F2F2F2]">
-                                <Image
-                                  src={item.primaryImage}
-                                  alt={item.product.name}
-                                  fill
-                                  sizes="192px"
-                                  loading="lazy"
-                                  className="object-cover object-center"
-                                />
-                              </div>
-                              <p className="mt-1.5 truncate text-xs font-semibold text-[#101114]">
-                                {item.product.name}
-                              </p>
-                              <p className="font-mono text-[10px] text-[#101114]/60">{item.sku}</p>
+                  {/* Product & Variant Attributes */}
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      {/* Thumbnail with Hover Zoom */}
+                      <div className="group/thumb relative size-11 shrink-0">
+                        <div className="relative size-11 overflow-hidden rounded-sm border border-[#101114]/15 bg-[#F2F2F2]">
+                          {item.primaryImage ? (
+                            <Image
+                              src={item.primaryImage}
+                              alt={item.product.name}
+                              fill
+                              sizes="44px"
+                              loading="lazy"
+                              className="object-cover object-center"
+                              unoptimized={item.primaryImage.startsWith("blob:")}
+                            />
+                          ) : (
+                            <div className="flex size-full items-center justify-center text-[#101114]/25">
+                              <ImageOff className="size-4" />
                             </div>
                           )}
                         </div>
 
-                        {/* Product Title & Variant Badge */}
-                        <div className="min-w-0">
-                          <Link
-                            href={`/admin/inventory/${item.id}`}
-                            className="font-semibold text-[#101114] hover:underline"
-                          >
-                            {item.product.name}
-                          </Link>
-                          <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                            <span className="rounded-2xs py-0.2 inline-flex items-center border border-[#101114]/15 bg-[#FBF9F5] px-1.5 text-[10px] font-semibold text-[#101114]">
-                              {[
-                                item.size ? `Size: ${item.size}` : null,
-                                item.color ? `Color: ${item.color}` : null,
-                              ]
-                                .filter(Boolean)
-                                .join(" • ") || "Default"}
-                            </span>
-                            {item.product.slug && (
-                              <span className="font-mono text-[10px] text-[#101114]/50">
-                                /{item.product.slug}
-                              </span>
-                            )}
+                        {/* Hover preview card */}
+                        {item.primaryImage && (
+                          <div className="pointer-events-none absolute top-0 left-13 z-50 hidden w-48 rounded-sm border border-[#101114]/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
+                            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-[#F2F2F2]">
+                              <Image
+                                src={item.primaryImage}
+                                alt={item.product.name}
+                                fill
+                                sizes="192px"
+                                loading="lazy"
+                                className="object-cover object-center"
+                              />
+                            </div>
+                            <p className="mt-1.5 truncate text-xs font-semibold text-[#101114]">
+                              {item.product.name}
+                            </p>
+                            <p className="font-mono text-[10px] text-[#101114]/60">{item.sku}</p>
                           </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    {/* SKU with 1-click copy */}
-                    {visibleColumns.sku && (
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-[#101114]">
-                          <span>{item.sku}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopySku(item.sku)}
-                            className="rounded p-1 text-[#101114]/40 hover:bg-[#101114]/10 hover:text-[#101114]"
-                            title="Copy SKU to clipboard"
-                          >
-                            {copiedSku === item.sku ? (
-                              <Check className="size-3 text-emerald-600" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Physical Stock */}
-                    {visibleColumns.physical && (
-                      <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
-                        <span className={item.totalStock < 0 ? "text-red-700" : "text-[#101114]"}>
-                          {item.totalStock}
-                        </span>
-                      </td>
-                    )}
-
-                    {/* Reserved Stock */}
-                    {visibleColumns.reserved && (
-                      <td className="px-5 py-3.5 text-center font-mono text-xs tabular-nums">
-                        {item.reserved > 0 ? (
-                          <span className="rounded-2xs inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800">
-                            <Lock className="size-2.5" />
-                            {item.reserved}
-                          </span>
-                        ) : (
-                          <span className="text-[#101114]/40">0</span>
                         )}
-                      </td>
-                    )}
+                      </div>
 
-                    {/* Available Stock */}
-                    {visibleColumns.available && (
-                      <td className="px-5 py-3.5 text-center font-mono text-xs font-bold tabular-nums">
-                        <span
-                          className={
-                            isNegative
-                              ? "font-extrabold text-red-700"
-                              : isOutOfStock
-                                ? "text-red-600"
-                                : isLowStock
-                                  ? "font-extrabold text-amber-700"
-                                  : "font-extrabold text-emerald-700"
-                          }
-                        >
-                          {item.available}
-                        </span>
-                      </td>
-                    )}
-
-                    {/* Pricing (Cost / Selling) */}
-                    {visibleColumns.pricing && (
-                      <td className="px-5 py-3.5 text-xs tabular-nums">
-                        <div className="space-y-0.5">
-                          <div className="font-semibold text-[#101114]">
-                            {formatCurrency(item.sellingPrice)}
-                          </div>
-                          <div className="text-[10px] text-[#101114]/50">
-                            Cost: {formatCurrency(item.costPrice)}
-                          </div>
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Stock Health Status */}
-                    {visibleColumns.health && (
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-1.5">
-                          {isLowStock ? (
-                            <span className="relative flex size-2">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                              <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
-                            </span>
-                          ) : (
-                            <span
-                              className={`size-2 rounded-full ${
-                                isNegative
-                                  ? "bg-red-700"
-                                  : isOutOfStock
-                                    ? "bg-red-500"
-                                    : "bg-emerald-500"
-                              }`}
-                            />
-                          )}
-                          <span
-                            className={`text-xs font-semibold ${
-                              isNegative
-                                ? "text-red-800"
-                                : isOutOfStock
-                                  ? "text-red-700"
-                                  : isLowStock
-                                    ? "text-amber-800"
-                                    : "text-emerald-800"
-                            }`}
-                          >
-                            {isNegative
-                              ? "Negative Stock"
-                              : isOutOfStock
-                                ? "Out of Stock"
-                                : isLowStock
-                                  ? "Low Stock"
-                                  : "In Stock"}
-                          </span>
-                          {isLowStock && (
-                            <span className="rounded-2xs py-0.2 bg-amber-100 px-1 text-[9px] font-extrabold text-amber-800">
-                              REORDER
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    )}
-
-                    {/* Actions */}
-                    <td className="px-5 py-3.5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Quick Adjust Button */}
-                        <button
-                          type="button"
-                          onClick={() => handleOpenAdjustModal(item)}
-                          className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                          title="Quick adjust stock for this variant"
-                        >
-                          <Plus className="size-3 text-emerald-600" />
-                          <Minus className="-ml-1 size-3 text-red-600" />
-                          <span>Adjust</span>
-                        </button>
-
-                        {/* Print Tag Button */}
-                        <button
-                          type="button"
-                          onClick={() => setBarcodeModalItems([item])}
-                          className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                          title="Print barcode price tag for this variant"
-                        >
-                          <Printer className="size-3.5" />
-                        </button>
-
-                        {/* Add to PO / Reorder Button */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPoInitialItems([item]);
-                            setShowPoModal(true);
-                          }}
-                          className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-                          title="Add variant to Supplier Purchase Order / Reorder Sheet"
-                        >
-                          <Factory className="size-3.5 text-amber-700" />
-                        </button>
-
-                        {/* History Link */}
+                      {/* Product Title & Variant Badge */}
+                      <div className="min-w-0">
                         <Link
                           href={`/admin/inventory/${item.id}`}
-                          className="inline-flex h-8 items-center rounded-sm border border-[#101114]/20 bg-white px-2 text-xs text-[#101114]/70 shadow-2xs transition-colors hover:bg-[#F3F0E8] hover:text-[#101114]"
-                          title="View complete transaction audit history"
+                          className="font-semibold text-[#101114] hover:underline"
                         >
-                          <ExternalLink className="size-3.5" />
+                          {item.product.name}
                         </Link>
+                        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                          <span className="rounded-2xs py-0.2 inline-flex items-center border border-[#101114]/15 bg-[#FBF9F5] px-1.5 text-[10px] font-semibold text-[#101114]">
+                            {[
+                              item.size ? `Size: ${item.size}` : null,
+                              item.color ? `Color: ${item.color}` : null,
+                            ]
+                              .filter(Boolean)
+                              .join(" • ") || "Default"}
+                          </span>
+                          {item.product.slug && (
+                            <span className="font-mono text-[10px] text-[#101114]/50">
+                              /{item.product.slug}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* SKU with 1-click copy */}
+                  {visibleColumns.sku && (
+                    <TableCell>
+                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-[#101114]">
+                        <span>{item.sku}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopySku(item.sku)}
+                          className="rounded p-1 text-[#101114]/40 hover:bg-[#101114]/10 hover:text-[#101114]"
+                          title="Copy SKU to clipboard"
+                        >
+                          {copiedSku === item.sku ? (
+                            <Check className="size-3 text-emerald-600" />
+                          ) : (
+                            <Copy className="size-3" />
+                          )}
+                        </button>
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Physical Stock */}
+                  {visibleColumns.physical && (
+                    <TableCell className="text-center font-mono text-xs font-bold tabular-nums">
+                      <span className={item.totalStock < 0 ? "text-red-700" : "text-[#101114]"}>
+                        {item.totalStock}
+                      </span>
+                    </TableCell>
+                  )}
+
+                  {/* Reserved Stock */}
+                  {visibleColumns.reserved && (
+                    <TableCell className="text-center font-mono text-xs tabular-nums">
+                      {item.reserved > 0 ? (
+                        <span className="rounded-2xs inline-flex items-center gap-1 border border-amber-200 bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-800">
+                          <Lock className="size-2.5" />
+                          {item.reserved}
+                        </span>
+                      ) : (
+                        <span className="text-[#101114]/40">0</span>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Available Stock */}
+                  {visibleColumns.available && (
+                    <TableCell className="text-center font-mono text-xs font-bold tabular-nums">
+                      <span
+                        className={
+                          isNegative
+                            ? "font-extrabold text-red-700"
+                            : isOutOfStock
+                              ? "text-red-600"
+                              : isLowStock
+                                ? "font-extrabold text-amber-700"
+                                : "font-extrabold text-emerald-700"
+                        }
+                      >
+                        {item.available}
+                      </span>
+                    </TableCell>
+                  )}
+
+                  {/* Pricing (Cost / Selling) */}
+                  {visibleColumns.pricing && (
+                    <TableCell className="text-xs tabular-nums">
+                      <div className="space-y-0.5">
+                        <div className="font-semibold text-[#101114]">
+                          {formatCurrency(item.sellingPrice)}
+                        </div>
+                        <div className="text-[10px] text-[#101114]/50">
+                          Cost: {formatCurrency(item.costPrice)}
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Stock Health Status */}
+                  {visibleColumns.health && (
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        {isLowStock ? (
+                          <span className="relative flex size-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                            <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
+                          </span>
+                        ) : (
+                          <span
+                            className={`size-2 rounded-full ${
+                              isNegative
+                                ? "bg-red-700"
+                                : isOutOfStock
+                                  ? "bg-red-500"
+                                  : "bg-emerald-500"
+                            }`}
+                          />
+                        )}
+                        <span
+                          className={`text-xs font-semibold ${
+                            isNegative
+                              ? "text-red-800"
+                              : isOutOfStock
+                                ? "text-red-700"
+                                : isLowStock
+                                  ? "text-amber-800"
+                                  : "text-emerald-800"
+                          }`}
+                        >
+                          {isNegative
+                            ? "Negative Stock"
+                            : isOutOfStock
+                              ? "Out of Stock"
+                              : isLowStock
+                                ? "Low Stock"
+                                : "In Stock"}
+                        </span>
+                        {isLowStock && (
+                          <span className="rounded-2xs py-0.2 bg-amber-100 px-1 text-[9px] font-extrabold text-amber-800">
+                            REORDER
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Quick Adjust Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenAdjustModal(item)}
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        title="Quick adjust stock for this variant"
+                      >
+                        <Plus className="size-3 text-emerald-600" />
+                        <Minus className="-ml-1 size-3 text-red-600" />
+                        <span>Adjust</span>
+                      </button>
+
+                      {/* Print Tag Button */}
+                      <button
+                        type="button"
+                        onClick={() => setBarcodeModalItems([item])}
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        title="Print barcode price tag for this variant"
+                      >
+                        <Printer className="size-3.5" />
+                      </button>
+
+                      {/* Add to PO / Reorder Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPoInitialItems([item]);
+                          setShowPoModal(true);
+                        }}
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        title="Add variant to Supplier Purchase Order / Reorder Sheet"
+                      >
+                        <Factory className="size-3.5 text-amber-700" />
+                      </button>
+
+                      {/* History Link */}
+                      <Link
+                        href={`/admin/inventory/${item.id}`}
+                        className="inline-flex h-8 items-center rounded-sm border border-[#101114]/20 bg-white px-2 text-xs text-[#101114]/70 shadow-2xs transition-colors hover:bg-[#F3F0E8] hover:text-[#101114]"
+                        title="View complete transaction audit history"
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
       <AdminTableInfiniteScroll
