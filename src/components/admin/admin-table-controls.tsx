@@ -171,5 +171,60 @@ export function AdminTableMetaBar({
   );
 }
 
+export interface AdminTableFilterSelectOption<T extends string = string> {
+  value: T;
+  label: string;
+}
+
+export interface AdminTableFilterSelectProps<T extends string = string> {
+  value: T;
+  onChange: (value: T) => void;
+  options: readonly AdminTableFilterSelectOption<T>[] | AdminTableFilterSelectOption<T>[];
+  icon?: React.ComponentType<{ className?: string }>;
+  ariaLabel?: string;
+  className?: string;
+  disabled?: boolean;
+}
+
+/**
+ * Standard accessible dropdown filter select for Admin tables.
+ */
+export function AdminTableFilterSelect<T extends string = string>({
+  value,
+  onChange,
+  options,
+  icon: Icon,
+  ariaLabel,
+  className,
+  disabled = false,
+}: AdminTableFilterSelectProps<T>) {
+  return (
+    <div
+      className={cn(
+        "inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors hover:border-neutral-300 focus-within:ring-2 focus-within:ring-[#00D9FF]",
+        disabled && "opacity-50 pointer-events-none",
+        className
+      )}
+    >
+      {Icon && <Icon className="size-3.5 shrink-0 text-neutral-500" />}
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+        aria-label={ariaLabel}
+        disabled={disabled}
+        className="bg-transparent text-xs font-medium text-neutral-800 outline-none cursor-pointer"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 export { ADMIN_TABLE_CLASSES };
+export { useAdminTableUrlFilters, buildFilterUrl } from "./admin-table-filters";
+export type { UseAdminTableUrlFiltersOptions, BuildFilterUrlOptions } from "./admin-table-filters";

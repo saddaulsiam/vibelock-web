@@ -6,6 +6,7 @@ import { PaymentStatus } from "@prisma/client";
 import { AdminPaymentListItem } from "@/lib/admin/payment-queries";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabItem,
@@ -314,21 +315,19 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Gateway Method Dropdown */}
-          <div className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors hover:border-neutral-300 focus-within:ring-2 focus-within:ring-[#00D9FF]">
-            <CreditCard className="size-3.5 shrink-0 text-neutral-500" />
-            <select
-              aria-label="Filter by payment gateway"
-              value={gatewayFilter}
-              onChange={(e) => setGatewayFilter(e.target.value)}
-              className="cursor-pointer bg-transparent text-xs font-semibold text-neutral-800 outline-none focus:outline-none"
-            >
-              <option value="ALL">All Gateways</option>
-              <option value="BKASH">bKash</option>
-              <option value="NAGAD">Nagad</option>
-              <option value="SSLCOMMERZ">SSLCommerz / Cards</option>
-              <option value="COD">Cash on Delivery (COD)</option>
-            </select>
-          </div>
+          <AdminTableFilterSelect
+            ariaLabel="Filter by payment gateway"
+            value={gatewayFilter}
+            onChange={setGatewayFilter}
+            options={[
+              { value: "ALL", label: "All Gateways" },
+              { value: "BKASH", label: "bKash" },
+              { value: "NAGAD", label: "Nagad" },
+              { value: "SSLCOMMERZ", label: "SSLCommerz / Cards" },
+              { value: "COD", label: "Cash on Delivery (COD)" },
+            ]}
+            icon={CreditCard}
+          />
 
           {/* Column Visibility */}
           <AdminTableColumnVisibility<PaymentColumnKey>

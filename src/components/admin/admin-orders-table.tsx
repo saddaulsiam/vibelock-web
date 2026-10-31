@@ -25,6 +25,7 @@ import {
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -89,6 +90,34 @@ import {
   getPaymentStatusBadge,
 } from "@/components/admin/admin-order-badges";
 export { getOrderStatusBadge, getPaymentStatusBadge };
+
+const DATE_RANGE_OPTIONS = [
+  { value: "ALL", label: "All Time" },
+  { value: "today", label: "Today (Live)" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "7d", label: "Last 7 Days" },
+  { value: "30d", label: "Last 30 Days" },
+] as const;
+
+const SALES_CHANNEL_OPTIONS = [
+  { value: "ALL", label: "All Channels" },
+  { value: "WEBSITE", label: "Online Store (WEB)" },
+  { value: "POS", label: "POS Counter" },
+] as const;
+
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "ALL", label: "All Payment Statuses" },
+  { value: "SUCCESS", label: "Paid (Success)" },
+  { value: "PENDING", label: "Unpaid (Pending)" },
+  { value: "FAILED", label: "Failed" },
+  { value: "REFUNDED", label: "Refunded" },
+] as const;
+
+const PAYMENT_METHOD_OPTIONS = [
+  { value: "ALL", label: "All Payment Methods" },
+  { value: "COD", label: "Cash on Delivery (COD)" },
+  { value: "ONLINE", label: "Online Gateway" },
+] as const;
 
 interface AdminOrdersTableProps {
   initialData: AdminOrdersResult;
@@ -337,22 +366,6 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
     updateUrlParams({ status: statusKey === "ALL" ? null : statusKey });
   };
 
-  const handlePaymentStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ paymentStatus: e.target.value });
-  };
-
-  const handlePaymentMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ paymentMethod: e.target.value });
-  };
-
-  const handleSalesChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ salesChannel: e.target.value });
-  };
-
-  const handleDateRangeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ dateRange: e.target.value });
-  };
-
   const hasActiveFilters = Boolean(
     searchTerm ||
       (currentFilters.status && currentFilters.status !== "ALL") ||
@@ -546,56 +559,36 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
           />
 
           {/* Date Range Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.dateRange || "ALL"}
-            onChange={handleDateRangeChange}
-            aria-label="Filter by date range"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="ALL">All Time</option>
-            <option value="today">Today (Live)</option>
-            <option value="yesterday">Yesterday</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="30d">Last 30 Days</option>
-          </select>
+            onChange={(val) => updateUrlParams({ dateRange: val })}
+            options={DATE_RANGE_OPTIONS}
+            ariaLabel="Filter by date range"
+          />
 
           {/* Sales Channel Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.salesChannel || "ALL"}
-            onChange={handleSalesChannelChange}
-            aria-label="Filter by sales channel"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="ALL">All Channels</option>
-            <option value="WEBSITE">Online Store (WEB)</option>
-            <option value="POS">POS Counter</option>
-          </select>
+            onChange={(val) => updateUrlParams({ salesChannel: val })}
+            options={SALES_CHANNEL_OPTIONS}
+            ariaLabel="Filter by sales channel"
+          />
 
           {/* Payment Status Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.paymentStatus || "ALL"}
-            onChange={handlePaymentStatusChange}
-            aria-label="Filter by payment status"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="ALL">All Payment Statuses</option>
-            <option value="SUCCESS">Paid (Success)</option>
-            <option value="PENDING">Unpaid (Pending)</option>
-            <option value="FAILED">Failed</option>
-            <option value="REFUNDED">Refunded</option>
-          </select>
+            onChange={(val) => updateUrlParams({ paymentStatus: val })}
+            options={PAYMENT_STATUS_OPTIONS}
+            ariaLabel="Filter by payment status"
+          />
 
           {/* Payment Method Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.paymentMethod || "ALL"}
-            onChange={handlePaymentMethodChange}
-            aria-label="Filter by payment method"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="ALL">All Payment Methods</option>
-            <option value="COD">Cash on Delivery (COD)</option>
-            <option value="ONLINE">Online Gateway</option>
-          </select>
+            onChange={(val) => updateUrlParams({ paymentMethod: val })}
+            options={PAYMENT_METHOD_OPTIONS}
+            ariaLabel="Filter by payment method"
+          />
         </div>
 
         {/* Column Visibility & CSV Export Controls */}

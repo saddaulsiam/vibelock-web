@@ -7,6 +7,7 @@ import {
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -519,16 +520,16 @@ export function AdminCouponsTable({
           </form>
 
           {/* Discount Type Filter Dropdown */}
-          <select
+          <AdminTableFilterSelect
             value={currentType || "ALL"}
-            onChange={(e) => updateFilters({ type: e.target.value })}
-            aria-label="Filter by discount type"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="ALL">All Discount Types</option>
-            <option value="PERCENTAGE">Percentage (%)</option>
-            <option value="FIXED">Fixed Amount (৳)</option>
-          </select>
+            onChange={(type) => updateFilters({ type })}
+            options={[
+              { value: "ALL", label: "All Discount Types" },
+              { value: "PERCENTAGE", label: "Percentage (%)" },
+              { value: "FIXED", label: "Fixed Amount (৳)" },
+            ]}
+            ariaLabel="Filter by discount type"
+          />
         </div>
 
         {/* Right Action Controls: Columns Customizer, Export CSV & Create Coupon */}

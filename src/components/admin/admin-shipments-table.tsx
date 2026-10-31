@@ -7,6 +7,7 @@ import {
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -376,21 +377,18 @@ export function AdminShipmentsTable({
           />
 
           {/* Courier Provider Filter */}
-          <div className="relative inline-flex items-center">
-            <select
-              value={currentProvider}
-              onChange={(e) =>
-                updateQueryParams({ provider: e.target.value as ShipmentProviderFilter })
-              }
-              className={ADMIN_TABLE_CLASSES.select}
-              aria-label="Filter by Courier Provider"
-            >
-              <option value="ALL">All Couriers</option>
-              <option value="STEADFAST">Steadfast Courier</option>
-              <option value="MANUAL">Manual / In-House</option>
-              <option value="PATHAO">Pathao Courier</option>
-            </select>
-          </div>
+          <AdminTableFilterSelect<ShipmentProviderFilter>
+            value={currentProvider}
+            onChange={(provider) => updateQueryParams({ provider })}
+            options={[
+              { value: "ALL", label: "All Couriers" },
+              { value: "STEADFAST", label: "Steadfast Courier" },
+              { value: "MANUAL", label: "Manual / In-House" },
+              { value: "PATHAO", label: "Pathao Courier" },
+            ]}
+            icon={Truck}
+            ariaLabel="Filter by Courier Provider"
+          />
 
           {/* Reset Filters */}
           {hasActiveFilters && (

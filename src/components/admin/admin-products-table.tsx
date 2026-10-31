@@ -8,6 +8,7 @@ import {
   type ColumnOption,
 } from "@/components/admin/admin-table-column-visibility";
 import {
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   ADMIN_TABLE_CLASSES,
@@ -657,63 +658,59 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
         {/* Filter, Sort & Export Dropdowns */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Category Filter */}
-          <div className="flex items-center gap-1">
-            <select
-              value={currentFilters.category}
-              onChange={(e) => updateQuery({ category: e.target.value })}
-              className={ADMIN_TABLE_CLASSES.select}
-            >
-              <option value="all">All Categories</option>
-              {allCategories.map((c) => (
-                <option key={c.id} value={c.slug}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <AdminTableFilterSelect
+            value={currentFilters.category}
+            onChange={(category) => updateQuery({ category })}
+            options={[
+              { value: "all", label: "All Categories" },
+              ...allCategories.map((c) => ({ value: c.slug, label: c.name })),
+            ]}
+            ariaLabel="Filter by category"
+          />
 
           {/* Stock Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.stock}
-            onChange={(e) => updateQuery({ stock: e.target.value })}
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="all">All Stock Levels</option>
-            <option value="in-stock">In Stock (&gt;0)</option>
-            <option value="low-stock">Low Stock (1–5)</option>
-            <option value="out-of-stock">Out of Stock (0)</option>
-          </select>
+            onChange={(stock) => updateQuery({ stock })}
+            options={[
+              { value: "all", label: "All Stock Levels" },
+              { value: "in-stock", label: "In Stock (>0)" },
+              { value: "low-stock", label: "Low Stock (1–5)" },
+              { value: "out-of-stock", label: "Out of Stock (0)" },
+            ]}
+            ariaLabel="Filter by stock level"
+          />
 
           {/* Status Filter */}
-          <select
+          <AdminTableFilterSelect
             value={currentFilters.status}
-            onChange={(e) => updateQuery({ status: e.target.value })}
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="all">All Statuses</option>
-            <option value="PUBLISHED">Published</option>
-            <option value="DRAFT">Draft</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
+            onChange={(status) => updateQuery({ status })}
+            options={[
+              { value: "all", label: "All Statuses" },
+              { value: "PUBLISHED", label: "Published" },
+              { value: "DRAFT", label: "Draft" },
+              { value: "ARCHIVED", label: "Archived" },
+            ]}
+            ariaLabel="Filter by status"
+          />
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-1">
-            <select
-              value={currentFilters.sort}
-              onChange={(e) => updateQuery({ sort: e.target.value })}
-              className={ADMIN_TABLE_CLASSES.select}
-            >
-              <option value="newest">Sort: Newest First</option>
-              <option value="updated">Sort: Recently Updated</option>
-              <option value="oldest">Sort: Oldest First</option>
-              <option value="name_asc">Sort: Name (A to Z)</option>
-              <option value="name_desc">Sort: Name (Z to A)</option>
-              <option value="price_asc">Sort: Price (Low to High)</option>
-              <option value="price_desc">Sort: Price (High to Low)</option>
-              <option value="stock_desc">Sort: Stock (High to Low)</option>
-              <option value="stock_asc">Sort: Stock (Low to High)</option>
-            </select>
-          </div>
+          <AdminTableFilterSelect
+            value={currentFilters.sort}
+            onChange={(sort) => updateQuery({ sort })}
+            options={[
+              { value: "newest", label: "Sort: Newest First" },
+              { value: "updated", label: "Sort: Recently Updated" },
+              { value: "oldest", label: "Sort: Oldest First" },
+              { value: "name_asc", label: "Sort: Name (A to Z)" },
+              { value: "name_desc", label: "Sort: Name (Z to A)" },
+              { value: "price_asc", label: "Sort: Price (Low to High)" },
+              { value: "price_desc", label: "Sort: Price (High to Low)" },
+              { value: "stock_desc", label: "Sort: Stock (High to Low)" },
+              { value: "stock_asc", label: "Sort: Stock (Low to High)" },
+            ]}
+            ariaLabel="Sort products"
+          />
 
           {/* Export to CSV Button */}
           <button

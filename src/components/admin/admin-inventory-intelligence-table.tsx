@@ -11,6 +11,7 @@ import {
   useAdminTableColumns,
 } from "@/components/admin/admin-table-column-visibility";
 import {
+  AdminTableFilterSelect,
   AdminTableSearchInput,
   AdminTableTabs,
   ADMIN_TABLE_CLASSES,
@@ -222,14 +223,6 @@ export function AdminInventoryIntelligenceTable({
     updateUrlParams({ status: status === "all" ? null : status, page: 1 });
   };
 
-  const handleWindowChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ window: e.target.value, page: 1 });
-  };
-
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    updateUrlParams({ sort: e.target.value, page: 1 });
-  };
-
   // Keyboard shortcut '/' to focus search input
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -320,30 +313,30 @@ export function AdminInventoryIntelligenceTable({
           />
 
           {/* Window selector */}
-          <select
+          <AdminTableFilterSelect<InventoryIntelligenceWindow>
             value={activeWindow}
-            onChange={handleWindowChange}
-            aria-label="Trailing sales velocity window"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="30d">Trailing 30 Days</option>
-            <option value="60d">Trailing 60 Days</option>
-            <option value="90d">Trailing 90 Days</option>
-          </select>
+            onChange={(window) => updateUrlParams({ window })}
+            options={[
+              { value: "30d", label: "Trailing 30 Days" },
+              { value: "60d", label: "Trailing 60 Days" },
+              { value: "90d", label: "Trailing 90 Days" },
+            ]}
+            ariaLabel="Trailing sales velocity window"
+          />
 
           {/* Sort selector */}
-          <select
+          <AdminTableFilterSelect<InventoryIntelligenceSort>
             value={currentFilters.sort}
-            onChange={handleSortChange}
-            aria-label="Sort inventory intelligence"
-            className={ADMIN_TABLE_CLASSES.select}
-          >
-            <option value="valuation">Sort: Capital Value</option>
-            <option value="runout">Sort: Days of Supply (Urgent)</option>
-            <option value="velocity">Sort: Sales Velocity</option>
-            <option value="stock">Sort: Available Stock</option>
-            <option value="age">Sort: Inflow Age</option>
-          </select>
+            onChange={(sort) => updateUrlParams({ sort })}
+            options={[
+              { value: "valuation", label: "Sort: Capital Value" },
+              { value: "runout", label: "Sort: Days of Supply (Urgent)" },
+              { value: "velocity", label: "Sort: Sales Velocity" },
+              { value: "stock", label: "Sort: Available Stock" },
+              { value: "age", label: "Sort: Inflow Age" },
+            ]}
+            ariaLabel="Sort inventory intelligence"
+          />
         </div>
 
         <div className="flex items-center gap-2">

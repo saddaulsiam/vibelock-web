@@ -1,7 +1,9 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import {
+  AdminTableFilterSelect,
   AdminTableMetaBar,
+  buildFilterUrl,
 } from "@/components/admin/admin-table-controls";
 import {
   buildCsvContent,
@@ -127,5 +129,65 @@ describe("AdminTableMetaBar Reusable Component", () => {
       />
     );
     expect(htmlWithoutReset).not.toContain("Reset filters");
+  });
+});
+
+describe("AdminTableFilterSelect Reusable Component", () => {
+  test("renders select element with all options and correct value", () => {
+    const options = [
+      { value: "ALL", label: "All Statuses" },
+      { value: "ACTIVE", label: "Active" },
+      { value: "INACTIVE", label: "Inactive" },
+    ];
+
+    const html = renderToStaticMarkup(
+      <AdminTableFilterSelect
+        value="ACTIVE"
+        onChange={() => {}}
+        options={options}
+        ariaLabel="Filter by status"
+      />
+    );
+
+    expect(html).toContain('aria-label="Filter by status"');
+    expect(html).toContain("All Statuses");
+    expect(html).toContain("Active");
+    expect(html).toContain("Inactive");
+  });
+});
+
+describe("buildFilterUrl Helper Function", () => {
+  test("updates query parameters and automatically deletes pagination page", () => {
+    const url = buildFilterUrl({
+      currentSearchParams: "page=3&status=PENDING&q=hoodie",
+      updates: { status: "DELIVERED" },
+      basePath: "/admin/orders",
+    });
+
+    expect(url).toBe("/admin/orders?status=DELIVERED&q=hoodie");
+    expect(url).not.toContain("page=");
+  });
+
+  test("removes parameters when value is null, undefined, empty, 'ALL' or 'all'", () => {
+    const url = buildFilterUrl({
+      currentSearchParams: "page=2&status=DELIVERED&provider=STEADFAST&q=shirt",
+      updates: {
+        status: "all",
+        provider: "ALL",
+        q: "",
+      },
+      basePath: "/admin/shipping",
+    });
+
+    expect(url).toBe("/admin/shipping");
+  });
+
+  test("constructs query string without basePath if omitted", () => {
+    const url = buildFilterUrl({
+      currentSearchParams: "page=1",
+      updates: { segment: "VIP" },
+    });
+
+    expect(url).toBe("?segment=VIP");
   });
 });

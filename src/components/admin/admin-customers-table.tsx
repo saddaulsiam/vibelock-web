@@ -8,6 +8,7 @@ import {
 } from "@/components/admin/admin-table-column-visibility";
 import {
   ADMIN_TABLE_CLASSES,
+  AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -337,20 +338,18 @@ export function AdminCustomersTable({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Sort Dropdown */}
-          <div className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors hover:border-neutral-300 focus-within:ring-2 focus-within:ring-[#00D9FF]">
-            <ArrowUpDown className="size-3.5 shrink-0 text-neutral-500" />
-            <select
-              aria-label="Sort customers"
-              value={currentSort}
-              onChange={(e) => updateFilters({ sort: e.target.value as CustomerSortBy })}
-              className="cursor-pointer bg-transparent text-xs font-semibold text-neutral-800 outline-none focus:outline-none"
-            >
-              <option value="newest">Sort: Newest Joined</option>
-              <option value="spent">Sort: Highest Spent (LTV)</option>
-              <option value="orders">Sort: Most Orders</option>
-              <option value="oldest">Sort: Oldest Joined</option>
-            </select>
-          </div>
+          <AdminTableFilterSelect<CustomerSortBy>
+            ariaLabel="Sort customers"
+            value={currentSort}
+            onChange={(sort) => updateFilters({ sort })}
+            options={[
+              { value: "newest", label: "Sort: Newest Joined" },
+              { value: "spent", label: "Sort: Highest Spent (LTV)" },
+              { value: "orders", label: "Sort: Most Orders" },
+              { value: "oldest", label: "Sort: Oldest Joined" },
+            ]}
+            icon={ArrowUpDown}
+          />
 
           {/* Column Visibility Customizer */}
           <AdminTableColumnVisibility
