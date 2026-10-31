@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Dices,
   CheckCircle2,
+  Check,
+  Layers,
 } from "lucide-react";
 import { DiscountType } from "@prisma/client";
 import { saveCouponAction } from "@/lib/admin/coupon-actions";
@@ -28,12 +30,14 @@ interface CouponToEditData {
   isActive: boolean;
   startDate: Date | null;
   endDate: Date | null;
+  categories?: { id: string; name: string; slug: string }[];
 }
 
 interface CouponCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   couponToEdit?: CouponToEditData | null;
+  categories?: { id: string; name: string; slug: string }[];
 }
 
 function generateRandomCode(): string {
@@ -53,9 +57,11 @@ const toLocalIso = (d: Date | null | undefined) => {
 
 function CouponCreateDialog({
   couponToEdit,
+  categories = [],
   onClose,
 }: {
   couponToEdit?: CouponToEditData | null;
+  categories?: { id: string; name: string; slug: string }[];
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -80,6 +86,12 @@ function CouponCreateDialog({
   const [startDate, setStartDate] = useState(toLocalIso(couponToEdit?.startDate));
   const [endDate, setEndDate] = useState(toLocalIso(couponToEdit?.endDate));
   const [isActive, setIsActive] = useState(couponToEdit?.isActive ?? true);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
+    couponToEdit?.categories?.map((c) => c.id) ?? []
+  );
+  const [targetMode, setTargetMode] = useState<"STOREWIDE" | "SPECIFIC">(
+    couponToEdit?.categories && couponToEdit.categories.length > 0 ? "SPECIFIC" : "STOREWIDE"
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -98,6 +110,11 @@ function CouponCreateDialog({
     if (isActive) formData.set("isActive", "on");
     if (startDate) formData.set("startDate", startDate);
     if (endDate) formData.set("endDate", endDate);
+    if (targetMode === "SPECIFIC") {
+      selectedCategoryIds.forEach((catId) => {
+        formData.append("categoryIds", catId);
+      });
+    }
 
     startTransition(async () => {
       const result = await saveCouponAction({ error: null }, formData);
@@ -185,9 +202,21 @@ function CouponCreateDialog({
                     : `৳${discountValue || 0} OFF`}
                 </div>
                 <div className="text-[11px] text-neutral-500">
-                  {minOrderValue && Number(minOrderValue) > 0
-                    ? `Min order: ৳${Number(minOrderValue).toLocaleString()}`
-                    : "No minimum spend required"}
+                  {targetMode === "SPECIFIC" && selectedCategoryIds.length > 0 ? (
+                    <span className="font-semibold text-purple-700">
+                      🎯 Valid only for:{" "}
+                      {categories
+                        .filter((c) => selectedCategoryIds.includes(c.id))
+                        .map((c) => c.name)
+                        .join(", ")}
+                    </span>
+                  ) : targetMode === "SPECIFIC" ? (
+                    <span className="text-amber-600 font-medium">Select target categories below</span>
+                  ) : minOrderValue && Number(minOrderValue) > 0 ? (
+                    `Min order: ৳${Number(minOrderValue).toLocaleString()} (Storewide)`
+                  ) : (
+                    "Storewide discount applied at checkout"
+                  )}
                 </div>
               </div>
             </div>
@@ -376,6 +405,125 @@ function CouponCreateDialog({
             </div>
           </div>
 
+          {/* Category Targeting Section */}
+          <div className="rounded-xl border border-neutral-200/90 bg-neutral-50/50 p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Layers className="size-4 text-neutral-700" />
+                  <label className="text-xs font-bold text-neutral-800">
+                    Category Targeting
+                  </label>
+                </div>
+                <p className="text-[11px] text-neutral-500 mt-0.5">
+                  Limit discount to specific categories or apply storewide.
+                </p>
+              </div>
+              <div className="flex items-center rounded-lg border border-neutral-200 bg-white p-1 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetMode("STOREWIDE");
+                    setSelectedCategoryIds([]);
+                  }}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                    targetMode === "STOREWIDE"
+                      ? "bg-[#101114] text-white shadow-2xs"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }`}
+                >
+                  Storewide (All)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTargetMode("SPECIFIC")}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                    targetMode === "SPECIFIC"
+                      ? "bg-[#101114] text-white shadow-2xs"
+                      : "text-neutral-600 hover:text-neutral-900"
+                  }`}
+                >
+                  Specific Categories
+                </button>
+              </div>
+            </div>
+
+            {targetMode === "STOREWIDE" ? (
+              <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-2.5 text-xs text-neutral-500">
+                ✨ Applies to <strong>all products</strong> across the entire catalog.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-neutral-600">
+                    {selectedCategoryIds.length} of {categories.length} selected
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategoryIds(categories.map((c) => c.id))}
+                      className="font-medium text-purple-600 hover:underline"
+                    >
+                      Select all
+                    </button>
+                    <span className="text-neutral-300">•</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategoryIds([])}
+                      className="font-medium text-neutral-500 hover:underline"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                </div>
+
+                {categories.length === 0 ? (
+                  <p className="text-xs text-neutral-500">No active categories found.</p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto p-1">
+                    {categories.map((category) => {
+                      const isSelected = selectedCategoryIds.includes(category.id);
+                      return (
+                        <button
+                          key={category.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategoryIds((prev) =>
+                              isSelected
+                                ? prev.filter((id) => id !== category.id)
+                                : [...prev, category.id]
+                            );
+                          }}
+                          className={`flex items-center gap-2 rounded-lg border p-2 text-left text-xs font-semibold transition ${
+                            isSelected
+                              ? "border-[#101114] bg-[#101114] text-white shadow-2xs"
+                              : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50"
+                          }`}
+                        >
+                          <div
+                            className={`flex size-3.5 shrink-0 items-center justify-center rounded border transition ${
+                              isSelected
+                                ? "border-white bg-white text-[#101114]"
+                                : "border-neutral-300 bg-white"
+                            }`}
+                          >
+                            {isSelected && <Check className="size-2.5 stroke-[3]" />}
+                          </div>
+                          <span className="truncate">{category.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                {selectedCategoryIds.length === 0 && (
+                  <p className="text-[11px] text-amber-600 font-medium">
+                    ⚠️ Please select at least one category, or switch to &quot;Storewide&quot;.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Modal Actions Footer */}
           <div className="flex items-center justify-end gap-3 border-t border-neutral-100 pt-4">
             <button
@@ -411,12 +559,14 @@ export function CouponCreateModal({
   isOpen,
   onClose,
   couponToEdit,
+  categories,
 }: CouponCreateModalProps) {
   if (!isOpen) return null;
   return (
     <CouponCreateDialog
       key={couponToEdit?.id ?? "new"}
       couponToEdit={couponToEdit}
+      categories={categories}
       onClose={onClose}
     />
   );

@@ -13,7 +13,7 @@ export default async function NewAdminCategoryPage() {
       <AdminPageHeader
         eyebrow="Catalog / Taxonomy"
         title="Create Category"
-        description="Define category identity, hierarchy, banner assets, and SEO-friendly slug."
+        description="Define category identity, hierarchy, media assets, and SEO-friendly slug."
       >
         <Link
           href="/admin/categories"

@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import type { DiscountType } from "@prisma/client";
 import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupon-actions";
-import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar } from "lucide-react";
+import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar, Check, Layers } from "lucide-react";
 
 const initialState: CouponActionState = { error: null };
 
@@ -17,6 +17,7 @@ function generateRandomCode(): string {
 
 export function CouponForm({
   coupon,
+  categories = [],
 }: {
   coupon?: {
     id: string;
@@ -28,12 +29,20 @@ export function CouponForm({
     isActive: boolean;
     startDate: Date | null;
     endDate: Date | null;
+    categories?: { id: string; name: string; slug: string }[];
   };
+  categories?: { id: string; name: string; slug: string }[];
 }) {
   const [state, formAction] = useActionState(saveCouponAction, initialState);
   const [code, setCode] = useState(coupon?.code || "");
   const [discountType, setDiscountType] = useState<DiscountType>(coupon?.discountType ?? "PERCENTAGE");
   const [discountValue, setDiscountValue] = useState(coupon?.discountValue?.toString() || "10");
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
+    coupon?.categories?.map((c) => c.id) ?? []
+  );
+  const [targetMode, setTargetMode] = useState<"STOREWIDE" | "SPECIFIC">(
+    coupon?.categories && coupon.categories.length > 0 ? "SPECIFIC" : "STOREWIDE"
+  );
 
   const inputClass =
     "mt-1.5 flex h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition hover:border-neutral-300 focus:border-[#101114] focus:ring-1 focus:ring-[#101114]";
@@ -66,7 +75,21 @@ export function CouponForm({
               {discountType === "PERCENTAGE" ? `${discountValue || 0}% OFF` : `৳${discountValue || 0} OFF`}
             </div>
             <div className="text-[11px] text-neutral-500">
-              Discount applied automatically at checkout
+            <div className="text-[11px] text-neutral-500">
+              {targetMode === "SPECIFIC" && selectedCategoryIds.length > 0 ? (
+                <span className="font-semibold text-purple-700">
+                  🎯 Valid only for:{" "}
+                  {categories
+                    .filter((c) => selectedCategoryIds.includes(c.id))
+                    .map((c) => c.name)
+                    .join(", ")}
+                </span>
+              ) : targetMode === "SPECIFIC" ? (
+                <span className="text-amber-600 font-medium">Select target categories below</span>
+              ) : (
+                "Discount applied storewide at checkout"
+              )}
+            </div>
             </div>
           </div>
         </div>
@@ -206,6 +229,131 @@ export function CouponForm({
             className={inputClass}
           />
         </div>
+      </div>
+
+      {/* Category Targeting / Eligibility */}
+      <div className="rounded-xl border border-neutral-200/90 bg-neutral-50/50 p-4 space-y-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <Layers className="size-4 text-neutral-700" />
+              <label className="text-xs font-bold text-neutral-800">
+                Applies To (Category Targeting)
+              </label>
+            </div>
+            <p className="text-[11px] text-neutral-500 mt-0.5">
+              Choose whether this discount applies storewide to all products or only to specific categories.
+            </p>
+          </div>
+          <div className="flex items-center rounded-lg border border-neutral-200 bg-white p-1 shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setTargetMode("STOREWIDE");
+                setSelectedCategoryIds([]);
+              }}
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                targetMode === "STOREWIDE"
+                  ? "bg-[#101114] text-white shadow-2xs"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`}
+            >
+              Storewide (All)
+            </button>
+            <button
+              type="button"
+              onClick={() => setTargetMode("SPECIFIC")}
+              className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                targetMode === "SPECIFIC"
+                  ? "bg-[#101114] text-white shadow-2xs"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`}
+            >
+              Specific Categories
+            </button>
+          </div>
+        </div>
+
+        {/* Hidden inputs for selected categories when in SPECIFIC mode */}
+        {targetMode === "SPECIFIC" &&
+          selectedCategoryIds.map((catId) => (
+            <input key={catId} type="hidden" name="categoryIds" value={catId} />
+          ))}
+
+        {targetMode === "STOREWIDE" ? (
+          <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-3 text-xs text-neutral-500">
+            ✨ This coupon applies to <strong>all products</strong> across the entire catalog during checkout.
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-semibold text-neutral-600">
+                {selectedCategoryIds.length} of {categories.length} categories selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryIds(categories.map((c) => c.id))}
+                  className="font-medium text-purple-600 hover:underline"
+                >
+                  Select all
+                </button>
+                <span className="text-neutral-300">•</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategoryIds([])}
+                  className="font-medium text-neutral-500 hover:underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+
+            {categories.length === 0 ? (
+              <p className="text-xs text-neutral-500">No active categories found.</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {categories.map((category) => {
+                  const isSelected = selectedCategoryIds.includes(category.id);
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategoryIds((prev) =>
+                          isSelected
+                            ? prev.filter((id) => id !== category.id)
+                            : [...prev, category.id]
+                        );
+                      }}
+                      className={`flex items-center gap-2 rounded-lg border p-2.5 text-left text-xs font-semibold transition ${
+                        isSelected
+                          ? "border-[#101114] bg-[#101114] text-white shadow-2xs"
+                          : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50"
+                      }`}
+                    >
+                      <div
+                        className={`flex size-4 shrink-0 items-center justify-center rounded border transition ${
+                          isSelected
+                            ? "border-white bg-white text-[#101114]"
+                            : "border-neutral-300 bg-white"
+                        }`}
+                      >
+                        {isSelected && <Check className="size-3 stroke-[3]" />}
+                      </div>
+                      <span className="truncate">{category.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {selectedCategoryIds.length === 0 && (
+              <p className="text-[11px] text-amber-600 font-medium">
+                ⚠️ Please select at least one category, or switch to &quot;Storewide&quot;.
+              </p>
+            )}
+          </div>
+        )}
       </div>
 
       {coupon ? (

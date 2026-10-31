@@ -50,8 +50,10 @@ function duplicateMessage(error: unknown) {
 function refreshCatalog() {
   updateTag("products");
   updateTag("categories");
+  updateTag("promo-banners");
   revalidatePath("/admin/products");
   revalidatePath("/admin/categories");
+  revalidatePath("/admin/banners");
   revalidatePath("/products");
   revalidatePath("/");
   revalidatePath("/category/[slug]", "page");
@@ -61,6 +63,8 @@ const categorySchema = z.object({
   id: z.string().uuid().optional(),
   name: nameField,
   description: z.string().trim().max(1000).optional(),
+  metaTitle: z.string().trim().max(120).optional(),
+  metaDescription: z.string().trim().max(320).optional(),
   parentId: z.string().uuid().optional(),
 });
 
@@ -74,6 +78,8 @@ export async function saveCategoryAction(
     id: String(formData.get("id") ?? "") || undefined,
     name: rawName,
     description: String(formData.get("description") ?? "") || undefined,
+    metaTitle: String(formData.get("metaTitle") ?? "") || undefined,
+    metaDescription: String(formData.get("metaDescription") ?? "") || undefined,
     parentId: String(formData.get("parentId") ?? "") || undefined,
   };
   const parsed = categorySchema.safeParse(raw);
@@ -86,7 +92,7 @@ export async function saveCategoryAction(
     };
   }
 
-  const { id, name, description, parentId } = parsed.data;
+  const { id, name, description, metaTitle, metaDescription, parentId } = parsed.data;
   if (id && parentId === id) return { error: "A category cannot be its own parent." };
   if (parentId) {
     const parent = await prisma.category.findUnique({
@@ -182,6 +188,8 @@ export async function saveCategoryAction(
           name,
           slug: slug.data,
           description: description || null,
+          metaTitle: metaTitle || null,
+          metaDescription: metaDescription || null,
           imageUrl: finalImageUrl !== undefined ? finalImageUrl : existing.imageUrl,
           parentId: parentId ?? null,
           isActive,
@@ -194,6 +202,8 @@ export async function saveCategoryAction(
           name,
           slug: slug.data,
           description: description || null,
+          metaTitle: metaTitle || null,
+          metaDescription: metaDescription || null,
           imageUrl: finalImageUrl ?? null,
           parentId: parentId ?? null,
           isActive,
@@ -1067,4 +1077,33 @@ export async function quickUpdateProductPricesAction(
     error: null,
     message: "Product prices updated successfully.",
   };
+}
+
+export async function toggleProductFeaturedAction(
+  productId: string,
+  isFeatured: boolean
+): Promise<AdminActionState & { isFeatured?: boolean }> {
+  await requireRole("ADMIN");
+  if (!productId) return { error: "Missing product ID." };
+
+  try {
+    const updated = await prisma.product.update({
+      where: { id: productId },
+      data: { isFeatured },
+      select: { id: true, name: true, isFeatured: true },
+    });
+
+    refreshCatalog();
+    return {
+      error: null,
+      message: updated.isFeatured
+        ? `"${updated.name}" is now pinned / featured.`
+        : `"${updated.name}" unpinned from featured.`,
+      isFeatured: updated.isFeatured,
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Failed to toggle featured status.",
+    };
+  }
 }

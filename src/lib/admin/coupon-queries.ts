@@ -127,6 +127,7 @@ export async function getAdminCoupons({
         startDate: true,
         endDate: true,
         createdAt: true,
+        categories: { select: { id: true, name: true, slug: true } },
       },
     }),
     prisma.coupon.count({ where }),
@@ -165,7 +166,11 @@ export async function getAdminCoupons({
   ]);
 
   return {
-    coupons: coupons as AdminCouponListItem[],
+    coupons: coupons.map((c) => ({
+      ...c,
+      discountValue: Number(c.discountValue),
+      minOrderValue: c.minOrderValue !== null ? Number(c.minOrderValue) : null,
+    })) as AdminCouponListItem[],
     total,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
     page: normalizedPage,
@@ -189,6 +194,20 @@ export async function getAdminCouponById(id: string) {
       isActive: true,
       startDate: true,
       endDate: true,
+      categories: { select: { id: true, name: true, slug: true } },
     },
   });
+}
+
+export async function getAdminCouponFormData(id?: string) {
+  await requireRole("ADMIN");
+  const [coupon, allCategories] = await Promise.all([
+    id ? getAdminCouponById(id) : Promise.resolve(null),
+    prisma.category.findMany({
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { id: true, name: true, slug: true },
+    }),
+  ]);
+  return { coupon, allCategories };
 }

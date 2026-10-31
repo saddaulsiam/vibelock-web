@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Tag } from "lucide-react";
 import { CouponForm } from "@/components/admin/coupon-form";
-import { getAdminCouponById } from "@/lib/admin/coupon-queries";
+import { getAdminCouponFormData } from "@/lib/admin/coupon-queries";
 
 export default async function EditCouponPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const coupon = await getAdminCouponById(id);
+  const { coupon, allCategories } = await getAdminCouponFormData(id);
   if (!coupon) notFound();
 
   return (
@@ -29,7 +29,7 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
               Edit Coupon: <span className="font-mono text-purple-900">{coupon.code}</span>
             </h1>
             <p className="text-xs text-neutral-500">
-              Update discount value, usage limits, or active dates. Historical order calculations
+              Update discount value, category targeting, usage limits, or active dates. Historical order calculations
               remain immutable.
             </p>
           </div>
@@ -38,7 +38,7 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
 
       {/* Main Container */}
       <div className="rounded-2xl border border-neutral-200/90 bg-white p-6 shadow-2xs">
-        <CouponForm coupon={coupon} />
+        <CouponForm coupon={coupon} categories={allCategories} />
       </div>
     </div>
   );

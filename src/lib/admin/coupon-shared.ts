@@ -7,14 +7,15 @@ export interface AdminCouponListItem {
   id: string;
   code: string;
   discountType: DiscountType;
-  discountValue: Prisma.Decimal;
-  minOrderValue: Prisma.Decimal | null;
+  discountValue: number | Prisma.Decimal;
+  minOrderValue: number | Prisma.Decimal | null;
   usageLimit: number | null;
   usageCount: number;
   isActive: boolean;
   startDate: Date | null;
   endDate: Date | null;
   createdAt: Date;
+  categories: { id: string; name: string; slug: string }[];
 }
 
 export function couponStatus(

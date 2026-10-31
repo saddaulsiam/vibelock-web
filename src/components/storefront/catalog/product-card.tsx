@@ -27,7 +27,7 @@ export interface CustomProductCardItem {
   category?: string;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new";
+    variant: "default" | "sale" | "new" | "featured";
   };
   rating?: number;
   reviewCount?: number;
@@ -39,13 +39,13 @@ export interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   product: ProductCardItem;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new";
+    variant: "default" | "sale" | "new" | "featured";
   };
 }
 
 export function toCardProduct(
   product: ProductCardItem,
-  overrideBadge?: { label: string; variant: "default" | "sale" | "new" }
+  overrideBadge?: { label: string; variant: "default" | "sale" | "new" | "featured" }
 ): CustomProductCardItem {
   if ("minPrice" in product) {
     const primaryCategory = product.categories?.[0]?.name
@@ -72,7 +72,11 @@ export function toCardProduct(
       category: primaryCategory,
       badge:
         overrideBadge ??
-        (product.hasDiscount ? { label: "Sale", variant: "sale" as const } : undefined),
+        (product.hasDiscount
+          ? { label: "Sale", variant: "sale" as const }
+          : product.isFeatured
+          ? { label: "Featured", variant: "featured" as const }
+          : undefined),
     };
   }
 
@@ -162,7 +166,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         {/* ── Badge (Top-Left) ── */}
         <div className="pointer-events-none absolute top-0 left-0 z-10 flex flex-col items-start gap-1">
           {item.badge && <ProductBadge label={item.badge.label} variant={item.badge.variant} />}
-          {discountPercent !== null && discountPercent > 0 && !item.badge && (
+          {discountPercent !== null && discountPercent > 0 && item.badge?.variant !== "sale" && (
             <ProductBadge label={`-${discountPercent}%`} variant="sale" />
           )}
         </div>

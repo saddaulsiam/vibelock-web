@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Globe, ImagePlus, Layers, Sparkles, Trash2, Upload } from "lucide-react";
+import { Globe, ImagePlus, Layers, Megaphone, Search, Sparkles, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/admin-action-form";
 import { CategorySearchableSelect } from "@/components/admin/category-select";
@@ -47,6 +47,8 @@ type CategoryFormValues = {
   slug: string;
   description: string | null;
   imageUrl?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   parentId: string | null;
   isActive?: boolean;
   sortOrder?: number;
@@ -62,6 +64,8 @@ export function CategoryForm({
   const [name, setName] = React.useState(category?.name ?? "");
   const [slug, setSlug] = React.useState(category?.slug ?? "");
   const [description, setDescription] = React.useState(category?.description ?? "");
+  const [metaTitle, setMetaTitle] = React.useState(category?.metaTitle ?? "");
+  const [metaDescription, setMetaDescription] = React.useState(category?.metaDescription ?? "");
   const [parentId, setParentId] = React.useState(category?.parentId ?? "");
   const [isActive, setIsActive] = React.useState(category?.isActive ?? true);
   const [sortOrder, setSortOrder] = React.useState(category?.sortOrder ?? 0);
@@ -544,6 +548,170 @@ export function CategoryForm({
               Toggle whether customers can view and filter this category.
             </p>
           </div>
+        </div>
+      </div>
+      {/* SECTION 4: SEARCH ENGINE OPTIMIZATION (SEO) */}
+      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-[#101114]/10 pb-4">
+          <div className="flex items-center gap-2">
+            <Search className="size-4 text-[#101114]" />
+            <h3 className="text-base font-semibold text-[#101114]">
+              Search Engine Optimization (SEO)
+            </h3>
+          </div>
+          <p className="text-muted-foreground mt-1 text-xs leading-5">
+            Customize how this category appears in search engine results (Google, Bing) and social sharing cards.
+          </p>
+        </div>
+
+        {/* Live Google Search Snippet Preview Box */}
+        <div className="rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+              Google Search Result Preview
+            </span>
+            <span className="text-[10px] text-neutral-400">Live Simulation</span>
+          </div>
+
+          <div className="rounded-md border border-neutral-200/70 bg-white p-3.5 shadow-2xs">
+            {/* Google SERP Breadcrumb / URL */}
+            <div className="flex items-center gap-1.5 text-xs text-[#202124]">
+              <span className="flex size-4 items-center justify-center rounded-full bg-neutral-100 text-[10px] font-bold text-neutral-700">
+                V
+              </span>
+              <div className="flex items-center gap-1 text-[11px] text-[#4d5156]">
+                <span className="font-medium text-[#202124]">vibelock.bd</span>
+                <span>›</span>
+                <span>category</span>
+                <span>›</span>
+                <span className="font-semibold text-[#202124]">{slug || "category-slug"}</span>
+              </div>
+            </div>
+
+            {/* Google Blue Link Title */}
+            <div className="mt-1 text-base font-medium text-[#1a0dab] hover:underline cursor-pointer">
+              {metaTitle.trim() || (name.trim() ? `${name.trim()} | VibeLock Streetwear` : "Category Title | VibeLock")}
+            </div>
+
+            {/* Google Description Snippet */}
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[#4d5156]">
+              {metaDescription.trim() ||
+                description.trim() ||
+                `Explore the latest ${name.trim() || "streetwear"} collection at VibeLock. Premium fabrics, oversized silhouettes, and minimal aesthetics crafted for Dhaka youth.`}
+            </p>
+          </div>
+        </div>
+
+        {/* Meta Title Input */}
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="category-meta-title" className="block text-sm font-medium text-[#101114]">
+              Page Title (Meta Title)
+            </label>
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-[11px] font-mono ${
+                  metaTitle.length > 70
+                    ? "font-bold text-amber-600"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {metaTitle.length}/70 characters
+              </span>
+              {!metaTitle && name.trim() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMetaTitle(`${name.trim()} | VibeLock`);
+                    setIsDirty(true);
+                  }}
+                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                >
+                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  Auto-fill
+                </button>
+              )}
+            </div>
+          </div>
+          <input
+            id="category-meta-title"
+            className={`${fieldClass} mt-1`}
+            name="metaTitle"
+            maxLength={100}
+            value={metaTitle}
+            onChange={(e) => {
+              setMetaTitle(e.target.value);
+              setIsDirty(true);
+            }}
+            placeholder={name.trim() ? `${name.trim()} | VibeLock` : "e.g. Oversized Graphic Tees | VibeLock Dhaka"}
+            autoComplete="off"
+          />
+          <p className="text-muted-foreground mt-1 text-xs">
+            Recommended length: 50–60 characters. Displayed as the primary clickable headline in search engines.
+          </p>
+        </div>
+
+        {/* Meta Description Textarea */}
+        <div>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="category-meta-desc" className="block text-sm font-medium text-[#101114]">
+              Meta Description
+            </label>
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-[11px] font-mono ${
+                  metaDescription.length > 160
+                    ? "font-bold text-amber-600"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {metaDescription.length}/160 characters
+              </span>
+              {!metaDescription && description.trim() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMetaDescription(description.slice(0, 160).trim());
+                    setIsDirty(true);
+                  }}
+                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                >
+                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  Copy from description
+                </button>
+              )}
+            </div>
+          </div>
+          <textarea
+            id="category-meta-desc"
+            className={`${fieldClass} mt-1 min-h-20 resize-y`}
+            name="metaDescription"
+            maxLength={300}
+            value={metaDescription}
+            onChange={(e) => {
+              setMetaDescription(e.target.value);
+              setIsDirty(true);
+            }}
+            placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
+          />
+          <p className="text-muted-foreground mt-1 text-xs">
+            Recommended length: 120–160 characters. A concise summary shown beneath the page title in search results.
+          </p>
+        </div>
+      </div>
+
+      {/* SECTION 5: PROMOTIONAL BANNERS NOTICE */}
+      <div className="flex items-start gap-3 rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4 text-xs text-neutral-600">
+        <Megaphone className="mt-0.5 size-4 shrink-0 text-[#101114]" />
+        <div className="flex-1 space-y-1">
+          <p className="font-semibold text-neutral-900">Campaign &amp; Promotional Banners</p>
+          <p>
+            Promotional banners for this category are managed centrally in{" "}
+            <Link href="/admin/banners" className="font-medium text-[#101114] underline underline-offset-2 hover:text-[#00D9FF]">
+              Admin → Banners
+            </Link>
+            . Target banners to this category, upload desktop &amp; mobile assets, and set placement options from the marketing hub.
+          </p>
         </div>
       </div>
     </AdminSaveForm>

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { ProductStatus } from "@prisma/client";
+import { BannerPlacement, ProductStatus } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 
@@ -30,6 +30,7 @@ export type AdminProductItem = {
   name: string;
   slug: string;
   status: ProductStatus;
+  isFeatured: boolean;
   primaryImage: string | null;
   categories: { id: string; name: string; slug: string }[];
   categoryNames: string[];
@@ -95,13 +96,18 @@ export async function getAdminCategoryFormData(id?: string) {
             slug: true,
             description: true,
             imageUrl: true,
+            metaTitle: true,
+            metaDescription: true,
             parentId: true,
             isActive: true,
             sortOrder: true,
           },
         })
       : Promise.resolve(null),
-    prisma.category.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
+    prisma.category.findMany({
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { id: true, name: true },
+    }),
   ]);
   return { category, categories };
 }
@@ -131,6 +137,7 @@ export async function getAdminProducts(
         name: true,
         slug: true,
         status: true,
+        isFeatured: true,
         createdAt: true,
         updatedAt: true,
         images: {
@@ -184,6 +191,7 @@ export async function getAdminProducts(
       name: p.name,
       slug: p.slug,
       status: p.status,
+      isFeatured: p.isFeatured,
       primaryImage: p.images[0]?.url ?? null,
       categories: p.categories,
       categoryNames: p.categories.map((c) => c.name),
@@ -354,6 +362,7 @@ export type CategoryAssignedProduct = {
   name: string;
   slug: string;
   status: ProductStatus;
+  isFeatured: boolean;
   primaryImage: string | null;
   categoryNames: string[];
   variantCount: number;
@@ -367,10 +376,22 @@ export type CategoryAvailableProduct = {
   name: string;
   slug: string;
   status: ProductStatus;
+  isFeatured: boolean;
   primaryImage: string | null;
   categoryNames: string[];
   totalStock: number;
   minSellingPrice: number | null;
+};
+
+export type AdminCategoryBannerItem = {
+  id: string;
+  title: string;
+  imageUrl: string;
+  mobileImageUrl: string | null;
+  linkUrl: string | null;
+  placement: BannerPlacement;
+  isActive: boolean;
+  sortOrder: number;
 };
 
 export type AdminCategoryDetail = {
@@ -380,6 +401,8 @@ export type AdminCategoryDetail = {
     slug: string;
     description: string | null;
     imageUrl: string | null;
+    metaTitle: string | null;
+    metaDescription: string | null;
     isActive: boolean;
     sortOrder: number;
     parentId: string | null;
@@ -393,6 +416,7 @@ export type AdminCategoryDetail = {
       productCount: number;
     }[];
   };
+  banners: AdminCategoryBannerItem[];
   products: CategoryAssignedProduct[];
   metrics: {
     totalProducts: number;
@@ -415,6 +439,8 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
       slug: true,
       description: true,
       imageUrl: true,
+      metaTitle: true,
+      metaDescription: true,
       isActive: true,
       sortOrder: true,
       parentId: true,
@@ -430,13 +456,27 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
           _count: { select: { products: true } },
         },
       },
+      banners: {
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+        select: {
+          id: true,
+          title: true,
+          imageUrl: true,
+          mobileImageUrl: true,
+          linkUrl: true,
+          placement: true,
+          isActive: true,
+          sortOrder: true,
+        },
+      },
       products: {
-        orderBy: { name: "asc" },
+        orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
         select: {
           id: true,
           name: true,
           slug: true,
           status: true,
+          isFeatured: true,
           images: {
             orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
             take: 1,
@@ -474,6 +514,7 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
       name: p.name,
       slug: p.slug,
       status: p.status,
+      isFeatured: p.isFeatured,
       primaryImage: p.images[0]?.url ?? null,
       categoryNames: p.categories.map((c) => c.name),
       variantCount: p.variants.length,
@@ -492,6 +533,8 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
       slug: raw.slug,
       description: raw.description,
       imageUrl: raw.imageUrl,
+      metaTitle: raw.metaTitle,
+      metaDescription: raw.metaDescription,
       isActive: raw.isActive,
       sortOrder: raw.sortOrder,
       parentId: raw.parentId,
@@ -505,6 +548,7 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
         productCount: c._count.products,
       })),
     },
+    banners: raw.banners,
     products,
     metrics: {
       totalProducts: products.length,
@@ -534,6 +578,7 @@ export async function getAdminAvailableProductsForCategory(
       name: true,
       slug: true,
       status: true,
+      isFeatured: true,
       images: {
         orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
         take: 1,
@@ -562,6 +607,7 @@ export async function getAdminAvailableProductsForCategory(
       name: p.name,
       slug: p.slug,
       status: p.status,
+      isFeatured: p.isFeatured,
       primaryImage: p.images[0]?.url ?? null,
       categoryNames: p.categories.map((c) => c.name),
       totalStock,

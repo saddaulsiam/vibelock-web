@@ -122,20 +122,25 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
 }
 
 /**
- * Map SortOption to Prisma orderBy
+ * Map SortOption to Prisma orderBy (featured products always sorted first)
  */
 function buildDiscoveryOrderBy(
   sortOption: DiscoverySearchParams["sort"]
-): Prisma.ProductOrderByWithRelationInput {
+): Prisma.ProductOrderByWithRelationInput[] {
+  let baseOrder: Prisma.ProductOrderByWithRelationInput;
   switch (sortOption) {
     case "name-asc":
-      return { name: "asc" };
+      baseOrder = { name: "asc" };
+      break;
     case "name-desc":
-      return { name: "desc" };
+      baseOrder = { name: "desc" };
+      break;
     case "newest":
     default:
-      return { createdAt: "desc" };
+      baseOrder = { createdAt: "desc" };
+      break;
   }
+  return [{ isFeatured: "desc" }, baseOrder];
 }
 
 export interface DiscoveryResult {

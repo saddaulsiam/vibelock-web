@@ -113,6 +113,11 @@ export async function saveCouponAction(
     parsed.data;
   const isActive = parsed.data.isActive !== "false";
 
+  const rawCategoryIds = formData
+    .getAll("categoryIds")
+    .map(String)
+    .filter((v) => /^[0-9a-fA-F-]{36}$/.test(v));
+
   try {
     if (id) {
       const existing = await prisma.coupon.findUnique({
@@ -133,6 +138,9 @@ export async function saveCouponAction(
           isActive,
           startDate,
           endDate,
+          categories: {
+            set: rawCategoryIds.map((catId) => ({ id: catId })),
+          },
         },
       });
     } else {
@@ -146,6 +154,9 @@ export async function saveCouponAction(
           isActive,
           startDate,
           endDate,
+          categories: rawCategoryIds.length
+            ? { connect: rawCategoryIds.map((catId) => ({ id: catId })) }
+            : undefined,
         },
       });
     }

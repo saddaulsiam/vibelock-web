@@ -65,6 +65,7 @@ interface AdminCouponsTableProps {
     expired: number;
     inactive: number;
   };
+  allCategories?: { id: string; name: string; slug: string }[];
 }
 
 function formatCurrency(val: unknown): string {
@@ -109,6 +110,7 @@ export function AdminCouponsTable({
   currentFilter = "all",
   currentType,
   segmentCounts = { all: total, active: 0, expired: 0, inactive: 0 },
+  allCategories = [],
 }: AdminCouponsTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -830,6 +832,19 @@ export function AdminCouponsTable({
                             ? `Min spend ${formatCurrency(coupon.minOrderValue)}`
                             : "No minimum spend"}
                         </div>
+                        <div className="mt-1">
+                          {coupon.categories && coupon.categories.length > 0 ? (
+                            <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700">
+                              <span className="size-1 rounded-full bg-purple-500" />
+                              {coupon.categories[0].name}
+                              {coupon.categories.length > 1
+                                ? ` +${coupon.categories.length - 1}`
+                                : ""}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-neutral-400">Storewide</span>
+                          )}
+                        </div>
                       </td>
                     )}
 
@@ -1054,6 +1069,18 @@ export function AdminCouponsTable({
                         ? `Min ${formatCurrency(coupon.minOrderValue)}`
                         : "No minimum"}
                     </span>
+                    <span className="mt-0.5 block">
+                      {coupon.categories && coupon.categories.length > 0 ? (
+                        <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.2 text-[9px] font-semibold text-purple-700">
+                          {coupon.categories[0].name}
+                          {coupon.categories.length > 1
+                            ? ` +${coupon.categories.length - 1}`
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] text-neutral-400">Storewide</span>
+                      )}
+                    </span>
                   </div>
                   <div className="text-right">
                     <span className="font-bold text-neutral-900">
@@ -1133,6 +1160,7 @@ export function AdminCouponsTable({
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
         couponToEdit={couponToEdit}
+        categories={allCategories}
       />
 
       {/* ── Safe Delete / Deactivation Modal ── */}

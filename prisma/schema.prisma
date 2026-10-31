@@ -220,6 +220,8 @@ model Category {
   slug        String     @unique
   description String?
   imageUrl    String?
+  metaTitle       String?
+  metaDescription String?
   parentId    String?
   parent      Category?  @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryToCategory")
@@ -230,6 +232,7 @@ model Category {
 
   products Product[]
   banners  Banner[] @relation("BannerCategories")
+  coupons  Coupon[] @relation("CouponCategories")
 
   @@index([sortOrder])
   @@index([isActive])
@@ -241,6 +244,7 @@ model Product {
   slug        String        @unique
   description String?
   status      ProductStatus @default(DRAFT)
+  isFeatured  Boolean       @default(false)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -248,6 +252,8 @@ model Product {
   variants   ProductVariant[]
   images     ProductImage[]
   reviews    Review[]
+
+  @@index([isFeatured])
 }
 
 model ProductVariant {
@@ -536,6 +542,7 @@ model Coupon {
   isActive      Boolean      @default(true)
   startDate     DateTime?
   endDate       DateTime?
+  categories    Category[]   @relation("CouponCategories")
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 }

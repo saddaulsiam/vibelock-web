@@ -17,12 +17,14 @@ import {
   AlertCircle,
   FolderPlus,
   ArrowRight,
+  Star,
 } from "lucide-react";
 import { ProductStatus } from "@prisma/client";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
 import {
   assignProductsToCategoryAction,
   removeProductFromCategoryAction,
+  toggleProductFeaturedAction,
 } from "@/lib/admin/catalog-actions";
 import type {
   CategoryAssignedProduct,
@@ -69,6 +71,63 @@ export function CategoryProductsManager({
 
   // Row removal state
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  // Pin / Feature toggle state
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(null);
+
+  const pinnedCount = useMemo(
+    () => assignedProducts.filter((p) => p.isFeatured).length,
+    [assignedProducts]
+  );
+
+  const handleToggleFeatured = async (product: CategoryAssignedProduct) => {
+    if (togglingFeaturedId) return;
+    const newFeatured = !product.isFeatured;
+    setTogglingFeaturedId(product.id);
+
+    // Optimistically update assigned products and re-sort
+    setAssignedProducts((prev) => {
+      const updated = prev.map((p) =>
+        p.id === product.id ? { ...p, isFeatured: newFeatured } : p
+      );
+      return [...updated].sort((a, b) => {
+        if (a.isFeatured !== b.isFeatured) {
+          return a.isFeatured ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    });
+
+    try {
+      const res = await toggleProductFeaturedAction(product.id, newFeatured);
+      if (res.error) {
+        setAssignedProducts((prev) =>
+          prev.map((p) => (p.id === product.id ? { ...p, isFeatured: !newFeatured } : p))
+        );
+        setNotification({ type: "error", message: res.error });
+      } else {
+        setNotification({
+          type: "success",
+          message: newFeatured
+            ? `"${product.name}" is now pinned to the top of category pages.`
+            : `"${product.name}" unpinned from category top.`,
+        });
+        startTransition(() => {
+          router.refresh();
+        });
+      }
+    } catch {
+      setAssignedProducts((prev) =>
+        prev.map((p) => (p.id === product.id ? { ...p, isFeatured: !newFeatured } : p))
+      );
+      setNotification({
+        type: "error",
+        message: "Failed to update pinned status. Please try again.",
+      });
+    } finally {
+      setTogglingFeaturedId(null);
+    }
+  };
 
   // Status notification
   const [notification, setNotification] = useState<{
@@ -153,6 +212,7 @@ export function CategoryProductsManager({
         name: p.name,
         slug: p.slug,
         status: p.status,
+        isFeatured: p.isFeatured,
         primaryImage: p.primaryImage,
         categoryNames: [...p.categoryNames, categoryName],
         variantCount: 1,
@@ -257,9 +317,17 @@ export function CategoryProductsManager({
             )}
           </div>
 
-          <div className="text-xs text-neutral-500 whitespace-nowrap">
-            Showing <span className="font-semibold text-neutral-900">{filteredAssigned.length}</span>{" "}
-            of <span className="font-semibold text-neutral-900">{assignedProducts.length}</span> assigned
+          <div className="flex items-center gap-2 text-xs text-neutral-500 whitespace-nowrap">
+            <span>
+              Showing <span className="font-semibold text-neutral-900">{filteredAssigned.length}</span>{" "}
+              of <span className="font-semibold text-neutral-900">{assignedProducts.length}</span> assigned
+            </span>
+            {pinnedCount > 0 && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+                <Star className="size-3 fill-amber-400 text-amber-600" />
+                <span>{pinnedCount} Pinned</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -283,6 +351,7 @@ export function CategoryProductsManager({
           <thead className={ADMIN_TABLE_CLASSES.thead}>
             <tr>
               <th className="px-4 py-3.5">Assigned Product</th>
+              <th className="px-4 py-3.5 text-center">Pin / Feature</th>
               <th className="px-4 py-3.5 text-center">Status</th>
               <th className="px-4 py-3.5 text-center">Total Stock</th>
               <th className="px-4 py-3.5 text-right">Price</th>
@@ -292,7 +361,7 @@ export function CategoryProductsManager({
           <tbody className={ADMIN_TABLE_CLASSES.tbody}>
             {filteredAssigned.length === 0 ? (
               <tr>
-                <td colSpan={5} className="py-14 text-center">
+                <td colSpan={6} className="py-14 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <Package className="size-10 text-neutral-300" />
                     <p className="text-sm font-semibold text-neutral-800">
@@ -343,12 +412,20 @@ export function CategoryProductsManager({
                           )}
                         </div>
                         <div className="min-w-0">
-                          <Link
-                            href={`/admin/products/${product.id}/edit`}
-                            className="font-semibold text-neutral-900 hover:text-black hover:underline"
-                          >
-                            {product.name}
-                          </Link>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/admin/products/${product.id}/edit`}
+                              className="font-semibold text-neutral-900 hover:text-black hover:underline"
+                            >
+                              {product.name}
+                            </Link>
+                            {product.isFeatured && (
+                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[10px] font-bold text-amber-800">
+                                <Star className="size-2.5 fill-amber-400 text-amber-600" />
+                                <span>Featured</span>
+                              </span>
+                            )}
+                          </div>
                           <div className="font-mono text-[11px] text-neutral-400">
                             /{product.slug}
                           </div>
@@ -368,6 +445,38 @@ export function CategoryProductsManager({
                           )}
                         </div>
                       </div>
+                    </td>
+
+                    {/* Pin / Feature */}
+                    <td className="px-4 py-3.5 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleFeatured(product)}
+                        disabled={togglingFeaturedId === product.id}
+                        title={
+                          product.isFeatured
+                            ? "Product is pinned to the top of this category. Click to unpin."
+                            : "Pin product to the top of this category"
+                        }
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
+                          product.isFeatured
+                            ? "border-amber-300 bg-amber-50 text-amber-800 shadow-2xs hover:bg-amber-100 hover:border-amber-400"
+                            : "border-neutral-200 bg-white text-neutral-600 shadow-2xs hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-900"
+                        } disabled:opacity-50`}
+                      >
+                        {togglingFeaturedId === product.id ? (
+                          <Loader2 className="size-3.5 animate-spin text-amber-600" />
+                        ) : (
+                          <Star
+                            className={`size-3.5 ${
+                              product.isFeatured
+                                ? "fill-amber-400 text-amber-600"
+                                : "text-neutral-400"
+                            }`}
+                          />
+                        )}
+                        <span>{product.isFeatured ? "Pinned" : "Pin"}</span>
+                      </button>
                     </td>
 
                     {/* Status */}

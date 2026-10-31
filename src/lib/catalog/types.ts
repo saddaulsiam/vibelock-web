@@ -6,6 +6,8 @@ export interface CategorySummary {
   slug: string;
   description: string | null;
   imageUrl: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
 }
 
 export interface ProductImageSummary {
@@ -31,6 +33,7 @@ export interface ProductSummary {
   slug: string;
   description: string | null;
   status: ProductStatus;
+  isFeatured?: boolean;
   primaryImage: ProductImageSummary | null;
   secondaryImage?: ProductImageSummary | null;
   images?: ProductImageSummary[];

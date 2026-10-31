@@ -27,6 +27,7 @@ describe("Admin Coupons & Discounts Module", () => {
       startDate: new Date("2026-01-01T00:00:00Z"),
       endDate: new Date("2026-12-31T23:59:59Z"),
       createdAt: new Date("2026-01-01T00:00:00Z"),
+      categories: [{ id: "cat-1", name: "T-Shirts", slug: "t-shirts" }],
     },
     {
       id: "coupon-2",
@@ -40,6 +41,7 @@ describe("Admin Coupons & Discounts Module", () => {
       startDate: null,
       endDate: null,
       createdAt: new Date("2026-02-01T00:00:00Z"),
+      categories: [],
     },
     {
       id: "coupon-3",
@@ -53,6 +55,7 @@ describe("Admin Coupons & Discounts Module", () => {
       startDate: new Date("2025-01-01T00:00:00Z"),
       endDate: new Date("2025-06-01T00:00:00Z"), // Expired!
       createdAt: new Date("2025-01-01T00:00:00Z"),
+      categories: [],
     },
     {
       id: "coupon-4",
@@ -66,6 +69,7 @@ describe("Admin Coupons & Discounts Module", () => {
       startDate: null,
       endDate: null,
       createdAt: new Date("2026-03-01T00:00:00Z"),
+      categories: [],
     },
   ];
 
