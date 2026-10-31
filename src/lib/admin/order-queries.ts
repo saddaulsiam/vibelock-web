@@ -306,11 +306,35 @@ export async function getAdminOrderById(id: string) {
 
   const itemsWithImages = order.items.map((item) => ({
     ...item,
+    unitPrice: Number(item.unitPrice),
+    costPrice: Number(item.costPrice),
+    appliedDiscount: Number(item.appliedDiscount),
+    taxRate: Number(item.taxRate),
+    lineSubtotal: Number(item.lineSubtotal),
+    discountAmount: Number(item.discountAmount),
+    taxAmount: Number(item.taxAmount),
+    lineTotal: Number(item.lineTotal),
     imageUrl: skuImageMap.get(item.sku) || skuImageMap.get(item.productName) || null,
   }));
 
   return {
     ...order,
+    total: Number(order.total),
+    subtotal: Number(order.subtotal),
+    shippingCost: Number(order.shippingCost),
+    taxAmount: Number(order.taxAmount),
+    discount: Number(order.discount),
+    taxRate: Number(order.taxRate),
+    shipment: order.shipment
+      ? {
+          ...order.shipment,
+          shippingAmount: Number(order.shipment.shippingAmount),
+        }
+      : null,
+    payments: order.payments.map((p) => ({
+      ...p,
+      amount: Number(p.amount),
+    })),
     items: itemsWithImages,
   };
 }
