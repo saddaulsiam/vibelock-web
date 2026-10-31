@@ -95,10 +95,17 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
         }))
       ) || [],
 
-    // Only DELIVERED orders are eligible for return (if they exist). Or you can set
-    // it to true for testing if required by the system, but the prompt said:
-    // "use statuses that actually exist... if shipping is Phase 3K... make it configurable/disabled"
-    isReturnable: order.status === "DELIVERED",
+    // 3-Day Return Policy:
+    // Only DELIVERED orders within 3 days (72h) of delivery are eligible for customer return.
+    isReturnable: (() => {
+      if (order.status !== "DELIVERED") return false;
+      const deliveredAt =
+        order.shipment?.deliveredAt ||
+        order.history?.find((h) => h.status === "DELIVERED")?.createdAt ||
+        order.updatedAt;
+      const daysSinceDelivery = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+      return daysSinceDelivery <= 3;
+    })(),
     shipment: order.shipment
       ? {
           id: order.shipment.id,

@@ -7,6 +7,8 @@ import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { RefundService } from "@/lib/refunds/service";
 import { ReturnService } from "@/lib/returns/service";
+import { getAdminReturns } from "@/lib/admin/return-queries";
+import { getShippingProvider } from "@/lib/shipping/provider";
 
 export type AdminReturnActionState = { error: string | null; message?: string };
 
@@ -257,4 +259,132 @@ export async function processReturnRefundAction(
 
   refreshReturns();
   return { error: null, message: "Refund provider processing completed." };
+}
+
+export async function loadMoreAdminReturnsAction(options: {
+  status?: ReturnRequestStatus;
+  search?: string;
+  page: number;
+  limit?: number;
+}) {
+  await requireRole("ADMIN");
+  return getAdminReturns(options);
+}
+
+export async function bookSteadfastReturnPickupAction(
+  _previous: AdminReturnActionState,
+  formData: FormData
+): Promise<AdminReturnActionState> {
+  const admin = await requireRole("ADMIN", { throw: true });
+  const returnId = String(formData.get("returnId") ?? "").trim();
+  if (!returnId) return { error: "Return ID is required." };
+
+  try {
+    const request = await prisma.returnRequest.findUnique({
+      where: { id: returnId },
+      include: {
+        order: true,
+        items: { include: { orderItem: true } },
+      },
+    });
+
+    if (!request) return { error: "Return request not found." };
+    if (request.status === "REJECTED" || request.status === "COMPLETED") {
+      return { error: `Cannot book pickup for a ${request.status.toLowerCase()} return request.` };
+    }
+
+    // Check if pickup has already been booked (idempotency check)
+    const existingAudit = await prisma.auditLog.findFirst({
+      where: {
+        entityType: "ReturnRequest",
+        entityId: returnId,
+        action: "RETURN_PICKUP_BOOKED",
+      },
+    });
+    if (existingAudit) {
+      const meta = (existingAudit.metadata as Record<string, unknown>) || {};
+      return {
+        error: null,
+        message: `Pickup already booked with Steadfast. Tracking: ${meta.trackingCode || meta.consignmentId}`,
+      };
+    }
+
+    if (!request.order.shippingStreet || !request.order.shippingCity) {
+      return { error: "Customer shipping address is incomplete for courier pickup." };
+    }
+
+    const cleanPhone = request.order.customerPhone?.replace(/\D/g, "");
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return { error: "A valid customer contact phone number is required for courier pickup." };
+    }
+
+    // Dispatch to courier provider
+    const provider = getShippingProvider();
+    const invoiceNumber = `RET-${request.order.orderNumber}`;
+    const note = `Return Pickup: Order #${request.order.orderNumber} (${request.items.length} items). Return ID: ${request.id.slice(0, 8)}`;
+
+    const dispatchRes = await provider.createShipment({
+      orderId: request.order.id,
+      orderNumber: invoiceNumber,
+      recipientName: request.order.customerName ? `${request.order.customerName} (Return)` : "Return Customer",
+      recipientPhone: request.order.customerPhone || "",
+      street: request.order.shippingStreet,
+      city: request.order.shippingCity,
+      state: request.order.shippingState || "",
+      zip: request.order.shippingZip || "",
+      country: request.order.shippingCountry || "BD",
+      amount: 0,
+      codAmount: 0,
+      referenceId: request.id,
+      note,
+    });
+
+    if (!dispatchRes.success || !dispatchRes.providerShipmentId || !dispatchRes.trackingNumber) {
+      return {
+        error: dispatchRes.error || "Steadfast rejected the return pickup request.",
+      };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Transition from PENDING to APPROVED if pending
+      if (request.status === "PENDING") {
+        await tx.returnRequest.update({
+          where: { id: returnId },
+          data: { status: "APPROVED" },
+        });
+      }
+
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "RETURN_PICKUP_BOOKED",
+          entityType: "ReturnRequest",
+          entityId: returnId,
+          metadata: {
+            provider: provider.name || "steadfast",
+            consignmentId: dispatchRes.providerShipmentId,
+            trackingCode: dispatchRes.trackingNumber,
+            bookedAt: new Date().toISOString(),
+          },
+        },
+      });
+
+      await tx.orderHistory.create({
+        data: {
+          orderId: request.orderId,
+          status: request.order.status,
+          notes: `[RETURN PICKUP] Steadfast pickup booked. Consignment ID: ${dispatchRes.providerShipmentId}, Tracking: ${dispatchRes.trackingNumber}`,
+        },
+      });
+    });
+
+    refreshReturns();
+    return {
+      error: null,
+      message: `Steadfast pickup booked! Consignment #${dispatchRes.providerShipmentId}, Tracking: ${dispatchRes.trackingNumber}`,
+    };
+  } catch (err) {
+    console.error("[bookSteadfastReturnPickupAction] error:", err);
+    return { error: "Failed to book return pickup. Please try again." };
+  }
 }

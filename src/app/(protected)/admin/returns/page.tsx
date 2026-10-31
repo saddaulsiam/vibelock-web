@@ -1,15 +1,16 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { ReturnRequestStatus } from "@prisma/client";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { ShoppingBag, ArrowUpRight } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { getAdminReturns } from "@/lib/admin/return-queries";
+import { AdminReturnsTable } from "@/components/admin/admin-returns-table";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-async function ReturnsTable({
+async function ReturnsTableContainer({
   searchParams,
 }: {
   searchParams: Record<string, string | string[] | undefined>;
@@ -21,112 +22,24 @@ async function ReturnsTable({
     : undefined;
   const rawPage = Number(valueOf(searchParams.page));
   const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
-  const { returns, totalPages } = await getAdminReturns({ search, status, page });
+
+  const { returns, total, totalPages, statusCounts } = await getAdminReturns({
+    search,
+    status,
+    page,
+    limit: 20,
+  });
 
   return (
-    <div className="space-y-4">
-      <form method="get" className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <Input
-          name="q"
-          placeholder="Search order, customer, email..."
-          defaultValue={search}
-          className="max-w-sm"
-        />
-        <select
-          name="status"
-          defaultValue={status ?? ""}
-          className="border-input flex h-9 w-45 rounded-md border bg-transparent px-3 text-sm"
-        >
-          <option value="">All statuses</option>
-          {Object.values(ReturnRequestStatus).map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="inline-flex h-9 items-center justify-center border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white"
-        >
-          Filter
-        </button>
-      </form>
-
-      <div className="overflow-x-auto rounded-md border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 border-b">
-            <tr className="text-left">
-              <th className="p-3 font-medium">Order #</th>
-              <th className="p-3 font-medium">Customer</th>
-              <th className="p-3 font-medium">Requested</th>
-              <th className="p-3 font-medium">Status</th>
-              <th className="p-3 font-medium">Refund estimate</th>
-              <th className="p-3 text-right font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            {returns.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-muted-foreground p-8 text-center">
-                  No return requests found.
-                </td>
-              </tr>
-            ) : (
-              returns.map((request) => (
-                <tr key={request.id} className="hover:bg-muted/30">
-                  <td className="p-3 font-medium">{request.order.orderNumber}</td>
-                  <td className="p-3">
-                    <div>{request.order.customerName || "Guest"}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {request.order.customerEmail}
-                    </div>
-                  </td>
-                  <td className="p-3">{new Date(request.createdAt).toLocaleDateString()}</td>
-                  <td className="p-3">
-                    <Badge variant={request.status === "REJECTED" ? "destructive" : "outline"}>
-                      {request.status}
-                    </Badge>
-                  </td>
-                  <td className="p-3">৳{request.requestedAmount.toFixed(2)}</td>
-                  <td className="p-3 text-right">
-                    <Link
-                      href={`/admin/returns/${request.id}`}
-                      className="text-primary font-medium hover:underline"
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-3">
-          {page > 1 && (
-            <Link
-              href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page - 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              ←
-            </Link>
-          )}
-          <span className="text-sm font-medium">
-            Page {page} of {totalPages}
-          </span>
-          {page < totalPages && (
-            <Link
-              href={`?q=${encodeURIComponent(search ?? "")}&status=${status ?? ""}&page=${page + 1}`}
-              className="inline-flex size-10 items-center justify-center rounded-sm border"
-            >
-              →
-            </Link>
-          )}
-        </div>
-      )}
-    </div>
+    <AdminReturnsTable
+      initialReturns={returns}
+      total={total}
+      totalPages={totalPages}
+      page={page}
+      statusCounts={statusCounts}
+      currentStatus={status}
+      currentSearch={search}
+    />
   );
 }
 
@@ -135,16 +48,40 @@ export default async function AdminReturnsPage({
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
+  const resolvedSearchParams = await searchParams;
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Returns &amp; Refunds</h1>
-        <p className="text-muted-foreground">
-          Review customer return requests and payment refunds.
-        </p>
-      </div>
-      <Suspense fallback={<div className="p-12 text-center">Loading returns...</div>}>
-        <ReturnsTable searchParams={await searchParams} />
+    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+      {/* ── Harmonized Page Header ── */}
+      <AdminPageHeader
+        eyebrow="Operations / Post-Purchase"
+        title="Returns & Refunds"
+        badgeLabel="Returns Desk"
+        badgeVariant="amber"
+        description="Review customer return requests, inspect returned merchandise, and process payment refunds."
+      >
+        <Link
+          href="/admin/orders"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 hover:text-neutral-900 transition"
+        >
+          <ShoppingBag className="size-3.5 text-neutral-500" />
+          <span>View All Orders</span>
+          <ArrowUpRight className="size-3 text-neutral-400" />
+        </Link>
+      </AdminPageHeader>
+
+      {/* ── Main Returns Table ── */}
+      <Suspense
+        fallback={
+          <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-neutral-200/90 bg-white p-12 text-center text-xs text-neutral-500">
+            <div className="flex items-center gap-2 font-medium">
+              <span className="size-4 animate-spin rounded-full border-2 border-[#101114] border-t-transparent" />
+              <span>Loading return requests...</span>
+            </div>
+          </div>
+        }
+      >
+        <ReturnsTableContainer searchParams={resolvedSearchParams} />
       </Suspense>
     </div>
   );
