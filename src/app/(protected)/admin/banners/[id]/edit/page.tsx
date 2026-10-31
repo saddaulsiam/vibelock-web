@@ -5,7 +5,7 @@ import { BannerForm } from "@/components/admin/banners";
 import { Card, CardContent } from "@/components/ui/card";
 import prisma from "@/lib/prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
-import { getAdminBannerById } from "@/lib/admin/banner-queries";
+import { getAdminBannerById } from "@/lib/admin/banners";
 
 async function getBannerAndCategories(id: string) {
   for (let attempt = 1; attempt <= 2; attempt++) {

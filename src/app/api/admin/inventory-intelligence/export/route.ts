@@ -3,7 +3,7 @@ import { AuthRequiredError, ForbiddenError, requireRole } from "@/lib/auth/autho
 import {
   getAdminInventoryIntelligenceForExport,
   type InventoryIntelligenceWindow,
-} from "@/lib/admin/inventory-intelligence-queries";
+} from "@/lib/admin/inventory";
 
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return "";

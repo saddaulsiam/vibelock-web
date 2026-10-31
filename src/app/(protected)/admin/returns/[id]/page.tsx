@@ -19,7 +19,7 @@ import {
   Gift,
   Lock,
 } from "lucide-react";
-import { getAdminReturnById } from "@/lib/admin/return-queries";
+import { getAdminReturnById } from "@/lib/admin/returns";
 import { parseReturnReason } from "@/lib/returns/utils";
 import {
   initiateReturnRefundAction,
@@ -27,7 +27,7 @@ import {
   updateReturnStatusAction,
   bookSteadfastReturnPickupAction,
   issueStoreCreditRefundAction,
-} from "@/lib/admin/return-actions";
+} from "@/lib/admin/returns";
 import {
   ProcessRefundForm,
   ReturnStatusForm,

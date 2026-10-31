@@ -66,7 +66,7 @@ import {
   updatePaymentMethodSetting,
   isBkashCredentialConfigured,
 } from "../../src/lib/settings/payment-settings";
-import { togglePaymentMethodAction } from "../../src/lib/admin/payment-settings-actions";
+import { togglePaymentMethodAction } from "../../src/lib/admin/payments";
 
 describe("VibeLock Phase 2C — Admin Payment Settings & bKash Credential Gating", () => {
   beforeEach(() => {

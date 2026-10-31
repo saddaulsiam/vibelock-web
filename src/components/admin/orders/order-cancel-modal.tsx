@@ -1,18 +1,18 @@
 "use client";
 
+import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
+import {
+  AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  RotateCcw,
+  ShieldAlert,
+  X,
+} from "lucide-react";
 import * as React from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import {
-  AlertTriangle,
-  X,
-  RotateCcw,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  ShieldAlert,
-} from "lucide-react";
-import { updateOrderStatusAction } from "@/lib/admin/order-actions";
 
 export interface CancellationReasonOption {
   id: string;
@@ -138,8 +138,7 @@ function OrderCancelModalContent({
   }, [state.message, state.error, onClose]);
 
   const currentReason =
-    CANCELLATION_REASONS.find((r) => r.id === selectedReasonId) ||
-    CANCELLATION_REASONS[0];
+    CANCELLATION_REASONS.find((r) => r.id === selectedReasonId) || CANCELLATION_REASONS[0];
 
   // Combined formatted note for audit logging
   const combinedNotes = customNote.trim()
@@ -147,7 +146,7 @@ function OrderCancelModalContent({
     : `[CANCELLATION: ${currentReason.label}]`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150">
       <div
         className="relative w-full max-w-lg rounded-2xl border border-neutral-200 bg-white p-6 shadow-2xl"
         role="dialog"
@@ -183,11 +182,10 @@ function OrderCancelModalContent({
         <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 text-emerald-900">
           <RotateCcw className="mt-0.5 size-4 shrink-0 text-emerald-600" />
           <div className="text-xs">
-            <p className="font-bold text-emerald-950">
-              Automatic Inventory Restock Guaranteed
-            </p>
-            <p className="mt-0.5 text-emerald-800 leading-relaxed">
-              Cancelling this order immediately releases all reserved units back to available stock in the store catalog.
+            <p className="font-bold text-emerald-950">Automatic Inventory Restock Guaranteed</p>
+            <p className="mt-0.5 leading-relaxed text-emerald-800">
+              Cancelling this order immediately releases all reserved units back to available stock
+              in the store catalog.
             </p>
           </div>
         </div>
@@ -215,9 +213,7 @@ function OrderCancelModalContent({
 
           {/* Quick Reason Selection Chips */}
           <div>
-            <label className="block text-xs font-bold text-neutral-800">
-              Quick Select:
-            </label>
+            <label className="block text-xs font-bold text-neutral-800">Quick Select:</label>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
               {CANCELLATION_REASONS.slice(0, 4).map((reason) => {
                 const isSelected = selectedReasonId === reason.id;
@@ -259,9 +255,7 @@ function OrderCancelModalContent({
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-neutral-500 italic">
-              {currentReason.description}
-            </p>
+            <p className="text-[11px] text-neutral-500 italic">{currentReason.description}</p>
           </div>
 
           {/* Optional Additional Internal Details */}
@@ -285,7 +279,10 @@ function OrderCancelModalContent({
           {/* Warning Note */}
           <div className="rounded-lg bg-neutral-50 p-2.5 text-[11px] text-neutral-600">
             <p>
-              ⚠️ <span className="font-semibold text-neutral-800">Please note:</span> Cancelling this order changes the status to <span className="font-mono font-bold text-rose-600">CANCELLED</span> and permanently logs this reason in the order history and audit trail.
+              ⚠️ <span className="font-semibold text-neutral-800">Please note:</span> Cancelling
+              this order changes the status to{" "}
+              <span className="font-mono font-bold text-rose-600">CANCELLED</span> and permanently
+              logs this reason in the order history and audit trail.
             </p>
           </div>
 
@@ -306,19 +303,8 @@ function OrderCancelModalContent({
   );
 }
 
-export function OrderCancelModal({
-  orderId,
-  orderNumber,
-  isOpen,
-  onClose,
-}: OrderCancelModalProps) {
+export function OrderCancelModal({ orderId, orderNumber, isOpen, onClose }: OrderCancelModalProps) {
   if (!isOpen) return null;
 
-  return (
-    <OrderCancelModalContent
-      orderId={orderId}
-      orderNumber={orderNumber}
-      onClose={onClose}
-    />
-  );
+  return <OrderCancelModalContent orderId={orderId} orderNumber={orderNumber} onClose={onClose} />;
 }

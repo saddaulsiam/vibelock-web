@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ReturnRequestStatus } from "@prisma/client";
 import { ShoppingBag, ArrowUpRight } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared";
-import { getAdminReturns } from "@/lib/admin/return-queries";
+import { getAdminReturns } from "@/lib/admin/returns";
 import { AdminReturnsTable } from "@/components/admin/returns";
 
 function valueOf(value: string | string[] | undefined) {

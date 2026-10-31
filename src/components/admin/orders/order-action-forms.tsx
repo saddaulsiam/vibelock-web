@@ -1,16 +1,19 @@
 "use client";
 
-import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import { Label } from "@/components/ui/label";
-import type { AdminActionState } from "@/lib/admin/order-actions";
-import { updateOrderPaymentStatusAction, updateOrderStatusAction } from "@/lib/admin/order-actions";
+import type { AdminActionState } from "@/lib/admin/orders/order-actions";
+import {
+  updateOrderPaymentStatusAction,
+  updateOrderStatusAction,
+} from "@/lib/admin/orders/order-actions";
 import {
   createShipmentAction,
   refreshShipmentStatusAction,
-} from "@/lib/admin/shipping-actions";
+} from "@/lib/admin/shipping/shipping-actions";
 import type { OrderStatus, PaymentStatus } from "@prisma/client";
-import { CheckCircle2, AlertCircle, Loader2, Send, RotateCw } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, RotateCw, Send } from "lucide-react";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: AdminActionState = { error: null };
 
@@ -177,7 +180,8 @@ export function CreateShipmentForm({ orderId }: { orderId: string }) {
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="id" value={orderId} />
       <p className="text-xs leading-relaxed text-neutral-600">
-        Dispatch parcel to integrated courier partner once packaging and physical inspection is complete.
+        Dispatch parcel to integrated courier partner once packaging and physical inspection is
+        complete.
       </p>
       {state.error ? (
         <div className="flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50 p-2 text-xs font-medium text-red-800">
@@ -224,4 +228,3 @@ export function RefreshShipmentStatusButton({ shipmentId }: { shipmentId: string
     </form>
   );
 }
-

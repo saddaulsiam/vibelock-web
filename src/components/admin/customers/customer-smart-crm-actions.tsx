@@ -1,16 +1,16 @@
 "use client";
 
-import * as React from "react";
 import {
-  MessageCircle,
-  Sparkles,
-  Gift,
-  PackageCheck,
-  HeartHandshake,
-  Send,
-  X,
   ChevronDown,
+  Gift,
+  HeartHandshake,
+  MessageCircle,
+  PackageCheck,
+  Send,
+  Sparkles,
+  X,
 } from "lucide-react";
+import * as React from "react";
 
 interface SmartCrmCustomer {
   id: string;

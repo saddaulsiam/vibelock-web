@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import {
   getAdminReconciliation,
   ReconciliationClassification,
-} from "@/lib/admin/reconciliation-queries";
+} from "@/lib/admin/reports";
 
 function money(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Unavailable";

@@ -34,8 +34,8 @@ import {
   OrderStaffNotes,
   OrderMobileActionBar,
 } from "@/components/admin/orders";
-import { getAdminOrderById } from "@/lib/admin/order-queries";
-import { getCustomerRiskProfile } from "@/lib/admin/customer-risk";
+import { getAdminOrderById } from "@/lib/admin/orders";
+import { getCustomerRiskProfile } from "@/lib/admin/customers";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);

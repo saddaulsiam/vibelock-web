@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { AdminInventoryPoModal } from "@/components/admin/inventory/admin-inventory-po-modal";
+import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
+import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
+import type { InventoryTransactionType } from "@prisma/client";
 import {
   ArrowLeft,
   Barcode,
@@ -24,10 +24,10 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import type { InventoryTransactionType } from "@prisma/client";
-import { quickAdjustInventoryAction } from "@/lib/admin/inventory-actions";
-import { AdminInventoryPoModal } from "@/components/admin/inventory/admin-inventory-po-modal";
-import type { AdminInventoryDetailResult } from "@/lib/admin/inventory-queries";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 function currency(value: number) {
   return `৳${Number(value || 0).toLocaleString("en-BD", {
@@ -192,8 +192,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
   };
 
   // Calculate actual delta to submit
-  const computedDelta =
-    adjustMode === "target" ? targetQuantity - totalStock : adjustQuantity;
+  const computedDelta = adjustMode === "target" ? targetQuantity - totalStock : adjustQuantity;
 
   // Calculate resulting stock preview
   const previewStock = totalStock + computedDelta;
@@ -288,11 +287,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
     ]);
 
     const csvContent = [headers, ...rows]
-      .map((row) =>
-        row
-          .map((field) => `"${String(field).replace(/"/g, '""')}"`)
-          .join(",")
-      )
+      .map((row) => row.map((field) => `"${String(field).replace(/"/g, '""')}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -322,7 +317,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
             <span>Inventory Control Center</span>
           </Link>
           <span>/</span>
-          <span className="truncate max-w-[200px] text-[#101114]/70">{variant.product.name}</span>
+          <span className="max-w-[200px] truncate text-[#101114]/70">{variant.product.name}</span>
           <span>/</span>
           <span className="font-mono text-xs font-semibold text-[#101114]">{variant.sku}</span>
         </div>
@@ -409,10 +404,10 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                 <span
                   className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                     isOutOfStock
-                      ? "bg-rose-100 text-rose-800 border border-rose-200"
+                      ? "border border-rose-200 bg-rose-100 text-rose-800"
                       : isLowStock
-                        ? "bg-amber-100 text-amber-900 border border-amber-200"
-                        : "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                        ? "border border-amber-200 bg-amber-100 text-amber-900"
+                        : "border border-emerald-200 bg-emerald-100 text-emerald-800"
                   }`}
                 >
                   {isOutOfStock ? "Out of Stock" : isLowStock ? "Low Stock" : "In Stock"}
@@ -459,7 +454,9 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
               <div className="flex flex-wrap items-center gap-4 pt-1 text-sm">
                 <div>
                   <span className="text-xs text-[#101114]/60">Cost Price: </span>
-                  <span className="font-semibold text-[#101114]">{currency(variant.costPrice)}</span>
+                  <span className="font-semibold text-[#101114]">
+                    {currency(variant.costPrice)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-xs text-[#101114]/60">Selling Price: </span>
@@ -481,7 +478,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
 
           {/* Quick Barcode Preview */}
           <div className="hidden shrink-0 flex-col items-center rounded-sm border border-[#101114]/15 bg-[#FBF9F5] p-3 text-center sm:flex">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#101114]/60">
+            <span className="text-[10px] font-extrabold tracking-widest text-[#101114]/60 uppercase">
               GARMENT TAG
             </span>
             <div className="my-1">
@@ -536,11 +533,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
           </div>
           <div
             className={`mt-2 text-2xl font-black ${
-              isOutOfStock
-                ? "text-rose-700"
-                : isLowStock
-                  ? "text-amber-700"
-                  : "text-emerald-700"
+              isOutOfStock ? "text-rose-700" : isLowStock ? "text-amber-700" : "text-emerald-700"
             }`}
           >
             {availableStock}
@@ -554,9 +547,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
             <span>Cost Valuation</span>
             <span className="font-mono text-[10px] text-[#101114]/40">৳ COST</span>
           </div>
-          <div className="mt-2 text-2xl font-black text-[#101114]">
-            {currency(costValuation)}
-          </div>
+          <div className="mt-2 text-2xl font-black text-[#101114]">{currency(costValuation)}</div>
           <p className="mt-1 text-[11px] text-[#101114]/60">Physical units × Cost price</p>
         </div>
 
@@ -639,7 +630,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                 className={`rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
                   isActive
                     ? "bg-[#101114] text-white"
-                    : "bg-white text-[#101114]/70 border border-[#101114]/15 hover:bg-[#101114]/10 hover:text-[#101114]"
+                    : "border border-[#101114]/15 bg-white text-[#101114]/70 hover:bg-[#101114]/10 hover:text-[#101114]"
                 }`}
               >
                 {pill.label}
@@ -664,12 +655,12 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
             <table className="w-full text-left text-xs">
               <thead className="border-b border-[#101114]/10 bg-[#F3F0E8]/50 text-[11px] font-semibold text-[#101114]/70">
                 <tr>
-                  <th className="py-3 pl-5 pr-3">Event Type</th>
+                  <th className="py-3 pr-3 pl-5">Event Type</th>
                   <th className="px-3 py-3">Channel</th>
                   <th className="px-3 py-3 text-right">Quantity Delta</th>
                   <th className="px-3 py-3">Reference ID</th>
                   <th className="px-3 py-3">Notes & Reason</th>
-                  <th className="py-3 pl-3 pr-5 text-right">Date & Time</th>
+                  <th className="py-3 pr-5 pl-3 text-right">Date & Time</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#101114]/5">
@@ -678,7 +669,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                   return (
                     <tr key={tx.id} className="transition-colors hover:bg-[#F3F0E8]/30">
                       {/* Type Badge */}
-                      <td className="py-3 pl-5 pr-3">
+                      <td className="py-3 pr-3 pl-5">
                         <span
                           className={`inline-flex items-center gap-1 rounded-xs px-2 py-0.5 text-[11px] font-bold ${
                             tx.type === "RESTOCK"
@@ -723,7 +714,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                       <td className="px-3 py-3 font-mono text-[11px] text-[#101114]/70">
                         {tx.referenceId ? (
                           <div className="flex items-center gap-1">
-                            <span className="truncate max-w-[140px]" title={tx.referenceId}>
+                            <span className="max-w-[140px] truncate" title={tx.referenceId}>
                               {tx.referenceId}
                             </span>
                             <button
@@ -745,12 +736,12 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                       </td>
 
                       {/* Notes / Reason */}
-                      <td className="px-3 py-3 text-[#101114]/80 max-w-xs truncate">
+                      <td className="max-w-xs truncate px-3 py-3 text-[#101114]/80">
                         {tx.notes || <span className="text-zinc-400 italic">No notes</span>}
                       </td>
 
                       {/* Timestamp */}
-                      <td className="py-3 pl-3 pr-5 text-right">
+                      <td className="py-3 pr-5 pl-3 text-right">
                         <span className="block font-medium text-[#101114]">
                           {formatRelativeTime(tx.createdAt)}
                         </span>
@@ -797,11 +788,13 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
       {/* QUICK ADJUSTMENT MODAL */}
       {isAdjustModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-md border border-[#101114]/15 bg-white shadow-xl animate-in fade-in-0 zoom-in-95">
+          <div className="animate-in fade-in-0 zoom-in-95 relative w-full max-w-lg rounded-md border border-[#101114]/15 bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-4">
               <div>
                 <h3 className="font-bold text-[#101114]">Record Stock Movement / Adjustment</h3>
-                <p className="text-xs text-[#101114]/60">{variant.product.name} ({variant.sku})</p>
+                <p className="text-xs text-[#101114]/60">
+                  {variant.product.name} ({variant.sku})
+                </p>
               </div>
               <button
                 type="button"
@@ -906,9 +899,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                       <button
                         key={step}
                         type="button"
-                        onClick={() =>
-                          setAdjustQuantity(adjustType === "DAMAGE" ? -step : step)
-                        }
+                        onClick={() => setAdjustQuantity(adjustType === "DAMAGE" ? -step : step)}
                         className="rounded-xs bg-[#F3F0E8] px-2 py-0.5 text-[11px] font-semibold text-[#101114] hover:bg-[#101114]/15"
                       >
                         {adjustType === "DAMAGE" ? `-${step}` : `+${step}`}
@@ -945,13 +936,19 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span>Current Physical: <strong>{totalStock}</strong></span>
+                  <span>
+                    Current Physical: <strong>{totalStock}</strong>
+                  </span>
                   <span>→</span>
-                  <span>New Physical: <strong>{previewStock}</strong></span>
+                  <span>
+                    New Physical: <strong>{previewStock}</strong>
+                  </span>
                 </div>
                 <div className="mt-1 flex items-center justify-between text-[11px] text-[#101114]/70">
                   <span>Reserved: {reservedStock}</span>
-                  <span>New Available to Sell: <strong>{previewAvailable}</strong></span>
+                  <span>
+                    New Available to Sell: <strong>{previewAvailable}</strong>
+                  </span>
                 </div>
               </div>
 
@@ -1001,7 +998,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
               )}
 
               {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#101114]/10">
+              <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAdjustModalOpen(false)}
@@ -1026,7 +1023,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
       {/* BARCODE & PRICE TAG PRINT MODAL */}
       {showBarcodeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col rounded-md border border-[#101114]/15 bg-white shadow-2xl animate-in fade-in-0 zoom-in-95">
+          <div className="animate-in fade-in-0 zoom-in-95 relative flex max-h-[90vh] w-full max-w-2xl flex-col rounded-md border border-[#101114]/15 bg-white shadow-2xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-4">
               <div className="flex items-center gap-2">
@@ -1109,7 +1106,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                 </div>
 
                 {/* Cost Code Checkbox */}
-                <label className="flex items-center gap-1.5 text-[11px] text-[#101114]/80 cursor-pointer">
+                <label className="flex cursor-pointer items-center gap-1.5 text-[11px] text-[#101114]/80">
                   <input
                     type="checkbox"
                     checked={showCostOnBarcode}
@@ -1127,7 +1124,9 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                 className="inline-flex h-8 items-center gap-1.5 rounded-xs bg-[#101114] px-4 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
               >
                 <Printer className="size-3.5" />
-                <span>Print {barcodeQuantity} {barcodeQuantity === 1 ? "Label" : "Labels"}</span>
+                <span>
+                  Print {barcodeQuantity} {barcodeQuantity === 1 ? "Label" : "Labels"}
+                </span>
               </button>
             </div>
 
@@ -1149,7 +1148,7 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                     }`}
                   >
                     {barcodeQuantity > 1 && (
-                      <span className="no-print absolute top-1 right-1 text-[8px] font-mono text-[#101114]/40">
+                      <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-[#101114]/40">
                         #{idx + 1}
                       </span>
                     )}
@@ -1160,11 +1159,11 @@ export function AdminInventoryDetail({ data }: { data: AdminInventoryDetailResul
                       </span>
                     </div>
 
-                    <p className="truncate px-0.5 text-[10px] font-semibold leading-tight">
+                    <p className="truncate px-0.5 text-[10px] leading-tight font-semibold">
                       {variant.product.name}
                     </p>
 
-                    <div className="flex items-center justify-between px-1 text-[9px] font-mono">
+                    <div className="flex items-center justify-between px-1 font-mono text-[9px]">
                       <span>{variant.size ? `SIZE: ${variant.size}` : ""}</span>
                       <span className="text-[11px] font-bold">
                         ৳{variant.discountPrice ?? variant.sellingPrice}

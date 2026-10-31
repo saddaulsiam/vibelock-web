@@ -1,9 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import {
+  adjustInventoryAction,
+  type InventoryActionState,
+} from "@/lib/admin/inventory/inventory-actions";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button } from "@/components/ui/button";
-import { adjustInventoryAction, type InventoryActionState } from "@/lib/admin/inventory-actions";
 
 const initialState: InventoryActionState = { error: null };
 

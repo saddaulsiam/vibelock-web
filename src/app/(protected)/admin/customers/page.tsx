@@ -6,7 +6,7 @@ import {
   getAdminCustomerSummaryKPIs,
   type CustomerSegment,
   type CustomerSortBy,
-} from "@/lib/admin/customer-queries";
+} from "@/lib/admin/customers";
 import { Award, DollarSign, ShoppingBag, Users } from "lucide-react";
 import { Suspense } from "react";
 

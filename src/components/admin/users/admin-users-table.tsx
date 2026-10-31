@@ -3,15 +3,15 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Role } from "@prisma/client";
-import {
+import type {
   AdminUserListItem,
   AdminUserStats,
-} from "@/lib/admin/admin-user-queries";
+} from "@/lib/admin/users/admin-user-queries";
 import {
   createAdminUserAction,
   updateAdminUserRoleAction,
-} from "@/lib/admin/admin-user-actions";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+} from "@/lib/admin/users/admin-user-actions";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   AdminTableMetaBar,
   AdminTableSearchInput,
@@ -24,7 +24,7 @@ import {
   useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/shared";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import { exportToCsv } from "@/lib/admin/shared";
 import {
   Table,
   TableBody,

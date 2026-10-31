@@ -8,7 +8,7 @@ import { cancelOrderAction } from "../../src/lib/orders/actions";
 import {
   updateOrderPaymentStatusAction,
   updateOrderStatusAction,
-} from "../../src/lib/admin/order-actions";
+} from "../../src/lib/admin/orders";
 import { PaymentService } from "../../src/lib/payment/service";
 import { createTestInventory, createTestProduct, createTestVariant } from "../factories";
 import { createTestUser } from "../factories/user";

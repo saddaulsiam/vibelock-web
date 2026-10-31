@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { ProductImageUploader } from "./product-image-uploader";
-import { saveProductAction } from "@/lib/admin/catalog-actions";
+import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 
 const slugify = (value: string) =>
   value

@@ -6,7 +6,7 @@ import {
   getAdminShippingOverviewKPIs,
   type ShipmentFilter,
   type ShipmentProviderFilter,
-} from "@/lib/admin/shipping-queries";
+} from "@/lib/admin/shipping";
 import { AlertTriangle, Banknote, CheckCircle2, Truck } from "lucide-react";
 import { Suspense } from "react";
 

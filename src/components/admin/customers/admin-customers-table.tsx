@@ -1,18 +1,18 @@
 "use client";
 
+import { CustomerCreateModal } from "@/components/admin/customers/customer-create-modal";
 import { AdminOrderStatusBadge } from "@/components/admin/orders/admin-order-badges";
 import {
-  AdminTableColumnVisibility,
-  useAdminTableColumns,
-  type ColumnOption,
-} from "@/components/admin/shared";
-import {
   ADMIN_TABLE_CLASSES,
+  AdminTableColumnVisibility,
   AdminTableFilterSelect,
+  AdminTableInfiniteScroll,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
+  useAdminTableColumns,
   type AdminTableTabItem,
+  type ColumnOption,
 } from "@/components/admin/shared";
 import {
   Table,
@@ -22,15 +22,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
-import { CustomerCreateModal } from "@/components/admin/customers/customer-create-modal";
-import { loadMoreAdminCustomersAction } from "@/lib/admin/customer-actions";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import { loadMoreAdminCustomersAction } from "@/lib/admin/customers/customer-actions";
 import type {
   AdminCustomerListItem,
   CustomerSegment,
   CustomerSortBy,
-} from "@/lib/admin/customer-queries";
+} from "@/lib/admin/customers/customer-queries";
+import { exportToCsv } from "@/lib/admin/shared";
 import {
   ArrowUpDown,
   Check,
@@ -209,11 +207,7 @@ export function AdminCustomersTable({
   }, [currentSearch, currentSegment, currentSort, hasMore, isLoadingMore, pageNumber]);
 
   const updateFilters = React.useCallback(
-    (updates: {
-      q?: string | null;
-      segment?: string | null;
-      sort?: string | null;
-    }) => {
+    (updates: { q?: string | null; segment?: string | null; sort?: string | null }) => {
       const params = new URLSearchParams(searchParams.toString());
 
       if (updates.q !== undefined) {
@@ -500,7 +494,7 @@ export function AdminCustomersTable({
                               </a>
                             </div>
                           ) : (
-                            <span className="text-xs italic text-neutral-400">No phone</span>
+                            <span className="text-xs text-neutral-400 italic">No phone</span>
                           )}
                         </TableCell>
                       )}
@@ -608,7 +602,7 @@ export function AdminCustomersTable({
                         {initials}
                       </div>
                       <div>
-                        <div className="font-bold leading-tight text-neutral-900">
+                        <div className="leading-tight font-bold text-neutral-900">
                           {c.name || "Unnamed Customer"}
                         </div>
                         <div className="max-w-[200px] truncate font-mono text-xs text-neutral-500">
@@ -683,13 +677,11 @@ export function AdminCustomersTable({
                   {/* Stats Grid */}
                   <div className="grid grid-cols-3 gap-2 rounded-lg border border-neutral-100 bg-neutral-50/50 p-2.5 text-center text-xs">
                     <div>
-                      <div className="text-[10px] font-bold uppercase text-neutral-400">
-                        Orders
-                      </div>
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase">Orders</div>
                       <div className="mt-0.5 font-bold text-neutral-800">{c.orderCount}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold uppercase text-neutral-400">
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase">
                         Lifetime Spent
                       </div>
                       <div className="mt-0.5 font-bold text-neutral-900">
@@ -697,9 +689,7 @@ export function AdminCustomersTable({
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold uppercase text-neutral-400">
-                        Latest
-                      </div>
+                      <div className="text-[10px] font-bold text-neutral-400 uppercase">Latest</div>
                       <div className="mt-0.5 truncate text-[11px] font-medium text-neutral-700">
                         {c.latestOrderDate ? formatDate(c.latestOrderDate) : "—"}
                       </div>
@@ -737,10 +727,7 @@ export function AdminCustomersTable({
       )}
 
       {/* Manual Customer Creation Modal */}
-      <CustomerCreateModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-      />
+      <CustomerCreateModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
     </div>
   );
 }

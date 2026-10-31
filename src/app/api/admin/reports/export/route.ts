@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ForbiddenError, AuthRequiredError, requireRole } from "@/lib/auth/authorization";
-import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/report-queries";
+import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/reports";
 
 export function csvCell(value: unknown) {
   const rawText = value === null || value === undefined ? "" : String(value);

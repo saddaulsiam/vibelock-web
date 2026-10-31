@@ -12,8 +12,8 @@ import {
   Sparkles,
   ShieldAlert,
 } from "lucide-react";
-import type { AdminReturnActionState } from "@/lib/admin/return-actions";
-import type { ReturnReverseLogistics } from "@/lib/admin/return-queries";
+import type { AdminReturnActionState } from "@/lib/admin/returns/return-actions";
+import type { ReturnReverseLogistics } from "@/lib/admin/returns/return-queries";
 import { OrderCopyButton } from "@/components/admin/orders";
 
 const initialState: AdminReturnActionState = { error: null };

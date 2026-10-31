@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import {
-  Clock,
-  ShoppingBag,
-  Star,
-  FileText,
-  Lock,
-  Unlock,
-  Key,
-  UserCheck,
-  ShieldAlert,
-  ShieldCheck,
-  UserCog,
-  ChevronDown,
-  ChevronUp,
-  ExternalLink,
-} from "lucide-react";
-import {
+import type {
   AdminCustomerTimelineEvent,
   AdminCustomerTimelineEventType,
-} from "@/lib/admin/customer-queries";
+} from "@/lib/admin/customers/customer-queries";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  ExternalLink,
+  FileText,
+  Key,
+  Lock,
+  ShieldAlert,
+  ShieldCheck,
+  ShoppingBag,
+  Star,
+  Unlock,
+  UserCheck,
+  UserCog,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 
 interface CustomerTimelineCardProps {
   timeline: AdminCustomerTimelineEvent[];
@@ -161,7 +161,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
   ).length;
 
   return (
-    <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
+    <div className="space-y-4 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-3">
         <div className="flex items-center gap-2">
@@ -169,9 +169,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
             <Clock className="size-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-neutral-900">
-              Unified 360° Activity Timeline
-            </h2>
+            <h2 className="text-sm font-bold text-neutral-900">Unified 360° Activity Timeline</h2>
             <p className="text-[11px] text-neutral-400">
               Chronological journey: registration, orders, reviews, staff notes, and audit events
             </p>
@@ -243,26 +241,26 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           No activity records found in this category.
         </div>
       ) : (
-        <div className="relative pl-6 space-y-6 before:absolute before:bottom-2 before:left-2.5 before:top-2 before:w-0.5 before:bg-neutral-200">
+        <div className="relative space-y-6 pl-6 before:absolute before:top-2 before:bottom-2 before:left-2.5 before:w-0.5 before:bg-neutral-200">
           {visibleEvents.map((event) => {
             const { icon, bg } = getEventIcon(event.type);
             return (
-              <div key={event.id} className="relative group">
+              <div key={event.id} className="group relative">
                 {/* Node icon */}
                 <div
-                  className={`absolute -left-6 top-0 flex size-5.5 -translate-x-1/2 items-center justify-center rounded-full border shadow-2xs ${bg}`}
+                  className={`absolute top-0 -left-6 flex size-5.5 -translate-x-1/2 items-center justify-center rounded-full border shadow-2xs ${bg}`}
                 >
                   {icon}
                 </div>
 
                 {/* Content Box */}
-                <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3 text-xs space-y-1 hover:border-neutral-200 hover:bg-neutral-50 transition">
+                <div className="space-y-1 rounded-xl border border-neutral-100 bg-neutral-50/50 p-3 text-xs transition hover:border-neutral-200 hover:bg-neutral-50">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 font-bold text-neutral-900">
                       <span>{event.title}</span>
                       {event.badge && (
                         <span
-                          className={`rounded-full px-2 py-0.2 text-[10px] font-bold border ${getBadgeStyle(
+                          className={`py-0.2 rounded-full border px-2 text-[10px] font-bold ${getBadgeStyle(
                             event.badgeVariant
                           )}`}
                         >
@@ -271,22 +269,20 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
                       )}
                     </div>
 
-                    <span className="text-[11px] font-mono text-neutral-400">
+                    <span className="font-mono text-[11px] text-neutral-400">
                       {formatEventDate(event.timestamp)}
                     </span>
                   </div>
 
                   {event.description && (
-                    <p className="text-neutral-600 leading-relaxed text-[11px]">
+                    <p className="text-[11px] leading-relaxed text-neutral-600">
                       {event.description}
                     </p>
                   )}
 
                   <div className="flex items-center justify-between pt-1 text-[11px]">
                     {event.actorName ? (
-                      <span className="text-neutral-400 italic">
-                        By {event.actorName}
-                      </span>
+                      <span className="text-neutral-400 italic">By {event.actorName}</span>
                     ) : (
                       <span />
                     )}
@@ -295,7 +291,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
                       <Link
                         href={event.link}
                         target={event.link.startsWith("/products") ? "_blank" : undefined}
-                        className="inline-flex items-center gap-1 font-semibold text-neutral-800 hover:text-black transition"
+                        className="inline-flex items-center gap-1 font-semibold text-neutral-800 transition hover:text-black"
                       >
                         <span>{event.linkLabel || "View Details"}</span>
                         <ExternalLink className="size-3 text-neutral-400" />
@@ -311,10 +307,10 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
 
       {/* Show More / Show Less Toggle */}
       {filteredEvents.length > 6 && (
-        <div className="pt-2 text-center border-t border-neutral-100">
+        <div className="border-t border-neutral-100 pt-2 text-center">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-1 text-xs font-bold text-neutral-700 hover:text-neutral-900 transition py-1 px-3 rounded-lg hover:bg-neutral-100"
+            className="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900"
           >
             {isExpanded ? (
               <>

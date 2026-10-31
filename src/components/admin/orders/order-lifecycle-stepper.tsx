@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { CheckCircle2, Clock, Package, Truck, Check, XCircle, RotateCcw } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
+import { Check, CheckCircle2, Clock, Package, RotateCcw, Truck, XCircle } from "lucide-react";
 
 interface OrderHistoryEntry {
   status: string;

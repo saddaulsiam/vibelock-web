@@ -11,8 +11,8 @@ import {
   Trash2,
   ShieldCheck,
 } from "lucide-react";
-import { deleteCouponAction, toggleCouponStatusAction } from "@/lib/admin/coupon-actions";
-import type { AdminCouponListItem } from "@/lib/admin/coupon-shared";
+import { deleteCouponAction, toggleCouponStatusAction } from "@/lib/admin/coupons/coupon-actions";
+import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 
 interface CouponDeleteModalProps {
   coupon: AdminCouponListItem | null;

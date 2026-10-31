@@ -1,22 +1,16 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Check, Copy, Download, Flame, Package, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
 import {
+  ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
-  useAdminTableColumns,
-} from "@/components/admin/shared";
-import {
   AdminTableFilterSelect,
+  AdminTableInfiniteScroll,
   AdminTableSearchInput,
   AdminTableTabs,
-  ADMIN_TABLE_CLASSES,
+  useAdminTableColumns,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
+import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -25,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory-actions";
+import { loadMoreAdminInventoryIntelligenceAction } from "@/lib/admin/inventory/inventory-actions";
 import type {
   InventoryIntelligenceItem,
   InventoryIntelligenceResult,
@@ -33,7 +27,11 @@ import type {
   InventoryIntelligenceStatus,
   InventoryIntelligenceStatusFilter,
   InventoryIntelligenceWindow,
-} from "@/lib/admin/inventory-intelligence-queries";
+} from "@/lib/admin/inventory/inventory-intelligence-queries";
+import { ArrowRight, Check, Copy, Download, Flame, Package, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
 
 function formatBdt(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
@@ -414,7 +412,9 @@ export function AdminInventoryIntelligenceTable({
               <TableHead className="text-center whitespace-nowrap">Days of Supply</TableHead>
             )}
             {visibleColumns.restock && (
-              <TableHead className="text-right whitespace-nowrap">Suggested Restock (30d)</TableHead>
+              <TableHead className="text-right whitespace-nowrap">
+                Suggested Restock (30d)
+              </TableHead>
             )}
             {visibleColumns.status && (
               <TableHead className="text-center whitespace-nowrap">Health Status</TableHead>
@@ -452,7 +452,9 @@ export function AdminInventoryIntelligenceTable({
                 <TableRow
                   key={item.id}
                   className={
-                    item.status === "STOCKOUT_RISK" ? "bg-rose-50/30 hover:bg-rose-50/50" : undefined
+                    item.status === "STOCKOUT_RISK"
+                      ? "bg-rose-50/30 hover:bg-rose-50/50"
+                      : undefined
                   }
                 >
                   {/* Product & Variant with SKU at bottom */}
@@ -548,9 +550,7 @@ export function AdminInventoryIntelligenceTable({
                                   : "border border-emerald-200 bg-emerald-50 text-emerald-700"
                             }`}
                           >
-                            {item.daysOfSupply <= 14 && (
-                              <Flame className="size-3 text-rose-600" />
-                            )}
+                            {item.daysOfSupply <= 14 && <Flame className="size-3 text-rose-600" />}
                             {Math.round(item.daysOfSupply)} days
                           </span>
                           <span className="mt-0.5 text-[10px] text-zinc-500">

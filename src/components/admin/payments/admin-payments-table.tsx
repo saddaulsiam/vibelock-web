@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { PaymentStatus } from "@prisma/client";
-import { AdminPaymentListItem } from "@/lib/admin/payment-queries";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import type { AdminPaymentListItem } from "@/lib/admin/payments/payment-queries";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   AdminTableFilterSelect,
   AdminTableMetaBar,
@@ -18,7 +18,7 @@ import {
   useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/shared";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import { exportToCsv } from "@/lib/admin/shared";
 import {
   Table,
   TableBody,

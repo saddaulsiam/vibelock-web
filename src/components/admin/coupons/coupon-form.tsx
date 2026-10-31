@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import type { DiscountType } from "@prisma/client";
-import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupon-actions";
+import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import {
   Tag,

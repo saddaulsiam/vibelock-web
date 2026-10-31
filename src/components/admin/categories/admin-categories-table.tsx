@@ -30,7 +30,7 @@ import {
 import {
   deleteCategoryAction,
   toggleCategoryStatusAction,
-} from "@/lib/admin/catalog-actions";
+} from "@/lib/admin/catalog/catalog-actions";
 import { AdminMutationForm } from "@/components/admin/shared";
 
 export type AdminCategoryListItem = {

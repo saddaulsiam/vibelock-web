@@ -4,7 +4,7 @@ import prisma from "../../src/lib/prisma/client";
 import {
   getAdminInventoryIntelligence,
   getAdminInventoryIntelligenceForExport,
-} from "../../src/lib/admin/inventory-intelligence-queries";
+} from "../../src/lib/admin/inventory";
 import { GET, csvCell, csv } from "../../src/app/api/admin/inventory-intelligence/export/route";
 import { NextRequest } from "next/server";
 

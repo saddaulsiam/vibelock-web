@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { BannerPlacement } from "@prisma/client";
-import { getAdminBanners } from "@/lib/admin/banner-queries";
-import { deleteBannerAction, toggleBannerAction } from "@/lib/admin/banner-actions";
+import { getAdminBanners } from "@/lib/admin/banners";
+import { deleteBannerAction, toggleBannerAction } from "@/lib/admin/banners";
 
 function placementLabel(value: BannerPlacement) {
   return value === "BOTH"

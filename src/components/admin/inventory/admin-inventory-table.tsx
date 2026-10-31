@@ -1,17 +1,32 @@
 "use client";
 
+import { AdminInventoryPoModal } from "@/components/admin/inventory/admin-inventory-po-modal";
+import {
+  AdminTableColumnVisibility,
+  AdminTableInfiniteScroll,
+  AdminTableSearchInput,
+  useAdminTableColumns,
+} from "@/components/admin/shared";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   bulkAdjustInventoryAction,
   loadMoreAdminInventoryAction,
   quickAdjustInventoryAction,
   reconcileStocktakeAction,
   type StocktakeReconcileItem,
-} from "@/lib/admin/inventory-actions";
+} from "@/lib/admin/inventory/inventory-actions";
 import type {
   AdminInventoryItem,
   AdminInventoryResult,
   InventoryFilter,
-} from "@/lib/admin/inventory-queries";
+} from "@/lib/admin/inventory/inventory-queries";
 import type { InventoryTransactionType } from "@prisma/client";
 import {
   AlertTriangle,
@@ -42,21 +57,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
-import { AdminInventoryPoModal } from "@/components/admin/inventory/admin-inventory-po-modal";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
-import {
-  AdminTableColumnVisibility,
-  useAdminTableColumns,
-} from "@/components/admin/shared";
-import { AdminTableSearchInput } from "@/components/admin/shared";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return "৳0";

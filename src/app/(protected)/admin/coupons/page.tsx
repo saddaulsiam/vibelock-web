@@ -8,7 +8,7 @@ import {
   getAdminCoupons,
   getAdminCouponsSummaryKPIs,
   type CouponFilter,
-} from "@/lib/admin/coupon-queries";
+} from "@/lib/admin/coupons";
 import { Tag, Sparkles, ShoppingBag, Clock } from "lucide-react";
 
 function valueOf(value: string | string[] | undefined): string | undefined {

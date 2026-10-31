@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { ProfileForm } from "@/components/account/profile-form";
-import { NotificationPreferencesCard } from "@/components/account/notification-preferences-card";
-import { AccountMembershipCard } from "@/components/account/account-membership-card";
+import {
+  ProfileForm,
+  NotificationPreferencesCard,
+} from "@/components/account/profile";
+import { AccountMembershipCard } from "@/components/account/dashboard";
 import { getNotificationPreferences } from "@/lib/account/notification-actions";
 
 export const metadata: Metadata = {

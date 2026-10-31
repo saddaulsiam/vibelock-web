@@ -8,7 +8,7 @@ import {
   saveShippingZoneAction,
   toggleShippingMethodAction,
   type ShippingActionState,
-} from "@/lib/admin/shipping-actions";
+} from "@/lib/admin/shipping/shipping-actions";
 
 const initialState: ShippingActionState = { error: null };
 const inputClass =

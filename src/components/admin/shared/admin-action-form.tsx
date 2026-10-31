@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import type { AdminActionState } from "@/lib/admin/catalog-actions";
+import type { AdminActionState } from "@/lib/admin/catalog/catalog-actions";
 
 const initialState: AdminActionState = { error: null };
 

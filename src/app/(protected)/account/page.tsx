@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getAccountOverview } from "@/lib/account/queries";
-import { AccountDashboardView } from "@/components/account/account-dashboard-view";
+import { AccountDashboardView } from "@/components/account/dashboard/account-dashboard-view";
 
 export const metadata: Metadata = {
   title: "My Account | VibeLock",

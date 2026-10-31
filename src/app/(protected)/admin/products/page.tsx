@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2, Layers, PackageX, Plus } from "lucide-react";
-import { getAdminProducts } from "@/lib/admin/catalog-queries";
+import { getAdminProducts } from "@/lib/admin/catalog";
 import { AdminProductsTable } from "@/components/admin/products";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";

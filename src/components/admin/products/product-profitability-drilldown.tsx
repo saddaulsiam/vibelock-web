@@ -9,7 +9,7 @@ import type {
   ProductProfitabilityProduct,
   ProductProfitabilityResult,
   ProductProfitabilityVariant,
-} from "@/lib/admin/report-queries";
+} from "@/lib/admin/reports/report-queries";
 
 function formatBdt(value: number | null | undefined) {
   if (value === null || value === undefined) return "—";

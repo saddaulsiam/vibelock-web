@@ -17,7 +17,7 @@ import {
   Layers,
 } from "lucide-react";
 import { DiscountType } from "@prisma/client";
-import { saveCouponAction } from "@/lib/admin/coupon-actions";
+import { saveCouponAction } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 
 interface CouponToEditData {

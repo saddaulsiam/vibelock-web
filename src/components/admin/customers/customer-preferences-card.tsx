@@ -1,15 +1,7 @@
 "use client";
 
-import * as React from "react";
-import {
-  Sparkles,
-  Shirt,
-  CreditCard,
-  Globe,
-  Clock,
-  Package,
-} from "lucide-react";
-import type { AdminCustomerPreferences } from "@/lib/admin/customer-queries";
+import type { AdminCustomerPreferences } from "@/lib/admin/customers/customer-queries";
+import { Clock, CreditCard, Globe, Package, Shirt, Sparkles } from "lucide-react";
 
 interface CustomerPreferencesCardProps {
   preferences: AdminCustomerPreferences;
@@ -81,7 +73,7 @@ export function CustomerPreferencesCard({ preferences }: CustomerPreferencesCard
         <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3.5">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Shirt className="size-3.5" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Size History</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Size History</span>
           </div>
           {topSizes.length > 0 ? (
             <div className="mt-2.5 flex flex-wrap gap-1.5">
@@ -108,18 +100,18 @@ export function CustomerPreferencesCard({ preferences }: CustomerPreferencesCard
         <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3.5">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Package className="size-3.5" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Top Purchased Items</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">
+              Top Purchased Items
+            </span>
           </div>
           {topProducts.length > 0 ? (
             <div className="mt-2 space-y-1.5">
               {topProducts.map((p) => (
                 <div key={p.name} className="flex items-center justify-between text-xs">
-                  <span className="truncate font-medium text-neutral-800 pr-2" title={p.name}>
+                  <span className="truncate pr-2 font-medium text-neutral-800" title={p.name}>
                     {p.name}
                   </span>
-                  <span className="shrink-0 font-bold text-neutral-600">
-                    {p.quantity} qty
-                  </span>
+                  <span className="shrink-0 font-bold text-neutral-600">{p.quantity} qty</span>
                 </div>
               ))}
             </div>
@@ -132,7 +124,9 @@ export function CustomerPreferencesCard({ preferences }: CustomerPreferencesCard
         <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3.5">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Globe className="size-3.5" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Channel &amp; Payment</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">
+              Channel &amp; Payment
+            </span>
           </div>
           <div className="mt-2.5 space-y-2 text-xs">
             <div className="flex items-center justify-between">
@@ -155,7 +149,9 @@ export function CustomerPreferencesCard({ preferences }: CustomerPreferencesCard
         <div className="rounded-xl border border-neutral-100 bg-neutral-50/50 p-3.5">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Clock className="size-3.5" />
-            <span className="text-[11px] font-bold uppercase tracking-wider">Cadence &amp; Recency</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">
+              Cadence &amp; Recency
+            </span>
           </div>
           <div className="mt-2">
             {daysSinceLastOrder !== null ? (
@@ -164,8 +160,8 @@ export function CustomerPreferencesCard({ preferences }: CustomerPreferencesCard
                   {daysSinceLastOrder === 0
                     ? "Today"
                     : daysSinceLastOrder === 1
-                    ? "Yesterday"
-                    : `${daysSinceLastOrder} days ago`}
+                      ? "Yesterday"
+                      : `${daysSinceLastOrder} days ago`}
                 </div>
                 <div className="mt-1 text-[11px]">
                   {daysSinceLastOrder <= 30 ? (

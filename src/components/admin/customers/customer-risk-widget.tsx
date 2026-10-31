@@ -1,21 +1,21 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
-import type { CombinedCustomerRiskProfile } from "@/lib/admin/customer-risk";
+import { toggleCustomerCodBlockAction } from "@/lib/admin/customers/customer-actions";
+import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers/customer-risk";
 import {
   AlertTriangle,
+  Ban,
+  CheckCircle2,
   Info,
+  Loader2,
   MessageCircle,
   ShieldAlert,
   ShieldCheck,
   Truck,
   UserCheck,
-  Ban,
-  CheckCircle2,
-  Loader2,
 } from "lucide-react";
-import { toggleCustomerCodBlockAction } from "@/lib/admin/customer-actions";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 interface CustomerRiskWidgetProps {
   initialProfile: CombinedCustomerRiskProfile | null;
@@ -178,11 +178,11 @@ export function CustomerRiskWidget({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+              <span className="text-xs font-bold tracking-wider text-neutral-600 uppercase">
                 Courier Risk Assessment
               </span>
               <span
-                className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black uppercase tracking-wider ${badgeClass}`}
+                className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-black tracking-wider uppercase ${badgeClass}`}
               >
                 {profile.riskScore.replace("_", " ")}
               </span>
@@ -227,7 +227,9 @@ export function CustomerRiskWidget({
                   <div className="mt-0.5 font-bold text-neutral-900">{st.totalParcels}</div>
                 </div>
                 <div className="rounded border border-emerald-100 bg-emerald-50/40 p-2">
-                  <div className="text-[10px] font-medium text-emerald-600 uppercase">Delivered</div>
+                  <div className="text-[10px] font-medium text-emerald-600 uppercase">
+                    Delivered
+                  </div>
                   <div className="mt-0.5 font-bold text-emerald-800">{st.totalDelivered}</div>
                 </div>
                 <div className="rounded border border-amber-100 bg-amber-50/40 p-2">

@@ -2,11 +2,11 @@ import Link from "next/link";
 import { requireRole } from "@/lib/auth/authorization";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   getAdminPayments,
   getAdminPaymentStats,
-} from "@/lib/admin/payment-queries";
+} from "@/lib/admin/payments";
 import { AdminPaymentsTable } from "@/components/admin/payments";
 import {
   CheckCircle2,

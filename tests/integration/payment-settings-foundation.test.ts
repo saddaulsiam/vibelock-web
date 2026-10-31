@@ -60,7 +60,7 @@ import {
   updatePaymentMethodSetting,
   type PaymentMethodCode,
 } from "../../src/lib/settings/payment-settings";
-import { togglePaymentMethodAction } from "../../src/lib/admin/payment-settings-actions";
+import { togglePaymentMethodAction } from "../../src/lib/admin/payments";
 import AdminPaymentSettingsPage from "../../src/app/(protected)/admin/settings/payments/page";
 import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
 

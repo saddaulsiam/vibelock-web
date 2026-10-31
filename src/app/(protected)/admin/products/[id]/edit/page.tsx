@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Copy } from "lucide-react";
 import { ProductForm } from "@/components/admin/products";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAdminProductFormData } from "@/lib/admin/catalog-queries";
+import { getAdminProductFormData } from "@/lib/admin/catalog";
 
 export default async function EditAdminProductPage({
   params,

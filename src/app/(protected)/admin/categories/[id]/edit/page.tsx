@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { CategoryForm } from "@/components/admin/categories";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
-import { getAdminCategoryFormData } from "@/lib/admin/catalog-queries";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { getAdminCategoryFormData } from "@/lib/admin/catalog";
 
 export default async function EditAdminCategoryPage({
   params,

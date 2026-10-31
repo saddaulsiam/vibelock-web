@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { Edit3, Phone, Mail } from "lucide-react";
 import { CustomerEditModal } from "@/components/admin/customers/customer-edit-modal";
 import { CustomerSmartCrmActions } from "@/components/admin/customers/customer-smart-crm-actions";
+import { Edit3, Mail, Phone } from "lucide-react";
+import * as React from "react";
 
 interface CustomerDetailHeaderActionsProps {
   customer: {
@@ -42,7 +42,7 @@ export function CustomerDetailHeaderActions({
         <button
           type="button"
           onClick={() => setIsEditOpen(true)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
         >
           <Edit3 className="size-3.5 text-neutral-500" />
           <span>Edit Profile</span>
@@ -66,7 +66,7 @@ export function CustomerDetailHeaderActions({
             {/* Direct Call Button */}
             <a
               href={`tel:${customer.phone}`}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
             >
               <Phone className="size-3.5 text-blue-600" />
               <span>Call Phone</span>
@@ -77,7 +77,7 @@ export function CustomerDetailHeaderActions({
         {/* 3. Direct Email Button */}
         <a
           href={`mailto:${customer.email}`}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
+          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
         >
           <Mail className="size-3.5 text-neutral-500" />
           <span>Email</span>

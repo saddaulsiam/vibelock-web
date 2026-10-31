@@ -8,7 +8,7 @@ import { ExternalLink, Globe, ImagePlus, Loader2, Trash2, Upload, X } from "luci
 import { BannerPlacement } from "@prisma/client";
 import { toast } from "sonner";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
-import { saveBannerAction, type BannerActionState } from "@/lib/admin/banner-actions";
+import { saveBannerAction, type BannerActionState } from "@/lib/admin/banners/banner-actions";
 
 const initialState: BannerActionState = { error: null };
 

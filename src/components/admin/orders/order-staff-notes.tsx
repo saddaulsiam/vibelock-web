@@ -12,7 +12,7 @@ import {
   XCircle,
   RotateCcw,
 } from "lucide-react";
-import { addOrderNoteAction } from "@/lib/admin/order-actions";
+import { addOrderNoteAction } from "@/lib/admin/orders/order-actions";
 
 interface OrderHistoryEntry {
   id: string;

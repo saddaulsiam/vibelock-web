@@ -6,7 +6,7 @@ import {
   type InventoryIntelligenceStatusFilter,
   type InventoryIntelligenceSort,
   type InventoryIntelligenceSummary,
-} from "@/lib/admin/inventory-intelligence-queries";
+} from "@/lib/admin/inventory";
 import { AdminInventoryIntelligenceTable } from "@/components/admin/inventory/admin-inventory-intelligence-table";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";

@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
-import { updateOrderStatusAction } from "@/lib/admin/order-actions";
+import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
 import {
   OrderStatusForm,
   OrderPaymentForm,

@@ -25,15 +25,15 @@ import { AdminTableInfiniteScroll } from "@/components/admin/shared";
 import {
   loadMoreAdminShipmentsAction,
   syncSingleShipmentAction,
-} from "@/lib/admin/shipping-actions";
+} from "@/lib/admin/shipping/shipping-actions";
 import {
   getShipmentStatusBadgeInfo,
   type AdminShipmentListItem,
   type ShipmentFilter,
   type ShipmentProviderFilter,
-} from "@/lib/admin/shipping-shared";
+} from "@/lib/admin/shipping/shipping-shared";
 import { ShipmentStatus } from "@prisma/client";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import { exportToCsv } from "@/lib/admin/shared";
 import {
   Check,
   Copy,

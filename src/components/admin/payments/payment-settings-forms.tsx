@@ -5,7 +5,7 @@ import { useFormStatus } from "react-dom";
 import {
   togglePaymentMethodAction,
   type PaymentSettingActionState,
-} from "@/lib/admin/payment-settings-actions";
+} from "@/lib/admin/payments/payment-settings-actions";
 
 const initialState: PaymentSettingActionState = { error: null };
 

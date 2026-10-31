@@ -226,7 +226,7 @@ export function AdminTableFilterSelect<T extends string = string>({
   );
 }
 
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 export { ADMIN_TABLE_CLASSES };
 export { useAdminTableUrlFilters, buildFilterUrl } from "./admin-table-filters";
 export type { UseAdminTableUrlFiltersOptions, BuildFilterUrlOptions } from "./admin-table-filters";

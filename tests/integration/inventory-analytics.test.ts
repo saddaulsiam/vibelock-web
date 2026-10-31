@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import prisma from "../../src/lib/prisma/client";
-import * as inventoryQueries from "../../src/lib/admin/inventory-queries";
+import * as inventoryQueries from "../../src/lib/admin/inventory";
 import {
   getAdminInventorySummary,
   getAdminInventoryForExport,
-} from "../../src/lib/admin/inventory-queries";
+} from "../../src/lib/admin/inventory";
 import { GET, csvCell, csv } from "../../src/app/api/admin/inventory/export/route";
 import { NextRequest } from "next/server";
 

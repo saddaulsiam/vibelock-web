@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft, Tag } from "lucide-react";
 import { CouponForm } from "@/components/admin/coupons/coupon-form";
-import { getAdminCouponFormData } from "@/lib/admin/coupon-queries";
+import { getAdminCouponFormData } from "@/lib/admin/coupons";
 
 export default async function EditCouponPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

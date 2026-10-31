@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ProductForm } from "@/components/admin/products";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAdminProductFormData } from "@/lib/admin/catalog-queries";
+import { getAdminProductFormData } from "@/lib/admin/catalog";
 
 export default async function NewAdminProductPage({
   searchParams,

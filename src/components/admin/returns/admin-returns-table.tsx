@@ -14,7 +14,7 @@ import {
   type AdminTableTabItem,
 } from "@/components/admin/shared";
 import { AdminTableInfiniteScroll } from "@/components/admin/shared";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+import { exportToCsv } from "@/lib/admin/shared";
 import {
   Table,
   TableBody,
@@ -23,8 +23,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { loadMoreAdminReturnsAction } from "@/lib/admin/return-actions";
-import type { AdminReturnListItem } from "@/lib/admin/return-queries";
+import { loadMoreAdminReturnsAction } from "@/lib/admin/returns/return-actions";
+import type { AdminReturnListItem } from "@/lib/admin/returns/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
 import { ReturnRequestStatus } from "@prisma/client";
 import {

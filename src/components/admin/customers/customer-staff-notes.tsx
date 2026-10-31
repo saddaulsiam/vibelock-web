@@ -1,18 +1,10 @@
 "use client";
 
-import * as React from "react";
+import { addCustomerStaffNoteAction } from "@/lib/admin/customers/customer-actions";
+import type { AdminCustomerStaffNote } from "@/lib/admin/customers/customer-queries";
+import { AlertCircle, CheckCircle2, Clock, FileText, Loader2, Send, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  FileText,
-  Send,
-  Loader2,
-  AlertCircle,
-  CheckCircle2,
-  User,
-  Clock,
-} from "lucide-react";
-import { addCustomerStaffNoteAction } from "@/lib/admin/customer-actions";
-import type { AdminCustomerStaffNote } from "@/lib/admin/customer-queries";
+import * as React from "react";
 
 interface CustomerStaffNotesProps {
   customerId: string;
@@ -95,7 +87,7 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             placeholder="Add internal note (e.g. 'Customer prefers loose L fit, always calls before 5 PM')..."
-            className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs leading-relaxed text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+            className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs leading-relaxed text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:bg-white focus:ring-1 focus:ring-neutral-900 focus:outline-none"
           />
         </div>
 
@@ -117,7 +109,7 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
           <button
             type="submit"
             disabled={isSubmitting || !noteText.trim()}
-            className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-40 transition"
+            className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-neutral-800 disabled:opacity-40"
           >
             {isSubmitting ? (
               <>
@@ -157,7 +149,7 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
                     <span>{timeAgo(n.createdAt)}</span>
                   </div>
                 </div>
-                <p className="mt-1.5 whitespace-pre-wrap leading-relaxed text-neutral-700">
+                <p className="mt-1.5 leading-relaxed whitespace-pre-wrap text-neutral-700">
                   {n.note}
                 </p>
               </div>

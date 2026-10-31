@@ -5,7 +5,7 @@ import {
   getAdminInventory,
   getAdminInventorySummary,
   type InventoryFilter,
-} from "@/lib/admin/inventory-queries";
+} from "@/lib/admin/inventory";
 import { AdminInventoryTable } from "@/components/admin/inventory/admin-inventory-table";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";

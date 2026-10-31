@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import StorefrontLayout from "@/app/(storefront)/layout";
-import { AccountShell } from "@/components/account/account-shell";
+import { AccountShell } from "@/components/account/layout/account-shell";
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
   // Enforce at least CUSTOMER role (any authenticated user)

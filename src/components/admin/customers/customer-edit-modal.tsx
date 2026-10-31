@@ -1,19 +1,19 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
+import { updateAdminCustomerAction } from "@/lib/admin/customers/customer-actions";
 import {
-  X,
-  Edit3,
-  Loader2,
   AlertCircle,
   CheckCircle2,
-  MapPin,
+  Edit3,
+  Loader2,
   Mail,
+  MapPin,
   Phone,
   User as UserIcon,
+  X,
 } from "lucide-react";
-import { updateAdminCustomerAction } from "@/lib/admin/customer-actions";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 interface CustomerEditModalProps {
   customer: {
@@ -36,11 +36,7 @@ interface CustomerEditModalProps {
   onClose: () => void;
 }
 
-export function CustomerEditModal({
-  customer,
-  isOpen,
-  onClose,
-}: CustomerEditModalProps) {
+export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditModalProps) {
   const router = useRouter();
 
   const defaultAddress = customer.addresses?.find((a) => a.isDefault) || customer.addresses?.[0];
@@ -147,7 +143,7 @@ export function CustomerEditModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150"
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-customer-title"
@@ -197,7 +193,7 @@ export function CustomerEditModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Customer Personal Details */}
           <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+            <h4 className="text-xs font-bold tracking-wider text-neutral-500 uppercase">
               Personal Information
             </h4>
 
@@ -206,14 +202,14 @@ export function CustomerEditModal({
                 Customer Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
                 <input
                   type="text"
                   required
                   placeholder="e.g. Tanvir Ahmed"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                 />
               </div>
             </div>
@@ -224,13 +220,13 @@ export function CustomerEditModal({
                   Phone Number
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                  <Phone className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="tel"
                     placeholder="017XXXXXXXX"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                   />
                 </div>
               </div>
@@ -240,14 +236,14 @@ export function CustomerEditModal({
                   Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="email"
                     required
                     placeholder="customer@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pl-9 pr-3 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                   />
                 </div>
               </div>
@@ -258,7 +254,7 @@ export function CustomerEditModal({
           <div className="space-y-3 border-t border-neutral-100 pt-3">
             <div className="flex items-center gap-1.5">
               <MapPin className="size-3.5 text-neutral-500" />
-              <h4 className="text-xs font-bold uppercase tracking-wider text-neutral-500">
+              <h4 className="text-xs font-bold tracking-wider text-neutral-500 uppercase">
                 Primary Delivery Address
               </h4>
             </div>
@@ -272,7 +268,7 @@ export function CustomerEditModal({
                 placeholder="House, Road, Area, Landmark"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 bg-white p-2.5 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                className="w-full rounded-lg border border-neutral-200 bg-white p-2.5 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
               />
             </div>
 
@@ -284,7 +280,7 @@ export function CustomerEditModal({
                   placeholder="Dhaka"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                 />
               </div>
 
@@ -297,7 +293,7 @@ export function CustomerEditModal({
                   placeholder="Dhaka"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                 />
               </div>
 
@@ -310,7 +306,7 @@ export function CustomerEditModal({
                   placeholder="1205"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
                 />
               </div>
             </div>

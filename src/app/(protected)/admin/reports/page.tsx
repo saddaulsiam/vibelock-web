@@ -9,7 +9,7 @@ import {
   getAdminOrderProfitability,
   getAdminProductProfitability,
   getAdminReport,
-} from "@/lib/admin/report-queries";
+} from "@/lib/admin/reports";
 
 function money(value: number | null) {
   return value === null

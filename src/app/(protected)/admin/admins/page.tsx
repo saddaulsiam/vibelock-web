@@ -4,7 +4,7 @@ import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import {
   getAdminUsers,
   getAdminUserStats,
-} from "@/lib/admin/admin-user-queries";
+} from "@/lib/admin/users";
 import { AdminUsersTable } from "@/components/admin/users";
 import { Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
 

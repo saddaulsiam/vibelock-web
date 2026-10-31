@@ -1,24 +1,24 @@
 "use client";
 
-import * as React from "react";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  AlertTriangle,
-  UserCheck,
-  RotateCw,
-  Truck,
-  ShoppingBag,
-  ExternalLink,
-  Copy,
-  Check,
-  MessageSquare,
-  Info,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { checkCustomerRiskAction } from "@/lib/admin/order-actions";
-import type { CombinedCustomerRiskProfile } from "@/lib/admin/customer-risk";
 import { generateWhatsAppUrl } from "@/components/admin/orders/admin-order-badges";
+import { Badge } from "@/components/ui/badge";
+import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers/customer-risk";
+import { checkCustomerRiskAction } from "@/lib/admin/orders/order-actions";
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  ExternalLink,
+  Info,
+  MessageSquare,
+  RotateCw,
+  ShieldAlert,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  UserCheck,
+} from "lucide-react";
+import * as React from "react";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);
@@ -149,7 +149,9 @@ export function OrderCustomerRiskCard({
               className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
               title="Refresh live fraud check from Steadfast API"
             >
-              <RotateCw className={`size-3.5 ${isRefreshing ? "animate-spin text-blue-600" : ""}`} />
+              <RotateCw
+                className={`size-3.5 ${isRefreshing ? "animate-spin text-blue-600" : ""}`}
+              />
               <span className="hidden md:inline">Check API</span>
             </button>
           </div>
@@ -190,7 +192,15 @@ export function OrderCustomerRiskCard({
               <div>
                 <div className="flex items-center justify-between text-[11px] font-bold">
                   <span className="text-neutral-600">Nationwide Success Rate</span>
-                  <span className={st.deliveryRatio >= 80 ? "text-emerald-700" : st.deliveryRatio < 60 ? "text-red-600" : "text-amber-700"}>
+                  <span
+                    className={
+                      st.deliveryRatio >= 80
+                        ? "text-emerald-700"
+                        : st.deliveryRatio < 60
+                          ? "text-red-600"
+                          : "text-amber-700"
+                    }
+                  >
                     {st.deliveryRatio}% Delivered
                   </span>
                 </div>
@@ -200,8 +210,8 @@ export function OrderCustomerRiskCard({
                       st.deliveryRatio >= 80
                         ? "bg-emerald-500"
                         : st.deliveryRatio < 60
-                        ? "bg-red-500"
-                        : "bg-amber-500"
+                          ? "bg-red-500"
+                          : "bg-amber-500"
                     }`}
                     style={{ width: `${Math.min(100, Math.max(0, st.deliveryRatio))}%` }}
                   />
@@ -215,7 +225,9 @@ export function OrderCustomerRiskCard({
                   <p className="mt-0.5 text-sm font-black text-neutral-900">{st.totalParcels}</p>
                 </div>
                 <div>
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase">Delivered</span>
+                  <span className="text-[10px] font-bold text-emerald-700 uppercase">
+                    Delivered
+                  </span>
                   <p className="mt-0.5 text-sm font-black text-emerald-700">{st.totalDelivered}</p>
                 </div>
                 <div>
@@ -257,7 +269,10 @@ export function OrderCustomerRiskCard({
               </h5>
             </div>
             {store.isRepeatCustomer ? (
-              <Badge variant="outline" className="border-blue-300 bg-blue-50 text-[10px] font-bold text-blue-800">
+              <Badge
+                variant="outline"
+                className="border-blue-300 bg-blue-50 text-[10px] font-bold text-blue-800"
+              >
                 Repeat Customer
               </Badge>
             ) : (
@@ -268,7 +283,9 @@ export function OrderCustomerRiskCard({
           <div className="space-y-2.5 text-xs">
             <div className="grid grid-cols-2 gap-2 rounded-lg bg-neutral-50 p-2.5">
               <div>
-                <span className="text-[10px] font-bold text-neutral-400 uppercase">Past Orders</span>
+                <span className="text-[10px] font-bold text-neutral-400 uppercase">
+                  Past Orders
+                </span>
                 <p className="mt-0.5 text-sm font-black text-neutral-900">
                   {store.totalOrders}{" "}
                   <span className="text-xs font-normal text-neutral-500">
@@ -277,7 +294,9 @@ export function OrderCustomerRiskCard({
                 </p>
               </div>
               <div>
-                <span className="text-[10px] font-bold text-neutral-400 uppercase">Lifetime Spent (LTV)</span>
+                <span className="text-[10px] font-bold text-neutral-400 uppercase">
+                  Lifetime Spent (LTV)
+                </span>
                 <p className="mt-0.5 text-sm font-black text-neutral-900">
                   {formatBdt(store.totalSpent)}
                 </p>
@@ -285,7 +304,7 @@ export function OrderCustomerRiskCard({
             </div>
 
             {/* Quick Contact & Copy Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-neutral-100">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-100 pt-1">
               {customerPhone ? (
                 <div className="flex items-center gap-1.5">
                   <span className="font-mono text-xs font-bold text-neutral-800">

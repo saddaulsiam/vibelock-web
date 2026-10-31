@@ -7,7 +7,7 @@ import { Globe, ImagePlus, Layers, Megaphone, Search, Sparkles, Trash2, Upload }
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
 import { CategorySearchableSelect } from "./category-select";
-import { saveCategoryAction } from "@/lib/admin/catalog-actions";
+import { saveCategoryAction } from "@/lib/admin/catalog/catalog-actions";
 
 const slugify = (value: string) =>
   value

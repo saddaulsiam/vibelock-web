@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { Check, Copy } from "lucide-react";
+import * as React from "react";
 import { toast } from "sonner";
 
 interface OrderCopyButtonProps {
@@ -60,8 +60,8 @@ export function OrderCopyButton({
       >
         {copied ? (
           <>
-            <Check className="size-3.5 text-emerald-600 stroke-[2.5]" />
-            <span className="text-emerald-700 font-bold">Copied!</span>
+            <Check className="size-3.5 stroke-[2.5] text-emerald-600" />
+            <span className="font-bold text-emerald-700">Copied!</span>
           </>
         ) : (
           <>
@@ -83,7 +83,7 @@ export function OrderCopyButton({
       >
         {copied ? (
           <>
-            <Check className="size-2.5 text-emerald-600 stroke-[2.5]" />
+            <Check className="size-2.5 stroke-[2.5] text-emerald-600" />
             <span className="text-emerald-700">Copied!</span>
           </>
         ) : (

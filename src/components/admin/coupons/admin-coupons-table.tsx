@@ -29,13 +29,13 @@ import {
   bulkUpdateCouponStatusAction,
   loadMoreAdminCouponsAction,
   toggleCouponStatusAction,
-} from "@/lib/admin/coupon-actions";
+} from "@/lib/admin/coupons/coupon-actions";
 import {
   couponStatus,
   type AdminCouponListItem,
   type CouponFilter,
-} from "@/lib/admin/coupon-shared";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
+} from "@/lib/admin/coupons/coupon-shared";
+import { exportToCsv } from "@/lib/admin/shared";
 import { DiscountType } from "@prisma/client";
 import {
   Check,

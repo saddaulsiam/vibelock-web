@@ -1,8 +1,36 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  ADMIN_TABLE_CLASSES,
+  AdminTableColumnVisibility,
+  AdminTableFilterSelect,
+  AdminTableInfiniteScroll,
+  AdminTableMetaBar,
+  AdminTableSearchInput,
+  AdminTableTabs,
+  useAdminTableColumns,
+  type AdminTableTabItem,
+} from "@/components/admin/shared";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  bulkUpdateOrderStatusAction,
+  loadMoreAdminOrdersAction,
+  quickUpdateOrderStatusAction,
+} from "@/lib/admin/orders/order-actions";
+import type {
+  AdminOrderDateRange,
+  AdminOrderItem,
+  AdminOrdersResult,
+} from "@/lib/admin/orders/order-queries";
+import { exportToCsv } from "@/lib/admin/shared";
+import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 import {
   Banknote,
   Check,
@@ -18,39 +46,9 @@ import {
   Truck,
   X,
 } from "lucide-react";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
-import {
-  AdminTableColumnVisibility,
-  useAdminTableColumns,
-} from "@/components/admin/shared";
-import {
-  ADMIN_TABLE_CLASSES,
-  AdminTableFilterSelect,
-  AdminTableMetaBar,
-  AdminTableSearchInput,
-  AdminTableTabs,
-  type AdminTableTabItem,
-} from "@/components/admin/shared";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { exportToCsv } from "@/lib/admin/admin-csv-export";
-import type {
-  AdminOrderDateRange,
-  AdminOrderItem,
-  AdminOrdersResult,
-} from "@/lib/admin/order-queries";
-import { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
-import {
-  bulkUpdateOrderStatusAction,
-  loadMoreAdminOrdersAction,
-  quickUpdateOrderStatusAction,
-} from "@/lib/admin/order-actions";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
 
 function formatBdt(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
@@ -375,11 +373,11 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
 
   const hasActiveFilters = Boolean(
     searchTerm ||
-      (currentFilters.status && currentFilters.status !== "ALL") ||
-      currentFilters.paymentStatus ||
-      currentFilters.paymentMethod ||
-      currentFilters.salesChannel ||
-      currentFilters.dateRange
+    (currentFilters.status && currentFilters.status !== "ALL") ||
+    currentFilters.paymentStatus ||
+    currentFilters.paymentMethod ||
+    currentFilters.salesChannel ||
+    currentFilters.dateRange
   );
 
   const handleClearAllFilters = () => {
@@ -476,11 +474,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
   return (
     <div className="space-y-4">
       {/* Status Filter Tabs */}
-      <AdminTableTabs
-        tabs={tabs}
-        activeKey={activeStatus}
-        onChange={handleStatusTab}
-      />
+      <AdminTableTabs tabs={tabs} activeKey={activeStatus} onChange={handleStatusTab} />
 
       {/* Floating / Sticky Bulk Action Bar */}
       {selectedIds.size > 0 && (
@@ -655,7 +649,9 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
               {visibleColumns.total && (
                 <TableHead className="text-right whitespace-nowrap">Total Amount</TableHead>
               )}
-              {visibleColumns.payment && <TableHead className="whitespace-nowrap">Payment</TableHead>}
+              {visibleColumns.payment && (
+                <TableHead className="whitespace-nowrap">Payment</TableHead>
+              )}
               {visibleColumns.shipment && (
                 <TableHead className="min-w-[140px]">Courier &amp; Tracking</TableHead>
               )}
@@ -668,7 +664,10 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
           <TableBody>
             {loadedOrders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={visibleColumnCount} className="p-12 text-center text-neutral-500">
+                <TableCell
+                  colSpan={visibleColumnCount}
+                  className="p-12 text-center text-neutral-500"
+                >
                   <Package className="mx-auto mb-2 size-8 text-neutral-400" />
                   <p className="font-semibold text-neutral-700">No orders found</p>
                   <p className="mt-1 text-xs text-neutral-500">
@@ -690,10 +689,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
               loadedOrders.map((order) => {
                 const isSelected = selectedIds.has(order.id);
                 return (
-                  <TableRow
-                    key={order.id}
-                    className={isSelected ? "bg-amber-50/40" : undefined}
-                  >
+                  <TableRow key={order.id} className={isSelected ? "bg-amber-50/40" : undefined}>
                     {/* Row Checkbox */}
                     <TableCell className="px-4 text-center">
                       <input
@@ -785,7 +781,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                           </span>
                           {order.itemsSummary ? (
                             <span
-                              className="block max-w-[150px] truncate text-[10px] text-neutral-500 hover:text-neutral-900 transition-colors"
+                              className="block max-w-[150px] truncate text-[10px] text-neutral-500 transition-colors hover:text-neutral-900"
                               title={order.itemsSummary}
                             >
                               {order.itemsSummary}
@@ -948,7 +944,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
               <div
                 key={order.id}
                 className={`rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs transition-colors ${
-                  isSelected ? "bg-amber-50/40 border-amber-300" : ""
+                  isSelected ? "border-amber-300 bg-amber-50/40" : ""
                 }`}
               >
                 {/* Header: Checkbox, Order #, Channel & Status */}
@@ -995,7 +991,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                     </p>
                     <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-neutral-500">
                       {order.shippingCity && (
-                        <span className="rounded-xs bg-neutral-100 px-1 py-0.2 text-[10px] font-medium text-neutral-600">
+                        <span className="py-0.2 rounded-xs bg-neutral-100 px-1 text-[10px] font-medium text-neutral-600">
                           {order.shippingCity}
                         </span>
                       )}
@@ -1004,7 +1000,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                   </div>
 
                   {order.customerPhone && (
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex shrink-0 items-center gap-1">
                       <a
                         href={`tel:${order.customerPhone}`}
                         className="flex size-7 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
@@ -1053,7 +1049,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
                       <span
                         className={
                           order.paymentStatus === "SUCCESS"
-                            ? "text-emerald-700 font-bold"
+                            ? "font-bold text-emerald-700"
                             : "text-amber-700"
                         }
                       >

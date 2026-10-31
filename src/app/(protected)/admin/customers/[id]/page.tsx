@@ -14,7 +14,7 @@ import {
   Ban,
   Lock,
 } from "lucide-react";
-import { getAdminCustomerById } from "@/lib/admin/customer-queries";
+import { getAdminCustomerById } from "@/lib/admin/customers";
 import {
   CustomerAbandonedCartCard,
   CustomerBackButton,

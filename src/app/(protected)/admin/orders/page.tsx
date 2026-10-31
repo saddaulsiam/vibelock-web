@@ -1,5 +1,5 @@
 import { CheckCircle2, Clock, Package, ShoppingBag } from "lucide-react";
-import { getAdminOrders, type AdminOrderDateRange } from "@/lib/admin/order-queries";
+import { getAdminOrders, type AdminOrderDateRange } from "@/lib/admin/orders";
 import { AdminOrdersTable } from "@/components/admin/orders/admin-orders-table";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";

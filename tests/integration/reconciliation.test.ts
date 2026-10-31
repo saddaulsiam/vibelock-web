@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import crypto from "crypto";
 import prisma from "../../src/lib/prisma/client";
-import { classifyOrder, getAdminReconciliation } from "../../src/lib/admin/reconciliation-queries";
+import { classifyOrder, getAdminReconciliation } from "../../src/lib/admin/reports";
 import AdminReconciliationPage from "../../src/app/(protected)/admin/reports/reconciliation/page";
 import Form from "next/form";
 

@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import type { AdminCustomerAbandonedCart } from "@/lib/admin/customers/customer-queries";
+import {
+  Clock,
+  ExternalLink,
+  MessageCircle,
+  Package,
+  Send,
+  ShoppingCart,
+  Sparkles,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ShoppingCart,
-  MessageCircle,
-  ExternalLink,
-  Sparkles,
-  Clock,
-  Send,
-  X,
-  Package,
-} from "lucide-react";
-import { AdminCustomerAbandonedCart } from "@/lib/admin/customer-queries";
+import { useState } from "react";
 
 interface CustomerAbandonedCartCardProps {
   cart: AdminCustomerAbandonedCart;

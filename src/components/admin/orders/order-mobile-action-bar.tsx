@@ -15,7 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { OrderStatus } from "@prisma/client";
-import { updateOrderStatusAction } from "@/lib/admin/order-actions";
+import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
 import { generateWhatsAppUrl } from "@/components/admin/orders/admin-order-badges";
 import { OrderCancelModal } from "@/components/admin/orders/order-cancel-modal";
 

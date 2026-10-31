@@ -1,26 +1,26 @@
 "use client";
 
-import * as React from "react";
-import { useRouter } from "next/navigation";
 import {
-  ShieldAlert,
-  KeyRound,
-  Mail,
-  Copy,
-  Check,
-  UserX,
-  UserCheck,
-  Trash2,
-  AlertTriangle,
-  Loader2,
-  Lock,
-} from "lucide-react";
-import {
+  adminGenerateCustomerPasswordResetLinkAction,
+  adminSendCustomerPasswordResetEmailAction,
   deleteAdminCustomerAction,
   toggleCustomerAccountSuspensionAction,
-  adminSendCustomerPasswordResetEmailAction,
-  adminGenerateCustomerPasswordResetLinkAction,
-} from "@/lib/admin/customer-actions";
+} from "@/lib/admin/customers/customer-actions";
+import {
+  AlertTriangle,
+  Check,
+  Copy,
+  KeyRound,
+  Loader2,
+  Lock,
+  Mail,
+  ShieldAlert,
+  Trash2,
+  UserCheck,
+  UserX,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 interface CustomerSecurityCardProps {
   customerId: string;
@@ -172,7 +172,7 @@ export function CustomerSecurityCard({
             <KeyRound className="size-3.5 text-neutral-500" />
             <span>Password Assistance</span>
           </div>
-          <p className="mt-1 text-[11px] text-neutral-500 leading-relaxed">
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
             Assist customers who forgot their password via email or direct WhatsApp link.
           </p>
 
@@ -181,7 +181,7 @@ export function CustomerSecurityCard({
               type="button"
               onClick={handleSendResetEmail}
               disabled={isSendingEmail}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 disabled:opacity-50 transition"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
             >
               {isSendingEmail ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -195,7 +195,7 @@ export function CustomerSecurityCard({
               type="button"
               onClick={handleCopyDirectLink}
               disabled={isGeneratingLink}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 disabled:opacity-50 transition"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
             >
               {isGeneratingLink ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -231,7 +231,7 @@ export function CustomerSecurityCard({
             )}
           </div>
 
-          <p className="mt-1 text-[11px] text-neutral-500 leading-relaxed">
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
             {isSuspended
               ? `Login is blocked. All active sessions terminated. (${suspensionReason || "Suspended by admin"})`
               : "Customer can currently sign in to VibeLock storefront and place orders."}
@@ -278,7 +278,7 @@ export function CustomerSecurityCard({
             )}
           </div>
 
-          <p className="mt-1 text-[11px] text-neutral-500 leading-relaxed">
+          <p className="mt-1 text-[11px] leading-relaxed text-neutral-500">
             {hasOrders
               ? "Cannot delete customers with past orders. Invoices, accounting, and courier fraud history must remain protected."
               : "This lead has 0 orders. Safe to permanently delete from database."}
@@ -299,7 +299,7 @@ export function CustomerSecurityCard({
               <button
                 type="button"
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-2xs hover:bg-rose-100 transition"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-2xs transition hover:bg-rose-100"
               >
                 <Trash2 className="size-3.5 text-rose-600" />
                 <span>Delete Customer Profile</span>
@@ -312,7 +312,7 @@ export function CustomerSecurityCard({
       {/* Delete Confirmation Modal for 0-order customers */}
       {isDeleteModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150"
           role="dialog"
           aria-modal="true"
         >
@@ -322,12 +322,11 @@ export function CustomerSecurityCard({
                 <AlertTriangle className="size-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-neutral-900">
-                  Permanently Delete Customer?
-                </h3>
-                <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+                <h3 className="text-sm font-bold text-neutral-900">Permanently Delete Customer?</h3>
+                <p className="mt-1 text-xs leading-relaxed text-neutral-600">
                   Are you sure you want to permanently delete{" "}
-                  <strong>{customerName || customerEmail}</strong>? This customer has 0 orders and will be completely removed from the database. This action cannot be undone.
+                  <strong>{customerName || customerEmail}</strong>? This customer has 0 orders and
+                  will be completely removed from the database. This action cannot be undone.
                 </p>
               </div>
             </div>

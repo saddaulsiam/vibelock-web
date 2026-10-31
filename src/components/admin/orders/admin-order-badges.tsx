@@ -1,5 +1,5 @@
-import * as React from "react";
 import { Badge } from "@/components/ui/badge";
+import type { OrderStatus, PaymentStatus, SalesChannel } from "@prisma/client";
 import {
   AlertCircle,
   CheckCircle2,
@@ -10,7 +10,6 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
-import type { OrderStatus, PaymentStatus, SalesChannel } from "@prisma/client";
 
 export function getOrderStatusBadge(status: OrderStatus | string) {
   switch (status) {
@@ -25,10 +24,7 @@ export function getOrderStatusBadge(status: OrderStatus | string) {
       );
     case "CONFIRMED":
       return (
-        <Badge
-          variant="outline"
-          className="border-blue-300 bg-blue-50 font-semibold text-blue-800"
-        >
+        <Badge variant="outline" className="border-blue-300 bg-blue-50 font-semibold text-blue-800">
           <CheckCircle2 className="mr-1 size-3 text-blue-600" /> Confirmed
         </Badge>
       );
@@ -108,10 +104,7 @@ export function getPaymentStatusBadge(status: PaymentStatus | string) {
       );
     case "FAILED":
       return (
-        <Badge
-          variant="outline"
-          className="border-rose-300 bg-rose-50 font-medium text-rose-800"
-        >
+        <Badge variant="outline" className="border-rose-300 bg-rose-50 font-medium text-rose-800">
           <AlertCircle className="mr-1 size-3 text-rose-600" /> Failed
         </Badge>
       );
@@ -133,13 +126,13 @@ export function getPaymentStatusBadge(status: PaymentStatus | string) {
 export function getSalesChannelBadge(channel: SalesChannel | string) {
   if (channel === "POS") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200">
+      <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800">
         <Store className="size-3 text-amber-600" /> POS Counter
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-800 border border-neutral-200">
+    <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-800">
       <Globe className="size-3 text-neutral-600" /> Online Store
     </span>
   );

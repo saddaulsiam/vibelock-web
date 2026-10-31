@@ -20,16 +20,16 @@ import {
   Star,
 } from "lucide-react";
 import { ProductStatus } from "@prisma/client";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   assignProductsToCategoryAction,
   removeProductFromCategoryAction,
   toggleProductFeaturedAction,
-} from "@/lib/admin/catalog-actions";
+} from "@/lib/admin/catalog/catalog-actions";
 import type {
   CategoryAssignedProduct,
   CategoryAvailableProduct,
-} from "@/lib/admin/catalog-queries";
+} from "@/lib/admin/catalog/catalog-queries";
 
 interface CategoryProductsManagerProps {
   categoryId: string;

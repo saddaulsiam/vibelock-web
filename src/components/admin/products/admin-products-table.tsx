@@ -30,8 +30,8 @@ import {
   loadMoreAdminProductsAction,
   quickUpdateProductPricesAction,
   toggleProductPublishedAction,
-} from "@/lib/admin/catalog-actions";
-import type { AdminProductItem, AdminProductsResult } from "@/lib/admin/catalog-queries";
+} from "@/lib/admin/catalog/catalog-actions";
+import type { AdminProductItem, AdminProductsResult } from "@/lib/admin/catalog/catalog-queries";
 import {
   AlertTriangle,
   Boxes,

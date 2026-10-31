@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 import prisma from "../../src/lib/prisma/client";
-import { getAdminDashboardData } from "../../src/lib/admin/dashboard-queries";
-import { getAdminReport } from "../../src/lib/admin/report-queries";
+import { getAdminDashboardData } from "../../src/lib/admin/reports";
+import { getAdminReport } from "../../src/lib/admin/reports";
 import AdminPage from "../../src/app/(protected)/admin/page";
 import crypto from "crypto";
 
