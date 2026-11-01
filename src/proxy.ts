@@ -9,6 +9,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/admin") ||
     pathname.startsWith("/manager") ||
     pathname.startsWith("/staff") ||
+    pathname.startsWith("/pos") ||
     pathname.startsWith("/account");
 
   if (isProtectedPath) {
