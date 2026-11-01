@@ -76,10 +76,7 @@ export async function createAdminUserAction(input: {
 
   const existing = await prisma.user.findFirst({
     where: {
-      OR: [
-        { email: cleanEmail },
-        ...(cleanPhone ? [{ phone: cleanPhone }] : []),
-      ],
+      OR: [{ email: cleanEmail }, ...(cleanPhone ? [{ phone: cleanPhone }] : [])],
     },
   });
 
@@ -110,4 +107,3 @@ export async function createAdminUserAction(input: {
     return { success: false, error: "Failed to create administrator profile." };
   }
 }
-

@@ -15,10 +15,7 @@ export default async function NewAdminCategoryPage() {
         title="Create Category"
         description="Define category identity, hierarchy, media assets, and SEO-friendly slug."
       >
-        <Link
-          href="/admin/categories"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/categories" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Categories</span>
         </Link>

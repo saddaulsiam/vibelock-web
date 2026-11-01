@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { Truck, MapPin, DollarSign } from "lucide-react";
 
-export function ShippingSubNav({
-  activeTab,
-}: {
-  activeTab: "shipments" | "zones" | "methods";
-}) {
+export function ShippingSubNav({ activeTab }: { activeTab: "shipments" | "zones" | "methods" }) {
   const tabs = [
     {
       id: "shipments",
@@ -43,11 +39,7 @@ export function ShippingSubNav({
                 : "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900"
             }`}
           >
-            <Icon
-              className={`size-3.5 ${
-                isActive ? "text-[#00D9FF]" : "text-neutral-500"
-              }`}
-            />
+            <Icon className={`size-3.5 ${isActive ? "text-[#00D9FF]" : "text-neutral-500"}`} />
             <span>{tab.label}</span>
           </Link>
         );

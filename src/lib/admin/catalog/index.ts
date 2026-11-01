@@ -32,4 +32,3 @@ export {
   type AdminCategoryBannerItem,
   type AdminCategoryDetail,
 } from "./catalog-queries";
-

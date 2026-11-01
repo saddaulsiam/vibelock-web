@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import {
-  ProfileForm,
-  NotificationPreferencesCard,
-} from "@/components/account/profile";
+import { ProfileForm, NotificationPreferencesCard } from "@/components/account/profile";
 import { AccountMembershipCard } from "@/components/account/dashboard";
 import { getNotificationPreferences } from "@/lib/account/notification-actions";
 

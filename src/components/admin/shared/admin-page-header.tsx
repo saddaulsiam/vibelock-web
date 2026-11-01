@@ -61,14 +61,12 @@ export function AdminPageHeader({
     >
       <div>
         {eyebrow && (
-          <p className="mb-1 text-xs font-semibold tracking-[0.16em] uppercase text-neutral-500">
+          <p className="mb-1 text-xs font-semibold tracking-[0.16em] text-neutral-500 uppercase">
             {eyebrow}
           </p>
         )}
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-2xl font-bold tracking-tight text-[#101114] sm:text-3xl">
-            {title}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-[#101114] sm:text-3xl">{title}</h1>
           {badgeLabel && (
             <span
               className={cn(
@@ -76,23 +74,17 @@ export function AdminPageHeader({
                 badgeStyle.container
               )}
             >
-              <span className={cn("size-1.5 rounded-full animate-pulse", badgeStyle.dot)} />
+              <span className={cn("size-1.5 animate-pulse rounded-full", badgeStyle.dot)} />
               {badgeLabel}
             </span>
           )}
         </div>
         {description && (
-          <p className="mt-1 text-xs leading-relaxed text-neutral-500 sm:text-sm">
-            {description}
-          </p>
+          <p className="mt-1 text-xs leading-relaxed text-neutral-500 sm:text-sm">{description}</p>
         )}
       </div>
 
-      {children && (
-        <div className="flex flex-wrap items-center gap-2">
-          {children}
-        </div>
-      )}
+      {children && <div className="flex flex-wrap items-center gap-2">{children}</div>}
     </div>
   );
 }

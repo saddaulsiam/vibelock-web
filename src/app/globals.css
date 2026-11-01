@@ -213,12 +213,12 @@
 
 /* Chrome/Safari Dark Mode Autofill Fix */
 input:-webkit-autofill,
-input:-webkit-autofill:hover, 
-input:-webkit-autofill:focus, 
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px #16171B inset !important;
-  -webkit-text-fill-color: #F3F0E8 !important;
-  caret-color: #F3F0E8 !important;
+  -webkit-box-shadow: 0 0 0 30px #16171b inset !important;
+  -webkit-text-fill-color: #f3f0e8 !important;
+  caret-color: #f3f0e8 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 
@@ -229,3 +229,84 @@ input:-webkit-autofill:active {
   }
 }
 
+/* POS Thermal Receipt & Cash Memo Print Styles (Fallback for Ctrl+P / window.print) */
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+  }
+
+  /* When printing, hide all non-print elements */
+  header,
+  nav,
+  main,
+  footer,
+  aside,
+  [data-sonner-toaster],
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-header"],
+  [data-slot="dialog-close"],
+  [data-slot="dialog-footer"],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Hide everything inside body by default */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Only make .print-area and its descendants visible */
+  .print-area,
+  .print-area * {
+    visibility: visible !important;
+  }
+
+  /* Reset the dialog container so it does not center or shadow */
+  [data-slot="dialog-content"] {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 72mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    outline: none !important;
+  }
+
+  /* Format .print-area as a clean 58mm/80mm thermal slip */
+  .print-area {
+    position: fixed !important;
+    left: 50% !important;
+    top: 0 !important;
+    transform: translateX(-50%) !important;
+    width: 72mm !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    overflow: visible !important;
+    z-index: 9999999 !important;
+  }
+}

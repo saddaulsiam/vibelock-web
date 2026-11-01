@@ -43,16 +43,7 @@ function BarcodeSvg({ value, height = 36 }: { value: string; height?: number }) 
         const x = currentX;
         currentX += barWidth;
         if (!isBlack) return null;
-        return (
-          <rect
-            key={index}
-            x={x}
-            y={0}
-            width={barWidth}
-            height={height}
-            fill="#000000"
-          />
-        );
+        return <rect key={index} x={x} y={0} width={barWidth} height={height} fill="#000000" />;
       })}
     </svg>
   );
@@ -91,7 +82,9 @@ export function OrderThermalLabelModal({
             </div>
             <div>
               <h3 className="text-sm font-bold text-neutral-900">Thermal Parcel Shipping Label</h3>
-              <p className="text-[11px] text-neutral-500">4&quot; × 6&quot; Courier Polybag Sticker Format</p>
+              <p className="text-[11px] text-neutral-500">
+                4&quot; × 6&quot; Courier Polybag Sticker Format
+              </p>
             </div>
           </div>
           <button
@@ -112,7 +105,9 @@ export function OrderThermalLabelModal({
           <div className="flex items-center justify-between border-b-2 border-black pb-2 text-xs">
             <div>
               <h2 className="text-base font-black tracking-tight uppercase">VibeLock Apparel</h2>
-              <p className="text-[10px] text-neutral-700">Official Merchant Dispatch &middot; Dhaka, BD</p>
+              <p className="text-[10px] text-neutral-700">
+                Official Merchant Dispatch &middot; Dhaka, BD
+              </p>
             </div>
             <div className="text-right">
               <span className="inline-block border border-black bg-black px-1.5 py-0.5 text-[10px] font-bold text-white uppercase">
@@ -133,7 +128,7 @@ export function OrderThermalLabelModal({
             <p className="font-mono text-xs font-bold text-neutral-900">
               📞 {order.customerPhone || "No Phone"}
             </p>
-            <p className="mt-1 text-[11px] leading-snug text-neutral-800 font-medium">
+            <p className="mt-1 text-[11px] leading-snug font-medium text-neutral-800">
               {order.shippingStreet}, {order.shippingCity}
               {order.shippingZip ? ` - ${order.shippingZip}` : ""}
             </p>
@@ -153,7 +148,7 @@ export function OrderThermalLabelModal({
               </div>
             ) : (
               <div className="rounded border-2 border-dashed border-neutral-700 bg-neutral-100 p-1.5 text-black">
-                <span className="block text-[10px] font-black tracking-widest uppercase text-emerald-800">
+                <span className="block text-[10px] font-black tracking-widest text-emerald-800 uppercase">
                   ★ PREPAID PARCEL ★
                 </span>
                 <span className="text-sm font-black text-neutral-900">COLLECT ৳0.00</span>
@@ -166,10 +161,7 @@ export function OrderThermalLabelModal({
 
           {/* Barcode Strip */}
           <div className="py-2.5 text-center">
-            <BarcodeSvg
-              value={order.providerShipmentId || order.orderNumber}
-              height={36}
-            />
+            <BarcodeSvg value={order.providerShipmentId || order.orderNumber} height={36} />
             <p className="mt-1 font-mono text-xs font-black tracking-wider">
               {order.providerShipmentId
                 ? `STEADFAST CID: *${order.providerShipmentId}*`

@@ -57,9 +57,7 @@ export function AdminOrdersMobileCard({
                 {order.salesChannel === "POS" ? "POS" : "WEB"}
               </span>
             </div>
-            <div className="text-[10px] text-neutral-500">
-              {formatDate(order.createdAt)}
-            </div>
+            <div className="text-[10px] text-neutral-500">{formatDate(order.createdAt)}</div>
           </div>
         </div>
         <div>{getOrderStatusBadge(order.status)}</div>
@@ -91,11 +89,7 @@ export function AdminOrdersMobileCard({
               <Phone className="size-3" />
             </a>
             <a
-              href={formatWhatsAppUrl(
-                order.customerPhone,
-                order.orderNumber,
-                order.customerName
-              )}
+              href={formatWhatsAppUrl(order.customerPhone, order.orderNumber, order.customerName)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex size-7 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
@@ -130,9 +124,7 @@ export function AdminOrdersMobileCard({
             <span>&middot;</span>
             <span
               className={
-                order.paymentStatus === "SUCCESS"
-                  ? "font-bold text-emerald-700"
-                  : "text-amber-700"
+                order.paymentStatus === "SUCCESS" ? "font-bold text-emerald-700" : "text-amber-700"
               }
             >
               {order.paymentStatus}
@@ -193,4 +185,3 @@ export function AdminOrdersMobileCard({
     </div>
   );
 }
-

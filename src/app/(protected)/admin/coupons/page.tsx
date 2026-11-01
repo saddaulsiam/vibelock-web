@@ -135,7 +135,7 @@ export default async function AdminCouponsPage({
       {/* 3. Interactive Data Table */}
       <Suspense
         fallback={
-          <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center text-xs text-neutral-400 animate-pulse">
+          <div className="animate-pulse rounded-xl border border-neutral-200 bg-white p-12 text-center text-xs text-neutral-400">
             Loading promotional coupons...
           </div>
         }

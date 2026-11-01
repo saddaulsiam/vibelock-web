@@ -289,4 +289,3 @@ export async function notifyCashRefundProcessed({
     console.error("[Email Error] Failed to send cash refund email:", error);
   }
 }
-

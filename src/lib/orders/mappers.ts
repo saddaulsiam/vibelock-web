@@ -103,7 +103,8 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
         order.shipment?.deliveredAt ||
         order.history?.find((h) => h.status === "DELIVERED")?.createdAt ||
         order.updatedAt;
-      const daysSinceDelivery = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+      const daysSinceDelivery =
+        (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
       return daysSinceDelivery <= 3;
     })(),
     shipment: order.shipment

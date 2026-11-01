@@ -204,7 +204,7 @@ export function Footer() {
           </span>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            {/* Facebook 1: VIBELOCK BD */}
+            {/* Facebook 1: VIBELOCK */}
             <a
               href="https://facebook.com/vibelock.bd"
               target="_blank"

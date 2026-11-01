@@ -141,7 +141,10 @@ export async function createPosOrderAction(
           throw new Error("Split payment selected but no payment tenders were provided.");
         }
 
-        const totalSplitAllocated = input.splitPayments.reduce((sum, s) => sum + Number(s.amount), 0);
+        const totalSplitAllocated = input.splitPayments.reduce(
+          (sum, s) => sum + Number(s.amount),
+          0
+        );
         if (totalSplitAllocated < total) {
           throw new Error(
             `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
@@ -275,7 +278,7 @@ export async function createPosOrderAction(
             gatewayTransactionId:
               input.paymentMethod === "CASH"
                 ? `CASH-${Date.now()}`
-                : (input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`),
+                : input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`,
             gatewayPayload: {
               tenderAmount: effectiveAmountPaid,
               changeReturned: changeDue,

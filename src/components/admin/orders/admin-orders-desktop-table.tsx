@@ -72,9 +72,7 @@ export function AdminOrdersDesktopTable({
             {visibleColumns.total && (
               <TableHead className="text-right whitespace-nowrap">Total Amount</TableHead>
             )}
-            {visibleColumns.payment && (
-              <TableHead className="whitespace-nowrap">Payment</TableHead>
-            )}
+            {visibleColumns.payment && <TableHead className="whitespace-nowrap">Payment</TableHead>}
             {visibleColumns.shipment && (
               <TableHead className="min-w-[140px]">Courier &amp; Tracking</TableHead>
             )}
@@ -87,10 +85,7 @@ export function AdminOrdersDesktopTable({
         <TableBody>
           {loadedOrders.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={visibleColumnCount}
-                className="p-12 text-center text-neutral-500"
-              >
+              <TableCell colSpan={visibleColumnCount} className="p-12 text-center text-neutral-500">
                 <Package className="mx-auto mb-2 size-8 text-neutral-400" />
                 <p className="font-semibold text-neutral-700">No orders found</p>
                 <p className="mt-1 text-xs text-neutral-500">
@@ -128,4 +123,3 @@ export function AdminOrdersDesktopTable({
     </div>
   );
 }
-

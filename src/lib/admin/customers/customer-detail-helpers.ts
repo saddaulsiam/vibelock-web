@@ -63,27 +63,29 @@ export function calculateCustomerPreferences({
   };
 }
 
-export function mapCustomerAbandonedCart(cartData: {
-  updatedAt: Date;
-  items: Array<{
-    id: string;
-    variantId: string;
-    quantity: number;
-    variant: {
-      productId: string;
-      sku: string;
-      size: string | null;
-      color: string | null;
-      sellingPrice: unknown;
-      discountPrice: unknown;
-      product: {
-        name: string;
-        slug: string;
-        images: Array<{ url: string }>;
+export function mapCustomerAbandonedCart(
+  cartData: {
+    updatedAt: Date;
+    items: Array<{
+      id: string;
+      variantId: string;
+      quantity: number;
+      variant: {
+        productId: string;
+        sku: string;
+        size: string | null;
+        color: string | null;
+        sellingPrice: unknown;
+        discountPrice: unknown;
+        product: {
+          name: string;
+          slug: string;
+          images: Array<{ url: string }>;
+        };
       };
-    };
-  }>;
-} | null): AdminCustomerAbandonedCart {
+    }>;
+  } | null
+): AdminCustomerAbandonedCart {
   const cartItems: AdminCustomerAbandonedCartItem[] = (cartData?.items || []).map((ci) => {
     const unitPrice = Number(ci.variant.discountPrice ?? ci.variant.sellingPrice);
     return {
@@ -167,11 +169,7 @@ export function buildCustomerTimeline({
       timestamp: o.createdAt,
       badge: o.status,
       badgeVariant:
-        o.status === "DELIVERED"
-          ? "success"
-          : o.status === "CANCELLED"
-          ? "destructive"
-          : "warning",
+        o.status === "DELIVERED" ? "success" : o.status === "CANCELLED" ? "destructive" : "warning",
       link: `/admin/orders/${o.id}`,
       linkLabel: "View Order",
     });
@@ -293,4 +291,3 @@ export function buildCustomerTimeline({
 
   return timeline;
 }
-

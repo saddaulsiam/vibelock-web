@@ -1,7 +1,4 @@
-export {
-  getAdminDashboardData,
-  type DashboardFilters,
-} from "./dashboard-queries";
+export { getAdminDashboardData, type DashboardFilters } from "./dashboard-queries";
 export {
   classifyOrder,
   getAdminReconciliation,
@@ -26,4 +23,3 @@ export {
   type ProductProfitabilityProduct,
   type ProductProfitabilityResult,
 } from "./report-queries";
-

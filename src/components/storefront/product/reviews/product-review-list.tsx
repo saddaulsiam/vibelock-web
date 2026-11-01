@@ -45,7 +45,8 @@ export function ProductReviewList({
         </div>
         <h4 className="mt-3 text-sm font-bold text-[#101114]">No reviews yet</h4>
         <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[#101114]/65">
-          Be the first verified customer to share feedback on sizing, fit, and comfort for this product!
+          Be the first verified customer to share feedback on sizing, fit, and comfort for this
+          product!
         </p>
       </div>
     );
@@ -54,17 +55,14 @@ export function ProductReviewList({
   return (
     <div className="space-y-4">
       {reviews.map((review) => {
-        const canDelete =
-          isAdmin || (currentUserId && review.userId === currentUserId);
+        const canDelete = isAdmin || (currentUserId && review.userId === currentUserId);
         const reviewDate = new Date(review.createdAt).toLocaleDateString("en-US", {
           year: "numeric",
           month: "short",
           day: "numeric",
         });
 
-        const initial = review.user?.name
-          ? review.user.name.charAt(0).toUpperCase()
-          : "V";
+        const initial = review.user?.name ? review.user.name.charAt(0).toUpperCase() : "V";
 
         return (
           <div
@@ -100,9 +98,7 @@ export function ProductReviewList({
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     <StarRating value={review.rating} size="sm" />
-                    <span className="text-[11px] text-[#101114]/50">
-                      {reviewDate}
-                    </span>
+                    <span className="text-[11px] text-[#101114]/50">{reviewDate}</span>
                   </div>
                 </div>
               </div>
@@ -126,11 +122,9 @@ export function ProductReviewList({
             </div>
 
             {review.comment ? (
-              <p className="mt-4 text-sm leading-relaxed text-[#101114]/85">
-                {review.comment}
-              </p>
+              <p className="mt-4 text-sm leading-relaxed text-[#101114]/85">{review.comment}</p>
             ) : (
-              <p className="mt-3 text-xs italic text-[#101114]/40">
+              <p className="mt-3 text-xs text-[#101114]/40 italic">
                 Customer left a {review.rating}-star rating without a written comment.
               </p>
             )}
@@ -140,4 +134,3 @@ export function ProductReviewList({
     </div>
   );
 }
-

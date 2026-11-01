@@ -5,11 +5,7 @@ import { Check, Copy, Edit, Loader2, MessageCircle, Power, Trash2 } from "lucide
 import { TableCell, TableRow } from "@/components/ui/table";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 import type { CouponColumnKey } from "./coupon-table-types";
-import {
-  formatCurrency,
-  formatDate,
-  getValidityNote,
-} from "./coupon-table-utils";
+import { formatCurrency, formatDate, getValidityNote } from "./coupon-table-utils";
 
 export interface AdminCouponsDesktopRowProps {
   coupon: AdminCouponListItem;
@@ -102,9 +98,7 @@ export function AdminCouponsDesktopRow({
               <span className="inline-flex items-center gap-1 rounded bg-purple-50 px-1.5 py-0.5 text-[10px] font-semibold text-purple-700">
                 <span className="size-1 rounded-full bg-purple-500" />
                 {coupon.categories[0].name}
-                {coupon.categories.length > 1
-                  ? ` +${coupon.categories.length - 1}`
-                  : ""}
+                {coupon.categories.length > 1 ? ` +${coupon.categories.length - 1}` : ""}
               </span>
             ) : (
               <span className="text-[10px] text-neutral-400">Storewide</span>
@@ -117,9 +111,7 @@ export function AdminCouponsDesktopRow({
       {visibleColumns.usage && (
         <TableCell>
           <div className="flex items-center gap-2">
-            <span className="font-bold text-neutral-900">
-              {coupon.usageCount.toLocaleString()}
-            </span>
+            <span className="font-bold text-neutral-900">{coupon.usageCount.toLocaleString()}</span>
             <span className="text-neutral-400">
               / {coupon.usageLimit ? coupon.usageLimit.toLocaleString() : "∞"}
             </span>
@@ -144,9 +136,7 @@ export function AdminCouponsDesktopRow({
               </span>
             </div>
           ) : (
-            <span className="mt-0.5 block text-[10px] text-neutral-400">
-              Unlimited uses
-            </span>
+            <span className="mt-0.5 block text-[10px] text-neutral-400">Unlimited uses</span>
           )}
         </TableCell>
       )}
@@ -247,9 +237,7 @@ export function AdminCouponsDesktopRow({
           <button
             type="button"
             onClick={() => onDelete(coupon)}
-            title={
-              coupon.usageCount > 0 ? "Deactivate Coupon" : "Delete Unused Coupon"
-            }
+            title={coupon.usageCount > 0 ? "Deactivate Coupon" : "Delete Unused Coupon"}
             className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
           >
             <Trash2 className="size-3.5" />
@@ -259,4 +247,3 @@ export function AdminCouponsDesktopRow({
     </TableRow>
   );
 }
-

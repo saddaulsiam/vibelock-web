@@ -61,4 +61,3 @@ export interface CloseShiftInput {
   countedCash: number;
   notes?: string;
 }
-

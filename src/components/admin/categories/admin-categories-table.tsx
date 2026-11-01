@@ -47,13 +47,7 @@ export type AdminCategoryListItem = {
 };
 
 export type CategoryFilterTab =
-  | "all"
-  | "active"
-  | "hidden"
-  | "root"
-  | "sub"
-  | "with_products"
-  | "empty";
+  "all" | "active" | "hidden" | "root" | "sub" | "with_products" | "empty";
 
 export function AdminCategoriesTable({
   initialCategories,
@@ -242,9 +236,7 @@ export function AdminCategoriesTable({
               <TableCell colSpan={6} className="py-14 text-center">
                 <div className="flex flex-col items-center justify-center space-y-2">
                   <FolderTree className="size-10 text-neutral-300" />
-                  <p className="text-sm font-semibold text-neutral-800">
-                    No categories found
-                  </p>
+                  <p className="text-sm font-semibold text-neutral-800">No categories found</p>
                   <p className="max-w-xs text-xs text-neutral-500">
                     {hasActiveFilters
                       ? "Try clearing your search query or filter settings to see more categories."
@@ -285,7 +277,7 @@ export function AdminCategoriesTable({
                   {/* Category Name & Thumbnail */}
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 flex items-center justify-center shadow-2xs">
+                      <div className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 shadow-2xs">
                         {category.imageUrl ? (
                           <Image
                             src={category.imageUrl}
@@ -304,156 +296,154 @@ export function AdminCategoriesTable({
                             href={`/admin/categories/${category.id}`}
                             className="font-semibold text-neutral-900 hover:text-black hover:underline"
                           >
-                              {category.name}
-                            </Link>
-                          </div>
-                          <div className="font-mono text-[11px] text-neutral-400">
-                            /{category.slug}
-                          </div>
-                          {category.description && (
-                            <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-neutral-500">
-                              {category.description}
-                            </p>
-                          )}
+                            {category.name}
+                          </Link>
                         </div>
-                      </div>
-                    </TableCell>
-
-                    {/* Hierarchy / Parent */}
-                    <TableCell>
-                      {category.parent ? (
-                        <div className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200/90 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-700 shadow-2xs">
-                          <Folder className="size-3 text-neutral-400" />
-                          <span>{category.parent.name}</span>
+                        <div className="font-mono text-[11px] text-neutral-400">
+                          /{category.slug}
                         </div>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 rounded-md border border-blue-200/80 bg-blue-50/70 px-2.5 py-1 text-[11px] font-semibold text-blue-800 shadow-2xs">
-                          <span className="size-1.5 rounded-full bg-blue-500" />
-                          Root Department
-                        </span>
-                      )}
-                    </TableCell>
-
-                    {/* Merchandising Priority / Sort Order */}
-                    <TableCell className="text-center">
-                      <span className="inline-flex items-center rounded-md border border-neutral-200/80 bg-neutral-100/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-neutral-700">
-                        #{category.sortOrder}
-                      </span>
-                    </TableCell>
-
-                    {/* Catalog Products */}
-                    <TableCell>
-                      {hasProducts ? (
-                        <Link
-                          href={`/admin/categories/${category.id}`}
-                          title={`Manage ${category._count.products} products in ${category.name}`}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 hover:text-emerald-950 transition-colors"
-                        >
-                          <Package className="size-3 text-emerald-600" />
-                          <span>{category._count.products} products</span>
-                          <span className="text-[10px] text-emerald-600">→</span>
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/admin/categories/${category.id}`}
-                          title={`Assign products to ${category.name}`}
-                          className="inline-flex items-center gap-1 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-1 text-xs text-neutral-500 hover:border-neutral-400 hover:text-neutral-800 transition-colors"
-                        >
-                          <span>0 products</span>
-                          <span className="text-[10px] text-neutral-400">+</span>
-                        </Link>
-                      )}
-                    </TableCell>
-
-                    {/* Storefront Visibility Toggle */}
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleToggleStatus(category.id, category.isActive)
-                          }
-                          disabled={isToggling}
-                          title={`Click to ${category.isActive ? "hide from" : "publish to"} storefront`}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors disabled:opacity-50 ${
-                            category.isActive
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-                              : "border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
-                          }`}
-                        >
-                          {isToggling ? (
-                            <Loader2 className="size-2.5 animate-spin" />
-                          ) : (
-                            <span
-                              className={`size-1.5 rounded-full ${
-                                category.isActive ? "bg-emerald-500" : "bg-neutral-400"
-                              }`}
-                            />
-                          )}
-                          <span>{category.isActive ? "Active Live" : "Hidden / Draft"}</span>
-                        </button>
-                      </div>
-                    </TableCell>
-
-                    {/* Actions */}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Storefront Link */}
-                        <a
-                          href={`/category/${category.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title={`View "${category.name}" on storefront`}
-                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors shadow-2xs"
-                        >
-                          <ExternalLink className="size-3.5" />
-                        </a>
-
-                        {/* Category Hub (Products) */}
-                        <Link
-                          href={`/admin/categories/${category.id}`}
-                          title={`Manage products in ${category.name}`}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
-                        >
-                          <Package className="size-3 text-neutral-500" />
-                          <span>Products</span>
-                        </Link>
-
-                        {/* Edit Button */}
-                        <Link
-                          href={`/admin/categories/${category.id}/edit`}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
-                        >
-                          <Pencil className="size-3 text-neutral-500" />
-                          <span>Edit</span>
-                        </Link>
-
-                        {/* Delete Button */}
-                        {canDelete ? (
-                          <AdminMutationForm
-                            action={deleteCategoryAction}
-                            id={category.id}
-                            label="Delete"
-                            destructive
-                            size="sm"
-                            variant="outline"
-                            confirmMessage={`Are you sure you want to delete category "${category.name}"? This action cannot be undone.`}
-                            className="inline-flex items-center"
-                          />
-                        ) : (
-                          <span
-                            title="Cannot delete: category has active products or sub-categories"
-                            className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-300 cursor-not-allowed"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </span>
+                        {category.description && (
+                          <p className="mt-0.5 line-clamp-1 max-w-xs text-xs text-neutral-500">
+                            {category.description}
+                          </p>
                         )}
                       </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
+                    </div>
+                  </TableCell>
+
+                  {/* Hierarchy / Parent */}
+                  <TableCell>
+                    {category.parent ? (
+                      <div className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200/90 bg-neutral-50 px-2.5 py-1 text-xs font-medium text-neutral-700 shadow-2xs">
+                        <Folder className="size-3 text-neutral-400" />
+                        <span>{category.parent.name}</span>
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-blue-200/80 bg-blue-50/70 px-2.5 py-1 text-[11px] font-semibold text-blue-800 shadow-2xs">
+                        <span className="size-1.5 rounded-full bg-blue-500" />
+                        Root Department
+                      </span>
+                    )}
+                  </TableCell>
+
+                  {/* Merchandising Priority / Sort Order */}
+                  <TableCell className="text-center">
+                    <span className="inline-flex items-center rounded-md border border-neutral-200/80 bg-neutral-100/70 px-2 py-0.5 font-mono text-[11px] font-semibold text-neutral-700">
+                      #{category.sortOrder}
+                    </span>
+                  </TableCell>
+
+                  {/* Catalog Products */}
+                  <TableCell>
+                    {hasProducts ? (
+                      <Link
+                        href={`/admin/categories/${category.id}`}
+                        title={`Manage ${category._count.products} products in ${category.name}`}
+                        className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 hover:text-emerald-950"
+                      >
+                        <Package className="size-3 text-emerald-600" />
+                        <span>{category._count.products} products</span>
+                        <span className="text-[10px] text-emerald-600">→</span>
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/admin/categories/${category.id}`}
+                        title={`Assign products to ${category.name}`}
+                        className="inline-flex items-center gap-1 rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-2.5 py-1 text-xs text-neutral-500 transition-colors hover:border-neutral-400 hover:text-neutral-800"
+                      >
+                        <span>0 products</span>
+                        <span className="text-[10px] text-neutral-400">+</span>
+                      </Link>
+                    )}
+                  </TableCell>
+
+                  {/* Storefront Visibility Toggle */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(category.id, category.isActive)}
+                        disabled={isToggling}
+                        title={`Click to ${category.isActive ? "hide from" : "publish to"} storefront`}
+                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                          category.isActive
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                            : "border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
+                        }`}
+                      >
+                        {isToggling ? (
+                          <Loader2 className="size-2.5 animate-spin" />
+                        ) : (
+                          <span
+                            className={`size-1.5 rounded-full ${
+                              category.isActive ? "bg-emerald-500" : "bg-neutral-400"
+                            }`}
+                          />
+                        )}
+                        <span>{category.isActive ? "Active Live" : "Hidden / Draft"}</span>
+                      </button>
+                    </div>
+                  </TableCell>
+
+                  {/* Actions */}
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {/* Storefront Link */}
+                      <a
+                        href={`/category/${category.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`View "${category.name}" on storefront`}
+                        className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 shadow-2xs transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </a>
+
+                      {/* Category Hub (Products) */}
+                      <Link
+                        href={`/admin/categories/${category.id}`}
+                        title={`Manage products in ${category.name}`}
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
+                      >
+                        <Package className="size-3 text-neutral-500" />
+                        <span>Products</span>
+                      </Link>
+
+                      {/* Edit Button */}
+                      <Link
+                        href={`/admin/categories/${category.id}/edit`}
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
+                      >
+                        <Pencil className="size-3 text-neutral-500" />
+                        <span>Edit</span>
+                      </Link>
+
+                      {/* Delete Button */}
+                      {canDelete ? (
+                        <AdminMutationForm
+                          action={deleteCategoryAction}
+                          id={category.id}
+                          label="Delete"
+                          destructive
+                          size="sm"
+                          variant="outline"
+                          confirmMessage={`Are you sure you want to delete category "${category.name}"? This action cannot be undone.`}
+                          className="inline-flex items-center"
+                        />
+                      ) : (
+                        <span
+                          title="Cannot delete: category has active products or sub-categories"
+                          className="inline-flex size-8 cursor-not-allowed items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-300"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
     </div>

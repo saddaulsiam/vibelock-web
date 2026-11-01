@@ -33,7 +33,9 @@ export async function registerAction(data: RegisterInput) {
         return { error: "Too many attempts. Please try again later." };
       }
       console.error("Rate limit check error in registerAction:", e);
-      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
+      return {
+        error: "Authentication service is temporarily unavailable. Please try again shortly.",
+      };
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -105,7 +107,9 @@ export async function loginAction(data: LoginInput) {
         return { error: "Too many attempts. Please try again later." };
       }
       console.error("Rate limit check error in loginAction:", e);
-      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
+      return {
+        error: "Authentication service is temporarily unavailable. Please try again shortly.",
+      };
     }
 
     await signIn("credentials", {
@@ -149,7 +153,9 @@ export async function sendPhoneOtpAction(data: PhoneOtpRequestInput) {
         return { error: "Too many OTP requests. Please try again in a few minutes." };
       }
       console.error("Rate limit check error in sendPhoneOtpAction:", e);
-      return { error: "Authentication service is temporarily unavailable. Please try again shortly." };
+      return {
+        error: "Authentication service is temporarily unavailable. Please try again shortly.",
+      };
     }
 
     const result = await sendOtp(parsed.phone);
@@ -204,4 +210,3 @@ export async function verifyPhoneOtpAction(data: PhoneOtpVerifyInput) {
     return { error: "Verification failed. Please try again." };
   }
 }
-

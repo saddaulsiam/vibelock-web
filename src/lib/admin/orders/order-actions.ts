@@ -6,11 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import {
-  getAdminOrders,
-  type AdminOrdersResult,
-  type AdminOrderDateRange,
-} from "./order-queries";
+import { getAdminOrders, type AdminOrdersResult, type AdminOrderDateRange } from "./order-queries";
 import {
   getAuthoritativePaymentStatus,
   getOrderStatusTransitionError,
@@ -409,7 +405,8 @@ export async function checkCustomerRiskAction(input: {
     const profile = await getCustomerRiskProfile(input);
     return { success: true, profile };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to query customer risk profile.";
+    const message =
+      error instanceof Error ? error.message : "Failed to query customer risk profile.";
     return { success: false, error: message };
   }
 }
@@ -471,5 +468,3 @@ export async function addOrderNoteAction(input: {
     return { success: false, error: message };
   }
 }
-
-

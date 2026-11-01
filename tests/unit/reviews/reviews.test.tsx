@@ -41,14 +41,8 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import {
-  getProductReviews,
-  getUserReviewEligibility,
-} from "@/lib/reviews/queries";
-import {
-  submitReviewAction,
-  deleteReviewAction,
-} from "@/lib/reviews/actions";
+import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
+import { submitReviewAction, deleteReviewAction } from "@/lib/reviews/actions";
 import { renderToStaticMarkup } from "react-dom/server";
 import { StarRating } from "@/components/storefront/product/reviews/star-rating";
 import { ProductReviewsSummary } from "@/components/storefront/product/reviews/product-reviews-summary";
@@ -69,12 +63,7 @@ describe("Product Reviews System", () => {
     });
 
     test("computes correct average rating and percentage distributions", () => {
-      const reviews = [
-        { rating: 5 },
-        { rating: 5 },
-        { rating: 5 },
-        { rating: 4 },
-      ];
+      const reviews = [{ rating: 5 }, { rating: 5 }, { rating: 5 }, { rating: 4 }];
       const summary = calculateReviewSummary(reviews);
       expect(summary.totalReviews).toBe(4);
       expect(summary.averageRating).toBe(4.8);
@@ -136,9 +125,7 @@ describe("Product Reviews System", () => {
 
     test("returns canReview: false when user has no delivered order for product", async () => {
       mockPrisma.review.findUnique.mockResolvedValueOnce(null);
-      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
-        { sku: "SKU-BLK-L" },
-      ]);
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([{ sku: "SKU-BLK-L" }]);
       mockPrisma.order.findFirst.mockResolvedValueOnce(null);
 
       const res = await getUserReviewEligibility("user-1", "prod-1");
@@ -149,9 +136,7 @@ describe("Product Reviews System", () => {
 
     test("returns canReview: true and verified: true when user has a DELIVERED order", async () => {
       mockPrisma.review.findUnique.mockResolvedValueOnce(null);
-      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
-        { sku: "SKU-BLK-L" },
-      ]);
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([{ sku: "SKU-BLK-L" }]);
       mockPrisma.order.findFirst.mockResolvedValueOnce({ id: "ord-1" });
 
       const res = await getUserReviewEligibility("user-1", "prod-1");
@@ -189,9 +174,7 @@ describe("Product Reviews System", () => {
     test("fails when customer has not purchased or received delivery", async () => {
       mockCurrentUser.mockResolvedValueOnce({ id: "user-1", role: "CUSTOMER" });
       mockPrisma.review.findUnique.mockResolvedValueOnce(null);
-      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
-        { sku: "SKU-TEST" },
-      ]);
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([{ sku: "SKU-TEST" }]);
       mockPrisma.order.findFirst.mockResolvedValueOnce(null);
 
       const res = await submitReviewAction({
@@ -207,9 +190,7 @@ describe("Product Reviews System", () => {
     test("successfully upserts review for verified delivered buyer", async () => {
       mockCurrentUser.mockResolvedValueOnce({ id: "user-1", role: "CUSTOMER" });
       mockPrisma.review.findUnique.mockResolvedValueOnce(null);
-      mockPrisma.productVariant.findMany.mockResolvedValueOnce([
-        { sku: "SKU-TEST" },
-      ]);
+      mockPrisma.productVariant.findMany.mockResolvedValueOnce([{ sku: "SKU-TEST" }]);
       mockPrisma.order.findFirst.mockResolvedValueOnce({ id: "ord-1" });
       mockPrisma.review.upsert.mockResolvedValueOnce({ id: "rev-new" });
 

@@ -172,7 +172,11 @@ export async function processPosReturnAction(
       let totalExchangeValue = 0;
       const exchangeItemsReceipt = [];
 
-      if (input.resolution === "EXCHANGE" && input.exchangeItems && input.exchangeItems.length > 0) {
+      if (
+        input.resolution === "EXCHANGE" &&
+        input.exchangeItems &&
+        input.exchangeItems.length > 0
+      ) {
         const variantIds = Array.from(new Set(input.exchangeItems.map((i) => i.variantId))).sort();
         if (variantIds.length > 0) {
           await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
@@ -324,4 +328,3 @@ export async function processPosReturnAction(
     return { success: false, error: msg };
   }
 }
-

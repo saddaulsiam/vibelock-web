@@ -59,9 +59,9 @@ export function AccountPopover({ user }: AccountPopoverProps) {
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="focus-visible:ring-vl-cyan hover:text-vl-white text-vl-white/75 hover:bg-vl-white/10 flex size-8 sm:size-9 sm:w-auto cursor-pointer items-center justify-center sm:gap-1 rounded-full p-0 sm:px-2 transition-all focus:outline-none focus-visible:ring-2"
+        className="focus-visible:ring-vl-cyan hover:text-vl-white text-vl-white/75 hover:bg-vl-white/10 flex size-8 cursor-pointer items-center justify-center rounded-full p-0 transition-all focus:outline-none focus-visible:ring-2 sm:size-9 sm:w-auto sm:gap-1 sm:px-2"
       >
-        <div className="bg-vl-white/5 flex size-6 sm:size-7 items-center justify-center rounded-full">
+        <div className="bg-vl-white/5 flex size-6 items-center justify-center rounded-full sm:size-7">
           <User className="size-3.5 sm:size-4" />
         </div>
         <ChevronDown

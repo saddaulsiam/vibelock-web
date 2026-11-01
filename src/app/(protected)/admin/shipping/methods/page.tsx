@@ -4,10 +4,7 @@ import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ShippingSubNav, ToggleShippingMethodForm } from "@/components/admin/shipping";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import {
-  getAdminShippingMethods,
-  getAdminShippingZonesForForm,
-} from "@/lib/admin/shipping";
+import { getAdminShippingMethods, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
 
 function formatCurrency(val: unknown): string {
   const num = typeof val === "number" ? val : Number(val || 0);
@@ -50,10 +47,7 @@ export default async function ShippingMethodsPage({
         badgeVariant="emerald"
         description="Configure customer delivery options, flat rates, and carrier pricing for inside and outside delivery zones."
       >
-        <Link
-          href="/admin/shipping/methods/new"
-          className={ADMIN_TABLE_CLASSES.buttonPrimary}
-        >
+        <Link href="/admin/shipping/methods/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
           <Plus className="size-3.5" />
           <span>New Method</span>
         </Link>
@@ -125,7 +119,7 @@ export default async function ShippingMethodsPage({
           {hasFilter && (
             <Link
               href="/admin/shipping/methods"
-              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-900"
             >
               <RotateCcw className="size-3.5" />
               Reset filters
@@ -134,7 +128,8 @@ export default async function ShippingMethodsPage({
         </form>
 
         <div className="text-xs text-neutral-500">
-          Showing <span className="font-semibold text-neutral-900">{methods.length}</span> method{methods.length === 1 ? "" : "s"}
+          Showing <span className="font-semibold text-neutral-900">{methods.length}</span> method
+          {methods.length === 1 ? "" : "s"}
         </div>
       </div>
 
@@ -156,7 +151,9 @@ export default async function ShippingMethodsPage({
                 <td colSpan={5} className="py-14 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <Truck className="size-10 text-neutral-300" />
-                    <p className="text-sm font-semibold text-neutral-800">No shipping methods found</p>
+                    <p className="text-sm font-semibold text-neutral-800">
+                      No shipping methods found
+                    </p>
                     <p className="max-w-xs text-xs text-neutral-500">
                       {hasFilter
                         ? "No methods match the selected filters. Try resetting filters."
@@ -219,7 +216,7 @@ export default async function ShippingMethodsPage({
                       <ToggleShippingMethodForm id={method.id} active={method.isActive} />
                       <Link
                         href={`/admin/shipping/methods/${method.id}/edit`}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
                         title="Edit method rate"
                       >
                         <Edit className="size-3 text-neutral-500" />

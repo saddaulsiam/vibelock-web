@@ -267,7 +267,9 @@ describe("POS In-Store Returns & Exchanges", () => {
       );
 
       // Replacement Hoodie (price 2200, stock 5)
-      (InventoryService.calculateAvailableQuantity as ReturnType<typeof vi.fn>).mockResolvedValue(5);
+      (InventoryService.calculateAvailableQuantity as ReturnType<typeof vi.fn>).mockResolvedValue(
+        5
+      );
 
       const res = await processPosReturnAction({
         orderId: "ord-1",

@@ -77,7 +77,8 @@ export async function getPosTodayOrdersAction(
       }
 
       const payload = payment?.gatewayPayload as Record<string, unknown> | null;
-      const amountPaid = typeof payload?.tenderAmount === "number" ? payload.tenderAmount : totalVal;
+      const amountPaid =
+        typeof payload?.tenderAmount === "number" ? payload.tenderAmount : totalVal;
       const changeDue = typeof payload?.changeReturned === "number" ? payload.changeReturned : 0;
 
       const itemsCount = o.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -156,4 +157,3 @@ export async function getPosTodayOrdersAction(
     };
   }
 }
-

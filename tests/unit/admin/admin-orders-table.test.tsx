@@ -67,10 +67,7 @@ describe("AdminOrdersTable Component Unit Tests", () => {
 
   test("renders order table with BDT currency symbol and order details", () => {
     const html = renderToStaticMarkup(
-      <AdminOrdersTable
-        initialData={sampleData}
-        currentFilters={{}}
-      />
+      <AdminOrdersTable initialData={sampleData} currentFilters={{}} />
     );
 
     // Verify order numbers
@@ -91,10 +88,7 @@ describe("AdminOrdersTable Component Unit Tests", () => {
 
   test("renders status filter tabs with correct count badges", () => {
     const html = renderToStaticMarkup(
-      <AdminOrdersTable
-        initialData={sampleData}
-        currentFilters={{}}
-      />
+      <AdminOrdersTable initialData={sampleData} currentFilters={{}} />
     );
 
     expect(html).toContain("All Orders");
@@ -109,10 +103,7 @@ describe("AdminOrdersTable Component Unit Tests", () => {
 
   test("renders payment method pills and status badges", () => {
     const html = renderToStaticMarkup(
-      <AdminOrdersTable
-        initialData={sampleData}
-        currentFilters={{}}
-      />
+      <AdminOrdersTable initialData={sampleData} currentFilters={{}} />
     );
 
     expect(html).toContain("COD");
@@ -140,10 +131,7 @@ describe("AdminOrdersTable Component Unit Tests", () => {
     };
 
     const html = renderToStaticMarkup(
-      <AdminOrdersTable
-        initialData={emptyData}
-        currentFilters={{}}
-      />
+      <AdminOrdersTable initialData={emptyData} currentFilters={{}} />
     );
 
     expect(html).toContain("No orders found");
@@ -151,10 +139,7 @@ describe("AdminOrdersTable Component Unit Tests", () => {
 
   test("does not render pagination buttons and renders infinite scroll sentinel", () => {
     const html = renderToStaticMarkup(
-      <AdminOrdersTable
-        initialData={sampleData}
-        currentFilters={{}}
-      />
+      <AdminOrdersTable initialData={sampleData} currentFilters={{}} />
     );
 
     // Verify pagination nav is removed
@@ -253,4 +238,3 @@ describe("AdminOrdersTable Component Unit Tests", () => {
     expect(html).toContain("View Details");
   });
 });
-

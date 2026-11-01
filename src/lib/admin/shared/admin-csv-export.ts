@@ -22,10 +22,7 @@ export function sanitizeCsvCell(value: unknown): string {
 /**
  * Generates CSV content string with UTF-8 BOM and formula sanitization.
  */
-export function buildCsvContent(
-  headers: string[],
-  rows: unknown[][]
-): string {
+export function buildCsvContent(headers: string[], rows: unknown[][]): string {
   const headerRow = headers.map(sanitizeCsvCell).join(",");
   const dataRows = rows.map((row) => row.map(sanitizeCsvCell).join(","));
   return "\uFEFF" + [headerRow, ...dataRows].join("\r\n");
@@ -52,4 +49,3 @@ export function exportToCsv({ filename, headers, rows }: ExportToCsvOptions): vo
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
-

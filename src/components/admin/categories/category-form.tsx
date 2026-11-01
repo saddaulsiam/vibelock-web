@@ -3,7 +3,16 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Globe, ImagePlus, Layers, Megaphone, Search, Sparkles, Trash2, Upload } from "lucide-react";
+import {
+  Globe,
+  ImagePlus,
+  Layers,
+  Megaphone,
+  Search,
+  Sparkles,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
 import { CategorySearchableSelect } from "./category-select";
@@ -520,11 +529,7 @@ export function CategoryForm({
               <span className="text-xs font-semibold text-neutral-800">
                 {isActive ? "Active at Storefront" : "Hidden / Draft"}
               </span>
-              <input
-                type="hidden"
-                name="isActive"
-                value={isActive ? "true" : "false"}
-              />
+              <input type="hidden" name="isActive" value={isActive ? "true" : "false"} />
               <button
                 type="button"
                 onClick={() => {
@@ -560,14 +565,15 @@ export function CategoryForm({
             </h3>
           </div>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
-            Customize how this category appears in search engine results (Google, Bing) and social sharing cards.
+            Customize how this category appears in search engine results (Google, Bing) and social
+            sharing cards.
           </p>
         </div>
 
         {/* Live Google Search Snippet Preview Box */}
         <div className="rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-neutral-500">
+            <span className="text-[11px] font-bold tracking-wider text-neutral-500 uppercase">
               Google Search Result Preview
             </span>
             <span className="text-[10px] text-neutral-400">Live Simulation</span>
@@ -589,8 +595,11 @@ export function CategoryForm({
             </div>
 
             {/* Google Blue Link Title */}
-            <div className="mt-1 text-base font-medium text-[#1a0dab] hover:underline cursor-pointer">
-              {metaTitle.trim() || (name.trim() ? `${name.trim()} | VibeLock Streetwear` : "Category Title | VibeLock")}
+            <div className="mt-1 cursor-pointer text-base font-medium text-[#1a0dab] hover:underline">
+              {metaTitle.trim() ||
+                (name.trim()
+                  ? `${name.trim()} | VibeLock Streetwear`
+                  : "Category Title | VibeLock")}
             </div>
 
             {/* Google Description Snippet */}
@@ -605,15 +614,16 @@ export function CategoryForm({
         {/* Meta Title Input */}
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="category-meta-title" className="block text-sm font-medium text-[#101114]">
+            <label
+              htmlFor="category-meta-title"
+              className="block text-sm font-medium text-[#101114]"
+            >
               Page Title (Meta Title)
             </label>
             <div className="flex items-center gap-2">
               <span
-                className={`text-[11px] font-mono ${
-                  metaTitle.length > 70
-                    ? "font-bold text-amber-600"
-                    : "text-muted-foreground"
+                className={`font-mono text-[11px] ${
+                  metaTitle.length > 70 ? "font-bold text-amber-600" : "text-muted-foreground"
                 }`}
               >
                 {metaTitle.length}/70 characters
@@ -643,23 +653,31 @@ export function CategoryForm({
               setMetaTitle(e.target.value);
               setIsDirty(true);
             }}
-            placeholder={name.trim() ? `${name.trim()} | VibeLock` : "e.g. Oversized Graphic Tees | VibeLock Dhaka"}
+            placeholder={
+              name.trim()
+                ? `${name.trim()} | VibeLock`
+                : "e.g. Oversized Graphic Tees | VibeLock Dhaka"
+            }
             autoComplete="off"
           />
           <p className="text-muted-foreground mt-1 text-xs">
-            Recommended length: 50–60 characters. Displayed as the primary clickable headline in search engines.
+            Recommended length: 50–60 characters. Displayed as the primary clickable headline in
+            search engines.
           </p>
         </div>
 
         {/* Meta Description Textarea */}
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="category-meta-desc" className="block text-sm font-medium text-[#101114]">
+            <label
+              htmlFor="category-meta-desc"
+              className="block text-sm font-medium text-[#101114]"
+            >
               Meta Description
             </label>
             <div className="flex items-center gap-2">
               <span
-                className={`text-[11px] font-mono ${
+                className={`font-mono text-[11px] ${
                   metaDescription.length > 160
                     ? "font-bold text-amber-600"
                     : "text-muted-foreground"
@@ -695,7 +713,8 @@ export function CategoryForm({
             placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
           />
           <p className="text-muted-foreground mt-1 text-xs">
-            Recommended length: 120–160 characters. A concise summary shown beneath the page title in search results.
+            Recommended length: 120–160 characters. A concise summary shown beneath the page title
+            in search results.
           </p>
         </div>
       </div>
@@ -707,10 +726,14 @@ export function CategoryForm({
           <p className="font-semibold text-neutral-900">Campaign &amp; Promotional Banners</p>
           <p>
             Promotional banners for this category are managed centrally in{" "}
-            <Link href="/admin/banners" className="font-medium text-[#101114] underline underline-offset-2 hover:text-[#00D9FF]">
+            <Link
+              href="/admin/banners"
+              className="font-medium text-[#101114] underline underline-offset-2 hover:text-[#00D9FF]"
+            >
               Admin → Banners
             </Link>
-            . Target banners to this category, upload desktop &amp; mobile assets, and set placement options from the marketing hub.
+            . Target banners to this category, upload desktop &amp; mobile assets, and set placement
+            options from the marketing hub.
           </p>
         </div>
       </div>

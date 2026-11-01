@@ -412,7 +412,9 @@ export async function bookSteadfastReturnPickupAction(
     const dispatchRes = await provider.createShipment({
       orderId: request.order.id,
       orderNumber: invoiceNumber,
-      recipientName: request.order.customerName ? `${request.order.customerName} (Return)` : "Return Customer",
+      recipientName: request.order.customerName
+        ? `${request.order.customerName} (Return)`
+        : "Return Customer",
       recipientPhone: request.order.customerPhone || "",
       street: request.order.shippingStreet,
       city: request.order.shippingCity,

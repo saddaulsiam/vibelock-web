@@ -79,13 +79,13 @@ export function AdminTableColumnVisibility<T extends string = string>({
       {isOpen && (
         <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-56 rounded-xl border border-zinc-200/90 bg-white p-2.5 shadow-xl duration-150">
           <div className="mb-2 flex items-center justify-between border-b border-zinc-100 pb-2">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-600">
+            <span className="text-[11px] font-bold tracking-wider text-zinc-600 uppercase">
               Customize Columns
             </span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded p-0.5 text-zinc-400 hover:text-zinc-700 transition"
+              className="rounded p-0.5 text-zinc-400 transition hover:text-zinc-700"
               aria-label="Close column customizer"
             >
               <X className="size-3.5" />
@@ -117,7 +117,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
               <button
                 type="button"
                 onClick={onReset}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg py-1 text-[11px] font-semibold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 transition"
+                className="flex w-full items-center justify-center gap-1.5 rounded-lg py-1 text-[11px] font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <RotateCcw className="size-3" />
                 <span>Reset to default</span>
@@ -145,7 +145,8 @@ export function useAdminTableColumns<T extends string>(
     return state;
   }, [columns, initialVisibility]);
 
-  const [visibleColumns, setVisibleColumns] = React.useState<Record<T, boolean>>(getDefaultVisibility);
+  const [visibleColumns, setVisibleColumns] =
+    React.useState<Record<T, boolean>>(getDefaultVisibility);
 
   const handleColumnChange = React.useCallback((key: T, value: boolean) => {
     setVisibleColumns((prev) => ({ ...prev, [key]: value }));

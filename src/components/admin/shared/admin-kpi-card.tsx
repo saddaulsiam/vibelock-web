@@ -148,16 +148,17 @@ export function AdminKpiCard({
       </div>
 
       {description && (
-        <p className="mt-1.5 text-xs text-neutral-500 leading-relaxed">
-          {description}
-        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-neutral-500">{description}</p>
       )}
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#101114]">
+      <Link
+        href={href}
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#101114] focus-visible:ring-offset-2"
+      >
         {content}
       </Link>
     );
@@ -180,9 +181,5 @@ export function AdminKpiGrid({ columns = 4, children, className }: AdminKpiGridP
     5: "sm:grid-cols-2 lg:grid-cols-5",
   }[columns];
 
-  return (
-    <div className={cn("grid gap-3.5", colClass, className)}>
-      {children}
-    </div>
-  );
+  return <div className={cn("grid gap-3.5", colClass, className)}>{children}</div>;
 }

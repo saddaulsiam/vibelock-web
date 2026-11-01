@@ -4,15 +4,7 @@ import { useActionState, useState } from "react";
 import type { DiscountType } from "@prisma/client";
 import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
-import {
-  Tag,
-  Sparkles,
-  AlertCircle,
-  CheckCircle2,
-  Dices,
-  Calendar,
-  Layers,
-} from "lucide-react";
+import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar, Layers } from "lucide-react";
 
 const initialState: CouponActionState = { error: null };
 
@@ -242,12 +234,11 @@ export function CouponForm({
         <div>
           <div className="flex items-center gap-2">
             <Layers className="size-4 text-neutral-700" />
-            <label className="text-xs font-bold text-neutral-800">
-              Target Categories
-            </label>
+            <label className="text-xs font-bold text-neutral-800">Target Categories</label>
           </div>
           <p className="mt-0.5 text-[11px] text-neutral-500">
-            Select one or more store categories to target. Leave empty to apply this coupon storewide across all products.
+            Select one or more store categories to target. Leave empty to apply this coupon
+            storewide across all products.
           </p>
         </div>
 
@@ -261,7 +252,8 @@ export function CouponForm({
 
         {selectedCategoryIds.length === 0 ? (
           <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-3 text-xs text-neutral-600">
-            ✨ <strong>Storewide:</strong> This coupon applies to <strong>all products</strong> across the entire catalog during checkout.
+            ✨ <strong>Storewide:</strong> This coupon applies to <strong>all products</strong>{" "}
+            across the entire catalog during checkout.
           </div>
         ) : (
           <div className="rounded-lg border border-purple-200 bg-purple-50/60 p-3 text-xs text-purple-900">

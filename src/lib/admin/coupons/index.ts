@@ -20,4 +20,3 @@ export {
   type CouponStatus,
   type AdminCouponListItem,
 } from "./coupon-shared";
-

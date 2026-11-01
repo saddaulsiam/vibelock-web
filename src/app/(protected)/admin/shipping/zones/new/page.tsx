@@ -12,10 +12,7 @@ export default function NewShippingZonePage() {
         title="Create Shipping Zone"
         description="Add a new geographical delivery boundary to assign regional shipping rates."
       >
-        <Link
-          href="/admin/shipping/zones"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/shipping/zones" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Zones</span>
         </Link>

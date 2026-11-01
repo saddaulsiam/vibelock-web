@@ -14,10 +14,7 @@ vi.mock("@/lib/admin/orders", () => ({
 }));
 
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  CANCELLATION_REASONS,
-  OrderCancelModal,
-} from "@/components/admin/orders";
+import { CANCELLATION_REASONS, OrderCancelModal } from "@/components/admin/orders";
 
 describe("Structured Order Cancellation and Inventory Restock", () => {
   test("defines comprehensive structured cancellation reasons for BD D2C streetwear", () => {
@@ -29,9 +26,7 @@ describe("Structured Order Cancellation and Inventory Restock", () => {
     expect(ids).toContain("CUSTOMER_CHANGED_MIND");
     expect(ids).toContain("DUPLICATE_ORDER");
 
-    const unreachable = CANCELLATION_REASONS.find(
-      (r) => r.id === "CUSTOMER_UNREACHABLE"
-    );
+    const unreachable = CANCELLATION_REASONS.find((r) => r.id === "CUSTOMER_UNREACHABLE");
     expect(unreachable?.label).toContain("Customer Unreachable");
     expect(unreachable?.shortLabel).toContain("Unreachable");
 
@@ -40,8 +35,7 @@ describe("Structured Order Cancellation and Inventory Restock", () => {
   });
 
   test("parses structured cancellation reason tags correctly from history notes", () => {
-    const rawNote =
-      "[CANCELLATION: Customer Unreachable / Fake Order] Multiple calls unanswered.";
+    const rawNote = "[CANCELLATION: Customer Unreachable / Fake Order] Multiple calls unanswered.";
     const cancelMatch = rawNote.match(/^\[CANCELLATION:\s*([^\]]+)\]\s*(.*)$/);
 
     expect(cancelMatch).not.toBeNull();

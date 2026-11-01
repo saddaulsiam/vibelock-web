@@ -3,6 +3,7 @@
 import { Printer, CheckCircle, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { printThermalSlip } from "@/lib/pos/pos-print-utils";
 import type { PosReceiptData } from "@/lib/pos/pos-types";
 
 interface PosThermalReceiptProps {
@@ -15,7 +16,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
   if (!receipt) return null;
 
   const handlePrint = () => {
-    window.print();
+    printThermalSlip("pos-thermal-receipt-memo");
   };
 
   const formattedDate = new Date(receipt.createdAt).toLocaleString("en-GB", {
@@ -38,10 +39,13 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
         </DialogHeader>
 
         {/* Thermal Printable Memo Container */}
-        <div className="print-area space-y-2 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text">
+        <div
+          id="pos-thermal-receipt-memo"
+          className="print-area space-y-2 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text"
+        >
           {/* Header */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 pb-2 text-center">
-            <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK BD</h2>
+            <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK</h2>
             <p className="text-[10px] text-slate-600">Streetwear & Modern Apparel</p>
             <p className="text-[10px] text-slate-500">Outlet 01, Dhaka, Bangladesh</p>
             <p className="text-[10px] text-slate-500">Hotline: +880 1700-000000</p>
@@ -49,21 +53,21 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
 
           {/* Meta Info */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 py-1 text-[11px]">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Invoice:</span>
-              <span className="font-bold">{receipt.orderNumber}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Invoice:</span>
+              <span className="pl-2 text-right font-mono font-bold">{receipt.orderNumber}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Date:</span>
-              <span>{formattedDate}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Date:</span>
+              <span className="pl-2 text-right">{formattedDate}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Cashier:</span>
-              <span>{receipt.cashierName}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Cashier:</span>
+              <span className="pl-2 text-right">{receipt.cashierName}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Customer:</span>
-              <span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Customer:</span>
+              <span className="pl-2 text-right">
                 {receipt.customerName}{" "}
                 {receipt.customerPhone !== "N/A" ? `(${receipt.customerPhone})` : ""}
               </span>
@@ -74,20 +78,20 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
           <div className="space-y-1 border-b border-dashed border-slate-400 py-1">
             <div className="flex justify-between pb-0.5 text-[11px] font-bold">
               <span>Item / SKU</span>
-              <span>Amount</span>
+              <span className="shrink-0 text-right">Amount</span>
             </div>
 
             {receipt.items.map((item, idx) => {
               const variantDesc = [item.size, item.color].filter(Boolean).join(" / ");
               return (
                 <div key={idx} className="space-y-0.5">
-                  <div className="truncate font-medium">{item.name}</div>
-                  <div className="flex justify-between text-[10px] text-slate-600">
-                    <span>
+                  <div className="leading-tight font-medium break-words">{item.name}</div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-600">
+                    <span className="pr-2">
                       {item.quantity} x ৳{item.unitPrice.toFixed(0)}{" "}
                       {variantDesc ? `(${variantDesc})` : ""}
                     </span>
-                    <span className="font-mono font-bold text-slate-900">
+                    <span className="shrink-0 text-right font-mono font-bold text-slate-900">
                       ৳{item.lineTotal.toFixed(0)}
                     </span>
                   </div>
@@ -98,21 +102,27 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
 
           {/* Financial Totals */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 py-1 text-[11px]">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>৳{receipt.subtotal.toFixed(0)}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0">Subtotal:</span>
+              <span className="shrink-0 text-right font-mono font-bold">
+                ৳{receipt.subtotal.toFixed(0)}
+              </span>
             </div>
 
             {receipt.discount > 0 && (
-              <div className="flex justify-between text-slate-700">
-                <span>Discount:</span>
-                <span>- ৳{receipt.discount.toFixed(0)}</span>
+              <div className="flex items-center justify-between text-slate-700">
+                <span className="shrink-0">Discount:</span>
+                <span className="shrink-0 text-right font-mono">
+                  - ৳{receipt.discount.toFixed(0)}
+                </span>
               </div>
             )}
 
-            <div className="flex justify-between pt-0.5 text-sm font-bold">
-              <span>TOTAL DUE:</span>
-              <span>৳{receipt.total.toFixed(0)}</span>
+            <div className="flex items-center justify-between pt-0.5 text-sm font-bold">
+              <span className="shrink-0">TOTAL DUE:</span>
+              <span className="shrink-0 text-right font-mono text-base font-black">
+                ৳{receipt.total.toFixed(0)}
+              </span>
             </div>
 
             {receipt.splits && receipt.splits.length > 0 ? (
@@ -121,30 +131,36 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
                   Tender Breakdown (Split):
                 </div>
                 {receipt.splits.map((s, idx) => (
-                  <div key={idx} className="flex justify-between pl-1">
-                    <span>
+                  <div key={idx} className="flex items-center justify-between pl-1">
+                    <span className="pr-2">
                       {s.method}
                       {s.reference ? ` (${s.reference})` : ""}:
                     </span>
-                    <span>৳{s.amount.toFixed(0)}</span>
+                    <span className="shrink-0 text-right font-mono">৳{s.amount.toFixed(0)}</span>
                   </div>
                 ))}
-                <div className="flex justify-between pt-0.5 font-semibold">
-                  <span>Total Tendered:</span>
-                  <span>৳{receipt.amountPaid.toFixed(0)}</span>
+                <div className="flex items-center justify-between pt-0.5 font-semibold">
+                  <span className="shrink-0">Total Tendered:</span>
+                  <span className="shrink-0 text-right font-mono">
+                    ৳{receipt.amountPaid.toFixed(0)}
+                  </span>
                 </div>
               </div>
             ) : (
-              <div className="flex justify-between pt-1">
-                <span>Paid ({receipt.paymentMethod}):</span>
-                <span>৳{receipt.amountPaid.toFixed(0)}</span>
+              <div className="flex items-center justify-between pt-1">
+                <span className="shrink-0">Paid ({receipt.paymentMethod}):</span>
+                <span className="shrink-0 text-right font-mono font-bold">
+                  ৳{receipt.amountPaid.toFixed(0)}
+                </span>
               </div>
             )}
 
             {receipt.changeDue > 0 && (
-              <div className="flex justify-between font-bold text-slate-900">
-                <span>Change Returned:</span>
-                <span>৳{receipt.changeDue.toFixed(0)}</span>
+              <div className="flex items-center justify-between font-bold text-slate-900">
+                <span className="shrink-0">Change Returned:</span>
+                <span className="shrink-0 text-right font-mono font-bold">
+                  ৳{receipt.changeDue.toFixed(0)}
+                </span>
               </div>
             )}
           </div>

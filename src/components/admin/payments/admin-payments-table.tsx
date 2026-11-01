@@ -43,13 +43,7 @@ import {
 } from "lucide-react";
 
 export type PaymentColumnKey =
-  | "ref"
-  | "order"
-  | "customer"
-  | "method"
-  | "amount"
-  | "status"
-  | "date";
+  "ref" | "order" | "customer" | "method" | "amount" | "status" | "date";
 
 const paymentColumnOptions: ColumnOption<PaymentColumnKey>[] = [
   { key: "ref", label: "Transaction / Ref" },
@@ -122,14 +116,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       const matchPhone = item.customerPhone?.toLowerCase().includes(q);
       const matchTrx = item.gatewayTransactionId?.toLowerCase().includes(q);
       const matchRef = item.merchantReferenceId?.toLowerCase().includes(q);
-      if (
-        !matchOrder &&
-        !matchName &&
-        !matchEmail &&
-        !matchPhone &&
-        !matchTrx &&
-        !matchRef
-      ) {
+      if (!matchOrder && !matchName && !matchEmail && !matchPhone && !matchTrx && !matchRef) {
         return false;
       }
     }
@@ -152,7 +139,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     const gw = gateway.toUpperCase();
     if (gw === "BKASH") {
       return (
-        <Badge className="border border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100 font-semibold text-xs gap-1">
+        <Badge className="gap-1 border border-pink-200 bg-pink-50 text-xs font-semibold text-pink-700 hover:bg-pink-100">
           <Smartphone className="size-3" />
           bKash
         </Badge>
@@ -160,7 +147,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     }
     if (gw === "NAGAD") {
       return (
-        <Badge className="border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 font-semibold text-xs gap-1">
+        <Badge className="gap-1 border border-amber-200 bg-amber-50 text-xs font-semibold text-amber-800 hover:bg-amber-100">
           <Smartphone className="size-3" />
           Nagad
         </Badge>
@@ -168,7 +155,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     }
     if (gw === "SSLCOMMERZ" || gw === "ONLINE") {
       return (
-        <Badge className="border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 font-semibold text-xs gap-1">
+        <Badge className="gap-1 border border-blue-200 bg-blue-50 text-xs font-semibold text-blue-800 hover:bg-blue-100">
           <CreditCard className="size-3" />
           SSLCommerz
         </Badge>
@@ -176,7 +163,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     }
     if (gw === "COD") {
       return (
-        <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs gap-1">
+        <Badge className="gap-1 border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-800 hover:bg-emerald-100">
           <Banknote className="size-3" />
           Cash on Delivery
         </Badge>
@@ -193,7 +180,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     switch (status) {
       case "SUCCESS":
         return (
-          <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-800 font-semibold text-xs gap-1">
+          <Badge className="gap-1 border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-800">
             <CheckCircle2 className="size-3 text-emerald-600" />
             SUCCESS
           </Badge>
@@ -201,7 +188,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       case "INITIATED":
       case "PENDING":
         return (
-          <Badge className="border border-amber-200 bg-amber-50 text-amber-800 font-semibold text-xs gap-1">
+          <Badge className="gap-1 border border-amber-200 bg-amber-50 text-xs font-semibold text-amber-800">
             <Clock className="size-3 text-amber-600" />
             {status}
           </Badge>
@@ -209,7 +196,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       case "FAILED":
       case "CANCELLED":
         return (
-          <Badge className="border border-rose-200 bg-rose-50 text-rose-800 font-semibold text-xs gap-1">
+          <Badge className="gap-1 border border-rose-200 bg-rose-50 text-xs font-semibold text-rose-800">
             <XCircle className="size-3 text-rose-600" />
             {status}
           </Badge>
@@ -217,7 +204,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       case "REFUNDED":
       case "PARTIALLY_REFUNDED":
         return (
-          <Badge className="border border-purple-200 bg-purple-50 text-purple-800 font-semibold text-xs gap-1">
+          <Badge className="gap-1 border border-purple-200 bg-purple-50 text-xs font-semibold text-purple-800">
             <RotateCcw className="size-3 text-purple-600" />
             {status}
           </Badge>
@@ -304,11 +291,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
   return (
     <div className="space-y-4">
       {/* ── 1. Shared AdminTableTabs Pattern ── */}
-      <AdminTableTabs
-        tabs={statusTabs}
-        activeKey={statusFilter}
-        onChange={setStatusFilter}
-      />
+      <AdminTableTabs tabs={statusTabs} activeKey={statusFilter} onChange={setStatusFilter} />
 
       {/* ── 2. Search & Toolbar Controls ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -433,15 +416,13 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
                   {visibleColumns.customer && (
                     <TableCell>
                       <div>
-                        <p className="font-medium text-xs text-neutral-900">
-                          {p.customerName}
-                        </p>
-                        <p className="text-[11px] text-neutral-500 flex items-center gap-1">
+                        <p className="text-xs font-medium text-neutral-900">{p.customerName}</p>
+                        <p className="flex items-center gap-1 text-[11px] text-neutral-500">
                           <Mail className="size-3 text-neutral-400" />
                           {p.customerEmail}
                         </p>
                         {p.customerPhone && (
-                          <p className="text-[10px] text-neutral-400 flex items-center gap-1">
+                          <p className="flex items-center gap-1 text-[10px] text-neutral-400">
                             <Phone className="size-2.5 text-neutral-400" />
                             {p.customerPhone}
                           </p>
@@ -451,13 +432,11 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
                   )}
 
                   {/* Method / Gateway */}
-                  {visibleColumns.method && (
-                    <TableCell>{getGatewayBadge(p.gateway)}</TableCell>
-                  )}
+                  {visibleColumns.method && <TableCell>{getGatewayBadge(p.gateway)}</TableCell>}
 
                   {/* Amount */}
                   {visibleColumns.amount && (
-                    <TableCell className="text-right font-semibold text-xs text-neutral-900">
+                    <TableCell className="text-right text-xs font-semibold text-neutral-900">
                       {formatCurrency(p.amount)}
                       {p.refundedAmount > 0 && (
                         <p className="text-[10px] font-normal text-purple-600">
@@ -468,13 +447,11 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
                   )}
 
                   {/* Status */}
-                  {visibleColumns.status && (
-                    <TableCell>{getStatusBadge(p.status)}</TableCell>
-                  )}
+                  {visibleColumns.status && <TableCell>{getStatusBadge(p.status)}</TableCell>}
 
                   {/* Date */}
                   {visibleColumns.date && (
-                    <TableCell className="text-xs text-neutral-500 whitespace-nowrap">
+                    <TableCell className="text-xs whitespace-nowrap text-neutral-500">
                       {new Date(p.createdAt).toLocaleDateString("en-GB", {
                         day: "numeric",
                         month: "short",
@@ -523,4 +500,3 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
     </div>
   );
 }
-

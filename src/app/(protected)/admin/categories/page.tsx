@@ -24,10 +24,7 @@ export default async function AdminCategoriesPage() {
         badgeVariant="blue"
         description="Structure catalog navigation, manage parent/child hierarchy, monitor product counts, and curate category assets."
       >
-        <Link
-          href="/admin/categories/new"
-          className={ADMIN_TABLE_CLASSES.buttonPrimary}
-        >
+        <Link href="/admin/categories/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
           <Plus className="size-3.5" />
           <span>New Category</span>
         </Link>

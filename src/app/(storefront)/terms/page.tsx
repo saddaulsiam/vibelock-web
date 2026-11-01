@@ -37,7 +37,7 @@ export default function TermsPage() {
             <Scale className="size-4" />
             <span>Legal Framework</span>
           </div>
-          <h1 className="mt-3 font-heading text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Terms of Service
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#F3F0E8]/70 sm:text-base">
@@ -85,9 +85,9 @@ export default function TermsPage() {
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
                   <p>
                     All products displayed on VibeLock are subject to real-time inventory
-                    availability. While we make every effort to display accurate sizing charts, fabric
-                    weights, and colors, slight variations may occur due to monitor color calibration
-                    and garment dye processes.
+                    availability. While we make every effort to display accurate sizing charts,
+                    fabric weights, and colors, slight variations may occur due to monitor color
+                    calibration and garment dye processes.
                   </p>
                   <p>
                     Prices for our products are stated in Bangladeshi Taka (BDT) and are subject to
@@ -106,14 +106,14 @@ export default function TermsPage() {
                   <p>
                     Upon placing an order on our platform, you will receive an automated order
                     confirmation. Receipt of an order number does not signify our final acceptance
-                    of your order; we reserve the right to decline or cancel any order in instances of
-                    suspected fraudulent activity, pricing errors, or stock unavailability.
+                    of your order; we reserve the right to decline or cancel any order in instances
+                    of suspected fraudulent activity, pricing errors, or stock unavailability.
                   </p>
                   <p>
-                    You may cancel an order before it has been dispatched from our fulfillment center
-                    by visiting your account dashboard or contacting customer support. Once an order
-                    is handed over to our courier partner (Steadfast), it cannot be cancelled but can
-                    be exchanged following our Return Policy.
+                    You may cancel an order before it has been dispatched from our fulfillment
+                    center by visiting your account dashboard or contacting customer support. Once
+                    an order is handed over to our courier partner (Steadfast), it cannot be
+                    cancelled but can be exchanged following our Return Policy.
                   </p>
                 </div>
               </div>
@@ -127,12 +127,12 @@ export default function TermsPage() {
                   <p>
                     We offer Cash on Delivery (COD) across Bangladesh, as well as secure online
                     payments via bKash, Nagad, Visa, Mastercard, and SSLCOMMERZ. Online transactions
-                    are processed through encrypted gateways; VibeLock does not store raw credit card
-                    numbers or banking PINs.
+                    are processed through encrypted gateways; VibeLock does not store raw credit
+                    card numbers or banking PINs.
                   </p>
                   <p>
-                    For Cash on Delivery orders, you agree to inspect the parcel exterior and pay the
-                    exact invoice amount to the delivery rider upon handover.
+                    For Cash on Delivery orders, you agree to inspect the parcel exterior and pay
+                    the exact invoice amount to the delivery rider upon handover.
                   </p>
                 </div>
               </div>

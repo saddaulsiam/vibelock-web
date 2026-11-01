@@ -45,4 +45,3 @@ export {
   type InventoryExportItem,
   type InventoryExportResult,
 } from "./inventory-queries";
-

@@ -8,9 +8,7 @@ export interface SectionHeadingActionConfig {
   label?: string;
 }
 
-export type SectionHeadingAction =
-  | React.ReactNode
-  | SectionHeadingActionConfig;
+export type SectionHeadingAction = React.ReactNode | SectionHeadingActionConfig;
 
 export interface SectionHeadingProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
@@ -98,9 +96,7 @@ export function SectionHeading({
           <div className="shrink-0">{renderedAction}</div>
         </div>
 
-        {divider && (
-          <div className="mt-6 border-b border-black/8 sm:mt-7" aria-hidden="true" />
-        )}
+        {divider && <div className="mt-6 border-b border-black/8 sm:mt-7" aria-hidden="true" />}
       </div>
     );
   }
@@ -142,9 +138,7 @@ export function SectionHeading({
         </div>
       )}
 
-      {divider && (
-        <div className="mt-6 border-b border-black/8 sm:mt-8" aria-hidden="true" />
-      )}
+      {divider && <div className="mt-6 border-b border-black/8 sm:mt-8" aria-hidden="true" />}
     </div>
   );
 }

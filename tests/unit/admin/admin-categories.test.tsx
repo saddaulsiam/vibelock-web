@@ -53,9 +53,7 @@ describe("AdminCategoriesTable", () => {
   ];
 
   test("renders all categories with names, slugs, priority, and badges", () => {
-    const html = renderToStaticMarkup(
-      <AdminCategoriesTable initialCategories={mockCategories} />
-    );
+    const html = renderToStaticMarkup(<AdminCategoriesTable initialCategories={mockCategories} />);
 
     // Names and Slugs
     expect(html).toContain("T-Shirts");
@@ -89,18 +87,14 @@ describe("AdminCategoriesTable", () => {
   });
 
   test("disables delete button for categories with products or children", () => {
-    const html = renderToStaticMarkup(
-      <AdminCategoriesTable initialCategories={mockCategories} />
-    );
+    const html = renderToStaticMarkup(<AdminCategoriesTable initialCategories={mockCategories} />);
 
     // Should indicate deletion restriction
     expect(html).toContain("Cannot delete: category has active products or sub-categories");
   });
 
   test("renders empty state when no categories match", () => {
-    const html = renderToStaticMarkup(
-      <AdminCategoriesTable initialCategories={[]} />
-    );
+    const html = renderToStaticMarkup(<AdminCategoriesTable initialCategories={[]} />);
 
     expect(html).toContain("No categories found");
     expect(html).toContain("Create Category");

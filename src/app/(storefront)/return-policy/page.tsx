@@ -37,12 +37,12 @@ export default function ReturnPolicyPage() {
             <RotateCcw className="size-4" />
             <span>Customer First</span>
           </div>
-          <h1 className="mt-3 font-heading text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Return &amp; Exchange Policy
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#F3F0E8]/70 sm:text-base">
-            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our 7-day exchange
-            policy has you covered nationwide.
+            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our 7-day
+            exchange policy has you covered nationwide.
           </p>
           <div className="mt-6 flex items-center gap-4 text-xs text-[#F3F0E8]/50">
             <span>Last Updated: {lastUpdated}</span>
@@ -67,9 +67,9 @@ export default function ReturnPolicyPage() {
                       7-Day Exchange Guarantee
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-emerald-800">
-                      You have <strong>7 calendar days</strong> from the delivery timestamp to initiate
-                      a return or size exchange for any unworn, unwashed VibeLock garment with its
-                      original tags intact.
+                      You have <strong>7 calendar days</strong> from the delivery timestamp to
+                      initiate a return or size exchange for any unworn, unwashed VibeLock garment
+                      with its original tags intact.
                     </p>
                   </div>
                 </div>
@@ -81,22 +81,23 @@ export default function ReturnPolicyPage() {
                   1. Return &amp; Exchange Eligibility
                 </h2>
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
-                  <p>To qualify for an exchange or refund, the garment must satisfy these standards:</p>
+                  <p>
+                    To qualify for an exchange or refund, the garment must satisfy these standards:
+                  </p>
                   <ul className="list-disc space-y-2 pl-5">
-                    <li>The item must be in brand-new condition: unworn, unwashed, and unaltered.</li>
+                    <li>
+                      The item must be in brand-new condition: unworn, unwashed, and unaltered.
+                    </li>
                     <li>Original brand tags, barcode labels, and poly packaging must be intact.</li>
-                    <li>
-                      Free from perfume, deodorant stains, body odor, smoke, or pet hair.
-                    </li>
-                    <li>
-                      Accompanied by the original order invoice or packing slip.
-                    </li>
+                    <li>Free from perfume, deodorant stains, body odor, smoke, or pet hair.</li>
+                    <li>Accompanied by the original order invoice or packing slip.</li>
                   </ul>
                   <div className="mt-4 rounded-xs border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
                     <p className="font-semibold">⚠️ Non-Returnable Items:</p>
                     <p className="mt-1">
-                      For hygiene reasons, innerwear, socks, and discounted clearance / &quot;Final Sale&quot;
-                      items cannot be returned unless a manufacturing defect is proven upon unboxing.
+                      For hygiene reasons, innerwear, socks, and discounted clearance / &quot;Final
+                      Sale&quot; items cannot be returned unless a manufacturing defect is proven
+                      upon unboxing.
                     </p>
                   </div>
                 </div>
@@ -117,10 +118,14 @@ export default function ReturnPolicyPage() {
                         <p className="font-semibold text-[#101114]">Submit Request Online</p>
                         <p className="text-xs text-[#101114]/70">
                           Visit your{" "}
-                          <Link href="/account/orders" className="text-[#00D9FF] underline font-medium">
+                          <Link
+                            href="/account/orders"
+                            className="font-medium text-[#00D9FF] underline"
+                          >
                             Account Orders page
                           </Link>{" "}
-                          and click &quot;Request Return / Exchange&quot; next to the delivered item.
+                          and click &quot;Request Return / Exchange&quot; next to the delivered
+                          item.
                         </p>
                       </div>
                     </div>
@@ -130,11 +135,13 @@ export default function ReturnPolicyPage() {
                         2
                       </span>
                       <div>
-                        <p className="font-semibold text-[#101114]">Inspection &amp; Courier Handover</p>
+                        <p className="font-semibold text-[#101114]">
+                          Inspection &amp; Courier Handover
+                        </p>
                         <p className="text-xs text-[#101114]/70">
-                          Pack the garment safely. In Dhaka, our courier will pick it up or swap it at
-                          your doorstep. Outside Dhaka, you can drop it off via Steadfast / Sundarban
-                          to our central hub.
+                          Pack the garment safely. In Dhaka, our courier will pick it up or swap it
+                          at your doorstep. Outside Dhaka, you can drop it off via Steadfast /
+                          Sundarban to our central hub.
                         </p>
                       </div>
                     </div>
@@ -146,8 +153,8 @@ export default function ReturnPolicyPage() {
                       <div>
                         <p className="font-semibold text-[#101114]">Resolution (Swap or Refund)</p>
                         <p className="text-xs text-[#101114]/70">
-                          Once inspected (typically within 24 hours of arrival), your replacement size
-                          is dispatched immediately or your refund is issued.
+                          Once inspected (typically within 24 hours of arrival), your replacement
+                          size is dispatched immediately or your refund is issued.
                         </p>
                       </div>
                     </div>
@@ -182,16 +189,16 @@ export default function ReturnPolicyPage() {
                   <p>When a refund is approved, you may choose:</p>
                   <ul className="list-disc space-y-2 pl-5">
                     <li>
-                      <strong>VibeLock Store Credit:</strong> Issued instantly to your account with no
-                      expiry date.
+                      <strong>VibeLock Store Credit:</strong> Issued instantly to your account with
+                      no expiry date.
                     </li>
                     <li>
-                      <strong>Mobile Financial Service (bKash / Nagad):</strong> Credited back to your
-                      account within <strong>3 to 5 business days</strong>.
+                      <strong>Mobile Financial Service (bKash / Nagad):</strong> Credited back to
+                      your account within <strong>3 to 5 business days</strong>.
                     </li>
                     <li>
-                      <strong>Card / Net Banking:</strong> Dispatched through SSLCOMMERZ gateway within{" "}
-                      <strong>5 to 10 business days</strong> depending on your issuing bank.
+                      <strong>Card / Net Banking:</strong> Dispatched through SSLCOMMERZ gateway
+                      within <strong>5 to 10 business days</strong> depending on your issuing bank.
                     </li>
                   </ul>
                 </div>

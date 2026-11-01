@@ -18,14 +18,17 @@ import { PosCartPanel } from "@/components/pos/pos-cart-panel";
 import { PosThermalReceipt } from "@/components/pos/pos-thermal-receipt";
 import { PosProductScanner } from "@/components/pos/pos-product-scanner";
 import { PosProductGrid } from "@/components/pos/pos-product-grid";
-import type { PosCartItem, PosCategory, PosProductSummary, PosReceiptData } from "@/lib/pos/pos-types";
+import type {
+  PosCartItem,
+  PosCategory,
+  PosProductSummary,
+  PosReceiptData,
+} from "@/lib/pos/pos-types";
 
 describe("POS UI Components", () => {
   describe("PosHeader", () => {
     test("renders cashier name, role, and store title", () => {
-      const html = renderToStaticMarkup(
-        <PosHeader cashierName="Siam Ahmed" cashierRole="STAFF" />
-      );
+      const html = renderToStaticMarkup(<PosHeader cashierName="Siam Ahmed" cashierRole="STAFF" />);
 
       expect(html).toContain("VIBELOCK");
       expect(html).toContain("POS");
@@ -133,7 +136,7 @@ describe("POS UI Components", () => {
         <PosThermalReceipt receipt={sampleReceipt} isOpen={true} onNewSale={vi.fn()} />
       );
 
-      expect(html).toContain("VIBELOCK BD");
+      expect(html).toContain("VIBELOCK");
       expect(html).toContain("VL-POS-202611-001");
       expect(html).toContain("Staff Siam");
       expect(html).toContain("Mahmud Hasan");
@@ -149,9 +152,7 @@ describe("POS UI Components", () => {
 
   describe("PosProductScanner", () => {
     test("renders scanner input bar with sound toggle button", () => {
-      const html = renderToStaticMarkup(
-        <PosProductScanner onAddVariant={vi.fn()} />
-      );
+      const html = renderToStaticMarkup(<PosProductScanner onAddVariant={vi.fn()} />);
 
       expect(html).toContain("SCAN SKU:");
       expect(html).toContain("Scan barcode or type SKU");
@@ -283,11 +284,7 @@ describe("POS UI Components", () => {
 
     test("renders empty catalog state with Reset Filters button when no products match", () => {
       const html = renderToStaticMarkup(
-        <PosProductGrid
-          products={[]}
-          categories={mockCategories}
-          onAddVariant={vi.fn()}
-        />
+        <PosProductGrid products={[]} categories={mockCategories} onAddVariant={vi.fn()} />
       );
 
       expect(html).toContain("No products match your filter.");

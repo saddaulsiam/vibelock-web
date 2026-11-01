@@ -21,4 +21,3 @@ export interface PosCustomerProfile {
   pointsDiscountValue: number; // ৳1 per point
   recentOrders: PosCustomerRecentOrder[];
 }
-

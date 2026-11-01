@@ -5,11 +5,7 @@ import {
   AdminTableMetaBar,
   buildFilterUrl,
 } from "@/components/admin/shared";
-import {
-  buildCsvContent,
-  exportToCsv,
-  sanitizeCsvCell,
-} from "@/lib/admin/shared";
+import { buildCsvContent, exportToCsv, sanitizeCsvCell } from "@/lib/admin/shared";
 
 describe("Reusable Admin Table CSV Exporter", () => {
   test("sanitizeCsvCell prevents formula injection for leading =, +, -, @", () => {
@@ -82,12 +78,7 @@ describe("Reusable Admin Table CSV Exporter", () => {
 describe("AdminTableMetaBar Reusable Component", () => {
   test("renders showing counter with singular and plural naming", () => {
     const pluralHtml = renderToStaticMarkup(
-      <AdminTableMetaBar
-        currentCount={15}
-        totalFiltered={25}
-        totalCount={50}
-        itemName="order"
-      />
+      <AdminTableMetaBar currentCount={15} totalFiltered={25} totalCount={50} itemName="order" />
     );
     expect(pluralHtml).toContain("Showing");
     expect(pluralHtml).toContain("15");
@@ -96,11 +87,7 @@ describe("AdminTableMetaBar Reusable Component", () => {
     expect(pluralHtml).toContain("(filtered from 50)");
 
     const singularHtml = renderToStaticMarkup(
-      <AdminTableMetaBar
-        currentCount={1}
-        totalFiltered={1}
-        itemName="order"
-      />
+      <AdminTableMetaBar currentCount={1} totalFiltered={1} itemName="order" />
     );
     expect(singularHtml).toContain("1");
     expect(singularHtml).toContain("order");

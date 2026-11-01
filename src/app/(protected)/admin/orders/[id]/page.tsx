@@ -53,11 +53,7 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-export default async function AdminOrderPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AdminOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   if (!id) {
@@ -161,7 +157,7 @@ export default async function AdminOrderPage({
               {getOrderStatusBadge(order.status)}
             </div>
 
-            <div className="h-4 w-px bg-neutral-200 hidden sm:block" />
+            <div className="hidden h-4 w-px bg-neutral-200 sm:block" />
 
             {/* Direct WhatsApp Customer Contact Button */}
             {order.customerPhone ? (
@@ -200,7 +196,10 @@ export default async function AdminOrderPage({
               Items Ordered
             </span>
             <p className="mt-0.5 text-lg font-black text-neutral-900">
-              {totalQuantity} <span className="text-xs font-medium text-neutral-500">({order.items.length} lines)</span>
+              {totalQuantity}{" "}
+              <span className="text-xs font-medium text-neutral-500">
+                ({order.items.length} lines)
+              </span>
             </p>
           </div>
 
@@ -209,7 +208,8 @@ export default async function AdminOrderPage({
               Payment Gateway
             </span>
             <p className="mt-0.5 text-sm font-bold text-neutral-900">
-              {order.payments[0]?.gateway || (order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Gateway")}
+              {order.payments[0]?.gateway ||
+                (order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Gateway")}
             </p>
           </div>
 
@@ -219,7 +219,9 @@ export default async function AdminOrderPage({
             </span>
             <p className="mt-0.5 text-sm font-bold text-neutral-900">
               {order.shipment ? (
-                <span className="text-emerald-700">{order.shipment.provider} ({order.shipment.status})</span>
+                <span className="text-emerald-700">
+                  {order.shipment.provider} ({order.shipment.status})
+                </span>
               ) : (
                 <span className="text-amber-700">Not Dispatched</span>
               )}
@@ -314,9 +316,7 @@ export default async function AdminOrderPage({
                       title="Copy street address"
                     />
                   </div>
-                  <p className="mt-0.5 text-neutral-700 leading-relaxed">
-                    {order.shippingStreet}
-                  </p>
+                  <p className="mt-0.5 leading-relaxed text-neutral-700">{order.shippingStreet}</p>
                 </div>
 
                 <div>
@@ -337,10 +337,12 @@ export default async function AdminOrderPage({
                   <p className="mt-0.5 text-neutral-700">{order.shippingCountry}</p>
                 </div>
 
-                <div className="pt-2 border-t border-neutral-100">
+                <div className="border-t border-neutral-100 pt-2">
                   <div className="flex items-center gap-1.5 text-neutral-600">
                     <Truck className="size-3.5 text-neutral-500" />
-                    <span><strong>Method:</strong> {order.shippingMethodName}</span>
+                    <span>
+                      <strong>Method:</strong> {order.shippingMethodName}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -359,7 +361,7 @@ export default async function AdminOrderPage({
                 </div>
                 <Badge variant="outline" className="text-[10px] font-medium">
                   {order.userId ? (
-                    <span className="text-emerald-700 font-semibold">Registered User</span>
+                    <span className="font-semibold text-emerald-700">Registered User</span>
                   ) : (
                     <span className="text-neutral-500">Guest Checkout</span>
                   )}
@@ -421,7 +423,7 @@ export default async function AdminOrderPage({
                 </div>
 
                 {order.customerPhone ? (
-                  <div className="pt-2 border-t border-neutral-100">
+                  <div className="border-t border-neutral-100 pt-2">
                     <a
                       href={generateWhatsAppUrl(
                         order.customerPhone,
@@ -490,9 +492,9 @@ export default async function AdminOrderPage({
         </div>
 
         {/* Right Column (Order Management, Financials, Shipment Dispatch) */}
-        <div className="space-y-6 lg:sticky lg:top-6 self-start">
+        <div className="space-y-6 self-start lg:sticky lg:top-6">
           {/* Shopify-Grade 1-Click Smart Action Hub (Sticky Top) */}
-          <div id="smart-fulfillment-hub" className="print:hidden scroll-mt-6">
+          <div id="smart-fulfillment-hub" className="scroll-mt-6 print:hidden">
             <OrderSmartActions
               order={{
                 id: order.id,
@@ -538,7 +540,9 @@ export default async function AdminOrderPage({
 
               <div className="flex justify-between text-neutral-600">
                 <span>Delivery Charge</span>
-                <span className="font-semibold text-neutral-900">{formatBdt(order.shippingCost)}</span>
+                <span className="font-semibold text-neutral-900">
+                  {formatBdt(order.shippingCost)}
+                </span>
               </div>
 
               {Number(order.discount) > 0 ? (
@@ -551,13 +555,15 @@ export default async function AdminOrderPage({
               {Number(order.taxAmount) > 0 ? (
                 <div className="flex justify-between text-neutral-600">
                   <span>Tax ({Number(order.taxRate)}%)</span>
-                  <span className="font-semibold text-neutral-900">{formatBdt(order.taxAmount)}</span>
+                  <span className="font-semibold text-neutral-900">
+                    {formatBdt(order.taxAmount)}
+                  </span>
                 </div>
               ) : null}
 
               <Separator className="my-2" />
 
-              <div className="flex justify-between items-baseline text-sm font-black text-neutral-900">
+              <div className="flex items-baseline justify-between text-sm font-black text-neutral-900">
                 <span>Total Payable</span>
                 <span className="text-lg text-neutral-900">{formatBdt(order.total)}</span>
               </div>
@@ -569,7 +575,9 @@ export default async function AdminOrderPage({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
                     <Banknote className="size-4 text-emerald-700" />
-                    <span className="text-xs font-bold text-emerald-950">Cash to Collect (COD)</span>
+                    <span className="text-xs font-bold text-emerald-950">
+                      Cash to Collect (COD)
+                    </span>
                   </div>
                   <span className="text-sm font-black text-emerald-900">
                     {order.paymentStatus === "SUCCESS" ? "Collected ✓" : formatBdt(order.total)}
@@ -588,7 +596,9 @@ export default async function AdminOrderPage({
               <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50/80 p-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-500">Goods Wholesale Cost</span>
-                  <span className="font-semibold text-neutral-800">{formatBdt(totalCostPrice)}</span>
+                  <span className="font-semibold text-neutral-800">
+                    {formatBdt(totalCostPrice)}
+                  </span>
                 </div>
                 <div className="mt-1.5 flex items-center justify-between border-t border-neutral-200/60 pt-1.5">
                   <div className="flex items-center gap-1 text-neutral-600">
@@ -622,12 +632,14 @@ export default async function AdminOrderPage({
                     <div key={p.id}>
                       <div className="flex items-center justify-between font-semibold text-neutral-800">
                         <span>{p.gateway}</span>
-                        <span className={p.status === "SUCCESS" ? "text-emerald-700" : "text-amber-700"}>
+                        <span
+                          className={p.status === "SUCCESS" ? "text-emerald-700" : "text-amber-700"}
+                        >
                           {p.status}
                         </span>
                       </div>
                       {p.gatewayTransactionId ? (
-                        <p className="font-mono text-[10px] text-neutral-500 truncate">
+                        <p className="truncate font-mono text-[10px] text-neutral-500">
                           TrxID: {p.gatewayTransactionId}
                         </p>
                       ) : null}
@@ -639,7 +651,10 @@ export default async function AdminOrderPage({
           </div>
 
           {/* Shipment Dispatch Status Card */}
-          <div id="courier-dispatch-card" className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs scroll-mt-6">
+          <div
+            id="courier-dispatch-card"
+            className="scroll-mt-6 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs"
+          >
             <div className="mb-3.5 flex items-center justify-between border-b border-neutral-100 pb-2.5">
               <div className="flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-lg bg-purple-50 text-purple-600">
@@ -671,7 +686,10 @@ export default async function AdminOrderPage({
 
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-500">Shipment Status</span>
-                  <Badge variant="outline" className="border-purple-300 bg-purple-50 font-semibold text-purple-800">
+                  <Badge
+                    variant="outline"
+                    className="border-purple-300 bg-purple-50 font-semibold text-purple-800"
+                  >
                     {order.shipment.status}
                   </Badge>
                 </div>
@@ -738,7 +756,7 @@ export default async function AdminOrderPage({
                       href={`https://steadfast.com.bd/user/consignment/print-label/${order.shipment.providerShipmentId}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-2xs transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white shadow-2xs transition hover:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
                       title="Open official Steadfast thermal sticker print page"
                     >
                       <Printer className="size-3.5" />

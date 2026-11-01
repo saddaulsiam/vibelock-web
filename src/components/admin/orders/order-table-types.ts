@@ -1,13 +1,7 @@
 import type { ColumnOption } from "@/components/admin/shared";
 
 export type OrderColumnKey =
-  | "date"
-  | "customer"
-  | "items"
-  | "total"
-  | "payment"
-  | "shipment"
-  | "status";
+  "date" | "customer" | "items" | "total" | "payment" | "shipment" | "status";
 
 export const orderColumnOptions: ColumnOption<OrderColumnKey>[] = [
   { key: "date", label: "Date & Channel" },
@@ -46,4 +40,3 @@ export const PAYMENT_METHOD_OPTIONS = [
   { value: "COD", label: "Cash on Delivery (COD)" },
   { value: "ONLINE", label: "Online Gateway" },
 ] as const;
-

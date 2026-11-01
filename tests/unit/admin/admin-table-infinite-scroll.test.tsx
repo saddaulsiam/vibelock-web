@@ -65,7 +65,7 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
     );
 
     expect(html).toContain("✓");
-    expect(html).toContain("All <strong class=\"text-[#101114]\">45</strong> orders loaded");
+    expect(html).toContain('All <strong class="text-[#101114]">45</strong> orders loaded');
     expect(html).not.toContain("Load more orders");
   });
 
@@ -82,6 +82,8 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
       />
     );
 
-    expect(html).toContain("All <strong class=\"text-[#101114]\">5</strong> orders loaded (filtered from 120 total)");
+    expect(html).toContain(
+      'All <strong class="text-[#101114]">5</strong> orders loaded (filtered from 120 total)'
+    );
   });
 });

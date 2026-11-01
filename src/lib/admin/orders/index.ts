@@ -15,4 +15,3 @@ export {
   type AdminOrderItem,
   type AdminOrdersResult,
 } from "./order-queries";
-

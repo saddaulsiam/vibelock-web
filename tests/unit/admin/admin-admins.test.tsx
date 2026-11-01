@@ -55,11 +55,7 @@ describe("Admin & Staff Management UI", () => {
 
   test("renders member names, emails, and role badges", () => {
     const html = renderToStaticMarkup(
-      <AdminUsersTable
-        initialUsers={mockUsers}
-        stats={mockStats}
-        currentAdminId="u1"
-      />
+      <AdminUsersTable initialUsers={mockUsers} stats={mockStats} currentAdminId="u1" />
     );
 
     expect(html).toContain("Siam Sadman");
@@ -78,11 +74,7 @@ describe("Admin & Staff Management UI", () => {
 
   test("highlights current logged in admin with 'You' pill", () => {
     const html = renderToStaticMarkup(
-      <AdminUsersTable
-        initialUsers={mockUsers}
-        stats={mockStats}
-        currentAdminId="u1"
-      />
+      <AdminUsersTable initialUsers={mockUsers} stats={mockStats} currentAdminId="u1" />
     );
 
     expect(html).toContain("You");
@@ -90,11 +82,7 @@ describe("Admin & Staff Management UI", () => {
 
   test("renders Add Staff / Admin button and role select dropdowns", () => {
     const html = renderToStaticMarkup(
-      <AdminUsersTable
-        initialUsers={mockUsers}
-        stats={mockStats}
-        currentAdminId="u1"
-      />
+      <AdminUsersTable initialUsers={mockUsers} stats={mockStats} currentAdminId="u1" />
     );
 
     expect(html).toContain("Add Staff / Admin");
@@ -103,11 +91,7 @@ describe("Admin & Staff Management UI", () => {
 
   test("renders role tabs, search, columns visibility, export CSV, and meta counter", () => {
     const html = renderToStaticMarkup(
-      <AdminUsersTable
-        initialUsers={mockUsers}
-        stats={mockStats}
-        currentAdminId="u1"
-      />
+      <AdminUsersTable initialUsers={mockUsers} stats={mockStats} currentAdminId="u1" />
     );
 
     expect(html).toContain("All Roles");
@@ -120,4 +104,3 @@ describe("Admin & Staff Management UI", () => {
     expect(html).toContain("members");
   });
 });
-

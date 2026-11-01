@@ -56,7 +56,6 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
     toast.success("Wishlist cleared.");
   };
 
-
   const savedProducts = initialProducts.filter((p) => wishlistSlugs.includes(p.slug));
   const recommendedProducts = initialProducts.slice(0, 4);
 

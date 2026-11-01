@@ -29,8 +29,4 @@ export {
   type AdminCustomerTimelineEvent,
   type AdminCustomerDetailResult,
 } from "./customer-queries";
-export {
-  getCustomerRiskProfile,
-  type CombinedCustomerRiskProfile,
-} from "./customer-risk";
-
+export { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./customer-risk";

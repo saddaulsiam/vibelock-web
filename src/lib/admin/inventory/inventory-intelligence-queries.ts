@@ -11,23 +11,12 @@ export const INVENTORY_INTELLIGENCE_EXPORT_LIMIT = 5000;
 
 export type InventoryIntelligenceWindow = "30d" | "60d" | "90d";
 export type InventoryIntelligenceStatusFilter =
-  | "all"
-  | "negative"
-  | "out-of-stock"
-  | "stockout-risk"
-  | "dead"
-  | "slow"
-  | "healthy";
+  "all" | "negative" | "out-of-stock" | "stockout-risk" | "dead" | "slow" | "healthy";
 
 export type InventoryIntelligenceSort = "valuation" | "stock" | "velocity" | "age" | "runout";
 
 export type InventoryIntelligenceStatus =
-  | "NEGATIVE"
-  | "OUT_OF_STOCK"
-  | "STOCKOUT_RISK"
-  | "DEAD"
-  | "SLOW"
-  | "HEALTHY";
+  "NEGATIVE" | "OUT_OF_STOCK" | "STOCKOUT_RISK" | "DEAD" | "SLOW" | "HEALTHY";
 
 const WINDOW_DAYS: Record<InventoryIntelligenceWindow, number> = {
   "30d": 30,

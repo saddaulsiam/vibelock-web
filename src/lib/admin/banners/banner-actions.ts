@@ -86,7 +86,10 @@ export async function saveBannerAction(
         if (uploadRes.success) {
           uploadedUrl = uploadRes.url;
         } else {
-          console.warn("[saveBannerAction] Cloudinary upload unsuccessful, falling back to local:", uploadRes.error);
+          console.warn(
+            "[saveBannerAction] Cloudinary upload unsuccessful, falling back to local:",
+            uploadRes.error
+          );
         }
       } catch (err) {
         console.warn("[saveBannerAction] Cloudinary upload error, falling back to local:", err);
@@ -128,10 +131,16 @@ export async function saveBannerAction(
         if (uploadRes.success) {
           uploadedMobileUrl = uploadRes.url;
         } else {
-          console.warn("[saveBannerAction] Mobile Cloudinary upload unsuccessful, falling back to local:", uploadRes.error);
+          console.warn(
+            "[saveBannerAction] Mobile Cloudinary upload unsuccessful, falling back to local:",
+            uploadRes.error
+          );
         }
       } catch (err) {
-        console.warn("[saveBannerAction] Mobile Cloudinary upload error, falling back to local:", err);
+        console.warn(
+          "[saveBannerAction] Mobile Cloudinary upload error, falling back to local:",
+          err
+        );
       }
     }
 

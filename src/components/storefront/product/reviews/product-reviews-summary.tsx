@@ -12,7 +12,7 @@ export function ProductReviewsSummary({ summary }: ProductReviewsSummaryProps) {
 
   return (
     <div className="rounded-2xl border border-[#101114]/10 bg-white p-6 shadow-xs sm:p-8">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:gap-8 sm:items-center">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:items-center sm:gap-8">
         {/* Left Side: Score & Stars */}
         <div className="flex flex-col items-center justify-center border-b border-[#101114]/10 pb-6 text-center sm:border-r sm:border-b-0 sm:pr-8 sm:pb-0">
           <div className="text-5xl font-black tracking-tight text-[#101114] sm:text-6xl">
@@ -61,4 +61,3 @@ export function ProductReviewsSummary({ summary }: ProductReviewsSummaryProps) {
     </div>
   );
 }
-

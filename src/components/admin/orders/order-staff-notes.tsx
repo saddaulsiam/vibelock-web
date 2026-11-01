@@ -28,11 +28,26 @@ interface OrderStaffNotesProps {
 }
 
 const QUICK_TEMPLATES = [
-  { label: "📞 Called & Confirmed", text: "Customer contacted via phone and confirmed order & address details." },
-  { label: "🚚 Deliver After 6 PM", text: "Customer requested delivery in the evening after 6:00 PM." },
-  { label: "⚠️ Call Before Delivery", text: "Rider must call recipient before arriving at the address." },
-  { label: "🎁 Gift Packaging", text: "Special gift wrap & ribbon requested. Do not include price tag invoice inside bag." },
-  { label: "🔄 Size Exchange Discussed", text: "Customer discussed size fitting. Confirmed correct size before dispatch." },
+  {
+    label: "📞 Called & Confirmed",
+    text: "Customer contacted via phone and confirmed order & address details.",
+  },
+  {
+    label: "🚚 Deliver After 6 PM",
+    text: "Customer requested delivery in the evening after 6:00 PM.",
+  },
+  {
+    label: "⚠️ Call Before Delivery",
+    text: "Rider must call recipient before arriving at the address.",
+  },
+  {
+    label: "🎁 Gift Packaging",
+    text: "Special gift wrap & ribbon requested. Do not include price tag invoice inside bag.",
+  },
+  {
+    label: "🔄 Size Exchange Discussed",
+    text: "Customer discussed size fitting. Confirmed correct size before dispatch.",
+  },
 ];
 
 function formatDate(dateInput: Date | string): string {
@@ -47,7 +62,10 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
   const [noteText, setNoteText] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"ALL" | "NOTES_ONLY">("ALL");
-  const [feedback, setFeedback] = React.useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [feedback, setFeedback] = React.useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const staffNotesCount = history.filter((h) => h.notes?.includes("[STAFF NOTE")).length;
 
@@ -82,9 +100,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
   };
 
   const displayedEntries =
-    activeTab === "NOTES_ONLY"
-      ? history.filter((h) => h.notes?.includes("[STAFF NOTE"))
-      : history;
+    activeTab === "NOTES_ONLY" ? history.filter((h) => h.notes?.includes("[STAFF NOTE")) : history;
 
   return (
     <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs print:hidden">
@@ -111,7 +127,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
             onClick={() => setActiveTab("ALL")}
             className={`rounded-md px-2.5 py-1 transition ${
               activeTab === "ALL"
-                ? "bg-white text-neutral-900 shadow-2xs font-bold"
+                ? "bg-white font-bold text-neutral-900 shadow-2xs"
                 : "text-neutral-500 hover:text-neutral-900"
             }`}
           >
@@ -122,13 +138,13 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
             onClick={() => setActiveTab("NOTES_ONLY")}
             className={`flex items-center gap-1 rounded-md px-2.5 py-1 transition ${
               activeTab === "NOTES_ONLY"
-                ? "bg-white text-neutral-900 shadow-2xs font-bold"
+                ? "bg-white font-bold text-neutral-900 shadow-2xs"
                 : "text-neutral-500 hover:text-neutral-900"
             }`}
           >
             <span>Staff Notes</span>
             {staffNotesCount > 0 ? (
-              <span className="rounded-full bg-amber-100 px-1.5 py-0.2 text-[10px] font-bold text-amber-800">
+              <span className="py-0.2 rounded-full bg-amber-100 px-1.5 text-[10px] font-bold text-amber-800">
                 {staffNotesCount}
               </span>
             ) : null}
@@ -144,7 +160,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
             onChange={(e) => setNoteText(e.target.value)}
             rows={2}
             placeholder="Write an internal note for the team (e.g., customer called, size change, evening delivery requested)..."
-            className="w-full resize-y rounded-lg border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+            className="w-full resize-y rounded-lg border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
             disabled={isSubmitting}
           />
 
@@ -183,9 +199,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                 <span>{feedback.text}</span>
               </div>
             ) : (
-              <span className="text-[11px] text-neutral-400">
-                Visible only to team members
-              </span>
+              <span className="text-[11px] text-neutral-400">Visible only to team members</span>
             )}
 
             <button
@@ -243,7 +257,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200/60 pb-1.5">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-amber-950">{author}</span>
-                          <span className="rounded bg-amber-200/70 px-1.5 py-0.2 text-[10px] font-bold text-amber-900">
+                          <span className="py-0.2 rounded bg-amber-200/70 px-1.5 text-[10px] font-bold text-amber-900">
                             Staff Note
                           </span>
                         </div>
@@ -251,7 +265,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                           {formatDate(entry.createdAt)}
                         </span>
                       </div>
-                      <p className="mt-2 text-neutral-800 leading-relaxed font-medium whitespace-pre-wrap">
+                      <p className="mt-2 leading-relaxed font-medium whitespace-pre-wrap text-neutral-800">
                         {text}
                       </p>
                     </div>
@@ -278,7 +292,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-rose-200/60 pb-1.5">
                         <div className="flex items-center gap-1.5">
                           <span className="font-bold text-rose-950">Order Cancelled</span>
-                          <span className="inline-flex items-center gap-1 rounded bg-rose-200/70 px-1.5 py-0.2 text-[10px] font-bold text-rose-900">
+                          <span className="py-0.2 inline-flex items-center gap-1 rounded bg-rose-200/70 px-1.5 text-[10px] font-bold text-rose-900">
                             <RotateCcw className="size-2.5" />
                             <span>Auto-Restocked</span>
                           </span>
@@ -289,14 +303,16 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                       </div>
                       {reason ? (
                         <div className="mt-2 flex items-center gap-1.5">
-                          <span className="text-[11px] font-semibold text-rose-900">Cancellation Reason:</span>
+                          <span className="text-[11px] font-semibold text-rose-900">
+                            Cancellation Reason:
+                          </span>
                           <span className="rounded-md bg-white px-2 py-0.5 text-xs font-bold text-neutral-900 ring-1 ring-rose-200">
                             {reason}
                           </span>
                         </div>
                       ) : null}
                       {detail ? (
-                        <p className="mt-1.5 text-neutral-700 leading-relaxed font-medium whitespace-pre-wrap">
+                        <p className="mt-1.5 leading-relaxed font-medium whitespace-pre-wrap text-neutral-700">
                           {detail}
                         </p>
                       ) : null}
@@ -325,7 +341,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                         {formatDate(entry.createdAt)}
                       </span>
                     </div>
-                    <p className="mt-1 text-neutral-600 leading-relaxed">
+                    <p className="mt-1 leading-relaxed text-neutral-600">
                       {entry.notes || "No details provided."}
                     </p>
                   </div>

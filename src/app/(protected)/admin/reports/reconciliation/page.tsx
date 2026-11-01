@@ -16,10 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  getAdminReconciliation,
-  ReconciliationClassification,
-} from "@/lib/admin/reports";
+import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
 
 function money(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Unavailable";

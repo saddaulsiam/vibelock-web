@@ -45,9 +45,7 @@ export function StarRating({
             <Star
               key={starNumber}
               className={`${sizeClasses[size]} ${
-                isFilled
-                  ? "fill-[#00D9FF] text-[#00D9FF]"
-                  : "fill-[#101114]/10 text-[#101114]/20"
+                isFilled ? "fill-[#00D9FF] text-[#00D9FF]" : "fill-[#101114]/10 text-[#101114]/20"
               } transition-colors`}
               aria-hidden="true"
             />
@@ -68,9 +66,7 @@ export function StarRating({
           >
             <Star
               className={`${sizeClasses[size]} ${
-                isFilled
-                  ? "fill-[#00D9FF] text-[#00D9FF]"
-                  : "fill-[#101114]/10 text-[#101114]/25"
+                isFilled ? "fill-[#00D9FF] text-[#00D9FF]" : "fill-[#101114]/10 text-[#101114]/25"
               } transition-colors`}
             />
           </button>
@@ -79,4 +75,3 @@ export function StarRating({
     </div>
   );
 }
-

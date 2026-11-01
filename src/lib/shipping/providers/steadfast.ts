@@ -65,11 +65,7 @@ export class SteadfastCourierProvider implements ShippingProvider {
   private readonly secretKey?: string;
   private readonly baseUrl: string;
 
-  constructor(
-    apiKey?: string,
-    secretKey?: string,
-    baseUrl?: string
-  ) {
+  constructor(apiKey?: string, secretKey?: string, baseUrl?: string) {
     this.apiKey =
       arguments.length > 0 ? apiKey : env.STEADFAST_API_KEY || process.env.STEADFAST_API_KEY;
     this.secretKey =
@@ -77,9 +73,7 @@ export class SteadfastCourierProvider implements ShippingProvider {
         ? secretKey
         : env.STEADFAST_SECRET_KEY || process.env.STEADFAST_SECRET_KEY;
     let url =
-      (arguments.length > 2
-        ? baseUrl
-        : env.STEADFAST_BASE_URL || process.env.STEADFAST_BASE_URL) ||
+      (arguments.length > 2 ? baseUrl : env.STEADFAST_BASE_URL || process.env.STEADFAST_BASE_URL) ||
       "https://portal.packzy.com/api/v1";
     if (url.includes("portal.steadfast.com.bd")) {
       url = url.replace("portal.steadfast.com.bd", "portal.packzy.com");
@@ -247,7 +241,11 @@ export class SteadfastCourierProvider implements ShippingProvider {
   /**
    * Retrieves current available COD financial balance from Steadfast via GET /get_balance
    */
-  async getMerchantBalance(): Promise<{ success: boolean; currentBalance?: number; error?: string }> {
+  async getMerchantBalance(): Promise<{
+    success: boolean;
+    currentBalance?: number;
+    error?: string;
+  }> {
     try {
       const { response, payload } = await this.request("/get_balance", { method: "GET" });
       const body = record(payload);
@@ -321,8 +319,7 @@ export class SteadfastCourierProvider implements ShippingProvider {
       // Handle diverse response field namings across Steadfast / Packzy API versions
       const totalParcels =
         Number(body.total_parcels ?? body.Total_parcels ?? body.total_orders ?? 0) || 0;
-      const totalDelivered =
-        Number(body.total_delivered ?? body.Total_delivered ?? 0) || 0;
+      const totalDelivered = Number(body.total_delivered ?? body.Total_delivered ?? 0) || 0;
       const totalCancelled =
         Number(body.total_cancelled ?? body.Total_cancelled ?? body.total_returned ?? 0) || 0;
 
@@ -330,12 +327,10 @@ export class SteadfastCourierProvider implements ShippingProvider {
       const rawReports = Array.isArray(body.total_fraud_reports)
         ? body.total_fraud_reports
         : Array.isArray(body.fraud_reports)
-        ? body.fraud_reports
-        : [];
+          ? body.fraud_reports
+          : [];
       const fraudReportsCount =
-        typeof body.total_fraud_reports === "number"
-          ? body.total_fraud_reports
-          : rawReports.length;
+        typeof body.total_fraud_reports === "number" ? body.total_fraud_reports : rawReports.length;
 
       // Delivery ratio calculation
       let deliveryRatio = 0;
@@ -386,7 +381,8 @@ export class SteadfastCourierProvider implements ShippingProvider {
         cancellationRatio: 0,
         fraudReportsCount: 0,
         riskLevel: "UNKNOWN",
-        error: err instanceof Error ? err.message : "Failed to connect to Steadfast fraud check API.",
+        error:
+          err instanceof Error ? err.message : "Failed to connect to Steadfast fraud check API.",
       };
     }
   }

@@ -16,19 +16,13 @@ interface AdminReviewsPageProps {
   }>;
 }
 
-export default async function AdminReviewsPage({
-  searchParams,
-}: AdminReviewsPageProps) {
+export default async function AdminReviewsPage({ searchParams }: AdminReviewsPageProps) {
   await requireRole("ADMIN");
 
   const params = await searchParams;
   const ratingNum = params.rating ? parseInt(params.rating, 10) : undefined;
   const verifiedBool =
-    params.verified === "true"
-      ? true
-      : params.verified === "false"
-        ? false
-        : undefined;
+    params.verified === "true" ? true : params.verified === "false" ? false : undefined;
 
   const { reviews, kpis, totalCount } = await getAdminReviews({
     search: params.search,
@@ -61,4 +55,3 @@ export default async function AdminReviewsPage({
     </div>
   );
 }
-

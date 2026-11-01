@@ -75,8 +75,8 @@ export function toCardProduct(
         (product.hasDiscount
           ? { label: "Sale", variant: "sale" as const }
           : product.isFeatured
-          ? { label: "Featured", variant: "featured" as const }
-          : undefined),
+            ? { label: "Featured", variant: "featured" as const }
+            : undefined),
     };
   }
 

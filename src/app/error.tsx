@@ -25,7 +25,7 @@ export default function Error({
           <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / Error
           </p>
-          <h1 className="font-heading text-2xl font-black tracking-tight text-vl-black sm:text-3xl">
+          <h1 className="font-heading text-vl-black text-2xl font-black tracking-tight sm:text-3xl">
             Something went wrong
           </h1>
           <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm leading-6 sm:text-base">
@@ -35,13 +35,13 @@ export default function Error({
             <Button
               onClick={reset}
               size="lg"
-              className="min-h-11 rounded-xs bg-vl-black font-heading font-black tracking-widest text-vl-white uppercase hover:bg-vl-black/85 focus-visible:ring-vl-cyan"
+              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan min-h-11 rounded-xs font-black tracking-widest uppercase"
             >
               Try again
             </Button>
             <Link
               href="/products"
-              className="inline-flex min-h-11 items-center justify-center border border-vl-black/20 px-5 font-heading text-sm font-black tracking-widest text-vl-black uppercase transition-colors hover:bg-vl-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               Browse products
             </Link>

@@ -36,7 +36,7 @@ export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartB
       type="button"
       onClick={handleAddToCart}
       disabled={!variantId || !isAvailable || isPending}
-      className="font-heading flex min-h-12 w-full items-center justify-center gap-2 rounded-xs bg-vl-black px-5 text-xs font-black tracking-widest text-vl-white uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
+      className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm"
     >
       {isPending ? (
         <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />

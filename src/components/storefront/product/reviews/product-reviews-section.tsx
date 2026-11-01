@@ -41,7 +41,8 @@ export function ProductReviewsSection({
           </h2>
         </div>
         <p className="text-xs text-[#101114]/60">
-          Showing {reviews.length} {reviews.length === 1 ? "review" : "reviews"} from verified buyers
+          Showing {reviews.length} {reviews.length === 1 ? "review" : "reviews"} from verified
+          buyers
         </p>
       </div>
 
@@ -61,14 +62,9 @@ export function ProductReviewsSection({
           <h3 className="text-sm font-bold tracking-wider text-[#101114] uppercase">
             All Reviews ({reviews.length})
           </h3>
-          <ProductReviewList
-            reviews={reviews}
-            currentUserId={currentUserId}
-            isAdmin={isAdmin}
-          />
+          <ProductReviewList reviews={reviews} currentUserId={currentUserId} isAdmin={isAdmin} />
         </div>
       </div>
     </section>
   );
 }
-

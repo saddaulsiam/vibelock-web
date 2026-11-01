@@ -35,10 +35,7 @@ import {
   ReturnSteadfastHeaderAction,
   StoreCreditRefundForm,
 } from "@/components/admin/returns";
-import {
-  OrderCopyButton,
-  generateWhatsAppUrl,
-} from "@/components/admin/orders";
+import { OrderCopyButton, generateWhatsAppUrl } from "@/components/admin/orders";
 import type { ReturnRequestStatus } from "@prisma/client";
 
 const nextStatuses: Record<string, string[]> = {
@@ -153,7 +150,7 @@ export default async function AdminReturnDetailPage({
       <div>
         <Link
           href="/admin/returns"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 transition hover:text-neutral-900"
         >
           <ChevronLeft className="size-4" />
           <span>Back to Returns</span>
@@ -211,7 +208,7 @@ export default async function AdminReturnDetailPage({
                 href={whatsAppUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 transition"
+                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-semibold text-emerald-800 shadow-2xs transition hover:bg-emerald-100"
                 title="Chat with customer on WhatsApp"
               >
                 <MessageSquare className="size-3.5 text-emerald-600" />
@@ -254,9 +251,7 @@ export default async function AdminReturnDetailPage({
             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
               Order Status
             </span>
-            <p className="mt-0.5 text-sm font-bold text-neutral-800">
-              {request.order.status}
-            </p>
+            <p className="mt-0.5 text-sm font-bold text-neutral-800">{request.order.status}</p>
           </div>
         </div>
       </div>
@@ -290,7 +285,7 @@ export default async function AdminReturnDetailPage({
               <table className="w-full text-left text-xs">
                 <thead className="border-b border-neutral-100 bg-neutral-50/70 text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                   <tr>
-                    <th className="py-2.5 pl-3 pr-2">Product Name &amp; Variants</th>
+                    <th className="py-2.5 pr-2 pl-3">Product Name &amp; Variants</th>
                     <th className="px-2 py-2.5 font-mono">SKU</th>
                     <th className="px-2 py-2.5 text-center">Qty</th>
                     <th className="px-2 py-2.5 text-right">Unit Price</th>
@@ -301,13 +296,15 @@ export default async function AdminReturnDetailPage({
                   {request.items.map((item) => {
                     const lineSubtotal = Number(item.orderItem.unitPrice) * item.quantity;
                     return (
-                      <tr key={item.id} className="hover:bg-neutral-50/50 transition-colors">
-                        <td className="py-3 pl-3 pr-2">
+                      <tr key={item.id} className="transition-colors hover:bg-neutral-50/50">
+                        <td className="py-3 pr-2 pl-3">
                           <p className="font-bold text-neutral-900">{item.orderItem.productName}</p>
                           {(item.orderItem.size || item.orderItem.color) && (
                             <p className="mt-0.5 text-[11px] text-neutral-500">
                               {item.orderItem.size && <span>Size: {item.orderItem.size} </span>}
-                              {item.orderItem.color && <span>&bull; Color: {item.orderItem.color}</span>}
+                              {item.orderItem.color && (
+                                <span>&bull; Color: {item.orderItem.color}</span>
+                              )}
                             </p>
                           )}
                         </td>
@@ -356,7 +353,8 @@ export default async function AdminReturnDetailPage({
               </div>
             </div>
 
-            {refunds.length === 0 && (!request.storeCreditVouchers || request.storeCreditVouchers.length === 0) ? (
+            {refunds.length === 0 &&
+            (!request.storeCreditVouchers || request.storeCreditVouchers.length === 0) ? (
               <p className="text-xs text-neutral-400 italic">
                 No refunds or store vouchers have been processed for this return request yet.
               </p>
@@ -370,7 +368,7 @@ export default async function AdminReturnDetailPage({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-black text-xs text-neutral-900 bg-white px-2 py-0.5 rounded border border-emerald-300">
+                        <span className="rounded border border-emerald-300 bg-white px-2 py-0.5 font-mono text-xs font-black text-neutral-900">
                           {voucher.code}
                         </span>
                         <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800">
@@ -386,7 +384,9 @@ export default async function AdminReturnDetailPage({
                           (Includes {formatBdt(voucher.bonusAmount)} Bonus)
                         </span>
                       </span>
-                      <span className="text-[11px] text-neutral-500">{formatDate(voucher.issuedAt)}</span>
+                      <span className="text-[11px] text-neutral-500">
+                        {formatDate(voucher.issuedAt)}
+                      </span>
                     </div>
                   </div>
                 ))}
@@ -398,7 +398,7 @@ export default async function AdminReturnDetailPage({
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-sm text-neutral-900">
+                        <span className="text-sm font-black text-neutral-900">
                           {formatBdt(refund.amount)}
                         </span>
                         <span
@@ -421,7 +421,7 @@ export default async function AdminReturnDetailPage({
                     </div>
 
                     {refund.reason && (
-                      <p className="text-neutral-600 text-[11px]">
+                      <p className="text-[11px] text-neutral-600">
                         <strong>Reason:</strong> {refund.reason}
                       </p>
                     )}
@@ -461,7 +461,10 @@ export default async function AdminReturnDetailPage({
 
             <div className="space-y-3">
               {request.auditLogs.map((entry) => (
-                <div key={entry.id} className="border-l-2 border-neutral-300 pl-3.5 text-xs space-y-0.5">
+                <div
+                  key={entry.id}
+                  className="space-y-0.5 border-l-2 border-neutral-300 pl-3.5 text-xs"
+                >
                   <p className="font-bold text-neutral-800">{entry.action}</p>
                   <p className="text-[11px] text-neutral-500">
                     {formatDate(entry.createdAt)} &bull; By{" "}
@@ -471,7 +474,10 @@ export default async function AdminReturnDetailPage({
               ))}
 
               {request.order.history.map((entry) => (
-                <div key={entry.id} className="border-l-2 border-neutral-200 pl-3.5 text-xs space-y-0.5">
+                <div
+                  key={entry.id}
+                  className="space-y-0.5 border-l-2 border-neutral-200 pl-3.5 text-xs"
+                >
                   <p className="font-semibold text-neutral-700">Order: {entry.status}</p>
                   <p className="text-[11px] text-neutral-500">
                     {entry.notes || "Status updated"} &bull; {formatDate(entry.createdAt)}
@@ -506,7 +512,7 @@ export default async function AdminReturnDetailPage({
                 <span className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
                   Name
                 </span>
-                <p className="font-bold text-neutral-900 text-sm mt-0.5">
+                <p className="mt-0.5 text-sm font-bold text-neutral-900">
                   {request.order.customerName || "Guest Customer"}
                 </p>
               </div>
@@ -515,7 +521,7 @@ export default async function AdminReturnDetailPage({
                 <span className="text-[10px] font-bold tracking-wider text-neutral-400 uppercase">
                   Email
                 </span>
-                <p className="font-medium text-neutral-700 truncate mt-0.5">
+                <p className="mt-0.5 truncate font-medium text-neutral-700">
                   {request.order.customerEmail}
                 </p>
               </div>
@@ -534,7 +540,7 @@ export default async function AdminReturnDetailPage({
                         href={whatsAppUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100 transition"
+                        className="inline-flex items-center gap-1 rounded bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-800 transition hover:bg-emerald-100"
                       >
                         <MessageSquare className="size-3 text-emerald-600" />
                         <span>WhatsApp</span>
@@ -598,7 +604,7 @@ export default async function AdminReturnDetailPage({
                       Custom Message / Customer Details
                     </span>
                     {parsedReason.customerNote ? (
-                      <div className="mt-1 rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 text-neutral-800 leading-relaxed font-medium">
+                      <div className="mt-1 rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 leading-relaxed font-medium text-neutral-800">
                         &ldquo;{parsedReason.customerNote}&rdquo;
                       </div>
                     ) : (
@@ -610,11 +616,13 @@ export default async function AdminReturnDetailPage({
                   {parsedReason.images.length > 0 && (
                     <div className="border-t border-neutral-100 pt-3">
                       <div className="mb-2 flex items-center justify-between">
-                        <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase flex items-center gap-1.5">
+                        <span className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                           <ImageIcon className="size-3 text-neutral-600" />
                           <span>Uploaded Photo Proof ({parsedReason.images.length})</span>
                         </span>
-                        <span className="text-[10px] text-neutral-400">Click to view full image</span>
+                        <span className="text-[10px] text-neutral-400">
+                          Click to view full image
+                        </span>
                       </div>
 
                       <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
@@ -624,7 +632,7 @@ export default async function AdminReturnDetailPage({
                             href={imgUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="group relative aspect-square overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 hover:border-neutral-400 transition"
+                            className="group relative aspect-square overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 transition hover:border-neutral-400"
                             title="Click to view full photo in new tab"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -633,8 +641,8 @@ export default async function AdminReturnDetailPage({
                               alt={`Return proof photo ${idx + 1}`}
                               className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
                             />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition flex items-center justify-center">
-                              <ExternalLink className="size-4 text-white opacity-0 group-hover:opacity-100 transition" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/20">
+                              <ExternalLink className="size-4 text-white opacity-0 transition group-hover:opacity-100" />
                             </div>
                           </a>
                         ))}
@@ -649,7 +657,9 @@ export default async function AdminReturnDetailPage({
                     </div>
                     <div className="flex justify-between">
                       <span>Order Payment Method:</span>
-                      <span className="font-semibold text-neutral-800">{request.order.paymentMethod}</span>
+                      <span className="font-semibold text-neutral-800">
+                        {request.order.paymentMethod}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -669,9 +679,7 @@ export default async function AdminReturnDetailPage({
                     <h3 className="text-xs font-bold tracking-wider text-neutral-900 uppercase">
                       Update Return Status
                     </h3>
-                    <p className="text-[10px] text-neutral-500">
-                      Validated server transitions
-                    </p>
+                    <p className="text-[10px] text-neutral-500">Validated server transitions</p>
                   </div>
                 </div>
               </div>
@@ -712,7 +720,7 @@ export default async function AdminReturnDetailPage({
                         <h3 className="text-xs font-bold tracking-wider text-emerald-950 uppercase">
                           Return Fully Settled
                         </h3>
-                        <p className="text-[11px] text-emerald-800 leading-snug mt-0.5">
+                        <p className="mt-0.5 text-[11px] leading-snug text-emerald-800">
                           {isStoreCreditSettled
                             ? "105% Store Credit voucher has been issued. Duplicate settlement is strictly locked."
                             : "Payment refund has been initiated or completed. Duplicate settlement is strictly locked."}
@@ -721,7 +729,7 @@ export default async function AdminReturnDetailPage({
                     </div>
 
                     <div className="mt-3.5 flex items-center justify-between rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs">
-                      <span className="text-neutral-500 font-medium">Settlement Status:</span>
+                      <span className="font-medium text-neutral-500">Settlement Status:</span>
                       <span className="inline-flex items-center gap-1 font-bold text-emerald-800">
                         <Lock className="size-3 text-emerald-600" />
                         <span>LOCKED &bull; 1-TIME LIMIT ENFORCED</span>

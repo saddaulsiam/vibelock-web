@@ -108,7 +108,8 @@ describe("Steadfast Courier Fraud Check & Risk Intelligence", () => {
       riskScore: "LOW_RISK",
       riskLabel: "Trusted / Verified Buyer",
       headline: "High Courier Reliability (90% delivery rate across 20 parcels in BD)",
-      recommendation: "Reliable buyer with proven delivery track record. Safe for 1-click confirmation.",
+      recommendation:
+        "Reliable buyer with proven delivery track record. Safe for 1-click confirmation.",
       confidenceBadge: "VERIFIED",
       storeStats: {
         totalOrders: 3,

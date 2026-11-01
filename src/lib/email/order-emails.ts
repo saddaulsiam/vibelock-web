@@ -63,12 +63,19 @@ const EMAIL_WRAPPER_FOOTER = `
 /**
  * Sends a rich, branded order confirmation email to the customer.
  */
-export async function sendOrderConfirmationEmail(data: OrderConfirmationEmailData): Promise<boolean> {
+export async function sendOrderConfirmationEmail(
+  data: OrderConfirmationEmailData
+): Promise<boolean> {
   if (!resendClient) {
     if (env.NODE_ENV === "production") {
-      console.warn("⚠️ RESEND_API_KEY is not configured in production. Order confirmation email skipped for:", data.customerEmail);
+      console.warn(
+        "⚠️ RESEND_API_KEY is not configured in production. Order confirmation email skipped for:",
+        data.customerEmail
+      );
     } else {
-      console.log(`[Order Email Simulation] Confirmation email for order #${data.orderNumber} sent to ${data.customerEmail}`);
+      console.log(
+        `[Order Email Simulation] Confirmation email for order #${data.orderNumber} sent to ${data.customerEmail}`
+      );
     }
     return true;
   }
@@ -180,8 +187,10 @@ export async function sendOrderConfirmationEmail(data: OrderConfirmationEmailDat
     });
     return true;
   } catch (error) {
-    console.error(`[Order Email] Failed to send order confirmation to ${data.customerEmail}:`, error);
+    console.error(
+      `[Order Email] Failed to send order confirmation to ${data.customerEmail}:`,
+      error
+    );
     return false;
   }
 }
-

@@ -50,4 +50,3 @@ export function refreshCatalog(): void {
   revalidatePath("/");
   revalidatePath("/category/[slug]", "page");
 }
-

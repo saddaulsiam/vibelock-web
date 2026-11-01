@@ -76,13 +76,9 @@ export async function getAdminShippingOverviewKPIs(): Promise<AdminShippingKPIs>
     }),
   ]);
 
-  const pendingCodAmount = pendingCodOrders.reduce(
-    (sum, s) => sum + Number(s.order.total || 0),
-    0
-  );
+  const pendingCodAmount = pendingCodOrders.reduce((sum, s) => sum + Number(s.order.total || 0), 0);
 
-  const successRate =
-    totalShipments > 0 ? Math.round((deliveredCount / totalShipments) * 100) : 0;
+  const successRate = totalShipments > 0 ? Math.round((deliveredCount / totalShipments) * 100) : 0;
 
   const providerBreakdown = {
     steadfast: 0,
@@ -179,63 +175,70 @@ export async function getAdminShipments({
     ...(searchFilter ? searchFilter : {}),
   };
 
-  const [rawShipments, total, countAll, countInTransit, countDelivered, countReturned, countPending] =
-    await Promise.all([
-      prisma.shipment.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip: (currentPage - 1) * customPageSize,
-        take: customPageSize,
-        select: {
-          id: true,
-          provider: true,
-          providerShipmentId: true,
-          trackingNumber: true,
-          status: true,
-          shippingAmount: true,
-          failureReason: true,
-          createdAt: true,
-          updatedAt: true,
-          shippedAt: true,
-          deliveredAt: true,
-          cancelledAt: true,
-          order: {
-            select: {
-              id: true,
-              orderNumber: true,
-              shippingMethodName: true,
-              customerName: true,
-              customerEmail: true,
-              customerPhone: true,
-              total: true,
-              paymentMethod: true,
-              paymentStatus: true,
-            },
+  const [
+    rawShipments,
+    total,
+    countAll,
+    countInTransit,
+    countDelivered,
+    countReturned,
+    countPending,
+  ] = await Promise.all([
+    prisma.shipment.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (currentPage - 1) * customPageSize,
+      take: customPageSize,
+      select: {
+        id: true,
+        provider: true,
+        providerShipmentId: true,
+        trackingNumber: true,
+        status: true,
+        shippingAmount: true,
+        failureReason: true,
+        createdAt: true,
+        updatedAt: true,
+        shippedAt: true,
+        deliveredAt: true,
+        cancelledAt: true,
+        order: {
+          select: {
+            id: true,
+            orderNumber: true,
+            shippingMethodName: true,
+            customerName: true,
+            customerEmail: true,
+            customerPhone: true,
+            total: true,
+            paymentMethod: true,
+            paymentStatus: true,
           },
         },
-      }),
-      prisma.shipment.count({ where }),
-      prisma.shipment.count(),
-      prisma.shipment.count({
-        where: {
-          status: {
-            in: [
-              ShipmentStatus.IN_TRANSIT,
-              ShipmentStatus.OUT_FOR_DELIVERY,
-              ShipmentStatus.PICKED_UP,
-              ShipmentStatus.CREATED,
-            ],
-          },
+      },
+    }),
+    prisma.shipment.count({ where }),
+    prisma.shipment.count(),
+    prisma.shipment.count({
+      where: {
+        status: {
+          in: [
+            ShipmentStatus.IN_TRANSIT,
+            ShipmentStatus.OUT_FOR_DELIVERY,
+            ShipmentStatus.PICKED_UP,
+            ShipmentStatus.CREATED,
+          ],
         },
-      }),
-      prisma.shipment.count({ where: { status: ShipmentStatus.DELIVERED } }),
-      prisma.shipment.count({
-        where: {
-          status: { in: [ShipmentStatus.RETURNED, ShipmentStatus.FAILED, ShipmentStatus.CANCELLED] },
-        },
-      }),
-      prisma.shipment.count({ where: { status: ShipmentStatus.PENDING } }),
-    ]);
+      },
+    }),
+    prisma.shipment.count({ where: { status: ShipmentStatus.DELIVERED } }),
+    prisma.shipment.count({
+      where: {
+        status: { in: [ShipmentStatus.RETURNED, ShipmentStatus.FAILED, ShipmentStatus.CANCELLED] },
+      },
+    }),
+    prisma.shipment.count({ where: { status: ShipmentStatus.PENDING } }),
+  ]);
 
   const shipments: AdminShipmentListItem[] = rawShipments.map((s) => ({
     id: s.id,

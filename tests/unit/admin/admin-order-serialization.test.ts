@@ -144,4 +144,3 @@ describe("Admin Order RSC Plain Object Serialization", () => {
     expect(typeof checklistItems[0].unitPrice).toBe("number");
   });
 });
-

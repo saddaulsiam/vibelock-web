@@ -91,7 +91,17 @@ export const newVariant = (
 });
 
 export const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "Free Size"];
-export const COLOR_OPTIONS = ["Black", "White", "Grey", "Navy", "Blue", "Red", "Olive", "Beige", "Brown"];
+export const COLOR_OPTIONS = [
+  "Black",
+  "White",
+  "Grey",
+  "Navy",
+  "Blue",
+  "Red",
+  "Olive",
+  "Beige",
+  "Brown",
+];
 
 export const comboKey = (size: string, color: string) =>
   `${size.trim().toLowerCase()}::${color.trim().toLowerCase()}`;
@@ -626,8 +636,8 @@ export function ProductVariantGenerator({
                       ) : (
                         <span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                           <TrendingUp className="size-3 text-emerald-600" />
-                          Profit: +৳{profitData.profit.toFixed(2)} ({profitData.margin.toFixed(1)}
-                          % margin)
+                          Profit: +৳{profitData.profit.toFixed(2)} ({profitData.margin.toFixed(1)}%
+                          margin)
                         </span>
                       )
                     ) : null}
@@ -647,9 +657,7 @@ export function ProductVariantGenerator({
                 <div className="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-6">
                   <div>
                     <div className="flex items-center justify-between">
-                      <label className="text-muted-foreground block text-xs font-medium">
-                        SKU
-                      </label>
+                      <label className="text-muted-foreground block text-xs font-medium">SKU</label>
                       <button
                         type="button"
                         onClick={() => {
@@ -695,9 +703,7 @@ export function ProductVariantGenerator({
                       step="0.01"
                       required
                       value={variant.sellingPrice}
-                      onChange={(event) =>
-                        updateVariant(index, "sellingPrice", event.target.value)
-                      }
+                      onChange={(event) => updateVariant(index, "sellingPrice", event.target.value)}
                     />
                   </div>
                   <div>
@@ -753,4 +759,3 @@ export function ProductVariantGenerator({
     </div>
   );
 }
-

@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
             <Lock className="size-4" />
             <span>Customer Security</span>
           </div>
-          <h1 className="mt-3 font-heading text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Privacy Policy
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#F3F0E8]/70 sm:text-base">
@@ -71,16 +71,17 @@ export default function PrivacyPolicyPage() {
                       email address, and account credentials.
                     </li>
                     <li>
-                      <strong>Delivery Information:</strong> Shipping street address, city, district,
-                      and recipient contact number provided at checkout.
+                      <strong>Delivery Information:</strong> Shipping street address, city,
+                      district, and recipient contact number provided at checkout.
                     </li>
                     <li>
                       <strong>Order History &amp; Preferences:</strong> Purchased sizes, colors,
                       transaction amounts, coupon redemptions, and return requests.
                     </li>
                     <li>
-                      <strong>Technical &amp; Session Data:</strong> IP address, device browser type,
-                      and cookie sessions necessary for cart retention and security rate-limiting.
+                      <strong>Technical &amp; Session Data:</strong> IP address, device browser
+                      type, and cookie sessions necessary for cart retention and security
+                      rate-limiting.
                     </li>
                   </ul>
                 </div>
@@ -92,7 +93,10 @@ export default function PrivacyPolicyPage() {
                   2. How We Use Your Data
                 </h2>
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
-                  <p>We use your information strictly for legitimate commercial and security purposes:</p>
+                  <p>
+                    We use your information strictly for legitimate commercial and security
+                    purposes:
+                  </p>
                   <ul className="list-disc space-y-2 pl-5">
                     <li>Fulfilling and delivering your garment orders via our courier partners.</li>
                     <li>
@@ -100,13 +104,15 @@ export default function PrivacyPolicyPage() {
                       orders and bot spam.
                     </li>
                     <li>
-                      Sending order confirmations, tracking updates, and return status notifications.
+                      Sending order confirmations, tracking updates, and return status
+                      notifications.
                     </li>
                     <li>
                       Preventing fraud, unauthorized account access, and brute-force intrusion.
                     </li>
                     <li>
-                      Optional newsletter drops and streetwear campaign previews if you have opted in.
+                      Optional newsletter drops and streetwear campaign previews if you have opted
+                      in.
                     </li>
                   </ul>
                 </div>
@@ -119,14 +125,14 @@ export default function PrivacyPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
                   <p>
-                    <strong>We never sell or rent your personal data to advertisers.</strong> We only
-                    share information with trusted operational partners strictly necessary to
+                    <strong>We never sell or rent your personal data to advertisers.</strong> We
+                    only share information with trusted operational partners strictly necessary to
                     provide our service:
                   </p>
                   <ul className="list-disc space-y-2 pl-5">
                     <li>
-                      <strong>Courier Services (Steadfast Courier):</strong> Recipient name, address,
-                      phone number, and COD cash collection invoice amount.
+                      <strong>Courier Services (Steadfast Courier):</strong> Recipient name,
+                      address, phone number, and COD cash collection invoice amount.
                     </li>
                     <li>
                       <strong>Payment Gateways (SSLCOMMERZ, bKash, Nagad):</strong> Secure tokenized
@@ -153,7 +159,8 @@ export default function PrivacyPolicyPage() {
                   </p>
                   <p>
                     Our administrative panels are protected by multi-role authorization guards.
-                    Regular security audits and rate limiters ensure defense against automated attacks.
+                    Regular security audits and rate limiters ensure defense against automated
+                    attacks.
                   </p>
                 </div>
               </div>
@@ -166,7 +173,9 @@ export default function PrivacyPolicyPage() {
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
                   <p>As a VibeLock customer, you have the right to:</p>
                   <ul className="list-disc space-y-2 pl-5">
-                    <li>Access and edit your saved delivery addresses from your account settings.</li>
+                    <li>
+                      Access and edit your saved delivery addresses from your account settings.
+                    </li>
                     <li>Request account deactivation or deletion of your stored profile.</li>
                     <li>Unsubscribe from promotional emails at any time with a single click.</li>
                   </ul>

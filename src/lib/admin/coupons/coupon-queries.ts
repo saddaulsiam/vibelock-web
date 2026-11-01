@@ -152,7 +152,10 @@ export async function getAdminCoupons({
               AND: [{ endDate: null }, { OR: [{ isActive: false }, { startDate: { gt: now } }] }],
             },
             {
-              AND: [{ endDate: { gte: now } }, { OR: [{ isActive: false }, { startDate: { gt: now } }] }],
+              AND: [
+                { endDate: { gte: now } },
+                { OR: [{ isActive: false }, { startDate: { gt: now } }] },
+              ],
             },
           ],
         },

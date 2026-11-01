@@ -13,9 +13,7 @@ import type {
 /**
  * Calculates review summary and rating distributions
  */
-export function calculateReviewSummary(
-  reviews: Array<{ rating: number }>
-): ReviewSummary {
+export function calculateReviewSummary(reviews: Array<{ rating: number }>): ReviewSummary {
   const totalReviews = reviews.length;
   const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
@@ -228,8 +226,7 @@ export async function getAdminReviews(options?: {
   const fiveStarCount = allReviewsForKPIs.filter((r) => r.rating === 5).length;
   const verifiedCount = allReviewsForKPIs.filter((r) => r.verified).length;
   const totalRatingSum = allReviewsForKPIs.reduce((acc, r) => acc + r.rating, 0);
-  const averageRating =
-    totalReviews > 0 ? Number((totalRatingSum / totalReviews).toFixed(1)) : 0;
+  const averageRating = totalReviews > 0 ? Number((totalRatingSum / totalReviews).toFixed(1)) : 0;
 
   const kpis: AdminReviewsKPIs = {
     totalReviews,
@@ -317,4 +314,3 @@ export async function getAdminReviews(options?: {
 
   return { reviews, kpis, totalCount };
 }
-

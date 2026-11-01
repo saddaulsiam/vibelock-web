@@ -98,9 +98,7 @@ export function ProductFormPreview({
             ) : (
               <span className="absolute inset-0 flex flex-col items-center justify-center gap-2">
                 <ImageOff className="size-8 text-[#101114]/20" aria-hidden="true" />
-                <span className="text-[11px] font-medium text-[#101114]/40">
-                  No image uploaded
-                </span>
+                <span className="text-[11px] font-medium text-[#101114]/40">No image uploaded</span>
               </span>
             )}
 
@@ -135,9 +133,7 @@ export function ProductFormPreview({
             <div className="mt-1 flex items-baseline gap-2">
               {hasDiscount ? (
                 <>
-                  <span className="text-[13px] font-bold text-[#101114]">
-                    ৳{previewDiscount}
-                  </span>
+                  <span className="text-[13px] font-bold text-[#101114]">৳{previewDiscount}</span>
                   <span className="text-muted-foreground text-xs line-through">
                     ৳{previewSelling}
                   </span>
@@ -198,4 +194,3 @@ export function ProductFormPreview({
     </div>
   );
 }
-

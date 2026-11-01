@@ -156,8 +156,8 @@ export function PosProductScanner({
   return (
     <form onSubmit={handleScanSubmit} className="relative w-full">
       <div className="relative flex items-center">
-        <div className="pointer-events-none absolute left-3 sm:left-3.5 flex items-center text-slate-400">
-          <Barcode className="mr-1 h-4 w-4 sm:mr-1.5 sm:h-5 sm:w-5 text-vl-cyan" />
+        <div className="pointer-events-none absolute left-3 flex items-center text-slate-400 sm:left-3.5">
+          <Barcode className="text-vl-cyan mr-1 h-4 w-4 sm:mr-1.5 sm:h-5 sm:w-5" />
           <span className="hidden font-mono text-[11px] font-semibold text-slate-400 sm:inline">
             SCAN SKU:
           </span>
@@ -169,7 +169,7 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => handleInputChange(e.target.value)}
           placeholder="Scan barcode or type SKU / product name to filter catalog [F2]..."
-          className="h-11 sm:h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-20 pl-11 font-mono text-xs sm:text-sm tracking-wide text-vl-black shadow-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15 sm:pr-32 sm:pl-32"
+          className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 h-11 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-20 pl-11 font-mono text-xs tracking-wide shadow-xs transition-all focus-visible:bg-white focus-visible:ring-4 sm:h-12 sm:pr-32 sm:pl-32 sm:text-sm"
           autoComplete="off"
           autoFocus
         />
@@ -183,7 +183,7 @@ export function PosProductScanner({
             onClick={toggleMute}
             className={`h-8 w-8 rounded-lg transition-colors ${
               isMuted
-                ? "text-vl-grey hover:bg-black/5 hover:text-vl-black"
+                ? "text-vl-grey hover:text-vl-black hover:bg-black/5"
                 : "text-vl-cyan hover:bg-vl-cyan/10 hover:text-vl-cyan"
             }`}
             title={
@@ -213,9 +213,9 @@ export function PosProductScanner({
           <Button
             type="submit"
             disabled={isSearching || !searchTerm.trim()}
-            className="h-8.5 rounded-lg bg-vl-black px-4 font-heading text-xs font-black tracking-wider text-vl-white shadow-xs transition-all hover:bg-vl-cyan hover:text-vl-black active:scale-95"
+            className="bg-vl-black font-heading text-vl-white hover:bg-vl-cyan hover:text-vl-black h-8.5 rounded-lg px-4 text-xs font-black tracking-wider shadow-xs transition-all active:scale-95"
           >
-            {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin text-vl-cyan" /> : "Scan"}
+            {isSearching ? <Loader2 className="text-vl-cyan h-3.5 w-3.5 animate-spin" /> : "Scan"}
           </Button>
         </div>
       </div>

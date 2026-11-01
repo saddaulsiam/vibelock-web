@@ -6,11 +6,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { appConfig } from "@/lib/config/app";
 import { sendPasswordResetEmail } from "@/lib/email/client";
-import {
-  getAdminCustomers,
-  type CustomerSegment,
-  type CustomerSortBy,
-} from "./customer-queries";
+import { getAdminCustomers, type CustomerSegment, type CustomerSortBy } from "./customer-queries";
 
 export async function loadMoreAdminCustomersAction(options: {
   search?: string;
@@ -421,7 +417,10 @@ export async function adminSendCustomerPasswordResetEmailAction(
     const sent = await sendPasswordResetEmail(customer.email, rawToken);
     if (!sent) {
       await prisma.passwordResetToken.deleteMany({ where: { tokenHash } });
-      return { success: false, error: "Failed to deliver reset email. Check email provider configuration." };
+      return {
+        success: false,
+        error: "Failed to deliver reset email. Check email provider configuration.",
+      };
     }
 
     return { success: true };
@@ -467,5 +466,3 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
     return { success: false, error: msg };
   }
 }
-
-

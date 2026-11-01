@@ -123,7 +123,8 @@ export async function getCustomerRiskProfile({
     riskLabel = "High Return / Cancellation Risk";
     confidenceBadge = "SUSPICIOUS";
     headline = `High Courier Return Rate (${stRatio}% delivered across ${stTotal} parcels)`;
-    recommendation = "High risk of parcel return (RTO). Call customer and consider taking advance delivery charge.";
+    recommendation =
+      "High risk of parcel return (RTO). Call customer and consider taking advance delivery charge.";
   } else if (deliveredOrders >= 2 || (stTotal >= 5 && stRatio >= 85)) {
     riskScore = "LOW_RISK";
     riskLabel = "Trusted / Verified Buyer";
@@ -131,7 +132,8 @@ export async function getCustomerRiskProfile({
     headline = isRepeatCustomer
       ? `Repeat Loyal Buyer (${deliveredOrders} delivered orders on VibeLock)`
       : `High Courier Reliability (${stRatio}% delivery rate across ${stTotal} parcels in BD)`;
-    recommendation = "Reliable buyer with proven delivery track record. Safe for 1-click confirmation.";
+    recommendation =
+      "Reliable buyer with proven delivery track record. Safe for 1-click confirmation.";
   } else if (stTotal >= 1 && stRatio >= 70) {
     riskScore = "LOW_RISK";
     riskLabel = "Good Courier Track Record";
@@ -149,7 +151,8 @@ export async function getCustomerRiskProfile({
     riskLabel = "First-time Buyer";
     confidenceBadge = "NEW";
     headline = "No prior courier or store delivery records found";
-    recommendation = "First-time buyer. Call or send a WhatsApp message to verify phone and address.";
+    recommendation =
+      "First-time buyer. Call or send a WhatsApp message to verify phone and address.";
   } else {
     riskScore = "MODERATE_RISK";
     riskLabel = "Moderate Verification Required";

@@ -3,14 +3,7 @@
 import * as React from "react";
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  AlertTriangle,
-  X,
-  Loader2,
-  PauseCircle,
-  Trash2,
-  ShieldCheck,
-} from "lucide-react";
+import { AlertTriangle, X, Loader2, PauseCircle, Trash2, ShieldCheck } from "lucide-react";
 import { deleteCouponAction, toggleCouponStatusAction } from "@/lib/admin/coupons/coupon-actions";
 import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 
@@ -108,12 +101,12 @@ function CouponDeleteDialog({
                 <span className="font-bold underline">{coupon.usageCount} time(s)</span>.
               </p>
               <p className="text-[11px] text-amber-800">
-                To maintain historical accounting and order calculation integrity, coupons with usage
-                history cannot be permanently deleted.
+                To maintain historical accounting and order calculation integrity, coupons with
+                usage history cannot be permanently deleted.
               </p>
               <p className="text-[11px] text-amber-800">
-                Instead, you can <strong>pause or deactivate</strong> this coupon so that customers can
-                no longer apply it on checkout.
+                Instead, you can <strong>pause or deactivate</strong> this coupon so that customers
+                can no longer apply it on checkout.
               </p>
             </div>
           ) : (
@@ -141,7 +134,7 @@ function CouponDeleteDialog({
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="h-9 rounded-lg border border-neutral-200 px-3.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition"
+            className="h-9 rounded-lg border border-neutral-200 px-3.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
           >
             Cancel
           </button>
@@ -152,7 +145,7 @@ function CouponDeleteDialog({
                 type="button"
                 onClick={handleDeactivate}
                 disabled={isPending}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-500 px-4 text-xs font-bold text-white shadow-xs hover:bg-amber-600 disabled:opacity-50 transition"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-500 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-amber-600 disabled:opacity-50"
               >
                 {isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -175,7 +168,7 @@ function CouponDeleteDialog({
               type="button"
               onClick={handleDelete}
               disabled={isPending}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-600 px-4 text-xs font-bold text-white shadow-xs hover:bg-rose-700 disabled:opacity-50 transition"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 disabled:opacity-50"
             >
               {isPending ? (
                 <Loader2 className="size-3.5 animate-spin" />

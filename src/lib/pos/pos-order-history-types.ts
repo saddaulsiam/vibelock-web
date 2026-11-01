@@ -26,4 +26,3 @@ export interface PosTodayOrdersStats {
   cashTotal: number;
   digitalTotal: number;
 }
-

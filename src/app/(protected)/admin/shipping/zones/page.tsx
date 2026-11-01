@@ -27,10 +27,7 @@ export default async function ShippingZonesPage({
         badgeVariant="blue"
         description="Define geographical delivery boundaries and group countries or regional divisions for localized shipping rates."
       >
-        <Link
-          href="/admin/shipping/zones/new"
-          className={ADMIN_TABLE_CLASSES.buttonPrimary}
-        >
+        <Link href="/admin/shipping/zones/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
           <Plus className="size-3.5" />
           <span>New Zone</span>
         </Link>
@@ -77,7 +74,7 @@ export default async function ShippingZonesPage({
               name="q"
               defaultValue={q}
               placeholder="Search zone name..."
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3.5 text-xs text-[#101114] placeholder:text-neutral-400 outline-none transition-colors hover:border-neutral-300 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3.5 text-xs text-[#101114] transition-colors outline-none placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
             />
           </div>
           <button type="submit" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
@@ -86,7 +83,7 @@ export default async function ShippingZonesPage({
           {q && (
             <Link
               href="/admin/shipping/zones"
-              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
+              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-900"
             >
               <RotateCcw className="size-3.5" />
               Clear
@@ -95,7 +92,8 @@ export default async function ShippingZonesPage({
         </form>
 
         <div className="text-xs text-neutral-500">
-          Showing <span className="font-semibold text-neutral-900">{zones.length}</span> zone{zones.length === 1 ? "" : "s"}
+          Showing <span className="font-semibold text-neutral-900">{zones.length}</span> zone
+          {zones.length === 1 ? "" : "s"}
         </div>
       </div>
 
@@ -116,7 +114,9 @@ export default async function ShippingZonesPage({
                 <td colSpan={4} className="py-14 text-center">
                   <div className="flex flex-col items-center justify-center space-y-2">
                     <MapPin className="size-10 text-neutral-300" />
-                    <p className="text-sm font-semibold text-neutral-800">No shipping zones found</p>
+                    <p className="text-sm font-semibold text-neutral-800">
+                      No shipping zones found
+                    </p>
                     <p className="max-w-xs text-xs text-neutral-500">
                       {q
                         ? `No zones matched "${q}". Try clearing search.`
@@ -142,7 +142,9 @@ export default async function ShippingZonesPage({
                       </div>
                       <div>
                         <div className="font-semibold text-neutral-900">{zone.name}</div>
-                        <span className="text-[11px] text-neutral-400">Regional Delivery Boundary</span>
+                        <span className="text-[11px] text-neutral-400">
+                          Regional Delivery Boundary
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -162,16 +164,18 @@ export default async function ShippingZonesPage({
                   <td className="px-4 py-3.5">
                     <Link
                       href={`/admin/shipping/methods?zoneId=${zone.id}`}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
                     >
-                      <span>{zone._count.methods} method{zone._count.methods === 1 ? "" : "s"}</span>
+                      <span>
+                        {zone._count.methods} method{zone._count.methods === 1 ? "" : "s"}
+                      </span>
                       <span className="text-neutral-400">&rarr;</span>
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right">
                     <Link
                       href={`/admin/shipping/zones/${zone.id}/edit`}
-                      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
                       title="Edit shipping zone"
                     >
                       <Edit className="size-3 text-neutral-500" />

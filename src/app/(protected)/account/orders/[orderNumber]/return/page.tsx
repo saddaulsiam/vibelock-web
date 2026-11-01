@@ -63,19 +63,20 @@ export default async function ReturnRequestPage(props: {
 
         {/* Expired Message Card */}
         <div className="rounded-2xl border border-[#101114]/10 bg-white p-8 text-center shadow-xs sm:p-12">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 shadow-2xs mb-4">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 shadow-2xs">
             <Clock className="size-7" />
           </div>
           <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
             Return Window Expired
           </h1>
-          <p className="text-muted-foreground mt-2 max-w-md mx-auto text-xs sm:text-sm leading-relaxed">
-            Order #{order.orderNumber} was delivered more than 3 days ago. Under VibeLock policy, return requests must be initiated within 3 days (72 hours) of delivery.
+          <p className="text-muted-foreground mx-auto mt-2 max-w-md text-xs leading-relaxed sm:text-sm">
+            Order #{order.orderNumber} was delivered more than 3 days ago. Under VibeLock policy,
+            return requests must be initiated within 3 days (72 hours) of delivery.
           </p>
           <div className="mt-6">
             <Link
               href={`/account/orders/${order.orderNumber}`}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#101114] px-5 text-xs font-bold uppercase tracking-wider text-white shadow-xs transition hover:bg-[#101114]/90"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#101114] px-5 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition hover:bg-[#101114]/90"
             >
               Back to Order Details
             </Link>
@@ -117,19 +118,20 @@ export default async function ReturnRequestPage(props: {
 
         {/* No Returnable Items Card */}
         <div className="rounded-2xl border border-[#101114]/10 bg-white p-8 text-center shadow-xs sm:p-12">
-          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#101114]/5 text-[#101114] shadow-2xs mb-4">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-[#101114]/5 text-[#101114] shadow-2xs">
             <PackageCheck className="size-7" />
           </div>
           <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
             No Returnable Items
           </h1>
-          <p className="text-muted-foreground mt-2 max-w-md mx-auto text-xs sm:text-sm leading-relaxed">
-            All items in order #{order.orderNumber} have already been returned or have an active return request under review.
+          <p className="text-muted-foreground mx-auto mt-2 max-w-md text-xs leading-relaxed sm:text-sm">
+            All items in order #{order.orderNumber} have already been returned or have an active
+            return request under review.
           </p>
           <div className="mt-6">
             <Link
               href={`/account/orders/${order.orderNumber}`}
-              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#101114] px-5 text-xs font-bold uppercase tracking-wider text-white shadow-xs transition hover:bg-[#101114]/90"
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#101114] px-5 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition hover:bg-[#101114]/90"
             >
               Back to Order Details
             </Link>

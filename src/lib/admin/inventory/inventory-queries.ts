@@ -271,7 +271,9 @@ export async function getAdminInventoryDetail(
   };
 }
 
-export type AdminInventoryDetailResult = NonNullable<Awaited<ReturnType<typeof getAdminInventoryDetail>>>;
+export type AdminInventoryDetailResult = NonNullable<
+  Awaited<ReturnType<typeof getAdminInventoryDetail>>
+>;
 
 export type InventorySummary = {
   totalPhysicalStock: number;

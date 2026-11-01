@@ -3,6 +3,7 @@
 import { Printer, CheckCircle, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { printThermalSlip } from "@/lib/pos/pos-print-utils";
 import type { PosZReportData } from "@/lib/pos/pos-shift-types";
 
 interface PosShiftZReportProps {
@@ -15,7 +16,7 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
   if (!report) return null;
 
   const handlePrint = () => {
-    window.print();
+    printThermalSlip("pos-shift-z-report-memo");
   };
 
   const formattedOpened = new Date(report.openedAt).toLocaleString("en-GB", {
@@ -43,10 +44,13 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
         </DialogHeader>
 
         {/* 58mm / 80mm Thermal Printable Z-Report Container */}
-        <div className="print-area space-y-2 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text">
+        <div
+          id="pos-shift-z-report-memo"
+          className="print-area space-y-2 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text"
+        >
           {/* Header */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 pb-2 text-center">
-            <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK BD</h2>
+            <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK</h2>
             <p className="text-[10px] font-bold text-slate-600 uppercase">
               Official Shift Z-Report
             </p>
@@ -55,29 +59,29 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
 
           {/* Meta Info */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 py-1 text-[11px]">
-            <div className="flex justify-between">
-              <span className="text-slate-500">Report ID:</span>
-              <span className="font-bold">{report.reportId}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Report ID:</span>
+              <span className="pl-2 text-right font-mono font-bold">{report.reportId}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Shift ID:</span>
-              <span>{report.shiftId}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Shift ID:</span>
+              <span className="pl-2 text-right font-mono">{report.shiftId}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Cashier:</span>
-              <span className="font-bold">{report.cashierName}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Cashier:</span>
+              <span className="pl-2 text-right font-bold">{report.cashierName}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Opened:</span>
-              <span>{formattedOpened}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Opened:</span>
+              <span className="pl-2 text-right">{formattedOpened}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Closed:</span>
-              <span>{formattedClosed}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Closed:</span>
+              <span className="pl-2 text-right">{formattedClosed}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-slate-500">Orders Processed:</span>
-              <span className="font-bold">{report.totalOrders}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0 text-slate-500">Orders Processed:</span>
+              <span className="pl-2 text-right font-mono font-bold">{report.totalOrders}</span>
             </div>
           </div>
 
@@ -86,32 +90,42 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
             <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
               --- Cash Drawer Reconciliation ---
             </p>
-            <div className="flex justify-between">
-              <span>Opening Cash Float:</span>
-              <span>৳{report.openingFloat.toFixed(0)}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0">Opening Cash Float:</span>
+              <span className="shrink-0 text-right font-mono">
+                ৳{report.openingFloat.toFixed(0)}
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span>Cash Sales Collected (+):</span>
-              <span>+ ৳{report.cashSales.toFixed(0)}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0">Cash Sales Collected (+):</span>
+              <span className="shrink-0 text-right font-mono">
+                + ৳{report.cashSales.toFixed(0)}
+              </span>
             </div>
             {report.cashDrops > 0 && (
-              <div className="flex justify-between text-red-600">
-                <span>Cash Payouts / Drops (-):</span>
-                <span>- ৳{report.cashDrops.toFixed(0)}</span>
+              <div className="flex items-center justify-between text-red-600">
+                <span className="shrink-0">Cash Payouts / Drops (-):</span>
+                <span className="shrink-0 text-right font-mono">
+                  - ৳{report.cashDrops.toFixed(0)}
+                </span>
               </div>
             )}
-            <div className="flex justify-between border-t border-slate-200 pt-0.5 font-bold">
-              <span>Expected Cash in Drawer:</span>
-              <span>৳{report.expectedCash.toFixed(0)}</span>
+            <div className="flex items-center justify-between border-t border-slate-200 pt-0.5 font-bold">
+              <span className="shrink-0">Expected Cash in Drawer:</span>
+              <span className="shrink-0 text-right font-mono">
+                ৳{report.expectedCash.toFixed(0)}
+              </span>
             </div>
-            <div className="flex justify-between font-bold">
-              <span>Actual Counted Cash:</span>
-              <span>৳{report.countedCash.toFixed(0)}</span>
+            <div className="flex items-center justify-between font-bold">
+              <span className="shrink-0">Actual Counted Cash:</span>
+              <span className="shrink-0 text-right font-mono">
+                ৳{report.countedCash.toFixed(0)}
+              </span>
             </div>
 
             {/* Variance */}
             <div
-              className={`flex justify-between border-t border-dashed border-slate-300 pt-1 text-xs font-bold ${
+              className={`flex items-center justify-between border-t border-dashed border-slate-300 pt-1 text-xs font-bold ${
                 report.variance === 0
                   ? "text-emerald-700"
                   : report.variance < 0
@@ -119,8 +133,8 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
                     : "text-amber-700"
               }`}
             >
-              <span>Discrepancy / Variance:</span>
-              <span>
+              <span className="shrink-0">Discrepancy / Variance:</span>
+              <span className="shrink-0 text-right font-mono">
                 {report.variance === 0
                   ? "৳0.00 (EXACT)"
                   : report.variance < 0
@@ -135,17 +149,19 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
             <p className="text-[10px] font-bold tracking-wider text-slate-500 uppercase">
               --- Non-Cash Settlements ---
             </p>
-            <div className="flex justify-between">
-              <span>bKash Merchant QR:</span>
-              <span>৳{report.bkashSales.toFixed(0)}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0">bKash Merchant QR:</span>
+              <span className="shrink-0 text-right font-mono">৳{report.bkashSales.toFixed(0)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Card / POS Terminal:</span>
-              <span>৳{report.cardSales.toFixed(0)}</span>
+            <div className="flex items-center justify-between">
+              <span className="shrink-0">Card / POS Terminal:</span>
+              <span className="shrink-0 text-right font-mono">৳{report.cardSales.toFixed(0)}</span>
             </div>
-            <div className="flex justify-between border-t border-slate-200 pt-1 font-bold text-slate-900">
-              <span>TOTAL SHIFT REVENUE:</span>
-              <span>৳{report.totalSales.toFixed(0)}</span>
+            <div className="flex items-center justify-between border-t border-slate-200 pt-1 font-bold text-slate-900">
+              <span className="shrink-0">TOTAL SHIFT REVENUE:</span>
+              <span className="shrink-0 text-right font-mono font-black">
+                ৳{report.totalSales.toFixed(0)}
+              </span>
             </div>
           </div>
 

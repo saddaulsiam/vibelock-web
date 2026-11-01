@@ -1,5 +1,1 @@
-export {
-  AdminUsersTable,
-  type UserColumnKey,
-} from "./admin-users-table";
-
+export { AdminUsersTable, type UserColumnKey } from "./admin-users-table";

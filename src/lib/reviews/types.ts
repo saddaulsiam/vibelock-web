@@ -57,4 +57,3 @@ export interface AdminReviewsKPIs {
   fiveStarCount: number;
   verifiedCount: number;
 }
-

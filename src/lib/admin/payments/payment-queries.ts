@@ -188,10 +188,7 @@ export async function getAdminPayments(options?: {
           take,
         });
 
-  const [onlinePayments, codOrders] = await Promise.all([
-    onlinePaymentsPromise,
-    codOrdersPromise,
-  ]);
+  const [onlinePayments, codOrders] = await Promise.all([onlinePaymentsPromise, codOrdersPromise]);
 
   const items: AdminPaymentListItem[] = [];
 

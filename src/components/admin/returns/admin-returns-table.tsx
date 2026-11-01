@@ -217,9 +217,7 @@ export function AdminReturnsTable({
     router.push(`/admin/returns?${params.toString()}`);
   };
 
-  const hasActiveFilters = Boolean(
-    searchValue.trim() || Boolean(currentStatus)
-  );
+  const hasActiveFilters = Boolean(searchValue.trim() || Boolean(currentStatus));
 
   const handleClearAllFilters = () => {
     setSearchValue("");
@@ -429,9 +427,7 @@ export function AdminReturnsTable({
                   <div className="flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-400">
                     <Inbox className="size-6" />
                   </div>
-                  <h4 className="text-sm font-bold text-neutral-800">
-                    No return requests found
-                  </h4>
+                  <h4 className="text-sm font-bold text-neutral-800">No return requests found</h4>
                   <p className="max-w-sm text-xs text-neutral-500">
                     {currentSearch || currentStatus
                       ? "Try adjusting your search keywords or switching status tabs."
@@ -450,209 +446,209 @@ export function AdminReturnsTable({
               </TableCell>
             </TableRow>
           ) : (
-                returns.map((ret) => {
-                  const whatsAppUrl = ret.order.customerPhone
-                    ? generateWhatsAppUrl(
-                        ret.order.customerPhone,
-                        ret.order.orderNumber,
-                        ret.order.customerName
-                      )
-                    : null;
+            returns.map((ret) => {
+              const whatsAppUrl = ret.order.customerPhone
+                ? generateWhatsAppUrl(
+                    ret.order.customerPhone,
+                    ret.order.orderNumber,
+                    ret.order.customerName
+                  )
+                : null;
 
-                  return (
-                    <TableRow key={ret.id} className="group">
-                      {/* Order & Return ID */}
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Link
-                            href={`/admin/orders/${ret.order.id}`}
-                            className="font-mono text-xs font-black text-neutral-900 transition hover:text-blue-600 hover:underline"
-                            title="Open full order details"
+              return (
+                <TableRow key={ret.id} className="group">
+                  {/* Order & Return ID */}
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/orders/${ret.order.id}`}
+                        className="font-mono text-xs font-black text-neutral-900 transition hover:text-blue-600 hover:underline"
+                        title="Open full order details"
+                      >
+                        #{ret.order.orderNumber}
+                      </Link>
+                      <OrderCopyButton
+                        text={ret.order.orderNumber}
+                        variant="icon"
+                        successMessage="Order # copied"
+                        title="Copy order number"
+                      />
+                    </div>
+                    <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-neutral-400">
+                      <span>Return ID:</span>
+                      <span className="text-neutral-500">{ret.id.slice(0, 8)}...</span>
+                    </div>
+                  </TableCell>
+
+                  {/* Customer & Contact */}
+                  {visibleColumns.customer && (
+                    <TableCell>
+                      <p className="font-bold text-neutral-900">
+                        {ret.order.customerName || "Guest Customer"}
+                      </p>
+                      <p className="max-w-[180px] truncate text-[11px] text-neutral-500">
+                        {ret.order.customerEmail}
+                      </p>
+                      {ret.order.customerPhone && (
+                        <div className="mt-1.5 flex items-center gap-2 text-[11px]">
+                          <a
+                            href={`tel:${ret.order.customerPhone}`}
+                            className="inline-flex items-center gap-1 text-neutral-600 transition hover:text-neutral-900"
                           >
-                            #{ret.order.orderNumber}
-                          </Link>
-                          <OrderCopyButton
-                            text={ret.order.orderNumber}
-                            variant="icon"
-                            successMessage="Order # copied"
-                            title="Copy order number"
-                          />
-                        </div>
-                        <div className="mt-1 flex items-center gap-1.5 font-mono text-[10px] text-neutral-400">
-                          <span>Return ID:</span>
-                          <span className="text-neutral-500">{ret.id.slice(0, 8)}...</span>
-                        </div>
-                      </TableCell>
-
-                      {/* Customer & Contact */}
-                      {visibleColumns.customer && (
-                        <TableCell>
-                          <p className="font-bold text-neutral-900">
-                            {ret.order.customerName || "Guest Customer"}
-                          </p>
-                          <p className="max-w-[180px] truncate text-[11px] text-neutral-500">
-                            {ret.order.customerEmail}
-                          </p>
-                          {ret.order.customerPhone && (
-                            <div className="mt-1.5 flex items-center gap-2 text-[11px]">
-                              <a
-                                href={`tel:${ret.order.customerPhone}`}
-                                className="inline-flex items-center gap-1 text-neutral-600 transition hover:text-neutral-900"
-                              >
-                                <Phone className="size-3 text-neutral-400" />
-                                <span>{ret.order.customerPhone}</span>
-                              </a>
-                              {whatsAppUrl && (
-                                <a
-                                  href={whatsAppUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-800 transition hover:bg-emerald-100"
-                                  title="Chat with customer on WhatsApp"
-                                >
-                                  <MessageSquare className="size-2.5 text-emerald-600" />
-                                  <span>WhatsApp</span>
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </TableCell>
-                      )}
-
-                      {/* Returned Items */}
-                      {visibleColumns.items && (
-                        <TableCell>
-                          <div className="space-y-1">
-                            <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-700">
-                              <ShoppingBag className="size-2.5" />
-                              {ret.totalQuantity} item{ret.totalQuantity === 1 ? "" : "s"} (
-                              {ret.items.length} line{ret.items.length === 1 ? "" : "s"})
-                            </span>
-                            <div className="space-y-1">
-                              {ret.items.map((it) => (
-                                <div
-                                  key={it.id}
-                                  className="max-w-[220px] truncate text-[11px] font-medium text-neutral-800"
-                                >
-                                  <div>
-                                    {it.orderItem.productName}
-                                    {it.orderItem.size && (
-                                      <span className="font-normal text-neutral-500">
-                                        {" "}
-                                        ({it.orderItem.size})
-                                      </span>
-                                    )}
-                                    <span className="font-semibold text-neutral-500">
-                                      {" "}
-                                      ×{it.quantity}
-                                    </span>
-                                  </div>
-                                  <span className="block font-mono text-[10px] text-neutral-400">
-                                    {it.orderItem.sku}
-                                  </span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </TableCell>
-                      )}
-
-                      {/* Reason */}
-                      {visibleColumns.reason && (
-                        <TableCell>
-                          {(() => {
-                            const parsed = parseReturnReason(ret.reason);
-                            return ret.reason ? (
-                              <div className="max-w-[220px] space-y-1">
-                                <span className="inline-block rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-800">
-                                  {parsed.categoryLabel}
-                                </span>
-                                {parsed.customerNote && (
-                                  <p className="line-clamp-2 text-[11px] text-neutral-600 italic">
-                                    &ldquo;{parsed.customerNote}&rdquo;
-                                  </p>
-                                )}
-                                {parsed.images.length > 0 && (
-                                  <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-600">
-                                    <Camera className="size-2.5 text-blue-500" />
-                                    <span>{parsed.images.length} photo proof(s)</span>
-                                  </div>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-[11px] text-neutral-400">No reason stated</span>
-                            );
-                          })()}
-                        </TableCell>
-                      )}
-
-                      {/* Financials */}
-                      {visibleColumns.financials && (
-                        <TableCell>
-                          <p className="text-sm font-black text-neutral-900">
-                            {formatBdt(ret.requestedAmount)}
-                          </p>
-                          <p className="mt-0.5 text-[10px] text-neutral-500">
-                            Order Total: {formatBdt(ret.order.total)}
-                          </p>
-                        </TableCell>
-                      )}
-
-                      {/* Status */}
-                      {visibleColumns.status && (
-                        <TableCell className="whitespace-nowrap">
-                          {getReturnStatusBadge(ret.status)}
-                          {ret.reverseLogistics?.trackingCode && (
-                            <div className="mt-1">
-                              <a
-                                href={ret.reverseLogistics.trackingUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-bold text-cyan-900 transition hover:bg-cyan-100"
-                                title="Live Steadfast Reverse Tracking"
-                              >
-                                <Truck className="size-2.5 text-cyan-700" />
-                                <span>Steadfast: {ret.reverseLogistics.trackingCode}</span>
-                              </a>
-                            </div>
-                          )}
-                        </TableCell>
-                      )}
-
-                      {/* Dates */}
-                      {visibleColumns.dates && (
-                        <TableCell className="text-[11px] whitespace-nowrap text-neutral-600">
-                          {formatDate(ret.createdAt)}
-                        </TableCell>
-                      )}
-
-                      {/* Actions */}
-                      <TableCell className="text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {ret.status === "APPROVED" && !ret.reverseLogistics && (
-                            <Link
-                              href={`/admin/returns/${ret.id}#steadfast-pickup`}
-                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800 shadow-2xs transition hover:bg-emerald-100"
-                              title="Book Steadfast Return Pickup"
+                            <Phone className="size-3 text-neutral-400" />
+                            <span>{ret.order.customerPhone}</span>
+                          </a>
+                          {whatsAppUrl && (
+                            <a
+                              href={whatsAppUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                              title="Chat with customer on WhatsApp"
                             >
-                              <Truck className="size-3.5 text-emerald-600" />
-                              <span>Book Pickup</span>
-                            </Link>
+                              <MessageSquare className="size-2.5 text-emerald-600" />
+                              <span>WhatsApp</span>
+                            </a>
                           )}
-                          <Link
-                            href={`/admin/returns/${ret.id}`}
-                            className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
-                            title="Review return items, update status, and process refund"
-                          >
-                            <Eye className="size-3.5" />
-                            <span>Review &amp; Process</span>
-                          </Link>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Returned Items */}
+                  {visibleColumns.items && (
+                    <TableCell>
+                      <div className="space-y-1">
+                        <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-700">
+                          <ShoppingBag className="size-2.5" />
+                          {ret.totalQuantity} item{ret.totalQuantity === 1 ? "" : "s"} (
+                          {ret.items.length} line{ret.items.length === 1 ? "" : "s"})
+                        </span>
+                        <div className="space-y-1">
+                          {ret.items.map((it) => (
+                            <div
+                              key={it.id}
+                              className="max-w-[220px] truncate text-[11px] font-medium text-neutral-800"
+                            >
+                              <div>
+                                {it.orderItem.productName}
+                                {it.orderItem.size && (
+                                  <span className="font-normal text-neutral-500">
+                                    {" "}
+                                    ({it.orderItem.size})
+                                  </span>
+                                )}
+                                <span className="font-semibold text-neutral-500">
+                                  {" "}
+                                  ×{it.quantity}
+                                </span>
+                              </div>
+                              <span className="block font-mono text-[10px] text-neutral-400">
+                                {it.orderItem.sku}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </TableCell>
+                  )}
+
+                  {/* Reason */}
+                  {visibleColumns.reason && (
+                    <TableCell>
+                      {(() => {
+                        const parsed = parseReturnReason(ret.reason);
+                        return ret.reason ? (
+                          <div className="max-w-[220px] space-y-1">
+                            <span className="inline-block rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold text-neutral-800">
+                              {parsed.categoryLabel}
+                            </span>
+                            {parsed.customerNote && (
+                              <p className="line-clamp-2 text-[11px] text-neutral-600 italic">
+                                &ldquo;{parsed.customerNote}&rdquo;
+                              </p>
+                            )}
+                            {parsed.images.length > 0 && (
+                              <div className="flex items-center gap-1 text-[10px] font-semibold text-blue-600">
+                                <Camera className="size-2.5 text-blue-500" />
+                                <span>{parsed.images.length} photo proof(s)</span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-neutral-400">No reason stated</span>
+                        );
+                      })()}
+                    </TableCell>
+                  )}
+
+                  {/* Financials */}
+                  {visibleColumns.financials && (
+                    <TableCell>
+                      <p className="text-sm font-black text-neutral-900">
+                        {formatBdt(ret.requestedAmount)}
+                      </p>
+                      <p className="mt-0.5 text-[10px] text-neutral-500">
+                        Order Total: {formatBdt(ret.order.total)}
+                      </p>
+                    </TableCell>
+                  )}
+
+                  {/* Status */}
+                  {visibleColumns.status && (
+                    <TableCell className="whitespace-nowrap">
+                      {getReturnStatusBadge(ret.status)}
+                      {ret.reverseLogistics?.trackingCode && (
+                        <div className="mt-1">
+                          <a
+                            href={ret.reverseLogistics.trackingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded border border-cyan-200 bg-cyan-50 px-1.5 py-0.5 text-[10px] font-bold text-cyan-900 transition hover:bg-cyan-100"
+                            title="Live Steadfast Reverse Tracking"
+                          >
+                            <Truck className="size-2.5 text-cyan-700" />
+                            <span>Steadfast: {ret.reverseLogistics.trackingCode}</span>
+                          </a>
+                        </div>
+                      )}
+                    </TableCell>
+                  )}
+
+                  {/* Dates */}
+                  {visibleColumns.dates && (
+                    <TableCell className="text-[11px] whitespace-nowrap text-neutral-600">
+                      {formatDate(ret.createdAt)}
+                    </TableCell>
+                  )}
+
+                  {/* Actions */}
+                  <TableCell className="text-right whitespace-nowrap">
+                    <div className="flex items-center justify-end gap-1.5">
+                      {ret.status === "APPROVED" && !ret.reverseLogistics && (
+                        <Link
+                          href={`/admin/returns/${ret.id}#steadfast-pickup`}
+                          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-bold text-emerald-800 shadow-2xs transition hover:bg-emerald-100"
+                          title="Book Steadfast Return Pickup"
+                        >
+                          <Truck className="size-3.5 text-emerald-600" />
+                          <span>Book Pickup</span>
+                        </Link>
+                      )}
+                      <Link
+                        href={`/admin/returns/${ret.id}`}
+                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+                        title="Review return items, update status, and process refund"
+                      >
+                        <Eye className="size-3.5" />
+                        <span>Review &amp; Process</span>
+                      </Link>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
 

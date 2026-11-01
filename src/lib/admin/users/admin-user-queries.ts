@@ -43,9 +43,7 @@ export async function getAdminUsers(options?: {
 
   const validRoles: Role[] = ["ADMIN", "MANAGER", "STAFF"];
   const roleFilter =
-    options?.role && validRoles.includes(options.role as Role)
-      ? (options.role as Role)
-      : undefined;
+    options?.role && validRoles.includes(options.role as Role) ? (options.role as Role) : undefined;
 
   const search = options?.search?.trim();
 
@@ -85,4 +83,3 @@ export async function getAdminUsers(options?: {
 
   return users;
 }
-

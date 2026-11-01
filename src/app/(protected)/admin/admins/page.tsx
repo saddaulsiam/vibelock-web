@@ -1,10 +1,7 @@
 import { requireRole } from "@/lib/auth/authorization";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import {
-  getAdminUsers,
-  getAdminUserStats,
-} from "@/lib/admin/users";
+import { getAdminUsers, getAdminUserStats } from "@/lib/admin/users";
 import { AdminUsersTable } from "@/components/admin/users";
 import { Shield, ShieldCheck, UserCheck, Users } from "lucide-react";
 
@@ -12,10 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminManagementPage() {
   const currentAdmin = await requireRole("ADMIN");
-  const [stats, users] = await Promise.all([
-    getAdminUserStats(),
-    getAdminUsers(),
-  ]);
+  const [stats, users] = await Promise.all([getAdminUserStats(), getAdminUsers()]);
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
@@ -65,12 +59,7 @@ export default async function AdminManagementPage() {
       </AdminKpiGrid>
 
       {/* ── User Table & Controls ── */}
-      <AdminUsersTable
-        initialUsers={users}
-        stats={stats}
-        currentAdminId={currentAdmin.id}
-      />
+      <AdminUsersTable initialUsers={users} stats={stats} currentAdminId={currentAdmin.id} />
     </div>
   );
 }
-

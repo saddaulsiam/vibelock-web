@@ -288,9 +288,7 @@ describe("Admin Customers Module Unit Tests", () => {
       daysSinceLastOrder: 4,
     };
 
-    const html = renderToStaticMarkup(
-      <CustomerPreferencesCard preferences={preferences} />
-    );
+    const html = renderToStaticMarkup(<CustomerPreferencesCard preferences={preferences} />);
 
     expect(html).toContain("Shopping Preferences &amp; Insights");
     expect(html).toContain("Most Bought: Size L");
@@ -303,9 +301,7 @@ describe("Admin Customers Module Unit Tests", () => {
   });
 
   test("CustomerStaffNotes renders empty state and notes list", () => {
-    const htmlEmpty = renderToStaticMarkup(
-      <CustomerStaffNotes customerId="cust-1" notes={[]} />
-    );
+    const htmlEmpty = renderToStaticMarkup(<CustomerStaffNotes customerId="cust-1" notes={[]} />);
     expect(htmlEmpty).toContain("Internal Staff Notes");
     expect(htmlEmpty).toContain("No internal staff notes yet");
 
@@ -336,18 +332,14 @@ describe("Admin Customers Module Unit Tests", () => {
       totalSpent: 12500,
     };
 
-    const html = renderToStaticMarkup(
-      <CustomerSmartCrmActions customer={customer} />
-    );
+    const html = renderToStaticMarkup(<CustomerSmartCrmActions customer={customer} />);
 
     expect(html).toContain("WhatsApp");
     expect(html).toContain("wa.me/8801711111111");
   });
 
   test("CustomerCreateModal renders input fields when open", () => {
-    const html = renderToStaticMarkup(
-      <CustomerCreateModal isOpen={true} onClose={vi.fn()} />
-    );
+    const html = renderToStaticMarkup(<CustomerCreateModal isOpen={true} onClose={vi.fn()} />);
     expect(html).toContain("Add New Customer");
     expect(html).toContain("Customer Name");
     expect(html).toContain("Phone Number");

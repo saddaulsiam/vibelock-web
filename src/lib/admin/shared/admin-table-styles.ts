@@ -1,7 +1,8 @@
 export const ADMIN_TABLE_CLASSES = {
   container: "overflow-x-auto rounded-xl border border-neutral-200/90 bg-white shadow-2xs",
   table: "w-full border-collapse text-left text-xs text-[#101114]",
-  thead: "border-b border-neutral-200 bg-[#FBF9F5] text-[11px] font-semibold tracking-wider text-neutral-600 uppercase",
+  thead:
+    "border-b border-neutral-200 bg-[#FBF9F5] text-[11px] font-semibold tracking-wider text-neutral-600 uppercase",
   tbody: "divide-y divide-neutral-100",
   tr: "transition-colors hover:bg-neutral-50/70",
   buttonSecondary:
