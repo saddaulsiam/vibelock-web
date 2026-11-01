@@ -341,7 +341,10 @@ describe("Admin Returns Module UI & Table Verification", () => {
     const rawJson = serializeReturnReason({
       category: "DEFECTIVE",
       customerNote: "Torn seam on left sleeve",
-      images: ["https://res.cloudinary.com/test/image1.webp", "https://res.cloudinary.com/test/image2.webp"],
+      images: [
+        "https://res.cloudinary.com/test/image1.webp",
+        "https://res.cloudinary.com/test/image2.webp",
+      ],
     });
 
     const parsed = parseReturnReason(rawJson);
@@ -350,7 +353,9 @@ describe("Admin Returns Module UI & Table Verification", () => {
     expect(parsed.customerNote).toBe("Torn seam on left sleeve");
     expect(parsed.images).toHaveLength(2);
     expect(parsed.requiresProof).toBe(true);
-    expect(parsed.formattedDisplay).toContain("Defective or Damaged Product — \"Torn seam on left sleeve\"");
+    expect(parsed.formattedDisplay).toContain(
+      'Defective or Damaged Product — "Torn seam on left sleeve"'
+    );
 
     // Test legacy string fallback
     const legacyParsed = parseReturnReason("Customer changed mind");
@@ -462,4 +467,3 @@ describe("Admin Returns Module UI & Table Verification", () => {
     expect(isFullySettled).toBe(true);
   });
 });
-

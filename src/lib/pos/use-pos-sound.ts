@@ -61,4 +61,3 @@ export function usePosSoundMuted(): {
 
   return { isMuted, toggleMute, setMuted };
 }
-

@@ -334,4 +334,3 @@ export async function closeRegisterShiftAction(
     return { success: false, error: msg };
   }
 }
-

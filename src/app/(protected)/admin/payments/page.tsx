@@ -3,18 +3,9 @@ import { requireRole } from "@/lib/auth/authorization";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import {
-  getAdminPayments,
-  getAdminPaymentStats,
-} from "@/lib/admin/payments";
+import { getAdminPayments, getAdminPaymentStats } from "@/lib/admin/payments";
 import { AdminPaymentsTable } from "@/components/admin/payments";
-import {
-  CheckCircle2,
-  Clock,
-  DollarSign,
-  Settings,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, Clock, DollarSign, Settings, XCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -27,10 +18,7 @@ function formatCurrency(val: number): string {
 export default async function AdminPaymentsPage() {
   await requireRole("ADMIN");
 
-  const [stats, payments] = await Promise.all([
-    getAdminPaymentStats(),
-    getAdminPayments(),
-  ]);
+  const [stats, payments] = await Promise.all([getAdminPaymentStats(), getAdminPayments()]);
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6">
@@ -42,10 +30,7 @@ export default async function AdminPaymentsPage() {
         badgeVariant="emerald"
         description="Monitor customer payment transactions, gateway settlements (bKash, Nagad, SSLCommerz, COD), and transaction verification."
       >
-        <Link
-          href="/admin/settings/payments"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/settings/payments" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <Settings className="size-3.5" />
           <span>Gateway Settings</span>
         </Link>

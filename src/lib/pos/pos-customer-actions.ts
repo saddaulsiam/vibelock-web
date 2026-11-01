@@ -91,7 +91,8 @@ export async function lookupPosCustomerByPhoneAction(
     // Customer Name resolution
     const resolvedName =
       matchedUser?.name ||
-      pastOrders.find((o) => o.customerName && o.customerName !== "Walk-in Customer")?.customerName ||
+      pastOrders.find((o) => o.customerName && o.customerName !== "Walk-in Customer")
+        ?.customerName ||
       "Valued Shopper";
 
     // Tier determination
@@ -142,4 +143,3 @@ export async function lookupPosCustomerByPhoneAction(
     };
   }
 }
-

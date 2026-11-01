@@ -15,10 +15,7 @@ export default async function NewShippingMethodPage() {
         title="Create Shipping Method"
         description="Define a delivery rate and associate it with an active shipping zone."
       >
-        <Link
-          href="/admin/shipping/methods"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/shipping/methods" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Methods</span>
         </Link>

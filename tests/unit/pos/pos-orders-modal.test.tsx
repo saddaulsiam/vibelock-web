@@ -35,11 +35,7 @@ describe("POS Orders History & Reprint", () => {
   describe("PosOrdersModal Component", () => {
     test("renders modal title, search input and stats strip", () => {
       const html = renderToStaticMarkup(
-        <PosOrdersModal
-          isOpen={true}
-          onClose={vi.fn()}
-          onReprintReceipt={vi.fn()}
-        />
+        <PosOrdersModal isOpen={true} onClose={vi.fn()} onReprintReceipt={vi.fn()} />
       );
 
       expect(html).toContain("Today&#x27;s Counter Sales &amp; Invoices");
@@ -54,11 +50,7 @@ describe("POS Orders History & Reprint", () => {
   describe("PosHeader Orders Action", () => {
     test("renders Orders [F5] button when onOpenOrdersModal handler provided", () => {
       const html = renderToStaticMarkup(
-        <PosHeader
-          cashierName="Saddam Hossain"
-          cashierRole="STAFF"
-          onOpenOrdersModal={vi.fn()}
-        />
+        <PosHeader cashierName="Saddam Hossain" cashierRole="STAFF" onOpenOrdersModal={vi.fn()} />
       );
 
       expect(html).toContain("Orders");
@@ -66,4 +58,3 @@ describe("POS Orders History & Reprint", () => {
     });
   });
 });
-

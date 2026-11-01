@@ -274,9 +274,7 @@ export async function bulkUpdateCouponStatusAction(
   }
 }
 
-export async function bulkDeleteCouponsAction(
-  ids: string[]
-): Promise<{
+export async function bulkDeleteCouponsAction(ids: string[]): Promise<{
   success: boolean;
   deletedCount: number;
   deactivatedCount: number;
@@ -336,4 +334,3 @@ export async function bulkDeleteCouponsAction(
     return { success: false, deletedCount: 0, deactivatedCount: 0, error: msg };
   }
 }
-

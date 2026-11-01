@@ -248,4 +248,3 @@ export async function quickUpdateProductPricesAction(
     message: "Product prices updated successfully.",
   };
 }
-

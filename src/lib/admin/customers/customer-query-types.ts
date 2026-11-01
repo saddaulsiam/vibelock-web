@@ -158,4 +158,3 @@ export interface AdminCustomerDetailResult {
   totalOrderPages: number;
   page: number;
 }
-

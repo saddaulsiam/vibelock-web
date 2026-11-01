@@ -62,7 +62,7 @@ export default async function AdminReturnsPage({
       >
         <Link
           href="/admin/orders"
-          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 hover:text-neutral-900 transition"
+          className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
         >
           <ShoppingBag className="size-3.5 text-neutral-500" />
           <span>View All Orders</span>

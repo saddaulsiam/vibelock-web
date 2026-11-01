@@ -413,7 +413,9 @@ export async function createOrderAction(
             orderItemCategories
           );
 
-          validateCouponRules(couponWithCategories, orderSubtotal, new Date(), { hasEligibleItems });
+          validateCouponRules(couponWithCategories, orderSubtotal, new Date(), {
+            hasEligibleItems,
+          });
           const discountAmount = calculateCouponDiscount(couponWithCategories, eligibleSubtotal);
 
           const willExhaust =

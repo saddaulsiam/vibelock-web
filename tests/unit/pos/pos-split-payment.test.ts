@@ -273,6 +273,8 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("Total allocated across split payment methods (৳1000.00) is less than total amount (৳1500.00)");
+    expect(result.error).toContain(
+      "Total allocated across split payment methods (৳1000.00) is less than total amount (৳1500.00)"
+    );
   });
 });

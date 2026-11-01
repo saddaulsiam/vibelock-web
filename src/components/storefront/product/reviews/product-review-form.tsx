@@ -14,17 +14,9 @@ interface ProductReviewFormProps {
   eligibility: UserReviewEligibility;
 }
 
-export function ProductReviewForm({
-  productId,
-  productSlug,
-  eligibility,
-}: ProductReviewFormProps) {
-  const [rating, setRating] = useState<number>(
-    eligibility.existingReview?.rating ?? 5
-  );
-  const [comment, setComment] = useState<string>(
-    eligibility.existingReview?.comment ?? ""
-  );
+export function ProductReviewForm({ productId, productSlug, eligibility }: ProductReviewFormProps) {
+  const [rating, setRating] = useState<number>(eligibility.existingReview?.rating ?? 5);
+  const [comment, setComment] = useState<string>(eligibility.existingReview?.comment ?? "");
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
@@ -63,14 +55,11 @@ export function ProductReviewForm({
             <CheckCircle2 className="size-5" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-[#101114]">
-              Verified Buyer Reviews Only
-            </h4>
+            <h4 className="text-sm font-bold text-[#101114]">Verified Buyer Reviews Only</h4>
             <p className="text-xs leading-relaxed text-[#101114]/70">
-              To ensure 100% authentic ratings and prevent misleading feedback, reviews on
-              VibeLock are exclusive to customers who have ordered and received delivery of
-              this item. If you recently placed an order, your review form will automatically
-              unlock upon delivery!
+              To ensure 100% authentic ratings and prevent misleading feedback, reviews on VibeLock
+              are exclusive to customers who have ordered and received delivery of this item. If you
+              recently placed an order, your review form will automatically unlock upon delivery!
             </p>
           </div>
         </div>
@@ -148,9 +137,7 @@ export function ProductReviewForm({
               interactive
               onChange={(newRating) => setRating(newRating)}
             />
-            <span className="text-sm font-bold text-[#101114]">
-              {rating} / 5 Stars
-            </span>
+            <span className="text-sm font-bold text-[#101114]">{rating} / 5 Stars</span>
           </div>
         </div>
 
@@ -199,4 +186,3 @@ export function ProductReviewForm({
     </div>
   );
 }
-

@@ -1,9 +1,5 @@
 export type PosReturnReason =
-  | "SIZE_MISMATCH"
-  | "DEFECTIVE_OR_DAMAGED"
-  | "WRONG_ITEM"
-  | "CUSTOMER_CHANGE_OF_MIND"
-  | "OTHER";
+  "SIZE_MISMATCH" | "DEFECTIVE_OR_DAMAGED" | "WRONG_ITEM" | "CUSTOMER_CHANGE_OF_MIND" | "OTHER";
 
 export type PosItemCondition = "RESELLABLE" | "DAMAGED";
 
@@ -88,4 +84,3 @@ export interface PosReturnReceiptData {
   netAction: "REFUND_TO_CUSTOMER" | "CHARGE_CUSTOMER" | "EVEN_EXCHANGE";
   notes?: string | null;
 }
-

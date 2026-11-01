@@ -111,4 +111,3 @@ export interface PosActionResult<T = unknown> {
   data?: T;
   error?: string;
 }
-

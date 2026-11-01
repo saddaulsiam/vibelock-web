@@ -78,9 +78,7 @@ export function AdminOrdersDesktopRow({
               {order.salesChannel === "POS" ? "POS" : "WEB"}
             </span>
           </div>
-          <div className="mt-0.5 text-[11px] text-neutral-500">
-            {formatDate(order.createdAt)}
-          </div>
+          <div className="mt-0.5 text-[11px] text-neutral-500">{formatDate(order.createdAt)}</div>
         </TableCell>
       )}
 
@@ -153,9 +151,7 @@ export function AdminOrdersDesktopRow({
         <TableCell className="text-right whitespace-nowrap tabular-nums">
           <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
           {order.discount > 0 && (
-            <div className="text-[10px] text-neutral-500">
-              Saved {formatBdt(order.discount)}
-            </div>
+            <div className="text-[10px] text-neutral-500">Saved {formatBdt(order.discount)}</div>
           )}
         </TableCell>
       )}
@@ -267,4 +263,3 @@ export function AdminOrdersDesktopRow({
     </TableRow>
   );
 }
-

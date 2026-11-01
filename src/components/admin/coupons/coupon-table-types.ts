@@ -8,4 +8,3 @@ export const couponColumnOptions: ColumnOption<CouponColumnKey>[] = [
   { key: "validity", label: "Validity Schedule" },
   { key: "status", label: "Status" },
 ];
-

@@ -20,7 +20,7 @@ function Submit({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
+      className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
     >
       {pending ? (
         <>
@@ -145,12 +145,7 @@ export function ShippingMethodForm({
         <label className="block text-xs font-semibold text-neutral-800">
           Assigned Zone <span className="text-rose-500">*</span>
         </label>
-        <select
-          name="zoneId"
-          required
-          defaultValue={method?.zoneId}
-          className={inputClass}
-        >
+        <select name="zoneId" required defaultValue={method?.zoneId} className={inputClass}>
           {zones.map((zone) => (
             <option key={zone.id} value={zone.id}>
               {zone.name}

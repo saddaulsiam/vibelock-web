@@ -37,4 +37,3 @@ export function formatWhatsAppUrl(
   const message = `${greeting}, regarding your VibeLock order #${orderNumber}: `;
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 }
-

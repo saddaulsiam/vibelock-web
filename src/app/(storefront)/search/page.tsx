@@ -4,9 +4,7 @@ interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function SearchRedirectPage({
-  searchParams,
-}: SearchPageProps) {
+export default async function SearchRedirectPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const searchParamsObj = new URLSearchParams();
 
@@ -25,4 +23,3 @@ export default async function SearchRedirectPage({
   const query = searchParamsObj.toString();
   redirect(query ? `/products?${query}` : "/products");
 }
-

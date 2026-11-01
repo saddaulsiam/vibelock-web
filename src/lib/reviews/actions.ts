@@ -21,9 +21,7 @@ export interface ReviewActionResult {
  * Submit or update a product review.
  * Only verified buyers who have received delivery (or are updating their existing review) can submit.
  */
-export async function submitReviewAction(
-  input: SubmitReviewInput
-): Promise<ReviewActionResult> {
+export async function submitReviewAction(input: SubmitReviewInput): Promise<ReviewActionResult> {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
@@ -138,9 +136,7 @@ export async function submitReviewAction(
 /**
  * Delete a review (accessible by ADMIN or the author of the review).
  */
-export async function deleteReviewAction(
-  reviewId: string
-): Promise<ReviewActionResult> {
+export async function deleteReviewAction(reviewId: string): Promise<ReviewActionResult> {
   try {
     const user = await getCurrentUser();
     if (!user || !user.id) {
@@ -184,4 +180,3 @@ export async function deleteReviewAction(
     return { success: false, error: "Failed to delete review." };
   }
 }
-

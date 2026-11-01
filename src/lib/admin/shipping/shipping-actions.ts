@@ -257,7 +257,9 @@ export async function syncSingleShipmentAction(shipmentId: string): Promise<{
       };
     }
 
-    const updated = await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+    const updated = await new ShippingService(provider).syncShipmentStatus(
+      shipment.providerShipmentId
+    );
     refreshShipping();
     return {
       success: true,

@@ -51,13 +51,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
-export type ShipmentColumnKey =
-  | "customer"
-  | "courier"
-  | "method"
-  | "amounts"
-  | "status"
-  | "dates";
+export type ShipmentColumnKey = "customer" | "courier" | "method" | "amounts" | "status" | "dates";
 
 const shipmentColumnOptions: ColumnOption<ShipmentColumnKey>[] = [
   { key: "customer", label: "Customer & Recipient" },
@@ -173,9 +167,11 @@ export function AdminShipmentsTable({
   // Row action feedback
   const [copiedTrackingId, setCopiedTrackingId] = useState<string | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
-  const [syncNotice, setSyncNotice] = useState<{ id: string; msg: string; isError?: boolean } | null>(
-    null
-  );
+  const [syncNotice, setSyncNotice] = useState<{
+    id: string;
+    msg: string;
+    isError?: boolean;
+  } | null>(null);
 
   // Keyboard shortcut '/' to focus search input
   useEffect(() => {
@@ -206,7 +202,8 @@ export function AdminShipmentsTable({
         else params.delete("filter");
       }
       if (updates.provider !== undefined) {
-        if (updates.provider && updates.provider !== "ALL") params.set("provider", updates.provider);
+        if (updates.provider && updates.provider !== "ALL")
+          params.set("provider", updates.provider);
         else params.delete("provider");
       }
       params.delete("page");
@@ -347,9 +344,24 @@ export function AdminShipmentsTable({
   // Status tabs definition
   const tabs: AdminTableTabItem<ShipmentFilter>[] = [
     { key: "all", label: "All Shipments", count: segmentCounts.all },
-    { key: "in_transit", label: "In Transit", count: segmentCounts.in_transit, dotColor: "bg-purple-500" },
-    { key: "delivered", label: "Delivered", count: segmentCounts.delivered, dotColor: "bg-emerald-500" },
-    { key: "returned", label: "Returned (RTO)", count: segmentCounts.returned, dotColor: "bg-rose-500" },
+    {
+      key: "in_transit",
+      label: "In Transit",
+      count: segmentCounts.in_transit,
+      dotColor: "bg-purple-500",
+    },
+    {
+      key: "delivered",
+      label: "Delivered",
+      count: segmentCounts.delivered,
+      dotColor: "bg-emerald-500",
+    },
+    {
+      key: "returned",
+      label: "Returned (RTO)",
+      count: segmentCounts.returned,
+      dotColor: "bg-rose-500",
+    },
     { key: "pending", label: "Pending", count: segmentCounts.pending, dotColor: "bg-amber-500" },
   ];
 
@@ -406,7 +418,7 @@ export function AdminShipmentsTable({
                 setSearchValue("");
                 updateQueryParams({ q: "", filter: "all", provider: "ALL" });
               }}
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 hover:border-neutral-400 hover:text-neutral-900 transition-colors"
+              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:text-neutral-900"
             >
               <RotateCcw className="size-3.5" />
               Reset filters
@@ -451,7 +463,7 @@ export function AdminShipmentsTable({
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center justify-between rounded-xl border border-neutral-900 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-lg animate-in fade-in slide-in-from-top-2">
+        <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-between rounded-xl border border-neutral-900 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-lg">
           <div className="flex items-center gap-3">
             <span className="flex size-5 items-center justify-center rounded-full bg-[#00D9FF] text-[11px] font-bold text-[#101114]">
               {selectedIds.size}
@@ -465,7 +477,7 @@ export function AdminShipmentsTable({
             <button
               type="button"
               onClick={() => exportCsv()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white hover:bg-white/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white transition-colors hover:bg-white/20"
             >
               <Download className="size-3.5" />
               Export Selected CSV
@@ -473,7 +485,7 @@ export function AdminShipmentsTable({
             <button
               type="button"
               onClick={() => setSelectedIds(new Set())}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-neutral-400 hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-neutral-400 transition-colors hover:text-white"
             >
               <X className="size-3.5" />
               Deselect
@@ -489,9 +501,7 @@ export function AdminShipmentsTable({
             <TableHead className="w-10 px-3 text-center">
               <input
                 type="checkbox"
-                checked={
-                  shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))
-                }
+                checked={shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))}
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 aria-label="Select all shipments"
                 className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
@@ -499,9 +509,7 @@ export function AdminShipmentsTable({
             </TableHead>
             <TableHead>Order</TableHead>
             {visibleColumns.customer && <TableHead>Customer & Phone</TableHead>}
-            {visibleColumns.courier && (
-              <TableHead>Courier & Tracking</TableHead>
-            )}
+            {visibleColumns.courier && <TableHead>Courier & Tracking</TableHead>}
             {visibleColumns.method && <TableHead>Method</TableHead>}
             {visibleColumns.amounts && <TableHead>Amounts & COD</TableHead>}
             {visibleColumns.status && <TableHead>Status</TableHead>}
@@ -554,10 +562,7 @@ export function AdminShipmentsTable({
               );
 
               return (
-                <TableRow
-                  key={shipment.id}
-                  className={isSelected ? "bg-cyan-50/40" : undefined}
-                >
+                <TableRow key={shipment.id} className={isSelected ? "bg-cyan-50/40" : undefined}>
                   {/* Row Checkbox */}
                   <TableCell className="w-10 px-3 text-center">
                     <input
@@ -632,7 +637,7 @@ export function AdminShipmentsTable({
                                 )
                               }
                               title="Copy tracking number"
-                              className="rounded p-1 text-neutral-400 hover:text-neutral-700 transition-colors"
+                              className="rounded p-1 text-neutral-400 transition-colors hover:text-neutral-700"
                             >
                               {copiedTrackingId === shipment.id ? (
                                 <Check className="size-3 text-emerald-600" />
@@ -664,7 +669,7 @@ export function AdminShipmentsTable({
                     <TableCell>
                       <div className="font-medium text-neutral-900">
                         {formatCurrency(shipment.shippingAmount)}
-                        <span className="text-[10px] text-neutral-400 ml-1">fee</span>
+                        <span className="ml-1 text-[10px] text-neutral-400">fee</span>
                       </div>
                       <div className="text-[11px] text-neutral-500">
                         Total: {formatCurrency(shipment.orderTotal)}
@@ -675,7 +680,7 @@ export function AdminShipmentsTable({
                   {/* Status Column */}
                   {visibleColumns.status && (
                     <TableCell>
-                      <div className="flex flex-col gap-1 items-start">
+                      <div className="flex flex-col items-start gap-1">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${statusBadge.badgeClass}`}
                         >
@@ -695,7 +700,10 @@ export function AdminShipmentsTable({
                         )}
 
                         {shipment.failureReason && (
-                          <span className="text-[10px] text-rose-600 max-w-[180px] truncate" title={shipment.failureReason}>
+                          <span
+                            className="max-w-[180px] truncate text-[10px] text-rose-600"
+                            title={shipment.failureReason}
+                          >
                             {shipment.failureReason}
                           </span>
                         )}
@@ -708,7 +716,7 @@ export function AdminShipmentsTable({
                     <TableCell className="text-[11px] text-neutral-500">
                       <div>Created: {formatDate(shipment.createdAt)}</div>
                       {shipment.deliveredAt ? (
-                        <div className="text-emerald-700 font-medium">
+                        <div className="font-medium text-emerald-700">
                           Delivered: {formatDate(shipment.deliveredAt)}
                         </div>
                       ) : shipment.shippedAt ? (
@@ -728,7 +736,7 @@ export function AdminShipmentsTable({
                           disabled={isSyncing}
                           title="Sync live status from Steadfast"
                           aria-label="Sync live status from Steadfast"
-                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors disabled:opacity-50"
+                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50"
                         >
                           {isSyncing ? (
                             <Loader2 className="size-3.5 animate-spin text-amber-600" />
@@ -746,7 +754,7 @@ export function AdminShipmentsTable({
                           rel="noopener noreferrer"
                           title="Send parcel status update via WhatsApp"
                           aria-label="Send parcel update via WhatsApp"
-                          className="inline-flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
+                          className="inline-flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 transition-colors hover:bg-emerald-100"
                         >
                           <MessageCircle className="size-3.5" />
                         </a>
@@ -756,7 +764,7 @@ export function AdminShipmentsTable({
                       <Link
                         href={`/admin/orders/${shipment.orderId}#courier-dispatch-card`}
                         title="View order and courier dispatch details"
-                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                        className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
                       >
                         <Eye className="size-3.5 text-neutral-500" />
                         <span>View</span>

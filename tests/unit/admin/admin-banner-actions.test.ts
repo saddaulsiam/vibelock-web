@@ -1,9 +1,5 @@
 import { describe, expect, test, vi, beforeEach } from "vitest";
-import {
-  saveBannerAction,
-  toggleBannerAction,
-  deleteBannerAction,
-} from "@/lib/admin/banners";
+import { saveBannerAction, toggleBannerAction, deleteBannerAction } from "@/lib/admin/banners";
 import prisma from "@/lib/prisma/client";
 
 vi.mock("@/lib/auth/authorization", () => ({

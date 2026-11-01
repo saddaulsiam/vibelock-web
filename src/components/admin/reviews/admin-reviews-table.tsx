@@ -23,11 +23,7 @@ interface AdminReviewsTableProps {
   totalCount: number;
 }
 
-export function AdminReviewsTable({
-  reviews,
-  kpis,
-  totalCount,
-}: AdminReviewsTableProps) {
+export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -200,29 +196,20 @@ export function AdminReviewsTable({
             <tbody className="divide-y divide-[#101114]/5">
               {reviews.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="p-8 text-center text-xs text-[#101114]/50"
-                  >
+                  <td colSpan={6} className="p-8 text-center text-xs text-[#101114]/50">
                     No reviews found matching your criteria.
                   </td>
                 </tr>
               ) : (
                 reviews.map((review) => {
-                  const dateStr = new Date(review.createdAt).toLocaleDateString(
-                    "en-US",
-                    {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    }
-                  );
+                  const dateStr = new Date(review.createdAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  });
 
                   return (
-                    <tr
-                      key={review.id}
-                      className="transition-colors hover:bg-[#101114]/1"
-                    >
+                    <tr key={review.id} className="transition-colors hover:bg-[#101114]/1">
                       {/* Product Column */}
                       <td className="px-4 py-3.5 sm:px-6">
                         <div className="flex items-center gap-3">
@@ -239,15 +226,13 @@ export function AdminReviewsTable({
                               VL
                             </div>
                           )}
-                          <div className="min-w-0 max-w-48">
+                          <div className="max-w-48 min-w-0">
                             <Link
                               href={`/products/${review.product.slug}`}
                               target="_blank"
                               className="hover:text-vl-cyan flex items-center gap-1 font-bold text-[#101114] transition-colors"
                             >
-                              <span className="truncate">
-                                {review.product.name}
-                              </span>
+                              <span className="truncate">{review.product.name}</span>
                               <ExternalLink className="size-3 shrink-0 opacity-60" />
                             </Link>
                           </div>
@@ -264,7 +249,7 @@ export function AdminReviewsTable({
                             {review.user?.email || "No email"}
                           </p>
                           {review.verified && (
-                            <span className="mt-1 inline-flex items-center gap-0.5 rounded-full bg-[#00D9FF]/15 px-1.5 py-0.2 text-[9px] font-bold text-[#008ca6]">
+                            <span className="py-0.2 mt-1 inline-flex items-center gap-0.5 rounded-full bg-[#00D9FF]/15 px-1.5 text-[9px] font-bold text-[#008ca6]">
                               <CheckCircle2 className="size-2.5" /> Verified Buyer
                             </span>
                           )}
@@ -274,9 +259,7 @@ export function AdminReviewsTable({
                       {/* Rating Column */}
                       <td className="px-4 py-3.5">
                         <div className="flex items-center gap-1">
-                          <span className="font-bold text-[#101114]">
-                            {review.rating}
-                          </span>
+                          <span className="font-bold text-[#101114]">{review.rating}</span>
                           <span className="text-amber-500">★</span>
                         </div>
                       </td>
@@ -288,16 +271,14 @@ export function AdminReviewsTable({
                             {review.comment}
                           </p>
                         ) : (
-                          <span className="text-[11px] italic text-[#101114]/40">
+                          <span className="text-[11px] text-[#101114]/40 italic">
                             Rating only (No comment)
                           </span>
                         )}
                       </td>
 
                       {/* Date Column */}
-                      <td className="px-4 py-3.5 whitespace-nowrap text-[#101114]/60">
-                        {dateStr}
-                      </td>
+                      <td className="px-4 py-3.5 whitespace-nowrap text-[#101114]/60">{dateStr}</td>
 
                       {/* Actions Column */}
                       <td className="px-4 py-3.5 text-right whitespace-nowrap">

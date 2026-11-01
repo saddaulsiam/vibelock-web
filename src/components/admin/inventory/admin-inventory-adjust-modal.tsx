@@ -110,9 +110,7 @@ export function AdminInventoryAdjustModal({
         <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="size-4 text-[#101114]" />
-            <h3 className="text-sm font-semibold text-[#101114]">
-              Quick Stock Adjust: {item.sku}
-            </h3>
+            <h3 className="text-sm font-semibold text-[#101114]">Quick Stock Adjust: {item.sku}</h3>
           </div>
           <button
             type="button"
@@ -139,9 +137,7 @@ export function AdminInventoryAdjustModal({
               </div>
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-[#101114]">
-                {item.product.name}
-              </p>
+              <p className="truncate text-xs font-semibold text-[#101114]">{item.product.name}</p>
               <p className="mt-0.5 font-mono text-[10px] text-[#101114]/60">
                 {item.sku} •{" "}
                 {[
@@ -178,9 +174,7 @@ export function AdminInventoryAdjustModal({
 
           {/* Transaction Type Selector */}
           <div>
-            <label className="block text-xs font-semibold text-[#101114]">
-              Adjustment Type
-            </label>
+            <label className="block text-xs font-semibold text-[#101114]">Adjustment Type</label>
             <div className="mt-1.5 grid grid-cols-4 gap-1.5 text-xs">
               {(["RESTOCK", "ADJUSTMENT", "DAMAGE", "RETURN"] as const).map((t) => (
                 <button
@@ -219,9 +213,7 @@ export function AdminInventoryAdjustModal({
               <label className="block text-xs font-semibold text-[#101114]">
                 Quantity Adjustment <span className="text-red-500">*</span>
               </label>
-              <span className="text-[10px] text-[#101114]/50">
-                Use (+) to add, (-) to deduct
-              </span>
+              <span className="text-[10px] text-[#101114]/50">Use (+) to add, (-) to deduct</span>
             </div>
             <input
               type="number"
@@ -331,4 +323,3 @@ export function AdminInventoryAdjustModal({
     </div>
   );
 }
-

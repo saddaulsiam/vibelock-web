@@ -161,4 +161,3 @@ describe("POS System - getPosTodayOrdersAction", () => {
     expect(result.error).toContain("Unauthorized");
   });
 });
-

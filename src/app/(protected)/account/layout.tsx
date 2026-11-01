@@ -42,10 +42,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
     prisma.returnRequest.findMany({
       where: {
         order: {
-          OR: [
-            { userId: user.id },
-            ...(user.email ? [{ customerEmail: user.email }] : []),
-          ],
+          OR: [{ userId: user.id }, ...(user.email ? [{ customerEmail: user.email }] : [])],
         },
       },
       select: { id: true },

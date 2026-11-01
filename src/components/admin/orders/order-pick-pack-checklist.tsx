@@ -96,10 +96,14 @@ export function OrderPickPackChecklist({
       <div className="flex flex-col gap-3 border-b border-neutral-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-bold text-neutral-900">Order Items &amp; Pick-Pack Audit</h2>
+            <h2 className="text-sm font-bold text-neutral-900">
+              Order Items &amp; Pick-Pack Audit
+            </h2>
             <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-700">
               <ShoppingBag className="size-3 text-neutral-500" />
-              <span>{items.length} lines &middot; {totalQuantity} units</span>
+              <span>
+                {items.length} lines &middot; {totalQuantity} units
+              </span>
             </span>
           </div>
           <p className="mt-0.5 text-xs text-neutral-500">
@@ -221,7 +225,7 @@ export function OrderPickPackChecklist({
                             });
                           }}
                           onMouseLeave={() => setHoveredPreview(null)}
-                          className="relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-neutral-200/90 transition hover:border-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900"
+                          className="relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-neutral-200/90 transition hover:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:outline-none"
                           title="Hover for quick preview &middot; Click to enlarge"
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -238,7 +242,7 @@ export function OrderPickPackChecklist({
                       )}
 
                       <div className="min-w-0 flex-1">
-                        <div className="font-semibold text-neutral-900 leading-snug">
+                        <div className="leading-snug font-semibold text-neutral-900">
                           {item.productName}
                         </div>
                         {item.size || item.color ? (
@@ -259,9 +263,7 @@ export function OrderPickPackChecklist({
                     </div>
                   </td>
 
-                  <td className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">
-                    {item.sku}
-                  </td>
+                  <td className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">{item.sku}</td>
 
                   <td className="px-4 py-3.5 text-center font-bold text-neutral-900">
                     {item.quantity}
@@ -284,7 +286,7 @@ export function OrderPickPackChecklist({
       {/* ── Fixed Floating Hover Preview (Immune to overflow-hidden / overflow-x-auto) ── */}
       {hoveredPreview && (
         <div
-          className="pointer-events-none fixed z-[9999] w-56 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150"
+          className="animate-in fade-in zoom-in-95 pointer-events-none fixed z-[9999] w-56 rounded-xl border border-neutral-200/90 bg-white p-2.5 shadow-2xl duration-150"
           style={{
             top: `${hoveredPreview.top}px`,
             left: `${hoveredPreview.left}px`,
@@ -294,14 +296,12 @@ export function OrderPickPackChecklist({
           <img
             src={hoveredPreview.url}
             alt={hoveredPreview.name}
-            className="aspect-square w-full rounded-lg object-cover bg-neutral-50 shadow-inner"
+            className="aspect-square w-full rounded-lg bg-neutral-50 object-cover shadow-inner"
           />
-          <p className="mt-2 line-clamp-2 text-xs font-bold text-neutral-900 leading-snug">
+          <p className="mt-2 line-clamp-2 text-xs leading-snug font-bold text-neutral-900">
             {hoveredPreview.name}
           </p>
-          <p className="mt-0.5 font-mono text-[10px] text-neutral-500">
-            SKU: {hoveredPreview.sku}
-          </p>
+          <p className="mt-0.5 font-mono text-[10px] text-neutral-500">SKU: {hoveredPreview.sku}</p>
           <span className="mt-1.5 block text-[10px] font-semibold text-neutral-400">
             Click thumbnail to view fullscreen
           </span>
@@ -311,14 +311,14 @@ export function OrderPickPackChecklist({
       {/* ── Fullscreen Lightbox Modal on Click ── */}
       {activeModalImage && (
         <div
-          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          className="animate-in fade-in fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150"
           onClick={() => setActiveModalImage(null)}
         >
           <div
-            className="relative max-w-lg w-full rounded-2xl bg-white p-5 shadow-2xl animate-in zoom-in-95 duration-150"
+            className="animate-in zoom-in-95 relative w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl duration-150"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div>
                 <h4 className="text-sm font-bold text-neutral-900">{activeModalImage.name}</h4>
                 <p className="font-mono text-xs text-neutral-500">SKU: {activeModalImage.sku}</p>
@@ -326,17 +326,17 @@ export function OrderPickPackChecklist({
               <button
                 type="button"
                 onClick={() => setActiveModalImage(null)}
-                className="size-7 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition hover:bg-neutral-200"
+                className="flex size-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition hover:bg-neutral-200"
               >
                 <X className="size-4" />
               </button>
             </div>
-            <div className="mt-4 overflow-hidden rounded-xl bg-neutral-50 border border-neutral-100">
+            <div className="mt-4 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeModalImage.url}
                 alt={activeModalImage.name}
-                className="max-h-[70vh] w-full object-contain mx-auto"
+                className="mx-auto max-h-[70vh] w-full object-contain"
               />
             </div>
           </div>

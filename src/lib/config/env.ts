@@ -6,17 +6,20 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   // Authentication
-  AUTH_SECRET: z.preprocess((val) => {
-    if (typeof val === "string" && val.trim()) return val.trim();
-    if (typeof process.env.NEXTAUTH_SECRET === "string" && process.env.NEXTAUTH_SECRET.trim()) {
-      return process.env.NEXTAUTH_SECRET.trim();
-    }
-    // Allow Next.js build-time page data collection to succeed on CI/Vercel
-    if (process.env.NEXT_PHASE === "phase-production-build" || (process.env.CI && !val)) {
-      return "build-time-fallback-auth-secret-needs-to-be-at-least-32-chars";
-    }
-    return undefined;
-  }, z.string().min(1, "AUTH_SECRET is required")),
+  AUTH_SECRET: z.preprocess(
+    (val) => {
+      if (typeof val === "string" && val.trim()) return val.trim();
+      if (typeof process.env.NEXTAUTH_SECRET === "string" && process.env.NEXTAUTH_SECRET.trim()) {
+        return process.env.NEXTAUTH_SECRET.trim();
+      }
+      // Allow Next.js build-time page data collection to succeed on CI/Vercel
+      if (process.env.NEXT_PHASE === "phase-production-build" || (process.env.CI && !val)) {
+        return "build-time-fallback-auth-secret-needs-to-be-at-least-32-chars";
+      }
+      return undefined;
+    },
+    z.string().min(1, "AUTH_SECRET is required")
+  ),
   AUTH_GOOGLE_ID: z.string().optional(),
   AUTH_GOOGLE_SECRET: z.string().optional(),
 

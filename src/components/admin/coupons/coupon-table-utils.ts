@@ -64,4 +64,3 @@ export function sharePromoWhatsApp(coupon: {
     window.open(url, "_blank", "noopener,noreferrer");
   }
 }
-

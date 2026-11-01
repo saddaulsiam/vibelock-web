@@ -65,9 +65,7 @@ describe("Admin Payments Ledger UI", () => {
   ];
 
   test("renders transaction ledger table with order numbers and customer info", () => {
-    const html = renderToStaticMarkup(
-      <AdminPaymentsTable initialPayments={mockPayments} />
-    );
+    const html = renderToStaticMarkup(<AdminPaymentsTable initialPayments={mockPayments} />);
 
     expect(html).toContain("VL-20261031-A1B2");
     expect(html).toContain("Rahim Uddin");
@@ -82,9 +80,7 @@ describe("Admin Payments Ledger UI", () => {
   });
 
   test("renders gateway badges and transaction IDs correctly", () => {
-    const html = renderToStaticMarkup(
-      <AdminPaymentsTable initialPayments={mockPayments} />
-    );
+    const html = renderToStaticMarkup(<AdminPaymentsTable initialPayments={mockPayments} />);
 
     expect(html).toContain("bKash");
     expect(html).toContain("BKS998877");
@@ -95,9 +91,7 @@ describe("Admin Payments Ledger UI", () => {
   });
 
   test("renders gateway and status filter tabs", () => {
-    const html = renderToStaticMarkup(
-      <AdminPaymentsTable initialPayments={mockPayments} />
-    );
+    const html = renderToStaticMarkup(<AdminPaymentsTable initialPayments={mockPayments} />);
 
     expect(html).toContain("All Gateways");
     expect(html).toContain("bKash");
@@ -111,9 +105,7 @@ describe("Admin Payments Ledger UI", () => {
   });
 
   test("renders meta counter showing loaded vs total transactions count", () => {
-    const html = renderToStaticMarkup(
-      <AdminPaymentsTable initialPayments={mockPayments} />
-    );
+    const html = renderToStaticMarkup(<AdminPaymentsTable initialPayments={mockPayments} />);
 
     expect(html).toContain("Showing");
     expect(html).toContain("transactions");
@@ -121,12 +113,9 @@ describe("Admin Payments Ledger UI", () => {
   });
 
   test("renders column visibility dropdown and export CSV button", () => {
-    const html = renderToStaticMarkup(
-      <AdminPaymentsTable initialPayments={mockPayments} />
-    );
+    const html = renderToStaticMarkup(<AdminPaymentsTable initialPayments={mockPayments} />);
 
     expect(html).toContain("Columns");
     expect(html).toContain("Export CSV");
   });
 });
-

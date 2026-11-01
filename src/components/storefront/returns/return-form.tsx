@@ -272,7 +272,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
 
                     {/* Stepper Quantity Control */}
                     {isSelected && (
-                      <div className="flex items-center justify-between border-t border-[#101114]/10 pt-2.5 sm:border-t-0 sm:pt-0 sm:justify-end gap-2 pl-8 sm:pl-0">
+                      <div className="flex items-center justify-between gap-2 border-t border-[#101114]/10 pt-2.5 pl-8 sm:justify-end sm:border-t-0 sm:pt-0 sm:pl-0">
                         <span className="text-muted-foreground text-xs font-semibold sm:hidden">
                           Return Qty:
                         </span>
@@ -282,11 +282,11 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
                             onClick={() => handleStepQuantity(item.id, -1, item.returnableQuantity)}
                             disabled={currentQty <= 1}
                             aria-label="Decrease return quantity"
-                            className="flex size-8 items-center justify-center rounded-l-xl text-[#101114] hover:bg-[#F3F0E8] disabled:opacity-30 transition"
+                            className="flex size-8 items-center justify-center rounded-l-xl text-[#101114] transition hover:bg-[#F3F0E8] disabled:opacity-30"
                           >
                             <Minus className="size-3.5" />
                           </button>
-                          <span className="w-8 text-center font-bold text-xs text-[#101114]">
+                          <span className="w-8 text-center text-xs font-bold text-[#101114]">
                             {currentQty}
                           </span>
                           <button
@@ -294,7 +294,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
                             onClick={() => handleStepQuantity(item.id, 1, item.returnableQuantity)}
                             disabled={currentQty >= item.returnableQuantity}
                             aria-label="Increase return quantity"
-                            className="flex size-8 items-center justify-center rounded-r-xl text-[#101114] hover:bg-[#F3F0E8] disabled:opacity-30 transition"
+                            className="flex size-8 items-center justify-center rounded-r-xl text-[#101114] transition hover:bg-[#F3F0E8] disabled:opacity-30"
                           >
                             <Plus className="size-3.5" />
                           </button>
@@ -308,7 +308,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
           </div>
 
           {/* Reason & Photo Proof Card */}
-          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-5">
+          <div className="space-y-5 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
             <h2 className="flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
               <FileText className="size-4.5 text-[#101114]" />
               <span>Reason & Proof</span>
@@ -316,10 +316,10 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
 
             {/* Visual Touch Tiles */}
             <div>
-              <label className="text-muted-foreground block text-xs font-semibold mb-2">
+              <label className="text-muted-foreground mb-2 block text-xs font-semibold">
                 Select Return Reason <span className="text-rose-600">*</span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                 {RETURN_REASONS.map((r) => {
                   const isSelected = reason === r.value;
                   return (
@@ -329,14 +329,16 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
                       onClick={() => setReason(r.value)}
                       className={`flex items-center justify-between rounded-xl border p-3.5 text-left text-xs transition-all ${
                         isSelected
-                          ? "border-[#101114] bg-[#101114] text-white shadow-xs font-bold"
-                          : "border-[#101114]/15 bg-white hover:border-[#101114]/30 text-[#101114] font-medium"
+                          ? "border-[#101114] bg-[#101114] font-bold text-white shadow-xs"
+                          : "border-[#101114]/15 bg-white font-medium text-[#101114] hover:border-[#101114]/30"
                       }`}
                     >
                       <span>{r.label}</span>
                       <div
                         className={`flex size-4.5 shrink-0 items-center justify-center rounded-full border ${
-                          isSelected ? "border-white bg-white text-[#101114]" : "border-[#101114]/30"
+                          isSelected
+                            ? "border-white bg-white text-[#101114]"
+                            : "border-[#101114]/30"
                         }`}
                       >
                         {isSelected && <Check className="size-3 stroke-[3]" />}
@@ -349,12 +351,13 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
 
             {/* Mandatory Proof Alert */}
             {requiresProof && (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950 flex items-start gap-3">
-                <AlertTriangle className="size-4.5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-950">
+                <AlertTriangle className="mt-0.5 size-4.5 shrink-0 text-amber-600" />
                 <div>
                   <p className="font-bold text-amber-900">Photo Proof Required</p>
-                  <p className="text-amber-800 mt-0.5 text-xs leading-relaxed">
-                    For defective, damaged, or incorrect merchandise, please attach clear photos showing the flaw, stitch, or tag.
+                  <p className="mt-0.5 text-xs leading-relaxed text-amber-800">
+                    For defective, damaged, or incorrect merchandise, please attach clear photos
+                    showing the flaw, stitch, or tag.
                   </p>
                 </div>
               </div>
@@ -362,7 +365,10 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
 
             {/* Custom Message / Notes Textarea */}
             <div className="space-y-1.5">
-              <label htmlFor="customerNote" className="text-muted-foreground block text-xs font-semibold">
+              <label
+                htmlFor="customerNote"
+                className="text-muted-foreground block text-xs font-semibold"
+              >
                 Custom Message / Additional Details
               </label>
               <textarea
@@ -371,20 +377,20 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
                 value={customerNote}
                 onChange={(e) => setCustomerNote(e.target.value)}
                 placeholder="Tell us what went wrong (e.g. size runs small, stitching torn on collar, received blue instead of black)..."
-                className="w-full rounded-xl border border-[#101114]/15 bg-white p-3 text-xs text-[#101114] placeholder:text-muted-foreground outline-none transition focus:border-[#101114] focus:ring-1 focus:ring-[#101114]"
+                className="placeholder:text-muted-foreground w-full rounded-xl border border-[#101114]/15 bg-white p-3 text-xs text-[#101114] transition outline-none focus:border-[#101114] focus:ring-1 focus:ring-[#101114]"
               />
             </div>
 
             {/* Photo Proof Upload Zone */}
             <div className="space-y-2.5 border-t border-[#101114]/10 pt-4">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#101114] flex items-center gap-1.5">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-[#101114]">
                   <Camera className="size-4 text-[#101114]" />
                   <span>Photo Proof</span>
                   {requiresProof ? (
-                    <span className="text-rose-600 font-bold text-xs">* Required</span>
+                    <span className="text-xs font-bold text-rose-600">* Required</span>
                   ) : (
-                    <span className="text-muted-foreground font-normal text-xs">(optional)</span>
+                    <span className="text-muted-foreground text-xs font-normal">(optional)</span>
                   )}
                 </span>
                 <span className="text-muted-foreground text-xs font-semibold">
@@ -394,18 +400,22 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
 
               {/* Photo Preview Strip */}
               {images.length > 0 && (
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
                   {images.map((imgUrl, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-square overflow-hidden rounded-xl border border-[#101114]/10 bg-[#101114] shadow-2xs group"
+                      className="group relative aspect-square overflow-hidden rounded-xl border border-[#101114]/10 bg-[#101114] shadow-2xs"
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={imgUrl} alt={`Proof ${idx + 1}`} className="h-full w-full object-cover" />
+                      <img
+                        src={imgUrl}
+                        alt={`Proof ${idx + 1}`}
+                        className="h-full w-full object-cover"
+                      />
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(idx)}
-                        className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-black/75 text-white hover:bg-black transition"
+                        className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-black/75 text-white transition hover:bg-black"
                         title="Remove photo"
                       >
                         <X className="size-3" />
@@ -431,7 +441,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingImage}
-                    className="flex w-full items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-[#101114]/20 bg-[#F3F0E8]/50 p-4 text-xs font-bold text-[#101114] hover:border-[#101114]/40 hover:bg-[#F3F0E8] disabled:opacity-60 transition"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-[#101114]/20 bg-[#F3F0E8]/50 p-4 text-xs font-bold text-[#101114] transition hover:border-[#101114]/40 hover:bg-[#F3F0E8] disabled:opacity-60"
                   >
                     {isUploadingImage ? (
                       <>
@@ -457,7 +467,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
         {/* Right Column: Refund Summary & Return Policy */}
         <div className="space-y-6">
           {/* Refund Summary Card */}
-          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-4">
+          <div className="space-y-4 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
             <h2 className="flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
               <CreditCard className="size-4 text-[#101114]" />
               <span>Refund Summary</span>
@@ -487,15 +497,16 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
               </div>
             </dl>
 
-            <p className="text-muted-foreground text-[11px] leading-relaxed pt-1">
-              Refund is issued to original payment method or bKash within 3–5 working days after QC approval at our Dhaka warehouse.
+            <p className="text-muted-foreground pt-1 text-[11px] leading-relaxed">
+              Refund is issued to original payment method or bKash within 3–5 working days after QC
+              approval at our Dhaka warehouse.
             </p>
 
             {/* Desktop Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-              className="w-full mt-2 hidden sm:inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#101114] px-6 text-xs font-bold uppercase tracking-wider text-white shadow-xs hover:bg-[#101114]/90 disabled:opacity-50 transition"
+              className="mt-2 hidden h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#101114] px-6 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition hover:bg-[#101114]/90 disabled:opacity-50 sm:inline-flex"
             >
               {isSubmitting ? (
                 <>
@@ -512,24 +523,30 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
           </div>
 
           {/* 3-Day Return Policy Card */}
-          <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6 space-y-3">
+          <div className="space-y-3 rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
             <h2 className="flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
               <ShieldCheck className="size-4.5 text-emerald-600" />
               <span>3-Day Return Policy</span>
-              <span className="text-muted-foreground ml-auto rounded-full bg-[#101114]/5 px-2 py-0.5 text-xs font-bold inline-flex items-center gap-1">
+              <span className="text-muted-foreground ml-auto inline-flex items-center gap-1 rounded-full bg-[#101114]/5 px-2 py-0.5 text-xs font-bold">
                 <Clock className="size-3" />
                 {daysRemaining}d Left
               </span>
             </h2>
 
-            <div className="space-y-2.5 text-xs text-muted-foreground leading-relaxed">
+            <div className="text-muted-foreground space-y-2.5 text-xs leading-relaxed">
               <div className="flex items-start gap-2">
                 <span className="font-bold text-[#101114]">1.</span>
-                <p>Ensure product is unwashed, unworn, and all original tags remain securely attached.</p>
+                <p>
+                  Ensure product is unwashed, unworn, and all original tags remain securely
+                  attached.
+                </p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-[#101114]">2.</span>
-                <p>Our team will review your request and schedule a Steadfast courier pickup from your delivery address.</p>
+                <p>
+                  Our team will review your request and schedule a Steadfast courier pickup from
+                  your delivery address.
+                </p>
               </div>
               <div className="flex items-start gap-2">
                 <span className="font-bold text-[#101114]">3.</span>
@@ -541,10 +558,10 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
       </div>
 
       {/* ── Mobile Sticky Bottom Action Bar ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#101114]/10 bg-white/95 p-3.5 backdrop-blur-md shadow-lg sm:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-40 border-t border-[#101114]/10 bg-white/95 p-3.5 shadow-lg backdrop-blur-md sm:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider block">
+            <span className="text-muted-foreground block text-[10px] font-bold tracking-wider uppercase">
               Est. Refund
             </span>
             <div className="flex items-baseline gap-1.5">
@@ -560,7 +577,7 @@ export function ReturnForm({ orderNumber, items, daysRemaining = 3 }: ReturnForm
           <button
             type="submit"
             disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-            className="inline-flex h-10.5 flex-1 max-w-[200px] items-center justify-center gap-1.5 rounded-xl bg-[#101114] px-4 text-xs font-black uppercase tracking-wider text-white shadow-xs hover:bg-[#101114]/90 disabled:opacity-50 transition"
+            className="inline-flex h-10.5 max-w-[200px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#101114] px-4 text-xs font-black tracking-wider text-white uppercase shadow-xs transition hover:bg-[#101114]/90 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="size-4 animate-spin" />

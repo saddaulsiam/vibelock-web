@@ -7,9 +7,5 @@ export { ProductForm, calculateProfitMargin } from "./product-form";
 export { ProductFormPreview } from "./product-form-preview";
 export { ProductBasicInfoSection } from "./product-basic-info-section";
 export { ProductVariantGenerator } from "./product-variant-generator";
-export {
-  ProductImageUploader,
-  type ProductImageItem,
-} from "./product-image-uploader";
+export { ProductImageUploader, type ProductImageItem } from "./product-image-uploader";
 export { ProductProfitabilityDrilldown } from "./product-profitability-drilldown";
-

@@ -71,11 +71,7 @@ export function AdminOrdersToolbar({
   return (
     <div className="space-y-4">
       {/* Status Filter Tabs */}
-      <AdminTableTabs
-        tabs={tabs}
-        activeKey={activeStatus}
-        onChange={onStatusTabChange}
-      />
+      <AdminTableTabs tabs={tabs} activeKey={activeStatus} onChange={onStatusTabChange} />
 
       {/* Search and Secondary Filter Bar */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -155,4 +151,3 @@ export function AdminOrdersToolbar({
     </div>
   );
 }
-

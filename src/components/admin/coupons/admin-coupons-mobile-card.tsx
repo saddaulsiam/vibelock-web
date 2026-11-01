@@ -3,10 +3,7 @@
 import * as React from "react";
 import { Check, Copy, Edit, MessageCircle, Power, Trash2 } from "lucide-react";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
-import {
-  formatCurrency,
-  getValidityNote,
-} from "./coupon-table-utils";
+import { formatCurrency, getValidityNote } from "./coupon-table-utils";
 
 export interface AdminCouponsMobileCardProps {
   coupon: AdminCouponListItem;
@@ -154,4 +151,3 @@ export function AdminCouponsMobileCard({
     </div>
   );
 }
-

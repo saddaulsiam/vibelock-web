@@ -104,11 +104,10 @@ export default async function AdminCustomerDetailsPage({
             <Lock className="size-5" />
           </div>
           <div className="text-xs">
-            <div className="font-bold text-amber-950 text-sm">
-              Customer Account Login Suspended
-            </div>
+            <div className="text-sm font-bold text-amber-950">Customer Account Login Suspended</div>
             <p className="mt-0.5 leading-relaxed text-amber-800">
-              This account has been suspended by store administration. Storefront login and checkout are blocked.
+              This account has been suspended by store administration. Storefront login and checkout
+              are blocked.
               {suspensionReason ? ` (Reason: ${suspensionReason})` : ""}
             </p>
           </div>
@@ -122,11 +121,12 @@ export default async function AdminCustomerDetailsPage({
             <Ban className="size-5" />
           </div>
           <div className="text-xs">
-            <div className="font-bold text-rose-950 text-sm">
+            <div className="text-sm font-bold text-rose-950">
               Cash on Delivery (COD) Privilege Suspended
             </div>
             <p className="mt-0.5 leading-relaxed text-rose-800">
-              This customer is restricted from placing COD orders due to high return risk or administrative hold. Online advance payment is required for all orders.
+              This customer is restricted from placing COD orders due to high return risk or
+              administrative hold. Online advance payment is required for all orders.
               {codBlockReason ? ` (Reason: ${codBlockReason})` : ""}
             </p>
           </div>
@@ -134,7 +134,7 @@ export default async function AdminCustomerDetailsPage({
       )}
 
       {/* 1. Header & Back Navigation */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200/80 pb-4">
+      <div className="flex flex-col gap-4 border-b border-neutral-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <CustomerBackButton />
           <div className="mt-2.5 flex flex-wrap items-center gap-3">
@@ -162,7 +162,7 @@ export default async function AdminCustomerDetailsPage({
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-neutral-500 font-mono">{customer.email}</p>
+          <p className="mt-1 font-mono text-xs text-neutral-500">{customer.email}</p>
         </div>
 
         {/* Header Actions: Edit Profile, Smart WhatsApp CRM, Phone, Email */}
@@ -178,7 +178,7 @@ export default async function AdminCustomerDetailsPage({
       <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-5">
         <div className="rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs">
           <div className="flex items-center justify-between text-neutral-500">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Total Orders</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Total Orders</span>
             <ShoppingBag className="size-4 text-neutral-400" />
           </div>
           <div className="mt-2 text-2xl font-black text-neutral-900">{summary.totalOrders}</div>
@@ -187,7 +187,7 @@ export default async function AdminCustomerDetailsPage({
 
         <div className="rounded-xl border border-emerald-200/90 bg-emerald-50/30 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-emerald-700">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Paid Orders</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Paid Orders</span>
             <CheckCircle2 className="size-4 text-emerald-600" />
           </div>
           <div className="mt-2 text-2xl font-black text-emerald-800">{summary.paidOrders}</div>
@@ -196,7 +196,7 @@ export default async function AdminCustomerDetailsPage({
 
         <div className="rounded-xl border border-purple-200/90 bg-purple-50/30 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-purple-700">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Lifetime Spent</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Lifetime Spent</span>
             <DollarSign className="size-4 text-purple-600" />
           </div>
           <div className="mt-2 text-2xl font-black text-purple-900">
@@ -209,16 +209,16 @@ export default async function AdminCustomerDetailsPage({
 
         <div className="rounded-xl border border-red-200/90 bg-red-50/30 p-4 shadow-2xs">
           <div className="flex items-center justify-between text-red-700">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Cancelled</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Cancelled</span>
             <XCircle className="size-4 text-red-600" />
           </div>
           <div className="mt-2 text-2xl font-black text-red-800">{summary.cancelledOrders}</div>
           <p className="mt-1 text-[11px] text-red-600">Cancelled orders</p>
         </div>
 
-        <div className="rounded-xl border border-amber-200/90 bg-amber-50/30 p-4 shadow-2xs col-span-2 sm:col-span-1">
+        <div className="col-span-2 rounded-xl border border-amber-200/90 bg-amber-50/30 p-4 shadow-2xs sm:col-span-1">
           <div className="flex items-center justify-between text-amber-700">
-            <span className="text-[11px] font-bold uppercase tracking-wider">Returns / Refund</span>
+            <span className="text-[11px] font-bold tracking-wider uppercase">Returns / Refund</span>
             <RotateCcw className="size-4 text-amber-600" />
           </div>
           <div className="mt-2 text-2xl font-black text-amber-800">
@@ -241,13 +241,13 @@ export default async function AdminCustomerDetailsPage({
       {/* 4. Customer Info Card & Courier Risk Intelligence */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Customer Information Card */}
-        <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
+        <div className="space-y-4 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
           <div className="flex items-center gap-3.5 border-b border-neutral-100 pb-4">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 font-bold text-base text-neutral-700 ring-2 ring-neutral-200/80">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-base font-bold text-neutral-700 ring-2 ring-neutral-200/80">
               {initials}
             </div>
             <div>
-              <div className="font-bold text-base text-neutral-900">
+              <div className="text-base font-bold text-neutral-900">
                 {customer.name || "Unnamed Customer"}
               </div>
               <div className="text-xs text-neutral-500">ID: {customer.id.slice(0, 8)}...</div>
@@ -256,44 +256,46 @@ export default async function AdminCustomerDetailsPage({
 
           <div className="space-y-3 text-xs">
             <div>
-              <span className="font-bold text-neutral-500 uppercase text-[10px] tracking-wider block">
+              <span className="block text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Email Address
               </span>
-              <span className="font-mono text-neutral-900 text-sm mt-0.5 block truncate">
+              <span className="mt-0.5 block truncate font-mono text-sm text-neutral-900">
                 {customer.email}
               </span>
             </div>
 
             <div>
-              <span className="font-bold text-neutral-500 uppercase text-[10px] tracking-wider block">
+              <span className="block text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Phone Number
               </span>
               {customer.phone ? (
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-mono text-neutral-900 text-sm">{customer.phone}</span>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="font-mono text-sm text-neutral-900">{customer.phone}</span>
                   <a
                     href={`tel:${customer.phone}`}
-                    className="text-blue-600 hover:underline text-[11px] font-semibold"
+                    className="text-[11px] font-semibold text-blue-600 hover:underline"
                   >
                     Call
                   </a>
                 </div>
               ) : (
-                <span className="text-neutral-400 italic mt-0.5 block">No phone number recorded</span>
+                <span className="mt-0.5 block text-neutral-400 italic">
+                  No phone number recorded
+                </span>
               )}
             </div>
 
             <div>
-              <span className="font-bold text-neutral-500 uppercase text-[10px] tracking-wider block">
+              <span className="block text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Account Created
               </span>
-              <span className="text-neutral-900 text-sm mt-0.5 block">
+              <span className="mt-0.5 block text-sm text-neutral-900">
                 {formatDate(customer.createdAt)}
               </span>
             </div>
 
             <div>
-              <span className="font-bold text-neutral-500 uppercase text-[10px] tracking-wider block">
+              <span className="block text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Account Status
               </span>
               <div className="mt-1 flex items-center gap-1.5">
@@ -317,11 +319,13 @@ export default async function AdminCustomerDetailsPage({
       </div>
 
       {/* 4. Saved Addresses */}
-      <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
+      <div className="space-y-4 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
         <div className="flex items-center gap-2 border-b border-neutral-100 pb-3">
           <MapPin className="size-4 text-neutral-500" />
           <h2 className="text-sm font-bold text-neutral-900">Saved Delivery Addresses</h2>
-          <span className="text-xs text-neutral-500 font-medium">({customer.addresses.length})</span>
+          <span className="text-xs font-medium text-neutral-500">
+            ({customer.addresses.length})
+          </span>
         </div>
 
         {customer.addresses.length === 0 ? (
@@ -345,13 +349,13 @@ export default async function AdminCustomerDetailsPage({
                     </span>
                   )}
                 </div>
-                <p className="text-neutral-700 leading-relaxed">{address.street}</p>
-                <p className="text-neutral-600 font-medium mt-1">
+                <p className="leading-relaxed text-neutral-700">{address.street}</p>
+                <p className="mt-1 font-medium text-neutral-600">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="text-neutral-500 text-[11px]">{address.country}</p>
+                <p className="text-[11px] text-neutral-500">{address.country}</p>
               </div>
             ))}
           </div>
@@ -378,12 +382,12 @@ export default async function AdminCustomerDetailsPage({
       <CustomerTimelineCard timeline={timeline} />
 
       {/* 7. Complete Order History */}
-      <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs space-y-4">
+      <div className="space-y-4 rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
         <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
           <div className="flex items-center gap-2">
             <ShoppingBag className="size-4 text-neutral-500" />
             <h2 className="text-sm font-bold text-neutral-900">Order History</h2>
-            <span className="text-xs text-neutral-500 font-medium">({summary.totalOrders})</span>
+            <span className="text-xs font-medium text-neutral-500">({summary.totalOrders})</span>
           </div>
         </div>
 
@@ -394,39 +398,36 @@ export default async function AdminCustomerDetailsPage({
         ) : (
           <>
             {/* Desktop Orders Table (hidden md:block) */}
-            <div className="hidden md:block overflow-hidden rounded-lg border border-neutral-200/80">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-neutral-50/75 border-b border-neutral-200/80 text-[11px] font-bold uppercase tracking-wider text-neutral-600">
+            <div className="hidden overflow-hidden rounded-lg border border-neutral-200/80 md:block">
+              <table className="w-full border-collapse text-left text-xs">
+                <thead className="border-b border-neutral-200/80 bg-neutral-50/75 text-[11px] font-bold tracking-wider text-neutral-600 uppercase">
                   <tr>
-                    <th className="py-2.5 px-3">Order Number</th>
-                    <th className="py-2.5 px-3">Date</th>
-                    <th className="py-2.5 px-3">Channel</th>
-                    <th className="py-2.5 px-3">Items Preview</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3">Payment</th>
-                    <th className="py-2.5 px-3">Total</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
+                    <th className="px-3 py-2.5">Order Number</th>
+                    <th className="px-3 py-2.5">Date</th>
+                    <th className="px-3 py-2.5">Channel</th>
+                    <th className="px-3 py-2.5">Items Preview</th>
+                    <th className="px-3 py-2.5">Status</th>
+                    <th className="px-3 py-2.5">Payment</th>
+                    <th className="px-3 py-2.5">Total</th>
+                    <th className="px-3 py-2.5 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
                   {orders.map((order) => (
-                    <tr key={order.id} className="hover:bg-neutral-50/60 transition">
-                      <td className="py-2.5 px-3 font-bold text-neutral-900">
+                    <tr key={order.id} className="transition hover:bg-neutral-50/60">
+                      <td className="px-3 py-2.5 font-bold text-neutral-900">
                         {order.orderNumber}
                       </td>
-                      <td className="py-2.5 px-3 text-neutral-600 font-mono">
+                      <td className="px-3 py-2.5 font-mono text-neutral-600">
                         {formatDate(order.createdAt)}
                       </td>
-                      <td className="py-2.5 px-3">
-                        {getSalesChannelBadge(order.salesChannel)}
-                      </td>
-                      <td className="py-2.5 px-3">
+                      <td className="px-3 py-2.5">{getSalesChannelBadge(order.salesChannel)}</td>
+                      <td className="px-3 py-2.5">
                         <div className="max-w-[220px] truncate text-neutral-700">
                           {order.previewItems.length > 0 ? (
                             order.previewItems
                               .map(
-                                (item) =>
-                                  `${item.productName}${item.size ? ` (${item.size})` : ""}`
+                                (item) => `${item.productName}${item.size ? ` (${item.size})` : ""}`
                               )
                               .join(", ")
                           ) : (
@@ -434,19 +435,19 @@ export default async function AdminCustomerDetailsPage({
                           )}
                         </div>
                       </td>
-                      <td className="py-2.5 px-3">
+                      <td className="px-3 py-2.5">
                         <AdminOrderStatusBadge status={order.status} />
                       </td>
-                      <td className="py-2.5 px-3">
+                      <td className="px-3 py-2.5">
                         <AdminPaymentStatusBadge status={order.paymentStatus} />
                       </td>
-                      <td className="py-2.5 px-3 font-bold text-neutral-900">
+                      <td className="px-3 py-2.5 font-bold text-neutral-900">
                         {currency(order.total)}
                       </td>
-                      <td className="py-2.5 px-3 text-right">
+                      <td className="px-3 py-2.5 text-right">
                         <Link
                           href={`/admin/orders/${order.id}`}
-                          className="inline-flex items-center gap-1 rounded border border-neutral-200 bg-white px-2 py-0.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition"
+                          className="inline-flex items-center gap-1 rounded border border-neutral-200 bg-white px-2 py-0.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
                         >
                           <span>View</span>
                           <ChevronRight className="size-3 text-neutral-400" />
@@ -463,11 +464,11 @@ export default async function AdminCustomerDetailsPage({
               {orders.map((order) => (
                 <div
                   key={order.id}
-                  className="rounded-lg border border-neutral-200 bg-neutral-50/40 p-3 text-xs space-y-2"
+                  className="space-y-2 rounded-lg border border-neutral-200 bg-neutral-50/40 p-3 text-xs"
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-neutral-900">{order.orderNumber}</span>
-                    <span className="font-mono text-neutral-500 text-[11px]">
+                    <span className="font-mono text-[11px] text-neutral-500">
                       {formatDate(order.createdAt)}
                     </span>
                   </div>
@@ -478,7 +479,7 @@ export default async function AdminCustomerDetailsPage({
                   </div>
 
                   <div className="flex items-center justify-between border-t border-neutral-200/60 pt-2">
-                    <span className="font-bold text-neutral-900 text-sm">
+                    <span className="text-sm font-bold text-neutral-900">
                       {currency(order.total)}
                     </span>
                     <Link

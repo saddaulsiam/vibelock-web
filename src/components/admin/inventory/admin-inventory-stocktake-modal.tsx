@@ -332,11 +332,7 @@ export function AdminInventoryStocktakeModal({
               }`}
               title={stocktakeSound ? "Mute scan sound" : "Enable scan sound"}
             >
-              {stocktakeSound ? (
-                <Volume2 className="size-3.5" />
-              ) : (
-                <VolumeX className="size-3.5" />
-              )}
+              {stocktakeSound ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />}
               <span>{stocktakeSound ? "Beep On" : "Muted"}</span>
             </button>
 
@@ -469,8 +465,7 @@ export function AdminInventoryStocktakeModal({
             </div>
             <span className="text-[10px] text-rose-600">
               {Array.from(stocktakeScans.values()).reduce(
-                (acc, s) =>
-                  acc + (s.count < s.item.totalStock ? s.item.totalStock - s.count : 0),
+                (acc, s) => acc + (s.count < s.item.totalStock ? s.item.totalStock - s.count : 0),
                 0
               )}{" "}
               units missing
@@ -490,8 +485,7 @@ export function AdminInventoryStocktakeModal({
             <span className="text-[10px] text-blue-600">
               +
               {Array.from(stocktakeScans.values()).reduce(
-                (acc, s) =>
-                  acc + (s.count > s.item.totalStock ? s.count - s.item.totalStock : 0),
+                (acc, s) => acc + (s.count > s.item.totalStock ? s.count - s.item.totalStock : 0),
                 0
               )}{" "}
               units extra
@@ -508,8 +502,8 @@ export function AdminInventoryStocktakeModal({
               </div>
               <h4 className="text-sm font-bold text-[#101114]">No items scanned yet</h4>
               <p className="max-w-md text-xs text-[#101114]/60">
-                Aim your wireless/USB barcode scanner at clothing price tags, or pick items from
-                the dropdown to start auditing store inventory.
+                Aim your wireless/USB barcode scanner at clothing price tags, or pick items from the
+                dropdown to start auditing store inventory.
               </p>
             </div>
           ) : (
@@ -540,9 +534,7 @@ export function AdminInventoryStocktakeModal({
                         }`}
                       >
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-[#101114]">
-                            {item.product.name}
-                          </div>
+                          <div className="font-semibold text-[#101114]">{item.product.name}</div>
                           <div className="text-[10px] text-zinc-500">
                             {[
                               item.size ? `Size: ${item.size}` : null,
@@ -800,9 +792,8 @@ export function AdminInventoryStocktakeModal({
               <span>
                 Reconcile Discrepancies (
                 {
-                  Array.from(stocktakeScans.values()).filter(
-                    (s) => s.count !== s.item.totalStock
-                  ).length
+                  Array.from(stocktakeScans.values()).filter((s) => s.count !== s.item.totalStock)
+                    .length
                 }
                 )
               </span>
@@ -813,4 +804,3 @@ export function AdminInventoryStocktakeModal({
     </div>
   );
 }
-

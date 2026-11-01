@@ -300,7 +300,9 @@ describe("POS Shift & Cash Drawer Management", () => {
         { amount: 500, gateway: "CASH" },
       ]);
       (prisma.auditLog.findMany as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-      (prisma.auditLog.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "close-log-exact" });
+      (prisma.auditLog.create as ReturnType<typeof vi.fn>).mockResolvedValue({
+        id: "close-log-exact",
+      });
 
       // Expected = 1500 + 500 = 2000, Counted = 2000
       const result = await closeRegisterShiftAction({
@@ -313,4 +315,3 @@ describe("POS Shift & Cash Drawer Management", () => {
     });
   });
 });
-

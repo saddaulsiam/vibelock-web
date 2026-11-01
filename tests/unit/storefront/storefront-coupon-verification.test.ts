@@ -42,7 +42,9 @@ describe("Storefront Coupon Application & End-to-End Verification", () => {
       expect(eligibleSubtotal).toBe(2800);
 
       // Validate rules
-      expect(() => validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })).not.toThrow();
+      expect(() =>
+        validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })
+      ).not.toThrow();
 
       // Discount = 15% of 2800 = 420
       const discount = calculateCouponDiscount(coupon, eligibleSubtotal);
@@ -77,7 +79,9 @@ describe("Storefront Coupon Application & End-to-End Verification", () => {
       expect(hasEligibleItems).toBe(true);
       expect(eligibleSubtotal).toBe(2000);
 
-      expect(() => validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })).not.toThrow();
+      expect(() =>
+        validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })
+      ).not.toThrow();
 
       const discount = calculateCouponDiscount(coupon, eligibleSubtotal);
       expect(discount).toBe(300);
@@ -116,7 +120,9 @@ describe("Storefront Coupon Application & End-to-End Verification", () => {
       // Critical check: Only the 1,000 BDT T-Shirt is eligible, NOT the 3,000 BDT Hoodie!
       expect(eligibleSubtotal).toBe(1000);
 
-      expect(() => validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })).not.toThrow();
+      expect(() =>
+        validateCouponRules(coupon, cartSubtotal, new Date(), { hasEligibleItems })
+      ).not.toThrow();
 
       // Discount = 20% of 1000 = 200 BDT (NOT 20% of 4000 = 800 BDT)
       const discount = calculateCouponDiscount(coupon, eligibleSubtotal);

@@ -131,4 +131,3 @@ describe("POS System - lookupPosCustomerByPhoneAction", () => {
     expect(result.error).toContain("Unauthorized");
   });
 });
-

@@ -490,7 +490,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-b border-[#d6d2c4] bg-white p-2.5 sm:p-3 shadow-2xs">
+          <div className="border-b border-[#d6d2c4] bg-white p-2.5 shadow-2xs sm:p-3">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -540,7 +540,7 @@ export function PosView({
               onClick={() => setIsMobileCartOpen(false)}
             />
             {/* Slide-over panel */}
-            <div className="relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right duration-200">
+            <div className="animate-in slide-in-from-right relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl duration-200">
               <PosCartPanel
                 cartItems={cartItems}
                 customerPhone={customerPhone}
@@ -565,14 +565,14 @@ export function PosView({
         )}
 
         {/* Mobile & Tablet Floating Cart Bar (< lg) */}
-        <div className="fixed bottom-0 inset-x-0 z-30 p-2.5 sm:p-3 bg-gradient-to-t from-black/85 via-black/45 to-transparent lg:hidden pointer-events-none">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-2.5 sm:p-3 lg:hidden">
           <button
             type="button"
             onClick={() => setIsMobileCartOpen(true)}
-            className="pointer-events-auto flex w-full items-center justify-between rounded-2xl bg-vl-black p-3 sm:p-3.5 text-vl-white shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-vl-cyan/40 backdrop-blur-md active:scale-[0.99] transition-all hover:border-vl-cyan"
+            className="bg-vl-black text-vl-white border-vl-cyan/40 hover:border-vl-cyan pointer-events-auto flex w-full items-center justify-between rounded-2xl border p-3 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-[0.99] sm:p-3.5"
           >
             <div className="flex items-center space-x-2.5 sm:space-x-3">
-              <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-vl-cyan text-vl-black font-black">
+              <div className="bg-vl-cyan text-vl-black relative flex h-9 w-9 items-center justify-center rounded-xl font-black sm:h-10 sm:w-10">
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
                 {totalItemsCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[9px] font-bold text-white shadow-xs">
@@ -581,20 +581,20 @@ export function PosView({
                 )}
               </div>
               <div className="text-left">
-                <span className="font-heading text-xs font-black text-vl-white block">
+                <span className="font-heading text-vl-white block text-xs font-black">
                   Current Sale ({totalItemsCount})
                 </span>
-                <span className="font-mono text-[11px] text-vl-grey">
+                <span className="text-vl-grey font-mono text-[11px]">
                   {totalItemsCount === 0 ? "Empty ticket" : `Subtotal: ৳${subtotal.toFixed(0)}`}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-2.5">
-              <span className="font-heading text-base sm:text-lg font-black text-vl-cyan font-mono">
+              <span className="font-heading text-vl-cyan font-mono text-base font-black sm:text-lg">
                 ৳{grandTotal.toFixed(0)}
               </span>
-              <div className="rounded-xl bg-vl-cyan px-2.5 sm:px-3 py-1 sm:py-1.5 font-heading text-xs font-black text-vl-black shadow-xs">
+              <div className="bg-vl-cyan font-heading text-vl-black rounded-xl px-2.5 py-1 text-xs font-black shadow-xs sm:px-3 sm:py-1.5">
                 View Ticket →
               </div>
             </div>

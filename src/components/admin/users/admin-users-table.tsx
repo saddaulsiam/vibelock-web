@@ -3,10 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Role } from "@prisma/client";
-import type {
-  AdminUserListItem,
-  AdminUserStats,
-} from "@/lib/admin/users/admin-user-queries";
+import type { AdminUserListItem, AdminUserStats } from "@/lib/admin/users/admin-user-queries";
 import {
   createAdminUserAction,
   updateAdminUserRoleAction,
@@ -70,10 +67,7 @@ interface AdminUsersTableProps {
   currentAdminId: string;
 }
 
-export function AdminUsersTable({
-  initialUsers,
-  currentAdminId,
-}: AdminUsersTableProps) {
+export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTableProps) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
@@ -107,8 +101,7 @@ export function AdminUsersTable({
   const [createError, setCreateError] = useState<string | null>(null);
 
   const filteredUsers = initialUsers.filter((u) => {
-    const matchesRole =
-      roleFilter === "ALL" || u.role === roleFilter;
+    const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
 
     const query = search.toLowerCase().trim();
     const matchesSearch =
@@ -155,14 +148,7 @@ export function AdminUsersTable({
   const handleExportCsv = () => {
     exportToCsv({
       filename: `vibelock-staff-admins-${new Date().toISOString().slice(0, 10)}`,
-      headers: [
-        "User ID",
-        "Name",
-        "Email",
-        "Phone",
-        "Role",
-        "Created Date",
-      ],
+      headers: ["User ID", "Name", "Email", "Phone", "Role", "Created Date"],
       rows: filteredUsers.map((u) => [
         u.id,
         u.name || "",
@@ -220,28 +206,28 @@ export function AdminUsersTable({
     switch (role) {
       case "ADMIN":
         return (
-          <Badge className="border border-purple-200 bg-purple-50 text-purple-800 hover:bg-purple-100 font-semibold text-xs">
+          <Badge className="border border-purple-200 bg-purple-50 text-xs font-semibold text-purple-800 hover:bg-purple-100">
             <ShieldCheck className="mr-1 size-3 text-purple-600" />
             ADMIN
           </Badge>
         );
       case "MANAGER":
         return (
-          <Badge className="border border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100 font-semibold text-xs">
+          <Badge className="border border-blue-200 bg-blue-50 text-xs font-semibold text-blue-800 hover:bg-blue-100">
             <Shield className="mr-1 size-3 text-blue-600" />
             MANAGER
           </Badge>
         );
       case "STAFF":
         return (
-          <Badge className="border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 font-semibold text-xs">
+          <Badge className="border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-800 hover:bg-emerald-100">
             <UserCheck className="mr-1 size-3 text-emerald-600" />
             STAFF
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="text-neutral-600 text-xs">
+          <Badge variant="outline" className="text-xs text-neutral-600">
             {role}
           </Badge>
         );
@@ -251,25 +237,21 @@ export function AdminUsersTable({
   return (
     <div className="space-y-4">
       {actionError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
           <ShieldAlert className="size-4 shrink-0 text-red-600" />
           <span>{actionError}</span>
         </div>
       )}
 
       {actionSuccess && (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 flex items-center gap-2">
+        <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800">
           <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
           <span>{actionSuccess}</span>
         </div>
       )}
 
       {/* ── 1. Shared AdminTableTabs Pattern ── */}
-      <AdminTableTabs
-        tabs={roleTabs}
-        activeKey={roleFilter}
-        onChange={setRoleFilter}
-      />
+      <AdminTableTabs tabs={roleTabs} activeKey={roleFilter} onChange={setRoleFilter} />
 
       {/* ── 2. Search & Toolbar Controls ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -309,7 +291,7 @@ export function AdminUsersTable({
               <Plus className="size-3.5" />
               <span>Add Staff / Admin</span>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-white">
+            <DialogContent className="bg-white sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-lg font-bold text-[#101114]">
                   Register Staff or Administrator
@@ -336,7 +318,7 @@ export function AdminUsersTable({
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Tanvir Ahmed"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                   />
                 </div>
 
@@ -350,20 +332,18 @@ export function AdminUsersTable({
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="admin@vibelock.bd"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">
-                    Phone Number
-                  </label>
+                  <label className="text-xs font-semibold text-neutral-700">Phone Number</label>
                   <input
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="017XXXXXXXX"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                   />
                 </div>
 
@@ -373,10 +353,8 @@ export function AdminUsersTable({
                   </label>
                   <select
                     value={newRole}
-                    onChange={(e) =>
-                      setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")
-                    }
-                    className="h-9 w-full rounded-md border border-neutral-200 bg-white px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    onChange={(e) => setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")}
+                    className="h-9 w-full rounded-md border border-neutral-200 bg-white px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                   >
                     <option value="STAFF">STAFF — Fulfillment & Customer Support</option>
                     <option value="MANAGER">MANAGER — Catalog, Inventory & Orders</option>
@@ -395,7 +373,7 @@ export function AdminUsersTable({
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                   />
                 </div>
 
@@ -456,9 +434,7 @@ export function AdminUsersTable({
           ) : (
             visibleUsers.map((user) => {
               const isCurrent = user.id === currentAdminId;
-              const initials = (user.name || user.email)
-                .substring(0, 2)
-                .toUpperCase();
+              const initials = (user.name || user.email).substring(0, 2).toUpperCase();
 
               return (
                 <TableRow key={user.id}>
@@ -470,7 +446,7 @@ export function AdminUsersTable({
                           {initials}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-xs font-semibold text-neutral-900 flex items-center gap-1.5">
+                          <p className="flex items-center gap-1.5 truncate text-xs font-semibold text-neutral-900">
                             {user.name || "Unnamed User"}
                             {isCurrent && (
                               <span className="rounded bg-neutral-100 px-1 py-0.5 text-[10px] font-normal text-neutral-600">
@@ -478,7 +454,7 @@ export function AdminUsersTable({
                               </span>
                             )}
                           </p>
-                          <p className="truncate text-[11px] text-neutral-500 flex items-center gap-1">
+                          <p className="flex items-center gap-1 truncate text-[11px] text-neutral-500">
                             <Mail className="size-3 text-neutral-400" />
                             {user.email}
                           </p>
@@ -502,9 +478,7 @@ export function AdminUsersTable({
                   )}
 
                   {/* Role Badge */}
-                  {visibleColumns.role && (
-                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  )}
+                  {visibleColumns.role && <TableCell>{getRoleBadge(user.role)}</TableCell>}
 
                   {/* Joined Date */}
                   {visibleColumns.date && (
@@ -522,10 +496,8 @@ export function AdminUsersTable({
                     <select
                       disabled={isPending}
                       value={user.role}
-                      onChange={(e) =>
-                        handleRoleChange(user.id, e.target.value as Role)
-                      }
-                      className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                      onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
+                      className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                     >
                       <option value="ADMIN">ADMIN</option>
                       <option value="MANAGER">MANAGER</option>

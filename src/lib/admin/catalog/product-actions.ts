@@ -566,4 +566,3 @@ export async function toggleProductFeaturedAction(
     };
   }
 }
-

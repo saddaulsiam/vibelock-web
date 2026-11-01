@@ -225,11 +225,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
               <form action={formAction}>
                 <input type="hidden" name="id" value={order.id} />
                 <input type="hidden" name="status" value="PROCESSING" />
-                <input
-                  type="hidden"
-                  name="notes"
-                  value="Moved to warehouse packaging & picking."
-                />
+                <input type="hidden" name="notes" value="Moved to warehouse packaging & picking." />
                 <SmartActionButton
                   label="📦 Move to Packaging (Processing)"
                   icon={Package}
@@ -354,7 +350,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
                   aria-hidden="true"
                 />
 
-                <div className="animate-in fade-in zoom-in-95 duration-150 absolute right-0 bottom-full z-30 mb-1.5 w-72 sm:w-80 rounded-xl border border-neutral-200 bg-white p-2.5 shadow-xl">
+                <div className="animate-in fade-in zoom-in-95 absolute right-0 bottom-full z-30 mb-1.5 w-72 rounded-xl border border-neutral-200 bg-white p-2.5 shadow-xl duration-150 sm:w-80">
                   {/* Header with Title and Close (X) button */}
                   <div className="mb-2 flex items-center justify-between border-b border-neutral-100 px-1 pb-1.5">
                     <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
@@ -363,7 +359,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
                     <button
                       type="button"
                       onClick={() => setShowWhatsAppMenu(false)}
-                      className="flex size-5 items-center justify-center rounded-md text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition-colors"
+                      className="flex size-5 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
                       title="Close menu (Esc)"
                       aria-label="Close WhatsApp templates menu"
                     >
@@ -371,16 +367,16 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
                     </button>
                   </div>
 
-                  <div className="space-y-1 max-h-72 overflow-y-auto">
+                  <div className="max-h-72 space-y-1 overflow-y-auto">
                     {whatsappTemplates.map((tmpl, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => openWhatsApp(tmpl.text)}
-                        className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                        className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50 focus-visible:ring-1 focus-visible:ring-emerald-500 focus-visible:outline-none"
                       >
                         <p className="text-xs font-bold text-neutral-900">{tmpl.title}</p>
-                        <p className="line-clamp-2 mt-0.5 text-[10px] text-neutral-500">
+                        <p className="mt-0.5 line-clamp-2 text-[10px] text-neutral-500">
                           {tmpl.text}
                         </p>
                       </button>

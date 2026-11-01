@@ -4,10 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import { ShippingMethodForm } from "@/components/admin/shipping";
-import {
-  getAdminShippingMethod,
-  getAdminShippingZonesForForm,
-} from "@/lib/admin/shipping";
+import { getAdminShippingMethod, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
 
 export default async function EditShippingMethodPage({
   params,
@@ -28,10 +25,7 @@ export default async function EditShippingMethodPage({
         title={`Edit ${method.name}`}
         description="Update pricing and assigned zone for this checkout delivery option."
       >
-        <Link
-          href="/admin/shipping/methods"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/shipping/methods" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Methods</span>
         </Link>

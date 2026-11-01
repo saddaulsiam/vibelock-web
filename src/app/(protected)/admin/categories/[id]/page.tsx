@@ -16,10 +16,7 @@ import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { CategoryProductsManager } from "@/components/admin/categories";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import {
-  getAdminAvailableProductsForCategory,
-  getAdminCategoryDetail,
-} from "@/lib/admin/catalog";
+import { getAdminAvailableProductsForCategory, getAdminCategoryDetail } from "@/lib/admin/catalog";
 
 export default async function AdminCategoryDetailPage({
   params,
@@ -52,10 +49,7 @@ export default async function AdminCategoryDetailPage({
           `Merchandising hub for "${category.name}". Manage product assignments, monitor stock availability, and curate category taxonomy.`
         }
       >
-        <Link
-          href="/admin/categories"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/categories" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>All Categories</span>
         </Link>
@@ -112,15 +106,13 @@ export default async function AdminCategoryDetailPage({
         />
         <AdminKpiCard
           label="Category Hierarchy"
-          value={
-            category.parent ? category.parent.name : "Root Department"
-          }
+          value={category.parent ? category.parent.name : "Root Department"}
           description={
             metrics.subCategoryCount > 0
               ? `${metrics.subCategoryCount} nested sub-categories`
               : category.parent
-              ? `Child of ${category.parent.name}`
-              : "Top-level department"
+                ? `Child of ${category.parent.name}`
+                : "Top-level department"
           }
           icon={Folder}
           tone="purple"
@@ -132,7 +124,7 @@ export default async function AdminCategoryDetailPage({
       {category.children.length > 0 && (
         <div className="rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-600">
+            <h2 className="text-xs font-bold tracking-wider text-neutral-600 uppercase">
               Sub-Categories in {category.name} ({category.children.length})
             </h2>
           </div>
@@ -145,10 +137,10 @@ export default async function AdminCategoryDetailPage({
               >
                 <Folder className="size-3.5 text-neutral-400 group-hover:text-neutral-600" />
                 <span>{child.name}</span>
-                <span className="rounded bg-neutral-200/80 px-1.5 py-0.2 text-[10px] font-mono text-neutral-600">
+                <span className="py-0.2 rounded bg-neutral-200/80 px-1.5 font-mono text-[10px] text-neutral-600">
                   {child.productCount} products
                 </span>
-                <span className="text-[10px] text-neutral-400 group-hover:translate-x-0.5 transition-transform">
+                <span className="text-[10px] text-neutral-400 transition-transform group-hover:translate-x-0.5">
                   →
                 </span>
               </Link>
@@ -163,9 +155,7 @@ export default async function AdminCategoryDetailPage({
           <div>
             <div className="flex items-center gap-2">
               <Megaphone className="size-4 text-neutral-700" />
-              <h2 className="text-base font-bold text-neutral-900">
-                Promotional Banners
-              </h2>
+              <h2 className="text-base font-bold text-neutral-900">Promotional Banners</h2>
               <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-600">
                 {banners.length} {banners.length === 1 ? "Banner" : "Banners"}
               </span>
@@ -175,16 +165,10 @@ export default async function AdminCategoryDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              href="/admin/banners"
-              className={ADMIN_TABLE_CLASSES.buttonSecondary}
-            >
+            <Link href="/admin/banners" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
               <span>Manage All Banners</span>
             </Link>
-            <Link
-              href="/admin/banners/new"
-              className={ADMIN_TABLE_CLASSES.buttonPrimary}
-            >
+            <Link href="/admin/banners/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
               <Plus className="size-3.5" />
               <span>Create Banner</span>
             </Link>
@@ -198,7 +182,8 @@ export default async function AdminCategoryDetailPage({
               No promotional banners currently assigned to this category.
             </p>
             <p className="mt-1 text-[11px] text-neutral-400">
-              Create a marketing banner in the Banners Hub and target &quot;{category.name}&quot; to display it on the storefront.
+              Create a marketing banner in the Banners Hub and target &quot;{category.name}&quot; to
+              display it on the storefront.
             </p>
             <div className="mt-3">
               <Link
@@ -233,7 +218,9 @@ export default async function AdminCategoryDetailPage({
                           : "bg-neutral-800/80 text-white shadow-xs"
                       }`}
                     >
-                      <span className={`size-1.5 rounded-full ${banner.isActive ? "bg-white" : "bg-neutral-400"}`} />
+                      <span
+                        className={`size-1.5 rounded-full ${banner.isActive ? "bg-white" : "bg-neutral-400"}`}
+                      />
                       {banner.isActive ? "Active" : "Draft / Inactive"}
                     </span>
                   </div>
@@ -245,7 +232,7 @@ export default async function AdminCategoryDetailPage({
                       {banner.title}
                     </h3>
                     <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-neutral-500">
-                      <span className="rounded bg-neutral-200/70 px-1.5 py-0.2 font-mono text-[10px] uppercase font-semibold text-neutral-700">
+                      <span className="py-0.2 rounded bg-neutral-200/70 px-1.5 font-mono text-[10px] font-semibold text-neutral-700 uppercase">
                         {banner.placement}
                       </span>
                       <span>Order #{banner.sortOrder}</span>
@@ -274,11 +261,10 @@ export default async function AdminCategoryDetailPage({
       {/* ── Product Merchandising & Assignment Manager ── */}
       <div className="rounded-xl border border-neutral-200/90 bg-white p-5 shadow-2xs">
         <div className="mb-4">
-          <h2 className="text-base font-bold text-neutral-900">
-            Assigned Products Hub
-          </h2>
+          <h2 className="text-base font-bold text-neutral-900">Assigned Products Hub</h2>
           <p className="text-xs text-neutral-500">
-            Assign products to this category, review stock status, and curate the merchandise displayed to customers.
+            Assign products to this category, review stock status, and curate the merchandise
+            displayed to customers.
           </p>
         </div>
 

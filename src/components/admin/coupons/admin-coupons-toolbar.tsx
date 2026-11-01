@@ -13,10 +13,7 @@ import {
   type AdminTableTabItem,
 } from "@/components/admin/shared";
 import type { CouponFilter } from "@/lib/admin/coupons/coupon-shared";
-import {
-  couponColumnOptions,
-  type CouponColumnKey,
-} from "./coupon-table-types";
+import { couponColumnOptions, type CouponColumnKey } from "./coupon-table-types";
 
 export interface AdminCouponsToolbarProps {
   currentFilter: CouponFilter;
@@ -93,11 +90,7 @@ export function AdminCouponsToolbar({
   return (
     <div className="space-y-4">
       {/* ── 1. Segment Status Filter Tabs ── */}
-      <AdminTableTabs
-        tabs={tabs}
-        activeKey={currentFilter}
-        onChange={onFilterChange}
-      />
+      <AdminTableTabs tabs={tabs} activeKey={currentFilter} onChange={onFilterChange} />
 
       {/* ── 2. Search & Toolbar Controls ── */}
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

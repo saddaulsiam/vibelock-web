@@ -12,4 +12,3 @@ export interface PosParkedCart {
   totalValue: number;
   itemsCount: number;
 }
-

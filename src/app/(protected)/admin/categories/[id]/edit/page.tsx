@@ -22,10 +22,7 @@ export default async function EditAdminCategoryPage({
         title={`Edit ${category.name}`}
         description="Update category name, parent hierarchy, media assets, and description."
       >
-        <Link
-          href="/admin/categories"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/categories" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Categories</span>
         </Link>

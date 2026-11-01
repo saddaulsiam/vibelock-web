@@ -37,12 +37,12 @@ export default function ShippingPolicyPage() {
             <Truck className="size-4" />
             <span>Fulfillment Operations</span>
           </div>
-          <h1 className="mt-3 font-heading text-3xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Shipping &amp; Delivery Policy
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-[#F3F0E8]/70 sm:text-base">
-            From our Dhaka fulfillment center to your doorstep. Transparent rates, fast couriers, and
-            safe parcel tracking across all 64 districts of Bangladesh.
+            From our Dhaka fulfillment center to your doorstep. Transparent rates, fast couriers,
+            and safe parcel tracking across all 64 districts of Bangladesh.
           </p>
           <div className="mt-6 flex items-center gap-4 text-xs text-[#F3F0E8]/50">
             <span>Last Updated: {lastUpdated}</span>
@@ -69,7 +69,7 @@ export default function ShippingPolicyPage() {
                       Fast Delivery
                     </span>
                   </div>
-                  <h3 className="mt-4 font-heading text-2xl font-bold text-[#101114]">
+                  <h3 className="font-heading mt-4 text-2xl font-bold text-[#101114]">
                     24 – 48 Hours
                   </h3>
                   <p className="mt-1 text-xs text-[#101114]/70">Standard Home Delivery</p>
@@ -88,7 +88,7 @@ export default function ShippingPolicyPage() {
                       All 64 Districts
                     </span>
                   </div>
-                  <h3 className="mt-4 font-heading text-2xl font-bold text-[#101114]">
+                  <h3 className="font-heading mt-4 text-2xl font-bold text-[#101114]">
                     2 – 4 Days
                   </h3>
                   <p className="mt-1 text-xs text-[#101114]/70">Doorstep &amp; Thana Hubs</p>
@@ -106,13 +106,14 @@ export default function ShippingPolicyPage() {
                 </h2>
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
                   <p>
-                    All domestic VibeLock parcels are dispatched through <strong>Steadfast Courier</strong>,
-                    one of Bangladesh&apos;s leading logistics networks.
+                    All domestic VibeLock parcels are dispatched through{" "}
+                    <strong>Steadfast Courier</strong>, one of Bangladesh&apos;s leading logistics
+                    networks.
                   </p>
                   <p>
-                    Once your order is picked up from our warehouse, you will receive an SMS and email
-                    with a direct <strong>Steadfast Tracking Consignment Code</strong> to monitor your parcel
-                    in real time.
+                    Once your order is picked up from our warehouse, you will receive an SMS and
+                    email with a direct <strong>Steadfast Tracking Consignment Code</strong> to
+                    monitor your parcel in real time.
                   </p>
                 </div>
               </div>
@@ -125,17 +126,19 @@ export default function ShippingPolicyPage() {
                 <div className="mt-4 space-y-3 text-sm leading-relaxed text-[#101114]/80">
                   <ul className="list-disc space-y-2 pl-5">
                     <li>
-                      <strong>Same-Day Dispatch:</strong> Orders placed before <strong>4:00 PM</strong>{" "}
-                      (Saturday to Thursday) are verified, packed, and handed to the courier the same
+                      <strong>Same-Day Dispatch:</strong> Orders placed before{" "}
+                      <strong>4:00 PM</strong> (Saturday to Thursday) are verified, packed, and
+                      handed to the courier the same day.
+                    </li>
+                    <li>
+                      <strong>Friday &amp; Public Holidays:</strong> Orders placed on Fridays or
+                      national holidays are processed and dispatched on the immediate next business
                       day.
                     </li>
                     <li>
-                      <strong>Friday &amp; Public Holidays:</strong> Orders placed on Fridays or national
-                      holidays are processed and dispatched on the immediate next business day.
-                    </li>
-                    <li>
-                      <strong>Order Verification:</strong> For Cash on Delivery orders, our automated SMS
-                      or customer care desk may verify your delivery address to ensure prompt handover.
+                      <strong>Order Verification:</strong> For Cash on Delivery orders, our
+                      automated SMS or customer care desk may verify your delivery address to ensure
+                      prompt handover.
                     </li>
                   </ul>
                 </div>
@@ -160,13 +163,13 @@ export default function ShippingPolicyPage() {
                       possession.
                     </li>
                     <li>
-                      If the outer parcel is torn, opened, or heavily taped over, refuse to accept and
-                      notify us immediately.
+                      If the outer parcel is torn, opened, or heavily taped over, refuse to accept
+                      and notify us immediately.
                     </li>
                     <li>
-                      Per standard courier rules, you may open the parcel and try on the garment after
-                      handing the COD invoice payment to the delivery rider. If the size does not fit,
-                      our 7-day exchange policy guarantees a seamless swap.
+                      Per standard courier rules, you may open the parcel and try on the garment
+                      after handing the COD invoice payment to the delivery rider. If the size does
+                      not fit, our 7-day exchange policy guarantees a seamless swap.
                     </li>
                   </ul>
                 </div>

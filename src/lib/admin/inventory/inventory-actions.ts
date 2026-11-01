@@ -234,7 +234,9 @@ export async function bulkAdjustInventoryAction({
         const currentStock = stock._sum.quantity ?? 0;
         const reservedStock = reserved._sum.quantity ?? 0;
         if (currentStock + q < reservedStock) {
-          throw new Error(`Adjustment on variant ${variantId} would reduce stock below reserved count.`);
+          throw new Error(
+            `Adjustment on variant ${variantId} would reduce stock below reserved count.`
+          );
         }
 
         await tx.inventoryTransaction.create({
@@ -304,9 +306,7 @@ export async function reconcileStocktakeAction({
   }
 
   // Filter items where there is a non-zero discrepancy (scanned != expected)
-  const discrepancies = items.filter(
-    (item) => item.scannedQuantity !== item.expectedQuantity
-  );
+  const discrepancies = items.filter((item) => item.scannedQuantity !== item.expectedQuantity);
 
   if (discrepancies.length === 0) {
     return {
@@ -478,4 +478,3 @@ export async function getReorderSuggestionsAction(threshold = 5): Promise<{
     };
   }
 }
-

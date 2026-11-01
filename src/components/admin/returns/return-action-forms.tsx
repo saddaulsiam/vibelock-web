@@ -56,7 +56,7 @@ export function ReturnStatusForm({
     <form action={formAction} className="space-y-3.5">
       <input type="hidden" name="id" value={id} />
       <div>
-        <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+        <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
           Next Status Transition
         </label>
         <select
@@ -75,13 +75,14 @@ export function ReturnStatusForm({
 
       {/* QC Quality Grading Section (Visible when transitioning to COMPLETED) */}
       {isCompletedSelected && items.length > 0 && (
-        <div className="rounded-xl border border-purple-200 bg-purple-50/40 p-3.5 space-y-3">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-purple-950 uppercase tracking-wide">
+        <div className="space-y-3 rounded-xl border border-purple-200 bg-purple-50/40 p-3.5">
+          <div className="flex items-center gap-1.5 text-xs font-bold tracking-wide text-purple-950 uppercase">
             <ShieldAlert className="size-4 text-purple-700" />
             <span>Warehouse QC Quality Grading</span>
           </div>
-          <p className="text-[11px] text-purple-800 leading-snug">
-            Grade each returned item below. Resellable items return to active sellable stock; damaged/defective items are diverted to the Damaged Ledger (0 stock added).
+          <p className="text-[11px] leading-snug text-purple-800">
+            Grade each returned item below. Resellable items return to active sellable stock;
+            damaged/defective items are diverted to the Damaged Ledger (0 stock added).
           </p>
 
           <div className="space-y-2 pt-1">
@@ -90,27 +91,21 @@ export function ReturnStatusForm({
               return (
                 <div
                   key={it.id}
-                  className="rounded-lg border border-neutral-200 bg-white p-2.5 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-2xs"
+                  className="flex flex-col gap-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-xs shadow-2xs sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="font-bold text-neutral-900 truncate">{it.productName}</p>
+                    <p className="truncate font-bold text-neutral-900">{it.productName}</p>
                     <p className="font-mono text-[11px] text-neutral-500">
                       SKU: {it.sku} &bull; Qty: {it.quantity}
                     </p>
                   </div>
 
-                  <input
-                    type="hidden"
-                    name={`item_grade_${it.id}`}
-                    value={currentGrade}
-                  />
+                  <input type="hidden" name={`item_grade_${it.id}`} value={currentGrade} />
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex shrink-0 items-center gap-1.5">
                     <button
                       type="button"
-                      onClick={() =>
-                        setItemGrading((prev) => ({ ...prev, [it.id]: "RESELLABLE" }))
-                      }
+                      onClick={() => setItemGrading((prev) => ({ ...prev, [it.id]: "RESELLABLE" }))}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
                         currentGrade === "RESELLABLE"
                           ? "bg-emerald-600 text-white shadow-2xs"
@@ -121,9 +116,7 @@ export function ReturnStatusForm({
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        setItemGrading((prev) => ({ ...prev, [it.id]: "DAMAGED" }))
-                      }
+                      onClick={() => setItemGrading((prev) => ({ ...prev, [it.id]: "DAMAGED" }))}
                       className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
                         currentGrade === "DAMAGED"
                           ? "bg-rose-600 text-white shadow-2xs"
@@ -141,20 +134,20 @@ export function ReturnStatusForm({
       )}
 
       <div>
-        <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+        <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
           Internal Note (Optional)
         </label>
         <textarea
           name="notes"
           placeholder="Optional internal QC or handover note..."
-          className="border-input flex min-h-18 w-full rounded-lg border bg-white px-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 shadow-2xs"
+          className="border-input flex min-h-18 w-full rounded-lg border bg-white px-3 py-2 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400"
         />
       </div>
 
       <button
         type="submit"
         disabled={pending}
-        className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-60 transition"
+        className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-neutral-800 disabled:opacity-60"
       >
         {pending ? "Updating Status..." : "Update Return Status"}
       </button>
@@ -177,10 +170,7 @@ export function StoreCreditRefundForm({
   const [tab, setTab] = useState<"CREDIT" | "CASH">("CREDIT");
   const [customAmount, setCustomAmount] = useState<string>(String(maxRequestedAmount || ""));
 
-  const [creditState, creditFormAction, creditPending] = useActionState(
-    creditAction,
-    initialState
-  );
+  const [creditState, creditFormAction, creditPending] = useActionState(creditAction, initialState);
   const [cashState, cashFormAction, cashPending] = useActionState(cashAction, initialState);
 
   const baseNum = Number(customAmount) > 0 ? Number(customAmount) : maxRequestedAmount;
@@ -222,7 +212,7 @@ export function StoreCreditRefundForm({
           <input type="hidden" name="returnId" value={returnId} />
 
           <div>
-            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+            <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Merchandise Refund Base (৳)
             </label>
             <input
@@ -239,7 +229,7 @@ export function StoreCreditRefundForm({
           </div>
 
           {/* 105% Bonus Calculation Card */}
-          <div className="rounded-xl border border-emerald-300 bg-emerald-50/60 p-3.5 space-y-2">
+          <div className="space-y-2 rounded-xl border border-emerald-300 bg-emerald-50/60 p-3.5">
             <div className="flex items-center justify-between text-xs text-emerald-950">
               <span>Return Value:</span>
               <span className="font-semibold">৳ {baseNum.toLocaleString("en-BD")}</span>
@@ -251,21 +241,22 @@ export function StoreCreditRefundForm({
               </span>
               <span className="font-bold">+৳ {bonusNum.toLocaleString("en-BD")}</span>
             </div>
-            <div className="border-t border-emerald-200/80 pt-2 flex items-center justify-between text-sm font-black text-emerald-950">
+            <div className="flex items-center justify-between border-t border-emerald-200/80 pt-2 text-sm font-black text-emerald-950">
               <span>Total Store Voucher:</span>
               <span className="text-base text-emerald-700">
                 ৳ {totalVoucherNum.toLocaleString("en-BD")}
               </span>
             </div>
-            <p className="text-[11px] text-emerald-800/80 leading-snug pt-1">
-              Generates a single-use promo voucher valid for 180 days with zero minimum spend. Automatically emails &amp; SMS-notifies customer.
+            <p className="pt-1 text-[11px] leading-snug text-emerald-800/80">
+              Generates a single-use promo voucher valid for 180 days with zero minimum spend.
+              Automatically emails &amp; SMS-notifies customer.
             </p>
           </div>
 
           <button
             type="submit"
             disabled={creditPending || baseNum <= 0}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-60 transition"
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-emerald-700 disabled:opacity-60"
           >
             {creditPending ? (
               <>
@@ -285,7 +276,7 @@ export function StoreCreditRefundForm({
         <form action={cashFormAction} className="space-y-3">
           <input type="hidden" name="returnId" value={returnId} />
           <div>
-            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+            <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Refund Amount (৳)
             </label>
             <input
@@ -302,7 +293,7 @@ export function StoreCreditRefundForm({
           </div>
 
           <div>
-            <label className="text-muted-foreground block text-[11px] font-bold uppercase tracking-wider mb-1">
+            <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Refund Reason (Optional)
             </label>
             <input
@@ -316,7 +307,7 @@ export function StoreCreditRefundForm({
           <button
             type="submit"
             disabled={cashPending}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold uppercase tracking-wider text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-60 transition"
+            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-neutral-800 disabled:opacity-60"
           >
             {cashPending ? "Creating..." : "Create Pending Gateway Refund"}
           </button>
@@ -406,7 +397,7 @@ export function ReturnSteadfastHeaderAction({
         href={reverseLogistics.trackingUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-900 shadow-2xs hover:bg-cyan-100 transition"
+        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-cyan-200 bg-cyan-50 px-3 text-xs font-bold text-cyan-900 shadow-2xs transition hover:bg-cyan-100"
         title="View live reverse tracking on Steadfast"
       >
         <Truck className="size-3.5 text-cyan-700" />
@@ -420,7 +411,7 @@ export function ReturnSteadfastHeaderAction({
     return (
       <a
         href="#steadfast-pickup"
-        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 transition"
+        className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 text-xs font-bold text-white shadow-2xs transition hover:bg-emerald-700"
         title="Scroll to Steadfast Return Pickup booking form"
       >
         <Truck className="size-3.5" />
@@ -460,18 +451,14 @@ export function ReturnSteadfastPickupCard({
     <div
       id="steadfast-pickup"
       className={`rounded-xl border p-5 shadow-2xs transition-colors ${
-        isBooked
-          ? "border-cyan-300/80 bg-cyan-50/20"
-          : "border-neutral-200/90 bg-white"
+        isBooked ? "border-cyan-300/80 bg-cyan-50/20" : "border-neutral-200/90 bg-white"
       }`}
     >
       <div className="mb-3.5 flex items-center justify-between border-b border-neutral-100 pb-2.5">
         <div className="flex items-center gap-2">
           <div
             className={`flex size-7 items-center justify-center rounded-lg ${
-              isBooked
-                ? "bg-cyan-100 text-cyan-800"
-                : "bg-neutral-100 text-neutral-700"
+              isBooked ? "bg-cyan-100 text-cyan-800" : "bg-neutral-100 text-neutral-700"
             }`}
           >
             <Truck className="size-4" />
@@ -480,9 +467,7 @@ export function ReturnSteadfastPickupCard({
             <h3 className="text-xs font-bold tracking-wider text-neutral-900 uppercase">
               Steadfast Reverse Logistics
             </h3>
-            <p className="text-[10px] text-neutral-500">
-              Doorstep return pickup consignment
-            </p>
+            <p className="text-[10px] text-neutral-500">Doorstep return pickup consignment</p>
           </div>
         </div>
 
@@ -492,7 +477,7 @@ export function ReturnSteadfastPickupCard({
             <span>Consignment Active</span>
           </span>
         ) : (
-          <span className="rounded bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-600 uppercase tracking-wider">
+          <span className="rounded bg-neutral-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-neutral-600 uppercase">
             Not Booked
           </span>
         )}
@@ -500,12 +485,12 @@ export function ReturnSteadfastPickupCard({
 
       {isBooked && reverseLogistics ? (
         <div className="space-y-3.5 text-xs">
-          <div className="rounded-lg border border-cyan-200/80 bg-white p-3 space-y-2">
+          <div className="space-y-2 rounded-lg border border-cyan-200/80 bg-white p-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Consignment ID
               </span>
-              <div className="flex items-center gap-1.5 font-mono font-black text-neutral-900 text-xs">
+              <div className="flex items-center gap-1.5 font-mono text-xs font-black text-neutral-900">
                 <span>#{reverseLogistics.consignmentId}</span>
                 <OrderCopyButton
                   text={reverseLogistics.consignmentId}
@@ -519,7 +504,7 @@ export function ReturnSteadfastPickupCard({
               <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                 Steadfast Tracking
               </span>
-              <div className="flex items-center gap-1.5 font-mono font-bold text-neutral-900 text-xs">
+              <div className="flex items-center gap-1.5 font-mono text-xs font-bold text-neutral-900">
                 <span>{reverseLogistics.trackingCode}</span>
                 <OrderCopyButton
                   text={reverseLogistics.trackingCode}
@@ -548,7 +533,7 @@ export function ReturnSteadfastPickupCard({
               href={reverseLogistics.trackingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800 transition"
+              className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
               title="Open Steadfast live tracking portal"
             >
               <Truck className="size-3.5" />
@@ -561,7 +546,7 @@ export function ReturnSteadfastPickupCard({
                 href={reverseLogistics.labelUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-8.5 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-bold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
+                className="inline-flex h-8.5 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-bold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
                 title="Print official Steadfast courier consignment label"
               >
                 <Printer className="size-3.5 text-neutral-500" />
@@ -572,7 +557,7 @@ export function ReturnSteadfastPickupCard({
         </div>
       ) : (
         <div className="space-y-3 text-xs">
-          <div className="rounded-lg bg-neutral-50 p-3 space-y-1.5 text-neutral-600">
+          <div className="space-y-1.5 rounded-lg bg-neutral-50 p-3 text-neutral-600">
             <p className="font-semibold text-neutral-800">
               Pickup From:{" "}
               <span className="font-normal text-neutral-600">
@@ -580,7 +565,7 @@ export function ReturnSteadfastPickupCard({
               </span>
             </p>
             {shippingAddress && (
-              <p className="text-[11px] text-neutral-500 leading-relaxed">
+              <p className="text-[11px] leading-relaxed text-neutral-500">
                 <strong>Address:</strong> {shippingAddress}
               </p>
             )}
@@ -600,7 +585,7 @@ export function ReturnSteadfastPickupCard({
               <button
                 type="submit"
                 disabled={pending}
-                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-xs font-bold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-60 transition"
+                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-emerald-700 disabled:opacity-60"
               >
                 {pending ? (
                   <>

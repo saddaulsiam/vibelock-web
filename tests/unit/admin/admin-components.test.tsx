@@ -106,9 +106,8 @@ describe("Admin Reusable UI Components", () => {
   });
 
   test("renders order badges and formats WhatsApp URL correctly", async () => {
-    const { getOrderStatusBadge, getPaymentStatusBadge, generateWhatsAppUrl } = await import(
-      "@/components/admin/orders/admin-order-badges"
-    );
+    const { getOrderStatusBadge, getPaymentStatusBadge, generateWhatsAppUrl } =
+      await import("@/components/admin/orders/admin-order-badges");
 
     const pendingBadge = renderToStaticMarkup(getOrderStatusBadge("PENDING"));
     expect(pendingBadge).toContain("Pending");
@@ -117,13 +116,14 @@ describe("Admin Reusable UI Components", () => {
     expect(paidBadge).toContain("Paid");
 
     const waUrl = generateWhatsAppUrl("01711111111", "VL-100", "Siam");
-    expect(waUrl).toBe("https://wa.me/8801711111111?text=Hello%20Siam%2C%20regarding%20your%20VibeLock%20order%20%23VL-100%3A%20");
+    expect(waUrl).toBe(
+      "https://wa.me/8801711111111?text=Hello%20Siam%2C%20regarding%20your%20VibeLock%20order%20%23VL-100%3A%20"
+    );
   });
 
   test("renders OrderLifecycleStepper with stages and cancelled states", async () => {
-    const { OrderLifecycleStepper } = await import(
-      "@/components/admin/orders/order-lifecycle-stepper"
-    );
+    const { OrderLifecycleStepper } =
+      await import("@/components/admin/orders/order-lifecycle-stepper");
 
     const pendingHtml = renderToStaticMarkup(
       <OrderLifecycleStepper
@@ -140,7 +140,13 @@ describe("Admin Reusable UI Components", () => {
       <OrderLifecycleStepper
         currentStatus="CANCELLED"
         createdAt={new Date("2026-10-26T10:00:00Z")}
-        orderHistory={[{ status: "CANCELLED", createdAt: new Date("2026-10-26T10:30:00Z"), notes: "Customer requested cancellation" }]}
+        orderHistory={[
+          {
+            status: "CANCELLED",
+            createdAt: new Date("2026-10-26T10:30:00Z"),
+            notes: "Customer requested cancellation",
+          },
+        ]}
       />
     );
     expect(cancelledHtml).toContain("Order Lifecycle: Cancelled");
@@ -148,9 +154,8 @@ describe("Admin Reusable UI Components", () => {
   });
 
   test("renders OrderPickPackChecklist with items and progress", async () => {
-    const { OrderPickPackChecklist } = await import(
-      "@/components/admin/orders/order-pick-pack-checklist"
-    );
+    const { OrderPickPackChecklist } =
+      await import("@/components/admin/orders/order-pick-pack-checklist");
 
     const html = renderToStaticMarkup(
       <OrderPickPackChecklist
@@ -177,9 +182,8 @@ describe("Admin Reusable UI Components", () => {
   });
 
   test("renders OrderThermalLabelModal with barcode and COD tag", async () => {
-    const { OrderThermalLabelModal } = await import(
-      "@/components/admin/orders/order-thermal-label-modal"
-    );
+    const { OrderThermalLabelModal } =
+      await import("@/components/admin/orders/order-thermal-label-modal");
 
     const html = renderToStaticMarkup(
       <OrderThermalLabelModal
@@ -209,5 +213,3 @@ describe("Admin Reusable UI Components", () => {
     expect(html).toContain("VL-9999");
   });
 });
-
-

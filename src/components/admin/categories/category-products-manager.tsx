@@ -237,7 +237,11 @@ export function CategoryProductsManager({
 
   // Remove action
   const handleRemoveProduct = async (productId: string, productName: string) => {
-    if (!window.confirm(`Remove "${productName}" from category "${categoryName}"? The product itself will not be deleted.`)) {
+    if (
+      !window.confirm(
+        `Remove "${productName}" from category "${categoryName}"? The product itself will not be deleted.`
+      )
+    ) {
       return;
     }
 
@@ -298,32 +302,34 @@ export function CategoryProductsManager({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2.5">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search assigned products by name or slug...`}
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-8 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 shadow-2xs focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#00D9FF]"
+              className="h-10 w-full rounded-lg border border-neutral-200 bg-white pr-8 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-3.5" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-neutral-500 whitespace-nowrap">
+          <div className="flex items-center gap-2 text-xs whitespace-nowrap text-neutral-500">
             <span>
-              Showing <span className="font-semibold text-neutral-900">{filteredAssigned.length}</span>{" "}
-              of <span className="font-semibold text-neutral-900">{assignedProducts.length}</span> assigned
+              Showing{" "}
+              <span className="font-semibold text-neutral-900">{filteredAssigned.length}</span> of{" "}
+              <span className="font-semibold text-neutral-900">{assignedProducts.length}</span>{" "}
+              assigned
             </span>
             {pinnedCount > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
                 <Star className="size-3 fill-amber-400 text-amber-600" />
                 <span>{pinnedCount} Pinned</span>
               </span>
@@ -398,7 +404,7 @@ export function CategoryProductsManager({
                     {/* Product Name & Thumbnail */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="relative size-11 shrink-0 overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 flex items-center justify-center shadow-2xs">
+                        <div className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200/90 bg-neutral-100 shadow-2xs">
                           {product.primaryImage ? (
                             <Image
                               src={product.primaryImage}
@@ -420,7 +426,7 @@ export function CategoryProductsManager({
                               {product.name}
                             </Link>
                             {product.isFeatured && (
-                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[10px] font-bold text-amber-800">
+                              <span className="py-0.2 inline-flex items-center gap-0.5 rounded border border-amber-200 bg-amber-50 px-1.5 text-[10px] font-bold text-amber-800">
                                 <Star className="size-2.5 fill-amber-400 text-amber-600" />
                                 <span>Featured</span>
                               </span>
@@ -460,7 +466,7 @@ export function CategoryProductsManager({
                         }
                         className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
                           product.isFeatured
-                            ? "border-amber-300 bg-amber-50 text-amber-800 shadow-2xs hover:bg-amber-100 hover:border-amber-400"
+                            ? "border-amber-300 bg-amber-50 text-amber-800 shadow-2xs hover:border-amber-400 hover:bg-amber-100"
                             : "border-neutral-200 bg-white text-neutral-600 shadow-2xs hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-900"
                         } disabled:opacity-50`}
                       >
@@ -486,8 +492,8 @@ export function CategoryProductsManager({
                           product.status === ProductStatus.PUBLISHED
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                             : product.status === ProductStatus.DRAFT
-                            ? "border-amber-200 bg-amber-50 text-amber-800"
-                            : "border-neutral-200 bg-neutral-100 text-neutral-600"
+                              ? "border-amber-200 bg-amber-50 text-amber-800"
+                              : "border-neutral-200 bg-neutral-100 text-neutral-600"
                         }`}
                       >
                         <span
@@ -495,8 +501,8 @@ export function CategoryProductsManager({
                             product.status === ProductStatus.PUBLISHED
                               ? "bg-emerald-500"
                               : product.status === ProductStatus.DRAFT
-                              ? "bg-amber-500"
-                              : "bg-neutral-400"
+                                ? "bg-amber-500"
+                                : "bg-neutral-400"
                           }`}
                         />
                         {product.status}
@@ -510,8 +516,8 @@ export function CategoryProductsManager({
                           product.totalStock > 5
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                             : product.totalStock > 0
-                            ? "border-amber-200 bg-amber-50 text-amber-800"
-                            : "border-rose-200 bg-rose-50 text-rose-800"
+                              ? "border-amber-200 bg-amber-50 text-amber-800"
+                              : "border-rose-200 bg-rose-50 text-rose-800"
                         }`}
                       >
                         {product.totalStock > 0 ? `${product.totalStock} in stock` : "Out of stock"}
@@ -529,7 +535,7 @@ export function CategoryProductsManager({
                         <Link
                           href={`/admin/products/${product.id}/edit`}
                           title={`Edit ${product.name}`}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 hover:text-neutral-950 transition-colors"
+                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-700 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950"
                         >
                           <ExternalLink className="size-3 text-neutral-400" />
                           <span>Edit</span>
@@ -540,7 +546,7 @@ export function CategoryProductsManager({
                           onClick={() => handleRemoveProduct(product.id, product.name)}
                           disabled={isRemoving}
                           title={`Remove from ${categoryName}`}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-50 hover:text-rose-900 transition-colors disabled:opacity-50"
+                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 text-xs font-semibold text-rose-700 shadow-2xs transition-colors hover:bg-rose-50 hover:text-rose-900 disabled:opacity-50"
                         >
                           {isRemoving ? (
                             <Loader2 className="size-3 animate-spin text-rose-600" />
@@ -568,7 +574,7 @@ export function CategoryProductsManager({
             aria-hidden="true"
           />
 
-          <div className="relative z-10 flex w-full max-w-2xl flex-col max-h-[85vh] rounded-2xl border border-neutral-200 bg-white shadow-2xl overflow-hidden">
+          <div className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-neutral-100 p-5">
               <div className="flex items-center gap-3">
@@ -588,7 +594,7 @@ export function CategoryProductsManager({
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
                 disabled={modalSubmitting}
-                className="flex size-8 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition"
+                className="flex size-8 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
               >
                 <X className="size-4" />
               </button>
@@ -598,13 +604,13 @@ export function CategoryProductsManager({
             <div className="border-b border-neutral-100 bg-neutral-50/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+                  <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
                   <input
                     type="text"
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
                     placeholder="Search unassigned products..."
-                    className="h-9.5 w-full rounded-lg border border-neutral-200 bg-white pl-9 pr-3 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 shadow-2xs focus:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#00D9FF]"
+                    className="h-9.5 w-full rounded-lg border border-neutral-200 bg-white pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
                   />
                 </div>
 
@@ -612,7 +618,7 @@ export function CategoryProductsManager({
                   <button
                     type="button"
                     onClick={handleSelectAllFiltered}
-                    className="inline-flex h-9.5 shrink-0 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 transition"
+                    className="inline-flex h-9.5 shrink-0 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
                   >
                     {filteredAvailable.every((p) => selectedProductIds.includes(p.id))
                       ? "Deselect All"
@@ -623,7 +629,7 @@ export function CategoryProductsManager({
             </div>
 
             {/* Scrollable Product List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 space-y-2 overflow-y-auto p-4">
               {filteredAvailable.length === 0 ? (
                 <div className="py-12 text-center">
                   <Package className="mx-auto size-10 text-neutral-300" />
@@ -651,14 +657,14 @@ export function CategoryProductsManager({
                           : "border-neutral-200/90 bg-white hover:border-neutral-300 hover:bg-neutral-50/60"
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex min-w-0 items-center gap-3">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleSelectProduct(product.id)}
                           className="size-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
                         />
-                        <div className="relative size-10 shrink-0 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100 flex items-center justify-center">
+                        <div className="relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-neutral-200 bg-neutral-100">
                           {product.primaryImage ? (
                             <Image
                               src={product.primaryImage}
@@ -678,7 +684,11 @@ export function CategoryProductsManager({
                           <div className="flex items-center gap-2 text-[11px] text-neutral-500">
                             <span className="font-mono text-neutral-400">/{product.slug}</span>
                             <span>•</span>
-                            <span>{product.totalStock > 0 ? `${product.totalStock} in stock` : "0 stock"}</span>
+                            <span>
+                              {product.totalStock > 0
+                                ? `${product.totalStock} in stock`
+                                : "0 stock"}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -697,7 +707,8 @@ export function CategoryProductsManager({
             {/* Modal Footer */}
             <div className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50/40 p-4">
               <span className="text-xs font-medium text-neutral-600">
-                <span className="font-bold text-neutral-900">{selectedProductIds.length}</span> product(s) selected
+                <span className="font-bold text-neutral-900">{selectedProductIds.length}</span>{" "}
+                product(s) selected
               </span>
 
               <div className="flex items-center gap-2">
@@ -705,7 +716,7 @@ export function CategoryProductsManager({
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
                   disabled={modalSubmitting}
-                  className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 transition"
+                  className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
                 >
                   Cancel
                 </button>
@@ -713,7 +724,7 @@ export function CategoryProductsManager({
                   type="button"
                   onClick={handleAssignSelected}
                   disabled={selectedProductIds.length === 0 || modalSubmitting}
-                  className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs hover:bg-[#101114]/85 disabled:opacity-40 transition"
+                  className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-40"
                 >
                   {modalSubmitting ? (
                     <>

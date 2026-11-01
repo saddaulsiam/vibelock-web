@@ -3,10 +3,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import {
-  getCustomerRiskProfile,
-  type CombinedCustomerRiskProfile,
-} from "./customer-risk";
+import { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./customer-risk";
 import type {
   AdminCustomerDetailOrder,
   AdminCustomerDetailResult,
@@ -212,7 +209,8 @@ export async function getAdminCustomerById(
   const staffNotes: AdminCustomerStaffNote[] = allAuditLogs
     .filter((log) => log.action === "CUSTOMER_STAFF_NOTE")
     .map((log) => {
-      const meta = (log.metadata as { note?: string; authorName?: string; authorEmail?: string }) || {};
+      const meta =
+        (log.metadata as { note?: string; authorName?: string; authorEmail?: string }) || {};
       return {
         id: log.id,
         note: meta.note || "",
@@ -227,7 +225,7 @@ export async function getAdminCustomerById(
   );
   const isCodBlocked = codStatusLog?.action === "CUSTOMER_COD_RESTRICTED";
   const codBlockReason = isCodBlocked
-    ? ((codStatusLog?.metadata as { reason?: string })?.reason || "Restricted by store manager")
+    ? (codStatusLog?.metadata as { reason?: string })?.reason || "Restricted by store manager"
     : null;
 
   const suspensionLog = allAuditLogs.find(
@@ -235,7 +233,8 @@ export async function getAdminCustomerById(
   );
   const isAccountSuspended = suspensionLog?.action === "CUSTOMER_ACCOUNT_SUSPENDED";
   const suspensionReason = isAccountSuspended
-    ? ((suspensionLog?.metadata as { reason?: string })?.reason || "Account suspended by store manager")
+    ? (suspensionLog?.metadata as { reason?: string })?.reason ||
+      "Account suspended by store manager"
     : null;
 
   const abandonedCart = mapCustomerAbandonedCart(cartData);
@@ -306,4 +305,3 @@ export async function getAdminCustomerById(
     page: normalizedPage,
   };
 }
-

@@ -22,10 +22,7 @@ export default async function EditShippingZonePage({
         title={`Edit ${zone.name}`}
         description="Modify geographical delivery boundary and assigned country codes."
       >
-        <Link
-          href="/admin/shipping/zones"
-          className={ADMIN_TABLE_CLASSES.buttonSecondary}
-        >
+        <Link href="/admin/shipping/zones" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <ArrowLeft className="size-3.5" />
           <span>Back to Zones</span>
         </Link>

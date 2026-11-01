@@ -92,7 +92,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
       <div aria-live="polite" className="space-y-2">
         {matchingVariant ? (
           <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <span className="font-heading text-3xl font-black tracking-tight text-vl-black sm:text-4xl">
+            <span className="font-heading text-vl-black text-3xl font-black tracking-tight sm:text-4xl">
               {formatPrice(matchingVariant.effectivePrice)}
             </span>
             {discount && (
@@ -100,7 +100,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                 <span className="text-muted-foreground text-lg line-through">
                   {formatPrice(matchingVariant.sellingPrice)}
                 </span>
-                <span className="bg-vl-cyan px-2 py-1 text-xs font-semibold text-vl-black">
+                <span className="bg-vl-cyan text-vl-black px-2 py-1 text-xs font-semibold">
                   {discountPercent}% off
                 </span>
               </>
@@ -137,7 +137,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   onClick={() => selectColor(color)}
                   disabled={!available}
                   aria-pressed={selected}
-                  className={`min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none ${
+                  className={`focus-visible:ring-vl-cyan min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
@@ -168,7 +168,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   onClick={() => selectSize(size)}
                   disabled={!available}
                   aria-pressed={selected}
-                  className={`min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none ${
+                  className={`focus-visible:ring-vl-cyan min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"

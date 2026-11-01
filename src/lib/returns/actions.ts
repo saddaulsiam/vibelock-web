@@ -90,7 +90,10 @@ export async function createReturnRequestAction(data: z.input<typeof ReturnReque
 
   const result = ReturnRequestSchema.safeParse(data);
   if (!result.success) {
-    return { success: false, error: result.error.issues[0]?.message || "Invalid return request data" };
+    return {
+      success: false,
+      error: result.error.issues[0]?.message || "Invalid return request data",
+    };
   }
 
   const { orderNumber, items, reason, customerNote, images } = result.data;
@@ -125,10 +128,13 @@ export async function createReturnRequestAction(data: z.input<typeof ReturnReque
       });
 
       const deliveredAt = shipment?.deliveredAt || deliveredHistory?.createdAt || order.updatedAt;
-      const daysSinceDelivery = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+      const daysSinceDelivery =
+        (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
 
       if (daysSinceDelivery > 3) {
-        throw new Error("Return window has expired. Returns must be requested within 3 days of delivery.");
+        throw new Error(
+          "Return window has expired. Returns must be requested within 3 days of delivery."
+        );
       }
 
       // Mandatory photo proof check for Defective or Wrong Item

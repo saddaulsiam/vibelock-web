@@ -23,20 +23,22 @@
 VibeLock-এর বিদ্যমান `prisma/schema.prisma`-তে কোনো ব্রেকিং পরিবর্তন ছাড়াই POS হ্যান্ডেল করা যাবে:
 
 ### `Order` মডেল ম্যাপিং:
-| ফিল্ড | POS ভ্যালু | বিবরণ |
-|---|---|---|
-| `salesChannel` | `SalesChannel.POS` | অর্ডারের সোর্স চিহ্নিত করবে |
-| `status` | `OrderStatus.DELIVERED` | দোকানে সরাসরি পণ্য হস্তান্তর হওয়ায় তাৎক্ষণিক ডেলিভার্ড |
-| `paymentStatus` | `PaymentStatus.SUCCESS` | কাউন্টারে পেমেন্ট সম্পন্ন হওয়ামাত্রই সাকসেস |
-| `customerEmail` | `pos-walkin@vibelock.bd` (বা কাস্টমারের রিয়েল ইমেইল) | ওয়াক-ইন কাস্টমারের ডিফল্ট ইমেইল |
-| `customerName` | `"Walk-in Customer"` (বা কাস্টমারের নাম) | মেমোতে প্রদর্শনের জন্য |
-| `customerPhone` | কাস্টমারের মোবাইল নম্বর (ঐচ্ছিক) | SMS মেমো ও লয়ালটি ট্র্যাকিংয়ের জন্য |
-| `shippingMethodName` | `"In-Store Counter / Takeaway"` | শিপিং মেথড স্ন্যাপশট |
-| `shippingCost` | `0.00` | দোকানে কোনো শিপিং চার্জ নেই |
-| `shippingStreet` | `"Store Outlet Counter"` | ফিজিক্যাল স্টোর লোকেশন |
-| `shippingCity` | `"Dhaka"` | স্টোর সিটি |
+
+| ফিল্ড                | POS ভ্যালু                                           | বিবরণ                                                  |
+| -------------------- | ---------------------------------------------------- | ------------------------------------------------------ |
+| `salesChannel`       | `SalesChannel.POS`                                   | অর্ডারের সোর্স চিহ্নিত করবে                            |
+| `status`             | `OrderStatus.DELIVERED`                              | দোকানে সরাসরি পণ্য হস্তান্তর হওয়ায় তাৎক্ষণিক ডেলিভার্ড |
+| `paymentStatus`      | `PaymentStatus.SUCCESS`                              | কাউন্টারে পেমেন্ট সম্পন্ন হওয়ামাত্রই সাকসেস            |
+| `customerEmail`      | `pos-walkin@vibelock.bd` (বা কাস্টমারের রিয়েল ইমেইল) | ওয়াক-ইন কাস্টমারের ডিফল্ট ইমেইল                        |
+| `customerName`       | `"Walk-in Customer"` (বা কাস্টমারের নাম)             | মেমোতে প্রদর্শনের জন্য                                 |
+| `customerPhone`      | কাস্টমারের মোবাইল নম্বর (ঐচ্ছিক)                     | SMS মেমো ও লয়ালটি ট্র্যাকিংয়ের জন্য                    |
+| `shippingMethodName` | `"In-Store Counter / Takeaway"`                      | শিপিং মেথড স্ন্যাপশট                                   |
+| `shippingCost`       | `0.00`                                               | দোকানে কোনো শিপিং চার্জ নেই                            |
+| `shippingStreet`     | `"Store Outlet Counter"`                             | ফিজিক্যাল স্টোর লোকেশন                                 |
+| `shippingCity`       | `"Dhaka"`                                            | স্টোর সিটি                                             |
 
 ### `InventoryTransaction` ম্যাপিং:
+
 - `type`: `SALE`
 - `quantity`: `-qty` (নেগেটিভ স্টক কর্তন)
 - `referenceId`: `order.id`
@@ -128,6 +130,7 @@ POS স্ক্রিনটি একটি ফুল-স্ক্রিন দ
 ## ৬. সার্ভার অ্যাকশন ও ইনভেন্টরি ট্রানজেকশন লজিক
 
 ### `createPosOrderAction` সিউডোকোড:
+
 ```typescript
 "use server";
 
@@ -146,7 +149,9 @@ export async function createPosOrderAction(payload: PosOrderPayload) {
     for (const item of payload.items) {
       const stock = await calculateAvailableStock(tx, item.variantId);
       if (stock < item.quantity) {
-        throw new Error(`স্টক ঘাটতি: "${item.productName}" পর্যাপ্ত পরিমাণে নেই (বর্তমান স্টক: ${stock})`);
+        throw new Error(
+          `স্টক ঘাটতি: "${item.productName}" পর্যাপ্ত পরিমাণে নেই (বর্তমান স্টক: ${stock})`
+        );
       }
     }
 
@@ -235,7 +240,8 @@ export async function createPosOrderAction(payload: PosOrderPayload) {
   body * {
     visibility: hidden;
   }
-  #pos-receipt, #pos-receipt * {
+  #pos-receipt,
+  #pos-receipt * {
     visibility: visible;
   }
   #pos-receipt {
@@ -243,7 +249,7 @@ export async function createPosOrderAction(payload: PosOrderPayload) {
     left: 0;
     top: 0;
     width: 80mm; /* অথবা 58mm রোল সাইজ */
-    font-family: 'Courier New', monospace;
+    font-family: "Courier New", monospace;
     font-size: 11px;
     padding: 2mm;
   }
@@ -251,28 +257,28 @@ export async function createPosOrderAction(payload: PosOrderPayload) {
 ```
 
 **রিসিটে যা যা থাকবে:**
+
 - VibeLock লোগো ও আউটলেট ঠিকানা
 - মেমো নম্বর ও তারিখ-সময়
 - ক্যাশিয়ারের নাম
 - প্রতিটি আইটেমের নাম, সাইজ, পরিমাণ ও মূল্য
 - সাবটোটাল, ডিসকাউন্ট ও মোট পরিশোধিত টাকা
 - ক্যাশ পেইড ও ফেরত দেওয়া খুচরা (Change)
-- নিচে বারকোড ও শুভেচ্ছা বার্তা: *"Thank you for moving with VibeLock!"*
+- নিচে বারকোড ও শুভেচ্ছা বার্তা: _"Thank you for moving with VibeLock!"_
 
 ---
 
 ## ৮. বাস্তবায়ন পরিকল্পনা (Step-by-Step Implementation Roadmap)
 
-| ধাপ | কাজ | সময়সীমা |
-|---|---|---|
-| **ফেজ ১** | `src/lib/pos/` — কুয়েরি, টাইপস এবং `createPosOrderAction` তৈরি | ১ দিন |
-| **ফেজ ২** | `src/app/(protected)/pos/` — বারকোড স্ক্যানার, প্রোডাক্ট গ্রিড ও কার্ট UI | ১-২ দিন |
-| **ফেজ ৩** | পেমেন্ট মোডাল (ক্যাশ, চেঞ্জ ক্যালকুলেটর, bKash) ও ফর্ম ভ্যালিডেশন | ১ দিন |
-| **ফেজ ৪** | থার্মাল রিসিট প্রিন্ট টেমপ্লেট (`@media print`) ও পপ-আপ অটো-প্রিন্ট | হাফ দিন |
-| **ফেজ ৫** | দিনশেষে ক্যাশ ড্রয়ার ও ডেইলি সেলস রিপোর্ট (`/pos/orders`) | ১ দিন |
+| ধাপ       | কাজ                                                                        | সময়সীমা |
+| --------- | -------------------------------------------------------------------------- | ------- |
+| **ফেজ ১** | `src/lib/pos/` — কুয়েরি, টাইপস এবং `createPosOrderAction` তৈরি             | ১ দিন   |
+| **ফেজ ২** | `src/app/(protected)/pos/` — বারকোড স্ক্যানার, প্রোডাক্ট গ্রিড ও কার্ট UI  | ১-২ দিন |
+| **ফেজ ৩** | পেমেন্ট মোডাল (ক্যাশ, চেঞ্জ ক্যালকুলেটর, bKash) ও ফর্ম ভ্যালিডেশন          | ১ দিন   |
+| **ফেজ ৪** | থার্মাল রিসিট প্রিন্ট টেমপ্লেট (`@media print`) ও পপ-আপ অটো-প্রিন্ট        | হাফ দিন |
+| **ফেজ ৫** | দিনশেষে ক্যাশ ড্রয়ার ও ডেইলি সেলস রিপোর্ট (`/pos/orders`)                  | ১ দিন   |
 | **ফেজ ৬** | কিবোর্ড শর্টকাট টেস্ট, বারকোড স্ক্যানার টেস্ট ও ইনভেন্টরি সিঙ্ক ভেরিফিকেশন | হাফ দিন |
 
 ---
 
 > **নোট:** এই প্ল্যানটি সম্পূর্ণ স্বয়ংসম্পূর্ণ। আপনি পরবর্তীতে যখনই POS নিয়ে কাজ শুরু করতে চাইবেন, এই ডকুমেন্টের ধাপগুলো ধরে ধারাবাহিকভাবে কোড ইমপ্লিমেন্ট করা যাবে।
-

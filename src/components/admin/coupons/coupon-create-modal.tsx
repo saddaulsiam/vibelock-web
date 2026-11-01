@@ -402,7 +402,8 @@ function CouponCreateDialog({
                 <label className="text-xs font-bold text-neutral-800">Category Targeting</label>
               </div>
               <p className="mt-0.5 text-[11px] text-neutral-500">
-                Select one or more store categories to target. Leave empty to apply storewide across all products.
+                Select one or more store categories to target. Leave empty to apply storewide across
+                all products.
               </p>
             </div>
 
@@ -416,7 +417,8 @@ function CouponCreateDialog({
 
             {selectedCategoryIds.length === 0 ? (
               <div className="rounded-lg border border-dashed border-neutral-200 bg-white p-2.5 text-xs text-neutral-600">
-                ✨ <strong>Storewide:</strong> Applies to <strong>all products</strong> across the entire catalog.
+                ✨ <strong>Storewide:</strong> Applies to <strong>all products</strong> across the
+                entire catalog.
               </div>
             ) : (
               <div className="rounded-lg border border-purple-200 bg-purple-50/60 p-2.5 text-xs text-purple-900">
