@@ -169,7 +169,8 @@ export function PosReturnModal({
     0
   );
 
-  const netDifference = resolution === "EXCHANGE" ? totalExchangeValue - totalReturnValue : -totalReturnValue;
+  const netDifference =
+    resolution === "EXCHANGE" ? totalExchangeValue - totalReturnValue : -totalReturnValue;
 
   const handleSubmitReturn = async () => {
     if (!orderData || selectedItems.length === 0 || isSubmitting) return;
@@ -212,40 +213,41 @@ export function PosReturnModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="max-w-2xl bg-white p-6 rounded-2xl border border-[#e2ded2] shadow-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="pb-3 border-b border-[#e2ded2]">
+      <DialogContent className="max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-xl">
+        <DialogHeader className="border-b border-[#e2ded2] pb-3">
           <div className="flex items-center space-x-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-vl-black text-vl-cyan shadow-2xs">
+            <div className="bg-vl-black text-vl-cyan flex h-8 w-8 items-center justify-center rounded-xl shadow-2xs">
               <RotateCcw className="h-4 w-4" />
             </div>
-            <DialogTitle className="font-heading font-black text-lg text-slate-900 tracking-wide">
+            <DialogTitle className="font-heading text-lg font-black tracking-wide text-slate-900">
               In-Store Returns &amp; Exchanges
             </DialogTitle>
           </div>
-          <DialogDescription className="text-xs text-vl-grey">
-            Look up original physical cash memo or order number to process returns, exchanges, and restock.
+          <DialogDescription className="text-vl-grey text-xs">
+            Look up original physical cash memo or order number to process returns, exchanges, and
+            restock.
           </DialogDescription>
         </DialogHeader>
 
         {/* Search Bar */}
         <form onSubmit={handleLookupOrder} className="flex items-center space-x-2 pt-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-3.5 h-4 w-4 text-vl-grey" />
+            <Search className="text-vl-grey absolute top-3.5 left-3 h-4 w-4" />
             <Input
               type="text"
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
               placeholder="Scan or enter invoice / order # (e.g. VL-POS-... or VL-ORD-...)"
-              className="pl-9 h-11 text-xs font-mono bg-[#faf9f5] border-[#d6d2c4] rounded-xl focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 uppercase"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 h-11 rounded-xl border-[#d6d2c4] bg-[#faf9f5] pl-9 font-mono text-xs uppercase"
               autoFocus
             />
           </div>
           <Button
             type="submit"
             disabled={isSearching || !orderQuery.trim()}
-            className="h-11 px-5 rounded-xl bg-vl-black hover:bg-black text-vl-white hover:text-vl-cyan font-heading font-black text-xs transition-colors shadow-xs"
+            className="bg-vl-black text-vl-white hover:text-vl-cyan font-heading h-11 rounded-xl px-5 text-xs font-black shadow-xs transition-colors hover:bg-black"
           >
-            {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-vl-cyan" /> : "Lookup"}
+            {isSearching ? <Loader2 className="text-vl-cyan h-4 w-4 animate-spin" /> : "Lookup"}
           </Button>
         </form>
 
@@ -253,39 +255,51 @@ export function PosReturnModal({
         {orderData && (
           <div className="space-y-4 pt-2">
             {/* Order Header Summary */}
-            <div className="bg-[#faf9f5] p-3.5 rounded-xl border border-[#e2ded2] text-xs flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3.5 text-xs">
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-heading font-black text-slate-900">{orderData.orderNumber}</span>
-                  <Badge className="bg-[#e2ded2] text-slate-800 text-[10px] font-mono px-2 py-0.5 rounded-md hover:bg-[#dcd7cb]">
+                  <span className="font-heading font-black text-slate-900">
+                    {orderData.orderNumber}
+                  </span>
+                  <Badge className="rounded-md bg-[#e2ded2] px-2 py-0.5 font-mono text-[10px] text-slate-800 hover:bg-[#dcd7cb]">
                     {orderData.salesChannel}
                   </Badge>
                   {orderData.isReturnablePeriodValid ? (
-                    <Badge className="bg-emerald-500/15 text-emerald-800 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-md hover:bg-emerald-500/20">
+                    <Badge className="rounded-md border border-emerald-500/30 bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 hover:bg-emerald-500/20">
                       Within 7-day policy ({orderData.daysElapsed}d ago)
                     </Badge>
                   ) : (
-                    <Badge variant="destructive" className="text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                    <Badge
+                      variant="destructive"
+                      className="rounded-md px-2 py-0.5 text-[10px] font-semibold"
+                    >
                       Policy alert ({orderData.daysElapsed}d ago)
                     </Badge>
                   )}
                 </div>
-                <p className="text-[11px] text-vl-grey mt-1">
-                  Customer: <span className="font-medium text-slate-800">{orderData.customerName}</span> ({orderData.customerPhone}) | Original Total: <span className="font-mono font-bold text-slate-900">৳{orderData.total.toFixed(0)}</span>
+                <p className="text-vl-grey mt-1 text-[11px]">
+                  Customer:{" "}
+                  <span className="font-medium text-slate-800">{orderData.customerName}</span> (
+                  {orderData.customerPhone}) | Original Total:{" "}
+                  <span className="font-mono font-bold text-slate-900">
+                    ৳{orderData.total.toFixed(0)}
+                  </span>
                 </p>
               </div>
             </div>
 
             {/* Selectable Return Items */}
             <div className="space-y-2">
-              <Label className="text-xs font-heading font-black text-slate-800 uppercase tracking-wider block">
+              <Label className="font-heading block text-xs font-black tracking-wider text-slate-800 uppercase">
                 Select Items to Return / Exchange:
               </Label>
 
-              <div className="divide-y divide-[#e2ded2] border border-[#e2ded2] rounded-xl overflow-hidden">
+              <div className="divide-y divide-[#e2ded2] overflow-hidden rounded-xl border border-[#e2ded2]">
                 {orderData.items.map((item) => {
                   const isSelected = selectedItems.some((i) => i.orderItemId === item.orderItemId);
-                  const selectedConfig = selectedItems.find((i) => i.orderItemId === item.orderItemId);
+                  const selectedConfig = selectedItems.find(
+                    (i) => i.orderItemId === item.orderItemId
+                  );
                   const isReturnable = item.returnableQuantity > 0;
                   const variantDesc = [item.size, item.color].filter(Boolean).join(" / ");
 
@@ -293,7 +307,7 @@ export function PosReturnModal({
                     <div
                       key={item.orderItemId}
                       className={`p-3.5 text-xs transition-colors ${
-                        isSelected ? "bg-amber-500/10 border-l-4 border-l-amber-500" : "bg-white"
+                        isSelected ? "border-l-4 border-l-amber-500 bg-amber-500/10" : "bg-white"
                       }`}
                     >
                       <div className="flex items-start justify-between">
@@ -302,14 +316,14 @@ export function PosReturnModal({
                             type="checkbox"
                             disabled={!isReturnable}
                             checked={isSelected}
-                            onChange={() =>
-                              handleToggleItemSelection(item.orderItemId)
-                            }
-                            className="mt-0.5 h-4 w-4 rounded border-[#d6d2c4] text-vl-black accent-vl-black focus:ring-vl-cyan"
+                            onChange={() => handleToggleItemSelection(item.orderItemId)}
+                            className="text-vl-black accent-vl-black focus:ring-vl-cyan mt-0.5 h-4 w-4 rounded border-[#d6d2c4]"
                           />
                           <div>
-                            <p className="font-semibold text-slate-900 leading-snug">{item.productName}</p>
-                            <div className="flex items-center space-x-1.5 mt-0.5 font-mono text-[10px] text-vl-grey">
+                            <p className="leading-snug font-semibold text-slate-900">
+                              {item.productName}
+                            </p>
+                            <div className="text-vl-grey mt-0.5 flex items-center space-x-1.5 font-mono text-[10px]">
                               <span className="font-bold text-slate-700">{item.sku}</span>
                               {variantDesc && <span>• {variantDesc}</span>}
                               <span>• ৳{item.unitPrice.toFixed(0)} each</span>
@@ -318,17 +332,21 @@ export function PosReturnModal({
                         </div>
 
                         <div className="text-right">
-                          <span className="text-[10px] text-vl-grey font-mono block">
-                            Returnable: <strong className="text-slate-800">{item.returnableQuantity}</strong> of {item.originalQuantity}
+                          <span className="text-vl-grey block font-mono text-[10px]">
+                            Returnable:{" "}
+                            <strong className="text-slate-800">{item.returnableQuantity}</strong> of{" "}
+                            {item.originalQuantity}
                           </span>
                         </div>
                       </div>
 
                       {/* Return Configuration if Selected */}
                       {isSelected && selectedConfig && (
-                        <div className="mt-2.5 pt-2 border-t border-amber-200/60 grid grid-cols-3 gap-2.5">
+                        <div className="mt-2.5 grid grid-cols-3 gap-2.5 border-t border-amber-200/60 pt-2">
                           <div>
-                            <Label className="text-[10px] font-heading font-black text-slate-700 uppercase">Qty to Return:</Label>
+                            <Label className="font-heading text-[10px] font-black text-slate-700 uppercase">
+                              Qty to Return:
+                            </Label>
                             <Input
                               type="number"
                               min={1}
@@ -341,12 +359,14 @@ export function PosReturnModal({
                                   item.returnableQuantity
                                 )
                               }
-                              className="h-8.5 text-xs font-mono font-bold mt-1 bg-white border-[#d6d2c4] rounded-lg"
+                              className="mt-1 h-8.5 rounded-lg border-[#d6d2c4] bg-white font-mono text-xs font-bold"
                             />
                           </div>
 
                           <div>
-                            <Label className="text-[10px] font-heading font-black text-slate-700 uppercase">Reason:</Label>
+                            <Label className="font-heading text-[10px] font-black text-slate-700 uppercase">
+                              Reason:
+                            </Label>
                             <select
                               value={selectedConfig.reason}
                               onChange={(e) =>
@@ -355,18 +375,22 @@ export function PosReturnModal({
                                   e.target.value as PosReturnReason
                                 )
                               }
-                              className="w-full h-8.5 text-xs rounded-lg border border-[#d6d2c4] bg-white px-2 mt-1 focus:ring-vl-cyan"
+                              className="focus:ring-vl-cyan mt-1 h-8.5 w-full rounded-lg border border-[#d6d2c4] bg-white px-2 text-xs"
                             >
                               <option value="SIZE_MISMATCH">Size Mismatch</option>
                               <option value="DEFECTIVE_OR_DAMAGED">Defective / Damaged</option>
                               <option value="WRONG_ITEM">Wrong Item</option>
-                              <option value="CUSTOMER_CHANGE_OF_MIND">Customer Change of Mind</option>
+                              <option value="CUSTOMER_CHANGE_OF_MIND">
+                                Customer Change of Mind
+                              </option>
                               <option value="OTHER">Other Reason</option>
                             </select>
                           </div>
 
                           <div>
-                            <Label className="text-[10px] font-heading font-black text-slate-700 uppercase">Condition:</Label>
+                            <Label className="font-heading text-[10px] font-black text-slate-700 uppercase">
+                              Condition:
+                            </Label>
                             <select
                               value={selectedConfig.condition}
                               onChange={(e) =>
@@ -375,7 +399,7 @@ export function PosReturnModal({
                                   e.target.value as PosItemCondition
                                 )
                               }
-                              className="w-full h-8.5 text-xs rounded-lg border border-[#d6d2c4] bg-white px-2 mt-1 font-medium focus:ring-vl-cyan"
+                              className="focus:ring-vl-cyan mt-1 h-8.5 w-full rounded-lg border border-[#d6d2c4] bg-white px-2 text-xs font-medium"
                             >
                               <option value="RESELLABLE">Resellable (Stock +1)</option>
                               <option value="DAMAGED">Damaged (No Restock)</option>
@@ -396,10 +420,10 @@ export function PosReturnModal({
                   <button
                     type="button"
                     onClick={() => setResolution("REFUND_CASH")}
-                    className={`p-3 rounded-xl border text-xs font-heading font-black flex items-center justify-center space-x-2 transition-all ${
+                    className={`font-heading flex items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
                       resolution === "REFUND_CASH"
-                        ? "border-2 border-vl-cyan bg-vl-black text-vl-cyan shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                        : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
+                        ? "border-vl-cyan bg-vl-black text-vl-cyan border-2 shadow-[0_0_15px_rgba(0,217,255,0.25)]"
+                        : "text-vl-grey border-[#d6d2c4] bg-[#faf9f5] hover:bg-[#ebe6d9]"
                     }`}
                   >
                     <Banknote className="h-4 w-4 text-emerald-400" />
@@ -409,21 +433,21 @@ export function PosReturnModal({
                   <button
                     type="button"
                     onClick={() => setResolution("EXCHANGE")}
-                    className={`p-3 rounded-xl border text-xs font-heading font-black flex items-center justify-center space-x-2 transition-all ${
+                    className={`font-heading flex items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
                       resolution === "EXCHANGE"
-                        ? "border-2 border-vl-cyan bg-vl-black text-vl-cyan shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                        : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
+                        ? "border-vl-cyan bg-vl-black text-vl-cyan border-2 shadow-[0_0_15px_rgba(0,217,255,0.25)]"
+                        : "text-vl-grey border-[#d6d2c4] bg-[#faf9f5] hover:bg-[#ebe6d9]"
                     }`}
                   >
-                    <ArrowRightLeft className="h-4 w-4 text-vl-cyan" />
+                    <ArrowRightLeft className="text-vl-cyan h-4 w-4" />
                     <span>Product Exchange (Swap)</span>
                   </button>
                 </div>
 
                 {/* Exchange Replacement Selection */}
                 {resolution === "EXCHANGE" && (
-                  <div className="space-y-2.5 bg-[#faf9f5] p-3.5 rounded-xl border border-[#e2ded2]">
-                    <Label className="text-xs font-heading font-black text-slate-800 uppercase tracking-wider block">
+                  <div className="space-y-2.5 rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3.5">
+                    <Label className="font-heading block text-xs font-black tracking-wider text-slate-800 uppercase">
                       Add Replacement Item(s) from Store:
                     </Label>
 
@@ -433,12 +457,12 @@ export function PosReturnModal({
                       value={exchangeSearch}
                       onChange={(e) => setExchangeSearch(e.target.value)}
                       placeholder="Search store catalog for replacement size/item..."
-                      className="h-9 text-xs bg-white border-[#d6d2c4] rounded-xl focus-visible:border-vl-cyan"
+                      className="focus-visible:border-vl-cyan h-9 rounded-xl border-[#d6d2c4] bg-white text-xs"
                     />
 
                     {/* Catalog Mini Suggestions */}
                     {exchangeSearch.trim() && (
-                      <div className="max-h-36 overflow-y-auto bg-white border border-[#e2ded2] rounded-xl divide-y divide-[#e2ded2]">
+                      <div className="max-h-36 divide-y divide-[#e2ded2] overflow-y-auto rounded-xl border border-[#e2ded2] bg-white">
                         {catalogProducts
                           .filter(
                             (p) =>
@@ -451,14 +475,14 @@ export function PosReturnModal({
                           .map((prod) => (
                             <div key={prod.id} className="p-2.5 text-xs">
                               <p className="font-semibold text-slate-900">{prod.name}</p>
-                              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                              <div className="mt-1.5 flex flex-wrap gap-1.5">
                                 {prod.variants.map((v) => (
                                   <button
                                     key={v.id}
                                     type="button"
                                     disabled={v.availableStock <= 0}
                                     onClick={() => handleAddReplacement(prod, v.id)}
-                                    className="text-[10px] font-mono px-2 py-0.5 rounded-lg border border-[#d6d2c4] bg-[#faf9f5] hover:bg-vl-cyan/20 hover:border-vl-cyan disabled:opacity-40 transition-colors"
+                                    className="hover:bg-vl-cyan/20 hover:border-vl-cyan rounded-lg border border-[#d6d2c4] bg-[#faf9f5] px-2 py-0.5 font-mono text-[10px] transition-colors disabled:opacity-40"
                                   >
                                     {[v.size, v.color].filter(Boolean).join("/") || v.sku} (৳
                                     {v.effectivePrice})
@@ -473,20 +497,22 @@ export function PosReturnModal({
                     {/* Selected Replacements List */}
                     {exchangeItems.length > 0 && (
                       <div className="space-y-1.5 pt-1">
-                        <span className="text-[10px] text-vl-grey uppercase font-heading font-black">
+                        <span className="text-vl-grey font-heading text-[10px] font-black uppercase">
                           Selected Replacements:
                         </span>
                         {exchangeItems.map((rep) => (
                           <div
                             key={rep.variantId}
-                            className="bg-white p-2.5 rounded-xl border border-[#e2ded2] text-xs flex justify-between items-center"
+                            className="flex items-center justify-between rounded-xl border border-[#e2ded2] bg-white p-2.5 text-xs"
                           >
                             <div>
-                              <span className="font-semibold text-slate-900">{rep.productName}</span>
-                              <span className="text-vl-grey font-mono text-[10px] ml-1">
+                              <span className="font-semibold text-slate-900">
+                                {rep.productName}
+                              </span>
+                              <span className="text-vl-grey ml-1 font-mono text-[10px]">
                                 ({[rep.size, rep.color].filter(Boolean).join("/") || rep.sku})
                               </span>
-                              <span className="text-slate-800 font-mono font-bold ml-2">
+                              <span className="ml-2 font-mono font-bold text-slate-800">
                                 {rep.quantity} x ৳{rep.unitPrice}
                               </span>
                             </div>
@@ -497,7 +523,7 @@ export function PosReturnModal({
                                   prev.filter((i) => i.variantId !== rep.variantId)
                                 )
                               }
-                              className="text-slate-400 hover:text-red-500 transition-colors"
+                              className="text-slate-400 transition-colors hover:text-red-500"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -509,29 +535,31 @@ export function PosReturnModal({
                 )}
 
                 {/* Financial Summary Callout */}
-                <div className="rounded-xl border border-vl-border bg-vl-black p-4 text-vl-white shadow-xs space-y-1.5 font-mono">
-                  <div className="flex justify-between text-vl-grey text-xs">
+                <div className="border-vl-border bg-vl-black text-vl-white space-y-1.5 rounded-xl border p-4 font-mono shadow-xs">
+                  <div className="text-vl-grey flex justify-between text-xs">
                     <span>Return Item Value:</span>
-                    <span className="font-bold text-vl-white">৳{totalReturnValue.toFixed(0)}</span>
+                    <span className="text-vl-white font-bold">৳{totalReturnValue.toFixed(0)}</span>
                   </div>
 
                   {resolution === "EXCHANGE" && (
-                    <div className="flex justify-between text-vl-grey text-xs">
+                    <div className="text-vl-grey flex justify-between text-xs">
                       <span>Replacement Item Value:</span>
-                      <span className="font-bold text-vl-white">৳{totalExchangeValue.toFixed(0)}</span>
+                      <span className="text-vl-white font-bold">
+                        ৳{totalExchangeValue.toFixed(0)}
+                      </span>
                     </div>
                   )}
 
-                  <div className="pt-2 border-t border-white/10 flex justify-between items-baseline font-heading font-black text-sm">
+                  <div className="font-heading flex items-baseline justify-between border-t border-white/10 pt-2 text-sm font-black">
                     <span className="tracking-wide">
                       {netDifference > 0
                         ? "CUSTOMER TO PAY:"
                         : netDifference < 0
-                        ? "REFUND TO CUSTOMER:"
-                        : "EVEN SWAP:"}
+                          ? "REFUND TO CUSTOMER:"
+                          : "EVEN SWAP:"}
                     </span>
                     <span
-                      className={`text-xl font-heading font-black ${
+                      className={`font-heading text-xl font-black ${
                         netDifference < 0 ? "text-amber-400" : "text-vl-cyan"
                       }`}
                     >
@@ -542,7 +570,7 @@ export function PosReturnModal({
 
                 {/* Notes Input */}
                 <div>
-                  <Label className="text-xs font-heading font-black text-slate-700">
+                  <Label className="font-heading text-xs font-black text-slate-700">
                     Staff Notes / Reason Details (Optional)
                   </Label>
                   <Input
@@ -550,18 +578,18 @@ export function PosReturnModal({
                     value={returnNotes}
                     onChange={(e) => setReturnNotes(e.target.value)}
                     placeholder="e.g. Customer brought tags intact, exchanged for size L"
-                    className="text-xs h-10 border-[#d6d2c4] bg-[#faf9f5] rounded-xl mt-1 focus-visible:border-vl-cyan"
+                    className="focus-visible:border-vl-cyan mt-1 h-10 rounded-xl border-[#d6d2c4] bg-[#faf9f5] text-xs"
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center space-x-2 pt-2 border-t border-[#e2ded2]">
+                <div className="flex items-center space-x-2 border-t border-[#e2ded2] pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
                     onClick={onClose}
-                    className="w-1/3 h-11 text-xs rounded-xl font-heading font-black border-[#d6d2c4] text-slate-700 hover:bg-[#faf9f5]"
+                    className="font-heading h-11 w-1/3 rounded-xl border-[#d6d2c4] text-xs font-black text-slate-700 hover:bg-[#faf9f5]"
                   >
                     Cancel
                   </Button>
@@ -569,11 +597,11 @@ export function PosReturnModal({
                     type="button"
                     disabled={isSubmitting || selectedItems.length === 0}
                     onClick={handleSubmitReturn}
-                    className="w-2/3 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-xl flex items-center justify-center space-x-2 shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all"
+                    className="bg-vl-cyan text-vl-black font-heading flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-[#2ae0ff]"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin text-vl-black" />
+                        <Loader2 className="text-vl-black h-4 w-4 animate-spin" />
                         <span>Processing Return...</span>
                       </>
                     ) : (

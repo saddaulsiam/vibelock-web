@@ -5,13 +5,7 @@ import Image from "next/image";
 import { Package, Plus, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { PosVariantPickerModal } from "./pos-variant-picker-modal";
 import { AdminTableInfiniteScroll } from "@/components/admin/shared";
 import type { PosCategory, PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
 
@@ -519,118 +513,13 @@ export function PosProductGrid({
         )}
       </div>
 
-      {/* Quick Variant Picker Dialog for Multi-Variant Products */}
-      <Dialog
-        open={!!activePickerProduct}
-        onOpenChange={(open) => {
-          if (!open) setActivePickerProduct(null);
-        }}
-      >
-        <DialogContent className="w-full gap-0 overflow-hidden rounded-2xl border border-[#d6d2c4] bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
-          {activePickerProduct && (
-            <div>
-              {/* Header Preview */}
-              <div className="flex items-center gap-3.5 border-b border-[#e2ded2] bg-[#fbfaf7] p-4 sm:p-5">
-                <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-[#e2ded2] bg-white shadow-2xs sm:h-20 sm:w-20">
-                  {activePickerProduct.imageUrl ? (
-                    <Image
-                      src={activePickerProduct.imageUrl}
-                      alt={activePickerProduct.name}
-                      fill
-                      sizes="80px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-slate-300">
-                      <Package className="h-8 w-8 stroke-1 text-slate-300" />
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0 flex-1 pr-6">
-                  <DialogHeader className="space-y-0.5 text-left">
-                    <DialogTitle className="font-heading text-vl-black line-clamp-1 text-base font-bold sm:text-lg">
-                      {activePickerProduct.name}
-                    </DialogTitle>
-                    <DialogDescription className="text-xs text-slate-500">
-                      Tap a variant below to add to POS ticket
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <span className="font-heading text-vl-black text-sm font-black sm:text-base">
-                      ৳{activePickerProduct.minPrice.toFixed(0)}
-                      {activePickerProduct.maxPrice > activePickerProduct.minPrice && (
-                        <span className="text-vl-grey text-xs font-normal sm:text-sm">
-                          {" "}
-                          - ৳{activePickerProduct.maxPrice.toFixed(0)}
-                        </span>
-                      )}
-                    </span>
-                    <span className="text-slate-300">•</span>
-                    <span className="font-mono text-xs font-medium text-slate-600">
-                      Total Stock: {activePickerProduct.totalAvailableStock}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Variants Touch Grid */}
-              <div className="max-h-[440px] overflow-y-auto p-4 sm:p-5">
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 md:grid-cols-3">
-                  {activePickerProduct.variants.map((v) => {
-                    const vOutOfStock = v.availableStock <= 0;
-                    const label = [v.size, v.color].filter(Boolean).join(" / ") || v.sku;
-
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        disabled={vOutOfStock}
-                        onClick={() => {
-                          onAddVariant(v, activePickerProduct);
-                          setActivePickerProduct(null);
-                        }}
-                        className={`group relative flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
-                          vOutOfStock
-                            ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
-                            : "hover:border-vl-cyan hover:bg-vl-cyan/5 border-[#e2ded2] bg-white hover:shadow-xs active:scale-[0.98]"
-                        }`}
-                      >
-                        <div className="flex w-full items-start justify-between gap-1">
-                          <span className="font-heading text-vl-black group-hover:text-vl-cyan truncate text-xs font-bold">
-                            {label}
-                          </span>
-                          <span className="font-heading text-vl-black shrink-0 text-xs font-black">
-                            ৳{v.effectivePrice.toFixed(0)}
-                          </span>
-                        </div>
-
-                        <div className="mt-2.5 flex w-full items-center justify-between text-[11px]">
-                          <span className="max-w-[100px] truncate font-mono text-[10px] text-slate-400">
-                            {v.sku}
-                          </span>
-                          {vOutOfStock ? (
-                            <span className="font-mono text-[10px] font-bold text-red-500">
-                              Out of stock
-                            </span>
-                          ) : v.availableStock <= 2 ? (
-                            <span className="font-mono text-[10px] font-bold text-amber-600">
-                              Low: {v.availableStock}
-                            </span>
-                          ) : (
-                            <span className="font-mono text-[10px] font-semibold text-emerald-600">
-                              {v.availableStock} in stock
-                            </span>
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Quick Variant Picker Modal for Multi-Variant Products */}
+      <PosVariantPickerModal
+        product={activePickerProduct}
+        isOpen={!!activePickerProduct}
+        onClose={() => setActivePickerProduct(null)}
+        onSelectVariant={onAddVariant}
+      />
     </div>
   );
 }
