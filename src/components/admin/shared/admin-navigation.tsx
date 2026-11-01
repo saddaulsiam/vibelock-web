@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import {
   BarChart3,
   Boxes,
+  Calculator,
   CreditCard,
   FolderTree,
   LayoutDashboard,
@@ -42,6 +43,7 @@ const navGroups: readonly NavGroup[] = [
   {
     group: "Sales & Operations",
     items: [
+      { label: "POS Counter", href: "/pos", icon: Calculator },
       { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
       { label: "Shipping", href: "/admin/shipping", icon: Truck },
       { label: "Returns", href: "/admin/returns", icon: RotateCcw },
