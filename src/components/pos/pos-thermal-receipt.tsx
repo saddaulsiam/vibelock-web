@@ -25,7 +25,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onNewSale()}>
-      <DialogContent className="max-w-md rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl">
+      <DialogContent className="w-full rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-md">
         <DialogHeader className="border-b border-[#e2ded2] pb-3 print:hidden">
           <div className="flex items-center space-x-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-2xs">

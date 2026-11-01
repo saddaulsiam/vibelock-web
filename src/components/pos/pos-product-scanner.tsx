@@ -156,8 +156,8 @@ export function PosProductScanner({
   return (
     <form onSubmit={handleScanSubmit} className="relative w-full">
       <div className="relative flex items-center">
-        <div className="pointer-events-none absolute left-3.5 flex items-center text-slate-400">
-          <Barcode className="mr-1.5 h-5 w-5 text-vl-cyan" />
+        <div className="pointer-events-none absolute left-3 sm:left-3.5 flex items-center text-slate-400">
+          <Barcode className="mr-1 h-4 w-4 sm:mr-1.5 sm:h-5 sm:w-5 text-vl-cyan" />
           <span className="hidden font-mono text-[11px] font-semibold text-slate-400 sm:inline">
             SCAN SKU:
           </span>
@@ -169,7 +169,7 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => handleInputChange(e.target.value)}
           placeholder="Scan barcode or type SKU / product name to filter catalog [F2]..."
-          className="h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-28 pl-28 font-mono text-sm tracking-wide text-vl-black shadow-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15 sm:pr-32 sm:pl-32"
+          className="h-11 sm:h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-20 pl-11 font-mono text-xs sm:text-sm tracking-wide text-vl-black shadow-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15 sm:pr-32 sm:pl-32"
           autoComplete="off"
           autoFocus
         />

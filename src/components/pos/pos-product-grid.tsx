@@ -312,7 +312,7 @@ export function PosProductGrid({
       </div>
 
       {/* Product Cards Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-3 pb-24 lg:pb-4">
         {filteredProducts.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-center text-slate-400">
             <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e2ded2] bg-white shadow-2xs">
@@ -339,7 +339,7 @@ export function PosProductGrid({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {visibleProducts.map((prod) => {
                 const isNoVariants = prod.variants.length === 0;
                 const isSingleVariant = prod.variants.length === 1;
@@ -364,7 +364,7 @@ export function PosProductGrid({
                   >
                     <div>
                       {/* Image / Thumbnail with smooth zoom on hover */}
-                      <div className="relative h-40 w-full overflow-hidden bg-[#f4f2ec]">
+                      <div className="relative h-36 sm:h-40 w-full overflow-hidden bg-[#f4f2ec]">
                         {prod.imageUrl ? (
                           <Image
                             src={prod.imageUrl}

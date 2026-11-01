@@ -15,6 +15,7 @@ import {
   Sparkles,
   Loader2,
   Package,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ interface PosCartPanelProps {
   onOpenPaymentModal: () => void;
   onParkCart?: () => void;
   isOnline?: boolean;
+  onCloseMobile?: () => void;
 }
 
 export function PosCartPanel({
@@ -55,6 +57,7 @@ export function PosCartPanel({
   onOpenPaymentModal,
   onParkCart,
   isOnline = true,
+  onCloseMobile,
 }: PosCartPanelProps) {
   // Customer Profile & Loyalty state
   const [customerProfile, setCustomerProfile] = useState<PosCustomerProfile | null>(null);
@@ -130,6 +133,18 @@ export function PosCartPanel({
       {/* Cart Header */}
       <div className="flex items-center justify-between bg-vl-black p-3 text-vl-white border-b border-vl-border">
         <div className="flex items-center space-x-2">
+          {onCloseMobile && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onCloseMobile}
+              className="lg:hidden -ml-1 h-7 w-7 rounded-lg text-vl-white/80 hover:bg-white/10 hover:text-white"
+              title="Close ticket and return to catalog"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
           <ShoppingCart className="h-5 w-5 text-vl-cyan" />
           <h3 className="font-heading font-black text-sm tracking-wider text-vl-white">
             Current Sale

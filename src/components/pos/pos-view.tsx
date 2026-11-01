@@ -15,6 +15,7 @@ import type {
   PosReceiptData,
 } from "@/lib/pos/pos-types";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { PosCartPanel } from "./pos-cart-panel";
 import { PosHeader } from "./pos-header";
@@ -93,6 +94,7 @@ export function PosView({
   const [customerName, setCustomerName] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState<boolean>(false);
 
   // Shift & Cash Drawer State
   const [shift, setShift] = useState<PosShiftSummary | null>(initialShift || null);
@@ -212,6 +214,7 @@ export function PosView({
   }, []);
 
   // Compute Grand Total
+  const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const effectiveDiscount = Math.min(subtotal, Math.max(0, discount));
   const grandTotal = Math.max(0, subtotal - effectiveDiscount);
@@ -478,14 +481,16 @@ export function PosView({
         onOpenParkedModal={() => setIsParkedModalOpen(true)}
         onOpenOrdersModal={() => setIsOrdersModalOpen(true)}
         isOnline={isOnline}
+        cartItemCount={totalItemsCount}
+        onToggleCartMobile={() => setIsMobileCartOpen((prev) => !prev)}
       />
 
       {/* Main Billing Counter Workspace */}
-      <main className="flex flex-1 overflow-hidden">
-        {/* Left Section: Scanner + Catalog Grid (60-65% width) */}
+      <main className="relative flex flex-1 overflow-hidden">
+        {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-b border-[#d6d2c4] bg-white p-3 shadow-2xs">
+          <div className="border-b border-[#d6d2c4] bg-white p-2.5 sm:p-3 shadow-2xs">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -507,8 +512,8 @@ export function PosView({
           </div>
         </section>
 
-        {/* Right Section: Billing Cart Panel (35-40% width) */}
-        <aside className="z-10 h-full w-96 shadow-md border-l border-[#d6d2c4] lg:w-[420px] xl:w-[460px]">
+        {/* Desktop Section: Billing Cart Panel (35-40% width, permanently visible on lg+) */}
+        <aside className="z-10 hidden h-full w-96 border-l border-[#d6d2c4] shadow-md lg:block lg:w-[400px] xl:w-[460px]">
           <PosCartPanel
             cartItems={cartItems}
             customerPhone={customerPhone}
@@ -525,6 +530,76 @@ export function PosView({
             isOnline={isOnline}
           />
         </aside>
+
+        {/* Mobile & Tablet Slide-Over Cart Sheet / Drawer (< lg) */}
+        {isMobileCartOpen && (
+          <div className="fixed inset-0 z-50 flex justify-end lg:hidden">
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+              onClick={() => setIsMobileCartOpen(false)}
+            />
+            {/* Slide-over panel */}
+            <div className="relative z-10 flex h-full w-full max-w-md flex-col bg-white shadow-2xl animate-in slide-in-from-right duration-200">
+              <PosCartPanel
+                cartItems={cartItems}
+                customerPhone={customerPhone}
+                setCustomerPhone={setCustomerPhone}
+                customerName={customerName}
+                setCustomerName={setCustomerName}
+                discount={discount}
+                setDiscount={setDiscount}
+                onUpdateQuantity={handleUpdateQuantity}
+                onRemoveItem={handleRemoveItem}
+                onClearCart={handleClearCart}
+                onOpenPaymentModal={() => {
+                  setIsMobileCartOpen(false);
+                  handleOpenPayment();
+                }}
+                onParkCart={handleParkCart}
+                isOnline={isOnline}
+                onCloseMobile={() => setIsMobileCartOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile & Tablet Floating Cart Bar (< lg) */}
+        <div className="fixed bottom-0 inset-x-0 z-30 p-2.5 sm:p-3 bg-gradient-to-t from-black/85 via-black/45 to-transparent lg:hidden pointer-events-none">
+          <button
+            type="button"
+            onClick={() => setIsMobileCartOpen(true)}
+            className="pointer-events-auto flex w-full items-center justify-between rounded-2xl bg-vl-black p-3 sm:p-3.5 text-vl-white shadow-[0_8px_30px_rgba(0,0,0,0.4)] border border-vl-cyan/40 backdrop-blur-md active:scale-[0.99] transition-all hover:border-vl-cyan"
+          >
+            <div className="flex items-center space-x-2.5 sm:space-x-3">
+              <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-vl-cyan text-vl-black font-black">
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                {totalItemsCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-red-500 px-1 font-mono text-[9px] font-bold text-white shadow-xs">
+                    {totalItemsCount}
+                  </span>
+                )}
+              </div>
+              <div className="text-left">
+                <span className="font-heading text-xs font-black text-vl-white block">
+                  Current Sale ({totalItemsCount})
+                </span>
+                <span className="font-mono text-[11px] text-vl-grey">
+                  {totalItemsCount === 0 ? "Empty ticket" : `Subtotal: ৳${subtotal.toFixed(0)}`}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2 sm:space-x-2.5">
+              <span className="font-heading text-base sm:text-lg font-black text-vl-cyan font-mono">
+                ৳{grandTotal.toFixed(0)}
+              </span>
+              <div className="rounded-xl bg-vl-cyan px-2.5 sm:px-3 py-1 sm:py-1.5 font-heading text-xs font-black text-vl-black shadow-xs">
+                View Ticket →
+              </div>
+            </div>
+          </button>
+        </div>
       </main>
 
       {/* Parked Sales / Held Carts Modal */}
