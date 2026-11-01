@@ -8,4 +8,5 @@ export * from "./pos-shift-modal";
 export * from "./pos-shift-z-report";
 export * from "./pos-return-modal";
 export * from "./pos-return-receipt";
+export * from "./pos-parked-modal";
 export * from "./pos-view";

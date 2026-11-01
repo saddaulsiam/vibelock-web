@@ -1,6 +1,15 @@
 "use client";
 
-import { Trash2, Plus, Minus, User, Phone, Tag, ShoppingCart } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Minus,
+  User,
+  Phone,
+  Tag,
+  ShoppingCart,
+  PauseCircle,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +28,7 @@ interface PosCartPanelProps {
   onRemoveItem: (variantId: string) => void;
   onClearCart: () => void;
   onOpenPaymentModal: () => void;
+  onParkCart?: () => void;
 }
 
 export function PosCartPanel({
@@ -33,6 +43,7 @@ export function PosCartPanel({
   onRemoveItem,
   onClearCart,
   onOpenPaymentModal,
+  onParkCart,
 }: PosCartPanelProps) {
   // Financial computations
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -58,15 +69,34 @@ export function PosCartPanel({
         </div>
 
         {cartItems.length > 0 && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onClearCart}
-            className="text-slate-400 hover:text-red-400 hover:bg-slate-800 h-7 px-2 text-xs"
-          >
-            Clear All
-          </Button>
+          <div className="flex items-center space-x-1">
+            {onParkCart && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onParkCart}
+                className="text-amber-400 hover:text-amber-300 hover:bg-slate-800 h-7 px-2 text-xs flex items-center space-x-1"
+                title="Hold / Suspend this cart [F4]"
+              >
+                <PauseCircle className="h-3.5 w-3.5" />
+                <span>Hold</span>
+                <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-400 font-mono hidden sm:inline">
+                  F4
+                </span>
+              </Button>
+            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onClearCart}
+              className="text-slate-400 hover:text-red-400 hover:bg-slate-800 h-7 px-2 text-xs"
+            >
+              Clear
+            </Button>
+          </div>
         )}
       </div>
 

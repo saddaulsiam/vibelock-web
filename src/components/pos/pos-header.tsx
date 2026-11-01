@@ -12,6 +12,7 @@ import {
   Banknote,
   Lock,
   RotateCcw,
+  PauseCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +24,8 @@ interface PosHeaderProps {
   shift?: PosShiftSummary | null;
   onOpenShiftModal?: () => void;
   onOpenReturnModal?: () => void;
+  parkedCount?: number;
+  onOpenParkedModal?: () => void;
 }
 
 export function PosHeader({
@@ -31,6 +34,8 @@ export function PosHeader({
   shift,
   onOpenShiftModal,
   onOpenReturnModal,
+  parkedCount,
+  onOpenParkedModal,
 }: PosHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -118,10 +123,34 @@ export function PosHeader({
             title="In-Store Returns & Exchanges [F3]"
           >
             <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
-            <span className="hidden md:inline">Returns / Exchange</span>
+            <span className="hidden md:inline">Returns</span>
             <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-400 font-mono hidden lg:inline">
               F3
             </span>
+          </Button>
+        )}
+
+        {/* Parked Sales / Held Carts Quick Button */}
+        {onOpenParkedModal && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onOpenParkedModal}
+            className={`text-xs h-8 px-2.5 space-x-1.5 transition-colors ${
+              (parkedCount || 0) > 0
+                ? "bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 hover:text-white border border-amber-500/40"
+                : "text-slate-400 hover:text-white hover:bg-slate-800"
+            }`}
+            title="View Parked Sales"
+          >
+            <PauseCircle className="h-3.5 w-3.5 text-amber-400" />
+            <span>Parked</span>
+            {(parkedCount || 0) > 0 && (
+              <Badge className="bg-amber-500 text-slate-950 font-bold text-[10px] h-4 px-1 py-0 hover:bg-amber-500">
+                {parkedCount}
+              </Badge>
+            )}
           </Button>
         )}
 

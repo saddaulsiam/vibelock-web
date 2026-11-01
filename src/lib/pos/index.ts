@@ -5,3 +5,4 @@ export * from "./pos-shift-types";
 export * from "./pos-shift-actions";
 export * from "./pos-returns-types";
 export * from "./pos-returns-actions";
+export * from "./pos-parked-types";

@@ -1,17 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
-import { PosHeader } from "./pos-header";
-import { PosProductScanner } from "./pos-product-scanner";
-import { PosProductGrid } from "./pos-product-grid";
-import { PosCartPanel } from "./pos-cart-panel";
-import { PosPaymentModal } from "./pos-payment-modal";
-import { PosThermalReceipt } from "./pos-thermal-receipt";
-import { PosShiftModal } from "./pos-shift-modal";
-import { PosShiftZReport } from "./pos-shift-z-report";
-import { PosReturnModal } from "./pos-return-modal";
-import { PosReturnReceipt } from "./pos-return-receipt";
 import { createPosOrderAction } from "@/lib/pos/pos-actions";
+import type { PosParkedCart } from "@/lib/pos/pos-parked-types";
+import type { PosReturnReceiptData } from "@/lib/pos/pos-returns-types";
+import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
 import type {
   PosCartItem,
   PosCategory,
@@ -20,9 +12,21 @@ import type {
   PosProductVariant,
   PosReceiptData,
 } from "@/lib/pos/pos-types";
-import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
-import type { PosReturnReceiptData } from "@/lib/pos/pos-returns-types";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { PosCartPanel } from "./pos-cart-panel";
+import { PosHeader } from "./pos-header";
+import { PosParkedModal } from "./pos-parked-modal";
+import { PosPaymentModal } from "./pos-payment-modal";
+import { PosProductGrid } from "./pos-product-grid";
+import { PosProductScanner } from "./pos-product-scanner";
+import { PosReturnModal } from "./pos-return-modal";
+import { PosReturnReceipt } from "./pos-return-receipt";
+import { PosShiftModal } from "./pos-shift-modal";
+import { PosShiftZReport } from "./pos-shift-z-report";
+import { PosThermalReceipt } from "./pos-thermal-receipt";
+
+const PARKED_CARTS_STORAGE_KEY = "vibelock_pos_parked_carts";
 
 interface PosViewProps {
   products: PosProductSummary[];
@@ -56,6 +60,10 @@ export function PosView({
   const [returnReceiptData, setReturnReceiptData] = useState<PosReturnReceiptData | null>(null);
   const [isReturnReceiptOpen, setIsReturnReceiptOpen] = useState<boolean>(false);
 
+  // Parked / Held Carts State
+  const [parkedCarts, setParkedCarts] = useState<PosParkedCart[]>([]);
+  const [isParkedModalOpen, setIsParkedModalOpen] = useState<boolean>(false);
+
   // Billing Modals
   const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState<boolean>(false);
@@ -65,51 +73,73 @@ export function PosView({
   // Scanner Input Ref for F2 shortcut
   const scannerRef = useRef<HTMLInputElement | null>(null);
 
+  // Load parked carts from localStorage on client mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(PARKED_CARTS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          setParkedCarts(parsed);
+        }
+      }
+    } catch {
+      // LocalStorage access issues fallback gracefully
+    }
+  }, []);
+
+  // Save parked carts to localStorage
+  const saveParkedCarts = (updatedCarts: PosParkedCart[]) => {
+    setParkedCarts(updatedCarts);
+    try {
+      localStorage.setItem(PARKED_CARTS_STORAGE_KEY, JSON.stringify(updatedCarts));
+    } catch {
+      // Fallback
+    }
+  };
+
   // Add Variant to Cart Handler
-  const handleAddVariant = useCallback(
-    (variant: PosProductVariant, product: PosProductSummary) => {
-      if (variant.availableStock <= 0) {
-        toast.error(`Out of stock: ${variant.sku}`);
-        return;
+  const handleAddVariant = useCallback((variant: PosProductVariant, product: PosProductSummary) => {
+    if (variant.availableStock <= 0) {
+      toast.error(`Out of stock: ${variant.sku}`);
+      return;
+    }
+
+    setCartItems((prev) => {
+      const existingIndex = prev.findIndex((item) => item.variantId === variant.id);
+      if (existingIndex > -1) {
+        const item = prev[existingIndex];
+        if (item.quantity >= variant.availableStock) {
+          toast.warning(
+            `Maximum stock available (${variant.availableStock}) already added to cart.`
+          );
+          return prev;
+        }
+        const updated = [...prev];
+        updated[existingIndex] = {
+          ...item,
+          quantity: item.quantity + 1,
+        };
+        return updated;
       }
 
-      setCartItems((prev) => {
-        const existingIndex = prev.findIndex((item) => item.variantId === variant.id);
-        if (existingIndex > -1) {
-          const item = prev[existingIndex];
-          if (item.quantity >= variant.availableStock) {
-            toast.warning(
-              `Maximum stock available (${variant.availableStock}) already added to cart.`
-            );
-            return prev;
-          }
-          const updated = [...prev];
-          updated[existingIndex] = {
-            ...item,
-            quantity: item.quantity + 1,
-          };
-          return updated;
-        }
+      const newItem: PosCartItem = {
+        variantId: variant.id,
+        productId: product.id,
+        productName: product.name,
+        sku: variant.sku,
+        size: variant.size,
+        color: variant.color,
+        price: variant.effectivePrice,
+        costPrice: variant.costPrice,
+        quantity: 1,
+        maxStock: variant.availableStock,
+        image: product.imageUrl,
+      };
 
-        const newItem: PosCartItem = {
-          variantId: variant.id,
-          productId: product.id,
-          productName: product.name,
-          sku: variant.sku,
-          size: variant.size,
-          color: variant.color,
-          price: variant.effectivePrice,
-          costPrice: variant.costPrice,
-          quantity: 1,
-          maxStock: variant.availableStock,
-          image: product.imageUrl,
-        };
-
-        return [...prev, newItem];
-      });
-    },
-    []
-  );
+      return [...prev, newItem];
+    });
+  }, []);
 
   // Update Item Quantity
   const handleUpdateQuantity = useCallback((variantId: string, quantity: number) => {
@@ -145,6 +175,60 @@ export function PosView({
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const effectiveDiscount = Math.min(subtotal, Math.max(0, discount));
   const grandTotal = Math.max(0, subtotal - effectiveDiscount);
+
+  // Park Current Cart (Hold Sale)
+  const handleParkCart = useCallback(() => {
+    if (cartItems.length === 0) {
+      toast.error("Cannot hold an empty cart.");
+      return;
+    }
+
+    const itemsCount = cartItems.reduce((acc, i) => acc + i.quantity, 0);
+    const label =
+      customerName.trim() || customerPhone.trim() || `Held Sale #${parkedCarts.length + 1}`;
+
+    const newParkedCart: PosParkedCart = {
+      id: `park-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      parkedAt: new Date().toISOString(),
+      label,
+      customerName: customerName.trim() || "Walk-in Customer",
+      customerPhone: customerPhone.trim() || "",
+      items: [...cartItems],
+      discount: effectiveDiscount,
+      totalValue: grandTotal,
+      itemsCount,
+    };
+
+    saveParkedCarts([newParkedCart, ...parkedCarts]);
+
+    // Clear active cart
+    setCartItems([]);
+    setCustomerPhone("");
+    setCustomerName("");
+    setDiscount(0);
+
+    toast.success(`Cart held successfully (${label}). Ready for next customer!`);
+  }, [cartItems, customerName, customerPhone, effectiveDiscount, grandTotal, parkedCarts]);
+
+  // Resume Parked Cart
+  const handleResumeCart = (cart: PosParkedCart) => {
+    setCartItems(cart.items);
+    setCustomerName(cart.customerName);
+    setCustomerPhone(cart.customerPhone);
+    setDiscount(cart.discount);
+
+    // Remove from parked
+    saveParkedCarts(parkedCarts.filter((c) => c.id !== cart.id));
+    setIsParkedModalOpen(false);
+
+    toast.success(`Resumed held cart: ${cart.label}`);
+  };
+
+  // Discard Parked Cart
+  const handleDiscardCart = (cartId: string) => {
+    saveParkedCarts(parkedCarts.filter((c) => c.id !== cartId));
+    toast.info("Held cart discarded.");
+  };
 
   // Open Payment Modal (Requires active shift)
   const handleOpenPayment = useCallback(() => {
@@ -222,7 +306,8 @@ export function PosView({
       setCustomerName("");
       setDiscount(0);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "An unexpected error occurred during checkout";
+      const msg =
+        err instanceof Error ? err.message : "An unexpected error occurred during checkout";
       toast.error(msg);
     } finally {
       setIsSubmitting(false);
@@ -261,7 +346,7 @@ export function PosView({
     }
   };
 
-  // Global Keyboard Shortcuts (F2: Scanner, F3: Returns, F9: Payment, Esc: Close)
+  // Global Keyboard Shortcuts (F2: Scanner, F3: Returns, F4: Hold/Park, F9: Payment, Esc: Close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "F2") {
@@ -270,6 +355,13 @@ export function PosView({
       } else if (e.key === "F3") {
         e.preventDefault();
         setIsReturnModalOpen(true);
+      } else if (e.key === "F4") {
+        e.preventDefault();
+        if (cartItems.length > 0) {
+          handleParkCart();
+        } else if (parkedCarts.length > 0) {
+          setIsParkedModalOpen(true);
+        }
       } else if (e.key === "F9") {
         e.preventDefault();
         if (
@@ -277,7 +369,8 @@ export function PosView({
           !isPaymentOpen &&
           !isReceiptOpen &&
           !isShiftModalOpen &&
-          !isReturnModalOpen
+          !isReturnModalOpen &&
+          !isParkedModalOpen
         ) {
           handleOpenPayment();
         }
@@ -288,15 +381,18 @@ export function PosView({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     cartItems.length,
+    parkedCarts.length,
     isPaymentOpen,
     isReceiptOpen,
     isShiftModalOpen,
     isReturnModalOpen,
+    isParkedModalOpen,
     handleOpenPayment,
+    handleParkCart,
   ]);
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 select-none">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 select-none">
       {/* Top Header with Live Drawer Badge & Returns Button */}
       <PosHeader
         cashierName={cashierName}
@@ -304,18 +400,17 @@ export function PosView({
         shift={shift}
         onOpenShiftModal={() => setIsShiftModalOpen(true)}
         onOpenReturnModal={() => setIsReturnModalOpen(true)}
+        parkedCount={parkedCarts.length}
+        onOpenParkedModal={() => setIsParkedModalOpen(true)}
       />
 
       {/* Main Billing Counter Workspace */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex flex-1 overflow-hidden">
         {/* Left Section: Scanner + Catalog Grid (60-65% width) */}
-        <section className="flex-1 flex flex-col min-w-0">
+        <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="p-3 bg-white border-b border-slate-200 shadow-sm">
-            <PosProductScanner
-              onAddVariant={handleAddVariant}
-              scannerRef={scannerRef}
-            />
+          <div className="border-b border-slate-200 bg-white p-3 shadow-sm">
+            <PosProductScanner onAddVariant={handleAddVariant} scannerRef={scannerRef} />
           </div>
 
           {/* Product Grid & Categories */}
@@ -329,7 +424,7 @@ export function PosView({
         </section>
 
         {/* Right Section: Billing Cart Panel (35-40% width) */}
-        <aside className="w-96 lg:w-[420px] xl:w-[460px] h-full shadow-lg z-10">
+        <aside className="z-10 h-full w-96 shadow-lg lg:w-[420px] xl:w-[460px]">
           <PosCartPanel
             cartItems={cartItems}
             customerPhone={customerPhone}
@@ -342,9 +437,20 @@ export function PosView({
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
             onOpenPaymentModal={handleOpenPayment}
+            onParkCart={handleParkCart}
           />
         </aside>
       </main>
+
+      {/* Parked Sales / Held Carts Modal */}
+      <PosParkedModal
+        isOpen={isParkedModalOpen}
+        onClose={() => setIsParkedModalOpen(false)}
+        parkedCarts={parkedCarts}
+        onResumeCart={handleResumeCart}
+        onDiscardCart={handleDiscardCart}
+        currentCartHasItems={cartItems.length > 0}
+      />
 
       {/* In-Store Returns & Exchanges Modal */}
       <PosReturnModal
@@ -396,11 +502,7 @@ export function PosView({
       />
 
       {/* Thermal Cash Memo Receipt Modal */}
-      <PosThermalReceipt
-        receipt={receiptData}
-        isOpen={isReceiptOpen}
-        onNewSale={handleNewSale}
-      />
+      <PosThermalReceipt receipt={receiptData} isOpen={isReceiptOpen} onNewSale={handleNewSale} />
     </div>
   );
 }
