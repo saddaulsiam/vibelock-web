@@ -15,6 +15,7 @@ import {
   Settings,
   ShieldCheck,
   ShoppingBag,
+  Star,
   TrendingDown,
   Truck,
   Users,
@@ -64,6 +65,7 @@ const navGroups: readonly NavGroup[] = [
     group: "Marketing & CRM",
     items: [
       { label: "Customers", href: "/admin/customers", icon: Users },
+      { label: "Reviews", href: "/admin/reviews", icon: Star },
       { label: "Coupons", href: "/admin/coupons", icon: Percent },
       { label: "Banners", href: "/admin/banners", icon: PanelsTopLeft },
     ],

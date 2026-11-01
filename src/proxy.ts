@@ -2,6 +2,27 @@ import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Centralized Route Protection for authenticated areas
+  const isProtectedPath =
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/manager") ||
+    pathname.startsWith("/staff") ||
+    pathname.startsWith("/account");
+
+  if (isProtectedPath) {
+    const sessionToken =
+      request.cookies.get("authjs.session-token")?.value ||
+      request.cookies.get("__Secure-authjs.session-token")?.value;
+
+    if (!sessionToken) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
   if (process.env.NODE_ENV !== "production") return NextResponse.next();
 
   const nonce = randomBytes(18).toString("base64");

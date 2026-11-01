@@ -261,6 +261,15 @@ export async function createOrderAction(
   const orderNumber = `VL-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
 
   try {
+    let capturedOrderItems: Array<{
+      productName: string;
+      size?: string | null;
+      color?: string | null;
+      quantity: number;
+      unitPrice: number;
+      lineTotal: number;
+    }> = [];
+
     const orderResult = await prisma.$transaction(
       async (tx) => {
         // Re-fetch cart internally inside the tx for strict isolation
@@ -343,6 +352,8 @@ export async function createOrderAction(
             productId: variant.productId,
           };
         });
+
+        capturedOrderItems = orderItemsToCreate;
 
         let appliedCoupon: {
           id: string;
@@ -625,6 +636,41 @@ export async function createOrderAction(
             error: "Payment initiation failed. You can retry from your orders page.",
           };
         }
+      }
+    }
+
+    if (paymentMethod === "COD") {
+      try {
+        const { sendOrderConfirmationEmail } = await import("@/lib/email/order-emails");
+        sendOrderConfirmationEmail({
+          orderNumber: orderResult.orderNumber,
+          customerName: orderResult.customerName,
+          customerEmail: orderResult.customerEmail,
+          items: capturedOrderItems.map((item) => ({
+            productName: item.productName,
+            size: item.size,
+            color: item.color,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            lineTotal: item.lineTotal,
+          })),
+          subtotal: orderResult.subtotal.toString(),
+          shippingCost: orderResult.shippingCost.toString(),
+          discount: orderResult.discount.toString(),
+          total: orderResult.total.toString(),
+          paymentMethod: "COD",
+          shippingAddress: {
+            street: orderResult.shippingStreet ?? "",
+            city: orderResult.shippingCity ?? "",
+            state: orderResult.shippingState,
+            zip: orderResult.shippingZip,
+            country: orderResult.shippingCountry ?? "Bangladesh",
+          },
+        }).catch((err) => {
+          console.error("[Checkout] Non-blocking background order email error:", err);
+        });
+      } catch (emailErr) {
+        console.error("[Checkout] Failed to load order email module:", emailErr);
       }
     }
 

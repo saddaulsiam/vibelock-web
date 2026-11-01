@@ -31,7 +31,9 @@ const shopLinks = [
 const customerLinks = [
   { label: "Customer Dashboard", href: "/account" },
   { label: "Track My Orders", href: "/account/orders" },
-  { label: "Return & Exchange", href: "/account/returns" },
+  { label: "Return & Exchange", href: "/return-policy" },
+  { label: "Shipping Policy", href: "/shipping-policy" },
+  { label: "FAQs & Support", href: "/faq" },
   { label: "Saved Wishlist", href: "/wishlist" },
   { label: "Shopping Bag", href: "/cart" },
 ] as const;
