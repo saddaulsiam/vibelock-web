@@ -174,7 +174,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
           <Button
             type="button"
             onClick={handlePrint}
-            className="w-1/2 h-11 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1.5"
+            className="w-1/2 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-[0_0_20px_rgba(0,217,255,0.3)] transition-all"
           >
             <Printer className="h-4 w-4" />
             <span>Print Receipt</span>

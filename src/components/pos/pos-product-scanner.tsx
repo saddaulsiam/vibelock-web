@@ -149,7 +149,7 @@ export function PosProductScanner({
     <form onSubmit={handleScanSubmit} className="relative w-full">
       <div className="relative flex items-center">
         <div className="pointer-events-none absolute left-3.5 flex items-center text-slate-400">
-          <Barcode className="mr-1.5 h-5 w-5 text-amber-500" />
+          <Barcode className="mr-1.5 h-5 w-5 text-vl-cyan" />
           <span className="hidden font-mono text-[11px] font-semibold text-slate-400 sm:inline">
             SCAN SKU:
           </span>
@@ -161,7 +161,7 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Scan barcode or type SKU (e.g. VL-TEE-BLK-M) and hit Enter [F2]"
-          className="h-12 rounded-lg border-2 border-slate-300 bg-white pr-28 pl-28 font-mono text-sm tracking-wide text-slate-900 shadow-sm focus-visible:border-amber-500 sm:pr-32 sm:pl-32"
+          className="h-12 rounded-lg border-2 border-[#d6d2c4] bg-white pr-28 pl-28 font-mono text-sm tracking-wide text-vl-black shadow-2xs focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/25 sm:pr-32 sm:pl-32"
           autoComplete="off"
           autoFocus
         />
@@ -175,8 +175,8 @@ export function PosProductScanner({
             onClick={toggleMute}
             className={`h-8 w-8 rounded-md transition-colors ${
               isMuted
-                ? "text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-                : "text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+                ? "text-vl-grey hover:bg-black/5 hover:text-vl-black"
+                : "text-vl-cyan hover:bg-vl-cyan/10 hover:text-vl-cyan"
             }`}
             title={
               isMuted
@@ -205,9 +205,9 @@ export function PosProductScanner({
           <Button
             type="submit"
             disabled={isSearching || !searchTerm.trim()}
-            className="h-8 rounded-md bg-slate-900 px-3 text-xs font-medium text-white hover:bg-slate-800"
+            className="h-8 rounded-md bg-vl-black px-4 text-xs font-bold text-vl-white hover:bg-black hover:text-vl-cyan transition-colors"
           >
-            {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Scan"}
+            {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin text-vl-cyan" /> : "Scan"}
           </Button>
         </div>
       </div>

@@ -102,13 +102,13 @@ export function PosCartPanel({
   const getTierBadgeStyle = (tier: string) => {
     switch (tier) {
       case "PLATINUM":
-        return "bg-purple-100 text-purple-800 border-purple-200 font-bold";
+        return "bg-vl-cyan text-vl-black font-heading font-black shadow-[0_0_8px_rgba(0,217,255,0.35)]";
       case "GOLD":
-        return "bg-amber-100 text-amber-900 border-amber-300 font-bold";
+        return "bg-amber-400 text-slate-950 font-bold";
       case "SILVER":
-        return "bg-sky-100 text-sky-800 border-sky-200 font-semibold";
+        return "bg-slate-200 text-slate-900 font-semibold";
       default:
-        return "bg-orange-100 text-orange-800 border-orange-200";
+        return "bg-vl-border text-vl-white";
     }
   };
 
@@ -124,13 +124,15 @@ export function PosCartPanel({
   };
 
   return (
-    <div className="flex h-full flex-col border-l border-slate-200 bg-white">
+    <div className="flex h-full flex-col border-l border-[#d6d2c4] bg-white">
       {/* Cart Header */}
-      <div className="flex items-center justify-between bg-slate-900 p-3 text-white">
+      <div className="flex items-center justify-between bg-vl-black p-3 text-vl-white border-b border-vl-border">
         <div className="flex items-center space-x-2">
-          <ShoppingCart className="h-5 w-5 text-amber-400" />
-          <h3 className="text-sm font-semibold tracking-wide">Current Sale</h3>
-          <Badge className="h-5 bg-amber-500 px-1.5 text-xs font-bold text-slate-950 hover:bg-amber-500">
+          <ShoppingCart className="h-5 w-5 text-vl-cyan" />
+          <h3 className="font-heading font-black text-sm tracking-wider text-vl-white">
+            Current Sale
+          </h3>
+          <Badge className="h-5 bg-vl-cyan px-1.5 text-xs font-heading font-black text-vl-black hover:bg-vl-cyan">
             {totalItemsCount}
           </Badge>
         </div>
@@ -143,12 +145,12 @@ export function PosCartPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onParkCart}
-                className="flex h-7 items-center space-x-1 px-2 text-xs text-amber-400 hover:bg-slate-800 hover:text-amber-300"
+                className="flex h-7 items-center space-x-1 px-2 text-xs text-vl-cyan hover:bg-vl-cyan/15 hover:text-white"
                 title="Hold / Suspend this cart [F4]"
               >
                 <PauseCircle className="h-3.5 w-3.5" />
                 <span>Hold</span>
-                <span className="hidden rounded bg-slate-800 px-1 font-mono text-[10px] text-slate-400 sm:inline">
+                <span className="hidden rounded bg-white/10 px-1 font-mono text-[10px] text-vl-white/70 sm:inline">
                   F4
                 </span>
               </Button>
@@ -159,7 +161,7 @@ export function PosCartPanel({
               variant="ghost"
               size="sm"
               onClick={onClearCart}
-              className="h-7 px-2 text-xs text-slate-400 hover:bg-slate-800 hover:text-red-400"
+              className="h-7 px-2 text-xs text-vl-white/60 hover:bg-white/10 hover:text-red-400"
             >
               Clear
             </Button>
@@ -168,44 +170,44 @@ export function PosCartPanel({
       </div>
 
       {/* Customer Quick Capture (Phone & Name) */}
-      <div className="space-y-2 border-b border-slate-200 bg-slate-50 p-3 text-xs">
+      <div className="space-y-2 border-b border-[#e2ded2] bg-[#faf9f5] p-3 text-xs">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider text-slate-500 uppercase">
+            <Label className="mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider text-vl-grey uppercase">
               <span className="flex items-center">
-                <Phone className="mr-1 h-3 w-3 text-slate-400" /> Customer Phone
+                <Phone className="mr-1 h-3 w-3 text-vl-grey" /> Customer Phone
               </span>
-              {isLookingUp && <Loader2 className="h-3 w-3 animate-spin text-amber-500" />}
+              {isLookingUp && <Loader2 className="h-3 w-3 animate-spin text-vl-cyan" />}
             </Label>
             <Input
               type="tel"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="017XXXXXXXX"
-              className="h-8 border-slate-300 bg-white font-mono text-xs"
+              className="h-8 border-[#d6d2c4] bg-white font-mono text-xs focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20"
             />
           </div>
           <div>
-            <Label className="mb-1 flex items-center text-[10px] font-bold tracking-wider text-slate-500 uppercase">
-              <User className="mr-1 h-3 w-3 text-slate-400" /> Customer Name
+            <Label className="mb-1 flex items-center text-[10px] font-bold tracking-wider text-vl-grey uppercase">
+              <User className="mr-1 h-3 w-3 text-vl-grey" /> Customer Name
             </Label>
             <Input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Walk-in Customer"
-              className="h-8 border-slate-300 bg-white text-xs"
+              className="h-8 border-[#d6d2c4] bg-white text-xs focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20"
             />
           </div>
         </div>
 
         {/* Customer Recognized Loyalty Banner */}
         {customerProfile ? (
-          <div className="animate-in fade-in-50 space-y-1.5 rounded-md border border-amber-200/90 bg-gradient-to-r from-amber-50/80 to-orange-50/80 p-2 duration-200">
+          <div className="animate-in fade-in-50 space-y-1.5 rounded-md border border-vl-cyan/40 bg-vl-black p-2.5 text-vl-white shadow-xs duration-200">
             <div className="flex items-center justify-between">
               <div className="flex min-w-0 items-center space-x-1.5">
-                <Crown className="h-3.5 w-3.5 flex-shrink-0 text-amber-500" />
-                <span className="truncate text-[11px] font-bold text-slate-900">
+                <Crown className="h-3.5 w-3.5 flex-shrink-0 text-vl-cyan" />
+                <span className="truncate text-[11px] font-bold text-vl-white">
                   {customerProfile.name}
                 </span>
                 <Badge
@@ -214,7 +216,7 @@ export function PosCartPanel({
                   {customerProfile.tier}
                 </Badge>
               </div>
-              <span className="flex-shrink-0 font-mono text-[10px] text-slate-500">
+              <span className="flex-shrink-0 font-mono text-[10px] text-vl-grey">
                 {customerProfile.ordersCount}{" "}
                 {customerProfile.ordersCount === 1 ? "order" : "orders"} &middot; ৳
                 {customerProfile.totalSpent.toLocaleString()} LTV
@@ -222,10 +224,10 @@ export function PosCartPanel({
             </div>
 
             {/* Points & Redemption */}
-            <div className="flex items-center justify-between border-t border-amber-200/60 pt-1 text-[11px]">
-              <span className="text-slate-600">
+            <div className="flex items-center justify-between border-t border-vl-border pt-1.5 text-[11px]">
+              <span className="text-vl-white/80">
                 Points:{" "}
-                <strong className="font-mono text-amber-800">
+                <strong className="font-mono text-vl-cyan">
                   {customerProfile.loyaltyPoints} pts
                 </strong>
                 {customerProfile.pointsDiscountValue > 0 &&
@@ -239,7 +241,7 @@ export function PosCartPanel({
                       setDiscount(0);
                       toast.info("Loyalty discount removed.");
                     }}
-                    className="rounded border border-emerald-300 bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700 transition-colors hover:bg-red-50 hover:text-red-600"
+                    className="rounded border border-emerald-400 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition-colors hover:bg-red-500/20 hover:text-red-300"
                   >
                     Points Applied ✓ (Remove)
                   </button>
@@ -252,7 +254,7 @@ export function PosCartPanel({
                         `Applied ৳${customerProfile.pointsDiscountValue} loyalty discount!`
                       );
                     }}
-                    className="rounded border border-amber-400 bg-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-900 shadow-2xs transition-colors hover:bg-amber-300"
+                    className="rounded bg-vl-cyan px-2 py-0.5 text-[10px] font-bold text-vl-black shadow-[0_0_10px_rgba(0,217,255,0.3)] transition-all hover:bg-[#2ae0ff]"
                   >
                     Redeem (-৳{customerProfile.pointsDiscountValue})
                   </button>
@@ -262,8 +264,8 @@ export function PosCartPanel({
         ) : (
           hasSearched &&
           customerPhone.replace(/\D/g, "").length >= 11 && (
-            <div className="flex items-center space-x-1 px-0.5 text-[10px] text-slate-400">
-              <Sparkles className="h-3 w-3 text-slate-400" />
+            <div className="flex items-center space-x-1 px-0.5 text-[10px] text-vl-grey">
+              <Sparkles className="h-3 w-3 text-vl-cyan" />
               <span>New Customer &middot; Profile will be saved upon checkout</span>
             </div>
           )
@@ -368,21 +370,21 @@ export function PosCartPanel({
         {/* Discount Row & Quick Presets */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center font-medium text-slate-600">
-              <Tag className="mr-1 h-3 w-3 text-slate-400" /> Counter Discount (৳)
+            <span className="flex items-center font-medium text-vl-grey">
+              <Tag className="mr-1 h-3 w-3 text-vl-grey" /> Counter Discount (৳)
             </span>
             <div className="flex items-center space-x-1">
               <button
                 type="button"
                 onClick={() => applyPercentDiscount(5)}
-                className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-300"
+                className="rounded bg-[#ebe6d9] px-2 py-0.5 text-[10px] font-bold text-vl-black hover:bg-[#d6d2c4] transition-colors"
               >
                 5%
               </button>
               <button
                 type="button"
                 onClick={() => applyPercentDiscount(10)}
-                className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 hover:bg-slate-300"
+                className="rounded bg-[#ebe6d9] px-2 py-0.5 text-[10px] font-bold text-vl-black hover:bg-[#d6d2c4] transition-colors"
               >
                 10%
               </button>
@@ -393,15 +395,15 @@ export function PosCartPanel({
                 value={discount === 0 ? "" : discount}
                 onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
                 placeholder="0"
-                className="h-7 w-20 border-slate-300 bg-white text-right font-mono text-xs font-bold"
+                className="h-7 w-20 border-[#d6d2c4] bg-white text-right font-mono text-xs font-bold focus-visible:border-vl-cyan"
               />
             </div>
           </div>
         </div>
 
         {/* Totals Breakdown */}
-        <div className="space-y-1 border-t border-slate-200 pt-1 text-xs">
-          <div className="flex justify-between text-slate-600">
+        <div className="space-y-1.5 border-t border-[#e2ded2] pt-2 text-xs">
+          <div className="flex justify-between text-vl-grey">
             <span>Subtotal:</span>
             <span className="font-mono font-medium">৳{subtotal.toFixed(0)}</span>
           </div>
@@ -413,9 +415,9 @@ export function PosCartPanel({
             </div>
           )}
 
-          <div className="flex items-baseline justify-between border-t border-slate-200 pt-1 font-bold text-slate-950">
-            <span className="text-sm">Payable Amount:</span>
-            <span className="font-mono text-xl tracking-tight text-slate-900">
+          <div className="flex items-baseline justify-between border-t border-[#e2ded2] pt-2 font-bold text-vl-black">
+            <span className="text-sm font-heading tracking-wide uppercase">Payable Amount:</span>
+            <span className="font-mono text-2xl font-black tracking-tight text-vl-black">
               ৳{grandTotal.toFixed(0)}
             </span>
           </div>
@@ -426,10 +428,10 @@ export function PosCartPanel({
           type="button"
           disabled={cartItems.length === 0}
           onClick={onOpenPaymentModal}
-          className={`mt-2 flex h-12 w-full items-center justify-center space-x-2 rounded-lg text-sm font-bold tracking-wide shadow-md transition-all ${
+          className={`mt-2 flex h-12 w-full items-center justify-center space-x-2 rounded-lg text-sm font-heading font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline
-              ? "bg-slate-700 text-slate-200 hover:bg-slate-600"
-              : "bg-amber-500 text-slate-950 hover:bg-amber-400"
+              ? "bg-[#212228] text-vl-grey border border-vl-border"
+              : "bg-vl-cyan text-vl-black hover:bg-[#2ae0ff] shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_28px_rgba(0,217,255,0.5)]"
           }`}
         >
           <span>
@@ -437,7 +439,7 @@ export function PosCartPanel({
               ? `OFFLINE (LOCKED) ৳${grandTotal.toFixed(0)}`
               : `CHARGE ৳${grandTotal.toFixed(0)}`}
           </span>
-          <span className="rounded bg-black/20 px-1.5 py-0.5 font-mono text-[11px] text-white">
+          <span className="rounded bg-black/20 px-1.5 py-0.5 font-mono text-[11px] text-vl-black">
             [F9]
           </span>
         </Button>

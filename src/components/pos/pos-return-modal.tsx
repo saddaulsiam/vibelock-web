@@ -214,7 +214,7 @@ export function PosReturnModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
       <DialogContent className="max-w-2xl bg-white p-6 rounded-xl border border-slate-200 shadow-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-3 border-b border-slate-100">
-          <div className="flex items-center space-x-2 text-amber-500">
+          <div className="flex items-center space-x-2 text-vl-cyan">
             <RotateCcw className="h-5 w-5" />
             <DialogTitle className="text-base font-bold text-slate-900">
               In-Store Returns &amp; Exchanges
@@ -234,16 +234,16 @@ export function PosReturnModal({
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
               placeholder="Scan or enter invoice / order # (e.g. VL-POS-... or VL-ORD-...)"
-              className="pl-9 h-10 text-xs font-mono bg-slate-50 border-slate-300 uppercase"
+              className="pl-9 h-10 text-xs font-mono bg-[#faf9f5] border-[#d6d2c4] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 uppercase"
               autoFocus
             />
           </div>
           <Button
             type="submit"
             disabled={isSearching || !orderQuery.trim()}
-            className="h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold"
+            className="h-10 px-4 bg-vl-black hover:bg-black text-vl-white hover:text-vl-cyan text-xs font-bold transition-colors"
           >
-            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Lookup"}
+            {isSearching ? <Loader2 className="h-4 w-4 animate-spin text-vl-cyan" /> : "Lookup"}
           </Button>
         </form>
 
@@ -397,8 +397,8 @@ export function PosReturnModal({
                     onClick={() => setResolution("REFUND_CASH")}
                     className={`p-2.5 rounded-lg border text-xs flex items-center justify-center space-x-1.5 transition-colors ${
                       resolution === "REFUND_CASH"
-                        ? "border-amber-500 bg-amber-50 font-bold text-slate-900"
-                        : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                        ? "border-vl-cyan bg-vl-cyan/15 font-bold text-vl-black shadow-xs"
+                        : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
                     }`}
                   >
                     <Banknote className="h-4 w-4 text-emerald-600" />
@@ -410,11 +410,11 @@ export function PosReturnModal({
                     onClick={() => setResolution("EXCHANGE")}
                     className={`p-2.5 rounded-lg border text-xs flex items-center justify-center space-x-1.5 transition-colors ${
                       resolution === "EXCHANGE"
-                        ? "border-amber-500 bg-amber-50 font-bold text-slate-900"
-                        : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                        ? "border-vl-cyan bg-vl-cyan/15 font-bold text-vl-black shadow-xs"
+                        : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
                     }`}
                   >
-                    <ArrowRightLeft className="h-4 w-4 text-blue-600" />
+                    <ArrowRightLeft className="h-4 w-4 text-vl-cyan" />
                     <span>Product Exchange (Swap)</span>
                   </button>
                 </div>
@@ -568,11 +568,11 @@ export function PosReturnModal({
                     type="button"
                     disabled={isSubmitting || selectedItems.length === 0}
                     onClick={handleSubmitReturn}
-                    className="w-2/3 h-10 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1.5"
+                    className="w-2/3 h-10 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-[0_0_20px_rgba(0,217,255,0.3)] transition-all"
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin text-vl-black" />
                         <span>Processing Return...</span>
                       </>
                     ) : (

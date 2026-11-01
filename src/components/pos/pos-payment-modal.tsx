@@ -164,11 +164,11 @@ function PosPaymentModalContent({
 
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         {/* Total Amount Callout */}
-        <div className="bg-slate-900 text-white rounded-lg p-3 flex items-center justify-between shadow-inner">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+        <div className="bg-vl-black text-vl-white rounded-lg p-3.5 flex items-center justify-between border border-vl-border shadow-inner">
+          <span className="text-xs font-heading font-black uppercase tracking-widest text-vl-grey">
             Total Payable:
           </span>
-          <span className="text-2xl font-bold font-mono text-amber-400">
+          <span className="text-2xl font-black font-mono text-vl-cyan">
             ৳{grandTotal.toFixed(0)}
           </span>
         </div>
@@ -183,12 +183,12 @@ function PosPaymentModalContent({
             }}
             className={`p-2.5 rounded-lg border flex flex-col items-center justify-center space-y-1 transition-all ${
               method === "CASH"
-                ? "border-amber-500 bg-amber-50/70 text-slate-950 font-bold shadow-sm"
-                : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                ? "border-vl-cyan bg-vl-cyan/15 text-vl-black font-bold shadow-xs"
+                : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
             }`}
           >
             <Banknote className="h-5 w-5 text-emerald-600" />
-            <span className="text-xs">Cash</span>
+            <span className="text-xs font-semibold">Cash</span>
           </button>
 
           <button
@@ -199,12 +199,12 @@ function PosPaymentModalContent({
             }}
             className={`p-2.5 rounded-lg border flex flex-col items-center justify-center space-y-1 transition-all ${
               method === "BKASH"
-                ? "border-amber-500 bg-amber-50/70 text-slate-950 font-bold shadow-sm"
-                : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                ? "border-vl-cyan bg-vl-cyan/15 text-vl-black font-bold shadow-xs"
+                : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
             }`}
           >
             <QrCode className="h-5 w-5 text-pink-600" />
-            <span className="text-xs">bKash QR</span>
+            <span className="text-xs font-semibold">bKash QR</span>
           </button>
 
           <button
@@ -215,12 +215,12 @@ function PosPaymentModalContent({
             }}
             className={`p-2.5 rounded-lg border flex flex-col items-center justify-center space-y-1 transition-all ${
               method === "CARD"
-                ? "border-amber-500 bg-amber-50/70 text-slate-950 font-bold shadow-sm"
-                : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                ? "border-vl-cyan bg-vl-cyan/15 text-vl-black font-bold shadow-xs"
+                : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
             }`}
           >
             <CreditCard className="h-5 w-5 text-blue-600" />
-            <span className="text-xs">Card</span>
+            <span className="text-xs font-semibold">Card</span>
           </button>
 
           <button
@@ -233,12 +233,12 @@ function PosPaymentModalContent({
             }}
             className={`p-2.5 rounded-lg border flex flex-col items-center justify-center space-y-1 transition-all ${
               method === "SPLIT"
-                ? "border-indigo-500 bg-indigo-50/70 text-slate-950 font-bold shadow-sm"
-                : "border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100"
+                ? "border-vl-cyan bg-vl-cyan/15 text-vl-black font-bold shadow-xs"
+                : "border-[#d6d2c4] bg-[#faf9f5] text-vl-grey hover:bg-[#ebe6d9]"
             }`}
           >
-            <Layers className="h-5 w-5 text-indigo-600" />
-            <span className="text-xs">Split</span>
+            <Layers className="h-5 w-5 text-vl-cyan" />
+            <span className="text-xs font-semibold">Split</span>
           </button>
         </div>
 
@@ -254,19 +254,19 @@ function PosPaymentModalContent({
                 autoFocus
                 value={tenderAmount || ""}
                 onChange={(e) => setTenderAmount(Number(e.target.value) || 0)}
-                className="text-lg font-mono font-bold h-11 border-2 border-slate-300 focus-visible:border-amber-500 mt-1"
+                className="text-lg font-mono font-bold h-11 border-2 border-[#d6d2c4] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 mt-1"
               />
             </div>
 
             {/* Quick Preset Buttons */}
             <div className="flex items-center space-x-1.5">
-              <span className="text-[10px] text-slate-400 font-semibold uppercase">Presets:</span>
+              <span className="text-[10px] text-vl-grey font-semibold uppercase">Presets:</span>
               {getDenominationPresets().map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setTenderAmount(preset)}
-                  className="text-xs px-2.5 py-1 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-800 font-mono font-semibold transition-colors"
+                  className="text-xs px-2.5 py-1 rounded-md bg-[#ebe6d9] hover:bg-[#d6d2c4] text-vl-black font-mono font-bold transition-colors"
                 >
                   ৳{preset}
                 </button>
@@ -521,15 +521,15 @@ function PosPaymentModalContent({
           <Button
             type="submit"
             disabled={isSubmitDisabled}
-            className="w-2/3 h-11 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs tracking-wide rounded-lg flex items-center justify-center space-x-2"
+            className="w-2/3 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs tracking-wider rounded-lg flex items-center justify-center space-x-2 shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_28px_rgba(0,217,255,0.5)] active:scale-[0.99] transition-all disabled:opacity-50 disabled:shadow-none"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin text-vl-black" />
                 <span>Processing...</span>
               </>
             ) : (
-              <span>Complete Sale & Print</span>
+              <span>Complete Sale &amp; Print</span>
             )}
           </Button>
         </div>

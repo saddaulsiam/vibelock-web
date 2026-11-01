@@ -36,9 +36,9 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
   }, [products, selectedCategory, searchQuery]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 border-r border-slate-200">
+    <div className="flex flex-col h-full bg-[#f2f2f2] border-r border-[#d6d2c4]">
       {/* Category Pills & Quick Filter Bar */}
-      <div className="p-3 bg-white border-b border-slate-200 space-y-2.5">
+      <div className="p-3 bg-white border-b border-[#d6d2c4] space-y-2.5">
         <div className="relative">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           <Input
@@ -46,7 +46,7 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Filter catalog by product name..."
-            className="pl-9 h-9 text-xs bg-slate-50 border-slate-200 focus-visible:bg-white"
+            className="pl-9 h-9 text-xs bg-[#faf9f5] border-[#d6d2c4] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20"
           />
         </div>
 
@@ -55,10 +55,10 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
           <button
             type="button"
             onClick={() => setSelectedCategory("all")}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
               selectedCategory === "all"
-                ? "bg-slate-900 text-white shadow-sm"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-vl-black text-vl-cyan border border-vl-cyan shadow-xs font-bold"
+                : "bg-[#ebe6d9] text-vl-black/80 hover:bg-[#d6d2c4]"
             }`}
           >
             All Items ({products.length})
@@ -71,10 +71,10 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                   isSelected
-                    ? "bg-amber-500 text-slate-950 shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-vl-cyan text-vl-black font-heading font-black shadow-[0_0_12px_rgba(0,217,255,0.35)]"
+                    : "bg-[#ebe6d9] text-vl-black/80 hover:bg-[#d6d2c4]"
                 }`}
               >
                 {cat.name} ({count})
@@ -101,15 +101,15 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
               return (
                 <div
                   key={prod.id}
-                  className={`bg-white rounded-lg border flex flex-col justify-between overflow-hidden transition-all shadow-sm ${
+                  className={`bg-white rounded-lg border flex flex-col justify-between overflow-hidden transition-all shadow-2xs ${
                     isOutOfStock
-                      ? "border-slate-200 opacity-60 bg-slate-50"
-                      : "border-slate-200 hover:border-amber-400 hover:shadow"
+                      ? "border-[#d6d2c4] opacity-60 bg-[#f9f8f5]"
+                      : "border-[#e2ded2] hover:border-vl-cyan hover:shadow-[0_4px_20px_rgba(0,217,255,0.15)]"
                   }`}
                 >
                   <div>
                     {/* Image / Thumbnail */}
-                    <div className="relative h-28 w-full bg-slate-100 overflow-hidden">
+                    <div className="relative h-28 w-full bg-[#f2f2f2] overflow-hidden">
                       {prod.imageUrl ? (
                         <Image
                           src={prod.imageUrl}
@@ -131,7 +131,7 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                             Out of Stock
                           </Badge>
                         ) : prod.totalAvailableStock <= 3 ? (
-                          <Badge className="bg-amber-500 hover:bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0 font-bold">
+                          <Badge className="bg-vl-cyan/20 text-[#007994] border border-vl-cyan/40 text-[10px] px-1.5 py-0 font-bold hover:bg-vl-cyan/20">
                             Low: {prod.totalAvailableStock} left
                           </Badge>
                         ) : (
@@ -145,18 +145,18 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                     {/* Content */}
                     <div className="p-2.5">
                       <h4
-                        className="font-medium text-xs text-slate-900 line-clamp-1 leading-snug"
+                        className="font-medium text-xs text-vl-black line-clamp-1 leading-snug"
                         title={prod.name}
                       >
                         {prod.name}
                       </h4>
 
                       <div className="mt-1 flex items-baseline space-x-1">
-                        <span className="text-sm font-bold text-slate-900">
+                        <span className="text-sm font-heading font-black text-vl-black">
                           ৳{prod.minPrice.toFixed(0)}
                         </span>
                         {prod.maxPrice > prod.minPrice && (
-                          <span className="text-[11px] text-slate-500 font-normal">
+                          <span className="text-[11px] text-vl-grey font-normal">
                             - ৳{prod.maxPrice.toFixed(0)}
                           </span>
                         )}
@@ -165,20 +165,20 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                   </div>
 
                   {/* Variants Action Area */}
-                  <div className="p-2 pt-0 border-t border-slate-100 bg-slate-50/60">
+                  <div className="p-2 pt-0 border-t border-[#f0ede6] bg-[#faf9f5]">
                     {isSingleVariant ? (
                       <Button
                         type="button"
                         size="sm"
                         disabled={isOutOfStock}
                         onClick={() => onAddVariant(prod.variants[0], prod)}
-                        className="w-full h-8 text-xs bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-white transition-colors"
+                        className="w-full h-8 text-xs bg-vl-black hover:bg-vl-cyan hover:text-vl-black text-vl-white transition-all font-bold"
                       >
                         <Plus className="h-3 w-3 mr-1" /> Add to Cart
                       </Button>
                     ) : (
                       <div className="space-y-1">
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block tracking-wider">
+                        <span className="text-[10px] uppercase font-semibold text-vl-grey block tracking-wider">
                           Select Variant:
                         </span>
                         <div className="grid grid-cols-2 gap-1">
@@ -196,13 +196,13 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                                 className={`text-[11px] px-1.5 py-1 rounded border text-left truncate transition-colors flex items-center justify-between ${
                                   vOutOfStock
                                     ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed line-through"
-                                    : "bg-white hover:bg-amber-50 hover:border-amber-400 border-slate-300 text-slate-800"
+                                    : "bg-white hover:bg-vl-cyan/10 hover:border-vl-cyan border-[#d6d2c4] text-vl-black"
                                 }`}
                               >
                                 <span className="truncate">{label}</span>
                                 <span
                                   className={`text-[9px] font-mono ml-1 ${
-                                    v.availableStock <= 2 ? "text-amber-600 font-bold" : "text-slate-500"
+                                    v.availableStock <= 2 ? "text-[#007994] font-bold" : "text-slate-500"
                                   }`}
                                 >
                                   {v.availableStock}

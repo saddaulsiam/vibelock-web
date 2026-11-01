@@ -116,7 +116,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
         <DialogHeader className="flex-shrink-0 border-b border-slate-100 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-slate-900">
-              <div className="rounded-lg bg-blue-50 p-2 text-blue-600">
+              <div className="rounded-lg bg-vl-cyan/15 p-2 text-vl-cyan border border-vl-cyan/30">
                 <Receipt className="h-5 w-5" />
               </div>
               <div>
@@ -136,9 +136,9 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               size="sm"
               onClick={() => fetchOrders(searchQuery)}
               disabled={isPending}
-              className="flex h-8 items-center space-x-1 text-xs text-slate-600"
+              className="flex h-8 items-center space-x-1 text-xs text-slate-600 hover:text-vl-black hover:border-vl-cyan"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin text-vl-cyan" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
@@ -150,9 +150,9 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             <span className="block text-[11px] font-medium text-slate-500">Total Orders</span>
             <span className="font-mono text-lg font-bold text-slate-900">{stats.totalOrders}</span>
           </div>
-          <div className="rounded-lg border border-emerald-100 bg-emerald-50/60 p-2.5">
-            <span className="block text-[11px] font-medium text-emerald-700">Total Sales</span>
-            <span className="font-mono text-lg font-bold text-emerald-700">
+          <div className="rounded-lg border border-vl-cyan/30 bg-vl-cyan/10 p-2.5">
+            <span className="block text-[11px] font-medium text-[#007994]">Total Sales</span>
+            <span className="font-mono text-lg font-black text-[#007994]">
               ৳{stats.totalRevenue.toLocaleString()}
             </span>
           </div>
@@ -162,11 +162,11 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               ৳{stats.cashTotal.toLocaleString()}
             </span>
           </div>
-          <div className="rounded-lg border border-blue-100 bg-blue-50/60 p-2.5">
-            <span className="block text-[11px] font-medium text-blue-700">
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+            <span className="block text-[11px] font-medium text-slate-600">
               Digital (bKash/Card)
             </span>
-            <span className="font-mono text-lg font-bold text-blue-700">
+            <span className="font-mono text-lg font-bold text-slate-800">
               ৳{stats.digitalTotal.toLocaleString()}
             </span>
           </div>
@@ -280,10 +280,10 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
                       onReprintReceipt(order.receiptData);
                       onClose();
                     }}
-                    className="flex h-8 items-center space-x-1.5 bg-slate-900 px-3 text-xs text-white hover:bg-slate-800"
+                    className="flex h-8 items-center space-x-1.5 bg-vl-black hover:bg-black text-vl-white hover:text-vl-cyan px-3 text-xs font-bold transition-colors"
                     title="Reprint thermal cash memo"
                   >
-                    <Printer className="h-3.5 w-3.5 text-amber-400" />
+                    <Printer className="h-3.5 w-3.5 text-vl-cyan" />
                     <span>Reprint</span>
                   </Button>
                 </div>

@@ -465,7 +465,7 @@ export function PosView({
   ]);
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 select-none">
+    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#f2f2f2] select-none">
       {/* Top Header with Live Drawer Badge & Returns Button */}
       <PosHeader
         cashierName={cashierName}
@@ -484,7 +484,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (60-65% width) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-b border-slate-200 bg-white p-3 shadow-sm">
+          <div className="border-b border-[#d6d2c4] bg-white p-3 shadow-2xs">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -503,7 +503,7 @@ export function PosView({
         </section>
 
         {/* Right Section: Billing Cart Panel (35-40% width) */}
-        <aside className="z-10 h-full w-96 shadow-lg lg:w-[420px] xl:w-[460px]">
+        <aside className="z-10 h-full w-96 shadow-md border-l border-[#d6d2c4] lg:w-[420px] xl:w-[460px]">
           <PosCartPanel
             cartItems={cartItems}
             customerPhone={customerPhone}
