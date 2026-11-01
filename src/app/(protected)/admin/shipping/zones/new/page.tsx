@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
-import { ShippingZoneForm } from "@/components/admin/shipping-forms";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { ShippingZoneForm } from "@/components/admin/shipping";
 
 export default function NewShippingZonePage() {
   return (

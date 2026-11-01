@@ -2,14 +2,14 @@ import Link from "next/link";
 import { BarChart3, CreditCard, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ReportCharts } from "@/components/admin/report-charts";
-import { ReportExportMenu } from "@/components/admin/report-export-menu";
-import { ProductProfitabilityDrilldown } from "@/components/admin/product-profitability-drilldown";
+import { ReportCharts, ReportExportMenu } from "@/components/admin/reports";
+
+import { ProductProfitabilityDrilldown } from "@/components/admin/products";
 import {
   getAdminOrderProfitability,
   getAdminProductProfitability,
   getAdminReport,
-} from "@/lib/admin/report-queries";
+} from "@/lib/admin/reports";
 
 function money(value: number | null) {
   return value === null

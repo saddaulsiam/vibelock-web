@@ -5,10 +5,10 @@ import {
   getAdminInventory,
   getAdminInventorySummary,
   type InventoryFilter,
-} from "@/lib/admin/inventory-queries";
-import { AdminInventoryTable } from "@/components/admin/admin-inventory-table";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+} from "@/lib/admin/inventory";
+import { AdminInventoryTable } from "@/components/admin/inventory/admin-inventory-table";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 
 function valueOf(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;

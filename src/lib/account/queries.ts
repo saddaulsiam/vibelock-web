@@ -67,10 +67,16 @@ export async function getAccountOverview() {
           discountType: true,
           discountValue: true,
           minOrderValue: true,
+          usageLimit: true,
+          usageCount: true,
           endDate: true,
         },
       }),
     ]);
+
+  const unredeemedCoupons = activeCoupons.filter(
+    (c) => c.usageLimit === null || c.usageCount < c.usageLimit
+  );
 
   return {
     profile: {
@@ -87,8 +93,8 @@ export async function getAccountOverview() {
       ...addr,
     })),
     totalSpent: Number(totalSpentAgg._sum.total ?? 0),
-    activeCouponsCount: activeCoupons.length,
-    coupons: activeCoupons.map((c) => ({
+    activeCouponsCount: unredeemedCoupons.length,
+    coupons: unredeemedCoupons.map((c) => ({
       id: c.id,
       code: c.code,
       discountType: c.discountType,

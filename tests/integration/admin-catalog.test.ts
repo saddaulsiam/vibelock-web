@@ -6,7 +6,7 @@ import {
   saveProductAction,
   toggleProductPublishedAction,
   deleteProductAction,
-} from "../../src/lib/admin/catalog-actions";
+} from "../../src/lib/admin/catalog";
 import { createTestProduct, createTestCategory } from "../factories";
 import { Prisma } from "@prisma/client";
 

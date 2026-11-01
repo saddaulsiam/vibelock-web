@@ -5,7 +5,7 @@ import {
 } from "@/lib/settings/payment-settings";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TogglePaymentMethodForm } from "@/components/admin/payment-settings-forms";
+import { TogglePaymentMethodForm } from "@/components/admin/payments";
 import {
   AlertCircle,
   Banknote,

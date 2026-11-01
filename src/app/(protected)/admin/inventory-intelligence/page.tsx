@@ -6,10 +6,10 @@ import {
   type InventoryIntelligenceStatusFilter,
   type InventoryIntelligenceSort,
   type InventoryIntelligenceSummary,
-} from "@/lib/admin/inventory-intelligence-queries";
-import { AdminInventoryIntelligenceTable } from "@/components/admin/admin-inventory-intelligence-table";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
+} from "@/lib/admin/inventory";
+import { AdminInventoryIntelligenceTable } from "@/components/admin/inventory/admin-inventory-intelligence-table";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;

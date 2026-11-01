@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { AddressForm } from "@/components/account/address-form";
+import { AddressForm } from "@/components/account/addresses/address-form";
 
 export const metadata: Metadata = {
   title: "Edit Address | VibeLock",

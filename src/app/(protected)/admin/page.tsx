@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAdminDashboardData } from "@/lib/admin/dashboard-queries";
+import { getAdminDashboardData } from "@/lib/admin/reports";
 
 function formatBdt(value: { toFixed: (decimalPlaces?: number) => string } | number) {
   const num = typeof value === "number" ? value : Number(value);

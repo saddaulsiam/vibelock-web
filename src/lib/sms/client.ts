@@ -66,3 +66,64 @@ export async function verifyOtp(phone: string, otp: string): Promise<boolean> {
 
   return true;
 }
+
+export interface SmsNotificationPayload {
+  phone: string;
+  message: string;
+  purpose?: string;
+}
+
+/**
+ * Pluggable SMS Dispatcher for VibeLock.
+ * Logs cleanly in development/staging and dispatches through BD SMS Gateway when configured.
+ */
+export async function sendSmsNotification({
+  phone,
+  message,
+  purpose = "transactional",
+}: SmsNotificationPayload): Promise<boolean> {
+  if (!phone || phone.trim().length === 0) {
+    return false;
+  }
+
+  const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
+
+  // Safe developer / audit logging
+  if (process.env.NODE_ENV !== "production") {
+    console.log(
+      `📱 [SMS Simulation - ${purpose.toUpperCase()}] To: ${cleanPhone} | Body: "${message}"`
+    );
+    return true;
+  }
+
+  try {
+    // In production, dispatch via configured BD SMS gateway (e.g., Greenweb, ElitBuzz, BulkSMSBD)
+    const smsApiKey = process.env.SMS_API_KEY;
+    const smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
+
+    if (!smsApiKey) {
+      console.warn(
+        `[SMS] SMS_API_KEY not configured in production. SMS notification skipped for ${cleanPhone}.`
+      );
+      return false;
+    }
+
+    // Generic BD HTTP GET/POST API structure compatible with major Bangladeshi SMS aggregators
+    const endpoint = process.env.SMS_API_URL || "https://api.smsnet.com.bd/sendsms";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        api_key: smsApiKey,
+        sender_id: smsSenderId,
+        recipient: cleanPhone,
+        message,
+      }),
+    });
+
+    return res.ok;
+  } catch (error) {
+    console.error(`[SMS Error] Failed to send SMS to ${cleanPhone}:`, error);
+    return false;
+  }
+}

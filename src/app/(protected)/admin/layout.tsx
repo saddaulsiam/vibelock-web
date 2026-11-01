@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
-import { AdminMobileNavigation, AdminSidebar } from "@/components/admin/admin-navigation";
+import { AdminMobileNavigation, AdminSidebar } from "@/components/admin/shared";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Enforce ADMIN role
@@ -10,7 +10,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-screen bg-[#F3F0E8] text-[#101114]">
       <AdminSidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-[#101114]/10 bg-white">
+        <header className="sticky top-0 z-30 border-b border-[#101114]/10 bg-white/95 backdrop-blur-sm shadow-xs">
           <div className="flex min-h-16 items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <AdminMobileNavigation />
             <div className="min-w-0">

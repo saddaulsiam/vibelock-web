@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Plus, MapPin } from "lucide-react";
 import { getCustomerAddresses } from "@/lib/account/queries";
-import { AddressList } from "@/components/account/address-list";
-import { AddressForm } from "@/components/account/address-form";
+import { AddressForm } from "@/components/account/addresses/address-form";
+import { AddressList } from "@/components/account/addresses/address-list";
 
 export const metadata: Metadata = {
   title: "Saved Addresses | VibeLock",

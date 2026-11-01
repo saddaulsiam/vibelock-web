@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { InventoryTransactionType } from "@prisma/client";
-import { AdminInventoryDetail } from "@/components/admin/admin-inventory-detail";
-import { getAdminInventoryDetail } from "@/lib/admin/inventory-queries";
+import { AdminInventoryDetail } from "@/components/admin/inventory/admin-inventory-detail";
+import { getAdminInventoryDetail } from "@/lib/admin/inventory";
 
 export const metadata: Metadata = {
   title: "Variant Inventory Ledger | VibeLock Admin",

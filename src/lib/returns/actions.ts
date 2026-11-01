@@ -5,10 +5,14 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
 import { ReturnService } from "./service";
+import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
+import { serializeReturnReason } from "./utils";
 
 const ReturnRequestSchema = z.object({
   orderNumber: z.string(),
-  reason: z.string().optional(),
+  reason: z.string().optional().default("OTHER"),
+  customerNote: z.string().max(1000).optional(),
+  images: z.array(z.string()).max(5).optional().default([]),
   items: z
     .array(
       z.object({
@@ -32,7 +36,52 @@ const ReturnRequestSchema = z.object({
     }),
 });
 
-export async function createReturnRequestAction(data: z.infer<typeof ReturnRequestSchema>) {
+/**
+ * Server action to securely upload return photo proof to Cloudinary.
+ * Enforces authenticated user, 5MB limit, and supported image formats.
+ */
+export async function uploadReturnProofAction(
+  formData: FormData
+): Promise<{ success: boolean; url?: string; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized. Please log in." };
+  }
+
+  const file = formData.get("file");
+  if (!file || !(file instanceof File)) {
+    return { success: false, error: "No image file provided." };
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    return { success: false, error: "Image file size must be under 5MB." };
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
+  if (!allowedTypes.includes(file.type)) {
+    return { success: false, error: "Only JPG, PNG, and WebP images are supported." };
+  }
+
+  try {
+    if (isCloudinaryConfigured()) {
+      const uploadRes = await uploadToCloudinary(file, "vibelock/returns");
+      if (uploadRes.success) {
+        return { success: true, url: uploadRes.url };
+      }
+      return { success: false, error: uploadRes.error };
+    }
+
+    // Local / development fallback if Cloudinary credentials are not in .env
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+    return { success: true, url: base64 };
+  } catch (err) {
+    console.error("[uploadReturnProofAction] Error:", err);
+    return { success: false, error: "Failed to upload image. Please try again." };
+  }
+}
+
+export async function createReturnRequestAction(data: z.input<typeof ReturnRequestSchema>) {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
@@ -41,10 +90,10 @@ export async function createReturnRequestAction(data: z.infer<typeof ReturnReque
 
   const result = ReturnRequestSchema.safeParse(data);
   if (!result.success) {
-    return { success: false, error: "Invalid return request data" };
+    return { success: false, error: result.error.issues[0]?.message || "Invalid return request data" };
   }
 
-  const { orderNumber, items, reason } = result.data;
+  const { orderNumber, items, reason, customerNote, images } = result.data;
 
   try {
     return await prisma.$transaction(async (tx) => {
@@ -66,6 +115,27 @@ export async function createReturnRequestAction(data: z.infer<typeof ReturnReque
         throw new Error("Only delivered orders can be returned.");
       }
 
+      // Check 3-day return window from delivery date
+      const deliveredHistory = await tx.orderHistory.findFirst({
+        where: { orderId: order.id, status: "DELIVERED" },
+        orderBy: { createdAt: "desc" },
+      });
+      const shipment = await tx.shipment.findUnique({
+        where: { orderId: order.id },
+      });
+
+      const deliveredAt = shipment?.deliveredAt || deliveredHistory?.createdAt || order.updatedAt;
+      const daysSinceDelivery = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+
+      if (daysSinceDelivery > 3) {
+        throw new Error("Return window has expired. Returns must be requested within 3 days of delivery.");
+      }
+
+      // Mandatory photo proof check for Defective or Wrong Item
+      if ((reason === "DEFECTIVE" || reason === "WRONG_ITEM") && (!images || images.length === 0)) {
+        throw new Error("Please upload at least one photo showing the defective or wrong item.");
+      }
+
       // 2. Validate returnable quantities server-side
       const returnService = new ReturnService();
       const returnableMap = await returnService.getReturnableQuantities(order.id, tx);
@@ -77,17 +147,40 @@ export async function createReturnRequestAction(data: z.infer<typeof ReturnReque
         }
       }
 
-      // 3. Create ReturnRequest
+      // 3. Serialize structured reason
+      const serializedReason = serializeReturnReason({
+        category: reason,
+        customerNote,
+        images,
+      });
+
+      // 4. Create ReturnRequest
       const returnRequest = await tx.returnRequest.create({
         data: {
           orderId: order.id,
           status: "PENDING",
-          reason,
+          reason: serializedReason,
           items: {
             create: items.map((i) => ({
               orderItemId: i.orderItemId,
               quantity: i.quantity,
             })),
+          },
+        },
+      });
+
+      // 5. Create AuditLog
+      await tx.auditLog.create({
+        data: {
+          actorId: userId,
+          action: "RETURN_REQUESTED",
+          entityType: "ReturnRequest",
+          entityId: returnRequest.id,
+          metadata: {
+            category: reason,
+            customerNote: customerNote?.trim() || "",
+            imageCount: images?.length || 0,
+            images: images || [],
           },
         },
       });
@@ -107,6 +200,8 @@ export async function createReturnRequestAction(data: z.infer<typeof ReturnReque
         "Order not found or access denied.",
         "Only delivered orders can be returned.",
         "Requested quantity exceeds the remaining returnable quantity.",
+        "Return window has expired. Returns must be requested within 3 days of delivery.",
+        "Please upload at least one photo showing the defective or wrong item.",
       ].includes(message)
         ? message
         : "Failed to submit the return request. Please try again later.",

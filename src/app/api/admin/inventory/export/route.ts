@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthRequiredError, ForbiddenError, requireRole } from "@/lib/auth/authorization";
-import { getAdminInventoryForExport, type InventoryFilter } from "@/lib/admin/inventory-queries";
+import { getAdminInventoryForExport, type InventoryFilter } from "@/lib/admin/inventory";
 
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return "";

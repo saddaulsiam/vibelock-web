@@ -1,12 +1,12 @@
-import { AdminCustomersTable } from "@/components/admin/admin-customers-table";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminCustomersTable } from "@/components/admin/customers/admin-customers-table";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminCustomers,
   getAdminCustomerSummaryKPIs,
   type CustomerSegment,
   type CustomerSortBy,
-} from "@/lib/admin/customer-queries";
+} from "@/lib/admin/customers";
 import { Award, DollarSign, ShoppingBag, Users } from "lucide-react";
 import { Suspense } from "react";
 

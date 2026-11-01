@@ -5,7 +5,7 @@ import {
   getAdminReport,
   getAdminOrderProfitability,
   getAdminProductProfitability,
-} from "../../src/lib/admin/report-queries";
+} from "../../src/lib/admin/reports";
 import crypto from "crypto";
 import { csv, csvCell } from "../../src/app/api/admin/reports/export/route";
 

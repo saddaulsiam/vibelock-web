@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Folder, FolderPlus, Layers, Package, Plus } from "lucide-react";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/admin-kpi-card";
-import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { AdminCategoriesTable } from "@/components/admin/admin-categories-table";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/admin-table-styles";
-import { getAdminCategories } from "@/lib/admin/catalog-queries";
+import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AdminPageHeader } from "@/components/admin/shared";
+import { AdminCategoriesTable } from "@/components/admin/categories";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { getAdminCategories } from "@/lib/admin/catalog";
 
 export default async function AdminCategoriesPage() {
   const categories = await getAdminCategories();

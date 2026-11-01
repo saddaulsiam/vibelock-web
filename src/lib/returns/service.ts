@@ -42,10 +42,15 @@ export class ReturnService {
   }
 
   /**
-   * Safely process inventory restoration for a COMPLETED return.
-   * Restocks items back into inventory if applicable.
+   * Safely process inventory restoration for a COMPLETED return with Quality Grading.
+   * - Grade A (RESELLABLE): Restocks items back into active sellable inventory (type: RETURN, positive quantity).
+   * - Grade B (DAMAGED): Diverts to damaged ledger without increasing sellable stock (type: DAMAGE, quantity: 0).
    */
-  async processReturnRestock(returnRequestId: string, tx: Prisma.TransactionClient) {
+  async processReturnRestock(
+    returnRequestId: string,
+    tx: Prisma.TransactionClient,
+    gradingMap?: Record<string, "RESELLABLE" | "DAMAGED">
+  ) {
     const returnReq = await tx.returnRequest.findUnique({
       where: { id: returnRequestId },
       include: {
@@ -67,12 +72,15 @@ export class ReturnService {
 
     const skuToVariantId = new Map(variants.map((v) => [v.sku, v.id]));
 
-    // Check if this return already has corresponding RESTOCK transactions
-    const existingRestocks = await tx.inventoryTransaction.findMany({
-      where: { referenceId: returnRequestId, type: "RETURN" },
+    // Check if this return already has corresponding RESTOCK or DAMAGE transactions
+    const existingTransactions = await tx.inventoryTransaction.findMany({
+      where: {
+        referenceId: returnRequestId,
+        type: { in: ["RETURN", "DAMAGE"] },
+      },
     });
 
-    if (existingRestocks.length > 0) {
+    if (existingTransactions.length > 0) {
       // Idempotency: Restock was already processed
       return;
     }
@@ -81,16 +89,32 @@ export class ReturnService {
       const variantId = skuToVariantId.get(item.orderItem.sku);
       if (!variantId) continue;
 
-      await tx.inventoryTransaction.create({
-        data: {
-          variantId,
-          type: "RETURN",
-          quantity: Math.abs(item.quantity), // Must be positive for restock
-          salesChannel: returnReq.order.salesChannel,
-          referenceId: returnRequestId,
-          notes: `Restock from Return #${returnRequestId}`,
-        },
-      });
+      const grade = gradingMap?.[item.id] || "RESELLABLE";
+
+      if (grade === "RESELLABLE") {
+        await tx.inventoryTransaction.create({
+          data: {
+            variantId,
+            type: "RETURN",
+            quantity: Math.abs(item.quantity), // Must be positive for restock
+            salesChannel: returnReq.order.salesChannel,
+            referenceId: returnRequestId,
+            notes: `Restock (Grade A - Resellable) from Return #${returnRequestId}`,
+          },
+        });
+      } else {
+        // Damaged item: divert to Damaged Ledger with quantity 0 to preserve sellable stock
+        await tx.inventoryTransaction.create({
+          data: {
+            variantId,
+            type: "DAMAGE",
+            quantity: 0,
+            salesChannel: returnReq.order.salesChannel,
+            referenceId: returnRequestId,
+            notes: `QC REJECTED (Damaged/Defective) from Return #${returnRequestId} - Not Restocked`,
+          },
+        });
+      }
     }
   }
 }
