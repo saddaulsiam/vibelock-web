@@ -36,6 +36,7 @@ interface PosCartPanelProps {
   onClearCart: () => void;
   onOpenPaymentModal: () => void;
   onParkCart?: () => void;
+  isOnline?: boolean;
 }
 
 export function PosCartPanel({
@@ -51,6 +52,7 @@ export function PosCartPanel({
   onClearCart,
   onOpenPaymentModal,
   onParkCart,
+  isOnline = true,
 }: PosCartPanelProps) {
   // Customer Profile & Loyalty state
   const [customerProfile, setCustomerProfile] = useState<PosCustomerProfile | null>(null);
@@ -424,10 +426,20 @@ export function PosCartPanel({
           type="button"
           disabled={cartItems.length === 0}
           onClick={onOpenPaymentModal}
-          className="mt-2 flex h-12 w-full items-center justify-center space-x-2 rounded-lg bg-amber-500 text-sm font-bold tracking-wide text-slate-950 shadow-md transition-all hover:bg-amber-400"
+          className={`mt-2 flex h-12 w-full items-center justify-center space-x-2 rounded-lg text-sm font-bold tracking-wide shadow-md transition-all ${
+            !isOnline
+              ? "bg-slate-700 text-slate-200 hover:bg-slate-600"
+              : "bg-amber-500 text-slate-950 hover:bg-amber-400"
+          }`}
         >
-          <span>CHARGE ৳{grandTotal.toFixed(0)}</span>
-          <span className="rounded bg-amber-600/30 px-1.5 py-0.5 font-mono text-[11px]">[F9]</span>
+          <span>
+            {!isOnline
+              ? `OFFLINE (LOCKED) ৳${grandTotal.toFixed(0)}`
+              : `CHARGE ৳${grandTotal.toFixed(0)}`}
+          </span>
+          <span className="rounded bg-black/20 px-1.5 py-0.5 font-mono text-[11px] text-white">
+            [F9]
+          </span>
         </Button>
       </div>
     </div>

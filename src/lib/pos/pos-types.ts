@@ -15,6 +15,7 @@ export interface PosCartItem {
 export interface PosProductVariant {
   id: string;
   sku: string;
+  barcode?: string | null;
   size?: string | null;
   color?: string | null;
   costPrice: number;

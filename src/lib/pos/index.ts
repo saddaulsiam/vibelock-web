@@ -10,3 +10,4 @@ export * from "./pos-order-history-types";
 export * from "./pos-order-history-actions";
 export * from "./pos-customer-types";
 export * from "./pos-customer-actions";
+export * from "./use-pos-online-status";

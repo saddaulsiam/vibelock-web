@@ -14,6 +14,7 @@ import {
   RotateCcw,
   PauseCircle,
   Receipt,
+  WifiOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ interface PosHeaderProps {
   parkedCount?: number;
   onOpenParkedModal?: () => void;
   onOpenOrdersModal?: () => void;
+  isOnline?: boolean;
 }
 
 export function PosHeader({
@@ -39,6 +41,7 @@ export function PosHeader({
   parkedCount,
   onOpenParkedModal,
   onOpenOrdersModal,
+  isOnline = true,
 }: PosHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -109,6 +112,28 @@ export function PosHeader({
       </div>
 
       <div className="flex items-center space-x-3">
+        {/* Network Connectivity Status Indicator */}
+        {isOnline === false ? (
+          <div
+            className="flex items-center space-x-1.5 bg-red-950/80 px-2.5 py-1 rounded-md border border-red-700/60 text-xs font-mono text-red-300 animate-pulse select-none"
+            title="Counter is operating offline. Server checkout is locked."
+          >
+            <WifiOff className="h-3.5 w-3.5 text-red-400" />
+            <span className="font-bold text-[11px]">Offline</span>
+          </div>
+        ) : (
+          <div
+            className="hidden sm:flex items-center space-x-1.5 bg-slate-800/80 px-2.5 py-1 rounded-md border border-slate-700 text-xs font-mono text-emerald-400 select-none"
+            title="Counter is connected online."
+          >
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="font-semibold text-[11px]">Online</span>
+          </div>
+        )}
+
         {/* Real-time Clock */}
         <div className="hidden md:flex items-center space-x-1.5 bg-slate-800/80 px-3 py-1 rounded-md border border-slate-700 text-slate-200 text-xs font-mono">
           <Clock className="h-3.5 w-3.5 text-amber-400" />

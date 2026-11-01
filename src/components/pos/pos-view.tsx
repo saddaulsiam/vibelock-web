@@ -1,6 +1,7 @@
 "use client";
 
 import { createPosOrderAction } from "@/lib/pos/pos-actions";
+import { usePosOnlineStatus } from "@/lib/pos";
 import type { PosParkedCart } from "@/lib/pos/pos-parked-types";
 import type { PosReturnReceiptData } from "@/lib/pos/pos-returns-types";
 import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
@@ -83,6 +84,9 @@ export function PosView({
   cashierRole,
   initialShift,
 }: PosViewProps) {
+  // Real-time Internet Connectivity Guard
+  const isOnline = usePosOnlineStatus();
+
   // Cart State
   const [cartItems, setCartItems] = useState<PosCartItem[]>([]);
   const [customerPhone, setCustomerPhone] = useState<string>("");
@@ -265,8 +269,16 @@ export function PosView({
     toast.info("Held cart discarded.");
   };
 
-  // Open Payment Modal (Requires active shift)
+  // Open Payment Modal (Requires active shift and internet connectivity)
   const handleOpenPayment = useCallback(() => {
+    if (!isOnline) {
+      toast.error(
+        "Counter is currently offline. Cannot settle payment without server connection. You can hold this cart [F4] until connection restores.",
+        { duration: 6000 }
+      );
+      return;
+    }
+
     if (cartItems.length === 0) {
       toast.error("Cart is empty. Add items before proceeding to payment.");
       return;
@@ -279,7 +291,7 @@ export function PosView({
     }
 
     setIsPaymentOpen(true);
-  }, [cartItems.length, shift]);
+  }, [cartItems.length, shift, isOnline]);
 
   // Execute Payment & Order Creation
   const handleConfirmPayment = async (
@@ -288,6 +300,11 @@ export function PosView({
     notes?: string,
     splitPayments?: PosPaymentSplitInput[]
   ) => {
+    if (!isOnline) {
+      toast.error("Offline: Cannot finalize order. Please wait for internet connection.");
+      return;
+    }
+
     if (cartItems.length === 0 || isSubmitting) return;
 
     setIsSubmitting(true);
@@ -459,6 +476,7 @@ export function PosView({
         parkedCount={parkedCarts.length}
         onOpenParkedModal={() => setIsParkedModalOpen(true)}
         onOpenOrdersModal={() => setIsOrdersModalOpen(true)}
+        isOnline={isOnline}
       />
 
       {/* Main Billing Counter Workspace */}
@@ -467,7 +485,11 @@ export function PosView({
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
           <div className="border-b border-slate-200 bg-white p-3 shadow-sm">
-            <PosProductScanner onAddVariant={handleAddVariant} scannerRef={scannerRef} />
+            <PosProductScanner
+              onAddVariant={handleAddVariant}
+              scannerRef={scannerRef}
+              catalogProducts={products}
+            />
           </div>
 
           {/* Product Grid & Categories */}
@@ -495,6 +517,7 @@ export function PosView({
             onClearCart={handleClearCart}
             onOpenPaymentModal={handleOpenPayment}
             onParkCart={handleParkCart}
+            isOnline={isOnline}
           />
         </aside>
       </main>

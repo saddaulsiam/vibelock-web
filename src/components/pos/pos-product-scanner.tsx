@@ -11,9 +11,34 @@ import { toast } from "sonner";
 interface PosProductScannerProps {
   onAddVariant: (variant: PosProductVariant, product: PosProductSummary) => void;
   scannerRef?: React.RefObject<HTMLInputElement | null>;
+  catalogProducts?: PosProductSummary[];
 }
 
-export function PosProductScanner({ onAddVariant, scannerRef: externalRef }: PosProductScannerProps) {
+export function findLocalVariant(
+  term: string,
+  catalogProducts?: PosProductSummary[]
+): { matchedVariant: PosProductVariant; product: PosProductSummary } | null {
+  if (!catalogProducts || catalogProducts.length === 0) return null;
+  const normalized = term.trim().toLowerCase();
+
+  for (const product of catalogProducts) {
+    for (const variant of product.variants) {
+      if (
+        variant.sku.toLowerCase() === normalized ||
+        (variant.barcode && variant.barcode.toLowerCase() === normalized)
+      ) {
+        return { matchedVariant: variant, product };
+      }
+    }
+  }
+  return null;
+}
+
+export function PosProductScanner({
+  onAddVariant,
+  scannerRef: externalRef,
+  catalogProducts,
+}: PosProductScannerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const internalRef = useRef<HTMLInputElement | null>(null);
@@ -49,6 +74,30 @@ export function PosProductScanner({ onAddVariant, scannerRef: externalRef }: Pos
     const term = searchTerm.trim();
     if (!term || isSearching) return;
 
+    // Check offline status
+    const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
+
+    if (isOffline) {
+      const localMatch = findLocalVariant(term, catalogProducts);
+      if (localMatch) {
+        const { matchedVariant, product } = localMatch;
+        if (matchedVariant.availableStock <= 0) {
+          playScanBeep(false);
+          toast.error(`Out of stock: ${matchedVariant.sku} (${product.name})`);
+        } else {
+          playScanBeep(true);
+          onAddVariant(matchedVariant, product);
+          toast.success(`[Offline Scan] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
+          setSearchTerm("");
+        }
+      } else {
+        playScanBeep(false);
+        toast.warning(`[Offline Mode] No local item found for SKU/barcode: "${term}"`);
+      }
+      inputRef.current?.focus();
+      return;
+    }
+
     setIsSearching(true);
     try {
       const result = await searchPosProductByBarcodeOrSku(term);
@@ -68,8 +117,23 @@ export function PosProductScanner({ onAddVariant, scannerRef: externalRef }: Pos
         toast.warning(`No product found for barcode/SKU: "${term}"`);
       }
     } catch {
-      playScanBeep(false);
-      toast.error("Error scanning item");
+      // Sudden network loss fallback: check in-memory local catalog
+      const localMatch = findLocalVariant(term, catalogProducts);
+      if (localMatch) {
+        const { matchedVariant, product } = localMatch;
+        if (matchedVariant.availableStock <= 0) {
+          playScanBeep(false);
+          toast.error(`Out of stock: ${matchedVariant.sku} (${product.name})`);
+        } else {
+          playScanBeep(true);
+          onAddVariant(matchedVariant, product);
+          toast.success(`[Offline Fallback] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
+          setSearchTerm("");
+        }
+      } else {
+        playScanBeep(false);
+        toast.error("Network error scanning item. Please verify connection.");
+      }
     } finally {
       setIsSearching(false);
       inputRef.current?.focus();
