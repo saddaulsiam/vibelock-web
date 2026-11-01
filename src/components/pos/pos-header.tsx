@@ -13,6 +13,7 @@ import {
   Lock,
   RotateCcw,
   PauseCircle,
+  Receipt,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +27,7 @@ interface PosHeaderProps {
   onOpenReturnModal?: () => void;
   parkedCount?: number;
   onOpenParkedModal?: () => void;
+  onOpenOrdersModal?: () => void;
 }
 
 export function PosHeader({
@@ -36,6 +38,7 @@ export function PosHeader({
   onOpenReturnModal,
   parkedCount,
   onOpenParkedModal,
+  onOpenOrdersModal,
 }: PosHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -151,6 +154,24 @@ export function PosHeader({
                 {parkedCount}
               </Badge>
             )}
+          </Button>
+        )}
+
+        {/* Today's Counter Orders / Invoices Button */}
+        {onOpenOrdersModal && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onOpenOrdersModal}
+            className="text-slate-300 hover:text-white hover:bg-slate-800 text-xs h-8 px-2.5 space-x-1.5"
+            title="Today's Sales & Invoices [F5]"
+          >
+            <Receipt className="h-3.5 w-3.5 text-blue-400" />
+            <span className="hidden md:inline">Orders</span>
+            <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-400 font-mono hidden lg:inline">
+              F5
+            </span>
           </Button>
         )}
 

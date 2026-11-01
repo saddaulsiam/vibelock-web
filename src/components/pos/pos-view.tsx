@@ -12,11 +12,12 @@ import type {
   PosProductVariant,
   PosReceiptData,
 } from "@/lib/pos/pos-types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 import { PosCartPanel } from "./pos-cart-panel";
 import { PosHeader } from "./pos-header";
 import { PosParkedModal } from "./pos-parked-modal";
+import { PosOrdersModal } from "./pos-orders-modal";
 import { PosPaymentModal } from "./pos-payment-modal";
 import { PosProductGrid } from "./pos-product-grid";
 import { PosProductScanner } from "./pos-product-scanner";
@@ -27,6 +28,44 @@ import { PosShiftZReport } from "./pos-shift-z-report";
 import { PosThermalReceipt } from "./pos-thermal-receipt";
 
 const PARKED_CARTS_STORAGE_KEY = "vibelock_pos_parked_carts";
+
+let cachedParkedRaw: string | null = null;
+let cachedParkedList: PosParkedCart[] = [];
+
+function getParkedSnapshot(): PosParkedCart[] {
+  if (typeof window === "undefined") return cachedParkedList;
+  try {
+    const raw = localStorage.getItem(PARKED_CARTS_STORAGE_KEY);
+    if (raw === cachedParkedRaw) {
+      return cachedParkedList;
+    }
+    cachedParkedRaw = raw;
+    if (!raw) {
+      cachedParkedList = [];
+      return cachedParkedList;
+    }
+    const parsed = JSON.parse(raw);
+    cachedParkedList = Array.isArray(parsed) ? parsed : [];
+    return cachedParkedList;
+  } catch {
+    return cachedParkedList;
+  }
+}
+
+const EMPTY_PARKED_CARTS: PosParkedCart[] = [];
+function getParkedServerSnapshot(): PosParkedCart[] {
+  return EMPTY_PARKED_CARTS;
+}
+
+function subscribeParked(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  window.addEventListener("vibelock-pos-parked-change", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("vibelock-pos-parked-change", callback);
+  };
+}
 
 interface PosViewProps {
   products: PosProductSummary[];
@@ -60,9 +99,16 @@ export function PosView({
   const [returnReceiptData, setReturnReceiptData] = useState<PosReturnReceiptData | null>(null);
   const [isReturnReceiptOpen, setIsReturnReceiptOpen] = useState<boolean>(false);
 
-  // Parked / Held Carts State
-  const [parkedCarts, setParkedCarts] = useState<PosParkedCart[]>([]);
+  // Parked / Held Carts State (synced with localStorage via useSyncExternalStore)
+  const parkedCarts = useSyncExternalStore(
+    subscribeParked,
+    getParkedSnapshot,
+    getParkedServerSnapshot
+  );
   const [isParkedModalOpen, setIsParkedModalOpen] = useState<boolean>(false);
+
+  // Today's Counter Orders & Reprint State
+  const [isOrdersModalOpen, setIsOrdersModalOpen] = useState<boolean>(false);
 
   // Billing Modals
   const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
@@ -73,26 +119,14 @@ export function PosView({
   // Scanner Input Ref for F2 shortcut
   const scannerRef = useRef<HTMLInputElement | null>(null);
 
-  // Load parked carts from localStorage on client mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(PARKED_CARTS_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          setParkedCarts(parsed);
-        }
-      }
-    } catch {
-      // LocalStorage access issues fallback gracefully
-    }
-  }, []);
-
-  // Save parked carts to localStorage
+  // Save parked carts to localStorage and notify store listeners
   const saveParkedCarts = (updatedCarts: PosParkedCart[]) => {
-    setParkedCarts(updatedCarts);
     try {
-      localStorage.setItem(PARKED_CARTS_STORAGE_KEY, JSON.stringify(updatedCarts));
+      const serialized = JSON.stringify(updatedCarts);
+      localStorage.setItem(PARKED_CARTS_STORAGE_KEY, serialized);
+      cachedParkedRaw = serialized;
+      cachedParkedList = updatedCarts;
+      window.dispatchEvent(new Event("vibelock-pos-parked-change"));
     } catch {
       // Fallback
     }
@@ -362,6 +396,9 @@ export function PosView({
         } else if (parkedCarts.length > 0) {
           setIsParkedModalOpen(true);
         }
+      } else if (e.key === "F5") {
+        e.preventDefault();
+        setIsOrdersModalOpen(true);
       } else if (e.key === "F9") {
         e.preventDefault();
         if (
@@ -370,7 +407,8 @@ export function PosView({
           !isReceiptOpen &&
           !isShiftModalOpen &&
           !isReturnModalOpen &&
-          !isParkedModalOpen
+          !isParkedModalOpen &&
+          !isOrdersModalOpen
         ) {
           handleOpenPayment();
         }
@@ -387,6 +425,7 @@ export function PosView({
     isShiftModalOpen,
     isReturnModalOpen,
     isParkedModalOpen,
+    isOrdersModalOpen,
     handleOpenPayment,
     handleParkCart,
   ]);
@@ -402,6 +441,7 @@ export function PosView({
         onOpenReturnModal={() => setIsReturnModalOpen(true)}
         parkedCount={parkedCarts.length}
         onOpenParkedModal={() => setIsParkedModalOpen(true)}
+        onOpenOrdersModal={() => setIsOrdersModalOpen(true)}
       />
 
       {/* Main Billing Counter Workspace */}
@@ -450,6 +490,16 @@ export function PosView({
         onResumeCart={handleResumeCart}
         onDiscardCart={handleDiscardCart}
         currentCartHasItems={cartItems.length > 0}
+      />
+
+      {/* Today's Counter Orders / Invoices Modal */}
+      <PosOrdersModal
+        isOpen={isOrdersModalOpen}
+        onClose={() => setIsOrdersModalOpen(false)}
+        onReprintReceipt={(receipt) => {
+          setReceiptData(receipt);
+          setIsReceiptOpen(true);
+        }}
       />
 
       {/* In-Store Returns & Exchanges Modal */}
