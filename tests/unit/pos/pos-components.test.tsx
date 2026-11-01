@@ -265,9 +265,20 @@ describe("POS UI Components", () => {
       expect(html).toContain("Add to Cart");
       expect(html).toContain("Select Variant:");
       expect(html).toContain("No Variants");
+    });
 
-      // Verify search input attributes
-      expect(html).toContain("Filter catalog by product name, SKU, color, or category...");
+    test("filters catalog items in real-time when searchQuery prop is provided", () => {
+      const html = renderToStaticMarkup(
+        <PosProductGrid
+          products={mockProducts}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+          searchQuery="Cyber"
+        />
+      );
+
+      expect(html).toContain("Cyber Graphic Tee");
+      expect(html).not.toContain("Stealth Hoodie");
     });
 
     test("renders empty catalog state with Reset Filters button when no products match", () => {

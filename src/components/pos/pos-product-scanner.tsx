@@ -13,6 +13,8 @@ interface PosProductScannerProps {
   onAddVariant: (variant: PosProductVariant, product: PosProductSummary) => void;
   scannerRef?: React.RefObject<HTMLInputElement | null>;
   catalogProducts?: PosProductSummary[];
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
 }
 
 export function findLocalVariant(
@@ -39,12 +41,32 @@ export function PosProductScanner({
   onAddVariant,
   scannerRef: externalRef,
   catalogProducts,
+  searchQuery,
+  onSearchQueryChange,
 }: PosProductScannerProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const isControlled = searchQuery !== undefined && onSearchQueryChange !== undefined;
+  const [internalTerm, setInternalTerm] = useState("");
+  const searchTerm = isControlled ? searchQuery : internalTerm;
   const [isSearching, setIsSearching] = useState(false);
   const internalRef = useRef<HTMLInputElement | null>(null);
   const inputRef = externalRef || internalRef;
   const { isMuted, toggleMute } = usePosSoundMuted();
+
+  const handleInputChange = (value: string) => {
+    if (isControlled) {
+      onSearchQueryChange(value);
+    } else {
+      setInternalTerm(value);
+    }
+  };
+
+  const handleClearInput = () => {
+    if (isControlled) {
+      onSearchQueryChange("");
+    } else {
+      setInternalTerm("");
+    }
+  };
 
   // Synthesize instant POS scanner beep sound using Web Audio API (no external asset needed)
   const playScanBeep = (isSuccess: boolean) => {
@@ -80,23 +102,26 @@ export function PosProductScanner({
     // Check offline status
     const isOffline = typeof navigator !== "undefined" && !navigator.onLine;
 
-    if (isOffline) {
-      const localMatch = findLocalVariant(term, catalogProducts);
-      if (localMatch) {
-        const { matchedVariant, product } = localMatch;
-        if (matchedVariant.availableStock <= 0) {
-          playScanBeep(false);
-          toast.error(`Out of stock: ${matchedVariant.sku} (${product.name})`);
-        } else {
-          playScanBeep(true);
-          onAddVariant(matchedVariant, product);
-          toast.success(`[Offline Scan] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
-          setSearchTerm("");
-        }
-      } else {
+    // Fast-path: Check local in-memory catalog (0ms latency)
+    const localMatch = findLocalVariant(term, catalogProducts);
+    if (localMatch) {
+      const { matchedVariant, product } = localMatch;
+      if (matchedVariant.availableStock <= 0) {
         playScanBeep(false);
-        toast.warning(`[Offline Mode] No local item found for SKU/barcode: "${term}"`);
+        toast.error(`Out of stock: ${matchedVariant.sku} (${product.name})`);
+      } else {
+        playScanBeep(true);
+        onAddVariant(matchedVariant, product);
+        toast.success(`Scanned: ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
+        handleClearInput();
       }
+      inputRef.current?.focus();
+      return;
+    }
+
+    if (isOffline) {
+      playScanBeep(false);
+      toast.warning(`[Offline Mode] No local item found for SKU/barcode: "${term}"`);
       inputRef.current?.focus();
       return;
     }
@@ -113,32 +138,15 @@ export function PosProductScanner({
           playScanBeep(true);
           onAddVariant(matchedVariant, product);
           toast.success(`Scanned: ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
-          setSearchTerm("");
+          handleClearInput();
         }
       } else {
         playScanBeep(false);
         toast.warning(`No product found for barcode/SKU: "${term}"`);
       }
     } catch {
-      // Sudden network loss fallback: check in-memory local catalog
-      const localMatch = findLocalVariant(term, catalogProducts);
-      if (localMatch) {
-        const { matchedVariant, product } = localMatch;
-        if (matchedVariant.availableStock <= 0) {
-          playScanBeep(false);
-          toast.error(`Out of stock: ${matchedVariant.sku} (${product.name})`);
-        } else {
-          playScanBeep(true);
-          onAddVariant(matchedVariant, product);
-          toast.success(
-            `[Offline Fallback] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`
-          );
-          setSearchTerm("");
-        }
-      } else {
-        playScanBeep(false);
-        toast.error("Network error scanning item. Please verify connection.");
-      }
+      playScanBeep(false);
+      toast.error("Network error scanning item. Please verify connection.");
     } finally {
       setIsSearching(false);
       inputRef.current?.focus();
@@ -159,8 +167,8 @@ export function PosProductScanner({
           ref={inputRef}
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Scan barcode or type SKU (e.g. VL-TEE-BLK-M) and hit Enter [F2]"
+          onChange={(e) => handleInputChange(e.target.value)}
+          placeholder="Scan barcode or type SKU / product name to filter catalog [F2]..."
           className="h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-28 pl-28 font-mono text-sm tracking-wide text-vl-black shadow-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15 sm:pr-32 sm:pl-32"
           autoComplete="off"
           autoFocus
@@ -194,7 +202,7 @@ export function PosProductScanner({
               size="icon"
               className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600"
               onClick={() => {
-                setSearchTerm("");
+                handleClearInput();
                 inputRef.current?.focus();
               }}
             >

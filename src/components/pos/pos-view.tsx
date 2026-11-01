@@ -92,6 +92,7 @@ export function PosView({
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Shift & Cash Drawer State
   const [shift, setShift] = useState<PosShiftSummary | null>(initialShift || null);
@@ -489,6 +490,8 @@ export function PosView({
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
               catalogProducts={products}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
             />
           </div>
 
@@ -498,6 +501,8 @@ export function PosView({
               products={products}
               categories={categories}
               onAddVariant={handleAddVariant}
+              searchQuery={searchQuery}
+              onClearSearch={() => setSearchQuery("")}
             />
           </div>
         </section>
