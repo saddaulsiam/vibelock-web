@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Barcode, Loader2, X } from "lucide-react";
+import { Barcode, Loader2, Volume2, VolumeX, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { searchPosProductByBarcodeOrSku } from "@/lib/pos/pos-queries";
+import { usePosSoundMuted } from "@/lib/pos";
 import type { PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
 import { toast } from "sonner";
 
@@ -43,9 +44,11 @@ export function PosProductScanner({
   const [isSearching, setIsSearching] = useState(false);
   const internalRef = useRef<HTMLInputElement | null>(null);
   const inputRef = externalRef || internalRef;
+  const { isMuted, toggleMute } = usePosSoundMuted();
 
   // Synthesize instant POS scanner beep sound using Web Audio API (no external asset needed)
   const playScanBeep = (isSuccess: boolean) => {
+    if (isMuted) return; // Muted by cashier
     try {
       const AudioCtx =
         window.AudioContext ||
@@ -127,7 +130,9 @@ export function PosProductScanner({
         } else {
           playScanBeep(true);
           onAddVariant(matchedVariant, product);
-          toast.success(`[Offline Fallback] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`);
+          toast.success(
+            `[Offline Fallback] ${matchedVariant.sku} - ৳${matchedVariant.effectivePrice}`
+          );
           setSearchTerm("");
         }
       } else {
@@ -143,9 +148,9 @@ export function PosProductScanner({
   return (
     <form onSubmit={handleScanSubmit} className="relative w-full">
       <div className="relative flex items-center">
-        <div className="absolute left-3.5 text-slate-400 pointer-events-none flex items-center">
-          <Barcode className="h-5 w-5 text-amber-500 mr-1.5" />
-          <span className="text-[11px] font-mono font-semibold text-slate-400 hidden sm:inline">
+        <div className="pointer-events-none absolute left-3.5 flex items-center text-slate-400">
+          <Barcode className="mr-1.5 h-5 w-5 text-amber-500" />
+          <span className="hidden font-mono text-[11px] font-semibold text-slate-400 sm:inline">
             SCAN SKU:
           </span>
         </div>
@@ -156,12 +161,32 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Scan barcode or type SKU (e.g. VL-TEE-BLK-M) and hit Enter [F2]"
-          className="pl-28 sm:pl-32 pr-20 h-12 bg-white text-slate-900 border-2 border-slate-300 focus-visible:border-amber-500 font-mono text-sm tracking-wide shadow-sm rounded-lg"
+          className="h-12 rounded-lg border-2 border-slate-300 bg-white pr-28 pl-28 font-mono text-sm tracking-wide text-slate-900 shadow-sm focus-visible:border-amber-500 sm:pr-32 sm:pl-32"
           autoComplete="off"
           autoFocus
         />
 
         <div className="absolute right-2 flex items-center space-x-1">
+          {/* Mute / Unmute Scan Beep Toggle */}
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={toggleMute}
+            className={`h-8 w-8 rounded-md transition-colors ${
+              isMuted
+                ? "text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                : "text-amber-600 hover:bg-amber-50 hover:text-amber-700"
+            }`}
+            title={
+              isMuted
+                ? "Scan beep is muted. Click to enable sound."
+                : "Scan beep is enabled. Click to mute."
+            }
+          >
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+
           {searchTerm && (
             <Button
               type="button"
@@ -180,7 +205,7 @@ export function PosProductScanner({
           <Button
             type="submit"
             disabled={isSearching || !searchTerm.trim()}
-            className="h-8 px-3 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-md"
+            className="h-8 rounded-md bg-slate-900 px-3 text-xs font-medium text-white hover:bg-slate-800"
           >
             {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Scan"}
           </Button>

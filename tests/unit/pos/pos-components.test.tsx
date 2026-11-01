@@ -16,6 +16,7 @@ vi.mock("@/components/ui/dialog", () => ({
 import { PosHeader } from "@/components/pos/pos-header";
 import { PosCartPanel } from "@/components/pos/pos-cart-panel";
 import { PosThermalReceipt } from "@/components/pos/pos-thermal-receipt";
+import { PosProductScanner } from "@/components/pos/pos-product-scanner";
 import type { PosCartItem, PosReceiptData } from "@/lib/pos/pos-types";
 
 describe("POS UI Components", () => {
@@ -142,6 +143,18 @@ describe("POS UI Components", () => {
       expect(html).toContain("2500");
       expect(html).toContain("500");
       expect(html).toContain("Exchange within 7 days");
+    });
+  });
+
+  describe("PosProductScanner", () => {
+    test("renders scanner input bar with sound toggle button", () => {
+      const html = renderToStaticMarkup(
+        <PosProductScanner onAddVariant={vi.fn()} />
+      );
+
+      expect(html).toContain("SCAN SKU:");
+      expect(html).toContain("Scan barcode or type SKU");
+      expect(html).toContain("Scan beep is enabled. Click to mute.");
     });
   });
 });
