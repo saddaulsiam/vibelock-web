@@ -306,5 +306,36 @@ describe("POS UI Components", () => {
       expect(html).toContain("no-scrollbar");
       expect(html).not.toContain("scrollbar-thin");
     });
+
+    test("renders AdminTableInfiniteScroll sentinel and status in PosProductGrid", () => {
+      // 1. With <= 24 items: renders all loaded state
+      const htmlFew = renderToStaticMarkup(
+        <PosProductGrid
+          products={mockProducts}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+        />
+      );
+      expect(htmlFew).toContain("All");
+      expect(htmlFew).toContain("products loaded");
+
+      // 2. With > 24 items: renders load more controls
+      const manyProducts: PosProductSummary[] = Array.from({ length: 30 }, (_, i) => ({
+        ...mockProducts[0],
+        id: `prod-batch-${i}`,
+        name: `Batch Item ${i}`,
+        variants: [],
+      }));
+
+      const htmlMany = renderToStaticMarkup(
+        <PosProductGrid
+          products={manyProducts}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+        />
+      );
+      expect(htmlMany).toContain("Load more products");
+      expect(htmlMany).toContain("Showing 24 of 30");
+    });
   });
 });
