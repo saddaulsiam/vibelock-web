@@ -9,11 +9,12 @@ export async function getPosCategories(): Promise<PosCategory[]> {
   try {
     const categories = await prisma.category.findMany({
       where: { isActive: true },
-      orderBy: { sortOrder: "asc" },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
       select: {
         id: true,
         name: true,
         slug: true,
+        parentId: true,
       },
     });
 
@@ -38,8 +39,14 @@ export async function getPosCatalog(options?: {
     };
 
     if (options?.categoryId && options.categoryId !== "all") {
+      const childCategories = await prisma.category.findMany({
+        where: { parentId: options.categoryId, isActive: true },
+        select: { id: true },
+      });
+      const matchingCategoryIds = [options.categoryId, ...childCategories.map((c) => c.id)];
+
       where.categories = {
-        some: { id: options.categoryId },
+        some: { id: { in: matchingCategoryIds } },
       };
     }
 
@@ -48,6 +55,7 @@ export async function getPosCatalog(options?: {
       where.OR = [
         { name: { contains: term, mode: "insensitive" } },
         { variants: { some: { sku: { contains: term, mode: "insensitive" } } } },
+        { variants: { some: { color: { contains: term, mode: "insensitive" } } } },
       ];
     }
 
@@ -56,12 +64,12 @@ export async function getPosCatalog(options?: {
       orderBy: { updatedAt: "desc" },
       include: {
         images: {
-          where: { isPrimary: true },
+          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
           take: 1,
           select: { url: true },
         },
         categories: {
-          select: { id: true, name: true },
+          select: { id: true, name: true, slug: true, parentId: true },
         },
         variants: {
           include: {
@@ -76,7 +84,6 @@ export async function getPosCatalog(options?: {
           },
         },
       },
-      take: 100, // Safe batch limit for fast touch interaction
     });
 
     return products.map((prod) => {
@@ -111,12 +118,17 @@ export async function getPosCatalog(options?: {
       const maxPrice = effectivePrices.length > 0 ? Math.max(...effectivePrices) : 0;
       const totalAvailableStock = variants.reduce((sum, v) => sum + v.availableStock, 0);
 
+      // Include direct category IDs and their parent category IDs so products match at any hierarchy level
+      const categoryIds = Array.from(
+        new Set(prod.categories.flatMap((c) => (c.parentId ? [c.id, c.parentId] : [c.id])))
+      );
+
       return {
         id: prod.id,
         name: prod.name,
         slug: prod.slug,
         imageUrl: primaryImage,
-        categoryIds: prod.categories.map((c) => c.id),
+        categoryIds,
         categoryNames: prod.categories.map((c) => c.name),
         variants,
         minPrice,
@@ -133,9 +145,7 @@ export async function getPosCatalog(options?: {
 /**
  * Rapid SKU/Barcode lookup for barcode scanner hardware and instant input.
  */
-export async function searchPosProductByBarcodeOrSku(
-  term: string
-): Promise<{
+export async function searchPosProductByBarcodeOrSku(term: string): Promise<{
   product: PosProductSummary;
   matchedVariant: PosProductVariant;
 } | null> {
@@ -161,11 +171,11 @@ export async function searchPosProductByBarcodeOrSku(
         product: {
           include: {
             images: {
-              where: { isPrimary: true },
+              orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
               take: 1,
               select: { url: true },
             },
-            categories: { select: { id: true, name: true } },
+            categories: { select: { id: true, name: true, slug: true, parentId: true } },
             variants: {
               include: {
                 inventoryTransactions: { select: { quantity: true } },
@@ -228,7 +238,9 @@ export async function searchPosProductByBarcodeOrSku(
       name: prod.name,
       slug: prod.slug,
       imageUrl: primaryImage,
-      categoryIds: prod.categories.map((c) => c.id),
+      categoryIds: Array.from(
+        new Set(prod.categories.flatMap((c) => (c.parentId ? [c.id, c.parentId] : [c.id])))
+      ),
       categoryNames: prod.categories.map((c) => c.name),
       variants: mappedVariants,
       minPrice,

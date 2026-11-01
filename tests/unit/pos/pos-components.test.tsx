@@ -17,7 +17,8 @@ import { PosHeader } from "@/components/pos/pos-header";
 import { PosCartPanel } from "@/components/pos/pos-cart-panel";
 import { PosThermalReceipt } from "@/components/pos/pos-thermal-receipt";
 import { PosProductScanner } from "@/components/pos/pos-product-scanner";
-import type { PosCartItem, PosReceiptData } from "@/lib/pos/pos-types";
+import { PosProductGrid } from "@/components/pos/pos-product-grid";
+import type { PosCartItem, PosCategory, PosProductSummary, PosReceiptData } from "@/lib/pos/pos-types";
 
 describe("POS UI Components", () => {
   describe("PosHeader", () => {
@@ -155,6 +156,131 @@ describe("POS UI Components", () => {
       expect(html).toContain("SCAN SKU:");
       expect(html).toContain("Scan barcode or type SKU");
       expect(html).toContain("Scan beep is enabled. Click to mute.");
+    });
+  });
+
+  describe("PosProductGrid", () => {
+    const mockCategories: PosCategory[] = [
+      { id: "cat-clothing", name: "Clothing", slug: "clothing", parentId: null },
+      { id: "cat-tees", name: "T-Shirts", slug: "t-shirts", parentId: "cat-clothing" },
+      { id: "cat-shoes", name: "Shoes", slug: "shoes", parentId: null },
+    ];
+
+    const mockProducts: PosProductSummary[] = [
+      {
+        id: "prod-1",
+        name: "Cyber Graphic Tee",
+        slug: "cyber-graphic-tee",
+        imageUrl: "/tee.jpg",
+        categoryIds: ["cat-tees", "cat-clothing"],
+        categoryNames: ["T-Shirts"],
+        variants: [
+          {
+            id: "var-1",
+            sku: "CYBER-TEE-M",
+            size: "M",
+            color: "Black",
+            costPrice: 500,
+            sellingPrice: 1200,
+            discountPrice: null,
+            effectivePrice: 1200,
+            availableStock: 10,
+          },
+        ],
+        minPrice: 1200,
+        maxPrice: 1200,
+        totalAvailableStock: 10,
+      },
+      {
+        id: "prod-2",
+        name: "Stealth Hoodie",
+        slug: "stealth-hoodie",
+        imageUrl: null,
+        categoryIds: ["cat-clothing"],
+        categoryNames: ["Clothing"],
+        variants: [
+          {
+            id: "var-2a",
+            sku: "STEALTH-HD-S",
+            size: "S",
+            color: "Grey",
+            costPrice: 900,
+            sellingPrice: 2200,
+            discountPrice: null,
+            effectivePrice: 2200,
+            availableStock: 4,
+          },
+          {
+            id: "var-2b",
+            sku: "STEALTH-HD-L",
+            size: "L",
+            color: "Grey",
+            costPrice: 900,
+            sellingPrice: 2400,
+            discountPrice: null,
+            effectivePrice: 2400,
+            availableStock: 2,
+          },
+        ],
+        minPrice: 2200,
+        maxPrice: 2400,
+        totalAvailableStock: 6,
+      },
+      {
+        id: "prod-3",
+        name: "Vintage Pin (Uncategorized)",
+        slug: "vintage-pin",
+        imageUrl: null,
+        categoryIds: [],
+        categoryNames: [],
+        variants: [],
+        minPrice: 0,
+        maxPrice: 0,
+        totalAvailableStock: 0,
+      },
+    ];
+
+    test("renders catalog items, category counts with parent-child hierarchy, and uncategorized tab", () => {
+      const html = renderToStaticMarkup(
+        <PosProductGrid
+          products={mockProducts}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+        />
+      );
+
+      // Verify category pills and counts
+      expect(html).toContain("All Items (3)");
+      expect(html).toContain("Clothing (2)"); // Parent category matches prod-1 (via subcategory) & prod-2 (direct)
+      expect(html).toContain("T-Shirts (1)");
+      expect(html).toContain("Shoes (0)");
+      expect(html).toContain("Uncategorized (1)");
+
+      // Verify product card details
+      expect(html).toContain("Cyber Graphic Tee");
+      expect(html).toContain("Stealth Hoodie");
+      expect(html).toContain("Vintage Pin (Uncategorized)");
+
+      // Verify single variant vs multi-variant vs no-variant actions
+      expect(html).toContain("Add to Cart");
+      expect(html).toContain("Select Variant:");
+      expect(html).toContain("No Variants");
+
+      // Verify search input attributes
+      expect(html).toContain("Filter catalog by product name, SKU, color, or category...");
+    });
+
+    test("renders empty catalog state with Reset Filters button when no products match", () => {
+      const html = renderToStaticMarkup(
+        <PosProductGrid
+          products={[]}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+        />
+      );
+
+      expect(html).toContain("No products match your filter.");
+      expect(html).toContain("Reset Filters");
     });
   });
 });

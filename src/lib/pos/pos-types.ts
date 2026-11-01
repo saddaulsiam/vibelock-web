@@ -42,6 +42,7 @@ export interface PosCategory {
   id: string;
   name: string;
   slug: string;
+  parentId?: string | null;
 }
 
 export type PosPaymentMethod = "CASH" | "BKASH" | "CARD" | "SPLIT";
