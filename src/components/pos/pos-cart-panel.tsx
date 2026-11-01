@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
+import Image from "next/image";
 import {
   Trash2,
   Plus,
@@ -13,6 +14,7 @@ import {
   Crown,
   Sparkles,
   Loader2,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,151 +277,188 @@ export function PosCartPanel({
       {/* Cart Items List */}
       <div className="flex-1 divide-y divide-slate-100 overflow-y-auto p-2">
         {cartItems.length === 0 ? (
-          <div className="flex h-48 flex-col items-center justify-center px-4 text-center text-slate-400">
-            <ShoppingCart className="mb-2 h-10 w-10 stroke-1 text-slate-300" />
-            <p className="text-xs font-semibold text-slate-600">Counter Cart is Empty</p>
-            <p className="mt-1 text-[11px] text-slate-400">
+          <div className="flex h-56 flex-col items-center justify-center px-4 text-center text-slate-400">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#faf9f5] border border-[#e2ded2] text-slate-300">
+              <ShoppingCart className="h-7 w-7 stroke-1 text-slate-400" />
+            </div>
+            <p className="text-xs font-heading font-bold text-vl-black">Counter Cart is Empty</p>
+            <p className="mt-1 text-[11px] text-vl-grey max-w-[200px]">
               Scan barcode or select an item from the catalog to begin billing.
             </p>
           </div>
         ) : (
-          cartItems.map((item) => {
-            const variantDesc = [item.size, item.color].filter(Boolean).join(" / ");
-            const itemTotal = item.price * item.quantity;
-            const isAtMaxStock = item.quantity >= item.maxStock;
+          <div className="space-y-1">
+            {cartItems.map((item) => {
+              const variantDesc = [item.size, item.color].filter(Boolean).join(" / ");
+              const itemTotal = item.price * item.quantity;
+              const isAtMaxStock = item.quantity >= item.maxStock;
 
-            return (
-              <div
-                key={item.variantId}
-                className="flex items-center justify-between px-1 py-2 text-xs"
-              >
-                {/* Product Name & SKU */}
-                <div className="min-w-0 flex-1 pr-2">
-                  <p className="truncate leading-snug font-semibold text-slate-900">
-                    {item.productName}
-                  </p>
-                  <div className="mt-0.5 flex items-center space-x-1.5">
-                    <span className="font-mono text-[10px] font-medium text-slate-500">
-                      {item.sku}
-                    </span>
-                    {variantDesc && (
-                      <Badge variant="outline" className="border-slate-300 px-1 py-0 text-[9px]">
-                        {variantDesc}
-                      </Badge>
+              return (
+                <div
+                  key={item.variantId}
+                  className="group flex items-center justify-between rounded-xl p-2 transition-all hover:bg-[#faf9f5] border border-transparent hover:border-[#e2ded2]"
+                >
+                  {/* Item Thumbnail */}
+                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-[#e2ded2] bg-[#f2f2f2]">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.productName}
+                        fill
+                        sizes="44px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                        <Package className="h-5 w-5 stroke-1" />
+                      </div>
                     )}
                   </div>
-                  <p className="mt-0.5 text-[11px] text-slate-600">৳{item.price.toFixed(0)} each</p>
-                </div>
 
-                {/* Quantity Controls */}
-                <div className="flex items-center space-x-1">
-                  <button
-                    type="button"
-                    onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
-                    className="flex h-6 w-6 items-center justify-center rounded bg-slate-100 text-slate-700 transition-colors hover:bg-slate-200"
-                    title="Decrease quantity"
-                  >
-                    <Minus className="h-3 w-3" />
-                  </button>
-
-                  <span className="w-7 text-center font-mono text-xs font-bold text-slate-900">
-                    {item.quantity}
-                  </span>
-
-                  <button
-                    type="button"
-                    disabled={isAtMaxStock}
-                    onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
-                    className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${
-                      isAtMaxStock
-                        ? "cursor-not-allowed bg-slate-100 text-slate-300"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                    title={
-                      isAtMaxStock
-                        ? `Max available stock reached (${item.maxStock})`
-                        : "Increase quantity"
-                    }
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
-
-                  {/* Line Total */}
-                  <div className="ml-1 w-16 text-right font-mono text-xs font-bold text-slate-900">
-                    ৳{itemTotal.toFixed(0)}
+                  {/* Product Name & SKU */}
+                  <div className="min-w-0 flex-1 px-2.5">
+                    <p className="truncate font-heading text-xs font-bold leading-snug text-vl-black">
+                      {item.productName}
+                    </p>
+                    <div className="mt-0.5 flex items-center space-x-1.5">
+                      <span className="font-mono text-[10px] font-medium text-vl-grey">
+                        {item.sku}
+                      </span>
+                      {variantDesc && (
+                        <Badge
+                          variant="outline"
+                          className="border-[#d6d2c4] bg-white px-1.5 py-0 text-[9px] font-medium text-vl-black"
+                        >
+                          {variantDesc}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="mt-0.5 font-mono text-[11px] font-medium text-vl-grey">
+                      ৳{item.price.toFixed(0)} each
+                    </p>
                   </div>
 
-                  {/* Remove Button */}
-                  <button
-                    type="button"
-                    onClick={() => onRemoveItem(item.variantId)}
-                    className="ml-1 p-1 text-slate-400 transition-colors hover:text-red-500"
-                    title="Remove item"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </button>
+                  {/* Quantity Controls & Line Total */}
+                  <div className="flex items-center space-x-1">
+                    <button
+                      type="button"
+                      onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#d6d2c4] bg-white text-vl-black transition-all hover:bg-[#f0ede6] active:scale-90"
+                      title="Decrease quantity"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+
+                    <span className="w-6 text-center font-mono text-xs font-black text-vl-black">
+                      {item.quantity}
+                    </span>
+
+                    <button
+                      type="button"
+                      disabled={isAtMaxStock}
+                      onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
+                      className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
+                        isAtMaxStock
+                          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
+                          : "border-[#d6d2c4] bg-white text-vl-black hover:bg-[#f0ede6] active:scale-90"
+                      }`}
+                      title={
+                        isAtMaxStock
+                          ? `Max available stock reached (${item.maxStock})`
+                          : "Increase quantity"
+                      }
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+
+                    {/* Line Total */}
+                    <div className="ml-1 w-16 text-right font-mono text-xs font-black text-vl-black">
+                      ৳{itemTotal.toFixed(0)}
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(item.variantId)}
+                      className="ml-1 rounded-md p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 active:scale-90"
+                      title="Remove item"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })
+              );
+            })}
+          </div>
         )}
       </div>
 
       {/* Bill Calculation & Summary */}
-      <div className="space-y-2 border-t border-slate-200 bg-slate-50 p-3">
+      <div className="space-y-3 border-t border-[#e2ded2] bg-[#faf9f5] p-3.5">
         {/* Discount Row & Quick Presets */}
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
-            <span className="flex items-center font-medium text-vl-grey">
-              <Tag className="mr-1 h-3 w-3 text-vl-grey" /> Counter Discount (৳)
+            <span className="flex items-center text-[10px] font-bold tracking-wider text-vl-grey uppercase">
+              <Tag className="mr-1 h-3 w-3 text-vl-grey" /> Counter Discount
             </span>
             <div className="flex items-center space-x-1">
               <button
                 type="button"
                 onClick={() => applyPercentDiscount(5)}
-                className="rounded bg-[#ebe6d9] px-2 py-0.5 text-[10px] font-bold text-vl-black hover:bg-[#d6d2c4] transition-colors"
+                className="rounded-md border border-[#d6d2c4] bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-vl-black transition-colors hover:border-vl-cyan hover:bg-vl-cyan/10"
               >
                 5%
               </button>
               <button
                 type="button"
                 onClick={() => applyPercentDiscount(10)}
-                className="rounded bg-[#ebe6d9] px-2 py-0.5 text-[10px] font-bold text-vl-black hover:bg-[#d6d2c4] transition-colors"
+                className="rounded-md border border-[#d6d2c4] bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-vl-black transition-colors hover:border-vl-cyan hover:bg-vl-cyan/10"
               >
                 10%
               </button>
-              <Input
-                type="number"
-                min="0"
-                max={subtotal}
-                value={discount === 0 ? "" : discount}
-                onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
-                placeholder="0"
-                className="h-7 w-20 border-[#d6d2c4] bg-white text-right font-mono text-xs font-bold focus-visible:border-vl-cyan"
-              />
+              <div className="relative">
+                <span className="absolute left-2 top-1.5 text-[10px] font-bold text-vl-grey">৳</span>
+                <Input
+                  type="number"
+                  min="0"
+                  max={subtotal}
+                  value={discount === 0 ? "" : discount}
+                  onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
+                  placeholder="0"
+                  className="h-7 w-20 rounded-md border-[#d6d2c4] bg-white pl-4 pr-1 text-right font-mono text-xs font-bold focus-visible:border-vl-cyan"
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Totals Breakdown */}
-        <div className="space-y-1.5 border-t border-[#e2ded2] pt-2 text-xs">
-          <div className="flex justify-between text-vl-grey">
-            <span>Subtotal:</span>
-            <span className="font-mono font-medium">৳{subtotal.toFixed(0)}</span>
+        <div className="space-y-2 border-t border-[#e2ded2] pt-2 text-xs">
+          <div className="flex justify-between font-medium text-vl-grey">
+            <span>Subtotal ({totalItemsCount} items):</span>
+            <span className="font-mono font-semibold text-vl-black">৳{subtotal.toFixed(0)}</span>
           </div>
 
           {effectiveDiscount > 0 && (
-            <div className="flex justify-between text-emerald-600">
-              <span>Discount:</span>
-              <span className="font-mono font-medium">- ৳{effectiveDiscount.toFixed(0)}</span>
+            <div className="flex justify-between font-medium text-emerald-600">
+              <span>Counter Discount:</span>
+              <span className="font-mono font-semibold">- ৳{effectiveDiscount.toFixed(0)}</span>
             </div>
           )}
 
-          <div className="flex items-baseline justify-between border-t border-[#e2ded2] pt-2 font-bold text-vl-black">
-            <span className="text-sm font-heading tracking-wide uppercase">Payable Amount:</span>
-            <span className="font-mono text-2xl font-black tracking-tight text-vl-black">
-              ৳{grandTotal.toFixed(0)}
-            </span>
+          {/* Net Payable Box */}
+          <div className="rounded-xl border border-vl-border bg-vl-black p-3 text-vl-white shadow-xs">
+            <div className="flex items-baseline justify-between">
+              <div>
+                <span className="font-heading text-xs font-bold tracking-widest text-vl-grey uppercase">
+                  Net Payable
+                </span>
+                <p className="text-[10px] text-vl-white/60">Tax inclusive</p>
+              </div>
+              <span className="font-heading text-3xl font-black tracking-tight text-vl-cyan">
+                ৳{grandTotal.toFixed(0)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -428,10 +467,10 @@ export function PosCartPanel({
           type="button"
           disabled={cartItems.length === 0}
           onClick={onOpenPaymentModal}
-          className={`mt-2 flex h-12 w-full items-center justify-center space-x-2 rounded-lg text-sm font-heading font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
+          className={`flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-heading font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline
-              ? "bg-[#212228] text-vl-grey border border-vl-border"
-              : "bg-vl-cyan text-vl-black hover:bg-[#2ae0ff] shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_28px_rgba(0,217,255,0.5)]"
+              ? "cursor-not-allowed border border-vl-border bg-[#212228] text-vl-grey"
+              : "bg-vl-cyan text-vl-black shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:bg-[#2ae0ff] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
           }`}
         >
           <span>
@@ -439,7 +478,7 @@ export function PosCartPanel({
               ? `OFFLINE (LOCKED) ৳${grandTotal.toFixed(0)}`
               : `CHARGE ৳${grandTotal.toFixed(0)}`}
           </span>
-          <span className="rounded bg-black/20 px-1.5 py-0.5 font-mono text-[11px] text-vl-black">
+          <span className="rounded bg-black/20 px-2 py-0.5 font-mono text-[11px] font-bold text-vl-black">
             [F9]
           </span>
         </Button>

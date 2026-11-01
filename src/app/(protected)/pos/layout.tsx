@@ -9,6 +9,6 @@ export default async function PosLayout({ children }: { children: React.ReactNod
   // Enforces at least STAFF role (Staff, Manager, or Admin)
   await requireRole("STAFF");
 
-  return <div className="h-screen w-screen overflow-hidden bg-slate-100">{children}</div>;
+  return <div className="h-screen w-screen overflow-hidden bg-[#f2f2f2] text-vl-black font-sans antialiased">{children}</div>;
 }
 

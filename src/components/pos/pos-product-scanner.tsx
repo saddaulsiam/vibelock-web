@@ -161,19 +161,19 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Scan barcode or type SKU (e.g. VL-TEE-BLK-M) and hit Enter [F2]"
-          className="h-12 rounded-lg border-2 border-[#d6d2c4] bg-white pr-28 pl-28 font-mono text-sm tracking-wide text-vl-black shadow-2xs focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/25 sm:pr-32 sm:pl-32"
+          className="h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-28 pl-28 font-mono text-sm tracking-wide text-vl-black shadow-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15 sm:pr-32 sm:pl-32"
           autoComplete="off"
           autoFocus
         />
 
-        <div className="absolute right-2 flex items-center space-x-1">
+        <div className="absolute right-2 flex items-center space-x-1.5">
           {/* Mute / Unmute Scan Beep Toggle */}
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={toggleMute}
-            className={`h-8 w-8 rounded-md transition-colors ${
+            className={`h-8 w-8 rounded-lg transition-colors ${
               isMuted
                 ? "text-vl-grey hover:bg-black/5 hover:text-vl-black"
                 : "text-vl-cyan hover:bg-vl-cyan/10 hover:text-vl-cyan"
@@ -192,7 +192,7 @@ export function PosProductScanner({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-400 hover:text-slate-600"
+              className="h-8 w-8 rounded-lg text-slate-400 hover:text-slate-600"
               onClick={() => {
                 setSearchTerm("");
                 inputRef.current?.focus();
@@ -205,7 +205,7 @@ export function PosProductScanner({
           <Button
             type="submit"
             disabled={isSearching || !searchTerm.trim()}
-            className="h-8 rounded-md bg-vl-black px-4 text-xs font-bold text-vl-white hover:bg-black hover:text-vl-cyan transition-colors"
+            className="h-8.5 rounded-lg bg-vl-black px-4 font-heading text-xs font-black tracking-wider text-vl-white shadow-xs transition-all hover:bg-vl-cyan hover:text-vl-black active:scale-95"
           >
             {isSearching ? <Loader2 className="h-3.5 w-3.5 animate-spin text-vl-cyan" /> : "Scan"}
           </Button>

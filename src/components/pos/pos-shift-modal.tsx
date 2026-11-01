@@ -167,22 +167,22 @@ export function PosShiftModal({
   if (!shift || !shift.isOpen) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-        <DialogContent className="max-w-md bg-white p-6 rounded-xl border border-slate-200 shadow-2xl">
-          <DialogHeader className="pb-3 border-b border-slate-100">
+        <DialogContent className="max-w-md rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl">
+          <DialogHeader className="pb-3 border-b border-[#f0ede6]">
             <div className="flex items-center space-x-2 text-vl-cyan">
               <Lock className="h-5 w-5" />
-              <DialogTitle className="text-base font-bold text-slate-900">
+              <DialogTitle className="font-heading font-black text-lg tracking-tight text-vl-black">
                 Open Register Shift
               </DialogTitle>
             </div>
-            <DialogDescription className="text-xs text-slate-500">
+            <DialogDescription className="text-xs text-vl-grey">
               Enter starting cash float to unlock POS counter and track drawer transactions.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleOpenShift} className="space-y-4 pt-2">
             <div>
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-bold uppercase tracking-wider text-vl-grey">
                 Opening Cash Float (৳)
               </Label>
               <Input
@@ -193,19 +193,21 @@ export function PosShiftModal({
                 value={openingFloat || ""}
                 onChange={(e) => setOpeningFloat(Number(e.target.value) || 0)}
                 placeholder="2000"
-                className="text-xl font-mono font-bold h-12 border-2 border-[#d6d2c4] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 mt-1"
+                className="mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black text-vl-black shadow-xs focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15"
               />
             </div>
 
             {/* Quick Float Presets */}
-            <div className="flex items-center space-x-2">
-              <span className="text-[10px] text-vl-grey font-semibold uppercase">Presets:</span>
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-vl-grey">
+                Presets:
+              </span>
               {[1000, 2000, 3000, 5000].map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setOpeningFloat(preset)}
-                  className="text-xs px-2.5 py-1 rounded bg-[#ebe6d9] hover:bg-[#d6d2c4] text-vl-black font-mono font-bold transition-colors"
+                  className="rounded-lg border border-[#d6d2c4] bg-white px-2.5 py-1 font-mono text-xs font-bold text-vl-black shadow-2xs transition-colors hover:border-vl-cyan hover:bg-vl-cyan/10"
                 >
                   ৳{preset}
                 </button>
@@ -213,7 +215,7 @@ export function PosShiftModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-bold uppercase tracking-wider text-vl-grey">
                 Shift Notes (Optional)
               </Label>
               <Input
@@ -221,24 +223,24 @@ export function PosShiftModal({
                 value={openNotes}
                 onChange={(e) => setOpenNotes(e.target.value)}
                 placeholder="e.g. Morning counter shift"
-                className="h-9 text-xs border-[#d6d2c4] mt-1 focus-visible:border-vl-cyan"
+                className="mt-1 h-10 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] text-xs focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15"
               />
             </div>
 
-            <div className="pt-2 flex items-center space-x-2 border-t border-slate-100">
+            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={onClose}
-                className="w-1/3 h-11 text-xs"
+                className="h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold text-vl-black hover:bg-[#faf9f5]"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-2/3 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-lg flex items-center justify-center space-x-2 shadow-[0_0_20px_rgba(0,217,255,0.3)] hover:shadow-[0_0_28px_rgba(0,217,255,0.5)] active:scale-[0.99] transition-all"
+                className="flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl bg-vl-cyan font-heading text-xs font-black tracking-wider text-vl-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-[#2ae0ff] active:scale-[0.99]"
               >
                 {isSubmitting ? (
                   <>
@@ -264,21 +266,21 @@ export function PosShiftModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="max-w-md bg-white p-6 rounded-xl border border-slate-200 shadow-2xl">
-        <DialogHeader className="pb-3 border-b border-slate-100">
+      <DialogContent className="max-w-md rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl">
+        <DialogHeader className="pb-3 border-b border-[#f0ede6]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-emerald-600">
               <Banknote className="h-5 w-5" />
-              <DialogTitle className="text-base font-bold text-slate-900">
+              <DialogTitle className="font-heading font-black text-lg tracking-tight text-vl-black">
                 Cash Drawer & Shift Status
               </DialogTitle>
             </div>
-            <Badge className="bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">
+            <Badge className="border border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-700">
               ACTIVE
             </Badge>
           </div>
-          <DialogDescription className="text-xs text-slate-500">
-            Shift {shift.shiftId} | Opened:{" "}
+          <DialogDescription className="text-xs text-vl-grey">
+            Shift #{shift.shiftId.slice(-6)} &middot; Opened:{" "}
             {new Date(shift.openedAt).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
@@ -290,44 +292,44 @@ export function PosShiftModal({
         {activeTab === "SUMMARY" && (
           <div className="space-y-4 pt-2">
             {/* Live Drawer Total Big Callout */}
-            <div className="bg-vl-black text-vl-white rounded-lg p-4 shadow-inner border border-vl-border flex items-center justify-between">
+            <div className="flex items-center justify-between rounded-xl border border-vl-border bg-vl-black p-4 text-vl-white shadow-xs">
               <div>
-                <span className="text-[11px] font-heading font-black uppercase tracking-widest text-vl-grey block">
+                <span className="block text-[10px] font-heading font-black uppercase tracking-widest text-vl-grey">
                   Expected Cash in Drawer:
                 </span>
-                <span className="text-2xl font-mono font-black text-vl-cyan">
+                <span className="font-heading font-mono text-3xl font-black text-vl-cyan">
                   ৳{shift.expectedCash.toFixed(0)}
                 </span>
               </div>
               <div className="text-right text-xs text-vl-white/80">
-                <span className="block font-semibold">Total Sales: ৳{shift.totalSales.toFixed(0)}</span>
-                <span className="text-[10px] text-vl-grey font-mono">{shift.ordersCount} Orders</span>
+                <span className="block font-semibold">Total: ৳{shift.totalSales.toFixed(0)}</span>
+                <span className="font-mono text-[10px] text-vl-grey">{shift.ordersCount} Orders</span>
               </div>
             </div>
 
             {/* Shift Breakdown Table */}
-            <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-xs space-y-1.5 font-mono">
-              <div className="flex justify-between text-slate-600">
+            <div className="space-y-1.5 rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3 text-xs font-mono">
+              <div className="flex justify-between text-vl-grey">
                 <span>Opening Cash Float:</span>
-                <span className="font-semibold text-slate-900">৳{shift.openingFloat.toFixed(0)}</span>
+                <span className="font-bold text-vl-black">৳{shift.openingFloat.toFixed(0)}</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-vl-grey">
                 <span>Cash Sales Received (+):</span>
-                <span className="font-semibold text-emerald-600">+ ৳{shift.cashSales.toFixed(0)}</span>
+                <span className="font-bold text-emerald-600">+ ৳{shift.cashSales.toFixed(0)}</span>
               </div>
               {shift.cashDrops > 0 && (
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-vl-grey">
                   <span>Cash Payouts / Drops (-):</span>
-                  <span className="font-semibold text-red-600">- ৳{shift.cashDrops.toFixed(0)}</span>
+                  <span className="font-bold text-red-600">- ৳{shift.cashDrops.toFixed(0)}</span>
                 </div>
               )}
-              <div className="pt-1 border-t border-slate-200 flex justify-between text-slate-500 text-[11px]">
+              <div className="flex justify-between border-t border-[#e2ded2] pt-1 text-[11px] text-vl-grey">
                 <span>bKash Sales (Digital):</span>
-                <span>৳{shift.bkashSales.toFixed(0)}</span>
+                <span className="font-medium text-vl-black">৳{shift.bkashSales.toFixed(0)}</span>
               </div>
-              <div className="flex justify-between text-slate-500 text-[11px]">
+              <div className="flex justify-between text-[11px] text-vl-grey">
                 <span>Card Sales (POS Machine):</span>
-                <span>৳{shift.cardSales.toFixed(0)}</span>
+                <span className="font-medium text-vl-black">৳{shift.cardSales.toFixed(0)}</span>
               </div>
             </div>
 
@@ -337,9 +339,9 @@ export function PosShiftModal({
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab("CASH_DROP")}
-                className="h-10 text-xs border-slate-300 text-slate-700 hover:bg-slate-50"
+                className="h-11 rounded-xl border-[#d6d2c4] text-xs font-bold text-vl-black hover:border-vl-cyan hover:bg-[#faf9f5]"
               >
-                <ArrowDownCircle className="h-4 w-4 mr-1 text-amber-500" />
+                <ArrowDownCircle className="mr-1.5 h-4 w-4 text-amber-500" />
                 Cash Drop / Payout
               </Button>
 
@@ -349,9 +351,9 @@ export function PosShiftModal({
                   setCountedCash(shift.expectedCash);
                   setActiveTab("CLOSE_SHIFT");
                 }}
-                className="h-10 text-xs bg-red-600 hover:bg-red-700 text-white font-semibold"
+                className="h-11 rounded-xl bg-vl-black text-xs font-heading font-black tracking-wider text-vl-white shadow-xs hover:bg-black hover:text-vl-cyan active:scale-[0.98]"
               >
-                <LogOut className="h-4 w-4 mr-1" />
+                <LogOut className="mr-1.5 h-4 w-4 text-vl-cyan" />
                 Close Register
               </Button>
             </div>
@@ -400,22 +402,22 @@ export function PosShiftModal({
               />
             </div>
 
-            <div className="pt-2 flex items-center space-x-2 border-t border-slate-100">
+            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="w-1/3 h-10 text-xs"
+                className="h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold text-vl-black hover:bg-[#faf9f5]"
               >
                 Back
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || dropAmount <= 0 || !dropReason.trim()}
-                className="w-2/3 h-10 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg"
+                className="h-11 w-2/3 rounded-xl bg-vl-black font-heading text-xs font-black tracking-wider text-vl-white shadow-xs transition-all hover:bg-black hover:text-vl-cyan active:scale-[0.98]"
               >
-                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Cash Drop"}
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin text-vl-cyan" /> : "Confirm Cash Drop"}
               </Button>
             </div>
           </form>
@@ -425,15 +427,15 @@ export function PosShiftModal({
         {activeTab === "CLOSE_SHIFT" && (
           <form onSubmit={handleCloseShift} className="space-y-3 pt-2">
             {/* Expected vs Counted Comparison */}
-            <div className="bg-slate-900 text-white rounded-lg p-3 flex justify-between items-center text-xs">
-              <span className="text-slate-400 font-semibold">Expected Cash in Drawer:</span>
-              <span className="text-lg font-bold font-mono text-amber-400">
+            <div className="flex items-center justify-between rounded-xl border border-vl-border bg-vl-black p-3.5 text-xs text-vl-white shadow-xs">
+              <span className="font-heading font-bold uppercase tracking-wider text-vl-grey text-[10px]">Expected Drawer Cash:</span>
+              <span className="font-mono text-xl font-black text-vl-cyan">
                 ৳{shift.expectedCash.toFixed(0)}
               </span>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-bold uppercase tracking-wider text-vl-grey">
                 Actual Counted Cash in Drawer (৳)
               </Label>
               <Input
@@ -443,27 +445,27 @@ export function PosShiftModal({
                 autoFocus
                 value={countedCash || ""}
                 onChange={(e) => setCountedCash(Number(e.target.value) || 0)}
-                className="font-mono text-xl font-bold h-11 border-2 border-slate-300 focus-visible:border-amber-500 mt-1"
+                className="mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black text-vl-black shadow-xs focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15"
               />
             </div>
 
             {/* Live Variance Callout */}
             <div
-              className={`p-3 rounded-lg border flex items-center justify-between text-xs ${
+              className={`flex items-center justify-between rounded-xl border p-3.5 text-xs ${
                 variance === 0
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-950"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-950"
                   : variance < 0
-                  ? "bg-red-50 border-red-200 text-red-950 font-bold"
-                  : "bg-amber-50 border-amber-200 text-amber-950 font-bold"
+                  ? "border-red-200 bg-red-50 text-red-950 font-bold"
+                  : "border-amber-200 bg-amber-50 text-amber-950 font-bold"
               }`}
             >
-              <div className="flex items-center space-x-1.5">
+              <div className="flex items-center space-x-2">
                 {variance === 0 ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 ) : (
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
                 )}
-                <span>
+                <span className="font-bold">
                   {variance === 0
                     ? "Drawer Perfectly Balanced:"
                     : variance < 0
@@ -471,42 +473,42 @@ export function PosShiftModal({
                     : "Cash Surplus:"}
                 </span>
               </div>
-              <span className="font-mono text-base font-bold">
+              <span className="font-mono text-xl font-black">
                 {variance === 0 ? "৳0.00" : `৳${Math.abs(variance).toFixed(0)}`}
               </span>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-slate-700">
+              <Label className="text-xs font-bold uppercase tracking-wider text-vl-grey">
                 Closing Notes / Explanation (Optional)
               </Label>
               <Input
                 type="text"
                 value={closeNotes}
                 onChange={(e) => setCloseNotes(e.target.value)}
-                placeholder="e.g. Shift balanced, all cash deposited to manager"
-                className="text-xs h-9 border-slate-300 mt-1"
+                placeholder="e.g. Shift balanced, cash handed to supervisor"
+                className="mt-1 h-10 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] text-xs focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15"
               />
             </div>
 
-            <div className="pt-2 flex items-center space-x-2 border-t border-slate-100">
+            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="w-1/3 h-10 text-xs"
+                className="h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold text-vl-black hover:bg-[#faf9f5]"
               >
                 Back
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-2/3 h-10 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg flex items-center justify-center space-x-1.5"
+                className="flex h-11 w-2/3 items-center justify-center space-x-1.5 rounded-xl bg-red-600 font-heading text-xs font-black tracking-wider text-white shadow-md transition-all hover:bg-red-700 active:scale-[0.99]"
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
                     <span>Closing Shift...</span>
                   </>
                 ) : (

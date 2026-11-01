@@ -30,18 +30,20 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onNewSale()}>
-      <DialogContent className="max-w-md bg-white p-6 shadow-2xl rounded-xl border border-slate-200">
-        <DialogHeader className="pb-3 border-b border-slate-100 print:hidden">
-          <div className="flex items-center space-x-2 text-emerald-600">
-            <CheckCircle className="h-6 w-6" />
-            <DialogTitle className="text-base font-bold text-slate-900">
-              Sale Complete - Cash Memo Ready
+      <DialogContent className="max-w-md bg-white p-6 shadow-2xl rounded-2xl border border-[#e2ded2]">
+        <DialogHeader className="pb-3 border-b border-[#e2ded2] print:hidden">
+          <div className="flex items-center space-x-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 shadow-2xs">
+              <CheckCircle className="h-5 w-5" />
+            </div>
+            <DialogTitle className="font-heading font-black text-base text-slate-900 tracking-wide">
+              Sale Complete — Cash Memo Ready
             </DialogTitle>
           </div>
         </DialogHeader>
 
         {/* Thermal Printable Memo Container */}
-        <div className="print-area font-mono text-xs text-slate-900 bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-2 select-text">
+        <div className="print-area font-mono text-xs text-slate-900 bg-[#faf9f5] p-4.5 rounded-xl border border-[#d6d2c4] space-y-2 select-text shadow-2xs">
           {/* Header */}
           <div className="text-center space-y-0.5 pb-2 border-b border-dashed border-slate-400">
             <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK BD</h2>
@@ -160,21 +162,21 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-2 pt-2 border-t border-slate-100 print:hidden">
+        <div className="flex items-center space-x-2.5 pt-3 border-t border-[#e2ded2] print:hidden">
           <Button
             type="button"
             variant="outline"
             onClick={onNewSale}
-            className="w-1/2 h-11 text-xs text-slate-700"
+            className="w-1/2 h-11 text-xs font-heading font-black rounded-xl border-[#d6d2c4] text-slate-700 hover:bg-[#faf9f5] transition-all"
           >
-            <RotateCcw className="h-4 w-4 mr-1.5" />
+            <RotateCcw className="h-4 w-4 mr-1.5 text-vl-grey" />
             New Sale
           </Button>
 
           <Button
             type="button"
             onClick={handlePrint}
-            className="w-1/2 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-lg flex items-center justify-center space-x-1.5 shadow-[0_0_20px_rgba(0,217,255,0.3)] transition-all"
+            className="w-1/2 h-11 bg-vl-cyan hover:bg-[#2ae0ff] text-vl-black font-heading font-black text-xs rounded-xl flex items-center justify-center space-x-1.5 shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all"
           >
             <Printer className="h-4 w-4" />
             <span>Print Receipt</span>

@@ -111,19 +111,19 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[90vh] max-w-xl flex-col rounded-xl border border-slate-200 bg-white p-6 shadow-2xl lg:max-w-2xl">
+      <DialogContent className="flex max-h-[90vh] max-w-xl flex-col rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl lg:max-w-2xl">
         {/* Header */}
-        <DialogHeader className="flex-shrink-0 border-b border-slate-100 pb-3">
+        <DialogHeader className="flex-shrink-0 border-b border-[#f0ede6] pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-slate-900">
-              <div className="rounded-lg bg-vl-cyan/15 p-2 text-vl-cyan border border-vl-cyan/30">
+            <div className="flex items-center space-x-2 text-vl-black">
+              <div className="rounded-xl border border-vl-cyan/40 bg-vl-black p-2 text-vl-cyan shadow-[0_0_12px_rgba(0,217,255,0.25)]">
                 <Receipt className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-bold">
+                <DialogTitle className="font-heading font-black text-lg tracking-tight text-vl-black">
                   Today&apos;s Counter Sales &amp; Invoices
                 </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500">
+                <DialogDescription className="text-xs text-vl-grey">
                   Real-time sales history for today&apos;s counter register. Instant receipt
                   reprint.
                 </DialogDescription>
@@ -136,7 +136,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               size="sm"
               onClick={() => fetchOrders(searchQuery)}
               disabled={isPending}
-              className="flex h-8 items-center space-x-1 text-xs text-slate-600 hover:text-vl-black hover:border-vl-cyan"
+              className="flex h-9 items-center space-x-1.5 rounded-xl border-[#d6d2c4] text-xs font-bold text-vl-black hover:border-vl-cyan hover:bg-[#faf9f5]"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin text-vl-cyan" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
@@ -146,27 +146,27 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
         {/* Stats Summary Bar */}
         <div className="my-3 grid flex-shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-            <span className="block text-[11px] font-medium text-slate-500">Total Orders</span>
-            <span className="font-mono text-lg font-bold text-slate-900">{stats.totalOrders}</span>
+          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-vl-grey">Total Orders</span>
+            <span className="font-heading font-mono text-lg font-black text-vl-black">{stats.totalOrders}</span>
           </div>
-          <div className="rounded-lg border border-vl-cyan/30 bg-vl-cyan/10 p-2.5">
-            <span className="block text-[11px] font-medium text-[#007994]">Total Sales</span>
-            <span className="font-mono text-lg font-black text-[#007994]">
+          <div className="rounded-xl border border-vl-border bg-vl-black p-2.5 text-vl-white shadow-xs">
+            <span className="block text-[10px] font-heading font-black uppercase tracking-widest text-vl-grey">Total Sales</span>
+            <span className="font-heading font-mono text-lg font-black text-vl-cyan">
               ৳{stats.totalRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-            <span className="block text-[11px] font-medium text-slate-500">Cash Tender</span>
-            <span className="font-mono text-lg font-bold text-slate-700">
+          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-vl-grey">Cash Tender</span>
+            <span className="font-heading font-mono text-lg font-black text-emerald-600">
               ৳{stats.cashTotal.toLocaleString()}
             </span>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-            <span className="block text-[11px] font-medium text-slate-600">
+          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-vl-grey">
               Digital (bKash/Card)
             </span>
-            <span className="font-mono text-lg font-bold text-slate-800">
+            <span className="font-heading font-mono text-lg font-black text-vl-black">
               ৳{stats.digitalTotal.toLocaleString()}
             </span>
           </div>
@@ -180,13 +180,13 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Invoice # (e.g. VL-POS-...), customer phone or name..."
-              className="h-9 pl-9 text-xs"
+              className="h-9 rounded-xl border-[#d6d2c4] bg-[#faf9f5] pl-9 text-xs transition-all focus-visible:bg-white focus-visible:border-vl-cyan focus-visible:ring-4 focus-visible:ring-vl-cyan/15"
             />
           </div>
           <Button
             type="submit"
             size="sm"
-            className="h-9 bg-slate-900 px-3 text-xs hover:bg-slate-800"
+            className="h-9 rounded-xl bg-vl-black px-4 font-heading text-xs font-black tracking-wider text-vl-white shadow-xs hover:bg-black hover:text-vl-cyan active:scale-95"
           >
             Search
           </Button>
@@ -196,7 +196,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               variant="outline"
               size="sm"
               onClick={handleResetSearch}
-              className="h-9 px-2 text-xs"
+              className="h-9 rounded-xl border-[#d6d2c4] px-3 text-xs font-semibold text-vl-black hover:bg-[#faf9f5]"
             >
               Clear
             </Button>
@@ -207,14 +207,14 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
         <div className="flex-1 space-y-2 overflow-y-auto pr-1">
           {isPending ? (
             <div className="flex flex-col items-center justify-center py-12 text-slate-400">
-              <Loader2 className="mb-2 h-6 w-6 animate-spin" />
+              <Loader2 className="mb-2 h-6 w-6 animate-spin text-vl-cyan" />
               <p className="text-xs">Loading sales history...</p>
             </div>
           ) : orders.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+            <div className="rounded-xl border border-dashed border-[#d6d2c4] bg-[#faf9f5] p-8 text-center">
               <AlertCircle className="mx-auto mb-2 h-8 w-8 text-slate-400" />
-              <p className="text-sm font-semibold text-slate-700">No Orders Found</p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="font-heading text-sm font-bold text-vl-black">No Orders Found</p>
+              <p className="mt-1 text-xs text-vl-grey">
                 {searchQuery
                   ? "No transactions matched your search query."
                   : "No POS counter orders completed today yet. Completed sales will appear here."}
@@ -224,50 +224,50 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             orders.map((order) => (
               <div
                 key={order.id}
-                className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs transition-colors hover:border-slate-300 sm:flex-row sm:items-center"
+                className="flex flex-col justify-between gap-3 rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3 text-xs transition-all duration-150 hover:border-vl-cyan hover:bg-white hover:shadow-2xs sm:flex-row sm:items-center"
               >
                 {/* Order Details */}
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="font-mono text-sm font-bold text-slate-900">
+                    <span className="font-mono text-sm font-black text-vl-black">
                       {order.orderNumber}
                     </span>
                     {renderPaymentBadge(order.paymentMethod)}
-                    <Badge variant="outline" className="bg-white text-[10px] text-slate-600">
+                    <Badge variant="outline" className="border-[#d6d2c4] bg-white px-1.5 py-0 font-mono text-[10px] text-vl-grey">
                       {order.itemsCount} {order.itemsCount === 1 ? "item" : "items"}
                     </Badge>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-slate-500">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-vl-grey">
                     <span className="flex items-center font-mono">
-                      <Clock className="mr-1 h-3 w-3 text-slate-400" />
+                      <Clock className="mr-1 h-3 w-3 text-vl-cyan" />
                       {formatOrderTime(order.createdAt)}
                     </span>
                     <span>
-                      Customer: <strong className="text-slate-700">{order.customerName}</strong>
+                      Customer: <strong className="font-semibold text-vl-black">{order.customerName}</strong>
                     </span>
                     {order.customerPhone && order.customerPhone !== "N/A" && (
                       <span className="flex items-center font-mono">
-                        <Phone className="mr-1 h-3 w-3 text-slate-400" />
+                        <Phone className="mr-1 h-3 w-3 text-vl-grey" />
                         {order.customerPhone}
                       </span>
                     )}
                   </div>
 
                   {/* Line items snippet */}
-                  <div className="line-clamp-1 pt-0.5 text-[11px] text-slate-500 italic">
+                  <div className="line-clamp-1 pt-0.5 text-[11px] text-vl-grey italic">
                     {order.items.map((i) => `${i.quantity}x ${i.name}`).join(", ")}
                   </div>
                 </div>
 
                 {/* Amount & Actions */}
-                <div className="flex items-center justify-between space-x-3 border-t border-slate-200 pt-2 sm:justify-end sm:border-t-0 sm:pt-0">
+                <div className="flex items-center justify-between space-x-3 border-t border-[#e2ded2] pt-2 sm:justify-end sm:border-t-0 sm:pt-0">
                   <div className="text-right">
-                    <span className="block font-mono text-base font-bold text-slate-900">
+                    <span className="block font-mono text-base font-black text-vl-black">
                       ৳{order.total.toLocaleString()}
                     </span>
                     {order.discount > 0 && (
-                      <span className="block text-[10px] text-emerald-600">
+                      <span className="block font-mono text-[10px] font-medium text-emerald-600">
                         -৳{order.discount} off
                       </span>
                     )}
@@ -280,7 +280,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
                       onReprintReceipt(order.receiptData);
                       onClose();
                     }}
-                    className="flex h-8 items-center space-x-1.5 bg-vl-black hover:bg-black text-vl-white hover:text-vl-cyan px-3 text-xs font-bold transition-colors"
+                    className="flex h-8.5 items-center space-x-1.5 rounded-lg bg-vl-black px-3.5 font-heading text-xs font-black tracking-wider text-vl-white shadow-xs transition-all hover:bg-vl-cyan hover:text-vl-black active:scale-95"
                     title="Reprint thermal cash memo"
                   >
                     <Printer className="h-3.5 w-3.5 text-vl-cyan" />

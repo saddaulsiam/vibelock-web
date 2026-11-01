@@ -142,17 +142,26 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
         </div>
 
         {/* Categories Bar */}
-        <div className="flex scrollbar-thin items-center space-x-1.5 overflow-x-auto pb-1">
+        <div className="flex scrollbar-thin items-center space-x-2 overflow-x-auto pb-1 pt-0.5">
           <button
             type="button"
             onClick={() => setSelectedCategory("all")}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
+            className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
               selectedCategory === "all"
-                ? "bg-vl-black text-vl-cyan border-vl-cyan border font-bold shadow-xs"
-                : "text-vl-black/80 bg-[#ebe6d9] hover:bg-[#d6d2c4]"
+                ? "border border-vl-cyan bg-vl-black font-heading font-black text-vl-cyan shadow-[0_0_15px_rgba(0,217,255,0.25)]"
+                : "border border-[#e2ded2] bg-white font-medium text-vl-black/80 shadow-2xs hover:border-vl-cyan/60 hover:text-vl-black"
             }`}
           >
-            All Items ({products.length})
+            <span>All Items</span>
+            <span
+              className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                selectedCategory === "all"
+                  ? "bg-vl-cyan/20 text-vl-cyan"
+                  : "bg-[#f0ede6] text-vl-black/70"
+              }`}
+            >
+              {products.length}
+            </span>
           </button>
           {categories.map((cat) => {
             const count = categoryCounts[cat.id] ?? 0;
@@ -162,13 +171,20 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
                   isSelected
-                    ? "bg-vl-cyan text-vl-black font-heading font-black shadow-[0_0_12px_rgba(0,217,255,0.35)]"
-                    : "text-vl-black/80 bg-[#ebe6d9] hover:bg-[#d6d2c4]"
+                    ? "border border-vl-cyan bg-vl-black font-heading font-black text-vl-cyan shadow-[0_0_15px_rgba(0,217,255,0.25)]"
+                    : "border border-[#e2ded2] bg-white font-medium text-vl-black/80 shadow-2xs hover:border-vl-cyan/60 hover:text-vl-black"
                 }`}
               >
-                {cat.name} ({count})
+                <span>{cat.name}</span>
+                <span
+                  className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                    isSelected ? "bg-vl-cyan/20 text-vl-cyan" : "bg-[#f0ede6] text-vl-black/70"
+                  }`}
+                >
+                  {count}
+                </span>
               </button>
             );
           })}
@@ -176,13 +192,22 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
             <button
               type="button"
               onClick={() => setSelectedCategory("uncategorized")}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
                 selectedCategory === "uncategorized"
-                  ? "bg-vl-cyan text-vl-black font-heading font-black shadow-[0_0_12px_rgba(0,217,255,0.35)]"
-                  : "text-vl-black/80 bg-[#ebe6d9] hover:bg-[#d6d2c4]"
+                  ? "border border-vl-cyan bg-vl-black font-heading font-black text-vl-cyan shadow-[0_0_15px_rgba(0,217,255,0.25)]"
+                  : "border border-[#e2ded2] bg-white font-medium text-vl-black/80 shadow-2xs hover:border-vl-cyan/60 hover:text-vl-black"
               }`}
             >
-              Uncategorized ({uncategorizedCount})
+              <span>Uncategorized</span>
+              <span
+                className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                  selectedCategory === "uncategorized"
+                    ? "bg-vl-cyan/20 text-vl-cyan"
+                    : "bg-[#f0ede6] text-vl-black/70"
+                }`}
+              >
+                {uncategorizedCount}
+              </span>
             </button>
           )}
         </div>
@@ -192,9 +217,11 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
       <div className="flex-1 overflow-y-auto p-3">
         {filteredProducts.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-center text-slate-400">
-            <Package className="mb-2 h-10 w-10 stroke-1 text-slate-300" />
-            <p className="text-sm font-medium">No products match your filter.</p>
-            <p className="text-xs text-slate-400 mb-3">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e2ded2] bg-white shadow-2xs">
+              <Package className="h-7 w-7 stroke-1 text-slate-400" />
+            </div>
+            <p className="text-sm font-heading font-bold text-vl-black">No products match your filter.</p>
+            <p className="mt-1 mb-3 text-xs text-vl-grey">
               Try selecting a different category or search term.
             </p>
             <Button
@@ -205,7 +232,7 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                 setSearchQuery("");
                 setSelectedCategory("all");
               }}
-              className="h-8 text-xs font-semibold border-[#d6d2c4] hover:bg-white"
+              className="h-8 rounded-lg border-[#d6d2c4] text-xs font-semibold hover:border-vl-cyan hover:bg-white"
             >
               Reset Filters
             </Button>
@@ -220,45 +247,51 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
               return (
                 <div
                   key={prod.id}
-                  className={`flex flex-col justify-between overflow-hidden rounded-lg border bg-white shadow-2xs transition-all ${
+                  className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-200 ${
                     isOutOfStock
-                      ? "border-[#d6d2c4] bg-[#f9f8f5] opacity-60"
-                      : "hover:border-vl-cyan border-[#e2ded2] hover:shadow-[0_4px_20px_rgba(0,217,255,0.15)]"
+                      ? "border-[#e2ded2] bg-[#f9f8f5] opacity-60"
+                      : "border-[#e2ded2] hover:border-vl-cyan hover:shadow-[0_8px_24px_rgba(0,217,255,0.14)]"
                   }`}
                 >
                   <div>
-                    {/* Image / Thumbnail */}
-                    <div className="relative h-28 w-full overflow-hidden bg-[#f2f2f2]">
+                    {/* Image / Thumbnail with smooth zoom on hover */}
+                    <div className="relative h-36 w-full overflow-hidden bg-[#f2f2f2]">
                       {prod.imageUrl ? (
                         <Image
                           src={prod.imageUrl}
                           alt={prod.name}
                           fill
                           sizes="(max-width: 768px) 50vw, 25vw"
-                          className="object-cover"
+                          className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-slate-300">
-                          <Package className="h-8 w-8 stroke-1" />
+                          <Package className="h-9 w-9 stroke-1 text-slate-300" />
                         </div>
                       )}
 
-                      {/* Stock Badge */}
-                      <div className="absolute top-1.5 right-1.5">
+                      {/* Floating Glassmorphic Stock Badge */}
+                      <div className="absolute top-2 right-2">
                         {isNoVariants ? (
-                          <Badge variant="secondary" className="bg-slate-200 px-1.5 py-0 text-[10px] text-slate-600">
+                          <Badge
+                            variant="secondary"
+                            className="rounded-full border border-slate-300 bg-white/90 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-600 shadow-xs backdrop-blur-md"
+                          >
                             No Variants
                           </Badge>
                         ) : isOutOfStock ? (
-                          <Badge variant="destructive" className="px-1.5 py-0 text-[10px]">
+                          <Badge
+                            variant="destructive"
+                            className="rounded-full px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs"
+                          >
                             Out of Stock
                           </Badge>
                         ) : prod.totalAvailableStock <= 3 ? (
-                          <Badge className="bg-vl-cyan/20 border-vl-cyan/40 hover:bg-vl-cyan/20 border px-1.5 py-0 text-[10px] font-bold text-[#007994]">
+                          <Badge className="rounded-full border border-vl-cyan/60 bg-vl-black/85 px-2 py-0.5 font-mono text-[10px] font-bold text-vl-cyan shadow-[0_0_10px_rgba(0,217,255,0.25)] backdrop-blur-md">
                             Low: {prod.totalAvailableStock} left
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-600 px-1.5 py-0 text-[10px] font-medium text-white hover:bg-emerald-600">
+                          <Badge className="rounded-full border border-white/20 bg-vl-black/80 px-2 py-0.5 font-mono text-[10px] font-bold text-vl-white shadow-xs backdrop-blur-md">
                             Stock: {prod.totalAvailableStock}
                           </Badge>
                         )}
@@ -266,24 +299,24 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                     </div>
 
                     {/* Content */}
-                    <div className="p-2.5">
+                    <div className="p-3">
                       <h4
-                        className="text-vl-black line-clamp-1 text-xs leading-snug font-medium"
+                        className="font-heading text-xs font-bold leading-snug text-vl-black line-clamp-1 transition-colors group-hover:text-vl-cyan"
                         title={prod.name}
                       >
                         {prod.name}
                       </h4>
 
-                      <div className="mt-1 flex items-baseline space-x-1">
+                      <div className="mt-1.5 flex items-baseline space-x-1.5">
                         {isNoVariants ? (
-                          <span className="text-vl-grey text-xs font-medium">Unpriced</span>
+                          <span className="text-xs font-medium text-vl-grey">Unpriced</span>
                         ) : (
                           <>
-                            <span className="font-heading text-vl-black text-sm font-black">
+                            <span className="font-heading text-base font-black tracking-tight text-vl-black">
                               ৳{prod.minPrice.toFixed(0)}
                             </span>
                             {prod.maxPrice > prod.minPrice && (
-                              <span className="text-vl-grey text-[11px] font-normal">
+                              <span className="text-[11px] font-normal text-vl-grey">
                                 - ৳{prod.maxPrice.toFixed(0)}
                               </span>
                             )}
@@ -294,9 +327,9 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                   </div>
 
                   {/* Variants Action Area */}
-                  <div className="border-t border-[#f0ede6] bg-[#faf9f5] p-2 pt-0">
+                  <div className="border-t border-[#f0ede6] bg-[#faf9f5] p-2.5">
                     {isNoVariants ? (
-                      <div className="flex h-8 items-center justify-center rounded border border-dashed border-[#d6d2c4] bg-[#f2f2f2] text-[11px] font-medium text-slate-400">
+                      <div className="flex h-9 items-center justify-center rounded-lg border border-dashed border-[#d6d2c4] bg-[#f2f2f2] text-xs font-medium text-slate-400">
                         No Variants
                       </div>
                     ) : isSingleVariant ? (
@@ -305,16 +338,16 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                         size="sm"
                         disabled={isOutOfStock}
                         onClick={() => onAddVariant(prod.variants[0], prod)}
-                        className="bg-vl-black hover:bg-vl-cyan hover:text-vl-black text-vl-white h-8 w-full text-xs font-bold transition-all"
+                        className="h-9 w-full rounded-lg bg-vl-black font-heading text-xs font-black tracking-wider text-vl-white shadow-xs transition-all hover:bg-vl-cyan hover:text-vl-black hover:shadow-[0_0_14px_rgba(0,217,255,0.3)] active:scale-[0.98]"
                       >
-                        <Plus className="mr-1 h-3 w-3" /> Add to Cart
+                        <Plus className="mr-1.5 h-3.5 w-3.5" /> Add to Cart
                       </Button>
                     ) : (
-                      <div className="space-y-1">
-                        <span className="text-vl-grey block text-[10px] font-semibold tracking-wider uppercase">
+                      <div className="space-y-1.5">
+                        <span className="block text-[10px] font-bold tracking-wider text-vl-grey uppercase">
                           Select Variant:
                         </span>
-                        <div className="grid grid-cols-2 gap-1">
+                        <div className="grid grid-cols-2 gap-1.5">
                           {prod.variants.map((v) => {
                             const vOutOfStock = v.availableStock <= 0;
                             const label = [v.size, v.color].filter(Boolean).join(" / ") || v.sku;
@@ -326,17 +359,17 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
                                 disabled={vOutOfStock}
                                 onClick={() => onAddVariant(v, prod)}
                                 title={`${label} - Stock: ${v.availableStock}`}
-                                className={`flex items-center justify-between truncate rounded border px-1.5 py-1 text-left text-[11px] transition-colors ${
+                                className={`flex items-center justify-between truncate rounded-lg border px-2 py-1.5 text-left text-[11px] font-medium transition-all ${
                                   vOutOfStock
                                     ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 line-through"
-                                    : "hover:bg-vl-cyan/10 hover:border-vl-cyan text-vl-black border-[#d6d2c4] bg-white"
+                                    : "border-[#d6d2c4] bg-white text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 hover:text-vl-black active:scale-[0.97]"
                                 }`}
                               >
                                 <span className="truncate">{label}</span>
                                 <span
-                                  className={`ml-1 font-mono text-[9px] ${
+                                  className={`ml-1 font-mono text-[10px] font-bold ${
                                     v.availableStock <= 2
-                                      ? "font-bold text-[#007994]"
+                                      ? "text-[#008ba8]"
                                       : "text-slate-500"
                                   }`}
                                 >

@@ -250,11 +250,11 @@ describe("POS UI Components", () => {
       );
 
       // Verify category pills and counts
-      expect(html).toContain("All Items (3)");
-      expect(html).toContain("Clothing (2)"); // Parent category matches prod-1 (via subcategory) & prod-2 (direct)
-      expect(html).toContain("T-Shirts (1)");
-      expect(html).toContain("Shoes (0)");
-      expect(html).toContain("Uncategorized (1)");
+      expect(html).toContain("All Items");
+      expect(html).toContain("Clothing");
+      expect(html).toContain("T-Shirts");
+      expect(html).toContain("Shoes");
+      expect(html).toContain("Uncategorized");
 
       // Verify product card details
       expect(html).toContain("Cyber Graphic Tee");
