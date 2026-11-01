@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Banknote,
   Lock,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +22,7 @@ interface PosHeaderProps {
   cashierRole: string;
   shift?: PosShiftSummary | null;
   onOpenShiftModal?: () => void;
+  onOpenReturnModal?: () => void;
 }
 
 export function PosHeader({
@@ -28,6 +30,7 @@ export function PosHeader({
   cashierRole,
   shift,
   onOpenShiftModal,
+  onOpenReturnModal,
 }: PosHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
@@ -103,6 +106,24 @@ export function PosHeader({
           <Clock className="h-3.5 w-3.5 text-amber-400" />
           <span>{time || "00:00:00"}</span>
         </div>
+
+        {/* In-Store Returns & Exchanges Quick Button */}
+        {onOpenReturnModal && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onOpenReturnModal}
+            className="text-slate-300 hover:text-white hover:bg-slate-800 text-xs h-8 px-2.5 space-x-1.5"
+            title="In-Store Returns & Exchanges [F3]"
+          >
+            <RotateCcw className="h-3.5 w-3.5 text-amber-400" />
+            <span className="hidden md:inline">Returns / Exchange</span>
+            <span className="text-[10px] bg-slate-800 px-1 rounded text-slate-400 font-mono hidden lg:inline">
+              F3
+            </span>
+          </Button>
+        )}
 
         {/* Live Drawer & Shift Status Button */}
         {onOpenShiftModal && (

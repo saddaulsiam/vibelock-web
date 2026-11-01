@@ -9,6 +9,8 @@ import { PosPaymentModal } from "./pos-payment-modal";
 import { PosThermalReceipt } from "./pos-thermal-receipt";
 import { PosShiftModal } from "./pos-shift-modal";
 import { PosShiftZReport } from "./pos-shift-z-report";
+import { PosReturnModal } from "./pos-return-modal";
+import { PosReturnReceipt } from "./pos-return-receipt";
 import { createPosOrderAction } from "@/lib/pos/pos-actions";
 import type {
   PosCartItem,
@@ -19,6 +21,7 @@ import type {
   PosReceiptData,
 } from "@/lib/pos/pos-types";
 import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
+import type { PosReturnReceiptData } from "@/lib/pos/pos-returns-types";
 import { toast } from "sonner";
 
 interface PosViewProps {
@@ -48,7 +51,12 @@ export function PosView({
   const [zReportData, setZReportData] = useState<PosZReportData | null>(null);
   const [isZReportOpen, setIsZReportOpen] = useState<boolean>(false);
 
-  // Modals
+  // Returns & Exchanges State
+  const [isReturnModalOpen, setIsReturnModalOpen] = useState<boolean>(false);
+  const [returnReceiptData, setReturnReceiptData] = useState<PosReturnReceiptData | null>(null);
+  const [isReturnReceiptOpen, setIsReturnReceiptOpen] = useState<boolean>(false);
+
+  // Billing Modals
   const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState<boolean>(false);
   const [receiptData, setReceiptData] = useState<PosReceiptData | null>(null);
@@ -234,15 +242,43 @@ export function PosView({
     }, 100);
   }, []);
 
-  // Global Keyboard Shortcuts (F2: Scanner, F9: Payment, Esc: Close)
+  // Handle In-Store Return Finished
+  const handleReturnFinished = (receipt: PosReturnReceiptData) => {
+    setReturnReceiptData(receipt);
+    setIsReturnReceiptOpen(true);
+
+    // If cash was refunded from drawer, update drawer in real time
+    if (receipt.netAction === "REFUND_TO_CUSTOMER" && shift && shift.isOpen) {
+      const refundAmt = Math.abs(receipt.netDifference);
+      setShift((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          cashDrops: prev.cashDrops + refundAmt,
+          expectedCash: Math.max(0, prev.expectedCash - refundAmt),
+        };
+      });
+    }
+  };
+
+  // Global Keyboard Shortcuts (F2: Scanner, F3: Returns, F9: Payment, Esc: Close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "F2") {
         e.preventDefault();
         scannerRef.current?.focus();
+      } else if (e.key === "F3") {
+        e.preventDefault();
+        setIsReturnModalOpen(true);
       } else if (e.key === "F9") {
         e.preventDefault();
-        if (cartItems.length > 0 && !isPaymentOpen && !isReceiptOpen && !isShiftModalOpen) {
+        if (
+          cartItems.length > 0 &&
+          !isPaymentOpen &&
+          !isReceiptOpen &&
+          !isShiftModalOpen &&
+          !isReturnModalOpen
+        ) {
           handleOpenPayment();
         }
       }
@@ -250,16 +286,24 @@ export function PosView({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cartItems.length, isPaymentOpen, isReceiptOpen, isShiftModalOpen, handleOpenPayment]);
+  }, [
+    cartItems.length,
+    isPaymentOpen,
+    isReceiptOpen,
+    isShiftModalOpen,
+    isReturnModalOpen,
+    handleOpenPayment,
+  ]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 select-none">
-      {/* Top Header with Live Drawer Badge */}
+      {/* Top Header with Live Drawer Badge & Returns Button */}
       <PosHeader
         cashierName={cashierName}
         cashierRole={cashierRole}
         shift={shift}
         onOpenShiftModal={() => setIsShiftModalOpen(true)}
+        onOpenReturnModal={() => setIsReturnModalOpen(true)}
       />
 
       {/* Main Billing Counter Workspace */}
@@ -301,6 +345,24 @@ export function PosView({
           />
         </aside>
       </main>
+
+      {/* In-Store Returns & Exchanges Modal */}
+      <PosReturnModal
+        isOpen={isReturnModalOpen}
+        onClose={() => setIsReturnModalOpen(false)}
+        catalogProducts={products}
+        onReturnCompleted={handleReturnFinished}
+      />
+
+      {/* Thermal Return & Exchange Memo */}
+      <PosReturnReceipt
+        receipt={returnReceiptData}
+        isOpen={isReturnReceiptOpen}
+        onClose={() => {
+          setIsReturnReceiptOpen(false);
+          setReturnReceiptData(null);
+        }}
+      />
 
       {/* Cash Drawer & Shift Management Modal */}
       <PosShiftModal
