@@ -43,7 +43,22 @@ export interface PosCategory {
   slug: string;
 }
 
-export type PosPaymentMethod = "CASH" | "BKASH" | "CARD";
+export type PosPaymentMethod = "CASH" | "BKASH" | "CARD" | "SPLIT";
+
+export interface PosPaymentSplitInput {
+  method: "CASH" | "BKASH" | "CARD";
+  amount: number;
+  tenderAmount?: number;
+  reference?: string;
+}
+
+export interface PosPaymentSplitDetail {
+  method: "CASH" | "BKASH" | "CARD";
+  amount: number;
+  tenderAmount?: number;
+  changeDue?: number;
+  reference?: string;
+}
 
 export interface PosCreateOrderInput {
   items: Array<{
@@ -57,6 +72,7 @@ export interface PosCreateOrderInput {
   amountPaid: number;
   discount?: number;
   notes?: string;
+  splitPayments?: PosPaymentSplitInput[];
 }
 
 export interface PosReceiptItem {
@@ -85,6 +101,7 @@ export interface PosReceiptData {
   amountPaid: number;
   changeDue: number;
   notes?: string | null;
+  splits?: PosPaymentSplitDetail[];
 }
 
 export interface PosActionResult<T = unknown> {

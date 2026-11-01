@@ -8,6 +8,7 @@ import type {
   PosCartItem,
   PosCategory,
   PosPaymentMethod,
+  PosPaymentSplitInput,
   PosProductSummary,
   PosProductVariant,
   PosReceiptData,
@@ -284,7 +285,8 @@ export function PosView({
   const handleConfirmPayment = async (
     paymentMethod: PosPaymentMethod,
     amountPaid: number,
-    notes?: string
+    notes?: string,
+    splitPayments?: PosPaymentSplitInput[]
   ) => {
     if (cartItems.length === 0 || isSubmitting) return;
 
@@ -301,6 +303,7 @@ export function PosView({
         amountPaid,
         discount: effectiveDiscount,
         notes,
+        splitPayments,
       });
 
       if (!result.success || !result.data) {
@@ -314,22 +317,36 @@ export function PosView({
       setIsReceiptOpen(true);
       toast.success(`Order ${result.data.orderNumber} completed successfully!`);
 
-      // Update shift drawer sales stats in real time
+      // Update shift drawer sales stats in real time (supporting Split Tenders)
+      const completedOrder = result.data;
       if (shift && shift.isOpen) {
-        const saleAmt = result.data.total;
+        const saleAmt = completedOrder.total;
         setShift((prev) => {
           if (!prev) return null;
-          const isCash = paymentMethod === "CASH";
-          const isBkash = paymentMethod === "BKASH";
-          const isCard = paymentMethod === "CARD";
+          let cashAdd = 0;
+          let bkashAdd = 0;
+          let cardAdd = 0;
+
+          if (completedOrder.splits && completedOrder.splits.length > 0) {
+            for (const sp of completedOrder.splits) {
+              if (sp.method === "CASH") cashAdd += sp.amount;
+              else if (sp.method === "BKASH") bkashAdd += sp.amount;
+              else if (sp.method === "CARD") cardAdd += sp.amount;
+            }
+          } else {
+            if (paymentMethod === "CASH") cashAdd = saleAmt;
+            else if (paymentMethod === "BKASH") bkashAdd = saleAmt;
+            else if (paymentMethod === "CARD") cardAdd = saleAmt;
+          }
+
           return {
             ...prev,
-            cashSales: prev.cashSales + (isCash ? saleAmt : 0),
-            bkashSales: prev.bkashSales + (isBkash ? saleAmt : 0),
-            cardSales: prev.cardSales + (isCard ? saleAmt : 0),
+            cashSales: prev.cashSales + cashAdd,
+            bkashSales: prev.bkashSales + bkashAdd,
+            cardSales: prev.cardSales + cardAdd,
             totalSales: prev.totalSales + saleAmt,
             ordersCount: prev.ordersCount + 1,
-            expectedCash: prev.expectedCash + (isCash ? saleAmt : 0),
+            expectedCash: prev.expectedCash + cashAdd,
           };
         });
       }

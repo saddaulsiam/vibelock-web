@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   Trash2,
   Plus,
@@ -54,53 +54,48 @@ export function PosCartPanel({
 }: PosCartPanelProps) {
   // Customer Profile & Loyalty state
   const [customerProfile, setCustomerProfile] = useState<PosCustomerProfile | null>(null);
-  const [isLookingUp, setIsLookingUp] = useState<boolean>(false);
+  const [isLookingUp, startLookup] = useTransition();
   const [hasSearched, setHasSearched] = useState<boolean>(false);
-  const customerNameRef = useRef(customerName);
-  customerNameRef.current = customerName;
 
   // Debounced auto-lookup customer by phone
   useEffect(() => {
     const digits = customerPhone.replace(/\D/g, "");
     if (digits.length < 11) {
-      setCustomerProfile(null);
-      setHasSearched(false);
       return;
     }
 
     let isMounted = true;
-    setIsLookingUp(true);
 
-    const timer = setTimeout(async () => {
-      try {
-        const res = await lookupPosCustomerByPhoneAction(customerPhone);
-        if (!isMounted) return;
-        setHasSearched(true);
-        if (res.success && res.data) {
-          setCustomerProfile(res.data);
-          const currentVal = customerNameRef.current.trim();
-          if (!currentVal || currentVal === "Walk-in Customer") {
-            setCustomerName(res.data.name);
-            toast.success(`Customer recognized: ${res.data.name} (${res.data.tier} Member)`);
-          }
-        } else {
-          setCustomerProfile(null);
-        }
-      } catch {
-        if (isMounted) {
-          setCustomerProfile(null);
+    const timer = setTimeout(() => {
+      startLookup(async () => {
+        try {
+          const res = await lookupPosCustomerByPhoneAction(customerPhone);
+          if (!isMounted) return;
           setHasSearched(true);
+          if (res.success && res.data) {
+            const profile = res.data;
+            setCustomerProfile(profile);
+            if (!customerName.trim() || customerName.trim() === "Walk-in Customer") {
+              setCustomerName(profile.name);
+              toast.success(`Customer recognized: ${profile.name} (${profile.tier} Member)`);
+            }
+          } else {
+            setCustomerProfile(null);
+          }
+        } catch {
+          if (isMounted) {
+            setCustomerProfile(null);
+            setHasSearched(true);
+          }
         }
-      } finally {
-        if (isMounted) setIsLookingUp(false);
-      }
+      });
     }, 400);
 
     return () => {
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [customerPhone, setCustomerName]);
+  }, [customerPhone, customerName, setCustomerName]);
 
   const getTierBadgeStyle = (tier: string) => {
     switch (tier) {

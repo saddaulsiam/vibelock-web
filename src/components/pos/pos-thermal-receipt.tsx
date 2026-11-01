@@ -118,13 +118,34 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
               <span>৳{receipt.total.toFixed(0)}</span>
             </div>
 
-            <div className="flex justify-between pt-1">
-              <span>Paid ({receipt.paymentMethod}):</span>
-              <span>৳{receipt.amountPaid.toFixed(0)}</span>
-            </div>
+            {receipt.splits && receipt.splits.length > 0 ? (
+              <div className="pt-1 space-y-0.5 border-t border-dotted border-slate-300">
+                <div className="font-bold text-[10px] text-slate-600 uppercase tracking-wide">
+                  Tender Breakdown (Split):
+                </div>
+                {receipt.splits.map((s, idx) => (
+                  <div key={idx} className="flex justify-between pl-1">
+                    <span>
+                      {s.method}
+                      {s.reference ? ` (${s.reference})` : ""}:
+                    </span>
+                    <span>৳{s.amount.toFixed(0)}</span>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-0.5 font-semibold">
+                  <span>Total Tendered:</span>
+                  <span>৳{receipt.amountPaid.toFixed(0)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-between pt-1">
+                <span>Paid ({receipt.paymentMethod}):</span>
+                <span>৳{receipt.amountPaid.toFixed(0)}</span>
+              </div>
+            )}
 
             {receipt.changeDue > 0 && (
-              <div className="flex justify-between font-bold">
+              <div className="flex justify-between font-bold text-slate-900">
                 <span>Change Returned:</span>
                 <span>৳{receipt.changeDue.toFixed(0)}</span>
               </div>

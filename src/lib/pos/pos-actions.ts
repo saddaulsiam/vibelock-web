@@ -11,6 +11,7 @@ import type {
   PosCreateOrderInput,
   PosReceiptData,
   PosReceiptItem,
+  PosPaymentSplitDetail,
 } from "./pos-types";
 
 /**
@@ -125,15 +126,65 @@ export async function createPosOrderAction(
       // 7. Calculate discounts and totals
       const discount = Math.min(subtotal, Math.max(0, Number(input.discount) || 0));
       const total = Math.max(0, subtotal - discount);
-      const amountPaid = Number(input.amountPaid) || 0;
 
-      if (amountPaid < total) {
-        throw new Error(
-          `Amount paid (৳${amountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
+      // Support Split Payments (Multiple Tenders)
+      const isSplit =
+        input.paymentMethod === "SPLIT" ||
+        (Array.isArray(input.splitPayments) && input.splitPayments.length > 0);
+
+      let effectiveAmountPaid = Number(input.amountPaid) || 0;
+      let changeDue = 0;
+      let receiptSplits: PosPaymentSplitDetail[] | undefined = undefined;
+
+      if (isSplit) {
+        if (!input.splitPayments || input.splitPayments.length === 0) {
+          throw new Error("Split payment selected but no payment tenders were provided.");
+        }
+
+        const totalSplitAllocated = input.splitPayments.reduce((sum, s) => sum + Number(s.amount), 0);
+        if (totalSplitAllocated < total) {
+          throw new Error(
+            `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
+          );
+        }
+
+        // Calculate cash change if customer handed more than the cash portion
+        const cashSplit = input.splitPayments.find((s) => s.method === "CASH");
+        if (cashSplit) {
+          const cashTender = Number(cashSplit.tenderAmount ?? cashSplit.amount);
+          const cashPortion = Number(cashSplit.amount);
+          if (cashTender < cashPortion) {
+            throw new Error(
+              `Cash tender (৳${cashTender.toFixed(2)}) is less than allocated cash amount (৳${cashPortion.toFixed(2)}).`
+            );
+          }
+          changeDue = Math.max(0, cashTender - cashPortion);
+        }
+
+        effectiveAmountPaid = input.splitPayments.reduce(
+          (sum, s) => sum + Number(s.tenderAmount ?? s.amount),
+          0
         );
-      }
 
-      const changeDue = Math.max(0, amountPaid - total);
+        receiptSplits = input.splitPayments.map((s) => {
+          const sTender = Number(s.tenderAmount ?? s.amount);
+          const sAmount = Number(s.amount);
+          return {
+            method: s.method,
+            amount: sAmount,
+            tenderAmount: sTender,
+            changeDue: s.method === "CASH" ? Math.max(0, sTender - sAmount) : 0,
+            reference: s.reference || undefined,
+          };
+        });
+      } else {
+        if (effectiveAmountPaid < total) {
+          throw new Error(
+            `Amount paid (৳${effectiveAmountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
+          );
+        }
+        changeDue = Math.max(0, effectiveAmountPaid - total);
+      }
 
       // 8. Generate order identifiers
       const orderNumber = `VL-POS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
@@ -143,6 +194,15 @@ export async function createPosOrderAction(
       const customerPhone = input.customerPhone?.trim() || "N/A";
       const customerEmail = input.customerEmail?.trim() || "pos-walkin@vibelock.com";
 
+      // Determine order-level payment method: COD if any cash involved, otherwise ONLINE
+      const orderPaymentMethod = isSplit
+        ? input.splitPayments!.some((s) => s.method === "CASH")
+          ? "COD"
+          : "ONLINE"
+        : input.paymentMethod === "CASH"
+          ? "COD"
+          : "ONLINE";
+
       // 9. Create Order
       const newOrder = await tx.order.create({
         data: {
@@ -151,7 +211,7 @@ export async function createPosOrderAction(
           userId: cashier.id,
           status: "DELIVERED",
           paymentStatus: "SUCCESS",
-          paymentMethod: input.paymentMethod === "CASH" ? "COD" : "ONLINE",
+          paymentMethod: orderPaymentMethod,
           salesChannel: "POS",
           customerName,
           customerPhone,
@@ -173,27 +233,59 @@ export async function createPosOrderAction(
         },
       });
 
-      // 10. Record Payment
-      await tx.payment.create({
-        data: {
-          orderId: newOrder.id,
-          amount: total,
-          status: "SUCCESS",
-          gateway: input.paymentMethod,
-          merchantReferenceId: `POS-${newOrder.id}`,
-          gatewayTransactionId:
-            input.paymentMethod === "CASH"
-              ? `CASH-${Date.now()}`
-              : (input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`),
-          gatewayPayload: {
-            tenderAmount: amountPaid,
-            changeReturned: changeDue,
-            cashierId: cashier.id,
-            cashierName: cashier.name || cashier.email,
-            paymentMethod: input.paymentMethod,
+      // 10. Record Payment(s)
+      if (isSplit && input.splitPayments) {
+        for (let i = 0; i < input.splitPayments.length; i++) {
+          const split = input.splitPayments[i];
+          const splitAmt = Number(split.amount);
+          const splitTender = Number(split.tenderAmount ?? split.amount);
+          const splitChange = split.method === "CASH" ? Math.max(0, splitTender - splitAmt) : 0;
+
+          await tx.payment.create({
+            data: {
+              orderId: newOrder.id,
+              amount: splitAmt,
+              status: "SUCCESS",
+              gateway: split.method,
+              merchantReferenceId: `POS-${newOrder.id}-${split.method}-${i + 1}`,
+              gatewayTransactionId:
+                split.reference?.trim() ||
+                (split.method === "CASH"
+                  ? `CASH-${Date.now()}-${i + 1}`
+                  : `POS-${split.method}-${Date.now()}-${i + 1}`),
+              gatewayPayload: {
+                tenderAmount: splitTender,
+                changeReturned: splitChange,
+                cashierId: cashier.id,
+                cashierName: cashier.name || cashier.email,
+                paymentMethod: split.method,
+                reference: split.reference || null,
+              },
+            },
+          });
+        }
+      } else {
+        await tx.payment.create({
+          data: {
+            orderId: newOrder.id,
+            amount: total,
+            status: "SUCCESS",
+            gateway: input.paymentMethod,
+            merchantReferenceId: `POS-${newOrder.id}`,
+            gatewayTransactionId:
+              input.paymentMethod === "CASH"
+                ? `CASH-${Date.now()}`
+                : (input.notes?.trim() || `POS-${input.paymentMethod}-${Date.now()}`),
+            gatewayPayload: {
+              tenderAmount: effectiveAmountPaid,
+              changeReturned: changeDue,
+              cashierId: cashier.id,
+              cashierName: cashier.name || cashier.email,
+              paymentMethod: input.paymentMethod,
+            },
           },
-        },
-      });
+        });
+      }
 
       // 11. Deduct Inventory in real-time via InventoryTransaction records
       for (const item of input.items) {
@@ -230,8 +322,10 @@ export async function createPosOrderAction(
             total,
             discount,
             paymentMethod: input.paymentMethod,
-            amountPaid,
+            amountPaid: effectiveAmountPaid,
             changeDue,
+            isSplit,
+            splitsCount: receiptSplits ? receiptSplits.length : 1,
           },
         },
       });
@@ -249,9 +343,10 @@ export async function createPosOrderAction(
         discount,
         total,
         paymentMethod: input.paymentMethod,
-        amountPaid,
+        amountPaid: effectiveAmountPaid,
         changeDue,
         notes: input.notes?.trim() || null,
+        splits: receiptSplits,
       };
 
       return receiptData;
