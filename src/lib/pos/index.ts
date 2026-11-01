@@ -8,3 +8,5 @@ export * from "./pos-returns-actions";
 export * from "./pos-parked-types";
 export * from "./pos-order-history-types";
 export * from "./pos-order-history-actions";
+export * from "./pos-customer-types";
+export * from "./pos-customer-actions";
