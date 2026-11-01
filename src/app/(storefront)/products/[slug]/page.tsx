@@ -6,7 +6,11 @@ import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
+import { StarRating } from "@/components/storefront/product/reviews/star-rating";
 import { getProductBySlug } from "@/lib/catalog/queries";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
 import { SITE_URL } from "@/lib/seo/site";
 import { notFound } from "next/navigation";
 
@@ -42,6 +46,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   if (!product) notFound();
 
+  const currentUser = await getCurrentUser();
+  const [{ reviews, summary }, eligibility] = await Promise.all([
+    getProductReviews(product.id),
+    getUserReviewEligibility(currentUser?.id, product.id),
+  ]);
+
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const mainCategory = product.categories[0];
 
@@ -73,6 +83,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     description: product.description || undefined,
     image: product.images.map((image) => image.url),
     offers,
+    ...(summary.totalReviews > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: summary.averageRating,
+            reviewCount: summary.totalReviews,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
   };
 
   return (
@@ -138,6 +159,21 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <h1 className="font-heading text-vl-black text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">
                 {product.name}
               </h1>
+
+              {summary.totalReviews > 0 && (
+                <a
+                  href="#reviews"
+                  className="mt-2.5 inline-flex items-center gap-2 text-xs font-semibold text-[#101114]/75 transition-colors hover:text-[#008ca6]"
+                >
+                  <StarRating value={Math.round(summary.averageRating)} size="sm" />
+                  <span className="font-bold text-[#101114]">
+                    {summary.averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-[#101114]/50">
+                    ({summary.totalReviews} {summary.totalReviews === 1 ? "review" : "reviews"})
+                  </span>
+                </a>
+              )}
             </div>
 
             <VariantSelector variants={product.variants} productAvailable={product.available} />
@@ -173,6 +209,19 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </Link>
             )}
           </div>
+        </div>
+
+        {/* Customer Ratings & Reviews Section */}
+        <div className="mt-14 sm:mt-20">
+          <ProductReviewsSection
+            productId={product.id}
+            productSlug={product.slug}
+            reviews={reviews}
+            summary={summary}
+            eligibility={eligibility}
+            currentUserId={currentUser?.id}
+            isAdmin={currentUser?.role === "ADMIN"}
+          />
         </div>
       </Container>
     </Section>
