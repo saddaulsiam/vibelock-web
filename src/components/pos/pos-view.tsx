@@ -7,6 +7,8 @@ import { PosProductGrid } from "./pos-product-grid";
 import { PosCartPanel } from "./pos-cart-panel";
 import { PosPaymentModal } from "./pos-payment-modal";
 import { PosThermalReceipt } from "./pos-thermal-receipt";
+import { PosShiftModal } from "./pos-shift-modal";
+import { PosShiftZReport } from "./pos-shift-z-report";
 import { createPosOrderAction } from "@/lib/pos/pos-actions";
 import type {
   PosCartItem,
@@ -16,6 +18,7 @@ import type {
   PosProductVariant,
   PosReceiptData,
 } from "@/lib/pos/pos-types";
+import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
 import { toast } from "sonner";
 
 interface PosViewProps {
@@ -23,6 +26,7 @@ interface PosViewProps {
   categories: PosCategory[];
   cashierName: string;
   cashierRole: string;
+  initialShift?: PosShiftSummary | null;
 }
 
 export function PosView({
@@ -30,12 +34,19 @@ export function PosView({
   categories,
   cashierName,
   cashierRole,
+  initialShift,
 }: PosViewProps) {
-  // State
+  // Cart State
   const [cartItems, setCartItems] = useState<PosCartItem[]>([]);
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+
+  // Shift & Cash Drawer State
+  const [shift, setShift] = useState<PosShiftSummary | null>(initialShift || null);
+  const [isShiftModalOpen, setIsShiftModalOpen] = useState<boolean>(!initialShift?.isOpen);
+  const [zReportData, setZReportData] = useState<PosZReportData | null>(null);
+  const [isZReportOpen, setIsZReportOpen] = useState<boolean>(false);
 
   // Modals
   const [isPaymentOpen, setIsPaymentOpen] = useState<boolean>(false);
@@ -127,14 +138,21 @@ export function PosView({
   const effectiveDiscount = Math.min(subtotal, Math.max(0, discount));
   const grandTotal = Math.max(0, subtotal - effectiveDiscount);
 
-  // Open Payment Modal
+  // Open Payment Modal (Requires active shift)
   const handleOpenPayment = useCallback(() => {
     if (cartItems.length === 0) {
       toast.error("Cart is empty. Add items before proceeding to payment.");
       return;
     }
+
+    if (!shift || !shift.isOpen) {
+      toast.warning("Register shift is not open. Please open your shift first.");
+      setIsShiftModalOpen(true);
+      return;
+    }
+
     setIsPaymentOpen(true);
-  }, [cartItems.length]);
+  }, [cartItems.length, shift]);
 
   // Execute Payment & Order Creation
   const handleConfirmPayment = async (
@@ -170,6 +188,26 @@ export function PosView({
       setIsReceiptOpen(true);
       toast.success(`Order ${result.data.orderNumber} completed successfully!`);
 
+      // Update shift drawer sales stats in real time
+      if (shift && shift.isOpen) {
+        const saleAmt = result.data.total;
+        setShift((prev) => {
+          if (!prev) return null;
+          const isCash = paymentMethod === "CASH";
+          const isBkash = paymentMethod === "BKASH";
+          const isCard = paymentMethod === "CARD";
+          return {
+            ...prev,
+            cashSales: prev.cashSales + (isCash ? saleAmt : 0),
+            bkashSales: prev.bkashSales + (isBkash ? saleAmt : 0),
+            cardSales: prev.cardSales + (isCard ? saleAmt : 0),
+            totalSales: prev.totalSales + saleAmt,
+            ordersCount: prev.ordersCount + 1,
+            expectedCash: prev.expectedCash + (isCash ? saleAmt : 0),
+          };
+        });
+      }
+
       // Reset cart
       setCartItems([]);
       setCustomerPhone("");
@@ -204,7 +242,7 @@ export function PosView({
         scannerRef.current?.focus();
       } else if (e.key === "F9") {
         e.preventDefault();
-        if (cartItems.length > 0 && !isPaymentOpen && !isReceiptOpen) {
+        if (cartItems.length > 0 && !isPaymentOpen && !isReceiptOpen && !isShiftModalOpen) {
           handleOpenPayment();
         }
       }
@@ -212,12 +250,17 @@ export function PosView({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cartItems.length, isPaymentOpen, isReceiptOpen, handleOpenPayment]);
+  }, [cartItems.length, isPaymentOpen, isReceiptOpen, isShiftModalOpen, handleOpenPayment]);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-100 select-none">
-      {/* Top Header */}
-      <PosHeader cashierName={cashierName} cashierRole={cashierRole} />
+      {/* Top Header with Live Drawer Badge */}
+      <PosHeader
+        cashierName={cashierName}
+        cashierRole={cashierRole}
+        shift={shift}
+        onOpenShiftModal={() => setIsShiftModalOpen(true)}
+      />
 
       {/* Main Billing Counter Workspace */}
       <main className="flex-1 flex overflow-hidden">
@@ -258,6 +301,28 @@ export function PosView({
           />
         </aside>
       </main>
+
+      {/* Cash Drawer & Shift Management Modal */}
+      <PosShiftModal
+        isOpen={isShiftModalOpen}
+        onClose={() => setIsShiftModalOpen(false)}
+        shift={shift}
+        onShiftUpdated={setShift}
+        onZReportGenerated={(report) => {
+          setZReportData(report);
+          setIsZReportOpen(true);
+        }}
+      />
+
+      {/* Official Shift Z-Report Thermal Modal */}
+      <PosShiftZReport
+        report={zReportData}
+        isOpen={isZReportOpen}
+        onClose={() => {
+          setIsZReportOpen(false);
+          setZReportData(null);
+        }}
+      />
 
       {/* Payment Settlement Modal */}
       <PosPaymentModal

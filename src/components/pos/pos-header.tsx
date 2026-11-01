@@ -9,16 +9,26 @@ import {
   Clock,
   UserCheck,
   ShoppingBag,
+  Banknote,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import type { PosShiftSummary } from "@/lib/pos/pos-shift-types";
 
 interface PosHeaderProps {
   cashierName: string;
   cashierRole: string;
+  shift?: PosShiftSummary | null;
+  onOpenShiftModal?: () => void;
 }
 
-export function PosHeader({ cashierName, cashierRole }: PosHeaderProps) {
+export function PosHeader({
+  cashierName,
+  cashierRole,
+  shift,
+  onOpenShiftModal,
+}: PosHeaderProps) {
   const [time, setTime] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
@@ -93,6 +103,33 @@ export function PosHeader({ cashierName, cashierRole }: PosHeaderProps) {
           <Clock className="h-3.5 w-3.5 text-amber-400" />
           <span>{time || "00:00:00"}</span>
         </div>
+
+        {/* Live Drawer & Shift Status Button */}
+        {onOpenShiftModal && (
+          <div>
+            {shift && shift.isOpen ? (
+              <button
+                type="button"
+                onClick={onOpenShiftModal}
+                className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 px-3 py-1 rounded-md border border-slate-700 text-xs font-mono text-emerald-400 transition-colors"
+                title="Click to view Cash Drawer & Shift details"
+              >
+                <Banknote className="h-3.5 w-3.5" />
+                <span className="font-bold">Drawer: ৳{shift.expectedCash.toFixed(0)}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenShiftModal}
+                className="flex items-center space-x-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1 rounded-md border border-amber-500/40 text-xs font-bold transition-colors animate-pulse"
+                title="Register Shift is Closed. Click to Open Register."
+              >
+                <Lock className="h-3.5 w-3.5 text-amber-400" />
+                <span>Open Register</span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Cashier Badge */}
         <div className="flex items-center space-x-2 bg-slate-800 px-3 py-1 rounded-md border border-slate-700">

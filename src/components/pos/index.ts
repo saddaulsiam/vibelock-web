@@ -4,5 +4,6 @@ export * from "./pos-product-grid";
 export * from "./pos-cart-panel";
 export * from "./pos-payment-modal";
 export * from "./pos-thermal-receipt";
+export * from "./pos-shift-modal";
+export * from "./pos-shift-z-report";
 export * from "./pos-view";
-
