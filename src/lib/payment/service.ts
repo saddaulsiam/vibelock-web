@@ -427,9 +427,69 @@ export class PaymentService {
 
     const order = await prisma.order.findUnique({
       where: { id: payment.orderId },
-      select: { orderNumber: true },
+      include: { items: true },
     });
     if (!order) throw new Error("Order not found");
+
+    if (verification.status === "SUCCESS" && (order as { customerEmail?: string }).customerEmail) {
+      try {
+        const fullOrder = order as unknown as {
+          orderNumber: string;
+          customerName?: string | null;
+          customerEmail: string;
+          items: Array<{
+            productName: string;
+            size?: string | null;
+            color?: string | null;
+            quantity: number;
+            unitPrice: { toString(): string } | number | string;
+            lineTotal: { toString(): string } | number | string;
+          }>;
+          subtotal: { toString(): string } | number | string;
+          shippingCost: { toString(): string } | number | string;
+          discount: { toString(): string } | number | string;
+          total: { toString(): string } | number | string;
+          paymentMethod: string;
+          shippingStreet?: string | null;
+          shippingCity?: string | null;
+          shippingState?: string | null;
+          shippingZip?: string | null;
+          shippingCountry?: string | null;
+        };
+
+        const { sendOrderConfirmationEmail } = await import("@/lib/email/order-emails");
+        sendOrderConfirmationEmail({
+          orderNumber: fullOrder.orderNumber,
+          customerName: fullOrder.customerName ?? undefined,
+          customerEmail: fullOrder.customerEmail,
+          items: (fullOrder.items || []).map((item) => ({
+            productName: item.productName,
+            size: item.size,
+            color: item.color,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice?.toString() ?? "0",
+            lineTotal: item.lineTotal?.toString() ?? "0",
+          })),
+          subtotal: fullOrder.subtotal?.toString() ?? "0",
+          shippingCost: fullOrder.shippingCost?.toString() ?? "0",
+          discount: fullOrder.discount?.toString() ?? "0",
+          total: fullOrder.total?.toString() ?? "0",
+          paymentMethod: fullOrder.paymentMethod,
+          shippingAddress: {
+            street: fullOrder.shippingStreet ?? "",
+            city: fullOrder.shippingCity ?? "",
+            state: fullOrder.shippingState,
+            zip: fullOrder.shippingZip,
+            country: fullOrder.shippingCountry ?? "Bangladesh",
+          },
+        }).catch((err) => {
+          console.error("[PaymentService] Non-blocking order email error:", err);
+        });
+      } catch (emailErr) {
+        console.error("[PaymentService] Failed to dispatch order email:", emailErr);
+      }
+    }
+
     return { orderNumber: order.orderNumber, verification };
   }
 }
