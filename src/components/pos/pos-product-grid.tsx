@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Package, Search, Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,89 @@ interface PosProductGridProps {
 export function PosProductGrid({ products, categories, onAddVariant }: PosProductGridProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const targetScrollLeft = useRef<number>(0);
+  const isAnimating = useRef<boolean>(false);
+  const animationFrameId = useRef<number | null>(null);
+
+  // Enable buttery-smooth momentum mouse wheel scrolling on categories bar
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+
+    // Initialize target scroll position
+    targetScrollLeft.current = el.scrollLeft;
+
+    const animate = () => {
+      if (!el) {
+        isAnimating.current = false;
+        return;
+      }
+
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const target = Math.max(0, Math.min(maxScroll, targetScrollLeft.current));
+      const current = el.scrollLeft;
+      const diff = target - current;
+
+      if (Math.abs(diff) < 0.5) {
+        el.scrollLeft = target;
+        isAnimating.current = false;
+        animationFrameId.current = null;
+        return;
+      }
+
+      // 0.16 easing factor provides silky, responsive 60fps/120fps glide
+      el.scrollLeft = current + diff * 0.16;
+      animationFrameId.current = requestAnimationFrame(animate);
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+
+      const isVertical = Math.abs(e.deltaY) >= Math.abs(e.deltaX);
+      const rawDelta = isVertical ? e.deltaY : e.deltaX;
+
+      if (rawDelta === 0) return;
+
+      // Normalize delta across browsers (Firefox lines mode vs pixels)
+      let delta = rawDelta;
+      if (e.deltaMode === 1) {
+        delta *= 24;
+      } else if (e.deltaMode === 2) {
+        delta *= el.clientWidth;
+      }
+
+      e.preventDefault();
+
+      targetScrollLeft.current = Math.max(
+        0,
+        Math.min(maxScroll, targetScrollLeft.current + delta)
+      );
+
+      if (!isAnimating.current) {
+        isAnimating.current = true;
+        animationFrameId.current = requestAnimationFrame(animate);
+      }
+    };
+
+    const handleScroll = () => {
+      if (!isAnimating.current) {
+        targetScrollLeft.current = el.scrollLeft;
+      }
+    };
+
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    el.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+      el.removeEventListener("scroll", handleScroll);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, []);
 
   // Map parent categories to all their descendant category IDs (recursive multi-level support)
   const categoryDescendantsMap = useMemo(() => {
@@ -141,8 +224,11 @@ export function PosProductGrid({ products, categories, onAddVariant }: PosProduc
           )}
         </div>
 
-        {/* Categories Bar */}
-        <div className="flex scrollbar-thin items-center space-x-2 overflow-x-auto pb-1 pt-0.5">
+        {/* Categories Bar (Scrollbar hidden, horizontal mouse wheel scrollable) */}
+        <div
+          ref={categoryScrollRef}
+          className="flex items-center space-x-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
           <button
             type="button"
             onClick={() => setSelectedCategory("all")}

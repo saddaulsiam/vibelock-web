@@ -282,5 +282,18 @@ describe("POS UI Components", () => {
       expect(html).toContain("No products match your filter.");
       expect(html).toContain("Reset Filters");
     });
+
+    test("renders category bar with hidden scrollbar classes for smooth mouse wheel navigation", () => {
+      const html = renderToStaticMarkup(
+        <PosProductGrid
+          products={mockProducts}
+          categories={mockCategories}
+          onAddVariant={vi.fn()}
+        />
+      );
+
+      expect(html).toContain("no-scrollbar");
+      expect(html).not.toContain("scrollbar-thin");
+    });
   });
 });
