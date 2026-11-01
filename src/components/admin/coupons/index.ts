@@ -9,4 +9,3 @@ export * from "./coupon-create-modal";
 export * from "./coupon-delete-modal";
 export * from "./coupon-form";
 export * from "./coupon-table-types";
-export * from "./coupon-table-utils";
