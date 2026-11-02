@@ -45,7 +45,7 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
     vi.clearAllMocks();
   });
 
-  test("processes split payments across Cash and bKash with multi-payment creation", async () => {
+  test("processes split payments across Cash and Bangla QR with multi-payment creation", async () => {
     const mockVariants = [
       {
         id: "var-1",
@@ -114,7 +114,7 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
       customerPhone: "01711223344",
       splitPayments: [
         { method: "CASH", amount: 1000, tenderAmount: 1000 },
-        { method: "BKASH", amount: 800, reference: "TRX998877" },
+        { method: "BANGLA_QR", amount: 800, reference: "TRX998877" },
       ],
     });
 
@@ -129,7 +129,7 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
     expect(data.splits![0].method).toBe("CASH");
     expect(data.splits![0].amount).toBe(1000);
 
-    expect(data.splits![1].method).toBe("BKASH");
+    expect(data.splits![1].method).toBe("BANGLA_QR");
     expect(data.splits![1].amount).toBe(800);
     expect(data.splits![1].reference).toBe("TRX998877");
 
@@ -147,12 +147,12 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
       })
     );
 
-    // Verify second payment record (bKash)
+    // Verify second payment record (Bangla QR)
     expect(mockTx.payment.create).toHaveBeenNthCalledWith(
       2,
       expect.objectContaining({
         data: expect.objectContaining({
-          gateway: "BKASH",
+          gateway: "BANGLA_QR",
           amount: 800,
         }),
       })
@@ -268,7 +268,7 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
       amountPaid: 1000,
       splitPayments: [
         { method: "CASH", amount: 500 },
-        { method: "BKASH", amount: 500 },
+        { method: "BANGLA_QR", amount: 500 },
       ],
     });
 

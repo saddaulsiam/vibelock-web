@@ -328,8 +328,8 @@ export function PosShiftModal({
                 </div>
               )}
               <div className="text-vl-grey flex justify-between border-t border-[#e2ded2] pt-1 text-[11px]">
-                <span>bKash Sales (Digital):</span>
-                <span className="text-vl-black font-medium">৳{shift.bkashSales.toFixed(0)}</span>
+                <span>Bangla QR Sales (Digital):</span>
+                <span className="text-vl-black font-medium">৳{(shift.banglaQrSales ?? shift.bkashSales).toFixed(0)}</span>
               </div>
               <div className="text-vl-grey flex justify-between text-[11px]">
                 <span>Card Sales (POS Machine):</span>

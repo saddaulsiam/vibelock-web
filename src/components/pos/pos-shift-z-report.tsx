@@ -150,8 +150,8 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
               --- Non-Cash Settlements ---
             </p>
             <div className="flex items-center justify-between">
-              <span className="shrink-0">bKash Merchant QR:</span>
-              <span className="shrink-0 text-right font-mono">৳{report.bkashSales.toFixed(0)}</span>
+              <span className="shrink-0">Bangla QR:</span>
+              <span className="shrink-0 text-right font-mono">৳{(report.banglaQrSales ?? report.bkashSales).toFixed(0)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="shrink-0">Card / POS Terminal:</span>

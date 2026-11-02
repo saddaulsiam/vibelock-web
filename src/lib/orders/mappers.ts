@@ -11,7 +11,7 @@ import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
-  payments?: (Payment & { refunds: Refund[] })[];
+  payments?: Array<{ gateway: string } & Partial<Payment & { refunds: Refund[] }>>;
   returns?: (ReturnRequest & { items: ReturnItem[] })[];
   shipment?: Shipment | null;
   history?: { status: Order["status"]; notes: string | null; createdAt: Date }[];
@@ -31,6 +31,7 @@ export function mapOrderItem(item: OrderItem): OrderItemSummary {
 }
 
 export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
+  const primaryGateway = order.payments?.[0]?.gateway;
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -38,6 +39,7 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
     status: order.status,
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
+    paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
     total: Number(order.total),
     itemCount: order.items.reduce((acc, item) => acc + item.quantity, 0),
     previewItems: order.items.slice(0, 3).map(mapOrderItem),
@@ -51,6 +53,7 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
 }
 
 export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
+  const primaryGateway = order.payments?.[0]?.gateway;
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -58,6 +61,7 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
     status: order.status,
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
+    paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
 
     subtotal: Number(order.subtotal),
     shippingCost: Number(order.shippingCost),
@@ -87,12 +91,12 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
 
     refunds:
       order.payments?.flatMap((p) =>
-        p.refunds.map((r) => ({
+        p.refunds?.map((r) => ({
           id: r.id,
           status: r.status,
           amount: Number(r.amount),
           createdAt: r.createdAt,
-        }))
+        })) || []
       ) || [],
 
     // 3-Day Return Policy:

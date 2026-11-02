@@ -18,6 +18,7 @@ export type OrderSummary = {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  paymentGateway?: string | null;
   total: number;
   itemCount: number;
   previewItems: OrderItemSummary[];
@@ -49,6 +50,7 @@ export type OrderDetail = {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  paymentGateway?: string | null;
 
   // Financials
   subtotal: number;

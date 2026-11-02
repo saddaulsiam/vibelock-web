@@ -3,11 +3,9 @@
 import * as React from "react";
 import Link from "next/link";
 import {
-  Banknote,
   Check,
   CheckCircle2,
   Copy,
-  CreditCard,
   Eye,
   MessageCircle,
   Package,
@@ -21,6 +19,7 @@ import {
   getOrderStatusBadge,
   getPaymentStatusBadge,
 } from "@/components/admin/orders/admin-order-badges";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import type { OrderColumnKey } from "./order-table-types";
 import { formatBdt, formatDate, formatWhatsAppUrl } from "./order-table-utils";
 
@@ -160,17 +159,10 @@ export function AdminOrdersDesktopRow({
       {visibleColumns.payment && (
         <TableCell className="whitespace-nowrap">
           <div className="flex items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 rounded-xs bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-800">
-              {order.paymentMethod === "COD" ? (
-                <>
-                  <Banknote className="size-3 text-emerald-700" /> COD
-                </>
-              ) : (
-                <>
-                  <CreditCard className="size-3 text-blue-700" /> ONLINE
-                </>
-              )}
-            </span>
+            <PaymentGatewayBadge
+              gateway={order.paymentGateway}
+              paymentMethod={order.paymentMethod}
+            />
             {getPaymentStatusBadge(order.paymentStatus)}
           </div>
         </TableCell>

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, CreditCard, MapPin, Package, Truck, ArrowRight } from "lucide-react";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { Separator } from "@/components/ui/separator";
 import { getCustomerOrder } from "@/lib/orders/queries";
 
@@ -213,9 +214,10 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
             <div className="mt-4 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Payment Method</span>
-                <span className="font-bold text-[#101114]">
-                  {order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Payment"}
-                </span>
+                <PaymentGatewayBadge
+                  gateway={order.paymentGateway}
+                  paymentMethod={order.paymentMethod}
+                />
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Payment Status</span>

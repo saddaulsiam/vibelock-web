@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowLeft, ArrowRight, PackageOpen, ArrowUpRight, Truck } from "lucide-react";
 import { getCustomerOrders } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 
 export const metadata: Metadata = {
   title: "My Orders | VibeLock",
@@ -131,6 +132,10 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex flex-col items-start gap-1">
                           <OrderStatusBadge status={order.status} />
+                          <PaymentGatewayBadge
+                            gateway={order.paymentGateway}
+                            paymentMethod={order.paymentMethod}
+                          />
                         </div>
                       </td>
 
@@ -154,14 +159,20 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
             <div className="flex flex-col divide-y divide-[#101114]/10 md:hidden">
               {orders.map((order) => (
                 <div key={order.id} className="py-4 first:pt-2 last:pb-0">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/account/orders/${order.orderNumber}`}
                       className="text-sm font-bold text-[#101114] hover:underline"
                     >
                       #{order.orderNumber}
                     </Link>
-                    <OrderStatusBadge status={order.status} />
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <PaymentGatewayBadge
+                        gateway={order.paymentGateway}
+                        paymentMethod={order.paymentMethod}
+                      />
+                      <OrderStatusBadge status={order.status} />
+                    </div>
                   </div>
 
                   <div className="text-muted-foreground mt-2.5 flex items-center justify-between text-xs">

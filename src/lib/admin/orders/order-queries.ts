@@ -12,6 +12,7 @@ export interface AdminOrderItem {
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
+  paymentGateway?: string | null;
   salesChannel: string;
   total: number;
   subtotal: number;
@@ -145,6 +146,14 @@ export async function getAdminOrders({
             status: true,
           },
         },
+        payments: {
+          select: {
+            gateway: true,
+            status: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
         _count: {
           select: {
             items: true,
@@ -176,13 +185,16 @@ export async function getAdminOrders({
   }
   statusCounts.ALL = allCount;
 
-  const mappedOrders: AdminOrderItem[] = orders.map((order) => ({
-    id: order.id,
-    orderNumber: order.orderNumber,
-    status: order.status,
-    paymentStatus: order.paymentStatus,
-    paymentMethod: order.paymentMethod,
-    salesChannel: order.salesChannel,
+  const mappedOrders: AdminOrderItem[] = orders.map((order) => {
+    const primaryGateway = order.payments?.[0]?.gateway;
+    return {
+      id: order.id,
+      orderNumber: order.orderNumber,
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      paymentMethod: order.paymentMethod,
+      paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
+      salesChannel: order.salesChannel,
     total: Number(order.total),
     subtotal: Number(order.subtotal),
     shippingCost: Number(order.shippingCost),
@@ -208,7 +220,8 @@ export async function getAdminOrders({
           status: order.shipment.status,
         }
       : null,
-  }));
+  };
+});
 
   return {
     orders: mappedOrders,

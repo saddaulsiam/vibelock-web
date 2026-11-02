@@ -63,7 +63,11 @@ export async function getPosTodayOrdersAction(
       const payment = o.payments[0];
       const gatewayStr = (payment?.gateway || "CASH").toUpperCase();
       const paymentMethod: PosPaymentMethod =
-        gatewayStr === "BKASH" ? "BKASH" : gatewayStr === "CARD" ? "CARD" : "CASH";
+        gatewayStr === "BANGLA_QR" || gatewayStr === "BKASH"
+          ? "BANGLA_QR"
+          : gatewayStr === "CARD"
+            ? "CARD"
+            : "CASH";
 
       const totalVal = Number(o.total);
       const subtotalVal = Number(o.subtotal);

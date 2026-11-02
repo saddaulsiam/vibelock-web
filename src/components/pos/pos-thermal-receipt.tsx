@@ -133,7 +133,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
                 {receipt.splits.map((s, idx) => (
                   <div key={idx} className="flex items-center justify-between pl-1">
                     <span className="pr-2">
-                      {s.method}
+                      {s.method === "BANGLA_QR" ? "Bangla QR" : s.method}
                       {s.reference ? ` (${s.reference})` : ""}:
                     </span>
                     <span className="shrink-0 text-right font-mono">৳{s.amount.toFixed(0)}</span>
@@ -148,7 +148,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
               </div>
             ) : (
               <div className="flex items-center justify-between pt-1">
-                <span className="shrink-0">Paid ({receipt.paymentMethod}):</span>
+                <span className="shrink-0">Paid ({receipt.paymentMethod === "BANGLA_QR" ? "Bangla QR" : receipt.paymentMethod}):</span>
                 <span className="shrink-0 text-right font-mono font-bold">
                   ৳{receipt.amountPaid.toFixed(0)}
                 </span>
