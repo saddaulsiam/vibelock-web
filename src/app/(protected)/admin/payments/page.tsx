@@ -16,7 +16,7 @@ function formatCurrency(val: number): string {
 }
 
 export default async function AdminPaymentsPage() {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const [stats, payments] = await Promise.all([getAdminPaymentStats(), getAdminPayments()]);
 

@@ -25,7 +25,7 @@ export async function getAdminCustomerById(
   id: string,
   page = 1
 ): Promise<AdminCustomerDetailResult | null> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const normalizedPage = normalizePage(page);
   const customer = await prisma.user.findFirst({

@@ -61,7 +61,7 @@ export async function saveBannerAction(
   _previous: BannerActionState,
   formData: FormData
 ): Promise<BannerActionState> {
-  await requireRole("ADMIN", { throw: true });
+  await requireRole("MANAGER", { throw: true });
 
   let rawImageUrl = String(formData.get("imageUrl") ?? "").trim();
   const desktopImageFile = formData.get("desktopImageFile");
@@ -225,7 +225,7 @@ export async function saveBannerAction(
 }
 
 export async function toggleBannerAction(formData: FormData): Promise<void> {
-  await requireRole("ADMIN", { throw: true });
+  await requireRole("MANAGER", { throw: true });
   const id = String(formData.get("id") ?? "");
   const active = String(formData.get("active") ?? "") === "true";
   if (!z.string().uuid().safeParse(id).success) throw new Error("Invalid banner ID.");
@@ -234,7 +234,7 @@ export async function toggleBannerAction(formData: FormData): Promise<void> {
 }
 
 export async function deleteBannerAction(formData: FormData): Promise<void> {
-  await requireRole("ADMIN", { throw: true });
+  await requireRole("MANAGER", { throw: true });
   const id = String(formData.get("id") ?? "");
   if (!z.string().uuid().safeParse(id).success) throw new Error("Invalid banner ID.");
   await prisma.banner.delete({ where: { id } });

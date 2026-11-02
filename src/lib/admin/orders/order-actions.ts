@@ -38,7 +38,7 @@ export async function updateOrderStatusAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
 
   const parsed = statusSchema.safeParse({
     id: String(formData.get("id") ?? ""),
@@ -170,7 +170,7 @@ export async function updateOrderPaymentStatusAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
 
   const parsed = paymentStatusSchema.safeParse({
     id: String(formData.get("id") ?? ""),
@@ -250,7 +250,7 @@ export async function loadMoreAdminOrdersAction(options: {
   page: number;
   limit?: number;
 }): Promise<AdminOrdersResult> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return getAdminOrders(options);
 }
 
@@ -259,7 +259,7 @@ export async function quickUpdateOrderStatusAction(input: {
   status: OrderStatus;
   notes?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
   const { orderId, status, notes } = input;
 
   if (!orderId || !status) {
@@ -371,7 +371,7 @@ export async function bulkUpdateOrderStatusAction(input: {
   status: OrderStatus;
   notes?: string;
 }): Promise<{ success: boolean; updatedCount: number; errors: string[] }> {
-  await requireRole("ADMIN", { throw: true });
+  await requireRole("STAFF", { throw: true });
   const { orderIds, status, notes } = input;
 
   if (!Array.isArray(orderIds) || orderIds.length === 0) {
@@ -399,7 +399,7 @@ export async function checkCustomerRiskAction(input: {
   userId?: string | null;
   currentOrderId?: string | null;
 }) {
-  await requireRole("ADMIN", { throw: true });
+  await requireRole("STAFF", { throw: true });
   const { getCustomerRiskProfile } = await import("@/lib/admin/customers");
   try {
     const profile = await getCustomerRiskProfile(input);
@@ -415,7 +415,7 @@ export async function addOrderNoteAction(input: {
   orderId: string;
   note: string;
 }): Promise<{ success: boolean; error?: string; message?: string }> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
   const { orderId, note } = input;
 
   const trimmed = note?.trim();

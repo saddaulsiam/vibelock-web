@@ -7,6 +7,7 @@ export {
   type AdminKpiGridProps,
 } from "./admin-kpi-card";
 export { AdminSidebar, AdminMobileNavigation } from "./admin-navigation";
+export { AdminSignOutButton } from "./admin-sign-out-button";
 export { AdminPageHeader, type AdminPageHeaderProps } from "./admin-page-header";
 export {
   AdminTableColumnVisibility,

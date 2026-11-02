@@ -44,7 +44,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    await logoutAction();
+    await logoutAction({ redirect: false });
     toast.success("Successfully signed out");
     setIsOpen(false);
     router.push("/");

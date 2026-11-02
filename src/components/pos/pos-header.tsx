@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Maximize2,
   Minimize2,
   Clock,
@@ -91,23 +90,7 @@ export function PosHeader({
 
   return (
     <header className="bg-vl-black text-vl-white flex items-center justify-between border-b border-white/10 px-2.5 py-2 shadow-md select-none sm:px-4 sm:py-2.5">
-      <div className="flex shrink-0 items-center space-x-1.5 sm:space-x-3">
-        <Link href="/admin">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-vl-white/70 hover:text-vl-white -ml-1 h-8 rounded-xl px-1.5 transition-all hover:bg-white/10 sm:h-9 sm:px-3"
-            title="Exit to Admin Dashboard"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0 sm:mr-1.5" />
-            <span className="font-heading hidden text-xs font-black tracking-wider sm:inline">
-              Exit Admin
-            </span>
-          </Button>
-        </Link>
-
-        <div className="hidden h-4 w-px shrink-0 bg-white/15 sm:block" />
-
+      <Link href="/pos">
         <div className="flex shrink-0 items-center space-x-1.5 sm:space-x-2.5">
           <div className="bg-vl-cyan text-vl-black flex h-7 w-7 shrink-0 items-center justify-center rounded-xl shadow-[0_0_16px_rgba(0,217,255,0.4)] sm:h-9 sm:w-9">
             <ShoppingBag className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
@@ -126,7 +109,7 @@ export function PosHeader({
             </p>
           </div>
         </div>
-      </div>
+      </Link>
 
       <div className="flex shrink-0 items-center space-x-1.5 sm:space-x-2 lg:space-x-2.5">
         {/* Mobile / Tablet Current Sale Ticket Trigger (< lg) */}
@@ -281,19 +264,24 @@ export function PosHeader({
         )}
 
         {/* Cashier Badge (Desktop lg+) */}
-        <div className="hidden items-center space-x-2 rounded-xl border border-white/10 bg-[#16171c] px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3">
-          <div className="bg-vl-cyan/15 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
-            <UserCheck className="h-3 w-3" />
+        <Link href="/admin">
+          <div
+            className="hidden items-center space-x-2 rounded-xl border border-white/10 bg-[#16171c] px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
+            title="Back To Dashboard"
+          >
+            <div className="bg-vl-cyan/15 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
+              <UserCheck className="h-3 w-3" />
+            </div>
+            <div className="text-left text-xs leading-none">
+              <span className="font-heading text-vl-white inline-block max-w-22.5 truncate font-black xl:max-w-30">
+                {cashierName}
+              </span>
+              <span className="text-vl-grey hidden font-mono text-[10px] capitalize xl:block">
+                {cashierRole.toLowerCase()}
+              </span>
+            </div>
           </div>
-          <div className="text-left text-xs leading-none">
-            <span className="font-heading text-vl-white inline-block max-w-[90px] truncate font-black xl:max-w-[120px]">
-              {cashierName}
-            </span>
-            <span className="text-vl-grey hidden font-mono text-[10px] capitalize xl:block">
-              {cashierRole.toLowerCase()}
-            </span>
-          </div>
-        </div>
+        </Link>
 
         {/* Fullscreen Button (Desktop lg+) */}
         <Button

@@ -214,7 +214,7 @@ export async function getAdminReviews(options?: {
   kpis: AdminReviewsKPIs;
   totalCount: number;
 }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const [totalReviews, allReviewsForKPIs] = await Promise.all([
     prisma.review.count(),

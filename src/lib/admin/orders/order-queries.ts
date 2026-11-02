@@ -59,7 +59,7 @@ export async function getAdminOrders({
   page?: number;
   limit?: number;
 }): Promise<AdminOrdersResult> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const where: Prisma.OrderWhereInput = {};
 
@@ -221,7 +221,7 @@ export async function getAdminOrders({
 }
 
 export async function getAdminOrderById(id: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const order = await prisma.order.findUnique({
     where: { id },

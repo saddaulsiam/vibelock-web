@@ -59,8 +59,15 @@ export async function getAdminReturns({
   search?: string;
   page?: number;
   limit?: number;
-}) {
-  await requireRole("ADMIN");
+}): Promise<{
+  returns: AdminReturnListItem[];
+  total: number;
+  totalPages: number;
+  page: number;
+  limit: number;
+  statusCounts: Record<ReturnRequestStatus, number>;
+}> {
+  await requireRole("STAFF");
 
   const safePage = Number.isSafeInteger(page) && page > 0 ? page : 1;
   const safeLimit = Number.isSafeInteger(limit) && limit > 0 ? Math.min(limit, 100) : 20;
@@ -233,7 +240,7 @@ export async function getAdminReturns({
 }
 
 export async function getAdminReturnById(id: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const returnRequest = await prisma.returnRequest.findUnique({
     where: { id },

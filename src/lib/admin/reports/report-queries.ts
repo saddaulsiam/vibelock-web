@@ -186,7 +186,7 @@ const financialCtes = (start: Date, end: Date) => Prisma.sql`
 `;
 
 export async function getAdminReport(filters: ReportFilters = {}) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const { start, end, range } = resolveReportRange(filters);
   const ctes = financialCtes(start, end);
 
@@ -377,7 +377,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
 }
 
 export async function getAdminOrderProfitability(filters: ReportFilters = {}) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const { start, end } = resolveReportRange(filters);
   const page = Number.isInteger(filters.page) && (filters.page ?? 0) > 0 ? filters.page! : 1;
   const limit = 20;
@@ -539,7 +539,7 @@ export type ProductProfitabilityResult = {
 export async function getAdminProductProfitability(
   filters: ReportFilters = {}
 ): Promise<ProductProfitabilityResult> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const { start, end, range } = resolveReportRange(filters);
   const page = Number.isInteger(filters.page) && (filters.page ?? 0) > 0 ? filters.page! : 1;
   const limit = Number.isInteger(filters.limit) && (filters.limit ?? 0) > 0 ? filters.limit! : 20;

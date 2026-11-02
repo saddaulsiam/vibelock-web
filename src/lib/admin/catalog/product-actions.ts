@@ -267,7 +267,7 @@ export async function saveProductAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const parsed = await parseProduct(formData);
   if ("error" in parsed) return { error: parsed.error ?? null };
   const product = parsed.data;
@@ -460,7 +460,7 @@ export async function toggleProductPublishedAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid product." };
   const product = await prisma.product.findUnique({
@@ -483,7 +483,7 @@ export async function deleteProductAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid product." };
   const product = await prisma.product.findUnique({
@@ -526,7 +526,7 @@ export async function deleteProductAction(
 }
 
 export async function loadMoreAdminProductsAction(options: AdminProductsQueryOptions) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const result = await getAdminProducts(options);
   return {
     ...result,
@@ -542,7 +542,7 @@ export async function toggleProductFeaturedAction(
   productId: string,
   isFeatured: boolean
 ): Promise<AdminActionState & { isFeatured?: boolean }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!productId) return { error: "Missing product ID." };
 
   try {

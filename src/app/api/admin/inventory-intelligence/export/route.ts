@@ -21,7 +21,7 @@ export function csv(rows: unknown[][]): string {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole("ADMIN", { throw: true });
+    await requireRole("MANAGER", { throw: true });
 
     const searchParams = request.nextUrl.searchParams;
     const window = (searchParams.get("window") ?? "90d") as InventoryIntelligenceWindow;

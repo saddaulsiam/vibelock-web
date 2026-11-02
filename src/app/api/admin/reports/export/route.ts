@@ -29,7 +29,7 @@ function filename(type: string, start: Date, end: Date) {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole("ADMIN", { throw: true });
+    await requireRole("MANAGER", { throw: true });
     const type = request.nextUrl.searchParams.get("type") ?? "sales";
     const report = await getAdminReport(filters(request));
     const currentFilters = filters(request);

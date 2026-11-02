@@ -30,7 +30,7 @@ export interface AdminPaymentStats {
 }
 
 export async function getAdminPaymentStats(): Promise<AdminPaymentStats> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const [
     gatewaySuccessSum,
@@ -101,7 +101,7 @@ export async function getAdminPayments(options?: {
   search?: string;
   take?: number;
 }): Promise<AdminPaymentListItem[]> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const take = options?.take || 100;
   const search = options?.search?.trim();

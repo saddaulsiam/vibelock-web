@@ -21,7 +21,7 @@ const paidStatuses = ["SUCCESS", "PARTIALLY_REFUNDED", "REFUNDED"] as const;
  * Fetch executive overview KPIs for customer intelligence
  */
 export async function getAdminCustomerSummaryKPIs(): Promise<AdminCustomerSummaryKPIs> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const [totalCustomers, activeBuyers, repeatGroup, paidAggregate] = await Promise.all([
     prisma.user.count({ where: { role: "CUSTOMER" } }),
@@ -69,7 +69,7 @@ export async function getAdminCustomers({
   sortBy?: CustomerSortBy;
   pageSize?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const normalizedPage = normalizePage(page);
   const where: Prisma.UserWhereInput = { role: "CUSTOMER" };

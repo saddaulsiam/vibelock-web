@@ -33,7 +33,7 @@ async function getBannerAndCategories(id: string) {
 }
 
 export default async function EditBannerPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const { id } = await params;
 
   const [banner, categories] = await getBannerAndCategories(id);

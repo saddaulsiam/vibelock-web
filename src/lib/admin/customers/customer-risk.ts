@@ -38,7 +38,7 @@ export async function getCustomerRiskProfile({
   userId?: string | null;
   currentOrderId?: string | null;
 }): Promise<CombinedCustomerRiskProfile> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   // 1. Fetch VibeLock Internal Store History
   const orFilters = [

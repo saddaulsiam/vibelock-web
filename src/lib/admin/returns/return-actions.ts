@@ -85,7 +85,7 @@ export async function updateReturnStatusAction(
   _previous: AdminReturnActionState,
   formData: FormData
 ): Promise<AdminReturnActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
 
   const parsed = transitionSchema.safeParse({
     id: String(formData.get("id") ?? ""),
@@ -194,7 +194,7 @@ export async function initiateReturnRefundAction(
   _previous: AdminReturnActionState,
   formData: FormData
 ): Promise<AdminReturnActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
   const parsed = refundSchema.safeParse({
     returnId: String(formData.get("returnId") ?? ""),
     amount: String(formData.get("amount") ?? ""),
@@ -290,7 +290,7 @@ export async function processReturnRefundAction(
   _previous: AdminReturnActionState,
   formData: FormData
 ): Promise<AdminReturnActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
   const parsed = processRefundSchema.safeParse({
     returnId: String(formData.get("returnId") ?? ""),
     refundId: String(formData.get("refundId") ?? ""),
@@ -353,7 +353,7 @@ export async function loadMoreAdminReturnsAction(options: {
   page: number;
   limit?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return getAdminReturns(options);
 }
 
@@ -361,7 +361,7 @@ export async function bookSteadfastReturnPickupAction(
   _previous: AdminReturnActionState,
   formData: FormData
 ): Promise<AdminReturnActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("STAFF", { throw: true });
   const returnId = String(formData.get("returnId") ?? "").trim();
   if (!returnId) return { error: "Return ID is required." };
 
@@ -501,7 +501,7 @@ export async function issueStoreCreditRefundAction(
   _previous: AdminReturnActionState,
   formData: FormData
 ): Promise<AdminReturnActionState> {
-  const admin = await requireRole("ADMIN", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
 
   const returnId = String(formData.get("returnId") ?? "");
   const amountStr = String(formData.get("amount") ?? "");

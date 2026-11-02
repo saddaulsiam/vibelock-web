@@ -5,7 +5,7 @@ import { ShippingService } from "./service";
 import { getShippingProvider } from "./provider";
 
 export async function adminCreateShipmentAction(orderId: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   let provider;
   try {
