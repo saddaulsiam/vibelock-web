@@ -31,7 +31,9 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
   const canCancel =
     order.status === "PENDING" &&
-    (order.paymentStatus === "PENDING" || order.paymentStatus === "INITIATED") &&
+    order.paymentStatus !== "SUCCESS" &&
+    order.paymentStatus !== "REFUNDED" &&
+    order.paymentStatus !== "PARTIALLY_REFUNDED" &&
     !order.shipment;
 
   return (

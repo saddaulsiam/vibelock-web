@@ -8,6 +8,7 @@ import { Section } from "@/components/shared/section";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Price } from "@/components/storefront/catalog/price";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
+import { cancelOrderAction } from "@/lib/orders/actions";
 
 export const metadata: Metadata = {
   title: "Order Status | VibeLock",
@@ -16,17 +17,27 @@ export const metadata: Metadata = {
 
 interface OrderSuccessPageProps {
   params: Promise<{ orderNumber: string }>;
+  searchParams?: Promise<{ payment?: string }>;
 }
 
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
 
-export default async function OrderSuccessPage({ params }: OrderSuccessPageProps) {
+export default async function OrderSuccessPage({ params, searchParams }: OrderSuccessPageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
   const { orderNumber } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const paymentQuery = resolvedSearchParams.payment?.toLowerCase();
+
+  // If customer returned from online payment gateway after cancelling or failing,
+  // automatically cancel the pending order and release reserved stock.
+  if (paymentQuery === "cancelled" || paymentQuery === "failed") {
+    await cancelOrderAction(orderNumber);
+  }
+
   const order = await getCustomerOrderConfirmation(orderNumber);
   if (!order) notFound();
 
