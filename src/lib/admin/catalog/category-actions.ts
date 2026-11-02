@@ -29,7 +29,7 @@ export async function saveCategoryAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const rawName = String(formData.get("name") ?? "");
   const raw = {
     id: String(formData.get("id") ?? "") || undefined,
@@ -182,7 +182,7 @@ export async function toggleCategoryStatusAction(
   id: string,
   currentActive: boolean
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   try {
     await prisma.category.update({
       where: { id },
@@ -204,7 +204,7 @@ export async function deleteCategoryAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid category." };
   const category = await prisma.category.findUnique({
@@ -230,7 +230,7 @@ export async function assignProductsToCategoryAction(
   categoryId: string,
   productIds: string[]
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!categoryId || !productIds.length) {
     return { error: "No products selected." };
   }
@@ -257,7 +257,7 @@ export async function removeProductFromCategoryAction(
   categoryId: string,
   productId: string
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   try {
     await prisma.category.update({
       where: { id: categoryId },

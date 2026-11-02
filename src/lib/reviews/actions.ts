@@ -154,10 +154,10 @@ export async function deleteReviewAction(reviewId: string): Promise<ReviewAction
       return { success: false, error: "Review not found" };
     }
 
-    const isAdmin = user.role === "ADMIN";
+    const isManagerOrAdmin = user.role === "ADMIN" || user.role === "MANAGER";
     const isOwner = review.userId === user.id;
 
-    if (!isAdmin && !isOwner) {
+    if (!isManagerOrAdmin && !isOwner) {
       return {
         success: false,
         error: "You do not have permission to delete this review.",

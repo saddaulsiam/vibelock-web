@@ -16,7 +16,7 @@ function pageNumber(page: number) {
 }
 
 export async function getAdminShippingOverviewKPIs(): Promise<AdminShippingKPIs> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const [
     totalShipments,
@@ -130,7 +130,7 @@ export async function getAdminShipments({
     pending: number;
   };
 }> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const currentPage = pageNumber(page);
 
   // Status mapping
@@ -278,7 +278,7 @@ export async function getAdminShipments({
 }
 
 export async function getAdminShippingOverview(page = 1) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const currentPage = pageNumber(page);
   const [shipments, total] = await Promise.all([
     prisma.shipment.findMany({
@@ -311,7 +311,7 @@ export async function getAdminShippingOverview(page = 1) {
 }
 
 export async function getAdminShippingZones(search?: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return prisma.shippingZone.findMany({
     where: search?.trim() ? { name: { contains: search.trim(), mode: "insensitive" } } : undefined,
     orderBy: { name: "asc" },
@@ -327,7 +327,7 @@ export async function getAdminShippingZones(search?: string) {
 }
 
 export async function getAdminShippingZone(id: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return prisma.shippingZone.findUnique({
     where: { id },
     select: {
@@ -349,7 +349,7 @@ export async function getAdminShippingMethods({
   zoneId?: string;
   active?: boolean;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return prisma.shippingMethod.findMany({
     where: {
       ...(zoneId ? { zoneId } : {}),
@@ -369,7 +369,7 @@ export async function getAdminShippingMethods({
 }
 
 export async function getAdminShippingMethod(id: string) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return prisma.shippingMethod.findUnique({
     where: { id },
     select: {
@@ -383,7 +383,7 @@ export async function getAdminShippingMethod(id: string) {
 }
 
 export async function getAdminShippingZonesForForm() {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return prisma.shippingZone.findMany({
     orderBy: { name: "asc" },
     select: { id: true, name: true },

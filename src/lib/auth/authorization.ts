@@ -2,14 +2,9 @@ import "server-only";
 import { getCurrentUser } from "./get-current-user";
 import { Role } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { ROLE_HIERARCHY } from "./roles";
 
-// Define the role hierarchy. Higher numbers indicate higher privileges.
-export const ROLE_HIERARCHY: Record<Role, number> = {
-  CUSTOMER: 1,
-  STAFF: 2,
-  MANAGER: 3,
-  ADMIN: 4,
-};
+export { ROLE_HIERARCHY, hasRequiredRole } from "./roles";
 
 export class AuthRequiredError extends Error {
   constructor(message = "Unauthorized") {

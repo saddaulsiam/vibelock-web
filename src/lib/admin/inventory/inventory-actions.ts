@@ -109,7 +109,7 @@ export async function quickAdjustInventoryAction({
   reason: string;
   type?: InventoryTransactionType;
 }): Promise<InventoryActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const q = Number(quantity);
   if (!Number.isInteger(q) || q === 0) {
@@ -193,7 +193,7 @@ export async function bulkAdjustInventoryAction({
   reason: string;
   type?: InventoryTransactionType;
 }): Promise<InventoryActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   if (!Array.isArray(variantIds) || variantIds.length === 0) {
     return { error: "No inventory items selected." };
@@ -269,7 +269,7 @@ export async function loadMoreAdminInventoryAction(options: {
   filter?: InventoryFilter;
   page?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return getAdminInventory(options);
 }
 
@@ -281,7 +281,7 @@ export async function loadMoreAdminInventoryIntelligenceAction(options?: {
   page?: number;
   pageSize?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   return getAdminInventoryIntelligence(options);
 }
 
@@ -299,7 +299,7 @@ export async function reconcileStocktakeAction({
   items: StocktakeReconcileItem[];
   auditNote?: string;
 }): Promise<InventoryActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   if (!Array.isArray(items) || items.length === 0) {
     return { error: "No stocktake items provided to reconcile." };
@@ -402,7 +402,7 @@ export async function getReorderSuggestionsAction(threshold = 5): Promise<{
   error: string | null;
   items: ReorderSuggestionItem[];
 }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   try {
     const rawItems = await prisma.$queryRaw<

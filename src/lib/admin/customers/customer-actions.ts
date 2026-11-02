@@ -15,7 +15,7 @@ export async function loadMoreAdminCustomersAction(options: {
   page: number;
   pageSize?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   return getAdminCustomers(options);
 }
 
@@ -32,7 +32,7 @@ export interface CreateCustomerInput {
 export async function createAdminCustomerAction(
   input: CreateCustomerInput
 ): Promise<{ success: boolean; customerId?: string; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const name = input.name?.trim();
   const phone = input.phone?.trim();
@@ -118,7 +118,7 @@ export interface UpdateCustomerInput {
 export async function updateAdminCustomerAction(
   input: UpdateCustomerInput
 ): Promise<{ success: boolean; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const { id } = input;
   const name = input.name?.trim();
@@ -211,7 +211,7 @@ export async function addCustomerStaffNoteAction(
   customerId: string,
   note: string
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("ADMIN");
+  const admin = await requireRole("MANAGER");
 
   const cleanNote = note?.trim();
   if (!customerId) return { success: false, error: "Customer ID is required." };
@@ -245,7 +245,7 @@ export async function toggleCustomerCodBlockAction(
   blocked: boolean,
   reason?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("ADMIN");
+  const admin = await requireRole("MANAGER");
 
   if (!customerId) return { success: false, error: "Customer ID is required." };
 
@@ -279,7 +279,7 @@ export async function toggleCustomerCodBlockAction(
 export async function deleteAdminCustomerAction(
   customerId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("ADMIN");
+  const admin = await requireRole("MANAGER");
 
   if (!customerId) return { success: false, error: "Customer ID is required." };
   if (admin.id === customerId) {
@@ -347,7 +347,7 @@ export async function toggleCustomerAccountSuspensionAction(
   suspended: boolean,
   reason?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("ADMIN");
+  const admin = await requireRole("MANAGER");
 
   if (!customerId) return { success: false, error: "Customer ID is required." };
   if (admin.id === customerId) {
@@ -389,7 +389,7 @@ export async function toggleCustomerAccountSuspensionAction(
 export async function adminSendCustomerPasswordResetEmailAction(
   customerId: string
 ): Promise<{ success: boolean; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const customer = await prisma.user.findUnique({
     where: { id: customerId },
@@ -434,7 +434,7 @@ export async function adminSendCustomerPasswordResetEmailAction(
 export async function adminGenerateCustomerPasswordResetLinkAction(
   customerId: string
 ): Promise<{ success: boolean; resetLink?: string; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const customer = await prisma.user.findUnique({
     where: { id: customerId },

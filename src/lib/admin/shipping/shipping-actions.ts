@@ -41,7 +41,7 @@ export async function saveShippingZoneAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const parsed = z
     .object({ id: id.optional(), name, countries: z.array(z.string().min(2).max(3)).min(1) })
     .safeParse({
@@ -75,7 +75,7 @@ export async function saveShippingMethodAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const parsed = z
     .object({
       id: id.optional(),
@@ -118,7 +118,7 @@ export async function toggleShippingMethodAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipping method." };
   try {
@@ -142,7 +142,7 @@ export async function updateShipmentStatusAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const parsed = z.object({ id, status: z.nativeEnum(ShipmentStatus) }).safeParse({
     id: formData.get("id"),
     status: formData.get("status"),
@@ -171,7 +171,7 @@ export async function refreshShipmentStatusAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipment." };
 
@@ -206,7 +206,7 @@ export async function createShipmentAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid order." };
 
@@ -226,7 +226,7 @@ export async function loadMoreAdminShipmentsAction(options: {
   page: number;
   pageSize?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   return getAdminShipments(options);
 }
 
@@ -235,7 +235,7 @@ export async function syncSingleShipmentAction(shipmentId: string): Promise<{
   message: string;
   status?: ShipmentStatus;
 }> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
   const parsed = id.safeParse(shipmentId);
   if (!parsed.success) return { success: false, message: "Invalid shipment ID" };
 

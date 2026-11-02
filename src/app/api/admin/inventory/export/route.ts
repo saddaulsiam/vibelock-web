@@ -30,7 +30,7 @@ function parseFilter(filter: string | null): InventoryFilter {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireRole("ADMIN", { throw: true });
+    await requireRole("MANAGER", { throw: true });
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("q") ?? searchParams.get("search") ?? undefined;

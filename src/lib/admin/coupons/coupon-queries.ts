@@ -29,7 +29,7 @@ function normalizePage(page: number) {
 }
 
 export async function getAdminCouponsSummaryKPIs(): Promise<AdminCouponsSummaryKPIs> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const now = new Date();
   const [allCoupons, totalRedemptionsAggregate] = await Promise.all([
@@ -83,7 +83,7 @@ export async function getAdminCoupons({
   type?: DiscountType;
   page?: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const normalizedPage = normalizePage(page);
   const where: Prisma.CouponWhereInput = {};
@@ -183,7 +183,7 @@ export async function getAdminCoupons({
 }
 
 export async function getAdminCouponById(id: string) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   return prisma.coupon.findUnique({
     where: { id },
     select: {
@@ -203,7 +203,7 @@ export async function getAdminCouponById(id: string) {
 }
 
 export async function getAdminCouponFormData(id?: string) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const [coupon, allCategories] = await Promise.all([
     id ? getAdminCouponById(id) : Promise.resolve(null),
     prisma.category.findMany({

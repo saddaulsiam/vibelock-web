@@ -431,7 +431,7 @@ export async function getAdminInventoryIntelligence({
   page?: number;
   pageSize?: number;
 } = {}): Promise<InventoryIntelligenceResult> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const validatedWindow = parseWindow(window);
   const validatedStatus = parseStatusFilter(status);
@@ -481,7 +481,7 @@ export async function getAdminInventoryIntelligenceForExport({
   search?: string;
   sort?: InventoryIntelligenceSort | string;
 } = {}): Promise<InventoryIntelligenceExportResult> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const validatedWindow = parseWindow(window);
   const validatedStatus = parseStatusFilter(status);

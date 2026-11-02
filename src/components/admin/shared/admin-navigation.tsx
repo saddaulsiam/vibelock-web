@@ -24,70 +24,95 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import type { Role } from "@prisma/client";
+import { hasRequiredRole } from "@/lib/auth/roles";
 
-interface NavItem {
+export interface NavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean | "true" | "false" }>;
+  minRole?: Role;
 }
 
-interface NavGroup {
+export interface NavGroup {
   group?: string;
   items: readonly NavItem[];
 }
 
-const navGroups: readonly NavGroup[] = [
+export const navGroups: readonly NavGroup[] = [
   {
-    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard }],
+    items: [{ label: "Dashboard", href: "/admin", icon: LayoutDashboard, minRole: "STAFF" }],
   },
   {
     group: "Sales & Operations",
     items: [
-      { label: "POS Counter", href: "/pos", icon: Calculator },
-      { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
-      { label: "Shipping", href: "/admin/shipping", icon: Truck },
-      { label: "Returns", href: "/admin/returns", icon: RotateCcw },
-      { label: "Payments", href: "/admin/payments", icon: CreditCard },
+      { label: "POS Counter", href: "/pos", icon: Calculator, minRole: "STAFF" },
+      { label: "Orders", href: "/admin/orders", icon: ShoppingBag, minRole: "STAFF" },
+      { label: "Shipping", href: "/admin/shipping", icon: Truck, minRole: "STAFF" },
+      { label: "Returns", href: "/admin/returns", icon: RotateCcw, minRole: "STAFF" },
+      { label: "Payments", href: "/admin/payments", icon: CreditCard, minRole: "MANAGER" },
     ],
   },
   {
     group: "Catalog & Stock",
     items: [
-      { label: "Products", href: "/admin/products", icon: Boxes },
-      { label: "Categories", href: "/admin/categories", icon: FolderTree },
-      { label: "Inventory", href: "/admin/inventory", icon: PackageCheck },
+      { label: "Products", href: "/admin/products", icon: Boxes, minRole: "MANAGER" },
+      { label: "Categories", href: "/admin/categories", icon: FolderTree, minRole: "MANAGER" },
+      { label: "Inventory", href: "/admin/inventory", icon: PackageCheck, minRole: "STAFF" },
       {
         label: "Inventory Intelligence",
         href: "/admin/inventory-intelligence",
         icon: TrendingDown,
+        minRole: "MANAGER",
       },
     ],
   },
   {
     group: "Marketing & CRM",
     items: [
-      { label: "Customers", href: "/admin/customers", icon: Users },
-      { label: "Reviews", href: "/admin/reviews", icon: Star },
-      { label: "Coupons", href: "/admin/coupons", icon: Percent },
-      { label: "Banners", href: "/admin/banners", icon: PanelsTopLeft },
+      { label: "Customers", href: "/admin/customers", icon: Users, minRole: "MANAGER" },
+      { label: "Reviews", href: "/admin/reviews", icon: Star, minRole: "MANAGER" },
+      { label: "Coupons", href: "/admin/coupons", icon: Percent, minRole: "MANAGER" },
+      { label: "Banners", href: "/admin/banners", icon: PanelsTopLeft, minRole: "MANAGER" },
     ],
   },
   {
     group: "Analytics & Settings",
     items: [
-      { label: "Reports", href: "/admin/reports", icon: BarChart3 },
-      { label: "Admins", href: "/admin/admins", icon: ShieldCheck },
-      { label: "Settings", href: "/admin/settings", icon: Settings },
+      { label: "Reports", href: "/admin/reports", icon: BarChart3, minRole: "MANAGER" },
+      { label: "Admins", href: "/admin/admins", icon: ShieldCheck, minRole: "ADMIN" },
+      { label: "Settings", href: "/admin/settings", icon: Settings, minRole: "ADMIN" },
     ],
   },
 ] as const;
 
-function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
+export function filterNavGroupsByRole(
+  groups: readonly NavGroup[],
+  userRole: Role = "ADMIN"
+): NavGroup[] {
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) =>
+        hasRequiredRole(userRole, item.minRole ?? "STAFF")
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
+function AdminNavLinks({
+  onNavigate,
+  userRole = "ADMIN",
+}: {
+  onNavigate?: () => void;
+  userRole?: Role;
+}) {
   const pathname = usePathname();
+  const visibleGroups = filterNavGroupsByRole(navGroups, userRole);
 
   return (
     <nav aria-label="Admin navigation" className="space-y-4">
-      {navGroups.map((group, groupIdx) => (
+      {visibleGroups.map((group, groupIdx) => (
         <div key={group.group || `group-${groupIdx}`} className="grid gap-0.5">
           {group.group && (
             <p className="px-3 pt-2 pb-1 text-[10px] font-bold tracking-[0.16em] text-white/40 uppercase">
@@ -122,7 +147,7 @@ function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export function AdminSidebar() {
+export function AdminSidebar({ userRole }: { userRole?: Role }) {
   return (
     <aside className="hidden w-64 shrink-0 flex-col bg-[#101114] text-white lg:sticky lg:top-0 lg:flex lg:h-screen lg:overflow-y-auto">
       <div className="sticky top-0 z-10 border-b border-white/10 bg-[#101114] px-6 py-6">
@@ -137,13 +162,13 @@ export function AdminSidebar() {
         </p>
       </div>
       <div className="flex-1 px-3 py-5">
-        <AdminNavLinks />
+        <AdminNavLinks userRole={userRole} />
       </div>
     </aside>
   );
 }
 
-export function AdminMobileNavigation() {
+export function AdminMobileNavigation({ userRole }: { userRole?: Role }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -167,7 +192,7 @@ export function AdminMobileNavigation() {
           </SheetTitle>
         </SheetHeader>
         <div className="px-3 py-5">
-          <AdminNavLinks onNavigate={() => setOpen(false)} />
+          <AdminNavLinks userRole={userRole} onNavigate={() => setOpen(false)} />
         </div>
       </SheetContent>
     </Sheet>

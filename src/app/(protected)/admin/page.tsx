@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   Boxes,
+  Calculator,
   CircleDollarSign,
   ClipboardList,
   Layers3,
@@ -9,12 +10,15 @@ import {
   RotateCcw,
   ShoppingBag,
   TrendingUp,
+  Truck,
   Users,
   Warehouse,
 } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminDashboardData } from "@/lib/admin/reports";
+import { requireRole } from "@/lib/auth/authorization";
+import { hasRequiredRole } from "@/lib/auth/roles";
 
 function formatBdt(value: { toFixed: (decimalPlaces?: number) => string } | number) {
   const num = typeof value === "number" ? value : Number(value);
@@ -139,6 +143,9 @@ export default async function AdminPage({
 }: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 } = {}) {
+  const user = await requireRole("STAFF");
+  const isManagerOrAdmin = hasRequiredRole(user.role, "MANAGER");
+
   const params = searchParams ? await searchParams : {};
   const rawRange = typeof params.range === "string" ? params.range.trim() : undefined;
   const validKeys = new Set(["today", "yesterday", "7d", "30d", "this-month"]);
@@ -155,112 +162,177 @@ export default async function AdminPage({
           Operations / Overview
         </p>
         <h2 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
-          Admin dashboard
+          {isManagerOrAdmin ? "Admin dashboard" : "Operations dashboard"}
         </h2>
         <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
-          Current catalog, customer, order, and inventory counts from VibeLock records.
+          {isManagerOrAdmin
+            ? "Current catalog, customer, order, and inventory counts from VibeLock records."
+            : "Daily store fulfillment, register counter, and stock management overview."}
         </p>
       </header>
 
-      <section aria-labelledby="financial-kpis-heading" className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h3
-              id="financial-kpis-heading"
-              className="text-lg font-semibold tracking-tight text-[#101114]"
-            >
-              Executive performance
+      {isManagerOrAdmin ? (
+        <section aria-labelledby="financial-kpis-heading" className="space-y-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h3
+                id="financial-kpis-heading"
+                className="text-lg font-semibold tracking-tight text-[#101114]"
+              >
+                Executive performance
+              </h3>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {activePreset.label} financial metrics ({dateLabel(dashboard.financials.start)} –{" "}
+                {dateLabel(new Date(dashboard.financials.end.getTime() - 1))}).
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <nav
+                aria-label="Executive KPI range presets"
+                className="flex flex-wrap items-center gap-1.5 sm:gap-2"
+              >
+                {rangePresets.map((preset) => {
+                  const isActive = range === preset.key;
+                  const href = preset.key === "30d" ? "/admin" : `/admin?range=${preset.key}`;
+                  return (
+                    <Link
+                      key={preset.key}
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`inline-flex items-center justify-center rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+                        isActive
+                          ? "border-[#101114] bg-[#101114] text-white shadow-none"
+                          : "text-muted-foreground hover:bg-muted border-[#101114]/15 bg-white hover:text-[#101114]"
+                      }`}
+                    >
+                      {preset.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+              <Link
+                href={reportHref}
+                className="text-muted-foreground text-xs font-medium underline-offset-4 hover:text-[#101114] hover:underline"
+              >
+                View full report →
+              </Link>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+            <FinancialKpiCard
+              label="Net sales"
+              value={formatBdt(dashboard.financials.netSales)}
+              detail={`${activePreset.label} · After discounts & refunds`}
+              icon={CircleDollarSign}
+              href={reportHref}
+            />
+            <FinancialKpiCard
+              label="Gross profit"
+              value={formatBdt(dashboard.financials.grossProfit)}
+              detail={`${activePreset.label} · Net sales minus COGS`}
+              icon={TrendingUp}
+              href={reportHref}
+            />
+            <FinancialKpiCard
+              label="Gross margin"
+              value={
+                dashboard.financials.grossMargin !== null
+                  ? `${dashboard.financials.grossMargin.toFixed(1)}%`
+                  : "—"
+              }
+              detail="Profit percentage on net sales"
+              icon={Percent}
+              href={reportHref}
+            />
+            <FinancialKpiCard
+              label="Orders"
+              value={dashboard.financials.orders.toLocaleString("en-BD")}
+              detail={`Placed in ${activePreset.label.toLowerCase()} (non-cancelled)`}
+              icon={ClipboardList}
+              href={reportHref}
+            />
+            <FinancialKpiCard
+              label="Retained units"
+              value={dashboard.financials.retainedUnits.toLocaleString("en-BD")}
+              detail={`${dashboard.financials.soldUnits.toLocaleString("en-BD")} sold, ${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned`}
+              icon={ShoppingBag}
+              href={reportHref}
+            />
+            <FinancialKpiCard
+              label="Return rate"
+              value={
+                dashboard.financials.soldUnits > 0
+                  ? `${dashboard.financials.returnRate.toFixed(1)}%`
+                  : "—"
+              }
+              detail={`${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned of ${dashboard.financials.soldUnits.toLocaleString("en-BD")} units sold`}
+              icon={RotateCcw}
+              href={reportHref}
+            />
+          </div>
+        </section>
+      ) : (
+        <section aria-label="Staff Quick Actions" className="space-y-3">
+          <div className="border-b border-[#101114]/10 pb-2">
+            <h3 className="text-lg font-semibold tracking-tight text-[#101114]">
+              Staff Operations Center
             </h3>
-            <p className="text-muted-foreground mt-1 text-sm">
-              {activePreset.label} financial metrics ({dateLabel(dashboard.financials.start)} –{" "}
-              {dateLabel(new Date(dashboard.financials.end.getTime() - 1))}).
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              Quick access to register sales, fulfillment queues, and stock operations.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <nav
-              aria-label="Executive KPI range presets"
-              className="flex flex-wrap items-center gap-1.5 sm:gap-2"
-            >
-              {rangePresets.map((preset) => {
-                const isActive = range === preset.key;
-                const href = preset.key === "30d" ? "/admin" : `/admin?range=${preset.key}`;
-                return (
-                  <Link
-                    key={preset.key}
-                    href={href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`inline-flex items-center justify-center rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
-                      isActive
-                        ? "border-[#101114] bg-[#101114] text-white shadow-none"
-                        : "text-muted-foreground hover:bg-muted border-[#101114]/15 bg-white hover:text-[#101114]"
-                    }`}
-                  >
-                    {preset.label}
-                  </Link>
-                );
-              })}
-            </nav>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link
-              href={reportHref}
-              className="text-muted-foreground text-xs font-medium underline-offset-4 hover:text-[#101114] hover:underline"
+              href="/pos"
+              className="group flex items-center gap-3 border border-[#101114]/10 bg-white p-4 transition-colors hover:border-[#101114]/30"
             >
-              View full report →
+              <span className="flex size-10 shrink-0 items-center justify-center bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
+                <Calculator className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-[#101114]">POS Counter</p>
+                <p className="text-muted-foreground text-xs">Scan & checkout sales</p>
+              </div>
+            </Link>
+            <Link
+              href="/admin/orders"
+              className="group flex items-center gap-3 border border-[#101114]/10 bg-white p-4 transition-colors hover:border-[#101114]/30"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
+                <ClipboardList className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-[#101114]">Fulfill Orders</p>
+                <p className="text-muted-foreground text-xs">Pick, pack & track shipments</p>
+              </div>
+            </Link>
+            <Link
+              href="/admin/inventory"
+              className="group flex items-center gap-3 border border-[#101114]/10 bg-white p-4 transition-colors hover:border-[#101114]/30"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
+                <Warehouse className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-[#101114]">Inventory Counts</p>
+                <p className="text-muted-foreground text-xs">Stock on hand & alerts</p>
+              </div>
+            </Link>
+            <Link
+              href="/admin/shipping"
+              className="group flex items-center gap-3 border border-[#101114]/10 bg-white p-4 transition-colors hover:border-[#101114]/30"
+            >
+              <span className="flex size-10 shrink-0 items-center justify-center bg-[#F3F0E8] text-[#101114] transition-colors group-hover:bg-[#101114] group-hover:text-white">
+                <Truck className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold text-[#101114]">Shipping Status</p>
+                <p className="text-muted-foreground text-xs">Courier & consignment logs</p>
+              </div>
             </Link>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          <FinancialKpiCard
-            label="Net sales"
-            value={formatBdt(dashboard.financials.netSales)}
-            detail={`${activePreset.label} · After discounts & refunds`}
-            icon={CircleDollarSign}
-            href={reportHref}
-          />
-          <FinancialKpiCard
-            label="Gross profit"
-            value={formatBdt(dashboard.financials.grossProfit)}
-            detail={`${activePreset.label} · Net sales minus COGS`}
-            icon={TrendingUp}
-            href={reportHref}
-          />
-          <FinancialKpiCard
-            label="Gross margin"
-            value={
-              dashboard.financials.grossMargin !== null
-                ? `${dashboard.financials.grossMargin.toFixed(1)}%`
-                : "—"
-            }
-            detail="Profit percentage on net sales"
-            icon={Percent}
-            href={reportHref}
-          />
-          <FinancialKpiCard
-            label="Orders"
-            value={dashboard.financials.orders.toLocaleString("en-BD")}
-            detail={`Placed in ${activePreset.label.toLowerCase()} (non-cancelled)`}
-            icon={ClipboardList}
-            href={reportHref}
-          />
-          <FinancialKpiCard
-            label="Retained units"
-            value={dashboard.financials.retainedUnits.toLocaleString("en-BD")}
-            detail={`${dashboard.financials.soldUnits.toLocaleString("en-BD")} sold, ${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned`}
-            icon={ShoppingBag}
-            href={reportHref}
-          />
-          <FinancialKpiCard
-            label="Return rate"
-            value={
-              dashboard.financials.soldUnits > 0
-                ? `${dashboard.financials.returnRate.toFixed(1)}%`
-                : "—"
-            }
-            detail={`${dashboard.financials.returnedUnits.toLocaleString("en-BD")} returned of ${dashboard.financials.soldUnits.toLocaleString("en-BD")} units sold`}
-            icon={RotateCcw}
-            href={reportHref}
-          />
-        </div>
-      </section>
+        </section>
+      )}
 
       <section
         aria-label="Store totals"

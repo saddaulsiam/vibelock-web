@@ -28,7 +28,7 @@ async function getBannerCategories() {
 }
 
 export default async function NewBannerPage() {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const categories = await getBannerCategories();
 

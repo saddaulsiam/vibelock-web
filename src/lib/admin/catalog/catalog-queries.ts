@@ -66,7 +66,7 @@ export type AdminProductsResult = {
 };
 
 export async function getAdminCategories() {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   return prisma.category.findMany({
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: {
@@ -85,7 +85,7 @@ export async function getAdminCategories() {
 }
 
 export async function getAdminCategoryFormData(id?: string) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const [category, categories] = await Promise.all([
     id
       ? prisma.category.findUnique({
@@ -115,7 +115,7 @@ export async function getAdminCategoryFormData(id?: string) {
 export async function getAdminProducts(
   options?: AdminProductsQueryOptions
 ): Promise<AdminProductsResult> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const search = options?.search?.trim() || "";
   const categoryFilter = options?.category?.trim() || "all";
@@ -295,7 +295,7 @@ export async function getAdminProducts(
 }
 
 export async function getAdminProductFormData(id?: string) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const [product, categories] = await Promise.all([
     id
       ? prisma.product.findUnique({
@@ -429,7 +429,7 @@ export type AdminCategoryDetail = {
 };
 
 export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryDetail | null> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const raw = await prisma.category.findUnique({
     where: { id },
@@ -564,7 +564,7 @@ export async function getAdminCategoryDetail(id: string): Promise<AdminCategoryD
 export async function getAdminAvailableProductsForCategory(
   categoryId: string
 ): Promise<CategoryAvailableProduct[]> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const raw = await prisma.product.findMany({
     where: {

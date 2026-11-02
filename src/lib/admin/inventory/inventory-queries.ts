@@ -45,7 +45,7 @@ export async function getAdminInventory({
   filter?: InventoryFilter;
   page?: number;
 }): Promise<AdminInventoryResult> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const normalizedPage = normalizePage(page);
   const searchSql = search?.trim()
@@ -160,7 +160,7 @@ export async function getAdminInventoryDetail(
   variantId: string,
   pageOrOptions: number | AdminInventoryDetailOptions = 1
 ) {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const page = typeof pageOrOptions === "number" ? pageOrOptions : (pageOrOptions?.page ?? 1);
   const typeFilter = typeof pageOrOptions === "object" ? pageOrOptions?.type : undefined;
@@ -313,7 +313,7 @@ export type InventoryExportResult = {
 };
 
 export async function getAdminInventorySummary(): Promise<InventorySummary> {
-  await requireRole("ADMIN");
+  await requireRole("STAFF");
 
   const [summary] = await prisma.$queryRaw<
     {
@@ -382,7 +382,7 @@ export async function getAdminInventoryForExport({
   search?: string;
   filter?: InventoryFilter;
 } = {}): Promise<InventoryExportResult> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const searchSql = search?.trim()
     ? Prisma.sql`AND ("ProductVariant"."sku" ILIKE ${`%${search.trim()}%`} OR "Product"."name" ILIKE ${`%${search.trim()}%`})`

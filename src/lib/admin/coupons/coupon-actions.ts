@@ -94,7 +94,7 @@ export async function saveCouponAction(
   _previous: CouponActionState,
   formData: FormData
 ): Promise<CouponActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   const parsed = couponSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
@@ -177,7 +177,7 @@ export async function saveCouponAction(
 export async function toggleCouponStatusAction(
   id: string
 ): Promise<{ success: boolean; newStatus?: boolean; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   try {
     const existing = await prisma.coupon.findUnique({
@@ -207,7 +207,7 @@ export async function toggleCouponStatusAction(
 export async function deleteCouponAction(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   try {
     const existing = await prisma.coupon.findUnique({
@@ -244,7 +244,7 @@ export async function loadMoreAdminCouponsAction(options: {
   type?: DiscountType;
   page: number;
 }) {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const { getAdminCoupons } = await import("./coupon-queries");
   return getAdminCoupons(options);
 }
@@ -253,7 +253,7 @@ export async function bulkUpdateCouponStatusAction(
   ids: string[],
   isActive: boolean
 ): Promise<{ success: boolean; updatedCount?: number; error?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   if (!ids || ids.length === 0) {
     return { success: false, error: "No coupons selected." };
@@ -281,7 +281,7 @@ export async function bulkDeleteCouponsAction(ids: string[]): Promise<{
   message?: string;
   error?: string;
 }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
 
   if (!ids || ids.length === 0) {
     return { success: false, deletedCount: 0, deactivatedCount: 0, error: "No coupons selected." };

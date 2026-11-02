@@ -11,7 +11,7 @@ export async function bulkUpdateProductStatusAction(
   productIds: string[],
   status: ProductStatus
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -33,7 +33,7 @@ export async function bulkUpdateProductStatusAction(
 }
 
 export async function bulkDeleteProductsAction(productIds: string[]): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -112,7 +112,7 @@ function sanitizeCsvCell(val: unknown): string {
 export async function exportAdminProductsCsvAction(
   options: AdminProductsQueryOptions
 ): Promise<{ error: string | null; csv?: string; filename?: string }> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   const result = await getAdminProducts({
     ...options,
     page: 1,
@@ -159,7 +159,7 @@ export async function bulkAssignProductCategoryAction(
   categoryId: string,
   mode: "add" | "replace" = "add"
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -210,7 +210,7 @@ export async function quickUpdateProductPricesAction(
   productId: string,
   prices: { sellingPrice: number; discountPrice: number | null }
 ): Promise<AdminActionState> {
-  await requireRole("ADMIN");
+  await requireRole("MANAGER");
   if (!productId) return { error: "Missing product ID." };
 
   const sellingPrice = Number(prices.sellingPrice);
