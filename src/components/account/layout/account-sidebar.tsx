@@ -47,7 +47,7 @@ export function AccountSidebar({ profile, onOpenCoupons, onNavClick }: AccountSi
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    await logoutAction();
+    await logoutAction({ redirect: false });
     toast.success("You've been signed out.");
     router.push("/");
     router.refresh();

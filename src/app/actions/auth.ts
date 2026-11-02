@@ -134,8 +134,33 @@ export async function loginAction(data: LoginInput) {
   }
 }
 
-export async function logoutAction() {
-  await signOut({ redirect: false });
+export async function logoutAction(
+  options?: string | FormData | { redirectTo?: string; redirect?: boolean }
+) {
+  let redirectTo = "/login";
+  let redirectUser = true;
+
+  if (typeof options === "string") {
+    redirectTo = options;
+  } else if (options instanceof FormData) {
+    const formRedirect = options.get("redirectTo");
+    if (typeof formRedirect === "string" && formRedirect) {
+      redirectTo = formRedirect;
+    }
+  } else if (options && typeof options === "object") {
+    if (options.redirectTo !== undefined) {
+      redirectTo = options.redirectTo;
+    }
+    if (options.redirect !== undefined) {
+      redirectUser = options.redirect;
+    }
+  }
+
+  if (redirectUser) {
+    await signOut({ redirectTo });
+  } else {
+    await signOut({ redirect: false });
+  }
 }
 
 export async function googleSignInAction() {

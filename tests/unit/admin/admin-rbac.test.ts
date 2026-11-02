@@ -50,16 +50,15 @@ describe("Unified RBAC Hierarchy & Permissions", () => {
   });
 
   describe("Navigation RBAC Filtering (filterNavGroupsByRole)", () => {
-    it("shows only 6 operational items for STAFF and hides empty groups", () => {
+    it("shows only 5 operational items for STAFF and hides empty groups", () => {
       const filtered = filterNavGroupsByRole(navGroups, "STAFF");
       const totalItems = filtered.flatMap((g) => g.items);
       const labels = totalItems.map((i) => i.label);
 
-      // Staff should only see 6 items
-      expect(totalItems).toHaveLength(6);
+      // Staff should only see 5 items in sidebar (POS Counter is promoted to top header)
+      expect(totalItems).toHaveLength(5);
       expect(labels).toEqual([
         "Dashboard",
-        "POS Counter",
         "Orders",
         "Shipping",
         "Returns",
@@ -72,13 +71,13 @@ describe("Unified RBAC Hierarchy & Permissions", () => {
       expect(groupNames).not.toContain("Analytics & Settings");
     });
 
-    it("shows 15 management items for MANAGER and excludes Admin/Settings", () => {
+    it("shows 14 management items for MANAGER and excludes Admin/Settings", () => {
       const filtered = filterNavGroupsByRole(navGroups, "MANAGER");
       const totalItems = filtered.flatMap((g) => g.items);
       const labels = totalItems.map((i) => i.label);
 
-      // Manager should see 15 items
-      expect(totalItems).toHaveLength(15);
+      // Manager should see 14 items
+      expect(totalItems).toHaveLength(14);
       expect(labels).toContain("Payments");
       expect(labels).toContain("Products");
       expect(labels).toContain("Categories");
@@ -94,16 +93,16 @@ describe("Unified RBAC Hierarchy & Permissions", () => {
       expect(labels).not.toContain("Settings");
     });
 
-    it("shows all 17 items across all groups for ADMIN", () => {
+    it("shows all 16 items across all groups for ADMIN", () => {
       const filtered = filterNavGroupsByRole(navGroups, "ADMIN");
       const totalItems = filtered.flatMap((g) => g.items);
       const labels = totalItems.map((i) => i.label);
 
-      expect(totalItems).toHaveLength(17);
+      expect(totalItems).toHaveLength(16);
       expect(labels).toContain("Admins");
       expect(labels).toContain("Settings");
       expect(labels).toContain("Dashboard");
-      expect(labels).toContain("POS Counter");
+      expect(labels).toContain("Orders");
     });
   });
 });
