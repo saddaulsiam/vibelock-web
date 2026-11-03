@@ -49,14 +49,14 @@ export function Footer() {
         className="bg-vl-cyan/5 pointer-events-none absolute right-0 -bottom-40 h-96 w-96 rounded-full blur-3xl"
       />
 
-      <Container className="relative z-10 pt-14 pb-8 sm:pt-16 sm:pb-10">
+      <Container className="relative pt-14 pb-8 sm:pt-16 sm:pb-10">
         {/* ── 1. Top Section: Brand Info & Retail Outlets + Quick Links ── */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Brand & About (Col-span 4) */}
           <div className="flex flex-col items-start lg:col-span-4">
             {/* Circular Logo Badge + Brand Name */}
             <div className="relative flex items-center gap-3">
-              <div className="border-vl-border relative z-10 flex size-10 items-center justify-center rounded-full border bg-[#16171b] shadow-[0_0_16px_rgba(0,217,255,0.2)]">
+              <div className="border-vl-border relative flex size-10 items-center justify-center rounded-full border bg-[#16171b] shadow-[0_0_16px_rgba(0,217,255,0.2)]">
                 <Image
                   src="/images/vibelock-logo.png"
                   alt="VibeLock Emblem"
@@ -281,7 +281,7 @@ export function Footer() {
         </div>
 
         {/* ── Bottom Footer Bar — sits on top of the watermark ── */}
-        <div className="border-vl-border text-vl-white/50 pointer-events-auto relative z-10 flex flex-col items-center gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-vl-border text-vl-white/50 pointer-events-auto relative flex flex-col items-center gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">
           <p>© {currentYear} VIBELOCKBD. All rights reserved.</p>
 
           <div className="flex items-center gap-5">

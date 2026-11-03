@@ -2,6 +2,7 @@ import "server-only";
 
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { parseReturnReason } from "@/lib/returns/utils";
 
 export async function getAccountOverview() {
   const user = await requireUser();
@@ -140,26 +141,51 @@ export async function getCustomerReturns(page = 1, pageSize = 10) {
       take: safePageSize,
       include: {
         order: { select: { orderNumber: true, createdAt: true } },
-        items: { include: { orderItem: { select: { unitPrice: true } } } },
+        items: {
+          include: {
+            orderItem: {
+              select: {
+                productName: true,
+                sku: true,
+                size: true,
+                color: true,
+                unitPrice: true,
+              },
+            },
+          },
+        },
       },
     }),
     prisma.returnRequest.count({ where }),
   ]);
 
   return {
-    returns: returns.map((request) => ({
-      id: request.id,
-      status: request.status,
-      reason: request.reason,
-      createdAt: request.createdAt,
-      updatedAt: request.updatedAt,
-      order: request.order,
-      itemCount: request.items.reduce((sum, item) => sum + item.quantity, 0),
-      requestedAmount: request.items.reduce(
-        (sum, item) => sum + Number(item.orderItem.unitPrice) * item.quantity,
-        0
-      ),
-    })),
+    returns: returns.map((request) => {
+      const parsed = parseReturnReason(request.reason);
+      return {
+        id: request.id,
+        status: request.status,
+        reason: parsed.categoryLabel,
+        rawReason: request.reason,
+        createdAt: request.createdAt,
+        updatedAt: request.updatedAt,
+        order: request.order,
+        itemCount: request.items.reduce((sum, item) => sum + item.quantity, 0),
+        requestedAmount: request.items.reduce(
+          (sum, item) => sum + Number(item.orderItem.unitPrice) * item.quantity,
+          0
+        ),
+        items: request.items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          productName: item.orderItem.productName,
+          sku: item.orderItem.sku,
+          size: item.orderItem.size,
+          color: item.orderItem.color,
+          unitPrice: Number(item.orderItem.unitPrice),
+        })),
+      };
+    }),
     total,
     totalPages: Math.ceil(total / safePageSize),
   };
@@ -174,6 +200,15 @@ export async function getCustomerReturnById(id: string) {
         select: {
           orderNumber: true,
           createdAt: true,
+          customerName: true,
+          customerPhone: true,
+          customerEmail: true,
+          shippingStreet: true,
+          shippingCity: true,
+          shippingState: true,
+          shippingZip: true,
+          shippingCountry: true,
+          paymentMethod: true,
           payments: {
             select: {
               refunds: {
@@ -196,16 +231,49 @@ export async function getCustomerReturnById(id: string) {
 
   if (!request) return null;
 
+  // Resolve product thumbnail images by SKU
+  const skus = request.items.map((it) => it.orderItem.sku).filter(Boolean);
+  let imageBySku = new Map<string, string>();
+  if (skus.length > 0) {
+    const variants = await prisma.productVariant.findMany({
+      where: { sku: { in: skus } },
+      select: {
+        sku: true,
+        product: {
+          select: {
+            images: {
+              orderBy: [{ isPrimary: "desc" }, { id: "asc" }],
+              take: 1,
+              select: { url: true },
+            },
+          },
+        },
+      },
+    });
+    imageBySku = new Map(
+      variants
+        .filter((v) => v.product.images[0]?.url)
+        .map((v) => [v.sku, v.product.images[0].url])
+    );
+  }
+
+  const parsedReason = parseReturnReason(request.reason);
+
   return {
     id: request.id,
     status: request.status,
-    reason: request.reason,
+    reason: parsedReason.categoryLabel,
+    parsedReason,
     createdAt: request.createdAt,
     updatedAt: request.updatedAt,
     order: request.order,
     items: request.items.map((item) => ({
       ...item,
-      orderItem: { ...item.orderItem, unitPrice: Number(item.orderItem.unitPrice) },
+      orderItem: {
+        ...item.orderItem,
+        unitPrice: Number(item.orderItem.unitPrice),
+        imageUrl: imageBySku.get(item.orderItem.sku) ?? "/images/categories/cat-t-shirts.jpg",
+      },
     })),
     requestedAmount: request.items.reduce(
       (sum, item) => sum + Number(item.orderItem.unitPrice) * item.quantity,

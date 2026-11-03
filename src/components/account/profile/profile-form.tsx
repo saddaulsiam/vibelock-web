@@ -6,14 +6,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
-import {
-  Check,
-  Loader2,
-  ShieldCheck,
-  ShieldAlert,
-  Camera,
-  Trash2,
-} from "lucide-react";
+import { Check, Loader2, ShieldCheck, ShieldAlert, Camera, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { resendVerificationAction } from "@/app/actions/verification";
 
@@ -133,7 +126,7 @@ export function ProfileForm({
     <form onSubmit={submit} className="space-y-6">
       {message && (
         <div
-          className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 text-xs font-semibold text-emerald-800"
+          className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/80 p-3.5 text-xs font-normal text-emerald-800"
           role="status"
         >
           <Check className="size-4 shrink-0 text-emerald-600" />
@@ -143,7 +136,7 @@ export function ProfileForm({
 
       {error && (
         <div
-          className="rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs font-semibold text-rose-800"
+          className="rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs font-normal text-rose-800"
           role="alert"
         >
           {error}
@@ -172,26 +165,26 @@ export function ProfileForm({
                 sizes="72px"
                 unoptimized={Boolean(
                   imageUrl.startsWith("http") ||
-                    imageUrl.startsWith("blob:") ||
-                    imageUrl.startsWith("data:")
+                  imageUrl.startsWith("blob:") ||
+                  imageUrl.startsWith("data:")
                 )}
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#101114] text-xl font-black text-white">
+              <div className="flex h-full w-full items-center justify-center bg-[#101114] text-xl font-bold text-white">
                 {(name || email || "V").slice(0, 1).toUpperCase()}
               </div>
             )}
 
             {uploadingAvatar && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white backdrop-blur-2xs">
+              <div className="backdrop-blur-2xs absolute inset-0 flex items-center justify-center bg-black/60 text-white">
                 <Loader2 className="size-5 animate-spin" />
               </div>
             )}
           </div>
 
           <div>
-            <span className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+            <span className="text-xs font-semibold tracking-wider text-[#101114] uppercase">
               Profile Photo
             </span>
             <p className="mt-0.5 text-xs text-neutral-500">
@@ -205,7 +198,7 @@ export function ProfileForm({
             type="button"
             disabled={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
+            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
             {uploadingAvatar ? (
               <>
@@ -227,7 +220,7 @@ export function ProfileForm({
                 setImageUrl("");
                 toast.info("Photo removed. Click 'Save Changes' to confirm.");
               }}
-              className="inline-flex min-h-[38px] items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+              className="inline-flex min-h-[38px] items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50"
               title="Remove photo"
             >
               <Trash2 className="size-3.5" />
@@ -241,7 +234,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-name"
-          className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
         >
           Full Name
         </Label>
@@ -260,7 +253,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-phone"
-          className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
         >
           Phone Number
         </Label>
@@ -282,17 +275,17 @@ export function ProfileForm({
         <div className="flex items-center justify-between">
           <Label
             htmlFor="profile-email"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Email
           </Label>
           {emailVerified ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
               <ShieldCheck className="size-3" />
               Verified
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700">
+            <span className="inline-flex items-center gap-1 text-[11px] font-normal text-amber-700">
               <ShieldAlert className="size-3" />
               Unverified
             </span>
@@ -321,7 +314,7 @@ export function ProfileForm({
               type="button"
               onClick={handleResendVerification}
               disabled={resendingEmail}
-              className="min-h-7 shrink-0 rounded-lg bg-amber-700 px-3 py-1 text-[11px] font-bold text-white transition-colors hover:bg-amber-800 disabled:opacity-50"
+              className="min-h-7 shrink-0 rounded-lg bg-amber-700 px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-amber-800 disabled:opacity-50"
             >
               {resendingEmail ? (
                 <span className="flex items-center gap-1">
@@ -340,7 +333,7 @@ export function ProfileForm({
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-dob"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Date of Birth
           </Label>
@@ -357,7 +350,7 @@ export function ProfileForm({
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-gender"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Gender
           </Label>
@@ -381,7 +374,7 @@ export function ProfileForm({
         <button
           type="submit"
           disabled={pending || uploadingAvatar}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-7 py-2.5 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-7 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
         >
           {pending ? (
             <span className="flex items-center gap-1.5">

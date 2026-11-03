@@ -28,7 +28,7 @@ export function AccountQuickActions() {
       <div>
         {/* Header */}
         <div className="border-b border-[#101114]/8 pb-3.5 sm:pb-4">
-          <h3 className="text-sm font-black tracking-tight text-[#101114] uppercase sm:text-base">
+          <h3 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
             Account Preferences
           </h3>
           <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -42,12 +42,12 @@ export function AccountQuickActions() {
             <Link
               key={act.title}
               href={act.href}
-              className="group flex min-h-[48px] items-center justify-between py-3 transition-colors hover:text-[#101114] first:pt-3.5 last:pb-1"
+              className="group flex min-h-[48px] items-center justify-between py-3 transition-colors first:pt-3.5 last:pb-1 hover:text-[#101114]"
             >
               <div className="flex items-center gap-3">
                 <act.icon className="size-4 shrink-0 text-neutral-400 transition-colors group-hover:text-[#101114]" />
                 <div>
-                  <h4 className="text-xs font-bold text-[#101114]">{act.title}</h4>
+                  <h4 className="text-xs font-semibold text-[#101114]">{act.title}</h4>
                   <p className="text-[11px] text-neutral-500">{act.description}</p>
                 </div>
               </div>
@@ -60,7 +60,7 @@ export function AccountQuickActions() {
       <div className="mt-5 border-t border-[#101114]/8 pt-4">
         <Link
           href="/account/orders"
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#101114] py-2.5 text-xs font-bold text-white transition-colors hover:bg-neutral-800 active:scale-99"
+          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#101114] py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 active:scale-99"
         >
           <span>Track Active Deliveries</span>
         </Link>

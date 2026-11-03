@@ -63,7 +63,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
     <form onSubmit={submit} className="space-y-4">
       {error && (
         <div
-          className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-semibold text-rose-800"
+          className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs font-normal text-rose-800"
           role="alert"
         >
           {error}
@@ -74,7 +74,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5 sm:col-span-2">
           <Label
             htmlFor="address-label"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Label (optional)
           </Label>
@@ -91,7 +91,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5 sm:col-span-2">
           <Label
             htmlFor="address-street"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Street Address
           </Label>
@@ -109,7 +109,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-city"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             City
           </Label>
@@ -127,7 +127,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-state"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             State / Division
           </Label>
@@ -144,7 +144,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-zip"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Postal Code
           </Label>
@@ -161,7 +161,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-country"
-            className="text-[11px] font-bold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
           >
             Country
           </Label>
@@ -193,7 +193,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
         >
           {pending ? (
             <span className="flex items-center gap-1.5">
@@ -212,7 +212,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
             type="button"
             onClick={onDone}
             disabled={pending}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#101114]/15 bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-neutral-600 uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#101114]/15 bg-white px-5 py-2.5 text-xs font-semibold tracking-wider text-neutral-600 uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
             Cancel
           </button>

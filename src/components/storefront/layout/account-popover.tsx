@@ -87,7 +87,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 className="bg-vl-black text-vl-white hover:bg-vl-black/80 mt-2.5 inline-flex h-9 w-full items-center justify-center gap-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all"
               >
                 <LayoutDashboard className="size-3.5" />
-                <span>Go to Dashboard</span>
+                <span>My Account</span>
               </Link>
             ) : (
               <>

@@ -26,23 +26,24 @@ export function AccountCollectionBanner() {
         <div className="max-w-xl">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
-            <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#F3F0E8]/70 uppercase">
+            <span className="text-[10px] font-semibold tracking-[0.2em] text-[#F3F0E8]/70 uppercase sm:text-[11px]">
               Limited Releases
             </span>
           </div>
 
-          <h3 className="mt-1.5 text-lg font-black tracking-tight text-white uppercase sm:mt-2 sm:text-2xl lg:text-3xl">
+          <h3 className="mt-1.5 text-lg font-bold tracking-tight text-white uppercase sm:mt-2 sm:text-2xl lg:text-3xl">
             Explore New Drop Essentials
           </h3>
 
           <p className="mt-1.5 text-xs leading-relaxed text-[#F3F0E8]/80 sm:mt-2 sm:text-sm">
-            Curated heavyweights, relaxed silhouettes, and cultural streetwear crafted for Dhaka youth.
+            Curated heavyweights, relaxed silhouettes, and cultural streetwear crafted for Dhaka
+            youth.
           </p>
 
           <div className="mt-4 sm:mt-5">
             <Link
               href="/products"
-              className="group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-black tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
+              className="group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
             >
               <span>Shop All Products</span>
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -52,7 +53,7 @@ export function AccountCollectionBanner() {
 
         {/* Right Label on Desktop */}
         <div className="hidden text-right select-none md:block">
-          <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
+          <span className="text-xs font-semibold tracking-widest text-white/40 uppercase">
             Curated Drop
           </span>
         </div>

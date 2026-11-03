@@ -38,7 +38,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
         <div>
-          <h3 className="text-sm font-black tracking-tight text-[#101114] uppercase sm:text-base">
+          <h3 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
             Recent Orders
           </h3>
           <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -47,7 +47,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
         </div>
         <Link
           href="/account/orders"
-          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors hover:text-[#101114]"
+          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
         >
           <span>View all</span>
           <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -59,13 +59,14 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
             <PackageOpen className="size-5" />
           </div>
-          <h4 className="mt-3 text-sm font-bold text-[#101114]">No orders yet</h4>
+          <h4 className="mt-3 text-sm font-semibold text-[#101114]">No orders yet</h4>
           <p className="mt-1 max-w-xs text-xs text-neutral-500">
-            Your recent purchase history and delivery tracking will appear here once you place an order.
+            Your recent purchase history and delivery tracking will appear here once you place an
+            order.
           </p>
           <Link
             href="/products"
-            className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-neutral-800"
+            className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             <span>Explore Collection</span>
             <ArrowRight className="size-3" />
@@ -77,7 +78,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#101114]/8 font-bold text-neutral-400 uppercase tracking-wider text-[11px]">
+                <tr className="border-b border-[#101114]/8 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
                   <th className="py-3.5 pr-4">Order #</th>
                   <th className="px-4 py-3.5">Date</th>
                   <th className="px-4 py-3.5">Items</th>
@@ -90,7 +91,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                 {orders.map((order) => (
                   <tr key={order.orderNumber} className="transition-colors hover:bg-neutral-50/70">
                     {/* Order Number */}
-                    <td className="py-4 pr-4 font-bold text-[#101114]">
+                    <td className="py-4 pr-4 font-semibold text-[#101114]">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
                         className="hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
@@ -100,17 +101,17 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     </td>
 
                     {/* Date */}
-                    <td className="px-4 py-4 text-xs font-medium text-neutral-500 whitespace-nowrap">
+                    <td className="px-4 py-4 text-xs font-medium whitespace-nowrap text-neutral-500">
                       {formatDate(order.createdAt)}
                     </td>
 
                     {/* Items Count */}
-                    <td className="px-4 py-4 text-xs font-medium text-neutral-600 whitespace-nowrap">
+                    <td className="px-4 py-4 text-xs font-medium whitespace-nowrap text-neutral-600">
                       {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
                     </td>
 
                     {/* Total Price */}
-                    <td className="px-4 py-4 font-black text-[#101114] whitespace-nowrap">
+                    <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </td>
 
@@ -123,7 +124,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     <td className="py-4 pl-4 text-right whitespace-nowrap">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors hover:text-[#101114]"
+                        className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
                       >
                         <span>View</span>
                         <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -143,7 +144,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                 <div className="flex items-center justify-between gap-2">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="truncate text-xs font-black tracking-tight text-[#101114] hover:underline sm:text-sm"
+                    className="truncate text-xs font-bold tracking-tight text-[#101114] hover:underline sm:text-sm"
                   >
                     #{order.orderNumber}
                   </Link>
@@ -155,16 +156,18 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                   <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                     <span>{formatDate(order.createdAt)}</span>
                     <span>·</span>
-                    <span>{order.itemCount} {order.itemCount === 1 ? "item" : "items"}</span>
+                    <span>
+                      {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
+                    </span>
                     <span>·</span>
-                    <span className="font-black text-[#101114]">
+                    <span className="font-bold text-[#101114]">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </span>
                   </div>
 
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
+                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
                   >
                     <span>View</span>
                     <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />

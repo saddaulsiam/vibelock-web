@@ -35,14 +35,14 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/8 pb-4 sm:pb-5">
           <div>
-            <h1 className="text-base font-black tracking-tight text-[#101114] uppercase sm:text-lg">
+            <h1 className="text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
               Order History
             </h1>
             <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
               Track fulfillment progress, payment details, and courier shipments
             </p>
           </div>
-          <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-bold text-neutral-700">
+          <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-semibold text-neutral-700">
             {total} {total === 1 ? "Order" : "Orders"}
           </span>
         </div>
@@ -53,13 +53,13 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
               <PackageOpen className="size-6" />
             </div>
-            <h2 className="mt-4 text-sm font-bold text-[#101114]">No orders found</h2>
-            <p className="mt-1 max-w-sm text-xs text-neutral-500 leading-relaxed">
+            <h2 className="mt-4 text-sm font-semibold text-[#101114]">No orders found</h2>
+            <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-500">
               You haven&apos;t placed any orders yet. Once you make a purchase, it will appear here.
             </p>
             <Link
               href="/products"
-              className="mt-5 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#101114] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-neutral-800"
+              className="mt-5 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
             >
               <span>Explore Collection</span>
               <ArrowRight className="size-3" />
@@ -71,7 +71,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
             <div className="hidden overflow-x-auto md:block">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#101114]/8 font-bold text-neutral-500 uppercase tracking-wider text-[11px]">
+                  <tr className="border-b border-[#101114]/8 text-[11px] font-semibold tracking-wider text-neutral-500 uppercase">
                     <th className="py-3.5 pr-4">Order #</th>
                     <th className="px-4 py-3.5">Date</th>
                     <th className="px-4 py-3.5">Items</th>
@@ -87,7 +87,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       <td className="py-4 pr-4">
                         <Link
                           href={`/account/orders/${order.orderNumber}`}
-                          className="font-bold text-[#101114] hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                          className="font-semibold text-[#101114] hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
                         >
                           #{order.orderNumber}
                         </Link>
@@ -100,17 +100,17 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       </td>
 
                       {/* Date */}
-                      <td className="px-4 py-4 text-xs font-medium text-neutral-500 whitespace-nowrap">
+                      <td className="px-4 py-4 text-xs font-medium whitespace-nowrap text-neutral-500">
                         {formatDate(order.createdAt)}
                       </td>
 
                       {/* Items */}
-                      <td className="px-4 py-4 text-xs font-medium text-neutral-600 whitespace-nowrap">
+                      <td className="px-4 py-4 text-xs font-medium whitespace-nowrap text-neutral-600">
                         {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
                       </td>
 
                       {/* Total */}
-                      <td className="px-4 py-4 font-black whitespace-nowrap text-[#101114]">
+                      <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
                         ৳ {order.total.toLocaleString("en-BD")}
                       </td>
 
@@ -129,7 +129,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                       <td className="py-4 pl-4 text-right whitespace-nowrap">
                         <Link
                           href={`/account/orders/${order.orderNumber}`}
-                          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-700 transition-colors hover:text-[#101114]"
+                          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
                         >
                           <span>View Details</span>
                           <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -148,7 +148,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/account/orders/${order.orderNumber}`}
-                      className="truncate text-xs font-bold text-[#101114] hover:underline sm:text-sm"
+                      className="truncate text-xs font-semibold text-[#101114] hover:underline sm:text-sm"
                     >
                       #{order.orderNumber}
                     </Link>
@@ -176,12 +176,12 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                   )}
 
                   <div className="mt-2.5 flex items-center justify-between pt-1">
-                    <span className="text-xs font-black text-[#101114] sm:text-sm">
+                    <span className="text-xs font-bold text-[#101114] sm:text-sm">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </span>
                     <Link
                       href={`/account/orders/${order.orderNumber}`}
-                      className="group inline-flex min-h-[38px] items-center gap-1 rounded-md border border-[#101114]/10 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition-colors active:scale-95"
+                      className="group inline-flex min-h-[38px] items-center gap-1 rounded-md border border-[#101114]/10 bg-white px-3 py-1.5 text-xs font-normal text-neutral-800 transition-colors active:scale-95"
                     >
                       <span>View details</span>
                       <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
@@ -201,7 +201,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                   {page > 1 ? (
                     <Link
                       href={`/account/orders?page=${page - 1}`}
-                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-normal text-[#101114] transition-colors hover:bg-neutral-50"
                     >
                       <ArrowLeft className="size-3" /> Previous
                     </Link>
@@ -220,7 +220,7 @@ export default async function OrdersPage(props: { searchParams: Promise<{ page?:
                   {page < totalPages ? (
                     <Link
                       href={`/account/orders?page=${page + 1}`}
-                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3.5 py-2 text-xs font-normal text-[#101114] transition-colors hover:bg-neutral-50"
                     >
                       Next <ArrowRight className="size-3" />
                     </Link>

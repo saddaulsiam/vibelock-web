@@ -65,18 +65,18 @@ export function AccountMetrics({
 
   return (
     /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
-    <div className="rounded-xl border border-[#101114]/8 bg-white overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-[#101114]/8 bg-white">
       <div className="grid grid-cols-2 divide-x divide-y divide-[#101114]/6 sm:grid-cols-4 sm:divide-y-0">
         {metrics.map((metric) => (
           <div
             key={metric.label}
-            className="flex flex-col justify-between p-4 sm:p-5 transition-colors hover:bg-neutral-50/50"
+            className="flex flex-col justify-between p-4 transition-colors hover:bg-neutral-50/50 sm:p-5"
           >
             <div>
-              <span className="block truncate text-[10px] font-bold tracking-wider text-neutral-400 uppercase sm:text-[11px]">
+              <span className="block truncate text-[10px] font-semibold tracking-wider text-neutral-400 uppercase sm:text-[11px]">
                 {metric.label}
               </span>
-              <p className="mt-1 truncate text-lg font-black tracking-tight text-[#101114] sm:mt-2 sm:text-2xl lg:text-3xl">
+              <p className="mt-1 truncate text-lg font-bold tracking-tight text-[#101114] sm:mt-2 sm:text-2xl lg:text-3xl">
                 {metric.value}
               </p>
             </div>
@@ -86,7 +86,7 @@ export function AccountMetrics({
                 <button
                   type="button"
                   onClick={metric.onClick}
-                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-[#101114]"
+                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-[#101114]"
                 >
                   <span>{metric.actionText}</span>
                   <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -94,7 +94,7 @@ export function AccountMetrics({
               ) : (
                 <Link
                   href={metric.href}
-                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-[#101114]"
+                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-[#101114]"
                 >
                   <span>{metric.actionText}</span>
                   <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />

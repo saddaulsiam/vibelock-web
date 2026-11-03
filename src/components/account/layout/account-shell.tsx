@@ -104,7 +104,7 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
       />
 
       {/* ── Main Canvas (Centered single column for all viewports) ── */}
-      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-20 pb-16 sm:px-6 sm:pt-24 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:px-8">
         {/* Universal Identity Row */}
         <div className="flex items-center justify-between gap-4 pb-8">
           <div>

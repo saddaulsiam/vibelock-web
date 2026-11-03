@@ -51,23 +51,23 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
         return (
           <article
             key={address.id}
-            className={`relative flex flex-col justify-between rounded-xl border p-4 transition-all sm:p-5 ${
+            className={`relative flex flex-col justify-between rounded-xl border p-3.5 transition-all sm:p-5 ${
               isEditingThis
-                ? "border-[#101114] bg-white ring-2 ring-[#00D9FF] shadow-sm"
+                ? "border-[#101114] bg-white shadow-sm ring-2 ring-[#00D9FF]"
                 : address.isDefault
                   ? "border-[#101114]/20 bg-[#FAF9F5] shadow-xs"
                   : "border-[#101114]/10 bg-white hover:border-[#101114]/20"
             }`}
           >
-            <div>
+            <div className="min-w-0">
               {/* Top Row: Label badge & default check */}
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black tracking-wider text-[#101114] uppercase">
+              <div className="flex items-center justify-between gap-2">
+                <span className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-[#101114] uppercase">
                   {label}
                 </span>
 
                 {address.isDefault && (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-[#101114] px-2 py-0.5 text-[9px] font-bold tracking-wider text-white uppercase">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-[#101114] px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
                     <Check className="size-2.5" />
                     Default
                   </span>
@@ -75,24 +75,24 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               </div>
 
               {/* Address details */}
-              <address className="mt-3 text-xs leading-relaxed text-[#101114] not-italic">
-                <p className="font-bold">{address.street}</p>
-                <p className="mt-0.5 text-neutral-500">
+              <address className="mt-3 text-xs leading-relaxed text-[#101114] not-italic break-words">
+                <p className="font-normal break-words">{address.street}</p>
+                <p className="mt-0.5 text-neutral-500 break-words">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="text-neutral-500">{address.country}</p>
+                <p className="text-neutral-500 break-words">{address.country}</p>
               </address>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-4 flex items-center justify-end gap-2 border-t border-[#101114]/8 pt-3.5">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-[#101114]/8 pt-3.5">
               {onEdit ? (
                 <button
                   type="button"
                   onClick={() => onEdit(address)}
-                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors active:scale-95 ${
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-normal tracking-wider uppercase transition-colors active:scale-95 ${
                     isEditingThis
                       ? "border-[#101114] bg-[#101114] text-white"
                       : "border-[#101114]/15 bg-white text-[#101114] hover:bg-neutral-50"
@@ -104,7 +104,7 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               ) : (
                 <Link
                   href={`/account/addresses/${address.id}/edit`}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-normal tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
                 >
                   <Pencil className="size-3 text-neutral-500" />
                   <span>Edit</span>
@@ -115,7 +115,7 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
                 type="button"
                 onClick={() => remove(address.id)}
                 disabled={isDeleting}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold tracking-wider text-neutral-400 uppercase transition-colors hover:bg-rose-50 hover:text-rose-600 active:scale-95 disabled:opacity-50"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-normal tracking-wider text-neutral-400 uppercase transition-colors hover:bg-rose-50 hover:text-rose-600 active:scale-95 disabled:opacity-50"
               >
                 <Trash2 className="size-3" />
                 <span>{isDeleting ? "Deleting..." : "Delete"}</span>

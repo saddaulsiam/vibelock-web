@@ -53,12 +53,12 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
   return (
     <div className="flex flex-col gap-6">
       {/* ── Card 1: Personal Details ── */}
-      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-6 shadow-2xs sm:p-8">
+      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-4 shadow-2xs sm:p-6 md:p-8">
         <div className="mb-5 border-b border-[#101114]/8 pb-4">
-          <span className="text-[11px] font-bold tracking-[0.2em] text-[#00D9FF] uppercase">
+          <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
             Profile Settings
           </span>
-          <h2 className="mt-0.5 text-base font-black tracking-tight text-[#101114] uppercase sm:text-lg">
+          <h2 className="mt-0.5 text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
             Personal Details
           </h2>
           <p className="mt-1 text-xs text-neutral-500">
@@ -78,36 +78,37 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
       </div>
 
       {/* ── Card 2: How You Sign In ── */}
-      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-6 shadow-2xs sm:p-8">
+      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-4 shadow-2xs sm:p-6 md:p-8">
         <div className="mb-4">
-          <span className="text-[11px] font-bold tracking-[0.2em] text-[#00D9FF] uppercase">
+          <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
             Access & Security
           </span>
-          <h2 className="mt-0.5 text-base font-black tracking-tight text-[#101114] uppercase sm:text-lg">
+          <h2 className="mt-0.5 text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
             How You Sign In
           </h2>
           <p className="mt-1 text-xs text-neutral-500">
-            Adding a second way is optional. It only ever adds to this account — nothing is replaced.
+            Adding a second way is optional. It only ever adds to this account — nothing is
+            replaced.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/8 pt-5">
+        <div className="flex flex-col gap-3.5 border-t border-[#101114]/8 pt-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             {isGoogle ? (
-              <span className="flex size-7 items-center justify-center rounded-full bg-neutral-100 text-xs font-bold text-neutral-800 border border-[#101114]/10">
+              <span className="flex size-7 items-center justify-center rounded-full border border-[#101114]/10 bg-neutral-100 text-xs font-semibold text-neutral-800">
                 G
               </span>
             ) : (
-              <div className="flex size-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-700 border border-[#101114]/10">
+              <div className="flex size-7 items-center justify-center rounded-full border border-[#101114]/10 bg-neutral-100 text-neutral-700">
                 <Lock className="size-3.5" />
               </div>
             )}
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-[#101114]">
+                <span className="text-xs font-semibold text-[#101114]">
                   {isGoogle ? "Google Account" : "Email & Password"}
                 </span>
-                <span className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-0.5 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
                   <Check className="size-3" /> Connected
                 </span>
               </div>
@@ -118,7 +119,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
           <button
             type="button"
             onClick={() => setShowSecurityDetails(!showSecurityDetails)}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+            className="inline-flex min-h-[38px] w-full items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 sm:w-auto"
           >
             <span>
               {showSecurityDetails
@@ -146,17 +147,17 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
       {/* ── Card 3: Delivery Addresses (with Instant Inline Edit & Add) ── */}
       <div
         id="addresses"
-        className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-6 shadow-2xs sm:p-8"
+        className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-4 shadow-2xs sm:p-6 md:p-8"
       >
         {/* Card Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/8 pb-5">
-          <div>
-            <span className="text-[11px] font-bold tracking-[0.2em] text-[#00D9FF] uppercase">
+          <div className="min-w-0 flex-1">
+            <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
               Shipping & Checkout
             </span>
             <div className="flex items-center gap-1.5">
               <MapPin className="size-4 text-[#101114]" />
-              <h2 className="mt-0.5 text-base font-black tracking-tight text-[#101114] uppercase sm:text-lg">
+              <h2 className="mt-0.5 text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
                 Delivery Addresses
               </h2>
             </div>
@@ -168,7 +169,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
           <button
             type="button"
             onClick={handleStartAdd}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-[#101114] px-4 py-1.5 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95"
+            className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl bg-[#101114] px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95"
           >
             <Plus className="size-3.5" />
             <span>{showAddAddress ? "Cancel" : "Add Address"}</span>
@@ -179,10 +180,10 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
         {(showAddAddress || editingAddress) && (
           <div
             ref={addressFormRef}
-            className="mt-5 rounded-xl border border-[#101114]/10 bg-[#FAF9F5] p-5 sm:p-6"
+            className="mt-5 rounded-xl border border-[#101114]/10 bg-[#FAF9F5] p-4 sm:p-6"
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xs font-black tracking-wider text-[#101114] uppercase">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h3 className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-[#101114] uppercase">
                 {editingAddress
                   ? `Edit Address — ${editingAddress.label || "Saved Address"}`
                   : "Add New Shipping Address"}
@@ -190,7 +191,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
               <button
                 type="button"
                 onClick={handleCloseAddressForm}
-                className="text-xs font-bold tracking-wider text-neutral-500 uppercase hover:text-[#101114]"
+                className="shrink-0 text-xs font-semibold tracking-wider text-neutral-500 uppercase hover:text-[#101114]"
               >
                 Cancel
               </button>
@@ -221,7 +222,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
           {addresses.length === 0 && !showAddAddress && !editingAddress ? (
             <div className="py-10 text-center">
               <MapPin className="mx-auto size-6 text-neutral-300" />
-              <p className="mt-2 text-xs font-semibold text-[#101114]">No saved addresses yet</p>
+              <p className="mt-2 text-xs font-normal text-[#101114]">No saved addresses yet</p>
               <p className="mt-0.5 text-xs text-neutral-400">
                 You can save a default delivery address here or type one in at checkout.
               </p>
