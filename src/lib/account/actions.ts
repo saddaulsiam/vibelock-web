@@ -200,3 +200,13 @@ export async function uploadAvatarAction(formData: FormData) {
     return { success: false, error: "Failed to process image upload." };
   }
 }
+
+export async function getCustomerReturnsAction(page: number, pageSize = 10) {
+  const { getCustomerReturns } = await import("./queries");
+  const result = await getCustomerReturns(page, pageSize);
+  return {
+    returns: result.returns,
+    total: result.total,
+    hasMore: page * pageSize < result.total,
+  };
+}

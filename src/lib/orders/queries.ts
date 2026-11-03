@@ -76,7 +76,33 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
     return null;
   }
 
-  return mapOrderDetail(order);
+  // Resolve product thumbnail images by SKU (same pattern as getCustomerOrderConfirmation)
+  const skus = order.items.map((it) => it.sku).filter(Boolean);
+  let imageBySku = new Map<string, string>();
+  if (skus.length > 0) {
+    const variants = await prisma.productVariant.findMany({
+      where: { sku: { in: skus } },
+      select: {
+        sku: true,
+        product: {
+          select: {
+            images: {
+              orderBy: [{ isPrimary: "desc" }, { id: "asc" }],
+              take: 1,
+              select: { url: true },
+            },
+          },
+        },
+      },
+    });
+    imageBySku = new Map(
+      variants
+        .filter((v) => v.product.images[0]?.url)
+        .map((v) => [v.sku, v.product.images[0].url])
+    );
+  }
+
+  return mapOrderDetail(order, imageBySku);
 }
 
 /**

@@ -18,6 +18,7 @@ import { OrderStatusBadge } from "@/components/storefront/orders/order-status-ba
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
 import { getCustomerOrder } from "@/lib/orders/queries";
+import { formatOrderDateTime } from "@/lib/format";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
@@ -30,12 +31,7 @@ export async function generateMetadata(props: {
   };
 }
 
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en-BD", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(date));
-}
+const formatDate = formatOrderDateTime;
 
 export default async function OrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
   const { orderNumber } = await props.params;
@@ -227,7 +223,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                 {/* Product Thumbnail */}
                 <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 sm:size-16">
                   <Image
-                    src="/images/categories/cat-t-shirts.jpg"
+                    src={item.imageUrl ?? "/images/categories/cat-t-shirts.jpg"}
                     alt={item.productName}
                     fill
                     sizes="64px"

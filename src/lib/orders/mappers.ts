@@ -17,7 +17,7 @@ type PrismaOrderWithItems = Order & {
   history?: { status: Order["status"]; notes: string | null; createdAt: Date }[];
 };
 
-export function mapOrderItem(item: OrderItem): OrderItemSummary {
+export function mapOrderItem(item: OrderItem, imageUrl?: string | null): OrderItemSummary {
   return {
     id: item.id,
     productName: item.productName,
@@ -27,6 +27,7 @@ export function mapOrderItem(item: OrderItem): OrderItemSummary {
     unitPrice: Number(item.unitPrice),
     quantity: item.quantity,
     lineTotal: Number(item.lineTotal),
+    imageUrl: imageUrl ?? null,
   };
 }
 
@@ -42,7 +43,7 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
     paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
     total: Number(order.total),
     itemCount: order.items.reduce((acc, item) => acc + item.quantity, 0),
-    previewItems: order.items.slice(0, 3).map(mapOrderItem),
+    previewItems: order.items.slice(0, 3).map((item) => mapOrderItem(item)),
     shipment: order.shipment
       ? {
           status: order.shipment.status,
@@ -52,7 +53,7 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
   };
 }
 
-export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
+export function mapOrderDetail(order: PrismaOrderWithItems, imageBySku?: Map<string, string>): OrderDetail {
   const primaryGateway = order.payments?.[0]?.gateway;
   return {
     id: order.id,
@@ -79,7 +80,7 @@ export function mapOrderDetail(order: PrismaOrderWithItems): OrderDetail {
     shippingCountry: order.shippingCountry,
     shippingMethodName: order.shippingMethodName,
 
-    items: order.items.map(mapOrderItem),
+    items: order.items.map((item) => mapOrderItem(item, imageBySku?.get(item.sku) ?? null)),
 
     returnRequests:
       order.returns?.map((r) => ({

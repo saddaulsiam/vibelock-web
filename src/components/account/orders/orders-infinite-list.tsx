@@ -7,6 +7,7 @@ import { OrderStatusBadge } from "@/components/storefront/orders/order-status-ba
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { getCustomerOrdersAction } from "@/lib/orders/actions";
 import type { OrderSummary } from "@/lib/orders/types";
+import { formatOrderDate } from "@/lib/format";
 
 interface OrdersInfiniteListProps {
   initialOrders: OrderSummary[];
@@ -75,13 +76,7 @@ export function OrdersInfiniteList({
     return () => observer.disconnect();
   }, [hasMore, isLoadingMore, loadMore]);
 
-  const formatDate = (date: Date | string) => {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(new Date(date));
-  };
+  const formatDate = formatOrderDate;
 
   return (
     <div className="mt-2">
