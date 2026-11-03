@@ -28,38 +28,38 @@ export default async function ReturnsPage({
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-4 border-b border-[#101114]/10 pb-5">
+    <div className="flex flex-col gap-5 sm:gap-6">
+      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/8 pb-4 sm:mb-5 sm:pb-5">
           <div>
-            <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
+            <h1 className="text-base font-black tracking-tight text-[#101114] uppercase sm:text-lg">
               Returns & Refunds
             </h1>
-            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-              Track return requests, status updates, and refund settlements.
+            <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
+              Track return requests, replacement statuses, and refund settlements
             </p>
           </div>
-          <span className="rounded-full bg-[#101114]/5 px-3 py-1 text-xs font-bold text-[#101114]">
+          <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-bold text-neutral-700">
             {result.total} {result.total === 1 ? "Request" : "Requests"}
           </span>
         </div>
 
         {result.returns.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="text-muted-foreground flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F3F0E8]">
-              <RotateCcw className="size-7" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
+              <RotateCcw className="size-6" />
             </div>
-            <h2 className="mt-4 text-base font-bold text-[#101114]">No return requests</h2>
-            <p className="text-muted-foreground mt-1.5 max-w-sm text-xs leading-relaxed">
+            <h2 className="mt-4 text-sm font-bold text-[#101114]">No return requests</h2>
+            <p className="mt-1 max-w-sm text-xs text-neutral-500 leading-relaxed">
               You haven&apos;t filed any returns yet. Eligible delivered items will appear here when
               requested.
             </p>
             <Link
               href="/account/orders"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-5 py-2.5 text-xs font-bold text-white transition-all hover:bg-[#1f2229]"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#101114] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-neutral-800"
             >
               <span>View Past Orders</span>
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-3" />
             </Link>
           </div>
         ) : (
@@ -67,9 +67,9 @@ export default async function ReturnsPage({
             {result.returns.map((request) => (
               <div
                 key={request.id}
-                className="rounded-xl border border-[#101114]/10 bg-white p-4 shadow-xs transition-all hover:border-[#101114]/20"
+                className="rounded-lg border border-[#101114]/8 bg-white p-4 transition-colors hover:border-[#101114]/20"
               >
-                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#101114]/10 pb-3">
+                <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#101114]/8 pb-3">
                   <div>
                     <Link
                       href={`/account/returns/${request.id}`}

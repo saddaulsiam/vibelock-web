@@ -30,31 +30,31 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 sm:gap-6">
       {/* Top Header Card */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <div className="mb-4 flex items-center justify-between border-b border-[#101114]/10 pb-4">
+      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+        <div className="mb-3.5 flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:mb-4 sm:pb-4">
           <Link
             href="/account/returns"
-            className="group text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold transition-colors hover:text-[#101114]"
+            className="group inline-flex min-h-[36px] items-center gap-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:text-[#101114]"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Returns</span>
           </Link>
-          <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
+          <span className="text-[10px] font-bold tracking-widest text-neutral-400 uppercase sm:text-[11px]">
             Return Request
           </span>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <h1 className="text-lg font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
                 Return #{request.id.slice(0, 8).toUpperCase()}
               </h1>
               <OrderStatusBadge status={request.status} />
             </div>
-            <p className="text-muted-foreground mt-1 text-xs">
+            <p className="mt-1 text-xs text-neutral-500">
               Order{" "}
               <Link
                 href={`/account/orders/${request.order.orderNumber}`}
@@ -62,27 +62,31 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
               >
                 #{request.order.orderNumber}
               </Link>{" "}
-              • Requested {formatDate(request.createdAt)}
+              • Requested on {formatDate(request.createdAt)}
             </p>
           </div>
         </div>
       </div>
 
       {/* Return Information Card */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="mb-4 flex items-center gap-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
-          <RotateCcw className="size-4 text-[#0099b8]" />
+      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+        <h2 className="mb-3.5 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 text-xs font-black tracking-tight text-[#101114] uppercase sm:text-sm">
+          <RotateCcw className="size-4 text-[#101114]" />
           <span>Return Summary</span>
         </h2>
 
-        <div className="grid grid-cols-1 gap-4 text-xs sm:grid-cols-2">
-          <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-4">
-            <span className="text-muted-foreground font-medium">Reason for Return</span>
-            <p className="mt-1 font-bold text-[#101114]">{request.reason || "Not specified"}</p>
+        <div className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2 sm:gap-4">
+          <div className="rounded-lg border border-[#101114]/8 bg-neutral-50/70 p-3.5 sm:p-4">
+            <span className="font-bold uppercase tracking-wider text-[10px] text-neutral-500 sm:text-[11px]">
+              Reason for Return
+            </span>
+            <p className="mt-1 font-semibold text-[#101114]">{request.reason || "Not specified"}</p>
           </div>
-          <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-4">
-            <span className="text-muted-foreground font-medium">Requested Refund Amount</span>
-            <p className="mt-1 text-base font-black text-[#101114]">
+          <div className="rounded-lg border border-[#101114]/8 bg-neutral-50/70 p-3.5 sm:p-4">
+            <span className="font-bold uppercase tracking-wider text-[10px] text-neutral-500 sm:text-[11px]">
+              Requested Refund Amount
+            </span>
+            <p className="mt-1 text-sm font-black text-[#101114] sm:text-base">
               ৳ {request.requestedAmount.toLocaleString("en-BD")}
             </p>
           </div>
@@ -90,17 +94,17 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
       </div>
 
       {/* Returned Items Card */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <h2 className="mb-2 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
+      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+        <h2 className="mb-2 border-b border-[#101114]/8 pb-3 text-xs font-black tracking-tight text-[#101114] uppercase sm:text-sm">
           Returned Items
         </h2>
 
-        <ul className="divide-y divide-[#101114]/10">
+        <ul className="divide-y divide-[#101114]/6">
           {request.items.map((item) => (
-            <li key={item.id} className="flex items-center justify-between py-4 text-xs">
+            <li key={item.id} className="flex items-center justify-between py-3 text-xs first:pt-3 last:pb-0 sm:py-4">
               <div>
-                <p className="text-sm font-bold text-[#101114]">{item.orderItem.productName}</p>
-                <p className="text-muted-foreground mt-0.5">
+                <p className="text-xs font-bold text-[#101114] sm:text-sm">{item.orderItem.productName}</p>
+                <p className="mt-0.5 text-[11px] text-neutral-500">
                   {[
                     item.orderItem.size && `Size: ${item.orderItem.size}`,
                     item.orderItem.color && `Color: ${item.orderItem.color}`,
@@ -110,7 +114,7 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-[#101114]">
+                <p className="font-black text-[#101114]">
                   {item.quantity} × ৳ {item.orderItem.unitPrice.toLocaleString("en-BD")}
                 </p>
               </div>
@@ -121,19 +125,19 @@ export default async function ReturnDetailPage({ params }: { params: Promise<{ i
 
       {/* Refunds settlements if any */}
       {request.refunds.length > 0 && (
-        <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-          <h2 className="mb-4 border-b border-[#101114]/10 pb-4 text-base font-bold text-[#101114]">
+        <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+          <h2 className="mb-3.5 border-b border-[#101114]/8 pb-3.5 text-xs font-black tracking-tight text-[#101114] uppercase sm:text-sm">
             Refund Transactions
           </h2>
-          <div className="space-y-3">
+          <div className="divide-y divide-[#101114]/6">
             {request.refunds.map((refund) => (
               <div
                 key={refund.id}
-                className="flex items-center justify-between rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/40 p-3.5 text-xs"
+                className="flex items-center justify-between py-3 text-xs first:pt-0 last:pb-0 sm:py-3.5"
               >
                 <div>
                   <p className="font-bold text-[#101114]">Refund Settlement</p>
-                  <p className="text-muted-foreground">{formatDate(refund.createdAt)}</p>
+                  <p className="text-neutral-500">{formatDate(refund.createdAt)}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <OrderStatusBadge status={refund.status} />

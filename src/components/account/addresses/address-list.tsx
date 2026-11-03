@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { deleteAddressAction } from "@/lib/account/actions";
-import { Pencil, Trash2, CheckCircle2 } from "lucide-react";
+import { Pencil, Trash2, Check } from "lucide-react";
+import { toast } from "sonner";
 
-type Address = {
+export type Address = {
   id: string;
   label: string | null;
   street: string;
@@ -17,7 +18,13 @@ type Address = {
   isDefault: boolean;
 };
 
-export function AddressList({ addresses }: { addresses: Address[] }) {
+interface AddressListProps {
+  addresses: Address[];
+  onEdit?: (address: Address) => void;
+  editingId?: string | null;
+}
+
+export function AddressList({ addresses, onEdit, editingId }: AddressListProps) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -26,9 +33,10 @@ export function AddressList({ addresses }: { addresses: Address[] }) {
     setDeletingId(id);
     const result = await deleteAddressAction(id);
     if (!result.success) {
-      window.alert(result.error);
+      toast.error(result.error ?? "Failed to delete address.");
       setDeletingId(null);
     } else {
+      toast.success("Address deleted successfully.");
       router.refresh();
     }
   }
@@ -38,63 +46,76 @@ export function AddressList({ addresses }: { addresses: Address[] }) {
       {addresses.map((address) => {
         const label = address.label || (address.isDefault ? "Home" : "Saved Address");
         const isDeleting = deletingId === address.id;
+        const isEditingThis = editingId === address.id;
 
         return (
           <article
             key={address.id}
-            className={`relative flex flex-col justify-between rounded-2xl border p-5 transition-all ${
-              address.isDefault
-                ? "border-[#00D9FF]/40 bg-[#00D9FF]/5 shadow-xs"
-                : "border-[#101114]/10 bg-white shadow-xs hover:border-[#101114]/25"
+            className={`relative flex flex-col justify-between rounded-xl border p-4 transition-all sm:p-5 ${
+              isEditingThis
+                ? "border-[#101114] bg-white ring-2 ring-[#00D9FF] shadow-sm"
+                : address.isDefault
+                  ? "border-[#101114]/20 bg-[#FAF9F5] shadow-xs"
+                  : "border-[#101114]/10 bg-white hover:border-[#101114]/20"
             }`}
           >
             <div>
               {/* Top Row: Label badge & default check */}
               <div className="flex items-center justify-between">
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase ${
-                    address.isDefault
-                      ? "bg-[#00D9FF]/20 text-[#008ba3]"
-                      : "text-muted-foreground bg-[#101114]/5"
-                  }`}
-                >
+                <span className="text-xs font-black tracking-wider text-[#101114] uppercase">
                   {label}
                 </span>
 
                 {address.isDefault && (
-                  <span className="flex items-center gap-1 text-[11px] font-bold text-[#008ba3]">
-                    <CheckCircle2 className="size-3.5" />
+                  <span className="inline-flex items-center gap-1 rounded-md bg-[#101114] px-2 py-0.5 text-[9px] font-bold tracking-wider text-white uppercase">
+                    <Check className="size-2.5" />
                     Default
                   </span>
                 )}
               </div>
 
               {/* Address details */}
-              <address className="mt-3.5 text-xs leading-relaxed text-[#101114] not-italic">
-                <p className="font-semibold">{address.street}</p>
-                <p className="text-muted-foreground mt-0.5">
+              <address className="mt-3 text-xs leading-relaxed text-[#101114] not-italic">
+                <p className="font-bold">{address.street}</p>
+                <p className="mt-0.5 text-neutral-500">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="text-muted-foreground">{address.country}</p>
+                <p className="text-neutral-500">{address.country}</p>
               </address>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-5 flex items-center justify-end gap-2 border-t border-[#101114]/10 pt-3.5">
-              <Link
-                href={`/account/addresses/${address.id}/edit`}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
-              >
-                <Pencil className="size-3" />
-                <span>Edit</span>
-              </Link>
+            <div className="mt-4 flex items-center justify-end gap-2 border-t border-[#101114]/8 pt-3.5">
+              {onEdit ? (
+                <button
+                  type="button"
+                  onClick={() => onEdit(address)}
+                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold tracking-wider uppercase transition-colors active:scale-95 ${
+                    isEditingThis
+                      ? "border-[#101114] bg-[#101114] text-white"
+                      : "border-[#101114]/15 bg-white text-[#101114] hover:bg-neutral-50"
+                  }`}
+                >
+                  <Pencil className="size-3" />
+                  <span>{isEditingThis ? "Editing..." : "Edit"}</span>
+                </button>
+              ) : (
+                <Link
+                  href={`/account/addresses/${address.id}/edit`}
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+                >
+                  <Pencil className="size-3 text-neutral-500" />
+                  <span>Edit</span>
+                </Link>
+              )}
+
               <button
                 type="button"
                 onClick={() => remove(address.id)}
                 disabled={isDeleting}
-                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50 disabled:opacity-50"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold tracking-wider text-neutral-400 uppercase transition-colors hover:bg-rose-50 hover:text-rose-600 active:scale-95 disabled:opacity-50"
               >
                 <Trash2 className="size-3" />
                 <span>{isDeleting ? "Deleting..." : "Delete"}</span>

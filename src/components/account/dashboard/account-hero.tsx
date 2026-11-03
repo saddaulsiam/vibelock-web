@@ -3,54 +3,34 @@ interface AccountHeroProps {
 }
 
 export function AccountHero({ name }: AccountHeroProps) {
-  // Extract first name or fallback to "BRO"
-  const firstName = name?.trim() ? name.trim().split(" ")[0].toUpperCase() : "BRO";
+  const firstName = name?.trim() ? name.trim().split(" ")[0] : null;
 
   return (
-    <section className="relative w-full overflow-hidden border-b border-white/10 bg-[#0A0D10] text-[#F3F0E8]">
-      {/* Background brutalist texture and cyan splatter accents */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50 mix-blend-screen"
-        style={{ backgroundImage: "url('/images/hero/account-hero.png')" }}
-        aria-hidden="true"
-      />
-
-      {/* Vibrant cyan atmospheric glow */}
-      <div
-        className="pointer-events-none absolute -top-24 right-1/4 h-96 w-96 rounded-full bg-[#00D9FF]/15 blur-3xl"
-        aria-hidden="true"
-      />
-
+    <section className="relative w-full border-b border-white/10 bg-[#101114] text-[#F3F0E8]">
       <div className="relative mx-auto max-w-360 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col-reverse items-center justify-between gap-6 pt-20 pb-10 sm:pt-24 sm:pb-12 md:flex-row lg:pt-28 lg:pb-16">
+        <div className="flex flex-col justify-between gap-3 pt-18 pb-6 sm:pt-24 sm:pb-10 md:flex-row md:items-end">
           {/* Left Text Block */}
-          <div className="z-10 flex w-full flex-col text-left md:max-w-xl">
-            <span className="text-[11px] font-bold tracking-[0.25em] text-[#F3F0E8]/70 uppercase">
-              My Account
-            </span>
-
-            <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white uppercase sm:text-5xl lg:text-6xl">
-              Welcome Back,
-              <span className="mt-1 block font-serif text-4xl font-extrabold tracking-normal text-[#00D9FF] italic drop-shadow-[0_0_25px_rgba(0,217,255,0.45)] sm:text-6xl lg:text-7xl">
-                {firstName}
+          <div className="flex flex-col text-left">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
+              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#F3F0E8]/60 uppercase">
+                Account Portal
               </span>
+            </div>
+
+            <h1 className="mt-1.5 text-xl font-black tracking-tight text-white uppercase sm:text-2xl lg:text-3xl">
+              Welcome, {firstName || "Member"}
             </h1>
 
-            <p className="mt-4 text-sm font-medium text-[#F3F0E8]/80 sm:text-base">
-              Your style. Your account. Your VibeLock.
+            <p className="mt-0.5 text-xs text-[#F3F0E8]/70 sm:text-sm">
+              Manage your orders, saved addresses, and profile details.
             </p>
           </div>
 
-          {/* Angled Tag — mobile-first, always visible */}
-          <div className="z-10 hidden -rotate-12 select-none md:block">
-            <span className="xs:text-xs block text-[10px] font-black tracking-widest text-white/90 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:text-sm lg:text-base">
-              STREETWEAR
-            </span>
-            <span className="xs:text-xs block text-[10px] font-black tracking-widest text-[#00D9FF] uppercase drop-shadow-[0_2px_8px_rgba(0,217,255,0.6)] sm:text-sm lg:text-base">
-              FOR DHAKA
-            </span>
-            <span className="xs:text-xs block text-[10px] font-black tracking-widest text-white/90 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] sm:text-sm lg:text-base">
-              YOUTH
+          {/* Right Brand Stamp */}
+          <div className="hidden text-right md:block">
+            <span className="text-[11px] font-semibold tracking-widest text-[#F3F0E8]/40 uppercase">
+              VibeLock Official
             </span>
           </div>
         </div>

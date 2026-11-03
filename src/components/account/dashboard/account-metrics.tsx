@@ -2,7 +2,7 @@
 
 import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Package, ShoppingCart, Heart, Ticket, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
 
 interface AccountMetricsProps {
@@ -37,30 +37,26 @@ export function AccountMetrics({
 
   const metrics = [
     {
-      label: "Total Orders",
+      label: "Orders Placed",
       value: orderCount.toString(),
-      icon: Package,
-      actionText: "View all orders",
+      actionText: "View all",
       href: "/account/orders",
     },
     {
-      label: "Total Spent",
+      label: "Total Spend",
       value: `৳ ${totalSpent.toLocaleString("en-BD")}`,
-      icon: ShoppingCart,
-      actionText: "View order history",
+      actionText: "Order history",
       href: "/account/orders",
     },
     {
-      label: "Wishlist Items",
+      label: "Wishlist",
       value: liveWishlistCount.toString(),
-      icon: Heart,
-      actionText: "View wishlist",
+      actionText: "Saved items",
       href: "/wishlist",
     },
     {
       label: "Active Coupons",
       value: activeCouponsCount.toString(),
-      icon: Ticket,
       actionText: "View coupons",
       href: "#coupons",
       onClick: onOpenCoupons,
@@ -68,46 +64,46 @@ export function AccountMetrics({
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3.5 sm:gap-4 lg:grid-cols-4">
-      {metrics.map((metric) => (
-        <div
-          key={metric.label}
-          className="flex flex-col justify-between rounded-2xl border border-[#101114]/10 bg-white p-4.5 shadow-xs transition-all hover:border-[#101114]/25 hover:shadow-sm sm:p-5"
-        >
-          {/* Top Squircle Icon & Label */}
-          <div>
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#F3F0E8] text-[#101114]">
-              <metric.icon className="size-5 text-[#101114]" />
+    /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
+    <div className="rounded-xl border border-[#101114]/8 bg-white overflow-hidden">
+      <div className="grid grid-cols-2 divide-x divide-y divide-[#101114]/6 sm:grid-cols-4 sm:divide-y-0">
+        {metrics.map((metric) => (
+          <div
+            key={metric.label}
+            className="flex flex-col justify-between p-4 sm:p-5 transition-colors hover:bg-neutral-50/50"
+          >
+            <div>
+              <span className="block truncate text-[10px] font-bold tracking-wider text-neutral-400 uppercase sm:text-[11px]">
+                {metric.label}
+              </span>
+              <p className="mt-1 truncate text-lg font-black tracking-tight text-[#101114] sm:mt-2 sm:text-2xl lg:text-3xl">
+                {metric.value}
+              </p>
             </div>
-            <p className="text-muted-foreground text-xs font-semibold">{metric.label}</p>
-            <p className="mt-1 text-2xl font-black tracking-tight text-[#101114] sm:text-3xl">
-              {metric.value}
-            </p>
-          </div>
 
-          {/* Bottom Action Link */}
-          <div className="mt-4 pt-2">
-            {metric.onClick ? (
-              <button
-                type="button"
-                onClick={metric.onClick}
-                className="group inline-flex items-center gap-1 text-xs font-semibold text-[#0099b8] transition-colors hover:text-[#00c2e5]"
-              >
-                <span>{metric.actionText}</span>
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-              </button>
-            ) : (
-              <Link
-                href={metric.href}
-                className="group inline-flex items-center gap-1 text-xs font-semibold text-[#0099b8] transition-colors hover:text-[#00c2e5]"
-              >
-                <span>{metric.actionText}</span>
-                <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-            )}
+            <div className="mt-3 pt-1 sm:mt-4">
+              {metric.onClick ? (
+                <button
+                  type="button"
+                  onClick={metric.onClick}
+                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-[#101114]"
+                >
+                  <span>{metric.actionText}</span>
+                  <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                </button>
+              ) : (
+                <Link
+                  href={metric.href}
+                  className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-[#101114]"
+                >
+                  <span>{metric.actionText}</span>
+                  <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

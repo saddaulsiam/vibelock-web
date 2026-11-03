@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 export function AccountCollectionBanner() {
   return (
-    <section className="relative mt-8 w-full overflow-hidden rounded-2xl border border-white/10 bg-[#101114] text-white shadow-lg sm:mt-10">
+    <section className="relative mt-6 w-full overflow-hidden rounded-xl border border-white/10 bg-[#101114] text-white sm:mt-10">
       {/* Background Campaign Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -12,7 +12,7 @@ export function AccountCollectionBanner() {
           alt="Explore VibeLock Streetwear Collection"
           fill
           sizes="(max-width: 1280px) 100vw, 1200px"
-          className="object-cover object-center opacity-40 sm:opacity-60"
+          className="object-cover object-center opacity-40"
         />
         {/* Dark Gradient Overlay for optimal contrast */}
         <div
@@ -21,37 +21,40 @@ export function AccountCollectionBanner() {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col items-start justify-between gap-6 p-6 sm:p-10 md:flex-row md:items-center lg:p-12">
+      <div className="relative z-10 flex flex-col items-start justify-between gap-5 p-5 sm:p-8 md:flex-row md:items-center lg:p-10">
         {/* Left Content */}
         <div className="max-w-xl">
-          <p className="text-[11px] font-bold tracking-[0.25em] text-[#00D9FF] uppercase">
-            Your Style Matters
-          </p>
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
+            <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#F3F0E8]/70 uppercase">
+              Limited Releases
+            </span>
+          </div>
 
-          <h3 className="font-heading mt-2 text-2xl font-black tracking-tight text-white uppercase sm:text-3xl lg:text-4xl">
-            Explore New Collections
+          <h3 className="mt-1.5 text-lg font-black tracking-tight text-white uppercase sm:mt-2 sm:text-2xl lg:text-3xl">
+            Explore New Drop Essentials
           </h3>
 
-          <p className="mt-2 text-xs leading-relaxed text-white/75 sm:text-sm">
-            Be the first to get updates on new arrivals, exclusive drops and special offers.
+          <p className="mt-1.5 text-xs leading-relaxed text-[#F3F0E8]/80 sm:mt-2 sm:text-sm">
+            Curated heavyweights, relaxed silhouettes, and cultural streetwear crafted for Dhaka youth.
           </p>
 
-          <div className="mt-5 sm:mt-6">
+          <div className="mt-4 sm:mt-5">
             <Link
               href="/products"
-              className="group inline-flex items-center gap-2 rounded-full bg-[#00D9FF] px-6 py-2.5 text-xs font-black tracking-wider text-[#101114] uppercase transition-all hover:bg-[#00c4e6] hover:shadow-[0_0_20px_rgba(0,217,255,0.4)] active:scale-95"
+              className="group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-black tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
             >
-              <span>Shop Now</span>
-              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
+              <span>Shop All Products</span>
+              <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>
 
-        {/* Right Stencil Tag on Desktop */}
+        {/* Right Label on Desktop */}
         <div className="hidden text-right select-none md:block">
-          <p className="text-sm font-black tracking-widest text-white/40 uppercase">Streetwear</p>
-          <p className="text-sm font-black tracking-widest text-[#00D9FF]/70 uppercase">Culture</p>
-          <p className="text-sm font-black tracking-widest text-white/40 uppercase">Community</p>
+          <span className="text-xs font-bold tracking-widest text-white/40 uppercase">
+            Curated Drop
+          </span>
         </div>
       </div>
     </section>

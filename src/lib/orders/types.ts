@@ -32,15 +32,28 @@ export type OrderConfirmation = Pick<
   OrderSummary,
   "orderNumber" | "createdAt" | "status" | "paymentStatus" | "paymentMethod"
 > & {
+  paymentGateway?: string | null;
+  transactionId?: string | null;
+  customerName?: string | null;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
+  shippingStreet?: string | null;
+  shippingCity?: string | null;
+  shippingState?: string | null;
+  shippingZip?: string | null;
+  shippingCountry?: string | null;
+  shippingMethodName?: string | null;
   subtotal: number;
   shippingCost: number;
   taxAmount: number;
   discount: number;
   total: number;
-  items: Pick<
+  items: (Pick<
     OrderItemSummary,
-    "productName" | "size" | "color" | "unitPrice" | "quantity" | "lineTotal"
-  >[];
+    "productName" | "sku" | "size" | "color" | "unitPrice" | "quantity" | "lineTotal"
+  > & {
+    imageUrl?: string | null;
+  })[];
 };
 
 export type OrderDetail = {

@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { cancelOrderAction } from "@/lib/orders/actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CancelOrderButtonProps {
   orderNumber: string;
+  className?: string;
 }
 
-export function CancelOrderButton({ orderNumber }: CancelOrderButtonProps) {
+export function CancelOrderButton({ orderNumber, className }: CancelOrderButtonProps) {
   const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -44,7 +46,7 @@ export function CancelOrderButton({ orderNumber }: CancelOrderButtonProps) {
       onClick={handleCancel}
       type="button"
       disabled={isCancelling}
-      className="w-full focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:w-auto"
+      className={cn("w-full focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:w-auto", className)}
     >
       {isCancelling ? (
         <>
