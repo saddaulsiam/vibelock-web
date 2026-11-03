@@ -115,7 +115,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           {canCancel && (
             <CancelOrderButton
               orderNumber={order.orderNumber}
-              className="min-h-[38px] rounded-lg border border-rose-200 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider text-rose-600 uppercase transition-colors hover:bg-rose-50"
+              className="min-h-[38px] cursor-pointer rounded-lg border-[1.5px] border-red-200 bg-red-100/60 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-red-500 uppercase transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
             />
           )}
         </div>

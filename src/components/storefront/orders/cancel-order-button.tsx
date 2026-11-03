@@ -46,7 +46,7 @@ export function CancelOrderButton({ orderNumber, className }: CancelOrderButtonP
       onClick={handleCancel}
       type="button"
       disabled={isCancelling}
-      className={cn("w-full focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:w-auto", className)}
+      className={cn("focus-visible:ring-vl-cyan w-full focus-visible:ring-2 sm:w-auto", className)}
     >
       {isCancelling ? (
         <>

@@ -166,7 +166,7 @@ export default async function ReturnsPage(props: { searchParams: Promise<{ page?
                       <td className="py-4 pr-7 pl-4 text-right whitespace-nowrap">
                         <Link
                           href={`/account/returns/${request.id}`}
-                          className="group inline-flex min-h-[34px] items-center gap-1 rounded-lg border border-[#101114]/12 bg-white px-3 py-1 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100"
+                          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
                         >
                           <span>Details</span>
                           <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />

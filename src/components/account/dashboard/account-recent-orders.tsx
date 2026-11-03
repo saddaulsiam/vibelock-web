@@ -126,7 +126,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                         href={`/account/orders/${order.orderNumber}`}
                         className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
                       >
-                        <span>View</span>
+                        <span>Details</span>
                         <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
                       </Link>
                     </td>
@@ -169,7 +169,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     href={`/account/orders/${order.orderNumber}`}
                     className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
                   >
-                    <span>View</span>
+                    <span>Details</span>
                     <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
                   </Link>
                 </div>

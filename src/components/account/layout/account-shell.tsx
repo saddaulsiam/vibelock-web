@@ -1,12 +1,19 @@
 "use client";
 
 import { logoutAction } from "@/app/actions/auth";
-import { LayoutDashboard, LogOut, RotateCcw, ShoppingBag, Ticket, User } from "lucide-react";
+import {
+  LayoutDashboard,
+  Loader2,
+  LogOut,
+  RotateCcw,
+  ShoppingBag,
+  Ticket,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 
 interface AccountShellProps {
   profile: {
@@ -112,17 +119,20 @@ export function AccountShell({ profile, children }: AccountShellProps) {
             </h1>
           </div>
 
-          <Button
+          <button
             type="button"
-            variant="outline"
             onClick={handleLogout}
             disabled={loggingOut}
             title="Sign out of account"
-            className="h-9 gap-2 rounded-md border border-red-200 bg-red-50 px-3 text-sm font-medium text-red-600 shadow-none transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded border-[1.5px] border-red-200 bg-red-100/60 px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <LogOut className="size-4 shrink-0 text-red-500" />
+            {loggingOut ? (
+              <Loader2 className="size-3.5 animate-spin text-red-500" />
+            ) : (
+              <LogOut className="size-3.5 shrink-0 text-red-500" />
+            )}
             <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
-          </Button>
+          </button>
         </div>
 
         {/* Universal Horizontal Underline Tabs */}
