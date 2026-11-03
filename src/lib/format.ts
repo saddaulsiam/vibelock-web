@@ -19,3 +19,4 @@ export function formatOrderDateTime(date: Date | string): string {
     timeStyle: "short",
   }).format(new Date(date));
 }
+
