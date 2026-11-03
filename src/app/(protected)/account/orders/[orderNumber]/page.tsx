@@ -14,10 +14,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { ReorderButton } from "@/components/storefront/orders/reorder-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
 import { getCustomerOrder } from "@/lib/orders/queries";
+import { formatOrderDateTime, calculateDeliveryEstimate } from "@/lib/format";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
@@ -30,12 +32,7 @@ export async function generateMetadata(props: {
   };
 }
 
-function formatDate(date: Date) {
-  return new Intl.DateTimeFormat("en-BD", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(date));
-}
+const formatDate = formatOrderDateTime;
 
 export default async function OrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
   const { orderNumber } = await props.params;
@@ -101,6 +98,11 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
           <OrderPrintAction order={order} />
+
+          {/* Buy Again / Reorder for Delivered Orders */}
+          {order.status === "DELIVERED" && (
+            <ReorderButton orderNumber={order.orderNumber} />
+          )}
 
           {order.isReturnable && (
             <Link
@@ -227,7 +229,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                 {/* Product Thumbnail */}
                 <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 sm:size-16">
                   <Image
-                    src="/images/categories/cat-t-shirts.jpg"
+                    src={item.imageUrl ?? "/images/categories/cat-t-shirts.jpg"}
                     alt={item.productName}
                     fill
                     sizes="64px"
@@ -399,7 +401,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                         ? "Delivered successfully."
                         : order.status === "CANCELLED"
                           ? "Fulfillment was cancelled."
-                          : "Estimated delivery: 2–4 business days inside Dhaka, 3–5 days outside Dhaka."}
+                          : `Estimated delivery: ${calculateDeliveryEstimate(order.createdAt, order.shippingCity)}`}
                     </p>
                   </div>
                 )}

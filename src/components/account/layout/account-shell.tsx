@@ -1,15 +1,8 @@
 "use client";
 
 import { logoutAction } from "@/app/actions/auth";
-import {
-  LayoutDashboard,
-  Loader2,
-  LogOut,
-  RotateCcw,
-  ShoppingBag,
-  Ticket,
-  User,
-} from "lucide-react";
+import { accountNavItems } from "@/lib/account/nav";
+import { Loader2, LogOut, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -22,11 +15,17 @@ interface AccountShellProps {
     emailVerified: Date | null;
     image: string | null;
   };
+  navCounts?: {
+    orders?: number;
+    coupons?: number;
+    returns?: number;
+  };
   children: React.ReactNode;
 }
 
-export function AccountShell({ profile, children }: AccountShellProps) {
+export function AccountShell({ profile, navCounts, children }: AccountShellProps) {
   const [loggingOut, setLoggingOut] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const tabsContainerRef = useRef<HTMLDivElement>(null);
@@ -51,48 +50,6 @@ export function AccountShell({ profile, children }: AccountShellProps) {
     router.push("/");
     router.refresh();
   };
-
-  type NavItem = {
-    label: string;
-    href: string;
-    icon: typeof LayoutDashboard;
-    exact?: boolean;
-    matches?: (p: string) => boolean;
-    onClick?: () => void;
-  };
-
-  const navItems: NavItem[] = [
-    {
-      label: "Overview",
-      href: "/account",
-      icon: LayoutDashboard,
-      exact: true,
-    },
-    {
-      label: "Orders",
-      href: "/account/orders",
-      icon: ShoppingBag,
-    },
-    {
-      label: "Coupons",
-      href: "/account/coupons",
-      icon: Ticket,
-    },
-    {
-      label: "Returns",
-      href: "/account/returns",
-      icon: RotateCcw,
-    },
-    {
-      label: "Profile",
-      href: "/account/profile",
-      icon: User,
-      matches: (p: string) =>
-        p.startsWith("/account/profile") ||
-        p.startsWith("/account/addresses") ||
-        p.startsWith("/account/security"),
-    },
-  ];
 
   return (
     <div className="bg-background relative min-h-screen">
@@ -119,20 +76,42 @@ export function AccountShell({ profile, children }: AccountShellProps) {
             </h1>
           </div>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={loggingOut}
-            title="Sign out of account"
-            className="inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded border-[1.5px] border-red-200 bg-red-100/60 px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loggingOut ? (
-              <Loader2 className="size-3.5 animate-spin text-red-500" />
-            ) : (
+          {/* Sign Out — inline confirmation before firing */}
+          {confirmLogout ? (
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5">
+              <span className="text-xs font-medium text-red-700">Sign out?</span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-md bg-red-500 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+              >
+                {loggingOut ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : null}
+                {loggingOut ? "Signing out..." : "Yes, sign out"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmLogout(false)}
+                disabled={loggingOut}
+                className="inline-flex size-6 items-center justify-center rounded-md text-red-400 hover:bg-red-100 hover:text-red-600"
+                title="Cancel"
+              >
+                <X className="size-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmLogout(true)}
+              title="Sign out of account"
+              className="inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded border-[1.5px] border-red-200 bg-red-100/60 px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600"
+            >
               <LogOut className="size-3.5 shrink-0 text-red-500" />
-            )}
-            <span>{loggingOut ? "Signing out..." : "Sign Out"}</span>
-          </button>
+              <span>Sign Out</span>
+            </button>
+          )}
         </div>
 
         {/* Universal Horizontal Underline Tabs */}
@@ -144,27 +123,14 @@ export function AccountShell({ profile, children }: AccountShellProps) {
             ref={tabsContainerRef}
             className="-mb-px flex scrollbar-none items-center gap-4 overflow-x-auto [-ms-overflow-style:none] sm:gap-6 [&::-webkit-scrollbar]:hidden"
           >
-            {navItems.map((item) => {
+            {accountNavItems.map((item) => {
               const isActive = item.matches
                 ? item.matches(pathname)
                 : item.exact
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
               const Icon = item.icon;
-
-              if (item.onClick) {
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={item.onClick}
-                    className="inline-flex min-h-10.5 shrink-0 cursor-pointer items-center gap-1.5 border-b-2 border-transparent pt-1 pb-3 text-xs font-medium tracking-wider text-neutral-500 uppercase transition-colors hover:border-neutral-300 hover:text-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-                  >
-                    <Icon className="size-3.5 text-neutral-400" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              }
+              const badgeCount = item.badgeKey ? navCounts?.[item.badgeKey] : undefined;
 
               return (
                 <Link
@@ -178,9 +144,20 @@ export function AccountShell({ profile, children }: AccountShellProps) {
                   }`}
                 >
                   <Icon
-                    className={`size-3.5 ${isActive ? "text-[#101114]" : "text-neutral-400"}`}
+                    className={`size-3.5 ${isActive ? "text-[#00D9FF]" : "text-neutral-400"}`}
                   />
                   <span>{item.label}</span>
+                  {typeof badgeCount === "number" && badgeCount > 0 && (
+                    <span
+                      className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] font-bold leading-none ${
+                        isActive
+                          ? "bg-[#101114] text-white"
+                          : "bg-neutral-100 text-neutral-600"
+                      }`}
+                    >
+                      {badgeCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

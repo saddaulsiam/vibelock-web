@@ -24,14 +24,17 @@ export function AccountMetrics({
     getWishlistServerSnapshot
   );
 
+  const isServer = rawWishlist === "__SSR__";
+
   const liveWishlistCount = useMemo(() => {
+    if (isServer) return null;
     try {
       const list = JSON.parse(rawWishlist);
       return Array.isArray(list) ? list.length : wishlistCount;
     } catch {
       return wishlistCount;
     }
-  }, [rawWishlist, wishlistCount]);
+  }, [rawWishlist, wishlistCount, isServer]);
 
   const metrics = [
     {
@@ -48,7 +51,7 @@ export function AccountMetrics({
     },
     {
       label: "Wishlist",
-      value: liveWishlistCount.toString(),
+      value: isServer ? "—" : (liveWishlistCount ?? 0).toString(),
       actionText: "Saved items",
       href: "/wishlist",
     },
