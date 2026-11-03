@@ -15,10 +15,15 @@ interface AccountShellProps {
     emailVerified: Date | null;
     image: string | null;
   };
+  navCounts?: {
+    orders?: number;
+    coupons?: number;
+    returns?: number;
+  };
   children: React.ReactNode;
 }
 
-export function AccountShell({ profile, children }: AccountShellProps) {
+export function AccountShell({ profile, navCounts, children }: AccountShellProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
   const pathname = usePathname();
@@ -125,6 +130,7 @@ export function AccountShell({ profile, children }: AccountShellProps) {
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
               const Icon = item.icon;
+              const badgeCount = item.badgeKey ? navCounts?.[item.badgeKey] : undefined;
 
               return (
                 <Link
@@ -141,6 +147,17 @@ export function AccountShell({ profile, children }: AccountShellProps) {
                     className={`size-3.5 ${isActive ? "text-[#00D9FF]" : "text-neutral-400"}`}
                   />
                   <span>{item.label}</span>
+                  {typeof badgeCount === "number" && badgeCount > 0 && (
+                    <span
+                      className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] font-bold leading-none ${
+                        isActive
+                          ? "bg-[#101114] text-white"
+                          : "bg-neutral-100 text-neutral-600"
+                      }`}
+                    >
+                      {badgeCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

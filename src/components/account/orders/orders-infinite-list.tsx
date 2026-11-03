@@ -26,6 +26,8 @@ export function OrdersInfiniteList({
   const [hasMore, setHasMore] = React.useState<boolean>(initialOrders.length < total);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
+  const [statusMessage, setStatusMessage] = React.useState<string>("");
+
   const loadMore = React.useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
 
@@ -38,7 +40,9 @@ export function OrdersInfiniteList({
         setOrders((prev) => {
           const existingIds = new Set(prev.map((o) => o.id));
           const newUniqueOrders = response.orders.filter((o) => !existingIds.has(o.id));
-          return [...prev, ...newUniqueOrders];
+          const updated = [...prev, ...newUniqueOrders];
+          setStatusMessage(`Loaded more orders. Showing ${updated.length} of ${total} orders.`);
+          return updated;
         });
         setPage(nextPage);
         setHasMore(response.hasMore && response.orders.length > 0);
@@ -51,7 +55,7 @@ export function OrdersInfiniteList({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, pageSize, isLoadingMore, hasMore]);
+  }, [page, pageSize, isLoadingMore, hasMore, total]);
 
   // Setup IntersectionObserver for auto-infinite scrolling
   React.useEffect(() => {
@@ -196,6 +200,11 @@ export function OrdersInfiniteList({
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Screen Reader Live Region (WCAG 4.1.3 compliant status announcements) */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {statusMessage}
       </div>
 
       {/* Sentinel for IntersectionObserver */}

@@ -20,3 +20,28 @@ export function formatOrderDateTime(date: Date | string): string {
   }).format(new Date(date));
 }
 
+/**
+ * Calculates a dynamic business-day delivery estimate range based on placement date and city.
+ * Inside Dhaka: 2 to 3 business days.
+ * Outside Dhaka: 3 to 5 business days.
+ */
+export function calculateDeliveryEstimate(createdAt: Date | string, city?: string | null): string {
+  const date = new Date(createdAt);
+  const isDhaka = city?.toLowerCase().includes("dhaka") ?? false;
+  const minDays = isDhaka ? 2 : 3;
+  const maxDays = isDhaka ? 3 : 5;
+
+  const minDate = new Date(date);
+  minDate.setDate(minDate.getDate() + minDays);
+
+  const maxDate = new Date(date);
+  maxDate.setDate(maxDate.getDate() + maxDays);
+
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
+  return `${formatter.format(minDate)} – ${formatter.format(maxDate)}`;
+}
+

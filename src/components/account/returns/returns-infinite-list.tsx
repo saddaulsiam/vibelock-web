@@ -35,6 +35,8 @@ export function ReturnsInfiniteList({
   const [hasMore, setHasMore] = React.useState<boolean>(initialReturns.length < total);
   const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
+  const [statusMessage, setStatusMessage] = React.useState<string>("");
+
   const loadMore = React.useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
@@ -45,7 +47,9 @@ export function ReturnsInfiniteList({
         setReturns((prev) => {
           const existingIds = new Set(prev.map((r) => r.id));
           const newUnique = response.returns.filter((r) => !existingIds.has(r.id));
-          return [...prev, ...newUnique];
+          const updated = [...prev, ...newUnique];
+          setStatusMessage(`Loaded more returns. Showing ${updated.length} of ${total} returns.`);
+          return updated;
         });
         setPage(nextPage);
         setHasMore(response.hasMore && response.returns.length > 0);
@@ -58,7 +62,7 @@ export function ReturnsInfiniteList({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [page, pageSize, isLoadingMore, hasMore]);
+  }, [page, pageSize, isLoadingMore, hasMore, total]);
 
   React.useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -232,6 +236,11 @@ export function ReturnsInfiniteList({
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Screen Reader Live Region (WCAG 4.1.3 compliant status announcements) */}
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {statusMessage}
       </div>
 
       {/* Sentinel for IntersectionObserver */}

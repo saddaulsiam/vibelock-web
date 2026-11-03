@@ -14,7 +14,7 @@ export function subscribeWishlist(callback: () => void): () => void {
 }
 
 export function getWishlistServerSnapshot(): string {
-  return "[]";
+  return "__SSR__";
 }
 
 export function toggleWishlistSlug(slug: string): boolean {

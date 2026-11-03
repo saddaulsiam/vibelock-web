@@ -6,6 +6,7 @@ export type NavItem = {
   icon: typeof LayoutDashboard;
   exact?: boolean;
   matches?: (pathname: string) => boolean;
+  badgeKey?: "orders" | "coupons" | "returns";
 };
 
 export const accountNavItems: NavItem[] = [
@@ -19,16 +20,19 @@ export const accountNavItems: NavItem[] = [
     label: "Orders",
     href: "/account/orders",
     icon: ShoppingBag,
+    badgeKey: "orders",
   },
   {
     label: "Coupons",
     href: "/account/coupons",
     icon: Ticket,
+    badgeKey: "coupons",
   },
   {
     label: "Returns",
     href: "/account/returns",
     icon: RotateCcw,
+    badgeKey: "returns",
   },
   {
     label: "Profile",

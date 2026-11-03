@@ -123,3 +123,59 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
     return { success: false, error: "Failed to cancel the order. Please try again later." };
   }
 }
+
+export async function reorderItemsAction(orderNumber: string): Promise<{
+  success: boolean;
+  addedCount?: number;
+  message?: string;
+  error?: string;
+}> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { orderNumber, userId: session.user.id },
+      include: { items: true },
+    });
+
+    if (!order || order.items.length === 0) {
+      return { success: false, error: "Order not found or has no items." };
+    }
+
+    const { addToCart } = await import("@/lib/cart/mutations");
+    const skus = order.items.map((i) => i.sku).filter(Boolean);
+
+    const variants = await prisma.productVariant.findMany({
+      where: { sku: { in: skus } },
+      select: { id: true, sku: true },
+    });
+
+    const variantBySku = new Map(variants.map((v) => [v.sku, v.id]));
+    let addedCount = 0;
+
+    for (const item of order.items) {
+      const variantId = variantBySku.get(item.sku);
+      if (variantId) {
+        try {
+          await addToCart(variantId, item.quantity);
+          addedCount += item.quantity;
+        } catch (itemErr) {
+          console.warn(`[reorderItemsAction] Could not add item SKU ${item.sku}:`, itemErr);
+        }
+      }
+    }
+
+    revalidatePath("/cart");
+    return {
+      success: true,
+      addedCount,
+      message: `Added ${addedCount} items to your cart.`,
+    };
+  } catch (error) {
+    console.error("[reorderItemsAction] Error:", error);
+    return { success: false, error: "Failed to reorder items. Please try again." };
+  }
+}

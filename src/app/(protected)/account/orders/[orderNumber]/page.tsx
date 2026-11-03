@@ -14,11 +14,12 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { ReorderButton } from "@/components/storefront/orders/reorder-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
 import { getCustomerOrder } from "@/lib/orders/queries";
-import { formatOrderDateTime } from "@/lib/format";
+import { formatOrderDateTime, calculateDeliveryEstimate } from "@/lib/format";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
@@ -97,6 +98,11 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
           <OrderPrintAction order={order} />
+
+          {/* Buy Again / Reorder for Delivered Orders */}
+          {order.status === "DELIVERED" && (
+            <ReorderButton orderNumber={order.orderNumber} />
+          )}
 
           {order.isReturnable && (
             <Link
@@ -395,7 +401,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                         ? "Delivered successfully."
                         : order.status === "CANCELLED"
                           ? "Fulfillment was cancelled."
-                          : "Estimated delivery: 2–4 business days inside Dhaka, 3–5 days outside Dhaka."}
+                          : `Estimated delivery: ${calculateDeliveryEstimate(order.createdAt, order.shippingCity)}`}
                     </p>
                   </div>
                 )}
