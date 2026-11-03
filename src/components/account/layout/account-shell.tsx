@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AccountCouponsModal, CouponItem } from "../dashboard/account-coupons-modal";
 import { Button } from "@/components/ui/button";
 
 interface AccountShellProps {
@@ -16,12 +15,10 @@ interface AccountShellProps {
     emailVerified: Date | null;
     image: string | null;
   };
-  coupons: CouponItem[];
   children: React.ReactNode;
 }
 
-export function AccountShell({ profile, coupons, children }: AccountShellProps) {
-  const [couponsModalOpen, setCouponsModalOpen] = useState(false);
+export function AccountShell({ profile, children }: AccountShellProps) {
   const [loggingOut, setLoggingOut] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -71,9 +68,8 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
     },
     {
       label: "Coupons",
-      href: "#coupons",
+      href: "/account/coupons",
       icon: Ticket,
-      onClick: () => setCouponsModalOpen(true),
     },
     {
       label: "Returns",
@@ -184,13 +180,6 @@ export function AccountShell({ profile, coupons, children }: AccountShellProps) 
         {/* Main Account Page Content */}
         <main className="w-full">{children}</main>
       </div>
-
-      {/* Interactive Coupons Dialog */}
-      <AccountCouponsModal
-        isOpen={couponsModalOpen}
-        onClose={() => setCouponsModalOpen(false)}
-        coupons={coupons}
-      />
     </div>
   );
 }

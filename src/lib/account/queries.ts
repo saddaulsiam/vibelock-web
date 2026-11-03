@@ -284,3 +284,84 @@ export async function getCustomerReturnById(id: string) {
     ),
   };
 }
+
+export async function getCustomerCoupons() {
+  const user = await requireUser();
+  const now = new Date();
+
+  const [activeCoupons, userReturnRequests] = await Promise.all([
+    prisma.coupon.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { startDate: null, endDate: null },
+          { startDate: { lte: now }, endDate: null },
+          { startDate: null, endDate: { gte: now } },
+          { startDate: { lte: now }, endDate: { gte: now } },
+        ],
+      },
+      select: {
+        id: true,
+        code: true,
+        discountType: true,
+        discountValue: true,
+        minOrderValue: true,
+        usageLimit: true,
+        usageCount: true,
+        startDate: true,
+        endDate: true,
+      },
+      orderBy: [{ discountValue: "desc" }, { createdAt: "desc" }],
+    }),
+    prisma.returnRequest.findMany({
+      where: {
+        order: {
+          OR: [{ userId: user.id }, ...(user.email ? [{ customerEmail: user.email }] : [])],
+        },
+      },
+      select: { id: true },
+    }),
+  ]);
+
+  const userReturnIds = userReturnRequests.map((r) => r.id);
+  const userCreditAuditLogs =
+    userReturnIds.length > 0
+      ? await prisma.auditLog.findMany({
+          where: {
+            action: "STORE_CREDIT_ISSUED",
+            entityType: "ReturnRequest",
+            entityId: { in: userReturnIds },
+          },
+          select: { metadata: true },
+        })
+      : [];
+
+  const userCreditCodes = new Set<string>();
+  for (const log of userCreditAuditLogs) {
+    const meta = (log.metadata as Record<string, unknown> | null) || {};
+    if (meta.couponCode && typeof meta.couponCode === "string") {
+      userCreditCodes.add(meta.couponCode.toUpperCase());
+    }
+  }
+
+  const eligibleCoupons = activeCoupons.filter((c) => {
+    if (c.usageLimit !== null && c.usageCount >= c.usageLimit) {
+      return false;
+    }
+    if (c.code.toUpperCase().startsWith("VL-CREDIT-")) {
+      return userCreditCodes.has(c.code.toUpperCase());
+    }
+    return true;
+  });
+
+  return eligibleCoupons.map((c) => ({
+    id: c.id,
+    code: c.code,
+    discountType: c.discountType,
+    discountValue: Number(c.discountValue),
+    minOrderValue: c.minOrderValue ? Number(c.minOrderValue) : null,
+    startDate: c.startDate,
+    endDate: c.endDate,
+    isPersonalCredit: c.code.toUpperCase().startsWith("VL-CREDIT-"),
+  }));
+}
