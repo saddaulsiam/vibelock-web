@@ -100,7 +100,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          <OrderPrintAction orderNumber={order.orderNumber} />
+          <OrderPrintAction order={order} />
 
           {order.isReturnable && (
             <Link

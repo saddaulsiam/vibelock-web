@@ -157,7 +157,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 )}
 
                 <div>
-                  <OrderPrintAction orderNumber={order.orderNumber} />
+                  <OrderPrintAction order={order} />
                 </div>
               </div>
             </div>
