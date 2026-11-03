@@ -6,6 +6,7 @@ import { CheckCircle2, Eye, MessageCircle, Package, Phone, Truck } from "lucide-
 import type { OrderStatus } from "@prisma/client";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
 import { getOrderStatusBadge } from "@/components/admin/orders/admin-order-badges";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { formatBdt, formatDate, formatWhatsAppUrl } from "./order-table-utils";
 
 export interface AdminOrdersMobileCardProps {
@@ -119,8 +120,11 @@ export function AdminOrdersMobileCard({
 
         <div className="text-right">
           <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
-          <div className="flex items-center justify-end gap-1 text-[10px]">
-            <span className="font-semibold text-neutral-600">{order.paymentMethod}</span>
+          <div className="flex items-center justify-end gap-1.5 pt-1 text-[10px]">
+            <PaymentGatewayBadge
+              gateway={order.paymentGateway}
+              paymentMethod={order.paymentMethod}
+            />
             <span>&middot;</span>
             <span
               className={

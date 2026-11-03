@@ -17,6 +17,7 @@ export interface PosShiftSummary {
   cashierName: string;
   openingFloat: number;
   cashSales: number;
+  banglaQrSales?: number;
   bkashSales: number;
   cardSales: number;
   totalSales: number;
@@ -35,6 +36,7 @@ export interface PosZReportData {
   closedAt: string;
   openingFloat: number;
   cashSales: number;
+  banglaQrSales?: number;
   bkashSales: number;
   cardSales: number;
   totalSales: number;

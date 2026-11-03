@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 
 const addressSchema = z.object({
   label: z.string().trim().max(50).optional(),
@@ -17,6 +18,7 @@ const addressSchema = z.object({
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
+  phone: z.string().trim().max(25).optional().nullable(),
   image: z
     .string()
     .trim()
@@ -24,6 +26,7 @@ const profileSchema = z.object({
       (val) => {
         if (!val) return true;
         if (val.startsWith("/")) return true;
+        if (val.startsWith("data:image/")) return true;
         try {
           const parsed = new URL(val);
           return parsed.protocol === "http:" || parsed.protocol === "https:";
@@ -129,11 +132,26 @@ export async function updateProfileAction(input: unknown) {
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid profile data." };
 
   try {
+    const phoneValue =
+      parsed.data.phone !== undefined ? parsed.data.phone?.trim() || null : undefined;
+
+    // Check unique phone if provided
+    if (phoneValue) {
+      const existingUser = await prisma.user.findFirst({
+        where: { phone: phoneValue, id: { not: user.id } },
+        select: { id: true },
+      });
+      if (existingUser) {
+        return { success: false, error: "This phone number is already registered to another account." };
+      }
+    }
+
     await prisma.user.update({
       where: { id: user.id },
       data: {
         name: parsed.data.name,
         image: parsed.data.image && parsed.data.image.length > 0 ? parsed.data.image : null,
+        ...(phoneValue !== undefined && { phone: phoneValue }),
       },
     });
     refreshAccount();
@@ -141,5 +159,44 @@ export async function updateProfileAction(input: unknown) {
   } catch (error) {
     console.error("[updateProfileAction] Error:", error);
     return { success: false, error: "Unable to update your profile." };
+  }
+}
+
+export async function uploadAvatarAction(formData: FormData) {
+  await requireUser({ throw: true });
+  const file = formData.get("file") as File | null;
+
+  if (!file || file.size === 0) {
+    return { success: false, error: "Please select an image file to upload." };
+  }
+
+  // Validate image MIME type
+  if (!file.type.startsWith("image/")) {
+    return { success: false, error: "Only image files (JPEG, PNG, WebP) are supported." };
+  }
+
+  // Max 5MB
+  if (file.size > 5 * 1024 * 1024) {
+    return { success: false, error: "Image file size must not exceed 5MB." };
+  }
+
+  try {
+    if (isCloudinaryConfigured()) {
+      const uploadRes = await uploadToCloudinary(file, "vibelock/avatars");
+      if (!uploadRes.success) {
+        return { success: false, error: uploadRes.error || "Failed to upload image to cloud." };
+      }
+      return { success: true, url: uploadRes.url };
+    }
+
+    // Local fallback: Base64 data URL
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const base64Data = buffer.toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64Data}`;
+    return { success: true, url: dataUrl };
+  } catch (err) {
+    console.error("[uploadAvatarAction] Error:", err);
+    return { success: false, error: "Failed to process image upload." };
   }
 }

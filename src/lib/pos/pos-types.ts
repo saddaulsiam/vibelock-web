@@ -45,17 +45,17 @@ export interface PosCategory {
   parentId?: string | null;
 }
 
-export type PosPaymentMethod = "CASH" | "BKASH" | "CARD" | "SPLIT";
+export type PosPaymentMethod = "CASH" | "BANGLA_QR" | "CARD" | "SPLIT" | "BKASH";
 
 export interface PosPaymentSplitInput {
-  method: "CASH" | "BKASH" | "CARD";
+  method: "CASH" | "BANGLA_QR" | "CARD" | "BKASH";
   amount: number;
   tenderAmount?: number;
   reference?: string;
 }
 
 export interface PosPaymentSplitDetail {
-  method: "CASH" | "BKASH" | "CARD";
+  method: "CASH" | "BANGLA_QR" | "CARD" | "BKASH";
   amount: number;
   tenderAmount?: number;
   changeDue?: number;

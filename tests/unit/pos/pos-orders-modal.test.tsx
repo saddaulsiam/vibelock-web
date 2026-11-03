@@ -42,7 +42,7 @@ describe("POS Orders History & Reprint", () => {
       expect(html).toContain("Total Orders");
       expect(html).toContain("Total Sales");
       expect(html).toContain("Cash Tender");
-      expect(html).toContain("Digital (bKash/Card)");
+      expect(html).toContain("Digital (Bangla QR/Card)");
       expect(html).toContain("Search by Invoice #");
     });
   });

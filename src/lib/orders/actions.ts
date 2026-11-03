@@ -3,6 +3,20 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
+import type { OrderSummary } from "./types";
+
+export async function getCustomerOrdersAction(
+  page: number,
+  pageSize = 10
+): Promise<{ orders: OrderSummary[]; total: number; hasMore: boolean }> {
+  const { getCustomerOrders } = await import("./queries");
+  const result = await getCustomerOrders(page, pageSize);
+  return {
+    orders: result.orders,
+    total: result.total,
+    hasMore: page * pageSize < result.total,
+  };
+}
 
 export async function cancelOrderAction(orderNumber: string): Promise<{
   success: boolean;

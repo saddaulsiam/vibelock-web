@@ -48,8 +48,8 @@ function PosPaymentModalContent({
   // Split Tender State
   const [splitCash, setSplitCash] = useState<number>(0);
   const [splitCashTender, setSplitCashTender] = useState<number>(0);
-  const [splitBkash, setSplitBkash] = useState<number>(0);
-  const [splitBkashRef, setSplitBkashRef] = useState<string>("");
+  const [splitBanglaQr, setSplitBanglaQr] = useState<number>(0);
+  const [splitBanglaQrRef, setSplitBanglaQrRef] = useState<string>("");
   const [splitCard, setSplitCard] = useState<number>(0);
   const [splitCardRef, setSplitCardRef] = useState<string>("");
 
@@ -57,7 +57,7 @@ function PosPaymentModalContent({
   const isShortage = tenderAmount < grandTotal;
 
   // Split computations
-  const splitTotalAllocated = splitCash + splitBkash + splitCard;
+  const splitTotalAllocated = splitCash + splitBanglaQr + splitCard;
   const splitRemaining = Math.max(0, grandTotal - splitTotalAllocated);
   const splitCashChange = Math.max(0, splitCashTender - splitCash);
   const isSplitShortage = splitTotalAllocated < grandTotal;
@@ -81,23 +81,23 @@ function PosPaymentModalContent({
     return presets.slice(0, 4);
   };
 
-  const allocateRemainingTo = (target: "CASH" | "BKASH" | "CARD") => {
+  const allocateRemainingTo = (target: "CASH" | "BANGLA_QR" | "CARD") => {
     if (splitRemaining <= 0) return;
     if (target === "CASH") {
       setSplitCash((prev) => prev + splitRemaining);
       setSplitCashTender((prev) => prev + splitRemaining);
-    } else if (target === "BKASH") {
-      setSplitBkash((prev) => prev + splitRemaining);
+    } else if (target === "BANGLA_QR") {
+      setSplitBanglaQr((prev) => prev + splitRemaining);
     } else if (target === "CARD") {
       setSplitCard((prev) => prev + splitRemaining);
     }
   };
 
-  const splitEvenlyCashBkash = () => {
+  const splitEvenlyCashBanglaQr = () => {
     const half = Math.floor(grandTotal / 2);
     setSplitCash(half);
     setSplitCashTender(half);
-    setSplitBkash(grandTotal - half);
+    setSplitBanglaQr(grandTotal - half);
     setSplitCard(0);
   };
 
@@ -121,11 +121,11 @@ function PosPaymentModalContent({
           tenderAmount: splitCashTender || splitCash,
         });
       }
-      if (splitBkash > 0) {
+      if (splitBanglaQr > 0) {
         splits.push({
-          method: "BKASH",
-          amount: splitBkash,
-          reference: splitBkashRef.trim() || undefined,
+          method: "BANGLA_QR",
+          amount: splitBanglaQr,
+          reference: splitBanglaQrRef.trim() || undefined,
         });
       }
       if (splitCard > 0) {
@@ -197,17 +197,17 @@ function PosPaymentModalContent({
           <button
             type="button"
             onClick={() => {
-              setMethod("BKASH");
+              setMethod("BANGLA_QR");
               setTenderAmount(grandTotal);
             }}
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
-              method === "BKASH"
+              method === "BANGLA_QR"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
                 : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
             }`}
           >
-            <QrCode className="h-5 w-5 text-pink-500" />
-            <span className="text-xs">bKash QR</span>
+            <QrCode className="h-5 w-5 text-teal-600" />
+            <span className="text-xs">Bangla QR</span>
           </button>
 
           <button
@@ -230,8 +230,8 @@ function PosPaymentModalContent({
             type="button"
             onClick={() => {
               setMethod("SPLIT");
-              if (splitCash === 0 && splitBkash === 0 && splitCard === 0) {
-                splitEvenlyCashBkash();
+              if (splitCash === 0 && splitBanglaQr === 0 && splitCard === 0) {
+                splitEvenlyCashBanglaQr();
               }
             }}
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
@@ -305,17 +305,20 @@ function PosPaymentModalContent({
           </div>
         )}
 
-        {method === "BKASH" && (
+        {method === "BANGLA_QR" && (
           <div className="space-y-3 pt-1">
-            <div className="rounded-lg border border-pink-200 bg-pink-50 p-3 text-xs text-pink-900">
+            <div className="rounded-lg border border-teal-200 bg-teal-50 p-3 text-xs text-teal-900">
               <p className="font-semibold">Counter Merchant Payment</p>
               <p className="mt-0.5 text-[11px]">
-                Ask customer to scan counter bKash QR code or make payment to merchant account.
+                Ask customer to scan counter Bangla QR using any bank or MFS app (bKash, Nagad,
+                Rocket, Upay, etc.).
               </p>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold text-slate-700">bKash TrxID (Optional)</Label>
+              <Label className="text-xs font-semibold text-slate-700">
+                Bangla QR / TrxID (Optional)
+              </Label>
               <Input
                 type="text"
                 placeholder="e.g. BL9A8X21"
@@ -394,10 +397,10 @@ function PosPaymentModalContent({
                 </button>
                 <button
                   type="button"
-                  onClick={() => allocateRemainingTo("BKASH")}
-                  className="rounded border border-pink-200 bg-pink-50 px-2 py-0.5 font-medium text-pink-700 hover:bg-pink-100"
+                  onClick={() => allocateRemainingTo("BANGLA_QR")}
+                  className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 font-medium text-teal-700 hover:bg-teal-100"
                 >
-                  + bKash (৳{splitRemaining})
+                  + Bangla QR (৳{splitRemaining})
                 </button>
                 <button
                   type="button"
@@ -455,10 +458,10 @@ function PosPaymentModalContent({
               </div>
             </div>
 
-            {/* Split Row 2: bKash QR */}
+            {/* Split Row 2: Bangla QR */}
             <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-2.5">
               <span className="flex items-center text-xs font-semibold text-slate-800">
-                <QrCode className="mr-1.5 h-3.5 w-3.5 text-pink-600" /> bKash Portion
+                <QrCode className="mr-1.5 h-3.5 w-3.5 text-teal-600" /> Bangla QR Portion
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -468,8 +471,8 @@ function PosPaymentModalContent({
                   <Input
                     type="number"
                     min={0}
-                    value={splitBkash || ""}
-                    onChange={(e) => setSplitBkash(Number(e.target.value) || 0)}
+                    value={splitBanglaQr || ""}
+                    onChange={(e) => setSplitBanglaQr(Number(e.target.value) || 0)}
                     placeholder="0"
                     className="h-8 bg-white font-mono text-xs font-bold"
                   />
@@ -480,8 +483,8 @@ function PosPaymentModalContent({
                   </Label>
                   <Input
                     type="text"
-                    value={splitBkashRef}
-                    onChange={(e) => setSplitBkashRef(e.target.value)}
+                    value={splitBanglaQrRef}
+                    onChange={(e) => setSplitBanglaQrRef(e.target.value)}
                     placeholder="e.g. BL9A8..."
                     className="h-8 bg-white font-mono text-xs uppercase"
                   />

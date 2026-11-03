@@ -1001,6 +1001,12 @@ describe("Phase 3G - Payments & SSLCommerz", () => {
 
     const updatedOrder = await prisma.order.findUnique({ where: { id: payment!.orderId } });
     expect(updatedOrder?.paymentStatus).toBe("FAILED");
+    expect(updatedOrder?.status).toBe("CANCELLED");
+
+    const orderHistory = await prisma.orderHistory.findFirst({
+      where: { orderId: payment!.orderId, status: "CANCELLED" },
+    });
+    expect(orderHistory).not.toBeNull();
 
     const activeReservations = await prisma.inventoryReservation.findMany({
       where: { orderId: payment!.orderId, status: "RESERVED" },

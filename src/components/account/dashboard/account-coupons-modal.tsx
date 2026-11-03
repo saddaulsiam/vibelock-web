@@ -34,7 +34,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-200">
       <div
-        className="animate-in zoom-in-95 relative w-full max-w-md rounded-2xl border border-[#101114]/15 bg-white p-6 shadow-2xl duration-200"
+        className="animate-in zoom-in-95 relative w-full max-w-lg rounded-2xl border border-[#101114]/15 bg-white p-6 shadow-2xl duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="coupons-modal-title"

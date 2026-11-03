@@ -1,30 +1,30 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { ProfileForm, NotificationPreferencesCard } from "@/components/account/profile";
-import { AccountMembershipCard } from "@/components/account/dashboard";
+import { ProfileHub } from "@/components/account/profile";
+import { getCustomerAddresses } from "@/lib/account/queries";
 import { getNotificationPreferences } from "@/lib/account/notification-actions";
 
 export const metadata: Metadata = {
   title: "Profile & Account Settings | VibeLock",
-  description: "Manage your personal profile, notification preferences, and account security.",
+  description: "Manage your personal profile, addresses, security, and notification preferences.",
   robots: { index: false, follow: false },
 };
 
 export default async function ProfilePage() {
   const sessionUser = await requireUser();
 
-  const [user, notificationPrefs] = await Promise.all([
+  const [user, addresses, notificationPrefs] = await Promise.all([
     prisma.user.findUnique({
       where: { id: sessionUser.id },
       select: {
         id: true,
         name: true,
         email: true,
+        phone: true,
         emailVerified: true,
         image: true,
         createdAt: true,
-        role: true,
         accounts: {
           select: {
             provider: true,
@@ -38,6 +38,7 @@ export default async function ProfilePage() {
         },
       },
     }),
+    getCustomerAddresses(),
     getNotificationPreferences(),
   ]);
 
@@ -49,41 +50,19 @@ export default async function ProfilePage() {
   const userId = user?.id ?? sessionUser.id;
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* 1. Personal & Contact Info Card */}
-      <div className="rounded-2xl border border-[#101114]/10 bg-white p-5 shadow-xs sm:p-6">
-        <div className="mb-6 border-b border-[#101114]/10 pb-5">
-          <h1 className="text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
-            Personal & Contact Info
-          </h1>
-          <p className="text-muted-foreground mt-1 text-xs sm:text-sm">
-            Manage your personal profile, streetwear avatar, contact details, and display
-            preferences.
-          </p>
-        </div>
-
-        <ProfileForm
-          initialName={user?.name ?? sessionUser.name ?? ""}
-          email={userEmail}
-          emailVerified={emailVerified}
-          initialImage={user?.image ?? null}
-          phone={latestPhone}
-          createdAt={createdAt}
-          authProvider={authProvider}
-        />
-      </div>
-
-      {/* 2. Notification Preferences Card */}
-      <NotificationPreferencesCard initialPreferences={notificationPrefs} />
-
-      {/* 3. Account Membership & Login Security Card */}
-      <AccountMembershipCard
-        email={userEmail}
-        emailVerified={emailVerified}
-        createdAt={createdAt}
-        authProvider={authProvider}
-        userId={userId}
-      />
-    </div>
+    <ProfileHub
+      user={{
+        id: userId,
+        name: user?.name ?? sessionUser.name ?? null,
+        email: userEmail,
+        emailVerified,
+        image: user?.image ?? null,
+        createdAt,
+        authProvider,
+        latestPhone: user?.phone ?? latestPhone,
+      }}
+      addresses={addresses}
+      notificationPreferences={notificationPrefs}
+    />
   );
 }

@@ -71,21 +71,21 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
     });
 
     let cashSales = 0;
-    let bkashSales = 0;
+    let banglaQrSales = 0;
     let cardSales = 0;
 
     for (const p of payments) {
       const amt = Number(p.amount) || 0;
       if (p.gateway === "CASH") {
         cashSales += amt;
-      } else if (p.gateway === "BKASH") {
-        bkashSales += amt;
+      } else if (p.gateway === "BANGLA_QR" || p.gateway === "BKASH") {
+        banglaQrSales += amt;
       } else if (p.gateway === "CARD") {
         cardSales += amt;
       }
     }
 
-    const totalSales = cashSales + bkashSales + cardSales;
+    const totalSales = cashSales + banglaQrSales + cardSales;
     const ordersCount = payments.length;
 
     // Fetch cash drops / payouts recorded during this shift
@@ -114,7 +114,8 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
       cashierName: cashier.name || cashier.email || "Cashier",
       openingFloat,
       cashSales,
-      bkashSales,
+      banglaQrSales,
+      bkashSales: banglaQrSales,
       cardSales,
       totalSales,
       cashDrops,
@@ -289,7 +290,8 @@ export async function closeRegisterShiftAction(
           reportId,
           openingFloat: shift.openingFloat,
           cashSales: shift.cashSales,
-          bkashSales: shift.bkashSales,
+          banglaQrSales: shift.banglaQrSales ?? shift.bkashSales,
+          bkashSales: shift.banglaQrSales ?? shift.bkashSales,
           cardSales: shift.cardSales,
           totalSales: shift.totalSales,
           totalOrders: shift.ordersCount,
@@ -315,7 +317,8 @@ export async function closeRegisterShiftAction(
       closedAt,
       openingFloat: shift.openingFloat,
       cashSales: shift.cashSales,
-      bkashSales: shift.bkashSales,
+      banglaQrSales: shift.banglaQrSales ?? shift.bkashSales,
+      bkashSales: shift.banglaQrSales ?? shift.bkashSales,
       cardSales: shift.cardSales,
       totalSales: shift.totalSales,
       totalOrders: shift.ordersCount,

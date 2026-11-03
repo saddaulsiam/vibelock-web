@@ -34,6 +34,7 @@ import {
   OrderStaffNotes,
   OrderMobileActionBar,
 } from "@/components/admin/orders";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { getAdminOrderById } from "@/lib/admin/orders";
 import { getCustomerRiskProfile } from "@/lib/admin/customers";
 
@@ -207,10 +208,20 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
             <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
               Payment Gateway
             </span>
-            <p className="mt-0.5 text-sm font-bold text-neutral-900">
-              {order.payments[0]?.gateway ||
-                (order.paymentMethod === "COD" ? "Cash on Delivery" : "Online Gateway")}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <PaymentGatewayBadge
+                gateway={order.payments[0]?.gateway}
+                paymentMethod={order.paymentMethod}
+              />
+              {order.payments[0]?.gatewayTransactionId && (
+                <span
+                  className="font-mono text-xs font-semibold text-neutral-600"
+                  title={order.payments[0].gatewayTransactionId}
+                >
+                  Trx: {order.payments[0].gatewayTransactionId}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="rounded-lg bg-neutral-50/80 p-2.5">

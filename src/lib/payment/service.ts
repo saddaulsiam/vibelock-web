@@ -244,7 +244,11 @@ export class PaymentService {
       }
     }
 
-    if (!verification.success) {
+    if (
+      !verification.success &&
+      verification.status !== "FAILED" &&
+      verification.status !== "CANCELLED"
+    ) {
       throw new Error("Payment verification failed");
     }
 
@@ -416,12 +420,23 @@ export class PaymentService {
       } else if (verification.status === "FAILED" || verification.status === "CANCELLED") {
         await tx.order.updateMany({
           where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
-          data: { paymentStatus: verification.status === "FAILED" ? "FAILED" : "CANCELLED" },
+          data: {
+            status: "CANCELLED",
+            paymentStatus: verification.status === "FAILED" ? "FAILED" : "CANCELLED",
+          },
         });
 
-        // Release reservation
+        await tx.orderHistory.create({
+          data: {
+            orderId: payment.orderId,
+            status: "CANCELLED",
+            notes: `Online payment ${verification.status.toLowerCase()} via ${gateway}. Order automatically cancelled and reserved stock released.`,
+          },
+        });
+
+        // Release reservation and restock if needed
         const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-        await inventoryService.releaseReservation(payment.orderId, tx);
+        await inventoryService.cancelOrderInventory(payment.orderId, tx);
       }
     });
 

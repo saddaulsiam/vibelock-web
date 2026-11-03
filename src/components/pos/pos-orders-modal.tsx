@@ -85,11 +85,12 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
   const renderPaymentBadge = (method: string) => {
     switch (method) {
+      case "BANGLA_QR":
       case "BKASH":
         return (
-          <Badge className="flex items-center space-x-1 border-pink-200 bg-pink-100 text-pink-700 hover:bg-pink-100">
+          <Badge className="flex items-center space-x-1 border-teal-200 bg-teal-100 text-teal-800 hover:bg-teal-100">
             <QrCode className="h-3 w-3" />
-            <span>bKash</span>
+            <span>Bangla QR</span>
           </Badge>
         );
       case "CARD":
@@ -174,7 +175,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
           </div>
           <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
             <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
-              Digital (bKash/Card)
+              Digital (Bangla QR/Card)
             </span>
             <span className="font-heading text-vl-black font-mono text-lg font-black">
               ৳{stats.digitalTotal.toLocaleString()}

@@ -345,25 +345,28 @@ export function PosView({
         setShift((prev) => {
           if (!prev) return null;
           let cashAdd = 0;
-          let bkashAdd = 0;
+          let banglaQrAdd = 0;
           let cardAdd = 0;
 
           if (completedOrder.splits && completedOrder.splits.length > 0) {
             for (const sp of completedOrder.splits) {
               if (sp.method === "CASH") cashAdd += sp.amount;
-              else if (sp.method === "BKASH") bkashAdd += sp.amount;
+              else if (sp.method === "BANGLA_QR" || sp.method === "BKASH") banglaQrAdd += sp.amount;
               else if (sp.method === "CARD") cardAdd += sp.amount;
             }
           } else {
             if (paymentMethod === "CASH") cashAdd = saleAmt;
-            else if (paymentMethod === "BKASH") bkashAdd = saleAmt;
+            else if (paymentMethod === "BANGLA_QR" || paymentMethod === "BKASH") banglaQrAdd = saleAmt;
             else if (paymentMethod === "CARD") cardAdd = saleAmt;
           }
+
+          const updatedBanglaQr = (prev.banglaQrSales ?? prev.bkashSales ?? 0) + banglaQrAdd;
 
           return {
             ...prev,
             cashSales: prev.cashSales + cashAdd,
-            bkashSales: prev.bkashSales + bkashAdd,
+            banglaQrSales: updatedBanglaQr,
+            bkashSales: updatedBanglaQr,
             cardSales: prev.cardSales + cardAdd,
             totalSales: prev.totalSales + saleAmt,
             ordersCount: prev.ordersCount + 1,
