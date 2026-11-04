@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import prisma from "@/lib/prisma/client";
 
 export const metadata: Metadata = {
   title: "Checkout | VibeLock",
@@ -17,9 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function CheckoutPage() {
-  const session = await auth();
+  const user = await getCurrentUser();
 
-  if (!session?.user) {
+  if (!user) {
     redirect("/login?callbackUrl=/checkout");
   }
 
@@ -38,8 +39,14 @@ export default async function CheckoutPage() {
     redirect("/cart?error=unavailable-items");
   }
 
+  // Fetch live phone number from DB (not in JWT)
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { phone: true },
+  });
+
   return (
-    <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
+    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container className="max-w-6xl">
         <div className="border-border mb-7 border-b pb-5 sm:mb-9 sm:pb-6">
           <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
@@ -54,8 +61,9 @@ export default async function CheckoutPage() {
         </div>
         <CheckoutForm
           cart={cart}
-          defaultEmail={session.user.email || ""}
-          defaultName={session.user.name || ""}
+          defaultEmail={user.email || ""}
+          defaultName={user.name || ""}
+          defaultPhone={dbUser?.phone || ""}
           availablePaymentMethods={await getStorefrontPaymentMethods()}
         />
       </Container>
