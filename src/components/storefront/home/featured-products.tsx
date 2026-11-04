@@ -80,7 +80,7 @@ export function FeaturedProducts({
           eyebrow="FEATURED"
           title="EXPLORE OUR CATALOG"
           align="center"
-          action={{ href: "/products", label: "View All" }}
+          action={{ href: "/shop", label: "View All" }}
         />
 
         {/* Filter Tabs (Pills) */}

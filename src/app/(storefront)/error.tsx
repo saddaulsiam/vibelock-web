@@ -44,7 +44,7 @@ export default function StorefrontError({
               Try again
             </Button>
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
             >
               Browse products

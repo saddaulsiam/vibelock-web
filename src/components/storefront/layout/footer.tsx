@@ -21,7 +21,7 @@ const RETAIL_LOCATION: RetailLocation = {
 };
 
 const shopLinks = [
-  { label: "All Products", href: "/products" },
+  { label: "All Products", href: "/shop" },
   { label: "Oversized T-Shirts", href: "/category/t-shirts" },
   { label: "Streetwear Shirts", href: "/category/shirts" },
   { label: "Cargo Pants & Denims", href: "/category/pants" },

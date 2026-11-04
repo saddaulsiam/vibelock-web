@@ -133,7 +133,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             favorite fits for later.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-6 py-3 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-[#1f2229] active:scale-95"
           >
             <span>Explore Drops</span>
@@ -154,7 +154,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             </h3>
           </div>
           <Link
-            href="/products"
+            href="/shop"
             className="group inline-flex items-center gap-1 text-xs font-bold text-[#101114] transition-colors hover:text-[#0099b8]"
           >
             <span>View All</span>

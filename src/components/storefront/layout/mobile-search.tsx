@@ -56,7 +56,7 @@ export function MobileSearch() {
           <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-[#0C0D0E] px-4 py-3 shadow-2xl sm:top-18">
             <div className="mx-auto max-w-lg">
               <form
-                action="/products"
+                action="/shop"
                 method="get"
                 onSubmit={() => setIsOpen(false)}
                 className="relative flex items-center"

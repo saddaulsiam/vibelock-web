@@ -22,7 +22,7 @@ export default function StorefrontNotFound() {
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Browse products <ArrowRight className="size-4" aria-hidden="true" />

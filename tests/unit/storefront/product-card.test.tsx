@@ -12,18 +12,18 @@ describe("ProductCard Secondary Image Hover Effect", () => {
       description: "Organic cotton heavyweight hoodie",
       status: ProductStatus.PUBLISHED,
       primaryImage: {
-        url: "/uploads/products/hoodie-front.webp",
+        url: "/uploads/product/hoodie-front.webp",
         alt: "Front view",
         isPrimary: true,
       },
       secondaryImage: {
-        url: "/uploads/products/hoodie-back.webp",
+        url: "/uploads/product/hoodie-back.webp",
         alt: "Back view",
         isPrimary: false,
       },
       images: [
-        { url: "/uploads/products/hoodie-front.webp", alt: "Front view", isPrimary: true },
-        { url: "/uploads/products/hoodie-back.webp", alt: "Back view", isPrimary: false },
+        { url: "/uploads/product/hoodie-front.webp", alt: "Front view", isPrimary: true },
+        { url: "/uploads/product/hoodie-back.webp", alt: "Back view", isPrimary: false },
       ],
       minPrice: 1850,
       maxPrice: 2200,

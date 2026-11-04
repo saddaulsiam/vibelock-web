@@ -19,7 +19,7 @@ export default function NotFound() {
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
-              href="/products"
+              href="/shop"
               className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center gap-2 rounded-xs px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               Browse products <ArrowRight className="size-4" aria-hidden="true" />

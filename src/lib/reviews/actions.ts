@@ -113,10 +113,10 @@ export async function submitReviewAction(input: SubmitReviewInput): Promise<Revi
     });
 
     if (productSlug) {
-      revalidatePath(`/products/${productSlug}`);
+      revalidatePath(`/product/${productSlug}`);
     }
     revalidatePath("/admin/reviews");
-    revalidatePath("/products");
+    revalidatePath("/shop");
 
     return {
       success: true,
@@ -169,10 +169,10 @@ export async function deleteReviewAction(reviewId: string): Promise<ReviewAction
     });
 
     if (review.product?.slug) {
-      revalidatePath(`/products/${review.product.slug}`);
+      revalidatePath(`/product/${review.product.slug}`);
     }
     revalidatePath("/admin/reviews");
-    revalidatePath("/products");
+    revalidatePath("/shop");
 
     return { success: true, message: "Review deleted successfully." };
   } catch (error) {

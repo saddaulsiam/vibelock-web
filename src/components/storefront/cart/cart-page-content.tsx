@@ -34,7 +34,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           Take a look through the collection and find your next everyday piece.
         </p>
         <Link
-          href="/products"
+          href="/shop"
           className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-xs px-6 text-xs font-black tracking-wider uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none"
         >
           Shop products <ArrowRight className="size-4" aria-hidden="true" />
@@ -80,7 +80,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
             ))}
           </div>
           <Link
-            href="/products"
+            href="/shop"
             className="hover:text-muted-foreground mt-6 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-semibold text-[#101114] underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             <ArrowLeft className="size-4" aria-hidden="true" /> Continue shopping

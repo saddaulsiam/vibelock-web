@@ -48,7 +48,7 @@ describe("Admin Banner Actions", () => {
         "mobileImageUrl",
         "https://res.cloudinary.com/vibelock/image/upload/mobile.webp"
       );
-      formData.append("linkUrl", "/products?category=t-shirts");
+      formData.append("linkUrl", "/shop?category=t-shirts");
       formData.append("placement", "CATEGORY");
       formData.append("sortOrder", "5");
       formData.append("isActive", "on");
@@ -63,7 +63,7 @@ describe("Admin Banner Actions", () => {
           title: "Valid Streetwear Drop",
           imageUrl: "https://res.cloudinary.com/vibelock/image/upload/desktop.webp",
           mobileImageUrl: "https://res.cloudinary.com/vibelock/image/upload/mobile.webp",
-          linkUrl: "/products?category=t-shirts",
+          linkUrl: "/shop?category=t-shirts",
           placement: "CATEGORY",
           sortOrder: 5,
           isActive: true,
