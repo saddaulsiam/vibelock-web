@@ -65,7 +65,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
             order.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             <span>Explore Collection</span>

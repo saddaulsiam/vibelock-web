@@ -57,7 +57,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
   };
 
   const savedProducts = initialProducts.filter((p) => wishlistSlugs.includes(p.slug));
-  const recommendedProducts = initialProducts.slice(0, 4);
+  const recommendedProducts = initialProducts.slice(0, 5);
 
   if (!isMounted) {
     return (
@@ -133,7 +133,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             favorite fits for later.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-6 py-3 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-[#1f2229] active:scale-95"
           >
             <span>Explore Drops</span>
@@ -154,7 +154,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             </h3>
           </div>
           <Link
-            href="/products"
+            href="/shop"
             className="group inline-flex items-center gap-1 text-xs font-bold text-[#101114] transition-colors hover:text-[#0099b8]"
           >
             <span>View All</span>
@@ -162,7 +162,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
           {recommendedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

@@ -563,7 +563,7 @@ export async function createOrderAction(
     const finalOrderNumber = orderResult.orderNumber;
 
     revalidatePath("/cart");
-    revalidatePath("/products");
+    revalidatePath("/shop");
     revalidatePath("/admin/orders");
     revalidatePath("/admin/inventory");
     if (couponCode) {

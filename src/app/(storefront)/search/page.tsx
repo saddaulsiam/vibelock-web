@@ -21,5 +21,5 @@ export default async function SearchRedirectPage({ searchParams }: SearchPagePro
   }
 
   const query = searchParamsObj.toString();
-  redirect(query ? `/products?${query}` : "/products");
+  redirect(query ? `/shop?q=${query}` : "/shop");
 }

@@ -21,7 +21,7 @@ const RETAIL_LOCATION: RetailLocation = {
 };
 
 const shopLinks = [
-  { label: "All Products", href: "/products" },
+  { label: "All Products", href: "/shop" },
   { label: "Oversized T-Shirts", href: "/category/t-shirts" },
   { label: "Streetwear Shirts", href: "/category/shirts" },
   { label: "Cargo Pants & Denims", href: "/category/pants" },
@@ -29,13 +29,11 @@ const shopLinks = [
 ] as const;
 
 const customerLinks = [
-  { label: "Customer Dashboard", href: "/account" },
+  { label: "My Account", href: "/account" },
   { label: "Track My Orders", href: "/account/orders" },
   { label: "Return & Exchange", href: "/return-policy" },
   { label: "Shipping Policy", href: "/shipping-policy" },
   { label: "FAQs & Support", href: "/faq" },
-  { label: "Saved Wishlist", href: "/wishlist" },
-  { label: "Shopping Bag", href: "/cart" },
 ] as const;
 
 export function Footer() {
@@ -43,13 +41,28 @@ export function Footer() {
 
   return (
     <footer className="border-vl-border bg-vl-black text-vl-white relative overflow-hidden border-t">
-      {/* Subtle atmospheric ambient glow */}
+      {/* ── Technical Grid Pattern (Dark Coordinate Grid) ── */}
       <div
         aria-hidden="true"
-        className="bg-vl-cyan/5 pointer-events-none absolute right-0 -bottom-40 h-96 w-96 rounded-full blur-3xl"
+        className="pointer-events-none absolute inset-0 z-0 opacity-70"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(0, 217, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 217, 255, 0.05) 1px, transparent 1px)",
+          backgroundSize: "36px 36px",
+        }}
       />
 
-      <Container className="relative pt-14 pb-8 sm:pt-16 sm:pb-10">
+      {/* Atmospheric Cyan/Teal Ambient Glow */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-36 left-1/4 h-[420px] w-[650px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,217,255,0.08),transparent_70%)] blur-3xl"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-0 -bottom-40 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(0,217,255,0.07),transparent_70%)] blur-3xl"
+      />
+
+      <Container className="relative z-10 pt-14 pb-8 sm:pt-16 sm:pb-10">
         {/* ── 1. Top Section: Brand Info & Retail Outlets + Quick Links ── */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Brand & About (Col-span 4) */}

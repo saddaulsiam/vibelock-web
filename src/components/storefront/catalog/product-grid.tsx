@@ -8,11 +8,7 @@ interface ProductGridProps {
   clearSearchHref?: string;
 }
 
-export function ProductGrid({
-  products,
-  searchTerm,
-  clearSearchHref = "/products",
-}: ProductGridProps) {
+export function ProductGrid({ products, searchTerm, clearSearchHref = "/shop" }: ProductGridProps) {
   if (products.length === 0) {
     if (searchTerm) {
       return (
@@ -31,7 +27,7 @@ export function ProductGrid({
               Clear search
             </Link>
             <Link
-              href="/products"
+              href="/shop"
               className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               Browse all products

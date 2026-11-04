@@ -56,7 +56,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
   return (
     <article className="border-border grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 border-b py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5 sm:py-6">
       <Link
-        href={`/products/${item.productSlug}`}
+        href={`/product/${item.productSlug}`}
         aria-label={`View ${item.productName}`}
         className="relative aspect-3/4 overflow-hidden bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
       >
@@ -81,7 +81,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
         <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:justify-between sm:gap-5">
           <div className="min-w-0">
             <Link
-              href={`/products/${item.productSlug}`}
+              href={`/product/${item.productSlug}`}
               className="font-heading text-vl-black focus-visible:ring-vl-cyan text-base font-black tracking-tight wrap-break-word underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none"
             >
               {item.productName}

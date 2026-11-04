@@ -9,13 +9,13 @@ import robots from "../../src/app/robots";
 import sitemap from "../../src/app/sitemap";
 import { NextRequest } from "next/server";
 import { metadata as rootMetadata } from "../../src/app/layout";
-import { metadata as productsMetadata } from "../../src/app/(storefront)/products/page";
+import { metadata as productsMetadata } from "../../src/app/(storefront)/shop/page";
 import { generateMetadata as generateCategoryMetadata } from "../../src/app/(storefront)/category/[slug]/page";
 import { proxy } from "../../src/proxy";
 import {
   default as ProductDetailPage,
   generateMetadata as generateProductMetadata,
-} from "../../src/app/(storefront)/products/[slug]/page";
+} from "../../src/app/(storefront)/product/[slug]/page";
 
 vi.mock("../../src/auth", () => ({ auth: vi.fn() }));
 vi.mock("next/font/google", () => ({
@@ -95,7 +95,7 @@ describe("Phase 3L - Launch Hardening", () => {
   test("production proxy returns a nonce-based CSP without unsafe-eval", () => {
     vi.stubEnv("NODE_ENV", "production");
     try {
-      const request = () => new NextRequest("https://vibelock.bd/products");
+      const request = () => new NextRequest("https://vibelock.bd/shop");
       const response = proxy(request());
       const repeatedResponse = proxy(request());
       const policy = response.headers.get("content-security-policy") ?? "";
@@ -120,7 +120,7 @@ describe("Phase 3L - Launch Hardening", () => {
   test("production canonical metadata uses the public host for storefront routes", async () => {
     expect(rootMetadata.metadataBase?.toString()).toBe("https://vibelock.bd/");
     expect(rootMetadata.alternates?.canonical).toBe("https://vibelock.bd");
-    expect(productsMetadata.alternates?.canonical).toBe("https://vibelock.bd/products");
+    expect(productsMetadata.alternates?.canonical).toBe("https://vibelock.bd/shop");
 
     const category = await prisma.category.create({
       data: { name: "Launch QA Category", slug: `launch-qa-${crypto.randomUUID()}` },
@@ -191,7 +191,7 @@ describe("Phase 3L - Launch Hardening", () => {
     expect(metadata.title).toBe(product.name);
     expect(metadata.description).toBe("SEO fixture description");
     expect(metadata.openGraph).toMatchObject({ title: `${product.name} | VibeLock` });
-    expect(metadata.alternates?.canonical).toBe(`https://vibelock.bd/products/${product.slug}`);
+    expect(metadata.alternates?.canonical).toBe(`https://vibelock.bd/product/${product.slug}`);
 
     const page = await ProductDetailPage({ params: Promise.resolve({ slug: product.slug }) });
     const jsonLdText = findJsonLd(page);
@@ -216,10 +216,8 @@ describe("Phase 3L - Launch Hardening", () => {
     const published = await makeSeoProduct("PUBLISHED");
     const unpublished = await makeSeoProduct("DRAFT");
     const entries = await sitemap();
-    expect(entries.some((entry) => entry.url.endsWith(`/products/${published.slug}`))).toBe(true);
-    expect(entries.some((entry) => entry.url.endsWith(`/products/${unpublished.slug}`))).toBe(
-      false
-    );
+    expect(entries.some((entry) => entry.url.endsWith(`/product/${published.slug}`))).toBe(true);
+    expect(entries.some((entry) => entry.url.endsWith(`/product/${unpublished.slug}`))).toBe(false);
 
     const robotsPolicy = robots();
     const policy = Array.isArray(robotsPolicy.rules) ? robotsPolicy.rules[0] : robotsPolicy.rules;

@@ -153,7 +153,7 @@ export default function AboutPage() {
               {/* Action Button */}
               <div className="mt-9">
                 <Link
-                  href="/products"
+                  href="/shop"
                   className="inline-flex items-center gap-2 rounded-lg bg-[#101114] px-6 py-3.5 text-xs font-extrabold tracking-wider text-white uppercase transition-all hover:bg-[#1E262C] hover:shadow-lg"
                 >
                   <span>EXPLORE CURRENT DROPS</span>

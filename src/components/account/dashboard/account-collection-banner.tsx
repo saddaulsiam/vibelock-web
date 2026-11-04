@@ -42,7 +42,7 @@ export function AccountCollectionBanner() {
 
           <div className="mt-4 sm:mt-5">
             <Link
-              href="/products"
+              href="/shop"
               className="group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
             >
               <span>Shop All Products</span>

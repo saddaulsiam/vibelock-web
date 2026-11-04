@@ -97,7 +97,11 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
     {
       id: "payment",
       label: isCod ? "COD Confirmed" : "Payment Verified",
-      sublabel: isCod ? "Pay on delivery" : isPaid ? "Settled via " + gatewayLabel : "Pending settlement",
+      sublabel: isCod
+        ? "Pay on delivery"
+        : isPaid
+          ? "Settled via " + gatewayLabel
+          : "Pending settlement",
       isDone: isPaid || isCod,
       isCurrent: !isPaid && !isCod,
     },
@@ -133,7 +137,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         {/* ── Top Navigation & Utility Toolbar ── */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link
-            href="/products"
+            href="/shop"
             className="group inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors hover:text-[#101114]"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
@@ -194,7 +198,8 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     Items Returned to Stock
                   </h4>
                   <p className="mt-0.5 text-xs text-rose-700">
-                    You can restart checkout anytime from your cart or continue browsing the collection.
+                    You can restart checkout anytime from your cart or continue browsing the
+                    collection.
                   </p>
                 </div>
               </div>
@@ -368,9 +373,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   {order.customerPhone && (
                     <p className="font-medium text-neutral-700">{order.customerPhone}</p>
                   )}
-                  {order.customerEmail && (
-                    <p className="text-neutral-500">{order.customerEmail}</p>
-                  )}
+                  {order.customerEmail && <p className="text-neutral-500">{order.customerEmail}</p>}
                   <div className="pt-2 text-[#101114]">
                     <p>{order.shippingStreet || "Standard Street Address"}</p>
                     <p>
@@ -425,7 +428,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
               </div>
 
               {/* Courier & Assurance */}
-              <div className="pt-5 sm:col-span-2 sm:pt-6 lg:col-span-1 lg:pl-6 lg:pt-0">
+              <div className="pt-5 sm:col-span-2 sm:pt-6 lg:col-span-1 lg:pt-0 lg:pl-6">
                 <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
                   <Truck className="size-3.5 text-[#101114]" />
                   <span>Courier &amp; Assurance</span>
@@ -433,7 +436,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 <div className="mt-3 space-y-2 text-xs text-neutral-600">
                   <p className="font-medium text-[#101114]">Steadfast Doorstep Delivery</p>
                   <p className="text-neutral-500">Inside Dhaka 2–3 days, outside 3–5 days.</p>
-                  <div className="space-y-1.5 pt-2 border-t border-[#101114]/6">
+                  <div className="space-y-1.5 border-t border-[#101114]/6 pt-2">
                     <div className="flex items-center gap-1.5 text-[11px] text-neutral-700">
                       <ShieldCheck className="size-3.5 text-emerald-600" />
                       <span>100% Authentic Garment Guarantee</span>
@@ -456,7 +459,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         {/* ── Bottom Navigation Action Controls ── */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
           <Link
-            href="/products"
+            href="/shop"
             className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#101114]/15 bg-white px-6 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
           >
             <ShoppingBag className="size-4 text-neutral-500" />

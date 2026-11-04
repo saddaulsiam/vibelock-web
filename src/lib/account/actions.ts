@@ -42,6 +42,7 @@ const profileSchema = z.object({
 });
 
 function refreshAccount() {
+  revalidatePath("/", "layout");
   revalidatePath("/account", "layout");
   revalidatePath("/account");
   revalidatePath("/account/profile");

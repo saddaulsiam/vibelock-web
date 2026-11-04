@@ -138,7 +138,7 @@ export function CategoriesDrawer({
         {/* ── 3. Bottom Docked Actions ── */}
         <div className="flex shrink-0 flex-col gap-2 border-t border-black/10 bg-white p-3.5 sm:p-4">
           <Link
-            href="/products"
+            href="/shop"
             onClick={closeDrawer}
             className="w-full rounded-xs bg-[#101114] py-3 text-center text-xs font-black tracking-widest text-white uppercase shadow-sm transition-colors hover:bg-black/90"
           >

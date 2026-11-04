@@ -30,11 +30,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title: product.name,
     description,
-    alternates: { canonical: `${SITE_URL}/products/${product.slug}` },
+    alternates: { canonical: `${SITE_URL}/shop/${product.slug}` },
     openGraph: {
       title: `${product.name} | VibeLock`,
       description,
-      url: `${SITE_URL}/products/${product.slug}`,
+      url: `${SITE_URL}/shop/${product.slug}`,
       images: primaryImage ? [{ url: primaryImage.url }] : [],
     },
   };
@@ -116,7 +116,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </Link>
           <ChevronRight className="size-4" aria-hidden="true" />
           <Link
-            href="/products"
+            href="/shop"
             className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
           >
             Products

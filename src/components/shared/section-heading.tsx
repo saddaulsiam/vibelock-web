@@ -39,7 +39,7 @@ export function SectionHeading({
   // If centered is explicitly passed, map to "center", otherwise use align or default to "center"
   const resolvedAlign = align ?? (centered === false ? "left" : "center");
 
-  // Resolve action: support object `{ href, label }`, url string `"/products"`, explicit props `actionHref`/`actionLabel`, or custom ReactNode
+  // Resolve action: support object `{ href, label }`, url string `"/product"`, explicit props `actionHref`/`actionLabel`, or custom ReactNode
   let resolvedHref: string | undefined = actionHref;
   let resolvedLabel: string = actionLabel ?? "VIEW ALL";
   let customActionNode: React.ReactNode = null;

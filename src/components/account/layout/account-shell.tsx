@@ -79,16 +79,14 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
           {/* Sign Out — inline confirmation before firing */}
           {confirmLogout ? (
             <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5">
-              <span className="text-xs font-medium text-red-700">Sign out?</span>
+              <span className="text-xs font-medium text-red-700">Are you sure?</span>
               <button
                 type="button"
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="inline-flex min-h-[28px] cursor-pointer items-center gap-1 rounded-md bg-red-500 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+                className="inline-flex min-h-7 cursor-pointer items-center gap-1 rounded-md bg-red-500 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-red-600 disabled:opacity-50"
               >
-                {loggingOut ? (
-                  <Loader2 className="size-3 animate-spin" />
-                ) : null}
+                {loggingOut ? <Loader2 className="size-3 animate-spin" /> : null}
                 {loggingOut ? "Signing out..." : "Yes, sign out"}
               </button>
               <button
@@ -106,7 +104,7 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
               type="button"
               onClick={() => setConfirmLogout(true)}
               title="Sign out of account"
-              className="inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded border-[1.5px] border-red-200 bg-red-100/60 px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600"
+              className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded border-[1.5px] border-red-200 bg-red-100/60 px-3 py-1.5 text-xs font-semibold text-red-500 transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600"
             >
               <LogOut className="size-3.5 shrink-0 text-red-500" />
               <span>Sign Out</span>
@@ -149,10 +147,8 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
                   <span>{item.label}</span>
                   {typeof badgeCount === "number" && badgeCount > 0 && (
                     <span
-                      className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] font-bold leading-none ${
-                        isActive
-                          ? "bg-[#101114] text-white"
-                          : "bg-neutral-100 text-neutral-600"
+                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold ${
+                        isActive ? "bg-[#101114] text-white" : "bg-neutral-100 text-neutral-600"
                       }`}
                     >
                       {badgeCount}

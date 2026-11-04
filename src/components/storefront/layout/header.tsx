@@ -55,7 +55,7 @@ export async function Header() {
           <Link
             href="/wishlist"
             aria-label="Wishlist"
-            className="text-vl-white/75 hover:text-vl-white hover:bg-vl-white/10 inline-flex size-8 items-center justify-center rounded-full transition-colors sm:size-9"
+            className="text-vl-white/75 hover:text-vl-cyan hover:bg-vl-white/10 inline-flex size-8 items-center justify-center rounded-full transition-colors sm:size-9"
           >
             <Heart className="size-4 sm:size-4.5" aria-hidden="true" />
           </Link>
@@ -64,7 +64,7 @@ export async function Header() {
           <Link
             href="/cart"
             aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
-            className="hover:text-vl-white text-vl-white/75 relative inline-flex size-8 items-center justify-center rounded-full transition-colors hover:bg-white/10 sm:size-9"
+            className="hover:text-vl-cyan text-vl-white/75 relative inline-flex size-8 items-center justify-center rounded-full transition-colors hover:bg-white/10 sm:size-9"
           >
             <ShoppingBag className="size-4 sm:size-4.5" aria-hidden="true" />
             {itemCount > 0 && (

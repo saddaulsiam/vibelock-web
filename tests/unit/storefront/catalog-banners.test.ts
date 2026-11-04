@@ -44,7 +44,7 @@ describe("Storefront Banner Queries", () => {
       title: "All Products Promo",
       imageUrl: "https://res.cloudinary.com/test/search.webp",
       mobileImageUrl: null,
-      linkUrl: "/products",
+      linkUrl: "/shop",
     };
 
     (prisma.banner.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue(mockBanner);

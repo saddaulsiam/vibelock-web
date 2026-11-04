@@ -128,7 +128,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
     <div className={cn("group relative flex flex-col", className)} {...props}>
       {/* ── Image Canvas ── */}
       <Link
-        href={`/products/${item.slug}`}
+        href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
         className="focus-visible:ring-vl-cyan relative block overflow-hidden bg-[#f2f2f2] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
         style={{ aspectRatio: "2 / 3" }}
@@ -204,7 +204,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
 
         {/* Product Name */}
         <Link
-          href={`/products/${item.slug}`}
+          href={`/product/${item.slug}`}
           title={item.name}
           className="mt-0.5 line-clamp-2 block text-[13px] leading-snug font-bold text-[#101114] transition-colors hover:text-[#101114]/70"
         >

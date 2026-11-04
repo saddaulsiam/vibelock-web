@@ -37,7 +37,7 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
           </div>
         </div>
         <Link
-          href={`/login?callbackUrl=/products/${productSlug}`}
+          href={`/login?callbackUrl=/product/${productSlug}`}
           className="inline-flex min-h-11 items-center justify-center rounded-sm bg-[#101114] px-6 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:outline-2 focus-visible:outline-[#00D9FF]"
         >
           Sign in to Review

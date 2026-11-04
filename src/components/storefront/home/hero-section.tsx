@@ -301,7 +301,7 @@ export function HeroSection({
 
           <div className="mt-4 sm:mt-7" style={{ pointerEvents: "auto" }}>
             <Link
-              href="/products"
+              href="/shop"
               className="inline-flex items-center gap-2.5 rounded-full border border-[#00D9FF]/40 bg-[#00D9FF]/10 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-[#00D9FF] uppercase backdrop-blur-sm transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF] hover:text-[#080A0C] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
             >
               SHOP ALL DROPS

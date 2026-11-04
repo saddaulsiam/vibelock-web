@@ -1,18 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   User,
   ChevronDown,
+  CircleUserRound,
   Heart,
-  Package,
-  Tag,
-  MapPin,
+  Box,
+  Sparkles,
   LogOut,
-  ArrowRight,
-  LayoutDashboard,
+  Loader2,
 } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ interface AccountPopoverProps {
   user: {
     name?: string | null;
     email?: string | null;
+    image?: string | null;
     role?: string;
   } | null;
 }
@@ -28,8 +29,30 @@ interface AccountPopoverProps {
 export function AccountPopover({ user }: AccountPopoverProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [failedImage, setFailedImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
+
+  const hasValidImage = Boolean(user?.image && failedImage !== user.image);
+
+  // Mouse hover handlers with smooth intent delay
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 150);
+  };
 
   // Close when clicking outside
   useEffect(() => {
@@ -39,7 +62,12 @@ export function AccountPopover({ user }: AccountPopoverProps) {
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -52,83 +80,130 @@ export function AccountPopover({ user }: AccountPopoverProps) {
   };
 
   return (
-    <div ref={containerRef} className="relative">
-      {/* Trigger Button with User Icon and Subtle Chevron */}
+    <div
+      ref={containerRef}
+      className="relative"
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* ── Trigger Button: Cyan User Icon with Subtle Chevron ── */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="focus-visible:ring-vl-cyan hover:text-vl-white text-vl-white/75 hover:bg-vl-white/10 flex size-8 cursor-pointer items-center justify-center rounded-full p-0 transition-all focus:outline-none focus-visible:ring-2 sm:size-9 sm:w-auto sm:gap-1 sm:px-2"
+        className="hover:text-vl-cyan text-vl-white/75 inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:size-9 sm:w-auto sm:px-2"
       >
-        <div className="bg-vl-white/5 flex size-6 items-center justify-center rounded-full sm:size-7">
-          <User className="size-3.5 sm:size-4" />
-        </div>
+        <User className="size-4 stroke-[2.2] sm:size-4.5" />
         <ChevronDown
-          className={`hidden size-3 transition-transform duration-200 xl:block ${
-            isOpen ? "text-vl-cyan rotate-180" : "text-vl-white/50"
-          }`}
+          className={`size-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Floating Card Popover */}
+      {/* ── Floating Account Card Popover (Matches Screenshot 1:1) ── */}
       {isOpen && (
-        <div className="border-vl-white/10 absolute top-full right-0 z-50 mt-2.5 w-76 rounded-2xl border bg-white p-5 shadow-[0_15px_40px_rgba(0,0,0,0.12)]">
-          {/* ── Top Header & Main CTA ── */}
-          <div className="text-center">
-            <p className="text-vl-black/70 text-xs font-medium">
-              {user ? `Hello, ${user.name || "Customer"}` : "Hello, sign in"}
-            </p>
-
-            {user ? (
-              <Link
-                href="/account"
-                onClick={() => setIsOpen(false)}
-                className="bg-vl-black text-vl-white hover:bg-vl-black/80 mt-2.5 inline-flex h-9 w-full items-center justify-center gap-2 rounded-full text-xs font-bold tracking-wider uppercase transition-all"
-              >
-                <LayoutDashboard className="size-3.5" />
-                <span>My Account</span>
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="bg-vl-black text-vl-white hover:bg-vl-black/80 mt-2.5 inline-flex h-9.5 w-full items-center justify-center rounded-full text-xs font-extrabold tracking-wider uppercase transition-all"
-                >
-                  SIGN IN
-                </Link>
-
-                <p className="text-vl-black/60 mt-2 text-[11px]">
-                  New customer?{" "}
-                  <Link
-                    href="/register"
-                    onClick={() => setIsOpen(false)}
-                    className="text-vl-cyan font-bold hover:underline"
+        <div className="absolute top-full right-0 z-50 mt-3 w-72 rounded-2xl border border-neutral-100/90 bg-white p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] before:absolute before:inset-x-0 before:-top-3 before:h-3 sm:w-[290px]">
+          {user ? (
+            /* ── LOGGED IN STATE ── */
+            <>
+              {/* Profile Header */}
+              <div className="flex items-center gap-3">
+                {hasValidImage && user?.image ? (
+                  <div className="relative size-11 shrink-0 overflow-hidden rounded-full shadow-2xs ring-2 ring-neutral-100/90">
+                    <Image
+                      src={user.image}
+                      alt={user.name || "Customer Avatar"}
+                      fill
+                      sizes="44px"
+                      unoptimized={Boolean(user.image.startsWith("http"))}
+                      onError={() => setFailedImage(user.image ?? null)}
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#101114] text-white shadow-2xs">
+                    <CircleUserRound className="size-7 stroke-[1.8] text-white" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <span className="block text-[10px] leading-none font-bold tracking-[0.14em] text-neutral-400 uppercase">
+                    HELLO,
+                  </span>
+                  <h3
+                    className="mt-1 truncate text-[14px] leading-snug font-bold tracking-tight text-[#101114]"
+                    title={user.name || "Customer"}
                   >
-                    Start here
-                  </Link>
-                </p>
-              </>
-            )}
-          </div>
+                    {user.name || "Customer"}
+                  </h3>
+                </div>
+              </div>
 
-          <div className="my-4 border-t border-black/8" />
+              {/* Action Buttons: MY ACCOUNT + Circular Sign Out */}
+              <div className="mt-4 flex items-center gap-2">
+                <Link
+                  href="/account"
+                  onClick={() => setIsOpen(false)}
+                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+                >
+                  MY ACCOUNT
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  title="Sign Out"
+                  aria-label="Sign Out"
+                  className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white text-neutral-500 shadow-2xs transition-all duration-150 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50"
+                >
+                  {isLoggingOut ? (
+                    <Loader2 className="size-4 animate-spin text-neutral-400" />
+                  ) : (
+                    <LogOut className="size-4 stroke-[1.8]" />
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            /* ── GUEST / SIGN IN STATE ── */
+            <div className="pt-1 text-center">
+              <p className="text-xs font-semibold text-neutral-500">Hello, sign in</p>
+              <Link
+                href="/login"
+                onClick={() => setIsOpen(false)}
+                className="mt-3.5 flex h-9 w-full items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+              >
+                SIGN IN
+              </Link>
+              <p className="mt-3 text-xs text-neutral-400">
+                New customer?{" "}
+                <Link
+                  href="/register"
+                  onClick={() => setIsOpen(false)}
+                  className="font-bold text-[#00D9FF] hover:underline"
+                >
+                  Start here
+                </Link>
+              </p>
+            </div>
+          )}
 
-          {/* ── 2-Column Split: YOUR LISTS & YOUR ACCOUNT ── */}
+          {/* Subtle Horizontal Divider */}
+          <div className="my-4 border-t border-neutral-100" />
+
+          {/* ── 2 Columns: YOUR LISTS & YOUR ACCOUNT ── */}
           <div className="grid grid-cols-2 gap-4 text-xs">
             {/* Column 1: YOUR LISTS */}
             <div>
-              <p className="text-vl-black/40 font-mono text-[10px] font-extrabold tracking-wider uppercase">
+              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR LISTS
-              </p>
-              <div className="mt-2.5 flex flex-col gap-2">
+              </h4>
+              <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
+                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
-                  <Heart className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
+                  <Heart className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Wishlist</span>
                 </Link>
               </div>
@@ -136,56 +211,37 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
             {/* Column 2: YOUR ACCOUNT */}
             <div>
-              <p className="text-vl-black/40 font-mono text-[10px] font-extrabold tracking-wider uppercase">
+              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR ACCOUNT
-              </p>
-              <div className="mt-2.5 flex flex-col gap-2">
+              </h4>
+              <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/account/orders"
                   onClick={() => setIsOpen(false)}
-                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
+                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
-                  <Package className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
+                  <Box className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Orders</span>
                 </Link>
                 <Link
-                  href="/account"
+                  href="/account/coupons"
                   onClick={() => setIsOpen(false)}
-                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
+                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
-                  <Tag className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
+                  <Sparkles className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Offers</span>
                 </Link>
                 <Link
-                  href="/account"
+                  href="/account/profile"
                   onClick={() => setIsOpen(false)}
-                  className="text-vl-black/75 group hover:text-vl-cyan flex items-center gap-2 text-xs font-medium transition-colors"
+                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
-                  <MapPin className="text-vl-black/50 group-hover:text-vl-cyan size-3.5" />
-                  <span>Addresses</span>
+                  <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <span>Profile</span>
                 </Link>
               </div>
             </div>
           </div>
-
-          {/* If Authenticated: Sign Out Action at bottom */}
-          {user && (
-            <div className="border-vl-black/10 mt-4 border-t pt-3">
-              <button
-                type="button"
-                disabled={isLoggingOut}
-                onClick={handleLogout}
-                className="group flex w-full items-center justify-between rounded-sm border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs font-semibold tracking-wide text-red-500 transition-all duration-200 hover:border-red-500 hover:bg-red-500/90 hover:text-white focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
-              >
-                <span className="flex items-center gap-2">
-                  <LogOut className="size-3.5 transition-transform duration-200 group-hover:-translate-x-0.5 group-hover:text-white" />
-                  <span>{isLoggingOut ? "Signing Out..." : "Sign Out"}</span>
-                </span>
-
-                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </button>
-            </div>
-          )}
         </div>
       )}
     </div>

@@ -131,7 +131,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
     const trimmed = query.trim();
     if (trimmed) {
       handleClose();
-      router.push(`/products?q=${encodeURIComponent(trimmed)}`);
+      router.push(`/shop?q=${encodeURIComponent(trimmed)}`);
     }
   };
 
@@ -284,7 +284,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                         return (
                           <Link
                             key={product.id}
-                            href={`/products/${product.slug}`}
+                            href={`/shop/${product.slug}`}
                             onClick={onClose}
                             className="group flex items-center gap-3.5 rounded-xl p-2 transition-colors hover:bg-gray-50"
                           >
@@ -321,7 +321,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
 
                     {/* View all results button */}
                     <Link
-                      href={`/products?q=${encodeURIComponent(query.trim())}`}
+                      href={`/shop?q=${encodeURIComponent(query.trim())}`}
                       onClick={onClose}
                       className="border-vl-cyan/60 text-vl-cyan hover:bg-vl-cyan/10 mt-4 flex w-full items-center justify-center rounded-full border py-2.5 text-xs font-bold tracking-wider uppercase transition-colors"
                     >
@@ -338,7 +338,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                       Try searching with a different keyword or browse our categories.
                     </p>
                     <Link
-                      href="/products"
+                      href="/shop"
                       onClick={onClose}
                       className="mt-4 inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2 text-xs font-bold tracking-wider text-gray-700 uppercase hover:bg-gray-50"
                     >

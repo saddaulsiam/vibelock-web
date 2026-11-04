@@ -614,23 +614,21 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             <div>
               <div class="footer-block-title">SUPPORT &amp; RETURNS</div>
               <p class="footer-block-body">
-                WhatsApp us at <strong>01942565664</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.com/policies/terms-of-service
+                WhatsApp us at <strong>01311-333277</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.com/policies/terms-of-service
               </p>
             </div>
 
             <div>
-              <div class="footer-block-title">VISIT OUR STORES</div>
+              <div class="footer-block-title">VISIT OUR STORE</div>
               <p class="footer-block-body">
-                <strong>Mirpur 12</strong> &mdash; Level 3, Hazi Kujrat Ali Mollah Super Market, Mirpur 12<br />
-                <strong>Jamuna Future Park</strong> &mdash; 3C-17A, Level 3, South Court, Jamuna Future Park<br />
-                <strong>Bashundhara City</strong> &mdash; 38,39,40, Block D, Level 5, Bashundhara City Shopping Complex
+                <strong>Chatmohar</strong> &mdash; Khondokar Market, Star More, Chatmohar, Pabna<br />
               </p>
             </div>
           </div>
 
           <!-- 8. Generation Timestamp Note -->
           <div class="generation-note">
-            Thank you for shopping with VibeLock BD. Computer-generated receipt for order #${escapeHtml(
+            Thank you for shopping with VibeLock. Computer-generated receipt for order #${escapeHtml(
               order.orderNumber
             )} &mdash; generated ${escapeHtml(currentTimestamp)}.
           </div>
@@ -659,4 +657,3 @@ export function printCustomerInvoice(order: PrintableOrder): void {
     }, 1500);
   }, 250);
 }
-

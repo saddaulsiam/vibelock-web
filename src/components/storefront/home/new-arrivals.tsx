@@ -21,7 +21,7 @@ export function NewArrivals({ products, newArrivals }: NewArrivalsProps) {
           eyebrow="EXPLORE THE LINEUP"
           title="NEW ARRIVALS"
           align="center"
-          action={{ href: "/products?sort=newest", label: "View All" }}
+          action={{ href: "/shop?sort=newest", label: "View All" }}
         />
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">

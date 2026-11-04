@@ -17,7 +17,7 @@ export default async function WishlistPage() {
   });
 
   return (
-    <Section className="min-h-screen bg-[#F3F0E8] pt-20 pb-12 sm:pt-24 sm:pb-16">
+    <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         {/* Wishlist Header */}
         <header className="mb-8 border-b border-[#101114]/10 pb-6 sm:mb-10">

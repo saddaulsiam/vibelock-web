@@ -84,7 +84,7 @@ export function CouponsView({ coupons }: CouponsViewProps) {
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Link
-                href="/products"
+                href="/shop"
                 className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#101114] px-5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
               >
                 <span>Explore Drops</span>

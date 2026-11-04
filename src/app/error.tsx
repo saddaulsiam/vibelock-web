@@ -40,7 +40,7 @@ export default function Error({
               Try again
             </Button>
             <Link
-              href="/products"
+              href="/shop"
               className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
               Browse products
