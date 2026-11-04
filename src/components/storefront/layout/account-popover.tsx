@@ -144,7 +144,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/account"
                   onClick={() => setIsOpen(false)}
-                  className="flex h-10 flex-1 items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
                 >
                   MY ACCOUNT
                 </Link>
@@ -154,7 +154,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                   disabled={isLoggingOut}
                   title="Sign Out"
                   aria-label="Sign Out"
-                  className="flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white text-neutral-500 shadow-2xs transition-all duration-150 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50"
+                  className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white text-neutral-500 shadow-2xs transition-all duration-150 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50"
                 >
                   {isLoggingOut ? (
                     <Loader2 className="size-4 animate-spin text-neutral-400" />
@@ -171,7 +171,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
-                className="mt-3.5 flex h-10 w-full items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+                className="mt-3.5 flex h-9 w-full items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
               >
                 SIGN IN
               </Link>
