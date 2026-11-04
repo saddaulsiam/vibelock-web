@@ -11,7 +11,6 @@ import {
   Heart,
   Box,
   Sparkles,
-  Coins,
   LogOut,
   Loader2,
 } from "lucide-react";
