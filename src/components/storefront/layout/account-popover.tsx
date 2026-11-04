@@ -103,7 +103,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
       {/* ── Floating Account Card Popover (Matches Screenshot 1:1) ── */}
       {isOpen && (
-        <div className="absolute top-full right-0 z-50 mt-3 w-72 rounded-[24px] border border-neutral-100/90 bg-white p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] before:absolute before:inset-x-0 before:-top-3 before:h-3 sm:w-[290px]">
+        <div className="absolute top-full right-0 z-50 mt-3 w-72 rounded-2xl border border-neutral-100/90 bg-white p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] before:absolute before:inset-x-0 before:-top-3 before:h-3 sm:w-[290px]">
           {user ? (
             /* ── LOGGED IN STATE ── */
             <>
@@ -233,12 +233,12 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                   <span>Offers</span>
                 </Link>
                 <Link
-                  href="/account"
+                  href="/account/profile"
                   onClick={() => setIsOpen(false)}
                   className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
-                  <Coins className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
-                  <span>Points</span>
+                  <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <span>Profile</span>
                 </Link>
               </div>
             </div>
