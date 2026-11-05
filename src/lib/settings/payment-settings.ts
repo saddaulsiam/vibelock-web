@@ -174,7 +174,7 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
   if (onlineActive) {
     options.push({
       value: "ONLINE",
-      title: "Online payment",
+      title: "SSLCOMMERZ",
       detail: "Pay securely via cards, internet banking, or mobile banking.",
     });
   }

@@ -150,7 +150,7 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                   </>
                 ) : (
                   <>
-                    <CreditCard className="size-3.5 text-blue-700" /> ONLINE
+                    <CreditCard className="size-3.5 text-blue-700" /> SSLCOMMERZ
                   </>
                 )}
               </span>

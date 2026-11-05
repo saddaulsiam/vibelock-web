@@ -46,11 +46,11 @@ function getHumanGatewayName(gateway?: string | null, method?: string) {
   if (method === "COD" || gateway === "COD" || gateway === "CASH") {
     return "Cash on Delivery";
   }
-  if (!gateway || gateway === "ONLINE") return "Online Gateway (Cards / MFS)";
+  if (!gateway || gateway === "ONLINE") return "SSLCOMMERZ (Cards / MFS)";
   const normalized = gateway.toUpperCase();
   if (normalized === "BKASH") return "bKash";
   if (normalized === "NAGAD") return "Nagad";
-  if (normalized === "SSLCOMMERZ") return "SSLCommerz (Card / MFS)";
+  if (normalized === "SSLCOMMERZ") return "SSLCOMMERZ (Cards / MFS)";
   if (normalized === "BANGLA_QR") return "Bangla QR";
   if (normalized === "CARD") return "Credit / Debit Card";
   return gateway;
