@@ -38,5 +38,5 @@ export const PAYMENT_STATUS_OPTIONS = [
 export const PAYMENT_METHOD_OPTIONS = [
   { value: "ALL", label: "All Payment Methods" },
   { value: "COD", label: "Cash on Delivery (COD)" },
-  { value: "ONLINE", label: "Online Gateway" },
+  { value: "ONLINE", label: "SSLCOMMERZ" },
 ] as const;

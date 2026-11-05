@@ -37,8 +37,9 @@ export function formatPaymentGatewayLabel(
         icon: "PHONE",
       };
     case "SSLCOMMERZ":
+    case "ONLINE":
       return {
-        label: "SSLCommerz",
+        label: "SSLCOMMERZ",
         sublabel: "Cards / MFS",
         colorClass: "border-blue-300 bg-blue-50 text-blue-800 font-bold hover:bg-blue-50",
         icon: "CARD",
@@ -74,11 +75,10 @@ export function formatPaymentGatewayLabel(
         colorClass: "border-emerald-300 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-50",
         icon: "CASH",
       };
-    case "ONLINE":
     default:
       return {
-        label: "ONLINE",
-        sublabel: "Online Gateway",
+        label: normalized || "SSLCOMMERZ",
+        sublabel: "Cards / MFS",
         colorClass: "border-slate-300 bg-slate-50 text-slate-800 font-semibold hover:bg-slate-50",
         icon: "CARD",
       };

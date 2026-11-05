@@ -49,8 +49,8 @@ function formatPaymentMethod(method: string, gateway?: string | null): string {
   }
   if (gateway === "BKASH" || method === "BKASH") return "bKash";
   if (gateway === "NAGAD" || method === "NAGAD") return "Nagad";
-  if (gateway === "SSLCOMMERZ") return "Card / MFS (SSLCommerz)";
-  if (method === "ONLINE") return "Online Payment";
+  if (gateway === "SSLCOMMERZ") return "SSLCOMMERZ (Cards / MFS)";
+  if (method === "ONLINE") return "SSLCOMMERZ";
   return method || "Cash on Delivery";
 }
 

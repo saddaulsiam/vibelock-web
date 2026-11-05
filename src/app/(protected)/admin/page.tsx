@@ -457,7 +457,7 @@ export default async function AdminPage({
                     </p>
                   </div>
                   <p className="text-muted-foreground hidden text-xs md:block">
-                    {order.paymentMethod === "COD" ? "Cash on delivery" : "Online payment"}
+                    {order.paymentMethod === "COD" ? "Cash on delivery" : "SSLCOMMERZ"}
                   </p>
                 </li>
               ))}

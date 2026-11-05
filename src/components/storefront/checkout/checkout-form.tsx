@@ -127,10 +127,13 @@ function getSafeCheckoutError(error: string | undefined) {
     return "Your session needs to be refreshed. Please sign in and try again.";
   }
   if (error?.toLowerCase().includes("payment initiation failed")) {
-    return "Your order was created, but online payment could not be started. You can retry from your orders page.";
+    return "Your order was created, but SSLCOMMERZ payment could not be started. You can retry from your orders page.";
   }
-  if (error?.toLowerCase().includes("online payment is currently unavailable")) {
-    return "Online payment is currently unavailable. Please choose cash on delivery.";
+  if (
+    error?.toLowerCase().includes("online payment is currently unavailable") ||
+    error?.toLowerCase().includes("sslcommerz payment is currently unavailable")
+  ) {
+    return "SSLCOMMERZ payment is currently unavailable. Please choose cash on delivery.";
   }
   if (error?.toLowerCase().includes("bkash payment is currently unavailable")) {
     return "bKash payment is currently unavailable. Please choose another payment method.";
@@ -221,7 +224,7 @@ export function CheckoutForm({
           },
           {
             value: "ONLINE",
-            title: "Online payment",
+            title: "SSLCOMMERZ",
             detail: "Instant payment via bKash, Nagad, debit/credit cards.",
           },
         ] as const);
@@ -819,50 +822,59 @@ export function CheckoutForm({
               </span>
             </div>
 
-            <fieldset className="mt-5 space-y-3">
-              <legend className="sr-only">Choose a payment method</legend>
-              {paymentOptions.map((method) => {
-                const isSelected = paymentMethod === method.value;
-                return (
-                  <label
-                    key={method.value}
-                    className={`flex cursor-pointer items-start gap-3.5 rounded-xs border p-4 transition-all duration-150 ${
-                      isSelected
-                        ? "border-[#101114] bg-[#F3F0E8]/60 shadow-xs"
-                        : "border-border bg-white hover:border-[#101114]/35"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={method.value}
-                      checked={isSelected}
-                      onChange={() => setPaymentMethod(method.value)}
-                      className="mt-0.5 size-4 accent-[#101114]"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-[#101114]">{method.title}</span>
-                        {method.value === "COD" && (
-                          <span className="bg-vl-black/5 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#101114] uppercase">
-                            Popular in BD
-                          </span>
-                        )}
-                        {method.value === "ONLINE" && (
-                          <span className="flex items-center gap-1 text-[11px] font-semibold text-neutral-500">
-                            <CreditCard className="size-3.5" />
-                            bKash / Nagad / Cards
-                          </span>
-                        )}
+            {paymentOptions.length === 0 ? (
+              <div
+                role="alert"
+                className="mt-4 rounded-xs border border-amber-300 bg-amber-50 p-4 text-xs font-semibold text-amber-900"
+              >
+                Checkout is currently unavailable as no payment methods are active. Please contact support.
+              </div>
+            ) : (
+              <fieldset className="mt-5 space-y-3">
+                <legend className="sr-only">Choose a payment method</legend>
+                {paymentOptions.map((method) => {
+                  const isSelected = paymentMethod === method.value;
+                  return (
+                    <label
+                      key={method.value}
+                      className={`flex cursor-pointer items-start gap-3.5 rounded-xs border p-4 transition-all duration-150 ${
+                        isSelected
+                          ? "border-[#101114] bg-[#F3F0E8]/60 shadow-xs"
+                          : "border-border bg-white hover:border-[#101114]/35"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value={method.value}
+                        checked={isSelected}
+                        onChange={() => setPaymentMethod(method.value)}
+                        className="mt-0.5 size-4 accent-[#101114]"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-bold text-[#101114]">{method.title}</span>
+                          {method.value === "COD" && (
+                            <span className="bg-vl-black/5 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#101114] uppercase">
+                              Popular in BD
+                            </span>
+                          )}
+                          {method.value === "ONLINE" && (
+                            <span className="flex items-center gap-1 text-[11px] font-semibold text-neutral-500">
+                              <CreditCard className="size-3.5" />
+                              Cards / Mobile Banking (SSLCOMMERZ)
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
+                          {method.detail}
+                        </p>
                       </div>
-                      <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                        {method.detail}
-                      </p>
-                    </div>
-                  </label>
-                );
-              })}
-            </fieldset>
+                    </label>
+                  );
+                })}
+              </fieldset>
+            )}
           </section>
         </fieldset>
       </form>
@@ -1043,16 +1055,24 @@ export function CheckoutForm({
             {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
             {isPending
               ? "Confirming Order…"
-              : !shippingCity
-                ? "Select District to Order"
-                : paymentMethod === "COD"
-                  ? "Place Order (Cash on Delivery)"
-                  : "Pay Online Now"}
+              : paymentOptions.length === 0
+                ? "Payment unavailable"
+                : !shippingCity
+                  ? "Select District to Order"
+                  : paymentMethod === "COD"
+                    ? "Place Order (Cash on Delivery)"
+                    : "Pay via SSLCOMMERZ"}
           </button>
 
-          <p className="text-muted-foreground mt-2.5 text-center text-[10px] tracking-wider uppercase">
-            No advance payment needed for Cash on Delivery
-          </p>
+          {paymentOptions.length === 0 ? (
+            <p className="text-muted-foreground mt-2.5 text-center text-[10px] tracking-wider text-amber-600 uppercase">
+              Orders cannot be placed right now because no payment methods are currently active.
+            </p>
+          ) : (
+            <p className="text-muted-foreground mt-2.5 text-center text-[10px] tracking-wider uppercase">
+              No advance payment needed for Cash on Delivery
+            </p>
+          )}
         </div>
       </aside>
     </div>
