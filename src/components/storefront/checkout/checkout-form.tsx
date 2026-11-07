@@ -23,6 +23,7 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { SelectableCard } from "@/components/shared/selectable-card";
 
@@ -128,7 +129,7 @@ function getSafeCheckoutError(error: string | undefined) {
     return "Your session needs to be refreshed. Please sign in and try again.";
   }
   if (error?.toLowerCase().includes("payment initiation failed")) {
-    return "Your order was created, but SSLCOMMERZ payment could not be started. You can retry from your orders page.";
+    return "Your order was created, but the online payment session could not be started. You can complete payment from your orders page.";
   }
   if (
     error?.toLowerCase().includes("online payment is currently unavailable") ||
@@ -400,17 +401,14 @@ export function CheckoutForm({
     // Fallback email if user didn't enter one
     const resolvedEmail = customerEmail.trim() || defaultEmail || `${cleanPhone}@vibelock.customer`;
 
-    const fullStreetAddress = orderNote.trim()
-      ? `${shippingStreet.trim()} (Note: ${orderNote.trim()})`
-      : shippingStreet.trim();
-
     const submissionData = {
       customerName: customerName.trim(),
       customerEmail: resolvedEmail,
       customerPhone: customerPhone.trim(),
-      shippingStreet: fullStreetAddress,
+      shippingStreet: shippingStreet.trim(),
       shippingCity: shippingCity.trim(),
       shippingCountry: "Bangladesh",
+      deliveryNote: orderNote.trim() || undefined,
       paymentMethod: paymentMethod as "COD" | "ONLINE" | "BKASH" | "NAGAD",
       shippingMethodId: selectedShippingMethodId,
       couponCode: appliedCoupon?.code || undefined,
@@ -594,44 +592,63 @@ export function CheckoutForm({
                 {fieldError("shippingStreet")}
               </div>
 
-              {/* Row 3: District Dropdown */}
-              <div className="space-y-1.5">
-                <Label
-                  htmlFor="shippingCity"
-                  className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
-                >
-                  Delivery District <span className="text-red-500">*</span>
-                </Label>
-                <div className="relative">
-                  <select
-                    id="shippingCity"
-                    value={shippingCity}
-                    onChange={(e) => {
-                      setShippingCity(e.target.value);
-                      if (errors.shippingCity)
-                        setErrors((prev) => ({ ...prev, shippingCity: undefined }));
-                    }}
-                    aria-invalid={Boolean(errors.shippingCity)}
-                    className={`h-11 w-full cursor-pointer appearance-none rounded-xs border bg-white px-3.5 pr-10 text-sm font-medium transition-colors focus:ring-2 focus:ring-vl-cyan focus:outline-none ${
-                      errors.shippingCity
-                        ? "border-destructive text-vl-black"
-                        : "border-vl-black/20 text-vl-black hover:border-vl-black/40"
-                    } ${!shippingCity ? "text-neutral-400" : ""}`}
+              {/* Row 3: Country & District */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="shippingCountry"
+                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
                   >
-                    <option value="" disabled>
-                      Select your district
-                    </option>
-                    {BD_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-neutral-400">
-                    <ChevronDown className="size-4" />
-                  </div>
+                    Country
+                  </Label>
+                  <Input
+                    id="shippingCountry"
+                    readOnly
+                    value="Bangladesh"
+                    tabIndex={-1}
+                    aria-readonly="true"
+                    className="h-11 rounded-xs border-vl-black/20 bg-neutral-100/70 px-3.5 text-sm font-medium text-vl-black/70 cursor-not-allowed select-none focus-visible:ring-0 focus-visible:border-vl-black/20"
+                  />
                 </div>
-                {fieldError("shippingCity")}
+
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="shippingCity"
+                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                  >
+                    Delivery District <span className="text-red-500">*</span>
+                  </Label>
+                  <div className="relative">
+                    <select
+                      id="shippingCity"
+                      value={shippingCity}
+                      onChange={(e) => {
+                        setShippingCity(e.target.value);
+                        if (errors.shippingCity)
+                          setErrors((prev) => ({ ...prev, shippingCity: undefined }));
+                      }}
+                      aria-invalid={Boolean(errors.shippingCity)}
+                      className={`h-11 w-full cursor-pointer appearance-none rounded-xs border bg-white px-3.5 pr-10 text-sm font-medium transition-colors focus:ring-2 focus:ring-vl-cyan focus:outline-none ${
+                        errors.shippingCity
+                          ? "border-destructive text-vl-black"
+                          : "border-vl-black/20 text-vl-black hover:border-vl-black/40"
+                      } ${!shippingCity ? "text-neutral-400" : ""}`}
+                    >
+                      <option value="" disabled>
+                        Select your district
+                      </option>
+                      {BD_DISTRICTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-neutral-400">
+                      <ChevronDown className="size-4" />
+                    </div>
+                  </div>
+                  {fieldError("shippingCity")}
+                </div>
               </div>
 
               {/* ── SHIPPING METHOD SELECTION (Auto-loads on district; selectable when multiple options exist!) ── */}
@@ -711,7 +728,7 @@ export function CheckoutForm({
                 </div>
               )}
 
-              {/* ── Optional Extras Accordion (Delivery note & Email) ── */}
+              {/* ── Optional Extras (Delivery Note & Email Update) ── */}
               <div className="pt-1">
                 <div className="flex flex-wrap items-center gap-4 text-xs">
                   {!showNote && (
@@ -720,7 +737,7 @@ export function CheckoutForm({
                       onClick={() => setShowNote(true)}
                       className="text-muted-foreground hover:text-vl-black inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
                     >
-                      <MessageSquare className="size-3.5" />+ Add Order Note
+                      <MessageSquare className="size-3.5" />+ Add Delivery Instructions / Note
                     </button>
                   )}
                   {!showEmail && (
@@ -729,7 +746,7 @@ export function CheckoutForm({
                       onClick={() => setShowEmail(true)}
                       className="text-muted-foreground hover:text-vl-black inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
                     >
-                      + Update Email Address
+                      {defaultEmail ? "+ Update Email Address" : "+ Add Email for Order Updates"}
                     </button>
                   )}
                 </div>
@@ -741,7 +758,7 @@ export function CheckoutForm({
                         htmlFor="orderNote"
                         className="text-compact font-bold text-vl-black/70 uppercase"
                       >
-                        Order Notes (Optional)
+                        Delivery Instructions / Note (Optional)
                       </Label>
                       <button
                         type="button"
@@ -754,13 +771,21 @@ export function CheckoutForm({
                         Cancel
                       </button>
                     </div>
-                    <Input
+                    <Textarea
                       id="orderNote"
+                      variant="brand"
+                      size="sm"
+                      rows={2}
                       value={orderNote}
-                      onChange={(e) => setOrderNote(e.target.value)}
-                      placeholder="e.g. Call before delivery, preferred time, gift packaging"
-                      className="h-10 rounded-xs border-vl-black/20 bg-white text-xs"
+                      onChange={(e) => setOrderNote(e.target.value.slice(0, 200))}
+                      placeholder="e.g. Call before delivery, building name, landmark, gate code"
+                      className="rounded-xs border-vl-black/20 bg-white text-xs leading-relaxed"
                     />
+                    <div className="flex justify-end">
+                      <span className="text-muted-foreground text-3xs">
+                        {orderNote.length}/200
+                      </span>
+                    </div>
                   </div>
                 )}
 

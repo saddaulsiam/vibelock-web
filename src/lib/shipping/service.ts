@@ -52,7 +52,9 @@ export class ShippingService {
         amount: Number(order.total),
         codAmount: order.paymentMethod === "COD" ? Number(order.total) : 0,
         referenceId: localShipment.id,
-        note: `VibeLock order ${order.orderNumber}`,
+        note: order.deliveryNote
+          ? `VibeLock #${order.orderNumber} | Note: ${order.deliveryNote}`
+          : `VibeLock order ${order.orderNumber}`,
       });
     } catch (err) {
       console.error("[ShippingService] Provider shipment creation request failed:", err);

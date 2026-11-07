@@ -6,7 +6,6 @@ import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
-import prisma from "@/lib/prisma/client";
 
 export const metadata: Metadata = {
   title: "Checkout | VibeLock",
@@ -39,12 +38,6 @@ export default async function CheckoutPage() {
     redirect("/cart?error=unavailable-items");
   }
 
-  // Fetch live phone number from DB (not in JWT)
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { phone: true },
-  });
-
   return (
     <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container className="max-w-6xl">
@@ -63,7 +56,7 @@ export default async function CheckoutPage() {
           cart={cart}
           defaultEmail={user.email || ""}
           defaultName={user.name || ""}
-          defaultPhone={dbUser?.phone || ""}
+          defaultPhone={user.phone || ""}
           availablePaymentMethods={await getStorefrontPaymentMethods()}
         />
       </Container>
