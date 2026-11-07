@@ -47,7 +47,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
         </div>
         <Link
           href="/account/orders"
-          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+          className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
         >
           <span>View all</span>
           <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -66,7 +66,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           </p>
           <Link
             href="/shop"
-            className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             <span>Explore Collection</span>
             <ArrowRight className="size-3" />
@@ -78,7 +78,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#101114]/8 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
+                <tr className="border-b border-vl-black/8 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
                   <th className="py-3.5 pr-4">Order #</th>
                   <th className="px-4 py-3.5">Date</th>
                   <th className="px-4 py-3.5">Items</th>
@@ -87,7 +87,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                   <th className="py-3.5 pl-4 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#101114]/6 text-sm">
+              <tbody className="divide-y divide-vl-black/6 text-sm">
                 {orders.map((order) => (
                   <tr key={order.orderNumber} className="transition-colors hover:bg-neutral-50/70">
                     {/* Order Number */}
@@ -124,7 +124,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     <td className="py-4 pl-4 text-right whitespace-nowrap">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+                        className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
                       >
                         <span>Details</span>
                         <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -137,7 +137,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           </div>
 
           {/* Mobile High-End Scannable List (< md) - Clean 2-row layout, zero heavy button boxes */}
-          <div className="divide-y divide-[#101114]/6 md:hidden">
+          <div className="divide-y divide-vl-black/6 md:hidden">
             {orders.map((order) => (
               <div key={order.orderNumber} className="py-3.5 first:pt-3 last:pb-0">
                 {/* Row 1: Order Number + Status Badge */}
@@ -167,7 +167,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
 
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
                   >
                     <span>Details</span>
                     <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />

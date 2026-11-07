@@ -5,12 +5,12 @@ export function AnnouncementBar() {
   return (
     <aside
       aria-label="Announcement"
-      className="relative z-50 flex h-8 items-center justify-center border-b border-white/10 bg-[#101114] px-4 text-center sm:h-8.5"
+      className="relative z-50 flex h-8 items-center justify-center border-b border-white/10 bg-vl-black px-4 text-center sm:h-8.5"
     >
-      <p className="flex items-center justify-center gap-2 text-[11px] font-bold tracking-wider text-[#F3F0E8] uppercase sm:text-xs">
-        <Truck className="size-3.5 shrink-0 text-[#00D9FF]" aria-hidden="true" />
+      <p className="flex items-center justify-center gap-2 text-compact font-bold tracking-wider text-vl-white uppercase sm:text-xs">
+        <Truck className="size-3.5 shrink-0 text-vl-cyan" aria-hidden="true" />
         <span>
-          FREE SHIPPING <span className="text-[#00D9FF]">ON ORDERS</span> OVER ৳2000
+          FREE SHIPPING <span className="text-vl-cyan">ON ORDERS</span> OVER ৳2000
         </span>
       </p>
     </aside>

@@ -19,10 +19,10 @@ interface AccountAddressesCardProps {
 
 export function AccountAddressesCard({ addresses, userName }: AccountAddressesCardProps) {
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+    <div className="flex flex-col justify-between rounded-xl border border-vl-black/8 bg-white p-4 sm:p-6">
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
+        <div className="flex items-center justify-between border-b border-vl-black/8 pb-3.5 sm:pb-4">
           <div>
             <h3 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
               Saved Addresses
@@ -33,7 +33,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
           </div>
           <Link
             href="/account/profile#addresses"
-            className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+            className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
           >
             <span>Manage</span>
             <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -47,7 +47,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
             <p className="mt-1">Save a delivery location for expedited checkout.</p>
           </div>
         ) : (
-          <div className="divide-y divide-[#101114]/6">
+          <div className="divide-y divide-vl-black/6">
             {addresses.slice(0, 2).map((addr) => {
               const label =
                 addr.label || (addr.isDefault ? "Primary Address" : "Alternate Address");
@@ -66,7 +66,7 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
 
                     <Link
                       href={`/account/addresses/${addr.id}/edit`}
-                      className="inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-500 hover:text-[#101114]"
+                      className="inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-500 hover:text-[#101114]"
                       aria-label={`Edit ${label}`}
                     >
                       <Pencil className="size-3" />
@@ -89,10 +89,10 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
       </div>
 
       {/* Add New Address Button */}
-      <div className="mt-5 border-t border-[#101114]/8 pt-4">
+      <div className="mt-5 border-t border-vl-black/8 pt-4">
         <Link
           href="/account/profile#addresses"
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg border border-[#101114]/15 bg-white py-2.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-100 active:scale-99"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-vl-black/15 bg-white py-2.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-100 active:scale-99"
         >
           <Plus className="size-3.5" />
           <span>Add New Address</span>

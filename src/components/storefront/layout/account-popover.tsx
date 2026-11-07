@@ -126,11 +126,11 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] leading-none font-bold tracking-[0.14em] text-neutral-400 uppercase">
+                  <span className="block text-2xs leading-none font-bold tracking-[0.14em] text-neutral-400 uppercase">
                     HELLO,
                   </span>
                   <h3
-                    className="mt-1 truncate text-[14px] leading-snug font-bold tracking-tight text-[#101114]"
+                    className="mt-1 truncate text-sm leading-snug font-bold tracking-tight text-[#101114]"
                     title={user.name || "Customer"}
                   >
                     {user.name || "Customer"}
@@ -143,7 +143,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/account"
                   onClick={() => setIsOpen(false)}
-                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-[#101114] text-compact font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
                 >
                   MY ACCOUNT
                 </Link>
@@ -170,7 +170,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
               <Link
                 href="/login"
                 onClick={() => setIsOpen(false)}
-                className="mt-3.5 flex h-9 w-full items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+                className="mt-3.5 flex h-9 w-full items-center justify-center rounded-full bg-[#101114] text-compact font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
               >
                 SIGN IN
               </Link>
@@ -194,14 +194,14 @@ export function AccountPopover({ user }: AccountPopoverProps) {
           <div className="grid grid-cols-2 gap-4 text-xs">
             {/* Column 1: YOUR LISTS */}
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
+              <h4 className="text-compact font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR LISTS
               </h4>
               <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
                   <Heart className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Wishlist</span>
@@ -211,14 +211,14 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
             {/* Column 2: YOUR ACCOUNT */}
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
+              <h4 className="text-compact font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR ACCOUNT
               </h4>
               <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/account/orders"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
                   <Box className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Orders</span>
@@ -226,7 +226,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/account/coupons"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
                   <Sparkles className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Offers</span>
@@ -234,7 +234,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/account/profile"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-[#101114]"
                 >
                   <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
                   <span>Profile</span>

@@ -72,7 +72,7 @@ export function ContactForm() {
       className="flex flex-col gap-4 rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8"
     >
       <div>
-        <span className="text-[10px] font-extrabold tracking-[0.2em] text-[#0088A8] uppercase">
+        <span className="text-2xs tracking-streetwear font-extrabold text-[#0088A8] uppercase">
           TRANSMISSION FORM
         </span>
         <h3 className="mt-1 text-lg font-black tracking-tight text-[#101114] uppercase">
@@ -96,7 +96,7 @@ export function ContactForm() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="e.g. Tanvir Ahmed"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
+            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-vl-black focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -115,7 +115,7 @@ export function ContactForm() {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             placeholder="tanvir@example.com"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
+            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-vl-black focus:bg-white focus:outline-none"
           />
         </div>
       </div>
@@ -136,7 +136,7 @@ export function ContactForm() {
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             placeholder="01700-000000"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
+            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-vl-black focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -152,7 +152,7 @@ export function ContactForm() {
             id="contact-subject"
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3 text-xs text-[#101114] focus:border-[#101114] focus:bg-white focus:outline-none"
+            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3 text-xs text-[#101114] focus:border-vl-black focus:bg-white focus:outline-none"
           >
             <option value="Order Status & Tracking">Order Status & Tracking</option>
             <option value="Size & Fit Consultation">Size & Fit Consultation</option>
@@ -178,7 +178,7 @@ export function ContactForm() {
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           placeholder="How can our crew help you today? Please include order number if applicable."
-          className="rounded-lg border border-black/15 bg-[#F9F8F5] p-3 text-xs leading-relaxed text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
+          className="rounded-lg border border-black/15 bg-[#F9F8F5] p-3 text-xs leading-relaxed text-[#101114] placeholder:text-[#101114]/40 focus:border-vl-black focus:bg-white focus:outline-none"
         />
       </div>
 

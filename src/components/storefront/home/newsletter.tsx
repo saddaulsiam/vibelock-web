@@ -46,17 +46,17 @@ export function Newsletter() {
           suppressHydrationWarning
           autoComplete="email"
           aria-label="Email for newsletter"
-          className="min-w-0 flex-1 bg-white/5 px-3 text-xs text-white placeholder:text-[#F3F0E8]/35 focus:outline-none"
+          className="min-w-0 flex-1 bg-white/5 px-3 text-xs text-white placeholder:text-vl-white/35 focus:outline-none"
         />
         <button
           type="submit"
           disabled={loading}
-          className="shrink-0 cursor-pointer bg-[#00D9FF] px-4 text-[10px] font-extrabold tracking-wider text-[#0B0F14] uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="shrink-0 cursor-pointer bg-vl-cyan px-4 text-2xs font-extrabold tracking-wider text-[#0B0F14] uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? <Loader2 className="size-3 animate-spin" /> : "SUBSCRIBE"}
         </button>
       </div>
-      <p className="mt-1.5 text-[10px] text-[#F3F0E8]/35">No spam. Unsubscribe anytime.</p>
+      <p className="mt-1.5 text-2xs text-vl-white/35">No spam. Unsubscribe anytime.</p>
     </form>
   );
 }

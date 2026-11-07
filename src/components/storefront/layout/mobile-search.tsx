@@ -33,10 +33,10 @@ export function MobileSearch() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close search" : "Open search"}
-        className="text-vl-white/75 hover:text-vl-white hover:bg-vl-white/10 flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:size-9"
+        className="text-vl-white/75 hover:text-vl-white hover:bg-vl-white/10 flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:size-9"
       >
         {isOpen ? (
-          <X className="size-4 text-[#0088A8] sm:size-4.5" />
+          <X className="size-4 text-vl-cyan-dark sm:size-4.5" />
         ) : (
           <Search className="size-4 sm:size-4.5" />
         )}
@@ -62,7 +62,7 @@ export function MobileSearch() {
                 className="relative flex items-center"
               >
                 <Search
-                  className="pointer-events-none absolute left-3.5 size-4 text-[#00D9FF]"
+                  className="pointer-events-none absolute left-3.5 size-4 text-vl-cyan"
                   aria-hidden="true"
                 />
 
@@ -72,7 +72,7 @@ export function MobileSearch() {
                   name="q"
                   placeholder="Search for products, categories..."
                   aria-label="Search products"
-                  className="h-10 w-full rounded-full border border-white/15 bg-[#181B1F] pr-10 pl-10 text-xs text-[#F3F0E8] placeholder:text-[#F3F0E8]/40 focus-visible:border-[#00D9FF] focus-visible:ring-1 focus-visible:ring-[#00D9FF]"
+                  className="h-10 w-full rounded-full border border-white/15 bg-[#181B1F] pr-10 pl-10 text-xs text-vl-white placeholder:text-vl-white/40 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan"
                 />
 
                 <button

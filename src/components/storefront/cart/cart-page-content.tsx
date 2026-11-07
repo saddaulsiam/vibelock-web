@@ -24,7 +24,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <div className="mb-6 flex size-16 items-center justify-center bg-[#F3F0E8] text-[#101114]">
           <ShoppingBag className="size-7" aria-hidden="true" />
         </div>
-        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
+        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-streetwear uppercase">
           VibeLock / Cart
         </p>
         <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight uppercase">
@@ -55,7 +55,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
   return (
     <div>
       <header className="border-border mb-8 border-b pb-6 sm:mb-10 sm:pb-8">
-        <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
+        <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-streetwear uppercase">
           VibeLock / Cart
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">

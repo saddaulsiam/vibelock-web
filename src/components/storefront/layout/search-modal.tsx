@@ -231,7 +231,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             {!query.trim() ? (
               /* State 1: POPULAR SEARCH TERMS */
               <div className="mx-auto max-w-2xl sm:text-center">
-                <h3 className="mb-3 text-[11px] font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="mb-3 text-compact font-bold tracking-wider text-gray-400 uppercase">
                   POPULAR SEARCH TERMS
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:justify-center">
@@ -251,11 +251,11 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
               /* State 2: MATCHES */
               <div className="mx-auto max-w-2xl">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-[11px] font-bold tracking-wider text-gray-400 uppercase">
+                  <h3 className="text-compact font-bold tracking-wider text-gray-400 uppercase">
                     MATCHES
                   </h3>
                   {isLoading && (
-                    <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                    <span className="flex items-center gap-1.5 text-compact text-gray-400">
                       <Loader2 className="text-vl-cyan size-3 animate-spin" />
                       Searching...
                     </span>

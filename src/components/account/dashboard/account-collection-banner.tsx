@@ -26,7 +26,7 @@ export function AccountCollectionBanner() {
         <div className="max-w-xl">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
-            <span className="text-[10px] font-semibold tracking-[0.2em] text-[#F3F0E8]/70 uppercase sm:text-[11px]">
+            <span className="text-2xs font-semibold tracking-streetwear text-[#F3F0E8]/70 uppercase sm:text-compact">
               Limited Releases
             </span>
           </div>
@@ -43,7 +43,7 @@ export function AccountCollectionBanner() {
           <div className="mt-4 sm:mt-5">
             <Link
               href="/shop"
-              className="group inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
+              className="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
             >
               <span>Shop All Products</span>
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

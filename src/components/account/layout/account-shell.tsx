@@ -68,7 +68,7 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
         {/* Universal Identity Row */}
         <div className="flex items-center justify-between gap-4 pb-8">
           <div>
-            <span className="text-vl-cyan text-[11px] font-bold tracking-[0.2em] uppercase">
+            <span className="text-vl-cyan text-compact font-bold tracking-streetwear uppercase">
               My Account
             </span>
             <h1 className="text-vl-black mt-0.5 text-xl font-semibold tracking-tight uppercase sm:text-2xl md:text-3xl">
@@ -115,7 +115,7 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
         {/* Universal Horizontal Underline Tabs */}
         <nav
           aria-label="Account navigation tabs"
-          className="mb-8 border-b border-[#101114]/10 bg-transparent"
+          className="mb-8 border-b border-vl-black/10 bg-transparent"
         >
           <div
             ref={tabsContainerRef}
@@ -135,20 +135,20 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
                   key={item.label}
                   href={item.href}
                   data-active={isActive ? "true" : undefined}
-                  className={`inline-flex min-h-10.5 shrink-0 items-center gap-1.5 border-b-2 pt-1 pb-3 text-xs tracking-wider uppercase transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+                  className={`inline-flex min-h-10.5 shrink-0 items-center gap-1.5 border-b-2 pt-1 pb-3 text-xs tracking-wider uppercase transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
                     isActive
-                      ? "border-[#101114] font-semibold text-[#101114]"
-                      : "border-transparent font-medium text-neutral-500 hover:border-neutral-300 hover:text-[#101114]"
+                      ? "border-vl-black font-semibold text-vl-black"
+                      : "border-transparent font-medium text-neutral-500 hover:border-neutral-300 hover:text-vl-black"
                   }`}
                 >
                   <Icon
-                    className={`size-3.5 ${isActive ? "text-[#00D9FF]" : "text-neutral-400"}`}
+                    className={`size-3.5 ${isActive ? "text-vl-cyan" : "text-neutral-400"}`}
                   />
                   <span>{item.label}</span>
                   {typeof badgeCount === "number" && badgeCount > 0 && (
                     <span
-                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] leading-none font-bold ${
-                        isActive ? "bg-[#101114] text-white" : "bg-neutral-100 text-neutral-600"
+                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-2xs leading-none font-bold ${
+                        isActive ? "bg-vl-black text-white" : "bg-neutral-100 text-neutral-600"
                       }`}
                     >
                       {badgeCount}

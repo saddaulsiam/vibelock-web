@@ -145,7 +145,7 @@ export function AccountSecurityCard() {
               value={pwData.currentPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
+              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
@@ -160,7 +160,7 @@ export function AccountSecurityCard() {
               value={pwData.newPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, newPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
+              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
@@ -177,7 +177,7 @@ export function AccountSecurityCard() {
                 setPwData((prev) => ({ ...prev, confirmNewPassword: e.target.value }))
               }
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
+              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
@@ -185,7 +185,7 @@ export function AccountSecurityCard() {
             <button
               type="submit"
               disabled={pwLoading || !!pwSuccess}
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#101114] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#101114] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 sm:w-auto"
             >
               {pwLoading ? "Updating Password..." : "Update Password"}
             </button>
@@ -232,7 +232,7 @@ export function AccountSecurityCard() {
                   {!s.isCurrent && (
                     <button
                       onClick={() => handleRevokeSession(s.id)}
-                      className="min-h-[36px] rounded-md px-2.5 py-1 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                      className="min-h-9 rounded-md px-2.5 py-1 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
                     >
                       Revoke
                     </button>
@@ -241,10 +241,10 @@ export function AccountSecurityCard() {
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2.5 border-t border-[#101114]/8 pt-4">
+            <div className="mt-4 flex flex-wrap gap-2.5 border-t border-vl-black/8 pt-4">
               <button
                 onClick={handleRevokeOther}
-                className="min-h-[38px] rounded-lg border border-[#101114]/15 px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
+                className="min-h-[38px] rounded-lg border border-vl-black/15 px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
               >
                 Sign Out Other Devices
               </button>
@@ -276,7 +276,7 @@ export function AccountSecurityCard() {
           <div className="pt-4">
             <button
               onClick={() => setDelConfirmMode(true)}
-              className="min-h-[40px] rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
+              className="min-h-10 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
             >
               Delete My Account
             </button>
@@ -307,7 +307,7 @@ export function AccountSecurityCard() {
               <button
                 type="submit"
                 disabled={delLoading}
-                className="min-h-[40px] rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
+                className="min-h-10 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
               >
                 {delLoading ? "Deleting..." : "Permanently Delete"}
               </button>
@@ -317,7 +317,7 @@ export function AccountSecurityCard() {
                   setDelConfirmMode(false);
                   setDelError("");
                 }}
-                className="min-h-[40px] rounded-lg border border-neutral-300 px-4 py-2 text-xs font-normal text-neutral-700 hover:bg-neutral-50"
+                className="min-h-10 rounded-lg border border-neutral-300 px-4 py-2 text-xs font-normal text-neutral-700 hover:bg-neutral-50"
               >
                 Cancel
               </button>

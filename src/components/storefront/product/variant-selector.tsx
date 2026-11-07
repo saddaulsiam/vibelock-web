@@ -139,8 +139,8 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   aria-pressed={selected}
                   className={`focus-visible:ring-vl-cyan min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
+                      ? "border-vl-black bg-[#101114] text-white"
+                      : "border-vl-black/20 bg-white text-[#101114] hover:border-vl-black"
                   } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
                 >
                   {color}
@@ -170,8 +170,8 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   aria-pressed={selected}
                   className={`focus-visible:ring-vl-cyan min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]"
+                      ? "border-vl-black bg-[#101114] text-white"
+                      : "border-vl-black/20 bg-white text-[#101114] hover:border-vl-black"
                   } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
                 >
                   {size}
@@ -187,7 +187,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
         <label htmlFor="product-quantity" className="block text-sm font-semibold">
           Quantity
         </label>
-        <div className="flex h-12 w-36 items-center border border-[#101114]/20">
+        <div className="flex h-12 w-36 items-center border border-vl-black/20">
           <button
             type="button"
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}

@@ -12,10 +12,10 @@ const TRUST_BENEFITS = [
 export function TrustBenefits() {
   return (
     <section
-      className="w-full max-w-full overflow-hidden border-y border-black bg-[#00D9FF] py-3 text-[#080A0C] select-none"
+      className="w-full max-w-full overflow-hidden border-y border-black bg-vl-cyan py-3 text-[#080A0C] select-none"
       aria-label="VibeLock Trust and Service Benefits"
     >
-      <div className="animate-marquee hover:hover:paused flex w-max items-center text-xs font-black tracking-[0.2em] whitespace-nowrap uppercase sm:text-sm">
+      <div className="animate-marquee hover:hover:paused flex w-max items-center text-xs font-black tracking-streetwear whitespace-nowrap uppercase sm:text-sm">
         {/* Track 1 */}
         <div className="flex shrink-0 items-center">
           {TRUST_BENEFITS.concat(TRUST_BENEFITS).map((item, idx) => (

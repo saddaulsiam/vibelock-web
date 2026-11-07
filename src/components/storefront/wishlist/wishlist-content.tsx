@@ -63,7 +63,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
     return (
       <div className="space-y-12" role="status" aria-label="Loading wishlist">
         <div>
-          <div className="mb-6 flex items-center justify-between border-b border-[#101114]/10 pb-4">
+          <div className="mb-6 flex items-center justify-between border-b border-vl-black/10 pb-4">
             <Skeleton className="h-4 w-24 bg-[#101114]/10" />
             <Skeleton className="h-4 w-16 bg-[#101114]/10" />
           </div>
@@ -89,7 +89,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       {savedProducts.length > 0 ? (
         <div>
           {/* Action Bar */}
-          <div className="mb-6 flex items-center justify-between border-b border-[#101114]/10 pb-4">
+          <div className="mb-6 flex items-center justify-between border-b border-vl-black/10 pb-4">
             <span className="text-xs font-bold text-[#101114]">
               {savedProducts.length} {savedProducts.length === 1 ? "Saved Item" : "Saved Items"}
             </span>
@@ -110,7 +110,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
                 <button
                   type="button"
                   onClick={() => handleRemove(product.slug)}
-                  className="text-muted-foreground mt-2.5 inline-flex items-center justify-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white py-2 text-xs font-semibold transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                  className="text-muted-foreground mt-2.5 inline-flex items-center justify-center gap-1.5 rounded-xl border border-vl-black/15 bg-white py-2 text-xs font-semibold transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Remove</span>
@@ -121,7 +121,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#101114]/15 bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-vl-black/15 bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F3F0E8] text-[#101114]">
             <Heart className="size-8 text-[#0099b8]" />
           </div>
@@ -143,7 +143,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       )}
 
       {/* Featured / Trending Streetwear Drops */}
-      <div className="border-t border-[#101114]/10 pt-10">
+      <div className="border-t border-vl-black/10 pt-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <span className="text-[11px] font-bold tracking-widest text-[#0099b8] uppercase">

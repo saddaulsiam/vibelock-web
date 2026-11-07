@@ -121,7 +121,7 @@ export function CategoriesDrawer({
                     />
                     <div className="absolute inset-0 bg-black/45 transition-colors group-hover:bg-black/55" />
                     <div className="relative z-10 flex h-full flex-col items-center justify-center p-2 text-center">
-                      <span className="font-mono text-[10px] font-bold tracking-widest text-[#00D9FF]">
+                      <span className="font-mono text-2xs font-bold tracking-widest text-[#00D9FF]">
                         {num}
                       </span>
                       <span className="font-heading text-xs font-black tracking-wide text-white uppercase drop-shadow-sm sm:text-sm">

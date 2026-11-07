@@ -92,7 +92,7 @@ export function Footer() {
 
             {/* About Label & Paragraph */}
             <div className="mt-6">
-              <span className="text-vl-cyan text-[10px] font-extrabold tracking-widest uppercase">
+              <span className="text-vl-cyan text-2xs font-extrabold tracking-widest uppercase">
                 ABOUT VIBELOCK
               </span>
               <p className="text-vl-grey mt-2 max-w-sm text-xs leading-relaxed">
@@ -110,7 +110,7 @@ export function Footer() {
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
               {/* Column 1: Shop Categories (Clean Links List - No Box) */}
               <div className="flex flex-col">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs font-extrabold tracking-streetwear uppercase">
                   COLLECTIONS
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
@@ -137,7 +137,7 @@ export function Footer() {
 
               {/* Column 2: Customer & Support (Clean Links List - No Box) */}
               <div className="flex flex-col">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs font-extrabold tracking-streetwear uppercase">
                   HELP &amp; ACCOUNT
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
@@ -164,7 +164,7 @@ export function Footer() {
 
               {/* Column 3: Our Retail Location (Preserved Box Card Design) */}
               <div className="col-span-2 flex flex-col sm:col-span-1">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs font-extrabold tracking-streetwear uppercase">
                   FLAGSHIP OUTLET
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
@@ -177,7 +177,7 @@ export function Footer() {
                     {/* Badge */}
                     <div className="text-vl-cyan flex items-center gap-1.5">
                       <MapPin className="size-3.5 shrink-0" />
-                      <span className="text-[11px] font-black tracking-wider uppercase">
+                      <span className="text-compact font-black tracking-wider uppercase">
                         {RETAIL_LOCATION.badge}
                       </span>
                     </div>
@@ -199,7 +199,7 @@ export function Footer() {
                     href={RETAIL_LOCATION.mapUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="border-vl-border text-vl-white/60 group-hover:text-vl-cyan mt-4 flex items-center justify-between border-t pt-2.5 text-[11px] font-bold tracking-wider uppercase transition-colors"
+                    className="border-vl-border text-vl-white/60 group-hover:text-vl-cyan mt-4 flex items-center justify-between border-t pt-2.5 text-compact font-bold tracking-wider uppercase transition-colors"
                   >
                     <span>OPEN IN GOOGLE MAPS</span>
                     <ExternalLink className="size-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -212,7 +212,7 @@ export function Footer() {
 
         {/* ── 2. Middle Section: Social Networks Row ── */}
         <div className="border-vl-border flex flex-col items-center border-b py-10">
-          <span className="text-vl-white/50 text-[10px] font-extrabold tracking-[0.25em] uppercase">
+          <span className="text-vl-white/50 text-2xs font-extrabold tracking-tag uppercase">
             SOCIAL NETWORKS
           </span>
 

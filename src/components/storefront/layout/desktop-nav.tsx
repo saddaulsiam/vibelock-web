@@ -32,12 +32,12 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       <Link
         href="/shop"
         className={`group relative flex items-center py-2 transition-colors ${
-          isShopActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
+          isShopActive ? "text-vl-cyan" : "text-white/75 hover:text-white"
         }`}
       >
         <span>SHOP</span>
         {isShopActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#00D9FF]" />
+          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
         )}
       </Link>
 
@@ -45,36 +45,36 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       <Link
         href="/category/t-shirts"
         className={`group relative flex items-center py-2 transition-colors ${
-          isTshirtsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
+          isTshirtsActive ? "text-vl-cyan" : "text-white/75 hover:text-white"
         }`}
       >
         <span>T-SHIRTS</span>
         {isTshirtsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#00D9FF]" />
+          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
         )}
       </Link>
 
       <Link
         href="/category/shirts"
         className={`group relative flex items-center py-2 transition-colors ${
-          isShirtsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
+          isShirtsActive ? "text-vl-cyan" : "text-white/75 hover:text-white"
         }`}
       >
         <span>SHIRTS</span>
         {isShirtsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#00D9FF]" />
+          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
         )}
       </Link>
 
       <Link
         href="/category/pants"
         className={`group relative flex items-center py-2 transition-colors ${
-          isPantsActive ? "text-[#00D9FF]" : "text-white/75 hover:text-white"
+          isPantsActive ? "text-vl-cyan" : "text-white/75 hover:text-white"
         }`}
       >
         <span>PANTS</span>
         {isPantsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-[#00D9FF]" />
+          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
         )}
       </Link>
     </nav>

@@ -84,7 +84,7 @@ export function AccountMetrics({
             <div className="mt-3 pt-1 sm:mt-4">
               <Link
                 href={metric.href}
-                className="group inline-flex min-h-[32px] items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-[#101114]"
+                className="group inline-flex min-h-8 items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-[#101114]"
               >
                 <span>{metric.actionText}</span>
                 <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />

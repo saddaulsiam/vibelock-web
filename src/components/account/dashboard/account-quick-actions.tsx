@@ -37,12 +37,12 @@ export function AccountQuickActions() {
         </div>
 
         {/* Action List - Minimalist divider style, comfortable mobile tap targets */}
-        <div className="divide-y divide-[#101114]/6">
+        <div className="divide-y divide-vl-black/6">
           {actions.map((act) => (
             <Link
               key={act.title}
               href={act.href}
-              className="group flex min-h-[48px] items-center justify-between py-3 transition-colors first:pt-3.5 last:pb-1 hover:text-[#101114]"
+              className="group flex min-h-12 items-center justify-between py-3 transition-colors first:pt-3.5 last:pb-1 hover:text-[#101114]"
             >
               <div className="flex items-center gap-3">
                 <act.icon className="size-4 shrink-0 text-neutral-400 transition-colors group-hover:text-[#101114]" />
@@ -57,10 +57,10 @@ export function AccountQuickActions() {
         </div>
       </div>
 
-      <div className="mt-5 border-t border-[#101114]/8 pt-4">
+      <div className="mt-5 border-t border-vl-black/8 pt-4">
         <Link
           href="/account/orders"
-          className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-[#101114] py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 active:scale-99"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#101114] py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 active:scale-99"
         >
           <span>Track Active Deliveries</span>
         </Link>

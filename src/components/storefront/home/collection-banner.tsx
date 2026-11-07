@@ -37,7 +37,7 @@ export function CollectionBanner() {
           <div className="flex flex-col items-start">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#00D9FF]/30 bg-[#00D9FF]/10 px-3 py-1 backdrop-blur-sm">
               <span className="size-1.5 rounded-full bg-[#00D9FF]" aria-hidden="true" />
-              <p className="text-[10px] font-extrabold tracking-[0.22em] text-[#00D9FF] uppercase sm:text-[11px]">
+              <p className="text-2xs font-extrabold tracking-[0.22em] text-[#00D9FF] uppercase sm:text-compact">
                 THE VIBELOCK COLLECTION
               </p>
             </div>
@@ -66,7 +66,7 @@ export function CollectionBanner() {
                     <span className="text-xl font-black tracking-tight text-white drop-shadow-sm sm:text-2xl">
                       {value}
                     </span>
-                    <span className="text-[10px] font-bold tracking-widest text-zinc-300 uppercase sm:text-[11px]">
+                    <span className="text-2xs font-bold tracking-widest text-zinc-300 uppercase sm:text-compact">
                       {label}
                     </span>
                   </div>
@@ -78,7 +78,7 @@ export function CollectionBanner() {
             <div className="mt-6">
               <Link
                 href="/shop"
-                className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-[#00D9FF] py-2 pr-2 pl-4.5 text-[10px] font-black tracking-[0.16em] text-[#080C0F] uppercase shadow-[0_0_18px_rgba(0,217,255,0.3)] transition-all duration-300 hover:scale-[1.02] hover:bg-[#2ae0ff] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95 sm:py-2.5 sm:pr-2.5 sm:pl-5 sm:text-[11px]"
+                className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-[#00D9FF] py-2 pr-2 pl-4.5 text-2xs font-black tracking-[0.16em] text-[#080C0F] uppercase shadow-[0_0_18px_rgba(0,217,255,0.3)] transition-all duration-300 hover:scale-[1.02] hover:bg-[#2ae0ff] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95 sm:py-2.5 sm:pr-2.5 sm:pl-5 sm:text-compact"
               >
                 {/* Subtle sheen highlight on hover */}
                 <span

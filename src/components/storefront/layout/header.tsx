@@ -19,7 +19,7 @@ export async function Header() {
 
   return (
     <header className="pointer-events-none fixed top-2 right-0 left-0 z-50 w-full px-2.5 sm:top-3 sm:px-6 lg:px-8">
-      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-4 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-lg sm:px-6">
+      <div className="border-vl-white/10 bg-vl-black/60 pointer-events-auto mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-4 shadow-floating-nav backdrop-blur-lg sm:px-6">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link
             href="/"

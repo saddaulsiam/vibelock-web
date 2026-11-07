@@ -88,7 +88,7 @@ export function OrdersInfiniteList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-[#101114]/8 text-[11px] font-semibold tracking-wider text-neutral-500 uppercase">
+            <tr className="border-b border-vl-black/8 text-[11px] font-semibold tracking-wider text-neutral-500 uppercase">
               <th className="py-3.5 pr-4">Order #</th>
               <th className="px-4 py-3.5">Date</th>
               <th className="px-4 py-3.5">Items</th>
@@ -97,7 +97,7 @@ export function OrdersInfiniteList({
               <th className="py-3.5 pl-4 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#101114]/6 text-sm">
+          <tbody className="divide-y divide-vl-black/6 text-sm">
             {orders.map((order) => (
               <tr key={order.id} className="transition-colors hover:bg-neutral-50/70">
                 {/* Order Number */}
@@ -140,7 +140,7 @@ export function OrdersInfiniteList({
                 <td className="py-4 pl-4 text-right whitespace-nowrap">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
                   >
                     <span>Details</span>
                     <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
@@ -153,7 +153,7 @@ export function OrdersInfiniteList({
       </div>
 
       {/* Mobile Intentional Stacked View (< md) - Zero horizontal scroll */}
-      <div className="flex flex-col divide-y divide-[#101114]/8 md:hidden">
+      <div className="flex flex-col divide-y divide-vl-black/8 md:hidden">
         {orders.map((order) => (
           <div key={order.id} className="py-3.5 first:pt-2 last:pb-0">
             <div className="flex items-center justify-between gap-2">
@@ -192,7 +192,7 @@ export function OrdersInfiniteList({
               </span>
               <Link
                 href={`/account/orders/${order.orderNumber}`}
-                className="group inline-flex min-h-[38px] items-center gap-1 rounded-md border border-[#101114]/10 bg-white px-3 py-1.5 text-xs font-normal text-neutral-800 transition-colors active:scale-95"
+                className="group inline-flex min-h-[38px] items-center gap-1 rounded-md border border-vl-black/10 bg-white px-3 py-1.5 text-xs font-normal text-neutral-800 transition-colors active:scale-95"
               >
                 <span>Details</span>
                 <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />

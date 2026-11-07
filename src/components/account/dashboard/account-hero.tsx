@@ -13,7 +13,7 @@ export function AccountHero({ name }: AccountHeroProps) {
           <div className="flex flex-col text-left">
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
-              <span className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-[#F3F0E8]/60 uppercase">
+              <span className="text-2xs sm:text-compact font-bold tracking-streetwear text-[#F3F0E8]/60 uppercase">
                 Account Portal
               </span>
             </div>
@@ -29,7 +29,7 @@ export function AccountHero({ name }: AccountHeroProps) {
 
           {/* Right Brand Stamp */}
           <div className="hidden text-right md:block">
-            <span className="text-[11px] font-semibold tracking-widest text-[#F3F0E8]/40 uppercase">
+            <span className="text-compact font-semibold tracking-widest text-[#F3F0E8]/40 uppercase">
               VibeLock Official
             </span>
           </div>

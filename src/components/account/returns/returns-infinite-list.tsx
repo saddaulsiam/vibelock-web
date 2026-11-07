@@ -83,7 +83,7 @@ export function ReturnsInfiniteList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-[#101114]/8 bg-[#FAF9F5] text-[10px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-[11px]">
+            <tr className="border-b border-vl-black/8 bg-[#FAF9F5] text-[10px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-[11px]">
               <th className="py-4 pr-4 pl-7">Return ID</th>
               <th className="px-4 py-4">Order &amp; Date</th>
               <th className="px-4 py-4">Items Returned</th>
@@ -93,7 +93,7 @@ export function ReturnsInfiniteList({
               <th className="py-4 pr-7 pl-4 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#101114]/6 text-sm">
+          <tbody className="divide-y divide-vl-black/6 text-sm">
             {returns.map((request) => (
               <tr key={request.id} className="transition-colors hover:bg-neutral-50/70">
                 {/* Return ID */}
@@ -158,7 +158,7 @@ export function ReturnsInfiniteList({
                 <td className="py-4 pr-7 pl-4 text-right whitespace-nowrap">
                   <Link
                     href={`/account/returns/${request.id}`}
-                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
                   >
                     <span>Details</span>
                     <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -171,7 +171,7 @@ export function ReturnsInfiniteList({
       </div>
 
       {/* Mobile Stacked View (< md) */}
-      <div className="divide-y divide-[#101114]/8 p-4 sm:p-5 md:hidden">
+      <div className="divide-y divide-vl-black/8 p-4 sm:p-5 md:hidden">
         {returns.map((request) => (
           <div key={request.id} className="py-4 first:pt-1 last:pb-1">
             <div className="flex items-start justify-between gap-2">
@@ -197,7 +197,7 @@ export function ReturnsInfiniteList({
             </div>
 
             {request.items && request.items.length > 0 && (
-              <div className="mt-2.5 rounded-xl border border-[#101114]/6 bg-neutral-50/80 p-2.5">
+              <div className="mt-2.5 rounded-xl border border-vl-black/6 bg-neutral-50/80 p-2.5">
                 <p className="text-[11px] font-semibold text-neutral-700">
                   {request.itemCount} {request.itemCount === 1 ? "Item" : "Items"}:
                 </p>
@@ -228,7 +228,7 @@ export function ReturnsInfiniteList({
               </div>
               <Link
                 href={`/account/returns/${request.id}`}
-                className="group inline-flex min-h-[36px] items-center gap-1.5 rounded-xl bg-[#101114] px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase shadow-2xs transition-colors hover:bg-neutral-800"
+                className="group inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-[#101114] px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase shadow-2xs transition-colors hover:bg-neutral-800"
               >
                 <span>View Details</span>
                 <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
