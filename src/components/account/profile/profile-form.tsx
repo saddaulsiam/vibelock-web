@@ -240,12 +240,13 @@ export function ProfileForm({
         </Label>
         <Input
           id="profile-name"
+          variant="brand"
+          size="lg"
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
           disabled={pending}
           placeholder="Your full name"
-          className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
         />
       </div>
 
@@ -259,11 +260,12 @@ export function ProfileForm({
         </Label>
         <Input
           id="profile-phone"
+          variant="brand"
+          size="lg"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
           disabled={pending}
           placeholder="No phone number on this account"
-          className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
         />
         <p className="text-[11px] text-neutral-500">
           Used for delivery courier calls and instant order dispatch SMS updates.
@@ -294,9 +296,11 @@ export function ProfileForm({
         <div className="relative">
           <Input
             id="profile-email"
+            variant="brand"
+            size="lg"
             value={email}
             disabled
-            className="min-h-11 cursor-not-allowed rounded-xl border-[#101114]/10 bg-neutral-50 pr-8 text-xs text-neutral-600"
+            className="cursor-not-allowed bg-neutral-50 pr-8 text-neutral-600"
           />
           {emailVerified && (
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600">

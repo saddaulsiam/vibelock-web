@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 export function ActiveFilters() {
@@ -155,13 +156,15 @@ export function ActiveFilters() {
         </Badge>
       )}
 
-      <button
+      <Button
         onClick={clearAll}
         type="button"
-        className="text-muted-foreground hover:text-foreground ml-2 min-h-9 rounded-sm px-2 text-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        variant="link"
+        size="sm"
+        className="hover:text-destructive ml-2 underline underline-offset-4"
       >
         Clear all
-      </button>
+      </Button>
     </div>
   );
 }

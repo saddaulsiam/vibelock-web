@@ -3,6 +3,7 @@
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
+import { Button } from "@/components/ui/button";
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
 import * as React from "react";
@@ -130,13 +131,14 @@ export function FeaturedProducts({
             <p className="text-muted-foreground mt-1 text-xs">
               New drops are in production. Check back soon or browse all items.
             </p>
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={() => setActiveTab("all")}
-              className="bg-vl-black font-heading text-vl-white mt-4 inline-flex cursor-pointer items-center rounded-xs px-5 py-2 text-xs font-black tracking-widest uppercase transition-opacity hover:opacity-90"
+              className="mt-4 px-5"
             >
               Show All Products
-            </button>
+            </Button>
           </div>
         )}
       </Container>

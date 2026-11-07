@@ -2,11 +2,7 @@ import Link from "next/link";
 import { Calculator, ExternalLink, Store } from "lucide-react";
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
-import {
-  AdminMobileNavigation,
-  AdminSidebar,
-  AdminSignOutButton,
-} from "@/components/admin/shared";
+import { AdminMobileNavigation, AdminSidebar, AdminSignOutButton } from "@/components/admin/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <AdminSidebar userRole={user.role} />
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         {/* ── Top Dashboard Header ── */}
-        <header className="shrink-0 z-30 border-b border-[#101114]/10 bg-white/95 shadow-xs backdrop-blur-md">
+        <header className="z-30 shrink-0 border-b border-[#101114]/10 bg-white/95 shadow-xs backdrop-blur-md">
           <div className="flex min-h-16 items-center justify-between gap-3 px-3.5 py-2.5 sm:px-6 sm:py-3 lg:px-8">
             {/* Left: Mobile Nav Toggle & Brand on Mobile, User Profile on Desktop */}
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
@@ -50,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   )}
                 </div>
                 <div className="text-left">
-                  <p className="max-w-[150px] truncate text-xs font-bold leading-tight text-[#101114] xl:max-w-[180px]">
+                  <p className="max-w-[150px] truncate text-xs leading-tight font-bold text-[#101114] xl:max-w-[180px]">
                     {displayName}
                   </p>
                   <div className="mt-0.5">
@@ -88,7 +84,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 nativeButton={false}
                 variant="outline"
                 size="sm"
-                className="hidden h-9 gap-1.5 rounded-xl border-[#101114]/15 bg-white px-3 text-xs font-semibold text-[#101114]/80 shadow-2xs hover:border-[#101114]/30 hover:bg-[#F3F0E8] hover:text-[#101114] md:inline-flex"
+                className="hidden md:inline-flex"
                 title="Open live customer storefront in a new tab"
               >
                 <Store className="size-3.5 text-[#101114]/60" />
@@ -100,9 +96,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <Button
                 render={<Link href="/pos" />}
                 nativeButton={false}
-                variant="cyan"
                 size="sm"
-                className="h-9 gap-2 rounded-xl px-3.5 font-heading text-xs font-black tracking-wide shadow-[0_2px_10px_rgba(0,217,255,0.3)] transition-all hover:shadow-[0_4px_16px_rgba(0,217,255,0.45)] sm:h-9.5 sm:px-4 sm:text-xs"
                 title="Launch Counter POS Cashier Register"
               >
                 <Calculator className="size-4 shrink-0" aria-hidden="true" />

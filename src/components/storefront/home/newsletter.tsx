@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { subscribeNewsletterAction } from "@/app/actions/newsletter";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -46,17 +46,20 @@ export function Newsletter() {
           suppressHydrationWarning
           autoComplete="email"
           aria-label="Email for newsletter"
-          className="min-w-0 flex-1 bg-white/5 px-3 text-xs text-white placeholder:text-vl-white/35 focus:outline-none"
+          className="placeholder:text-vl-white/35 min-w-0 flex-1 bg-white/5 px-3 text-xs text-white focus:outline-none"
         />
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="sm"
           disabled={loading}
-          className="shrink-0 cursor-pointer bg-vl-cyan px-4 text-2xs font-extrabold tracking-wider text-[#0B0F14] uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
+          loading={loading}
+          className="bg-vl-cyan text-2xs hover:bg-vl-cyan h-full shrink-0 rounded-none px-4 font-extrabold tracking-wider text-[#0B0F14] uppercase hover:opacity-90"
         >
-          {loading ? <Loader2 className="size-3 animate-spin" /> : "SUBSCRIBE"}
-        </button>
+          SUBSCRIBE
+        </Button>
       </div>
-      <p className="mt-1.5 text-2xs text-vl-white/35">No spam. Unsubscribe anytime.</p>
+      <p className="text-2xs text-vl-white/35 mt-1.5">No spam. Unsubscribe anytime.</p>
     </form>
   );
 }

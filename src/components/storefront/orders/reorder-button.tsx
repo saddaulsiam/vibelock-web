@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { reorderItemsAction } from "@/lib/orders/actions";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface ReorderButtonProps {
   orderNumber: string;
@@ -34,18 +35,16 @@ export function ReorderButton({ orderNumber }: ReorderButtonProps) {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="sm"
       onClick={handleReorder}
       disabled={loading}
-      className="inline-flex min-h-[38px] cursor-pointer items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3.5 py-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+      loading={loading}
     >
-      {loading ? (
-        <Loader2 className="size-3.5 animate-spin text-[#101114]" />
-      ) : (
-        <RefreshCw className="size-3.5 text-neutral-600" />
-      )}
+      {!loading && <RefreshCw className="size-3.5 text-neutral-600" />}
       <span>{loading ? "Adding..." : "Buy Again"}</span>
-    </button>
+    </Button>
   );
 }

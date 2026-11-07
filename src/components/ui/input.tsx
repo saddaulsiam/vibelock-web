@@ -4,59 +4,61 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 const inputVariants = cva(
-  // Base — identical to the original flat class string; all existing consumers
-  // using no variant/size props will receive the exact same computed classes.
   [
     "border-input file:text-foreground placeholder:text-muted-foreground",
     "focus-visible:border-ring focus-visible:ring-ring/50",
     "disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20",
     "dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
-    "w-full min-w-0 rounded-lg border bg-transparent px-2.5 py-1 text-base transition-colors outline-none",
+    "w-full min-w-0 border bg-transparent px-3 py-1 text-sm transition-colors outline-none",
     "file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium",
-    "focus-visible:ring-3 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-    "aria-invalid:ring-3 md:text-sm",
+    "focus-visible:ring-2 focus-visible:ring-vl-cyan disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+    "aria-invalid:ring-3",
   ],
   {
     variants: {
       variant: {
         /**
-         * default — original styling unchanged.
-         * rounded-lg, ring border, standard muted placeholder.
+         * default — standard clean input (rounded-lg).
          */
-        default: "",
+        default: "rounded-lg",
         /**
-         * brand — Storefront / checkout style.
-         * Sharp 4px radius (--radius-brand), neutral-200 border at rest,
-         * vl-black border + subtle ring on focus. Matches the form aesthetic
-         * on /checkout, /contact, and /products filter inputs.
+         * brand — Storefront & Checkout style.
+         * Sharp streetwear radius (rounded-xs), clean white surface, subtle
+         * obsidian border, and electric cyber cyan focus ring.
          */
         brand:
-          "rounded-[var(--radius-brand)] border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
+          "rounded-xs bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
         /**
-         * dark — Auth page / POS terminal dark-surface style.
-         * bg: --color-surface-dark (#16171b, 24-occurrence token)
-         * border: --color-border-dark-input (#2a2d33, elevated above surface)
-         * Focus ring: vl-cyan (consistent with cyan button on auth pages)
+         * dark — Auth page & POS terminal dark-surface style.
          */
         dark: "rounded-[var(--radius-ui)] bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-[#6b7280] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
       },
       size: {
         /**
-         * default — h-8 (32px). Matches original. Admin data-table controls.
-         * Note: base class already sets rounded-lg; size does NOT override radius
-         * so variant radius always wins when both are applied.
+         * sm — h-8 (32px). Admin data-table controls, compact filters.
          */
-        default: "h-8",
+        sm: "h-8 px-2.5 text-xs",
         /**
-         * lg — h-10 (40px). General form inputs, comfortable touch target.
-         * Used in /checkout address fields, account profile form.
+         * default — h-10 (40px). Standard general form input.
          */
-        lg: "h-10",
+        default: "h-10 px-3 text-xs",
+        /**
+         * md — alias to 40px comfortable touch target.
+         */
+        md: "h-10 px-3 text-xs",
+        /**
+         * lg — h-11 (44px). General form inputs, checkout address fields.
+         */
+        lg: "h-11 px-3.5 text-sm",
         /**
          * xl — h-12 (48px). Storefront search bar, prominent single inputs.
-         * 48px matches the dominant storefront CTA height (min-h-11/min-h-12).
+         * 48px matches the dominant storefront CTA height.
          */
-        xl: "h-12 text-base",
+        xl: "h-12 px-4 text-sm",
+        /**
+         * 2xl — alias to 48px prominent input.
+         */
+        "2xl": "h-12 px-4 text-sm",
       },
     },
     defaultVariants: {

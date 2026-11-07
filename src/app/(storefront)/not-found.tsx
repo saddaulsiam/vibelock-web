@@ -2,6 +2,7 @@ import { Container } from "@/components/shared/container";
 import Link from "next/link";
 import { ArrowRight, Search } from "lucide-react";
 import { Section } from "@/components/shared/section";
+import { Button } from "@/components/ui/button";
 
 export default function StorefrontNotFound() {
   return (
@@ -21,18 +22,14 @@ export default function StorefrontNotFound() {
             We couldn&apos;t find the page you&apos;re looking for.
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/shop"
-              className="inline-flex min-h-11 items-center justify-center gap-2 bg-[#101114] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
-            >
-              Browse products <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-            <Link
-              href="/"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-            >
-              Return home
-            </Link>
+            <Button asChild size="lg">
+              <Link href="/shop">
+                Browse products <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/">Return home</Link>
+            </Button>
           </div>
         </div>
       </Container>

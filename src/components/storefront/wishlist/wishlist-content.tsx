@@ -6,6 +6,7 @@ import { Heart, ArrowRight, Trash2 } from "lucide-react";
 import { ProductSummary } from "@/lib/catalog/types";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -93,13 +94,15 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             <span className="text-xs font-bold text-[#101114]">
               {savedProducts.length} {savedProducts.length === 1 ? "Saved Item" : "Saved Items"}
             </span>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={clearAll}
-              className="text-xs font-semibold text-rose-600 transition-colors hover:text-rose-700"
+              className="h-auto p-0 text-xs font-semibold text-rose-600 hover:text-rose-700"
             >
               Clear All
-            </button>
+            </Button>
           </div>
 
           {/* Saved Items Grid */}
@@ -107,14 +110,16 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             {savedProducts.map((product) => (
               <div key={product.id} className="group relative flex flex-col justify-between">
                 <ProductCard product={product} />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleRemove(product.slug)}
-                  className="text-muted-foreground mt-2.5 inline-flex items-center justify-center gap-1.5 rounded-xl border border-vl-black/15 bg-white py-2 text-xs font-semibold transition-all hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                  className="text-muted-foreground mt-2.5 w-full rounded-xl border-vl-black/15 bg-white text-xs font-semibold hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Remove</span>
-                </button>
+                </Button>
               </div>
             ))}
           </div>
@@ -122,8 +127,8 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       ) : (
         /* Empty State */
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-vl-black/15 bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#F3F0E8] text-[#101114]">
-            <Heart className="size-8 text-[#0099b8]" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-vl-white text-[#101114]">
+            <Heart className="text-vl-cyan-dark size-8" />
           </div>
           <h2 className="mt-4 text-xl font-black tracking-tight text-[#101114] uppercase sm:text-2xl">
             Your wishlist is empty
@@ -132,13 +137,16 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
             Hit the heart icon on any streetwear drop, graphic tee, or oversized hoodie to save your
             favorite fits for later.
           </p>
-          <Link
-            href="/shop"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#101114] px-6 py-3 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-[#1f2229] active:scale-95"
+          <Button
+            asChild
+            size="lg"
+            className="mt-6"
           >
-            <span>Explore Drops</span>
-            <ArrowRight className="size-4" />
-          </Link>
+            <Link href="/shop">
+              <span>Explore Drops</span>
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       )}
 
@@ -146,7 +154,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       <div className="border-t border-vl-black/10 pt-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-bold tracking-widest text-[#0099b8] uppercase">
+            <span className="text-vl-cyan-dark text-[11px] font-bold tracking-widest uppercase">
               Trending Drops
             </span>
             <h3 className="mt-1 text-lg font-black tracking-tight text-[#101114] uppercase sm:text-xl">
@@ -155,7 +163,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
           </div>
           <Link
             href="/shop"
-            className="group inline-flex items-center gap-1 text-xs font-bold text-[#101114] transition-colors hover:text-[#0099b8]"
+            className="hover:text-vl-cyan-dark group inline-flex items-center gap-1 text-xs font-bold text-[#101114] transition-colors"
           >
             <span>View All</span>
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

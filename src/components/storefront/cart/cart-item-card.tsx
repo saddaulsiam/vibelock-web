@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ImageOff, LoaderCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import type { CartItemDTO } from "@/lib/cart/types";
 import { removeCartItemAction, updateCartItemAction } from "@/lib/cart/actions";
 
@@ -158,20 +159,19 @@ export function CartItemCard({ item }: CartItemCardProps) {
             </button>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={handleRemove}
             disabled={isPending}
-            className="text-muted-foreground hover:text-destructive inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            loading={isPending}
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium"
             aria-label={`Remove ${item.productName} from cart`}
           >
-            {isPending ? (
-              <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
-            ) : (
-              <Trash2 className="size-4" aria-hidden="true" />
-            )}
+            {!isPending && <Trash2 className="size-4" aria-hidden="true" />}
             Remove
-          </button>
+          </Button>
         </div>
       </div>
     </article>

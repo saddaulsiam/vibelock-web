@@ -20,6 +20,8 @@ import {
   Clock,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { createReturnRequestAction, uploadReturnProofAction } from "@/lib/returns/actions";
 import { RETURN_REASONS } from "@/lib/returns/utils";
 import { OrderItemSummary } from "@/lib/orders/types";
@@ -509,13 +511,14 @@ export function ReturnForm({
             >
               Additional Details / Comments (Optional)
             </label>
-            <textarea
+            <Textarea
               id="customerNote"
+              variant="brand"
               rows={3}
               value={customerNote}
               onChange={(e) => setCustomerNote(e.target.value)}
               placeholder="Tell us what went wrong (e.g. size runs small, stitching issue on collar, received incorrect color)..."
-              className="w-full rounded-xl border border-[#101114]/15 bg-white p-3.5 text-xs text-[#101114] transition outline-none placeholder:text-neutral-400 focus:border-[#101114] focus:ring-1 focus:ring-[#101114]"
+              className="p-3.5 text-xs"
             />
           </div>
         </div>
@@ -560,23 +563,16 @@ export function ReturnForm({
 
               {/* Form Card Submit Button (Available on all viewports) */}
               <div className="mt-5 sm:mt-6">
-                <button
+                <Button
                   type="submit"
+                  size="lg"
+                  fullWidth
                   disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#101114] px-6 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                  loading={isSubmitting}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Submitting Request...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Return Request</span>
-                      <ArrowRight className="size-4" />
-                    </>
-                  )}
-                </button>
+                  <span>{isSubmitting ? "Submitting Request..." : "Submit Return Request"}</span>
+                  {!isSubmitting && <ArrowRight className="size-4" />}
+                </Button>
               </div>
             </div>
 
@@ -628,20 +624,16 @@ export function ReturnForm({
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
+            size="lg"
             disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-            className="inline-flex h-11 max-w-[200px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition-colors hover:bg-neutral-800 disabled:opacity-50"
+            loading={isSubmitting}
+            className="max-w-[200px] flex-1"
           >
-            {isSubmitting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <>
-                <span>Submit Return</span>
-                <ArrowRight className="size-3.5" />
-              </>
-            )}
-          </button>
+            <span>{isSubmitting ? "Submitting..." : "Submit Return"}</span>
+            {!isSubmitting && <ArrowRight className="size-3.5" />}
+          </Button>
         </div>
       </div>
     </form>

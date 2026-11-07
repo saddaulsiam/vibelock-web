@@ -5,8 +5,9 @@ import Image from "next/image";
 import { StarRating } from "./star-rating";
 import { deleteReviewAction } from "@/lib/reviews/actions";
 import type { ReviewItem } from "@/lib/reviews/types";
-import { CheckCircle2, Trash2, MessageSquare, Loader2 } from "lucide-react";
+import { CheckCircle2, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface ProductReviewListProps {
   reviews: ReviewItem[];
@@ -90,7 +91,7 @@ export function ProductReviewList({
                       {review.user?.name || "Verified Customer"}
                     </span>
                     {review.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#00D9FF]/15 px-2 py-0.5 text-[10px] font-bold text-[#008ca6]">
+                      <span className="bg-vl-cyan/15 text-vl-cyan-dark inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold">
                         <CheckCircle2 className="size-3" />
                         Verified Purchase
                       </span>
@@ -104,20 +105,19 @@ export function ProductReviewList({
               </div>
 
               {canDelete && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleDelete(review.id)}
                   disabled={isPending && deletingId === review.id}
-                  className="inline-flex size-8 items-center justify-center rounded-md text-[#101114]/40 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-[#00D9FF]"
+                  loading={isPending && deletingId === review.id}
+                  className="size-8 rounded-md text-[#101114]/40 hover:bg-rose-50 hover:text-rose-600"
                   title="Delete review"
                   aria-label="Delete review"
                 >
-                  {isPending && deletingId === review.id ? (
-                    <Loader2 className="size-4 animate-spin text-rose-600" />
-                  ) : (
-                    <Trash2 className="size-4" />
-                  )}
-                </button>
+                  <Trash2 className="size-4" />
+                </Button>
               )}
             </div>
 

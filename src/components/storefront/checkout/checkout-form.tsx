@@ -25,6 +25,7 @@ import { checkoutSchema } from "@/lib/checkout/validation";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { SelectableCard } from "@/components/shared/selectable-card";
 
 // ── 64 Districts of Bangladesh ───────────────────────────────────────────────
@@ -161,8 +162,8 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <li className="grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3 border-b border-vl-black/8 py-3.5 last:border-b-0">
-      <div className="relative aspect-3/4 overflow-hidden rounded-xs bg-vl-white">
+    <li className="border-vl-black/8 grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-3.5 last:border-b-0">
+      <div className="bg-vl-white relative aspect-3/4 overflow-hidden rounded-xs">
         {item.productImage && !imageFailed ? (
           <Image
             src={item.productImage}
@@ -181,22 +182,22 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
       </div>
 
       <div className="min-w-0">
-        <h3 className="truncate text-xs font-bold text-vl-black">{item.productName}</h3>
-        <p className="text-muted-foreground mt-0.5 text-compact leading-tight">
+        <h3 className="text-vl-black truncate text-xs font-bold">{item.productName}</h3>
+        <p className="text-muted-foreground text-compact mt-0.5 leading-tight">
           {[item.variant.size, item.variant.color].filter(Boolean).join(" · ") || "Standard"}
           {" · "}Qty {item.quantity}
         </p>
         <p className="text-muted-foreground mt-1 text-xs">
           {formatPrice(item.variant.effectivePrice)}
           {item.variant.discountPrice !== null && (
-            <span className="ml-1.5 text-compact line-through">
+            <span className="text-compact ml-1.5 line-through">
               {formatPrice(item.variant.sellingPrice)}
             </span>
           )}
         </p>
       </div>
 
-      <span className="text-right text-xs font-bold text-vl-black">
+      <span className="text-vl-black text-right text-xs font-bold">
         {formatPrice(item.lineTotal)}
       </span>
     </li>
@@ -500,12 +501,12 @@ export function CheckoutForm({
           >
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <span className="bg-vl-black flex size-6 items-center justify-center rounded-full text-compact font-black text-white">
+                <span className="bg-vl-black text-compact flex size-6 items-center justify-center rounded-full font-black text-white">
                   1
                 </span>
                 <h2
                   id="delivery-heading"
-                  className="font-heading text-lg font-black tracking-tight text-vl-black uppercase"
+                  className="font-heading text-vl-black text-lg font-black tracking-tight uppercase"
                 >
                   Delivery Details
                 </h2>
@@ -522,12 +523,14 @@ export function CheckoutForm({
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="customerName"
-                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                    className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
                   >
                     Full Name <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="customerName"
+                    variant="brand"
+                    size="lg"
                     autoComplete="name"
                     value={customerName}
                     onChange={(e) => {
@@ -537,7 +540,6 @@ export function CheckoutForm({
                     }}
                     placeholder="Enter your name"
                     aria-invalid={Boolean(errors.customerName)}
-                    className="h-11 rounded-xs border-vl-black/20 bg-white px-3.5 text-sm"
                   />
                   {fieldError("customerName")}
                 </div>
@@ -545,12 +547,14 @@ export function CheckoutForm({
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="customerPhone"
-                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                    className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
                   >
                     Mobile Number <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="customerPhone"
+                    variant="brand"
+                    size="lg"
                     type="tel"
                     autoComplete="tel"
                     value={customerPhone}
@@ -561,7 +565,7 @@ export function CheckoutForm({
                     }}
                     placeholder="01XXXXXXXXX"
                     aria-invalid={Boolean(errors.customerPhone)}
-                    className="h-11 rounded-xs border-vl-black/20 bg-white px-3.5 text-sm font-medium tracking-wide"
+                    className="font-medium tracking-wide"
                   />
                   {fieldError("customerPhone")}
                 </div>
@@ -571,12 +575,13 @@ export function CheckoutForm({
               <div className="space-y-1.5">
                 <Label
                   htmlFor="shippingStreet"
-                  className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                  className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
                 >
                   Full Address <span className="text-red-500">*</span>
                 </Label>
-                <textarea
+                <Textarea
                   id="shippingStreet"
+                  variant="brand"
                   rows={2}
                   autoComplete="street-address"
                   value={shippingStreet}
@@ -587,7 +592,7 @@ export function CheckoutForm({
                   }}
                   placeholder="House no, road no, block, area, and nearest landmark"
                   aria-invalid={Boolean(errors.shippingStreet)}
-                  className="w-full resize-none rounded-xs border border-vl-black/20 bg-white px-3.5 py-2.5 text-sm leading-relaxed transition-colors placeholder:text-neutral-400 hover:border-vl-black/40 focus:ring-2 focus:ring-vl-cyan focus:outline-none"
+                  className="resize-none leading-relaxed"
                 />
                 {fieldError("shippingStreet")}
               </div>
@@ -597,7 +602,7 @@ export function CheckoutForm({
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="shippingCountry"
-                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                    className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
                   >
                     Country
                   </Label>
@@ -607,14 +612,14 @@ export function CheckoutForm({
                     value="Bangladesh"
                     tabIndex={-1}
                     aria-readonly="true"
-                    className="h-11 rounded-xs border-vl-black/20 bg-neutral-100/70 px-3.5 text-sm font-medium text-vl-black/70 cursor-not-allowed select-none focus-visible:ring-0 focus-visible:border-vl-black/20"
+                    className="border-vl-black/20 text-vl-black/70 focus-visible:border-vl-black/20 h-11 cursor-not-allowed rounded-xs bg-neutral-100/70 px-3.5 text-sm font-medium select-none focus-visible:ring-0"
                   />
                 </div>
 
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="shippingCity"
-                    className="text-xs font-bold tracking-wider text-vl-black/80 uppercase"
+                    className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
                   >
                     Delivery District <span className="text-red-500">*</span>
                   </Label>
@@ -628,7 +633,7 @@ export function CheckoutForm({
                           setErrors((prev) => ({ ...prev, shippingCity: undefined }));
                       }}
                       aria-invalid={Boolean(errors.shippingCity)}
-                      className={`h-11 w-full cursor-pointer appearance-none rounded-xs border bg-white px-3.5 pr-10 text-sm font-medium transition-colors focus:ring-2 focus:ring-vl-cyan focus:outline-none ${
+                      className={`focus:ring-vl-cyan h-11 w-full cursor-pointer appearance-none rounded-xs border bg-white px-3.5 pr-10 text-sm font-medium transition-colors focus:ring-2 focus:outline-none ${
                         errors.shippingCity
                           ? "border-destructive text-vl-black"
                           : "border-vl-black/20 text-vl-black hover:border-vl-black/40"
@@ -664,8 +669,15 @@ export function CheckoutForm({
                       {shippingLookupError}
                     </div>
                   ) : shippingMethods.length > 1 ? (
-                    <div className="space-y-2" role="radiogroup" aria-labelledby="delivery-speed-label">
-                      <Label id="delivery-speed-label" className="text-xs font-bold tracking-wider text-vl-black/80 uppercase">
+                    <div
+                      className="space-y-2"
+                      role="radiogroup"
+                      aria-labelledby="delivery-speed-label"
+                    >
+                      <Label
+                        id="delivery-speed-label"
+                        className="text-vl-black/80 text-xs font-bold tracking-wider uppercase"
+                      >
                         Select Delivery Speed <span className="text-red-500">*</span>
                       </Label>
                       <div className="grid gap-2.5 sm:grid-cols-2">
@@ -686,17 +698,17 @@ export function CheckoutForm({
                                 }
                               }}
                               title={
-                                <span className="block text-xs font-bold text-vl-black uppercase">
+                                <span className="text-vl-black block text-xs font-bold uppercase">
                                   {method.name}
                                 </span>
                               }
                               description={
-                                <span className="text-muted-foreground block text-compact">
+                                <span className="text-muted-foreground text-compact block">
                                   {method.zoneName} · Doorstep
                                 </span>
                               }
                               trailing={
-                                <span className="shrink-0 text-xs font-black text-vl-black">
+                                <span className="text-vl-black shrink-0 text-xs font-black">
                                   {formatPrice(method.cost)}
                                 </span>
                               }
@@ -712,7 +724,7 @@ export function CheckoutForm({
                           <Check className="size-3.5 stroke-[2.5]" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-vl-black uppercase">
+                          <p className="text-vl-black text-xs font-bold uppercase">
                             {selectedMethod.name}
                           </p>
                           <p className="text-muted-foreground text-compact">
@@ -720,7 +732,7 @@ export function CheckoutForm({
                           </p>
                         </div>
                       </div>
-                      <span className="text-sm font-black text-vl-black">
+                      <span className="text-vl-black text-sm font-black">
                         {formatPrice(selectedMethod.cost)}
                       </span>
                     </div>
@@ -732,22 +744,26 @@ export function CheckoutForm({
               <div className="pt-1">
                 <div className="flex flex-wrap items-center gap-4 text-xs">
                   {!showNote && (
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
+                      size="sm"
                       onClick={() => setShowNote(true)}
-                      className="text-muted-foreground hover:text-vl-black inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
+                      className="text-muted-foreground hover:text-vl-black h-auto p-0 text-xs font-medium hover:underline"
                     >
                       <MessageSquare className="size-3.5" />+ Add Delivery Instructions / Note
-                    </button>
+                    </Button>
                   )}
                   {!showEmail && (
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
+                      size="sm"
                       onClick={() => setShowEmail(true)}
-                      className="text-muted-foreground hover:text-vl-black inline-flex items-center gap-1.5 font-medium transition-colors hover:underline"
+                      className="text-muted-foreground hover:text-vl-black h-auto p-0 text-xs font-medium hover:underline"
                     >
                       {defaultEmail ? "+ Update Email Address" : "+ Add Email for Order Updates"}
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -756,20 +772,22 @@ export function CheckoutForm({
                     <div className="flex items-center justify-between">
                       <Label
                         htmlFor="orderNote"
-                        className="text-compact font-bold text-vl-black/70 uppercase"
+                        className="text-compact text-vl-black/70 font-bold uppercase"
                       >
                         Delivery Instructions / Note (Optional)
                       </Label>
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="sm"
                         onClick={() => {
                           setOrderNote("");
                           setShowNote(false);
                         }}
-                        className="text-muted-foreground hover:text-vl-black text-compact"
+                        className="text-muted-foreground hover:text-vl-black text-compact h-auto p-0"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                     <Textarea
                       id="orderNote"
@@ -779,12 +797,10 @@ export function CheckoutForm({
                       value={orderNote}
                       onChange={(e) => setOrderNote(e.target.value.slice(0, 200))}
                       placeholder="e.g. Call before delivery, building name, landmark, gate code"
-                      className="rounded-xs border-vl-black/20 bg-white text-xs leading-relaxed"
+                      className="border-vl-black/20 rounded-xs bg-white text-xs leading-relaxed"
                     />
                     <div className="flex justify-end">
-                      <span className="text-muted-foreground text-3xs">
-                        {orderNote.length}/200
-                      </span>
+                      <span className="text-muted-foreground text-3xs">{orderNote.length}/200</span>
                     </div>
                   </div>
                 )}
@@ -794,17 +810,19 @@ export function CheckoutForm({
                     <div className="flex items-center justify-between">
                       <Label
                         htmlFor="customerEmail"
-                        className="text-compact font-bold text-vl-black/70 uppercase"
+                        className="text-compact text-vl-black/70 font-bold uppercase"
                       >
                         Email Address (Optional)
                       </Label>
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="sm"
                         onClick={() => setShowEmail(false)}
-                        className="text-muted-foreground hover:text-vl-black text-compact"
+                        className="text-muted-foreground hover:text-vl-black text-compact h-auto p-0"
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                     <Input
                       id="customerEmail"
@@ -812,7 +830,7 @@ export function CheckoutForm({
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
                       placeholder="your.email@example.com"
-                      className="h-10 rounded-xs border-vl-black/20 bg-white text-xs"
+                      className="border-vl-black/20 h-10 rounded-xs bg-white text-xs"
                     />
                   </div>
                 )}
@@ -827,12 +845,12 @@ export function CheckoutForm({
           >
             <div className="border-border flex items-center justify-between border-b pb-4">
               <div className="flex items-center gap-2.5">
-                <span className="bg-vl-black flex size-6 items-center justify-center rounded-full text-compact font-black text-white">
+                <span className="bg-vl-black text-compact flex size-6 items-center justify-center rounded-full font-black text-white">
                   2
                 </span>
                 <h2
                   id="payment-heading"
-                  className="font-heading text-lg font-black tracking-tight text-vl-black uppercase"
+                  className="font-heading text-vl-black text-lg font-black tracking-tight uppercase"
                 >
                   Payment Method
                 </h2>
@@ -847,7 +865,8 @@ export function CheckoutForm({
                 role="alert"
                 className="mt-4 rounded-xs border border-amber-300 bg-amber-50 p-4 text-xs font-semibold text-amber-900"
               >
-                Checkout is currently unavailable as no payment methods are active. Please contact support.
+                Checkout is currently unavailable as no payment methods are active. Please contact
+                support.
               </div>
             ) : (
               <fieldset className="mt-5 space-y-3">
@@ -865,14 +884,14 @@ export function CheckoutForm({
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-bold text-vl-black">{method.title}</span>
+                          <span className="text-vl-black text-sm font-bold">{method.title}</span>
                           {method.value === "COD" && (
-                            <span className="bg-vl-black/5 rounded-full px-2 py-0.5 text-2xs font-bold tracking-wider text-vl-black uppercase">
+                            <span className="bg-vl-black/5 text-2xs text-vl-black rounded-full px-2 py-0.5 font-bold tracking-wider uppercase">
                               Popular in BD
                             </span>
                           )}
                           {method.value === "ONLINE" && (
-                            <span className="flex items-center gap-1 text-compact font-semibold text-neutral-500">
+                            <span className="text-compact flex items-center gap-1 font-semibold text-neutral-500">
                               <CreditCard className="size-3.5" />
                               Cards / Mobile Banking (SSLCOMMERZ)
                             </span>
@@ -897,10 +916,10 @@ export function CheckoutForm({
         className="lg:sticky lg:top-24 lg:self-start"
       >
         <div className="border-border bg-background rounded-xs border p-5 shadow-xs sm:p-6">
-          <div className="border-b border-vl-black/12 pb-4">
+          <div className="border-vl-black/12 border-b pb-4">
             <h2
               id="checkout-summary-heading"
-              className="font-heading text-lg font-black tracking-tight text-vl-black uppercase"
+              className="font-heading text-vl-black text-lg font-black tracking-tight uppercase"
             >
               Order Summary
             </h2>
@@ -917,13 +936,13 @@ export function CheckoutForm({
           </ul>
 
           {/* Promo Code Box */}
-          <div className="border-t border-vl-black/12 py-3.5">
+          <div className="border-vl-black/12 border-t py-3.5">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-muted-foreground text-compact font-bold tracking-[0.14em] uppercase">
                 Promo Code
               </span>
               {appliedCoupon && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-2xs font-bold text-emerald-700 uppercase">
+                <span className="text-2xs inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-bold text-emerald-700 uppercase">
                   <Tag className="size-3" aria-hidden="true" />
                   Applied
                 </span>
@@ -933,7 +952,7 @@ export function CheckoutForm({
             {appliedCoupon ? (
               <div className="flex items-center justify-between gap-2 rounded-xs border border-emerald-200 bg-emerald-50/50 p-2.5">
                 <div className="min-w-0">
-                  <p className="font-mono text-xs font-bold tracking-wider text-vl-black uppercase">
+                  <p className="text-vl-black font-mono text-xs font-bold tracking-wider uppercase">
                     {appliedCoupon.code}
                   </p>
                   <p className="text-muted-foreground text-compact">
@@ -943,21 +962,24 @@ export function CheckoutForm({
                     {" · "}Saved {formatPrice(appliedCoupon.discountAmount)}
                   </p>
                 </div>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={handleRemoveCoupon}
                   disabled={isPending || isApplyingCoupon}
-                  className="text-destructive hover:bg-destructive/10 rounded-full p-1 transition-colors"
+                  className="text-destructive hover:bg-destructive/10 size-6 rounded-full"
                   aria-label="Remove applied coupon"
                 >
                   <X className="size-3.5" />
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-1.5">
                 <div className="flex gap-2">
                   <Input
                     id="couponCode"
+                    variant="brand"
                     placeholder="ENTER CODE"
                     value={couponInput}
                     onChange={(e) => {
@@ -966,20 +988,18 @@ export function CheckoutForm({
                     }}
                     disabled={isPending || isApplyingCoupon}
                     aria-label="Coupon code"
-                    className="h-9 rounded-xs border-vl-black/20 bg-white font-mono text-xs tracking-wider uppercase"
+                    className="font-mono tracking-wider uppercase"
                   />
-                  <button
+                  <Button
                     type="button"
+                    size="sm"
                     onClick={handleApplyCoupon}
                     disabled={isPending || isApplyingCoupon || !couponInput.trim()}
-                    className="inline-flex h-9 items-center justify-center rounded-xs bg-vl-black px-3.5 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+                    loading={isApplyingCoupon}
+                    className="h-9 px-3.5"
                   >
-                    {isApplyingCoupon ? (
-                      <LoaderCircle className="size-3.5 animate-spin" aria-hidden="true" />
-                    ) : (
-                      "Apply"
-                    )}
-                  </button>
+                    Apply
+                  </Button>
                 </div>
                 {couponError && (
                   <p className="text-destructive text-xs" role="alert">
@@ -991,17 +1011,15 @@ export function CheckoutForm({
           </div>
 
           {/* Pricing Breakdown */}
-          <dl className="space-y-2.5 border-t border-vl-black/12 py-3.5 text-xs">
+          <dl className="border-vl-black/12 space-y-2.5 border-t py-3.5 text-xs">
             <div className="flex items-center justify-between gap-3">
               <dt className="text-muted-foreground">Subtotal</dt>
-              <dd className="font-semibold text-vl-black">
-                {formatPrice(subtotalBeforeDiscount)}
-              </dd>
+              <dd className="text-vl-black font-semibold">{formatPrice(subtotalBeforeDiscount)}</dd>
             </div>
             {discountTotal > 0 && (
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-muted-foreground">Item Discount</dt>
-                <dd className="font-semibold text-vl-black">−{formatPrice(discountTotal)}</dd>
+                <dd className="text-vl-black font-semibold">−{formatPrice(discountTotal)}</dd>
               </div>
             )}
             {appliedCoupon && appliedCoupon.discountAmount > 0 && (
@@ -1016,13 +1034,13 @@ export function CheckoutForm({
             )}
             <div className="flex items-center justify-between gap-3">
               <dt className="text-muted-foreground">Shipping</dt>
-              <dd className="text-right font-semibold text-vl-black">
+              <dd className="text-vl-black text-right font-semibold">
                 {isLoadingShipping ? (
                   <span className="text-muted-foreground text-compact">Calculating...</span>
                 ) : selectedMethod ? (
                   <span>
                     {formatPrice(shippingCost)}
-                    <span className="text-muted-foreground ml-1 text-2xs font-normal">
+                    <span className="text-muted-foreground text-2xs ml-1 font-normal">
                       ({selectedMethod.name})
                     </span>
                   </span>
@@ -1034,12 +1052,12 @@ export function CheckoutForm({
           </dl>
 
           {/* Total */}
-          <div className="border-t border-vl-black/15 pt-3.5">
+          <div className="border-vl-black/15 border-t pt-3.5">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="font-heading text-sm font-black text-vl-black uppercase">
+              <span className="font-heading text-vl-black text-sm font-black uppercase">
                 Total to Pay
               </span>
-              <span className="text-xl font-black tracking-tight text-vl-black">
+              <span className="text-vl-black text-xl font-black tracking-tight">
                 {grandTotal !== null ? (
                   formatPrice(grandTotal)
                 ) : (
@@ -1050,7 +1068,7 @@ export function CheckoutForm({
                 )}
               </span>
             </div>
-            <p className="text-muted-foreground mt-1 text-compact">
+            <p className="text-muted-foreground text-compact mt-1">
               {selectedMethod
                 ? `Includes ${formatPrice(shippingCost)} delivery fee to ${shippingCity}.`
                 : "Select district on the left to confirm total delivery charge."}
@@ -1058,13 +1076,15 @@ export function CheckoutForm({
           </div>
 
           {/* ── BIG PRIMARY ACTION BUTTON ── */}
-          <button
+          <Button
             type="submit"
             form="checkout-form"
+            size="lg"
+            fullWidth
+            loading={isPending}
             disabled={isPending || paymentOptions.length === 0}
-            className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all duration-200 hover:bg-black hover:shadow-[0_0_24px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-5"
           >
-            {isPending ? <LoaderCircle className="size-4 animate-spin" aria-hidden="true" /> : null}
             {isPending
               ? "Confirming Order…"
               : paymentOptions.length === 0
@@ -1074,14 +1094,14 @@ export function CheckoutForm({
                   : paymentMethod === "COD"
                     ? "Place Order (Cash on Delivery)"
                     : "Pay via SSLCOMMERZ"}
-          </button>
+          </Button>
 
           {paymentOptions.length === 0 ? (
-            <p className="text-muted-foreground mt-2.5 text-center text-2xs tracking-wider text-amber-600 uppercase">
+            <p className="text-muted-foreground text-2xs mt-2.5 text-center tracking-wider text-amber-600 uppercase">
               Orders cannot be placed right now because no payment methods are currently active.
             </p>
           ) : (
-            <p className="text-muted-foreground mt-2.5 text-center text-2xs tracking-wider uppercase">
+            <p className="text-muted-foreground text-2xs mt-2.5 text-center tracking-wider uppercase">
               No advance payment needed for Cash on Delivery
             </p>
           )}

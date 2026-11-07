@@ -27,7 +27,8 @@ export default function AdminDashboardError({
         </p>
         <Button
           onClick={reset}
-          className="mt-7 min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
+          size="lg"
+          className="mt-7"
         >
           Try again
         </Button>

@@ -80,11 +80,12 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-label"
+            variant="brand"
+            size="lg"
             value={values.label}
             onChange={(e) => update("label", e.target.value)}
             placeholder="e.g. Home, Studio, Office"
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
@@ -97,12 +98,13 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-street"
+            variant="brand"
+            size="lg"
             required
             value={values.street}
             onChange={(e) => update("street", e.target.value)}
             placeholder="House, Road, Area, Sector"
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
@@ -115,12 +117,13 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-city"
+            variant="brand"
+            size="lg"
             required
             value={values.city}
             onChange={(e) => update("city", e.target.value)}
             placeholder="Dhaka"
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
@@ -133,11 +136,12 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-state"
+            variant="brand"
+            size="lg"
             value={values.state}
             onChange={(e) => update("state", e.target.value)}
             placeholder="Dhaka"
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
@@ -150,11 +154,12 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-zip"
+            variant="brand"
+            size="lg"
             value={values.zip}
             onChange={(e) => update("zip", e.target.value)}
             placeholder="1230"
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
@@ -167,11 +172,12 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           </Label>
           <Input
             id="address-country"
+            variant="brand"
+            size="lg"
             required
             value={values.country}
             onChange={(e) => update("country", e.target.value)}
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
       </div>

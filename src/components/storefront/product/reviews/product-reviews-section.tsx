@@ -30,7 +30,7 @@ export function ProductReviewsSection({
     >
       <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
         <div>
-          <p className="text-xs font-bold tracking-[0.2em] text-[#008ca6] uppercase">
+          <p className="text-vl-cyan-dark text-xs font-bold tracking-[0.2em] uppercase">
             Customer Feedback
           </p>
           <h2

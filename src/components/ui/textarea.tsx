@@ -3,7 +3,6 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 const textareaVariants = cva(
-  // Base — mirrors Input primitive: same border, focus ring, disabled, aria-invalid patterns
   [
     "border-input placeholder:text-muted-foreground",
     "focus-visible:border-ring focus-visible:ring-ring/50",
@@ -11,28 +10,25 @@ const textareaVariants = cva(
     "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
     "dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
     "w-full min-w-0 border bg-transparent px-3 py-2 text-sm transition-colors outline-none",
-    "focus-visible:ring-3",
+    "focus-visible:ring-2 focus-visible:ring-vl-cyan",
     "resize-y",
   ],
   {
     variants: {
       variant: {
-        /** Default — matches Input primitive aesthetic (rounded-lg, light border) */
+        /** Default — matches Input primitive aesthetic (rounded-lg) */
         default: "rounded-lg",
-        /** Brand — storefront style: sharp 4px radius, vl-black border on focus */
+        /** Brand — storefront style: sharp 4px radius, clean white surface, subtle obsidian border, cyan focus ring */
         brand:
-          "rounded-[var(--radius-brand)] border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
-        /** Dark — auth/POS dark-surface style.
-         *  bg: --color-surface-dark (#16171b)  — established token (24 occurrences)
-         *  border: --color-border-dark-input (#2a2d33) — intentionally lighter than
-         *    --color-border-dark (#303137) so an input border reads against surface-dark */
+          "rounded-xs bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
+        /** Dark — auth/POS dark-surface style */
         dark: "rounded-[var(--radius-ui)] bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-[#6b7280] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
       },
       size: {
         sm: "min-h-16 text-xs",
-        default: "min-h-24",
-        lg: "min-h-32",
-        xl: "min-h-48",
+        default: "min-h-24 text-sm",
+        lg: "min-h-32 text-sm",
+        xl: "min-h-48 text-base",
       },
     },
     defaultVariants: {

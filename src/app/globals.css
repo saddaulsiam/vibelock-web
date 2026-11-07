@@ -155,8 +155,8 @@
 }
 
 :root {
-  /* Warm Off-White */
-  --background: #f2f2f2;
+  /* Warm Linen Off-White (canonical brand token #f3f0e8) */
+  --background: #f3f0e8;
   --foreground: #101114;
 
   /* Primary uses Deep Charcoal */
@@ -176,13 +176,13 @@
   --secondary-foreground: #101114;
 
   --muted: #ebe6d9;
-  --muted-foreground: #666666; /* Subdued text */
+  --muted-foreground: #555555; /* WCAG 2.2 AA compliant subdued text (6.4:1 ratio on #f3f0e8) */
 
   --destructive: oklch(0.577 0.245 27.325);
 
   --border: #d6d2c4;
   --input: #d6d2c4;
-  --ring: #101114;
+  --ring: #00d9ff; /* Unified cyber cyan focus ring */
 
   --radius: 0.25rem; /* Restrained radius */
 }
@@ -319,6 +319,12 @@
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none !important;
+  }
 }
 
 /* Chrome/Safari Dark Mode Autofill Fix */

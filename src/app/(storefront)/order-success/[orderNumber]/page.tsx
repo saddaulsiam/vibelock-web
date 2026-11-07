@@ -4,6 +4,7 @@ import { cancelOrderAction } from "@/lib/orders/actions";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
   ArrowLeft,
@@ -458,21 +459,26 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
         {/* ── Bottom Navigation Action Controls ── */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-          <Link
-            href="/shop"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#101114]/15 bg-white px-6 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
           >
-            <ShoppingBag className="size-4 text-neutral-500" />
-            <span>Explore More Drops</span>
-          </Link>
+            <Link href="/shop">
+              <ShoppingBag className="size-4 text-neutral-500" />
+              <span>Explore More Drops</span>
+            </Link>
+          </Button>
 
-          <Link
-            href={`/account/orders/${order.orderNumber}`}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#101114] px-7 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition-colors hover:bg-neutral-800 active:scale-95"
+          <Button
+            asChild
+            size="lg"
           >
-            <span>Track in Account Orders</span>
-            <ArrowRight className="size-4" />
-          </Link>
+            <Link href={`/account/orders/${order.orderNumber}`}>
+              <span>Track in Account Orders</span>
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

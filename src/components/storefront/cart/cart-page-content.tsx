@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ShoppingBag } from "lucide-react";
 import type { CartDTO } from "@/lib/cart/types";
+import { Button } from "@/components/ui/button";
 import { CartItemCard } from "./cart-item-card";
 
 interface CartPageContentProps {
@@ -24,7 +25,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <div className="mb-6 flex size-16 items-center justify-center bg-[#F3F0E8] text-[#101114]">
           <ShoppingBag className="size-7" aria-hidden="true" />
         </div>
-        <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-streetwear uppercase">
+        <p className="text-muted-foreground tracking-streetwear mb-2 text-xs font-semibold uppercase">
           VibeLock / Cart
         </p>
         <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight uppercase">
@@ -33,12 +34,11 @@ export function CartPageContent({ cart }: CartPageContentProps) {
         <p className="text-muted-foreground mt-3 max-w-sm text-sm leading-6">
           Take a look through the collection and find your next everyday piece.
         </p>
-        <Link
-          href="/shop"
-          className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-7 inline-flex min-h-11 items-center justify-center gap-2 rounded-xs px-6 text-xs font-black tracking-wider uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none"
-        >
-          Shop products <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        <Button asChild size="lg" className="mt-7">
+          <Link href="/shop">
+            Shop products <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </Button>
       </div>
     );
   }
@@ -55,7 +55,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
   return (
     <div>
       <header className="border-border mb-8 border-b pb-6 sm:mb-10 sm:pb-8">
-        <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-streetwear uppercase">
+        <p className="text-muted-foreground tracking-streetwear mb-3 text-xs font-semibold uppercase">
           VibeLock / Cart
         </p>
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -134,12 +134,11 @@ export function CartPageContent({ cart }: CartPageContentProps) {
               </p>
             )}
 
-            <Link
-              href="/checkout"
-              className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all hover:bg-black hover:shadow-[0_0_20px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none"
-            >
-              Continue to checkout <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
+            <Button asChild size="lg" fullWidth className="mt-6">
+              <Link href="/checkout">
+                Continue to checkout <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
           </div>
         </aside>
       </div>

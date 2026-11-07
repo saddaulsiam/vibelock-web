@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ArrowRight } from "lucide-react";
@@ -18,18 +19,21 @@ export default function NotFound() {
             The page you&apos;re looking for doesn&apos;t exist or may have moved.
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href="/shop"
-              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center gap-2 rounded-xs px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            <Button
+              asChild
+              size="lg"
             >
-              Browse products <ArrowRight className="size-4" aria-hidden="true" />
-            </Link>
-            <Link
-              href="/"
-              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              <Link href="/shop">
+                Browse products <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
             >
-              Return home
-            </Link>
+              <Link href="/">Return home</Link>
+            </Button>
           </div>
         </div>
       </Container>

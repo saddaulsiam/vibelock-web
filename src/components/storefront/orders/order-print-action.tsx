@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Copy, Check, Printer } from "lucide-react";
 import { printCustomerInvoice, type PrintableOrder } from "@/lib/orders/print-invoice";
+import { Button } from "@/components/ui/button";
 
 export interface OrderPrintActionProps {
   orderNumber?: string;
@@ -35,10 +36,11 @@ export function OrderPrintAction({ orderNumber: propOrderNumber, order }: OrderP
   return (
     <div className="flex items-center gap-2 print:hidden">
       {activeOrderNumber && (
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={handleCopy}
-          className="group inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95"
           title="Copy Order ID"
         >
           {copied ? (
@@ -52,17 +54,18 @@ export function OrderPrintAction({ orderNumber: propOrderNumber, order }: OrderP
               <span>Copy ID</span>
             </>
           )}
-        </button>
+        </Button>
       )}
 
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={handlePrint}
-        className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95"
       >
         <Printer className="size-3.5 text-neutral-400" />
         <span>Print Receipt</span>
-      </button>
+      </Button>
     </div>
   );
 }

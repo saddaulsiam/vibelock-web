@@ -39,16 +39,14 @@ export default function StorefrontError({
             <Button
               onClick={reset}
               size="lg"
-              className="min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
             >
               Try again
             </Button>
-            <Link
-              href="/shop"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-            >
-              Browse products
-            </Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/shop">
+                Browse products
+              </Link>
+            </Button>
           </div>
         </div>
       </Container>

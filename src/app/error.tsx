@@ -35,16 +35,18 @@ export default function Error({
             <Button
               onClick={reset}
               size="lg"
-              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan min-h-11 rounded-xs font-black tracking-widest uppercase"
             >
               Try again
             </Button>
-            <Link
-              href="/shop"
-              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
             >
-              Browse products
-            </Link>
+              <Link href="/shop">
+                Browse products
+              </Link>
+            </Button>
           </div>
         </div>
       </Container>

@@ -1,6 +1,7 @@
 import { ProductSummary } from "@/lib/catalog/types";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface ProductGridProps {
   products: ProductSummary[];
@@ -20,18 +21,16 @@ export function ProductGrid({ products, searchTerm, clearSearchHref = "/shop" }:
             Try a different search term, or clear your search to browse the catalog.
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link
-              href={clearSearchHref}
-              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center rounded-xs px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-            >
-              Clear search
-            </Link>
-            <Link
-              href="/shop"
-              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
-            >
-              Browse all products
-            </Link>
+            <Button asChild size="lg">
+              <Link href={clearSearchHref}>
+                Clear search
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/shop">
+                Browse all products
+              </Link>
+            </Button>
           </div>
         </div>
       );

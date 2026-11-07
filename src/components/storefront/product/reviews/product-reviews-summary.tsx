@@ -26,7 +26,7 @@ export function ProductReviewsSummary({ summary }: ProductReviewsSummaryProps) {
               ? "No reviews yet"
               : `Based on ${totalReviews} ${totalReviews === 1 ? "review" : "reviews"}`}
           </p>
-          <span className="mt-2 inline-flex items-center gap-1 rounded-full bg-[#00D9FF]/10 px-2.5 py-0.5 text-[11px] font-bold tracking-wider text-[#008ca6] uppercase">
+          <span className="bg-vl-cyan/15 text-vl-cyan-dark mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase">
             100% Verified Buyers
           </span>
         </div>

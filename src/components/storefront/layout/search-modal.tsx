@@ -4,6 +4,7 @@ import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
 import { ImageOff, Loader2, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
@@ -217,13 +218,15 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             </form>
 
             {/* CANCEL Button */}
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={handleClose}
-              className="shrink-0 cursor-pointer text-xs font-bold tracking-wider text-gray-500 uppercase transition-colors hover:text-black"
+              className="shrink-0 text-xs font-bold tracking-wider text-gray-500 uppercase hover:text-black"
             >
               CANCEL
-            </button>
+            </Button>
           </div>
 
           {/* ── Content Area: Popular Search Terms OR Matches ── */}

@@ -30,19 +30,12 @@ export default function AccountError({
             Please try again, or return to your account overview.
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button
-              onClick={reset}
-              size="lg"
-              className="min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
-            >
+            <Button onClick={reset} size="lg">
               Try again
             </Button>
-            <Link
-              href="/account"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-            >
-              Account overview
-            </Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/account">Account overview</Link>
+            </Button>
           </div>
         </div>
       </Container>

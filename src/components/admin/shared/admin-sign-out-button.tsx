@@ -10,10 +10,10 @@ export function AdminSignOutButton() {
   return (
     <Button
       type="submit"
-      variant="outline"
+      variant="destructive"
       size="sm"
       disabled={pending}
-      className="h-9 gap-1.5 rounded-xl border-[#101114]/15 bg-white px-2.5 text-xs font-semibold text-[#101114]/80 shadow-2xs hover:border-red-300 hover:bg-red-50 hover:text-red-700 sm:px-3"
+      className="gap-1.5"
       title="Sign out of Operations"
     >
       {pending ? (
@@ -25,4 +25,3 @@ export function AdminSignOutButton() {
     </Button>
   );
 }
-

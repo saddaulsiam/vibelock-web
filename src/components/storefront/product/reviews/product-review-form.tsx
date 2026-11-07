@@ -5,8 +5,10 @@ import Link from "next/link";
 import { StarRating } from "./star-rating";
 import { submitReviewAction } from "@/lib/reviews/actions";
 import type { UserReviewEligibility } from "@/lib/reviews/types";
-import { CheckCircle2, AlertCircle, Loader2, Sparkles, Lock } from "lucide-react";
+import { CheckCircle2, AlertCircle, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ProductReviewFormProps {
   productId: string;
@@ -51,7 +53,7 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
     return (
       <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-6 sm:p-8">
         <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#00D9FF]/15 text-[#008ca6]">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-vl-cyan/15 text-vl-cyan-dark">
             <CheckCircle2 className="size-5" />
           </div>
           <div className="space-y-1">
@@ -101,7 +103,7 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
             <h3 className="text-base font-black tracking-tight text-[#101114] sm:text-lg">
               {isEditing ? "Edit Your Review" : "Write a Verified Review"}
             </h3>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#00D9FF]/15 px-2 py-0.5 text-[10px] font-bold text-[#008ca6] uppercase">
+            <span className="bg-vl-cyan/15 text-vl-cyan-dark inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
               <Sparkles className="size-3" /> Verified Buyer
             </span>
           </div>
@@ -153,34 +155,28 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
               {comment.length} / 1000
             </span>
           </div>
-          <textarea
+          <Textarea
             id="review-comment"
+            variant="brand"
             rows={4}
             maxLength={1000}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share details about the fabric GSM, true-to-size fit, collar durability, or style recommendations..."
-            className="w-full resize-y rounded-lg border border-[#101114]/15 bg-white p-3.5 text-sm text-[#101114] transition-colors placeholder:text-[#101114]/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
+            className="p-3.5 text-sm"
           />
         </div>
 
         <div className="flex items-center justify-end">
-          <button
+          <Button
             type="submit"
+            size="default"
             disabled={isPending}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm bg-[#101114] px-7 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:outline-2 focus-visible:outline-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
+            loading={isPending}
+            className="px-7"
           >
-            {isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>Submitting...</span>
-              </>
-            ) : isEditing ? (
-              <span>Update Review</span>
-            ) : (
-              <span>Post Review</span>
-            )}
-          </button>
+            {isPending ? "Submitting..." : isEditing ? "Update Review" : "Post Review"}
+          </Button>
         </div>
       </form>
     </div>

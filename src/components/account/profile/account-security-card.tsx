@@ -13,6 +13,7 @@ import {
 import { deleteAccountAction } from "@/app/actions/account-deletion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Lock, Laptop, AlertTriangle, Check } from "lucide-react";
 
 export function AccountSecurityCard() {
@@ -140,12 +141,13 @@ export function AccountSecurityCard() {
             </Label>
             <Input
               id="currentPassword"
+              variant="brand"
+              size="md"
               type="password"
               required
               value={pwData.currentPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
@@ -155,12 +157,13 @@ export function AccountSecurityCard() {
             </Label>
             <Input
               id="newPassword"
+              variant="brand"
+              size="md"
               type="password"
               required
               value={pwData.newPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, newPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
@@ -170,6 +173,8 @@ export function AccountSecurityCard() {
             </Label>
             <Input
               id="confirmNewPassword"
+              variant="brand"
+              size="md"
               type="password"
               required
               value={pwData.confirmNewPassword}
@@ -177,18 +182,20 @@ export function AccountSecurityCard() {
                 setPwData((prev) => ({ ...prev, confirmNewPassword: e.target.value }))
               }
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-vl-black/15 bg-white text-xs"
             />
           </div>
 
           <div className="pt-2">
-            <button
+            <Button
               type="submit"
-              disabled={pwLoading || !!pwSuccess}
-              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-[#101114] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 sm:w-auto"
+              variant="primary"
+              size="lg"
+              loading={pwLoading}
+              disabled={!!pwSuccess}
+              className="w-full sm:w-auto"
             >
-              {pwLoading ? "Updating Password..." : "Update Password"}
-            </button>
+              Update Password
+            </Button>
           </div>
         </form>
       </div>
@@ -241,19 +248,13 @@ export function AccountSecurityCard() {
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2.5 border-t border-vl-black/8 pt-4">
-              <button
-                onClick={handleRevokeOther}
-                className="min-h-[38px] rounded-lg border border-vl-black/15 px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
-              >
+            <div className="border-vl-black/8 mt-4 flex flex-wrap gap-2.5 border-t pt-4">
+              <Button onClick={handleRevokeOther} variant="outline" size="sm">
                 Sign Out Other Devices
-              </button>
-              <button
-                onClick={handleRevokeAll}
-                className="min-h-[38px] rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
-              >
+              </Button>
+              <Button onClick={handleRevokeAll} variant="destructive" size="sm">
                 Sign Out All Devices
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -274,12 +275,9 @@ export function AccountSecurityCard() {
 
         {!delConfirmMode ? (
           <div className="pt-4">
-            <button
-              onClick={() => setDelConfirmMode(true)}
-              className="min-h-10 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
-            >
+            <Button onClick={() => setDelConfirmMode(true)} variant="danger" size="lg">
               Delete My Account
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleDeleteAccount} className="mt-4 max-w-md space-y-3">
@@ -304,23 +302,20 @@ export function AccountSecurityCard() {
               className="min-h-[42px] rounded-lg border-rose-300 text-xs"
             />
             <div className="flex gap-2.5 pt-1">
-              <button
-                type="submit"
-                disabled={delLoading}
-                className="min-h-10 rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
-              >
-                {delLoading ? "Deleting..." : "Permanently Delete"}
-              </button>
-              <button
+              <Button type="submit" variant="danger" size="lg" loading={delLoading}>
+                Permanently Delete
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => {
                   setDelConfirmMode(false);
                   setDelError("");
                 }}
-                className="min-h-10 rounded-lg border border-neutral-300 px-4 py-2 text-xs font-normal text-neutral-700 hover:bg-neutral-50"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}
