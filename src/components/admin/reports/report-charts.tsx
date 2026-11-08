@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { NativeSelect } from "@/components/ui/select-native";
 
 type TrendPoint = {
   date: Date;
@@ -179,15 +180,16 @@ export function ReportCharts({
               Top 10 from the existing product aggregation
             </p>
           </div>
-          <select
+          <NativeSelect
             value={productMetric}
             onChange={(event) => setProductMetric(event.target.value as typeof productMetric)}
-            className="bg-background h-8 rounded-md border px-2 text-xs"
+            size="sm"
+            className="w-auto"
           >
             <option value="revenue">Revenue</option>
             <option value="profit">Gross profit</option>
             <option value="units">Units sold</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-3">
           {topProducts.length ? (

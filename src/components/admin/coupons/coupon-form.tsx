@@ -4,6 +4,8 @@ import { useActionState, useState } from "react";
 import type { DiscountType } from "@prisma/client";
 import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar, Layers } from "lucide-react";
 
 const initialState: CouponActionState = { error: null };
@@ -122,15 +124,18 @@ export function CouponForm({
         {/* Discount Type */}
         <div>
           <label className="text-xs font-bold text-neutral-700">Discount Type *</label>
-          <select
-            name="discountType"
-            value={discountType}
-            onChange={(e) => setDiscountType(e.target.value as DiscountType)}
-            className={`${inputClass} font-semibold`}
-          >
-            <option value="PERCENTAGE">Percentage (%)</option>
-            <option value="FIXED">Fixed Amount (৳)</option>
-          </select>
+          <div className="mt-1.5">
+            <NativeSelect
+              name="discountType"
+              value={discountType}
+              onChange={(e) => setDiscountType(e.target.value as DiscountType)}
+              size="default"
+              className="font-semibold"
+            >
+              <option value="PERCENTAGE">Percentage (%)</option>
+              <option value="FIXED">Fixed Amount (৳)</option>
+            </NativeSelect>
+          </div>
         </div>
 
         {/* Discount Value */}
@@ -287,13 +292,14 @@ export function CouponForm({
       ) : null}
 
       <div className="flex items-center justify-end gap-3 border-t border-neutral-100 pt-3">
-        <button
+        <Button
           type="submit"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#101114] px-5 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+          variant="primary"
+          size="default"
         >
           <Tag className="size-3.5" />
           <span>{coupon ? "Update Coupon" : "Save Coupon"}</span>
-        </button>
+        </Button>
       </div>
     </form>
   );

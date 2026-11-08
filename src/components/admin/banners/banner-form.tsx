@@ -4,10 +4,12 @@ import * as React from "react";
 import { useState, useActionState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Globe, ImagePlus, Loader2, Trash2, Upload, X } from "lucide-react";
+import { ExternalLink, Globe, ImagePlus, Trash2, Upload, X } from "lucide-react";
 import { BannerPlacement } from "@prisma/client";
 import { toast } from "sonner";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import { saveBannerAction, type BannerActionState } from "@/lib/admin/banners/banner-actions";
 
 const initialState: BannerActionState = { error: null };
@@ -339,17 +341,19 @@ export function BannerForm({
               >
                 Showcase Placement
               </label>
-              <select
-                id="banner-placement"
-                name="placement"
-                value={placement}
-                onChange={(e) => setPlacement(e.target.value as BannerPlacement)}
-                className={fieldClass}
-              >
-                <option value="BOTH">Category pages + Search results (Recommended)</option>
-                <option value="CATEGORY">Category pages only</option>
-                <option value="SEARCH">Search results only</option>
-              </select>
+              <div className="mt-1.5">
+                <NativeSelect
+                  id="banner-placement"
+                  name="placement"
+                  value={placement}
+                  onChange={(e) => setPlacement(e.target.value as BannerPlacement)}
+                  size="default"
+                >
+                  <option value="BOTH">Category pages + Search results (Recommended)</option>
+                  <option value="CATEGORY">Category pages only</option>
+                  <option value="SEARCH">Search results only</option>
+                </NativeSelect>
+              </div>
               <p className="text-muted-foreground mt-1 text-[11px]">
                 Choose where customers encounter this visual banner.
               </p>
@@ -660,27 +664,18 @@ export function BannerForm({
           SECTION 5: ACTION BUTTONS (Matches Product Form)
       ───────────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 pt-6">
-        <Link
-          href="/admin/banners"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F9F8F6]"
-        >
-          Cancel
-        </Link>
+        <Button asChild variant="outline" size="default">
+          <Link href="/admin/banners">Cancel</Link>
+        </Button>
 
-        <button
+        <Button
           type="submit"
-          disabled={pending}
-          className="inline-flex min-h-10 items-center justify-center gap-2 border border-[#101114] bg-[#101114] px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          variant="primary"
+          size="default"
+          loading={pending}
         >
-          {pending ? (
-            <>
-              <Loader2 className="size-4 animate-spin text-white" />
-              <span>Saving banner...</span>
-            </>
-          ) : (
-            <span>{banner ? "Update banner" : "Save banner"}</span>
-          )}
-        </button>
+          {banner ? "Update banner" : "Save banner"}
+        </Button>
       </div>
     </form>
   );

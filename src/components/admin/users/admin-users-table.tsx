@@ -40,6 +40,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import {
   CheckCircle2,
   Download,
@@ -312,13 +315,13 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Full Name <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="text"
                     required
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Tanvir Ahmed"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
@@ -326,24 +329,24 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Email Address <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="email"
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="admin@vibelock.bd"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">Phone Number</label>
-                  <input
+                  <Input
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="017XXXXXXXX"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
@@ -351,48 +354,50 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Role Permission <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <NativeSelect
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")}
-                    className="h-9 w-full rounded-md border border-neutral-200 bg-white px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   >
                     <option value="STAFF">STAFF — Fulfillment & Customer Support</option>
                     <option value="MANAGER">MANAGER — Catalog, Inventory & Orders</option>
                     <option value="ADMIN">ADMIN — Full System Access & Settings</option>
-                  </select>
+                  </NativeSelect>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">
                     Initial Password <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="password"
                     required
                     minLength={6}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
                 <DialogFooter className="pt-2">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="default"
                     onClick={() => setIsDialogOpen(false)}
-                    className={ADMIN_TABLE_CLASSES.buttonSecondary}
                     disabled={isPending}
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="submit"
-                    disabled={isPending}
-                    className={ADMIN_TABLE_CLASSES.buttonPrimary}
+                    variant="primary"
+                    size="default"
+                    loading={isPending}
                   >
-                    {isPending ? "Creating..." : "Create Account"}
-                  </button>
+                    Create Account
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -493,17 +498,18 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
 
                   {/* Action Dropdown */}
                   <TableCell className="text-right">
-                    <select
+                    <NativeSelect
                       disabled={isPending}
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
-                      className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                      size="sm"
+                      className="w-auto inline-flex"
                     >
                       <option value="ADMIN">ADMIN</option>
                       <option value="MANAGER">MANAGER</option>
                       <option value="STAFF">STAFF</option>
                       <option value="CUSTOMER">Demote to CUSTOMER</option>
-                    </select>
+                    </NativeSelect>
                   </TableCell>
                 </TableRow>
               );

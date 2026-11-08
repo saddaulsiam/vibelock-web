@@ -1,5 +1,6 @@
 "use client";
 
+import { NativeSelect } from "@/components/ui/select-native";
 import {
   bulkAssignProductCategoryAction,
   bulkDeleteProductsAction,
@@ -151,18 +152,21 @@ export function AdminProductBulkBar({
         {showBulkCategoryMenu && (
           <div className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 mb-2 w-64 rounded-sm border border-white/20 bg-[#101114] p-3 text-white shadow-2xl">
             <p className="text-[11px] font-semibold text-white/90">Bulk Assign Category</p>
-            <select
-              value={selectedBulkCategoryId}
-              onChange={(e) => setSelectedBulkCategoryId(e.target.value)}
-              className="mt-1.5 h-8 w-full rounded-sm border border-white/20 bg-[#1e2024] px-2 text-xs text-white"
-            >
-              <option value="">Select category...</option>
-              {allCategories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <div className="mt-1.5">
+              <NativeSelect
+                variant="dark"
+                size="sm"
+                value={selectedBulkCategoryId}
+                onChange={(e) => setSelectedBulkCategoryId(e.target.value)}
+              >
+                <option value="">Select category...</option>
+                {allCategories.map((c) => (
+                  <option key={c.id} value={c.id} className="bg-[#1e2024] text-white">
+                    {c.name}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
 
             <div className="mt-2.5 flex items-center justify-between gap-2 text-[10px] text-white/70">
               <label className="flex cursor-pointer items-center gap-1">

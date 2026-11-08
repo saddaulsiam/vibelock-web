@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Tag, X, Minus, Plus, Printer } from "lucide-react";
+import { NativeSelect } from "@/components/ui/select-native";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
 
 export function BarcodeSvg({ value, height = 28 }: { value: string; height?: number }) {
@@ -100,22 +101,23 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-[#101114]/70">Format:</span>
-              <select
+              <NativeSelect
                 value={barcodeLabelSize}
                 onChange={(e) =>
                   setBarcodeLabelSize(e.target.value as "standard" | "compact" | "sheet")
                 }
-                className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                size="sm"
+                className="w-auto"
               >
                 <option value="standard">50mm × 30mm (Thermal Roll)</option>
                 <option value="compact">40mm × 25mm (Compact Tag)</option>
                 <option value="sheet">A4 Sheet (24 Grid)</option>
-              </select>
+              </NativeSelect>
             </div>
 
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-[#101114]/70">Quantity:</span>
-              <select
+              <NativeSelect
                 value={barcodeQuantityMode}
                 onChange={(e) => {
                   setBarcodeQuantityMode(
@@ -123,12 +125,13 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                   );
                   setBarcodeItemOverrides({});
                 }}
-                className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                size="sm"
+                className="w-auto"
               >
                 <option value="one-per-variant">1 Label per Variant</option>
                 <option value="by-stock">Match Available Stock</option>
                 <option value="custom">Custom Quantity</option>
-              </select>
+              </NativeSelect>
             </div>
 
             {/* Custom Quantity Stepper & Presets */}

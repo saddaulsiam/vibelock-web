@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { createAddressAction, updateAddressAction } from "@/lib/account/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 
 type AddressValues = {
   id?: string;
@@ -196,32 +196,25 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
       </div>
 
       <div className="flex flex-wrap items-center gap-2 pt-2">
-        <button
+        <Button
           type="submit"
-          disabled={pending}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
+          variant="primary"
+          size="lg"
+          loading={pending}
         >
-          {pending ? (
-            <span className="flex items-center gap-1.5">
-              <Loader2 className="size-3.5 animate-spin" />
-              <span>Saving Address...</span>
-            </span>
-          ) : address ? (
-            "Save Changes"
-          ) : (
-            "Save Address"
-          )}
-        </button>
+          {address ? "Save Changes" : "Save Address"}
+        </Button>
 
         {onDone && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="lg"
             onClick={onDone}
             disabled={pending}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#101114]/15 bg-white px-5 py-2.5 text-xs font-semibold tracking-wider text-neutral-600 uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
             Cancel
-          </button>
+          </Button>
         )}
       </div>
     </form>

@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { ArrowRight, Loader2, ShieldCheck } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { Button } from "@/components/ui/button";
 import { getCustomerReturnsAction } from "@/lib/account/actions";
 import { formatOrderDate } from "@/lib/format";
 
@@ -257,16 +258,17 @@ export function ReturnsInfiniteList({
       {/* Manual fallback button */}
       {hasMore && !isLoadingMore && (
         <div className="flex justify-center border-t border-[#101114]/8 pt-4 pb-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={loadMore}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-[#101114]/10 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 hover:text-[#101114]"
           >
             <span>Load more returns</span>
             <span className="text-[11px] text-neutral-400">
               ({returns.length} of {total})
             </span>
-          </button>
+          </Button>
         </div>
       )}
 

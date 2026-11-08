@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { NotificationPreferences } from "@/lib/account/notification-types";
 import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Bell, PackageCheck, Flame, RefreshCw, Tag, Loader2, Check } from "lucide-react";
 
 interface NotificationPreferencesCardProps {
@@ -67,7 +69,7 @@ export function NotificationPreferencesCard({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-4 shadow-2xs sm:p-6 md:p-8">
+    <Card variant="brand" className="p-4 sm:p-6 md:p-8">
       {/* Header */}
       <div className="mb-5 border-b border-[#101114]/8 pb-5">
         <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
@@ -150,22 +152,16 @@ export function NotificationPreferencesCard({
 
         {/* Action Button */}
         <div className="flex items-center justify-end border-t border-[#101114]/8 pt-5">
-          <button
+          <Button
             type="submit"
-            disabled={pending}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
+            variant="primary"
+            size="lg"
+            loading={pending}
           >
-            {pending ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="size-3.5 animate-spin" />
-                <span>Saving...</span>
-              </span>
-            ) : (
-              "Save Settings"
-            )}
-          </button>
+            Save Settings
+          </Button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 }

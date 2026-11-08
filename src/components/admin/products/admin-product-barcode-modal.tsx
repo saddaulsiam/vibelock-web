@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import type { AdminProductItem } from "@/lib/admin/catalog/catalog-queries";
 import { Minus, Plus, Printer, Tag, X } from "lucide-react";
 import * as React from "react";
@@ -93,23 +95,24 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
             {/* Format selection */}
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-[#101114]/70">Format:</span>
-              <select
+              <NativeSelect
                 value={barcodeLabelSize}
                 onChange={(e) =>
                   setBarcodeLabelSize(e.target.value as "standard" | "compact" | "sheet")
                 }
-                className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                size="sm"
+                className="w-auto"
               >
                 <option value="standard">50mm × 30mm (Thermal Roll)</option>
                 <option value="compact">40mm × 25mm (Compact Tag)</option>
                 <option value="sheet">A4 Sheet (24 Grid)</option>
-              </select>
+              </NativeSelect>
             </div>
 
             {/* Quantity mode */}
             <div className="flex items-center gap-1.5">
               <span className="font-semibold text-[#101114]/70">Quantity:</span>
-              <select
+              <NativeSelect
                 value={barcodeQuantityMode}
                 onChange={(e) => {
                   setBarcodeQuantityMode(
@@ -117,12 +120,13 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                   );
                   setBarcodeVariantOverrides({});
                 }}
-                className="h-8 rounded-sm border border-[#101114]/20 bg-white px-2 font-medium text-[#101114]"
+                size="sm"
+                className="w-auto"
               >
                 <option value="one-per-variant">1 Label per Variant</option>
                 <option value="by-stock">Match Current Stock Count</option>
                 <option value="custom">Custom Quantity</option>
-              </select>
+              </NativeSelect>
             </div>
 
             {/* Custom Quantity Stepper & Presets */}
@@ -210,14 +214,15 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
               <span className="text-[#101114]/60">Labels</span>
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="default"
               onClick={() => window.print()}
-              className="inline-flex h-9 items-center gap-2 rounded-sm bg-[#101114] px-4 font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85"
             >
               <Printer className="size-3.5" />
               <span>Print Labels Now</span>
-            </button>
+            </Button>
           </div>
         </div>
 

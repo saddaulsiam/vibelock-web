@@ -4,6 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { Ticket, Copy, Check, Sparkles, ArrowRight, ShieldCheck, Tag } from "lucide-react";
 import { toast } from "sonner";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export interface CustomerCoupon {
   id: string;
@@ -104,28 +107,29 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                   : `৳ ${coupon.discountValue.toLocaleString("en-BD")} OFF`;
 
                 return (
-                  <div
+                  <Card
                     key={coupon.id}
-                    className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-[#101114]/10 bg-white p-4 shadow-2xs transition-all hover:border-[#101114]/30 hover:shadow-xs sm:p-5"
+                    variant="interactive"
+                    className="p-4 sm:p-5 justify-between"
                   >
                     <div>
                       {/* Top Row: Type & Discount Badge */}
                       <div className="flex items-center justify-between gap-2">
                         {coupon.isPersonalCredit ? (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-amber-800 uppercase">
+                          <Badge variant="warning" size="sm" className="gap-1 font-semibold">
                             <ShieldCheck className="size-3 text-amber-600" />
                             Store Credit Voucher
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className="inline-flex items-center gap-1 rounded-md bg-neutral-100 px-2 py-0.5 text-[10px] font-semibold tracking-wider text-neutral-600 uppercase">
+                          <Badge variant="secondary" size="sm" className="gap-1 font-semibold">
                             <Tag className="size-3 text-neutral-500" />
                             Member Promo
-                          </span>
+                          </Badge>
                         )}
 
-                        <span className="inline-flex items-center rounded-full bg-[#101114] px-2.5 py-0.5 text-xs font-bold text-white">
+                        <Badge variant="brand" size="sm" className="font-bold">
                           {discountDisplay}
-                        </span>
+                        </Badge>
                       </div>
 
                       {/* Code Block */}
@@ -134,10 +138,12 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                           {coupon.code}
                         </span>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="xs"
                           onClick={() => handleCopy(coupon.code)}
-                          className="inline-flex min-h-8 items-center gap-1 rounded-lg border border-[#101114]/15 bg-white px-3 py-1 text-xs font-semibold tracking-wider uppercase shadow-2xs transition-colors hover:bg-[#101114] hover:text-white"
+                          className="gap-1 font-semibold uppercase"
                         >
                           {isCopied ? (
                             <>
@@ -150,7 +156,7 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                               <span>Copy</span>
                             </>
                           )}
-                        </button>
+                        </Button>
                       </div>
 
                       {/* Conditions & Expiry */}
@@ -167,7 +173,7 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>

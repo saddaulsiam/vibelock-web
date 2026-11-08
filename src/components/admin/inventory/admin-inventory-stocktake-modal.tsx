@@ -20,6 +20,7 @@ import {
   type StocktakeReconcileItem,
 } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
+import { NativeSelect } from "@/components/ui/select-native";
 
 function playStocktakeBeep(type: "success" | "warning" | "error") {
   if (typeof window === "undefined") return;
@@ -380,7 +381,7 @@ export function AdminInventoryStocktakeModal({
 
             {/* Dropdown manual selector for items without readable barcodes */}
             <div className="sm:w-72">
-              <select
+              <NativeSelect
                 onChange={(e) => {
                   if (e.target.value) {
                     handleScanVariant(e.target.value);
@@ -388,7 +389,7 @@ export function AdminInventoryStocktakeModal({
                   }
                 }}
                 defaultValue=""
-                className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] shadow-xs outline-none focus:border-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500"
+                size="default"
               >
                 <option value="">Or pick variant manually...</option>
                 {variants.map((v) => (
@@ -396,7 +397,7 @@ export function AdminInventoryStocktakeModal({
                     {v.sku} - {v.product.name} ({[v.size, v.color].filter(Boolean).join("/")})
                   </option>
                 ))}
-              </select>
+              </NativeSelect>
             </div>
           </div>
 

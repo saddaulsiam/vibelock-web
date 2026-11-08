@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
 import { Check, Loader2, ShieldCheck, ShieldAlert, Camera, Trash2 } from "lucide-react";
@@ -377,20 +378,15 @@ export function ProfileForm({
 
       {/* ── 6. Save Changes Button ── */}
       <div className="pt-2">
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
+          loading={pending}
           disabled={pending || uploadingAvatar}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-7 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
         >
-          {pending ? (
-            <span className="flex items-center gap-1.5">
-              <Loader2 className="size-3.5 animate-spin" />
-              <span>Saving Changes...</span>
-            </span>
-          ) : (
-            "Save Changes"
-          )}
-        </button>
+          Save Changes
+        </Button>
       </div>
     </form>
   );

@@ -1,6 +1,9 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
 import type { AdminActionState } from "@/lib/admin/orders/order-actions";
 import {
   updateOrderPaymentStatusAction,
@@ -11,7 +14,7 @@ import {
   refreshShipmentStatusAction,
 } from "@/lib/admin/shipping/shipping-actions";
 import type { OrderStatus, PaymentStatus } from "@prisma/client";
-import { AlertCircle, CheckCircle2, Loader2, RotateCw, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, RotateCw, Send } from "lucide-react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 
@@ -21,23 +24,16 @@ function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
-      disabled={pending}
-      className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:opacity-50 sm:w-auto"
+      variant="primary"
+      size="default"
+      loading={pending}
+      className="w-full sm:w-auto"
     >
-      {pending ? (
-        <>
-          <Loader2 className="size-3.5 animate-spin" />
-          <span>Processing...</span>
-        </>
-      ) : (
-        <>
-          <Send className="size-3" />
-          <span>{label}</span>
-        </>
-      )}
-    </button>
+      <Send className="size-3" />
+      <span>{label}</span>
+    </Button>
   );
 }
 
@@ -61,18 +57,18 @@ export function OrderStatusForm({
           Order Status
         </Label>
 
-        <select
+        <NativeSelect
           id="status"
           name="status"
           defaultValue={currentStatus}
-          className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors focus:border-neutral-900 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          size="default"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <div className="space-y-1.5">
@@ -80,12 +76,12 @@ export function OrderStatusForm({
           Audit Log Notes
         </Label>
 
-        <textarea
+        <Textarea
           id="order-notes"
           name="notes"
           rows={2}
           placeholder="Reason or dispatch notes for this status update..."
-          className="w-full rounded-lg border border-neutral-300 bg-white p-2.5 text-xs text-neutral-900 shadow-2xs transition-colors placeholder:text-neutral-400 focus:border-neutral-900 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="text-xs"
         />
       </div>
 
@@ -127,18 +123,18 @@ export function OrderPaymentForm({
           Payment Status
         </Label>
 
-        <select
+        <NativeSelect
           id="payment-status"
           name="paymentStatus"
           defaultValue={currentPaymentStatus}
-          className="h-9 w-full rounded-lg border border-neutral-300 bg-white px-3 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors focus:border-neutral-900 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          size="default"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       <div className="space-y-1.5">
@@ -146,12 +142,12 @@ export function OrderPaymentForm({
           Payment Reference / Notes
         </Label>
 
-        <textarea
+        <Textarea
           id="payment-notes"
           name="notes"
           rows={2}
           placeholder="Bank voucher, COD remittance note, or transaction ID..."
-          className="w-full rounded-lg border border-neutral-300 bg-white p-2.5 text-xs text-neutral-900 shadow-2xs transition-colors placeholder:text-neutral-400 focus:border-neutral-900 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="text-xs"
         />
       </div>
 
@@ -204,15 +200,17 @@ function SyncButtonInner() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
-      disabled={pending}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1.5 text-xs font-semibold text-purple-800 transition hover:bg-purple-100 disabled:opacity-50"
+      variant="outline"
+      size="xs"
+      loading={pending}
+      className="border-purple-200 bg-purple-50 text-purple-800 hover:bg-purple-100 hover:text-purple-900"
       title="Sync latest delivery status from Steadfast Courier"
     >
-      <RotateCw className={`size-3 text-purple-600 ${pending ? "animate-spin" : ""}`} />
+      <RotateCw className="size-3 text-purple-600" />
       <span>{pending ? "Syncing..." : "Sync Live Courier Status"}</span>
-    </button>
+    </Button>
   );
 }
 

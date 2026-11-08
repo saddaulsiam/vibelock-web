@@ -6,7 +6,6 @@ import {
   ExternalLink,
   Printer,
   CheckCircle2,
-  Loader2,
   Gift,
   CreditCard,
   Sparkles,
@@ -15,6 +14,10 @@ import {
 import type { AdminReturnActionState } from "@/lib/admin/returns/return-actions";
 import type { ReturnReverseLogistics } from "@/lib/admin/returns/return-queries";
 import { OrderCopyButton } from "@/components/admin/orders";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
 
 const initialState: AdminReturnActionState = { error: null };
 
@@ -59,18 +62,18 @@ export function ReturnStatusForm({
         <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
           Next Status Transition
         </label>
-        <select
+        <NativeSelect
           name="status"
           value={currentStatus}
           onChange={(e) => setCurrentStatus(e.target.value)}
-          className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-semibold text-neutral-900 shadow-2xs"
+          size="default"
         >
           {statuses.map((status) => (
             <option key={status} value={status}>
               {status}
             </option>
           ))}
-        </select>
+        </NativeSelect>
       </div>
 
       {/* QC Quality Grading Section (Visible when transitioning to COMPLETED) */}
@@ -137,20 +140,22 @@ export function ReturnStatusForm({
         <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
           Internal Note (Optional)
         </label>
-        <textarea
+        <Textarea
           name="notes"
           placeholder="Optional internal QC or handover note..."
-          className="border-input flex min-h-18 w-full rounded-lg border bg-white px-3 py-2 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400"
+          className="text-xs"
         />
       </div>
 
-      <button
+      <Button
         type="submit"
-        disabled={pending}
-        className="inline-flex min-h-10 w-full items-center justify-center rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-neutral-800 disabled:opacity-60"
+        variant="primary"
+        size="default"
+        loading={pending}
+        className="w-full text-xs font-bold tracking-wider uppercase"
       >
-        {pending ? "Updating Status..." : "Update Return Status"}
-      </button>
+        Update Return Status
+      </Button>
       <ActionResult state={state} />
     </form>
   );
@@ -215,7 +220,7 @@ export function StoreCreditRefundForm({
             <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Merchandise Refund Base (৳)
             </label>
-            <input
+            <Input
               name="amount"
               type="number"
               min="1"
@@ -224,7 +229,8 @@ export function StoreCreditRefundForm({
               value={customAmount}
               onChange={(e) => setCustomAmount(e.target.value)}
               required
-              className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-bold text-neutral-900 shadow-2xs"
+              size="default"
+              className="text-sm font-bold"
             />
           </div>
 
@@ -253,23 +259,17 @@ export function StoreCreditRefundForm({
             </p>
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={creditPending || baseNum <= 0}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-emerald-700 disabled:opacity-60"
+            variant="primary"
+            size="default"
+            loading={creditPending}
+            disabled={baseNum <= 0}
+            className="w-full bg-emerald-600 text-xs font-bold tracking-wider uppercase hover:bg-emerald-700"
           >
-            {creditPending ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin" />
-                <span>Issuing 105% Store Credit...</span>
-              </>
-            ) : (
-              <>
-                <Gift className="size-3.5" />
-                <span>Issue ৳ {totalVoucherNum.toLocaleString("en-BD")} Store Credit Voucher</span>
-              </>
-            )}
-          </button>
+            <Gift className="size-3.5" />
+            <span>Issue ৳ {totalVoucherNum.toLocaleString("en-BD")} Store Credit Voucher</span>
+          </Button>
           <ActionResult state={creditState} />
         </form>
       ) : (
@@ -279,7 +279,7 @@ export function StoreCreditRefundForm({
             <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Refund Amount (৳)
             </label>
-            <input
+            <Input
               name="amount"
               type="number"
               min="0.01"
@@ -288,7 +288,8 @@ export function StoreCreditRefundForm({
               defaultValue={maxRequestedAmount}
               required
               placeholder="Amount (৳)"
-              className="border-input flex h-9.5 w-full rounded-lg border bg-white px-3 text-sm font-bold text-neutral-900 shadow-2xs"
+              size="default"
+              className="text-sm font-bold"
             />
           </div>
 
@@ -296,21 +297,24 @@ export function StoreCreditRefundForm({
             <label className="text-muted-foreground mb-1 block text-[11px] font-bold tracking-wider uppercase">
               Refund Reason (Optional)
             </label>
-            <input
+            <Input
               name="reason"
               maxLength={500}
               placeholder="e.g. Return item inspected and approved"
-              className="border-input flex h-9 w-full rounded-lg border bg-white px-3 text-xs text-neutral-900 shadow-2xs"
+              size="default"
+              className="text-xs"
             />
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={cashPending}
-            className="inline-flex min-h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-[#101114] bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-2xs transition hover:bg-neutral-800 disabled:opacity-60"
+            variant="primary"
+            size="default"
+            loading={cashPending}
+            className="w-full text-xs font-bold tracking-wider uppercase"
           >
-            {cashPending ? "Creating..." : "Create Pending Gateway Refund"}
-          </button>
+            Create Pending Gateway Refund
+          </Button>
           <p className="text-muted-foreground text-[11px]">
             Creates a pending refund to be settled via payment gateway.
           </p>
@@ -582,23 +586,16 @@ export function ReturnSteadfastPickupCard({
           {isEligible ? (
             <form action={formAction} className="space-y-2.5">
               <input type="hidden" name="returnId" value={returnId} />
-              <button
+              <Button
                 type="submit"
-                disabled={pending}
-                className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-emerald-700 disabled:opacity-60"
+                variant="primary"
+                size="default"
+                loading={pending}
+                className="w-full bg-emerald-600 text-xs font-bold hover:bg-emerald-700"
               >
-                {pending ? (
-                  <>
-                    <Loader2 className="size-3.5 animate-spin" />
-                    <span>Booking with Steadfast API...</span>
-                  </>
-                ) : (
-                  <>
-                    <Truck className="size-3.5" />
-                    <span>Generate Steadfast Return Pickup</span>
-                  </>
-                )}
-              </button>
+                <Truck className="size-3.5" />
+                <span>Generate Steadfast Return Pickup</span>
+              </Button>
               <ActionResult state={state} />
             </form>
           ) : (

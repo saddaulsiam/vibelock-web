@@ -2,6 +2,7 @@
 
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { NativeSelect } from "@/components/ui/select-native";
 import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -30,9 +31,6 @@ export type ProductFormValues = {
   variants: VariantFormValue[];
   images: { url: string; alt: string | null; isPrimary: boolean }[];
 };
-
-const fieldClass =
-  "min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/35 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export function ProductForm({
   product,
@@ -277,16 +275,19 @@ export function ProductForm({
           <label htmlFor="product-status" className="block text-sm font-medium text-[#101114]">
             Storefront Visibility
           </label>
-          <select
-            id="product-status"
-            className={`${fieldClass} mt-1.5 cursor-pointer font-medium`}
-            name="status"
-            defaultValue={product?.status ?? "DRAFT"}
-          >
-            <option value="DRAFT">Draft — Hidden from store, save for later</option>
-            <option value="PUBLISHED">Published — Live and purchasable in store</option>
-            <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
-          </select>
+          <div className="mt-1.5">
+            <NativeSelect
+              id="product-status"
+              name="status"
+              defaultValue={product?.status ?? "DRAFT"}
+              size="default"
+              className="font-medium"
+            >
+              <option value="DRAFT">Draft — Hidden from store, save for later</option>
+              <option value="PUBLISHED">Published — Live and purchasable in store</option>
+              <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
+            </NativeSelect>
+          </div>
         </div>
       </div>
     </AdminSaveForm>
