@@ -37,18 +37,21 @@
      2. VIBELOCK CORE BRAND TOKENS
      Preserves canonical brand identity with extended cyan states
   ══════════════════════════════════════════════════════ */
-  --color-vl-black: #101114;       /* Core Obsidian Black — 2,575 occurrences in audit */
-  --color-vl-white: #f3f0e8;       /* Core Warm Linen Off-White — 286 occurrences in audit */
-  --color-vl-cyan: #00d9ff;        /* Core Electric Cyber Cyan — 482 occurrences in audit */
-  --color-vl-cyan-light: #2ae0ff;  /* Cyan Hover / Glow highlight — 12 occurrences in audit */
-  --color-vl-cyan-dark: #0088a8;   /* Cyan Pressed / High-contrast text state — 21 occurrences */
-  --color-vl-grey: #777982;        /* Core Subtitle & Neutral Grey — 39 occurrences */
-  --color-vl-border: #303137;      /* Dark Mode Container Border — 25 occurrences */
+  --color-vl-black: var(--brand-primary, #101114);       /* Core Obsidian Black */
+  --color-vl-white: var(--brand-surface, #f3f0e8);       /* Core Warm Linen Off-White */
+  --color-vl-cyan: var(--brand-accent, #00d9ff);        /* Core Electric Cyber Cyan */
+  --color-vl-cyan-light: var(--brand-accent-hover, #2ae0ff);  /* Cyan Hover / Glow highlight */
+  --color-vl-cyan-dark: var(--brand-accent-dark, #0088a8);   /* Cyan Pressed / High-contrast text state */
+  --color-vl-grey: var(--brand-grey, #777982);        /* Core Subtitle & Neutral Grey */
+  --color-vl-border: var(--brand-dark-border, #303137);      /* Dark Mode Container Border */
 
-  /* Legacy brand token aliases for backward compatibility */
-  --color-brand-charcoal: #101114;
-  --color-brand-offwhite: #f3f0e8;
-  --color-brand-cyan: #00d9ff;
+  /* Brand token aliases for 1-click global restyling */
+  --color-brand-primary: var(--brand-primary, #101114);
+  --color-brand-accent: var(--brand-accent, #00d9ff);
+  --color-brand-surface: var(--brand-surface, #f3f0e8);
+  --color-brand-charcoal: var(--brand-primary, #101114);
+  --color-brand-offwhite: var(--brand-surface, #f3f0e8);
+  --color-brand-cyan: var(--brand-accent, #00d9ff);
 
   /* ══════════════════════════════════════════════════════
      3. STOREFRONT & CHECKOUT SURFACES
@@ -108,13 +111,14 @@
   --tracking-tag: 0.25em;              /* Eyebrow headers, auth uppercase headers */
 
   /* ══════════════════════════════════════════════════════
-     8. DUAL-TIER BORDER RADIUS
+     8. DUAL-TIER BORDER RADIUS & MASTER TOKENS
      Preserves intentional split: sharp storefront vs comfortable admin
   ══════════════════════════════════════════════════════ */
-  --radius-sharp: 0px;                 /* 0px  — Product card images, brutalist banners */
-  --radius-brand: 0.25rem;             /* 4px  — Storefront inputs, cards, buttons */
-  --radius-ui: 0.5rem;                 /* 8px  — Admin tables, auth panels, dialogs */
-  --radius-pill: 9999px;               /* 9999px — Badges, floating header, avatars */
+  --radius-sharp: 0px;                                 /* 0px  — Brutalist streetwear elements */
+  --radius-brand: var(--brand-radius-btn, 0.25rem);    /* 4px  — Storefront inputs, buttons, controls */
+  --radius-card: var(--brand-radius-card, 1rem);       /* 16px — Storefront & Account content cards */
+  --radius-ui: var(--brand-radius-ui, 0.5rem);         /* 8px  — Admin tables, auth panels, dialogs */
+  --radius-pill: var(--brand-radius-pill, 9999px);     /* 9999px — Badges, floating header, avatars */
 
   /* ══════════════════════════════════════════════════════
      9. SIGNATURE ELEVATION & GLOW SHADOWS
@@ -155,65 +159,84 @@
 }
 
 :root {
+  /* ══════════════════════════════════════════════════════
+     MASTER BRAND THEME CONTROL (EDIT HERE TO CHANGE DESIGN SYSTEM)
+     ══════════════════════════════════════════════════════ */
+  --brand-primary: #101114;       /* Core Obsidian Black — buttons, headings, dark surfaces */
+  --brand-accent: #00d9ff;        /* Core Electric Cyber Cyan — focus rings, highlight borders, active badges */
+  --brand-accent-hover: #2ae0ff;  /* Cyan Hover / Glow highlight */
+  --brand-accent-dark: #0088a8;   /* Cyan Pressed / High-contrast text state */
+  --brand-surface: #f3f0e8;       /* Warm Linen Storefront canvas background */
+  --brand-grey: #777982;          /* Neutral subtitle grey */
+  --brand-border: #d6d2c4;        /* Default border token */
+  --brand-dark-surface: #16171b;  /* Dark card & modal surface */
+  --brand-dark-border: #303137;   /* Dark mode border */
+
+  /* Corner Radius Master Controls */
+  --brand-radius-btn: 0.25rem;    /* 4px — Button, Input, Select, Textarea corner radius */
+  --brand-radius-card: 1rem;      /* 16px — Storefront & Account Card corner radius */
+  --brand-radius-ui: 0.5rem;      /* 8px — Modals, Tables, Admin Surfaces */
+  --brand-radius-pill: 9999px;    /* 9999px — Badges, floating pills, status dots */
+
   /* Warm Linen Off-White (canonical brand token #f3f0e8) */
-  --background: #f3f0e8;
-  --foreground: #101114;
+  --background: var(--brand-surface);
+  --foreground: var(--brand-primary);
 
   /* Primary uses Deep Charcoal */
-  --primary: #101114;
-  --primary-foreground: #f3f0e8;
+  --primary: var(--brand-primary);
+  --primary-foreground: var(--brand-surface);
 
   /* Accent Cyan */
-  --accent: #00d9ff;
-  --accent-foreground: #101114;
+  --accent: var(--brand-accent);
+  --accent-foreground: var(--brand-primary);
 
   --card: #ffffff;
-  --card-foreground: #101114;
+  --card-foreground: var(--brand-primary);
   --popover: #ffffff;
-  --popover-foreground: #101114;
+  --popover-foreground: var(--brand-primary);
 
   --secondary: #ebe6d9; /* Slightly darker off-white for contrast */
-  --secondary-foreground: #101114;
+  --secondary-foreground: var(--brand-primary);
 
   --muted: #ebe6d9;
   --muted-foreground: #555555; /* WCAG 2.2 AA compliant subdued text (6.4:1 ratio on #f3f0e8) */
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: #d6d2c4;
-  --input: #d6d2c4;
-  --ring: #00d9ff; /* Unified cyber cyan focus ring */
+  --border: var(--brand-border);
+  --input: var(--brand-border);
+  --ring: var(--brand-accent); /* Unified cyber cyan focus ring */
 
-  --radius: 0.25rem; /* Restrained radius */
+  --radius: var(--brand-radius-btn); /* Restrained radius */
 }
 
 .dark {
   /* Obsidian Black */
-  --background: #101114;
-  --foreground: #f3f0e8;
+  --background: var(--brand-primary);
+  --foreground: var(--brand-surface);
 
-  --primary: #f3f0e8;
-  --primary-foreground: #101114;
+  --primary: var(--brand-surface);
+  --primary-foreground: var(--brand-primary);
 
-  --accent: #00d9ff;
-  --accent-foreground: #101114;
+  --accent: var(--brand-accent);
+  --accent-foreground: var(--brand-primary);
 
-  --card: #16171b;
-  --card-foreground: #f3f0e8;
-  --popover: #16171b;
-  --popover-foreground: #f3f0e8;
+  --card: var(--brand-dark-surface);
+  --card-foreground: var(--brand-surface);
+  --popover: var(--brand-dark-surface);
+  --popover-foreground: var(--brand-surface);
 
   --secondary: #212228;
-  --secondary-foreground: #f3f0e8;
+  --secondary-foreground: var(--brand-surface);
 
   --muted: #212228;
-  --muted-foreground: #777982;
+  --muted-foreground: var(--brand-grey);
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: #303137;
-  --input: #303137;
-  --ring: #00d9ff;
+  --border: var(--brand-dark-border);
+  --input: var(--brand-dark-border);
+  --ring: var(--brand-accent);
 }
 
 @layer base {

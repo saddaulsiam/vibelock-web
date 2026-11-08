@@ -5,15 +5,15 @@ import { Textarea, textareaVariants } from "@/components/ui/textarea";
 
 describe("Centralized Input and Textarea Primitives", () => {
   describe("Input Variants", () => {
-    it("renders default variant with rounded-lg", () => {
+    it("renders default variant with rounded-brand", () => {
       const html = renderToStaticMarkup(<Input placeholder="Default" />);
-      expect(html).toContain("rounded-lg");
+      expect(html).toContain("rounded-brand");
       expect(html).toContain("data-slot=\"input\"");
     });
 
-    it("renders brand variant with streetwear rounded-xs and cyan focus ring", () => {
+    it("renders brand variant with streetwear rounded-brand and cyan focus ring", () => {
       const html = renderToStaticMarkup(<Input variant="brand" placeholder="Brand" />);
-      expect(html).toContain("rounded-xs");
+      expect(html).toContain("rounded-brand");
       expect(html).toContain("bg-white");
       expect(html).toContain("border-vl-black/15");
       expect(html).toContain("focus-visible:ring-vl-cyan");
@@ -45,9 +45,9 @@ describe("Centralized Input and Textarea Primitives", () => {
   });
 
   describe("Textarea Variants & Sizes", () => {
-    it("renders brand textarea with rounded-xs and cyan focus ring", () => {
+    it("renders brand textarea with rounded-brand and cyan focus ring", () => {
       const html = renderToStaticMarkup(<Textarea variant="brand" placeholder="Note" />);
-      expect(html).toContain("rounded-xs");
+      expect(html).toContain("rounded-brand");
       expect(html).toContain("bg-white");
       expect(html).toContain("border-vl-black/15");
       expect(html).toContain("focus-visible:ring-vl-cyan");
@@ -70,13 +70,13 @@ describe("Centralized Input and Textarea Primitives", () => {
   describe("Input and Textarea Helper Functions", () => {
     it("computes inputVariants classes directly", () => {
       const classes = inputVariants({ variant: "brand", size: "lg" });
-      expect(classes).toContain("rounded-xs");
+      expect(classes).toContain("rounded-brand");
       expect(classes).toContain("h-11");
     });
 
     it("computes textareaVariants classes directly", () => {
       const classes = textareaVariants({ variant: "brand", size: "sm" });
-      expect(classes).toContain("rounded-xs");
+      expect(classes).toContain("rounded-brand");
       expect(classes).toContain("min-h-16");
     });
   });

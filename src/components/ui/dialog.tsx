@@ -42,13 +42,13 @@ const dialogContentVariants = cva(
   {
     variants: {
       variant: {
-        /** default — standard admin and storefront modal */
+        /** default — standard admin and storefront modal, governed by master card radius */
         default:
-          "bg-popover text-popover-foreground border border-border shadow-2xl rounded-2xl ring-1 ring-foreground/10",
+          "bg-popover text-popover-foreground border border-border shadow-2xl rounded-card ring-1 ring-foreground/10",
         /** brand — clean streetwear brand modal */
-        brand: "bg-white text-[#101114] border border-[#101114]/10 shadow-2xl rounded-2xl",
+        brand: "bg-white text-vl-black border border-vl-black/10 shadow-2xl rounded-card",
         /** dark — POS & dark-themed modal */
-        dark: "bg-surface-dark text-vl-white border border-border-dark shadow-2xl rounded-2xl",
+        dark: "bg-surface-dark text-vl-white border border-border-dark shadow-2xl rounded-card",
       },
       size: {
         sm: "max-w-[calc(100%-2rem)] sm:max-w-sm",

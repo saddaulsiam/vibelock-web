@@ -8,31 +8,31 @@ const cardVariants = cva(
     variants: {
       variant: {
         /**
-         * default — standard admin and operational surface.
+         * default — standard admin and operational surface, governed by master card radius.
          */
-        default: "bg-card border border-border rounded-xl ring-1 ring-foreground/10",
+        default: "bg-card border border-border rounded-card ring-1 ring-foreground/10",
 
         /**
          * brand — Storefront & Account clean white card with subtle obsidian border.
-         * High-contrast, clean 16px/24px rounded corners with soft 2xs elevation.
+         * Governed by master card radius (--radius-card) with soft 2xs elevation.
          */
-        brand: "bg-white border border-vl-black/8 rounded-2xl shadow-2xs",
+        brand: "bg-white border border-vl-black/8 rounded-card shadow-2xs",
 
         /**
          * dark — Auth pages and POS dark-surface card.
          */
-        dark: "bg-surface-dark text-vl-white border border-border-dark rounded-xl",
+        dark: "bg-surface-dark text-vl-white border border-border-dark rounded-card",
 
         /**
          * panel — Checkout, order summary, FAQ warm-off-white panel.
          */
-        panel: "bg-surface-warm-soft border border-vl-black/8 rounded-xl",
+        panel: "bg-surface-warm-soft border border-vl-black/8 rounded-card",
 
         /**
          * interactive — Storefront hoverable cards (coupons, action tiles).
          */
         interactive:
-          "bg-white border border-vl-black/10 rounded-2xl shadow-2xs hover:border-vl-black/30 hover:shadow-xs",
+          "bg-white border border-vl-black/10 rounded-card shadow-2xs hover:border-vl-black/30 hover:shadow-xs",
       },
     },
     defaultVariants: {

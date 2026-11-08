@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 import { cn } from "cn";
 
 const buttonVariants = cva(
-  "group/button cursor-pointer inline-flex shrink-0 items-center justify-center rounded-xs border border-transparent bg-clip-padding font-heading text-sm font-bold tracking-wider uppercase whitespace-nowrap transition-all outline-none select-none focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button cursor-pointer inline-flex shrink-0 items-center justify-center rounded-brand border border-transparent bg-clip-padding font-heading text-sm font-bold tracking-wider uppercase whitespace-nowrap transition-all outline-none select-none focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -54,9 +54,9 @@ const buttonVariants = cva(
       },
       size: {
         /** xs — 28px compact actions */
-        xs: "h-7 gap-1 px-2 text-2xs in-data-[slot=button-group]:rounded-xs [&_svg:not([class*='size-'])]:size-3",
+        xs: "h-7 gap-1 px-2 text-2xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3",
         /** sm — 32px small controls (filters, table actions, small pills) */
-        sm: "h-8 gap-1.5 px-3 text-xs in-data-[slot=button-group]:rounded-xs [&_svg:not([class*='size-'])]:size-3.5",
+        sm: "h-8 gap-1.5 px-3 text-xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3.5",
         /** default — 40px standard actions (inputs, forms, admin, dialogs) */
         default:
           "h-10 gap-2 px-4 text-xs font-bold tracking-wider",
@@ -71,10 +71,10 @@ const buttonVariants = cva(
         icon: "size-8",
         /** icon-xs — 24px compact icon */
         "icon-xs":
-          "size-6 in-data-[slot=button-group]:rounded-xs [&_svg:not([class*='size-'])]:size-3",
+          "size-6 in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3",
         /** icon-sm — 28px small icon (dialogs/sheets) */
         "icon-sm":
-          "size-7 in-data-[slot=button-group]:rounded-xs [&_svg:not([class*='size-'])]:size-3.5",
+          "size-7 in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3.5",
         /** icon-lg — 36px large icon */
         "icon-lg": "size-9 [&_svg:not([class*='size-'])]:size-4.5",
       },

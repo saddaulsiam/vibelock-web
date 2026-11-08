@@ -30,16 +30,13 @@ const nativeSelectVariants = cva(
   {
     variants: {
       variant: {
-        /** Default — matches Input and SelectTrigger aesthetic (rounded-lg) */
-        default: "rounded-lg",
-        /** Brand — storefront style: sharp 4px radius, vl-black focus border */
+        /** Default — matches Input and Button aesthetic, governed by master brand radius */
+        default: "rounded-brand",
+        /** Brand — storefront style: governed by master brand radius, vl-black focus border */
         brand:
-          "rounded-[var(--radius-brand)] border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
-        /** Dark — auth/POS dark-surface style.
-         *  bg: --color-surface-dark (#16171b)  — established token (24 occurrences)
-         *  border: --color-border-dark-input (#2a2d33) — intentionally lighter than
-         *    --color-border-dark (#303137) so an input border reads against surface-dark */
-        dark: "rounded-[var(--radius-ui)] bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
+          "rounded-brand border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
+        /** Dark — auth/POS dark-surface style */
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
       },
       size: {
         sm: "h-7 text-xs",

@@ -6,7 +6,7 @@ import { updateNotificationPreferencesAction } from "@/lib/account/notification-
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, PackageCheck, Flame, RefreshCw, Tag, Loader2, Check } from "lucide-react";
+import { Bell, PackageCheck, Flame, RefreshCw, Tag, Check } from "lucide-react";
 
 interface NotificationPreferencesCardProps {
   initialPreferences: NotificationPreferences;

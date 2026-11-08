@@ -33,13 +33,13 @@ const selectTriggerVariants = cva(
   {
     variants: {
       variant: {
-        /** default — Standard input-matching border and radius */
-        default: "rounded-lg",
+        /** default — Standard input-matching border, governed by master brand radius */
+        default: "rounded-brand",
         /** brand — Streetwear brand style: clean neutral border with obsidian focus */
         brand:
-          "rounded-[var(--radius-brand)] border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
+          "rounded-brand border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
         /** dark — POS & dark mode surface */
-        dark: "rounded-[var(--radius-ui)] bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
       },
       size: {
         sm: "h-7 text-xs px-2.5 rounded-[min(var(--radius-md),10px)]",

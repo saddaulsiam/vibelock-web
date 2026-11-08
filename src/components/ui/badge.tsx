@@ -28,17 +28,17 @@ const badgeVariants = cva(
          * Solid red-500 (#E50010): high-contrast attention signal for price reduction.
          * Uses rounded-xs (2px) to match storefront sharp-corner aesthetic.
          */
-        sale: "rounded-xs bg-[#E50010] text-white border-transparent font-black uppercase tracking-wider shadow-xs",
+        sale: "rounded-brand bg-status-sale text-white border-transparent font-black uppercase tracking-wider shadow-xs",
 
         /**
          * new — New collection / streetwear drop badge.
          */
-        new: "rounded-xs bg-[#E50010] text-white border-transparent font-black uppercase tracking-wider shadow-xs",
+        new: "rounded-brand bg-status-sale text-white border-transparent font-black uppercase tracking-wider shadow-xs",
 
         /**
          * featured — Highlighted product / editor's pick badge.
          */
-        featured: "rounded-xs bg-amber-400 text-vl-black border-transparent font-black uppercase tracking-wider shadow-xs",
+        featured: "rounded-brand bg-amber-400 text-vl-black border-transparent font-black uppercase tracking-wider shadow-xs",
 
         /**
          * success — Order confirmed, payment verified, in-stock, completed status.

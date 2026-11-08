@@ -9,7 +9,7 @@ describe("Unified Global Card Component", () => {
   describe("Variants", () => {
     const variants: { name: CardVariant; expectedClass: string }[] = [
       { name: "default", expectedClass: "bg-card border border-border" },
-      { name: "brand", expectedClass: "bg-white border border-vl-black/8 rounded-2xl" },
+      { name: "brand", expectedClass: "bg-white border border-vl-black/8 rounded-card" },
       { name: "dark", expectedClass: "bg-surface-dark text-vl-white border border-border-dark" },
       { name: "panel", expectedClass: "bg-surface-warm-soft border border-vl-black/8" },
       { name: "interactive", expectedClass: "hover:border-vl-black/30 hover:shadow-xs" },

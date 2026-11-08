@@ -10,7 +10,7 @@ describe("Unified Global Dialog / Modal Component", () => {
   describe("Content Variants", () => {
     const variants = [
       { name: "default", expectedClass: "bg-popover text-popover-foreground border-border" },
-      { name: "brand", expectedClass: "bg-white text-[#101114] border-[#101114]/10" },
+      { name: "brand", expectedClass: "bg-white text-vl-black border-vl-black/10" },
       { name: "dark", expectedClass: "bg-surface-dark text-vl-white border-border-dark" },
     ] as const;
 

@@ -16,13 +16,13 @@ const textareaVariants = cva(
   {
     variants: {
       variant: {
-        /** Default — matches Input primitive aesthetic (rounded-lg) */
-        default: "rounded-lg",
-        /** Brand — storefront style: sharp 4px radius, clean white surface, subtle obsidian border, cyan focus ring */
+        /** Default — matches Input primitive aesthetic, governed by master brand radius */
+        default: "rounded-brand",
+        /** Brand — storefront style: governed by master brand radius, clean white surface, subtle obsidian border, cyan focus ring */
         brand:
-          "rounded-xs bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
         /** Dark — auth/POS dark-surface style */
-        dark: "rounded-[var(--radius-ui)] bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-[#6b7280] focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-muted-foreground focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
       },
       size: {
         sm: "min-h-16 text-xs",

@@ -6,8 +6,8 @@ import { NativeSelect } from "@/components/ui/select-native";
 describe("Unified Global Select Component", () => {
   describe("SelectTrigger Variants", () => {
     const variants = [
-      { name: "default", expectedClass: "rounded-lg" },
-      { name: "brand", expectedClass: "rounded-[var(--radius-brand)] border-neutral-200" },
+      { name: "default", expectedClass: "rounded-brand" },
+      { name: "brand", expectedClass: "rounded-brand border-neutral-200" },
       { name: "dark", expectedClass: "bg-surface-dark border-[var(--color-border-dark-input)] text-white" },
     ] as const;
 
@@ -49,7 +49,7 @@ describe("Unified Global Select Component", () => {
       );
 
       expect(html).toContain("data-slot=\"native-select\"");
-      expect(html).toContain("rounded-[var(--radius-brand)]");
+      expect(html).toContain("rounded-brand");
       expect(html).toContain("h-10");
       expect(html).toContain("Dhaka");
       expect(html).toContain("Chittagong");

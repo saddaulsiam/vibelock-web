@@ -8,13 +8,13 @@ const tableVariants = cva("w-full border-collapse text-left", {
   variants: {
     variant: {
       /** default — Standard administrative data grid */
-      default: "text-xs text-[#101114]",
+      default: "text-xs text-vl-black",
       /** striped — Alternating rows for readable scanning of high-density lists */
-      striped: "text-xs text-[#101114] [&_tbody_tr:nth-child(even)]:bg-neutral-50/50",
+      striped: "text-xs text-vl-black [&_tbody_tr:nth-child(even)]:bg-neutral-50/50",
       /** plain — Unstyled / borderless table for receipts, modals, and embedded sub-tables */
-      plain: "text-xs text-[#101114]",
+      plain: "text-xs text-vl-black",
       /** dark — POS dark-mode table */
-      dark: "text-xs text-vl-white [&_tbody_tr:nth-child(even)]:bg-[#1d1e24]",
+      dark: "text-xs text-vl-white [&_tbody_tr:nth-child(even)]:bg-surface-dark/70",
     },
     density: {
       /** compact — Dense POS order lists, receipt breakdown, quick modals */
@@ -88,7 +88,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "text-compact border-b border-neutral-200 bg-[#FBF9F5] font-semibold tracking-wider text-neutral-600 uppercase select-none",
+        "text-compact border-b border-neutral-200 bg-surface-cream font-semibold tracking-wider text-neutral-600 uppercase select-none",
         className
       )}
       {...props}
