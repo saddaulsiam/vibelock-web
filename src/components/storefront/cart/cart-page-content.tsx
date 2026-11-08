@@ -22,7 +22,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center py-8 text-center">
-        <div className="mb-6 flex size-16 items-center justify-center bg-vl-white-300 text-vl-dark-900">
+        <div className="bg-vl-white-300 text-vl-dark-900 mb-6 flex size-16 items-center justify-center">
           <ShoppingBag className="size-7" aria-hidden="true" />
         </div>
         <p className="text-muted-foreground tracking-streetwear mb-2 text-xs font-semibold uppercase">
@@ -81,7 +81,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
           </div>
           <Link
             href="/shop"
-            className="hover:text-muted-foreground mt-6 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-semibold text-vl-dark-900 underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="hover:text-muted-foreground text-vl-dark-900 focus-visible:ring-vl-cyan mt-6 inline-flex min-h-10 items-center gap-2 rounded-sm text-sm font-semibold underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <ArrowLeft className="size-4" aria-hidden="true" /> Continue shopping
           </Link>
@@ -99,14 +99,14 @@ export function CartPageContent({ cart }: CartPageContentProps) {
             <dl className="space-y-4 py-5">
               <div className="flex items-center justify-between gap-4 text-sm">
                 <dt className="text-muted-foreground">Subtotal</dt>
-                <dd className="font-medium text-vl-dark-900">
+                <dd className="text-vl-dark-900 font-medium">
                   {formatPrice(subtotalBeforeDiscount)}
                 </dd>
               </div>
               {discountTotal > 0 && (
                 <div className="flex items-center justify-between gap-4 text-sm">
                   <dt className="text-muted-foreground">Discount</dt>
-                  <dd className="font-medium text-vl-dark-900">−{formatPrice(discountTotal)}</dd>
+                  <dd className="text-vl-dark-900 font-medium">−{formatPrice(discountTotal)}</dd>
                 </div>
               )}
               <div className="flex items-start justify-between gap-4 text-sm">
@@ -115,7 +115,7 @@ export function CartPageContent({ cart }: CartPageContentProps) {
               </div>
             </dl>
 
-            <div className="flex items-center justify-between gap-4 border-t border-vl-dark-900/15 pt-4">
+            <div className="border-vl-dark-900/15 flex items-center justify-between gap-4 border-t pt-4">
               <span className="font-semibold">Total</span>
               <span className="text-xl font-semibold tracking-tight">
                 {formatPrice(cart.subtotal)}

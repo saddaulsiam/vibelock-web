@@ -93,8 +93,8 @@ export function SectionHeading({
                 className={cn(
                   "text-vl-cyan font-extrabold uppercase",
                   isCompact
-                    ? "mb-1 text-2xs tracking-streetwear"
-                    : "mb-1.5 text-2xs tracking-[0.24em] sm:mb-2 sm:text-compact"
+                    ? "text-2xs tracking-streetwear mb-1"
+                    : "text-2xs sm:text-compact mb-1.5 tracking-[0.24em] sm:mb-2"
                 )}
               >
                 {eyebrow}
@@ -153,8 +153,8 @@ export function SectionHeading({
           className={cn(
             "text-vl-cyan font-extrabold uppercase",
             isCompact
-              ? "mb-1 text-2xs tracking-streetwear"
-              : "mb-1.5 text-2xs tracking-[0.24em] sm:mb-2 sm:text-compact"
+              ? "text-2xs tracking-streetwear mb-1"
+              : "text-2xs sm:text-compact mb-1.5 tracking-[0.24em] sm:mb-2"
           )}
         >
           {eyebrow}

@@ -1,8 +1,9 @@
 "use client";
 
-import * as React from "react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import * as React from "react";
 
 import type { CategorySummary } from "@/lib/catalog/types";
 
@@ -136,11 +137,9 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         }}
       >
         {items.map((cat, i) => (
-          <Link
+          <div
             key={`${cat.id}-${i}`}
-            href={`/category/${cat.slug}`}
             tabIndex={-1}
-            className="vl-card-link"
             style={{
               position: "relative",
               flexShrink: 0,
@@ -151,7 +150,8 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
             }}
           >
             {/* Inner wrapper — glued to bottom, height scales down from the top */}
-            <div
+            <Link
+              href={`/category/${cat.slug}`}
               className="vl-card-inner"
               style={{
                 position: "absolute",
@@ -181,47 +181,16 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
                     "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 30%, transparent 60%, rgba(0,0,0,0.6) 100%)",
                 }}
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "1.25rem",
-                  left: "1.25rem",
-                  zIndex: 10,
-                  maxWidth: "calc(100% - 2.5rem)",
-                  pointerEvents: "none",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    letterSpacing: "0.22em",
-                    color: "#00D9FF",
-                    textTransform: "uppercase",
-                    margin: 0,
-                    whiteSpace: "nowrap",
-                  }}
-                >
+              <div className="pointer-events-none absolute top-5 left-5 z-10 max-w-[calc(100%-2.5rem)]">
+                <p className="text-vl-cyan text-[10px] font-extrabold tracking-[0.22em] uppercase">
                   {cat.label}
                 </p>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: 900,
-                    letterSpacing: "0.04em",
-                    color: "#ffffff",
-                    textTransform: "uppercase",
-                    margin: 0,
-                    marginTop: "2px",
-                    lineHeight: 1.2,
-                    whiteSpace: "nowrap",
-                  }}
-                >
+                <p className="mt-0.5 text-[15px] font-black tracking-wider text-white uppercase">
                   {cat.name}
                 </p>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
     </div>
@@ -263,7 +232,7 @@ export function HeroSection({
 
   return (
     <section
-      className="relative flex h-screen overflow-hidden bg-vl-dark-900"
+      className="bg-vl-dark-900 relative flex h-screen overflow-hidden"
       aria-label="VibeLock hero — shop by category"
     >
       {formattedCategories.length > 0 && <InfiniteTrack categories={formattedCategories} />}
@@ -276,13 +245,13 @@ export function HeroSection({
         <div className="relative max-w-85 sm:max-w-110 lg:max-w-full">
           {/* Typewriter headline */}
           <h1
-            className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-vl-cyan uppercase select-none"
+            className="font-heading text-vl-cyan text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight uppercase drop-shadow-[0_0_35px_rgba(0,217,255,0.25)] select-none"
             aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}
             <span
               aria-hidden="true"
-              className="ml-0.5 inline-block bg-vl-cyan align-middle"
+              className="bg-vl-cyan ml-1 inline-block align-middle shadow-[0_0_10px_rgba(0,217,255,0.8)]"
               style={{
                 width: "4px",
                 height: "0.8em",
@@ -291,36 +260,24 @@ export function HeroSection({
             />
           </h1>
 
-          <p className="mt-3 text-[10px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/60 uppercase sm:mt-5 sm:text-xs lg:text-[13px]">
+          <p className="mt-3 text-[10px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/70 uppercase sm:mt-5 sm:text-xs lg:text-[13px]">
             {tagline}
           </p>
 
-          <p className="mt-1.5 text-[10px] font-black tracking-[0.22em] text-vl-cyan uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
+          <p className="text-vl-cyan mt-1.5 text-[10px] font-black tracking-[0.22em] uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
             {subtagline}
           </p>
 
-          <div className="mt-4 sm:mt-7" style={{ pointerEvents: "auto" }}>
+          <div className="mt-5 sm:mt-8" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="inline-flex items-center gap-2.5 rounded-full border border-vl-cyan-200 bg-vl-cyan-50 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-vl-cyan uppercase backdrop-blur-sm transition-all duration-300 hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
+              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 active:bg-vl-cyan-600 focus-visible:ring-vl-cyan inline-flex items-center gap-2.5 rounded-full border px-5.5 py-2.5 text-[11px] font-black tracking-[0.18em] uppercase backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(0,217,255,0.45)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] sm:gap-3 sm:px-7 sm:py-3 sm:text-xs"
             >
-              SHOP ALL DROPS
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 14 14"
-                fill="none"
+              <span>SHOP ALL DROPS</span>
+              <ArrowRight
+                className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 sm:size-4"
                 aria-hidden="true"
-                className="sm:size-3.5"
-              >
-                <path
-                  d="M1 7h12M8 2l5 5-5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              />
             </Link>
           </div>
         </div>
@@ -334,11 +291,11 @@ export function HeroSection({
             window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
           }
         }}
-        className="group absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan"
+        className="group focus-visible:ring-vl-cyan absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2"
         aria-label="Scroll down"
       >
-        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors group-hover:border-vl-cyan">
-          <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-vl-cyan shadow-[0_0_6px_#00D9FF]" />
+        <div className="group-hover:border-vl-cyan flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/60 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors">
+          <div className="animate-vl-scroll-wheel bg-vl-cyan h-1.5 w-1 rounded-full shadow-[0_0_8px_rgba(0,217,255,0.9)]" />
         </div>
       </button>
     </section>

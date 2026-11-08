@@ -35,6 +35,7 @@ export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartB
   return (
     <Button
       type="button"
+      variant="brand"
       size="lg"
       fullWidth
       onClick={handleAddToCart}

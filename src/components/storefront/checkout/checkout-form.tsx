@@ -1076,6 +1076,7 @@ export function CheckoutForm({
           <Button
             type="submit"
             form="checkout-form"
+            variant="brand"
             size="lg"
             fullWidth
             loading={isPending}
