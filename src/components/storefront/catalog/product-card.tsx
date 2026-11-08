@@ -176,13 +176,13 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         <Button
           type="button"
           variant="ghost"
-          size="icon"
+          size="icon-sm"
           aria-label={
             isWishlisted ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute top-2 right-2 z-10 size-7 rounded-full p-0 transition-all duration-200 hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-vl-cyan",
+            "absolute top-2 right-2 z-10 rounded-full hover:bg-white/80",
             isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
           )}
         >

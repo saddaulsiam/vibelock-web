@@ -95,7 +95,7 @@ export function FeaturedProducts({
                   variant={isActive ? "brand" : "outline"}
                   size="sm"
                   onClick={() => setActiveTab(tab.slug)}
-                  className="rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase sm:px-5 sm:py-2"
+                  className="rounded-full px-5"
                 >
                   {tab.label}
                 </Button>

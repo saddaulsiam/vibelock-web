@@ -243,10 +243,10 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                     <Button
                       key={term}
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => handleSelectTerm(term)}
-                      className="rounded-full border-gray-200 bg-gray-50/80 px-3.5 py-1 text-xs font-medium text-gray-700 hover:border-vl-cyan hover:bg-gray-100 hover:text-black"
+                      className="rounded-full"
                     >
                       {term}
                     </Button>

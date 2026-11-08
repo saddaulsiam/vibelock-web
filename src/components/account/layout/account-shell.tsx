@@ -84,21 +84,20 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
               <Button
                 type="button"
                 variant="destructive"
-                size="sm"
+                size="xs"
                 onClick={handleLogout}
                 disabled={loggingOut}
                 loading={loggingOut}
-                className="h-7 px-2.5 text-xs font-semibold"
               >
                 {loggingOut ? "Signing out..." : "Yes, sign out"}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
+                size="icon-xs"
                 onClick={() => setConfirmLogout(false)}
                 disabled={loggingOut}
-                className="size-7 text-red-400 hover:bg-red-100 hover:text-red-600"
+                className="text-red-400 hover:bg-red-100 hover:text-red-600"
                 title="Cancel"
               >
                 <X className="size-3.5" />
@@ -111,9 +110,8 @@ export function AccountShell({ profile, navCounts, children }: AccountShellProps
               size="sm"
               onClick={() => setConfirmLogout(true)}
               title="Sign out of account"
-              className="border-red-200 bg-red-100/60 text-red-600 hover:border-red-300 hover:bg-red-100 hover:text-red-700"
             >
-              <LogOut className="size-3.5 shrink-0 text-red-500" />
+              <LogOut className="size-3.5 shrink-0" />
               <span>Sign Out</span>
             </Button>
           )}

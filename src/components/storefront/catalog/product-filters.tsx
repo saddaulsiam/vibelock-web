@@ -263,7 +263,7 @@ export function ProductFilters({
           <Button
             type="submit"
             variant="outline"
-            className="border-vl-dark-900/20 h-10 w-full rounded-sm"
+            fullWidth
           >
             Apply price
           </Button>

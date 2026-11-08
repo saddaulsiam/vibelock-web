@@ -44,7 +44,7 @@ const buttonVariants = cva(
          * Destructive confirmation and warning actions.
          */
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 border border-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30",
         /**
          * link — Transparent, borderless, text-based appearance.
          * Inline actions and navigation links.

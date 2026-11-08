@@ -170,7 +170,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
             onClick={handleRemove}
             disabled={isPending}
             loading={isPending}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 inline-flex min-h-10 items-center gap-2 rounded-sm px-2 text-sm font-medium"
+            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
             aria-label={`Remove ${item.productName} from cart`}
           >
             {!isPending && <Trash2 className="size-4" aria-hidden="true" />}

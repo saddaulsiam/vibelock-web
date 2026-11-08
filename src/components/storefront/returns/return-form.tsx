@@ -484,10 +484,11 @@ export function ReturnForm({
                 <Button
                   type="button"
                   variant="outline"
+                  fullWidth
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
                   loading={isUploadingImage}
-                  className="h-auto w-full flex-wrap gap-2 rounded-xl border-dashed border-vl-dark-900/20 bg-white p-4 text-xs font-normal tracking-wider text-vl-dark-900 uppercase hover:border-vl-dark-900/50 hover:bg-neutral-50"
+                  className="h-auto flex-wrap gap-2 border-dashed border-border/80 p-4 hover:bg-muted/40"
                 >
                   {isUploadingImage ? (
                     <span>Uploading to Cloudinary...</span>
@@ -495,7 +496,7 @@ export function ReturnForm({
                     <>
                       <Camera className="size-4 text-vl-dark-900" />
                       <span>Upload Photo</span>
-                      <span className="text-[11px] font-normal text-neutral-400">
+                      <span className="text-[11px] font-normal text-muted-foreground">
                         (Max 5MB • JPG, PNG, WebP)
                       </span>
                     </>

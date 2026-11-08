@@ -212,9 +212,9 @@ export function AccountSecurityCard() {
         </div>
 
         {sessionLoading ? (
-          <p className="py-4 text-xs text-neutral-500">Loading active sessions...</p>
+          <p className="py-4 text-xs text-muted-foreground">Loading active sessions...</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-vl-dark-900/10 p-6 text-center text-xs text-neutral-500">
+          <p className="rounded-lg border border-dashed border-vl-dark-900/10 p-6 text-center text-xs text-muted-foreground">
             No other active sessions detected.
           </p>
         ) : (
@@ -234,7 +234,7 @@ export function AccountSecurityCard() {
                         </Badge>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-neutral-500">
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
                       Expires on {new Date(s.expires).toLocaleDateString()}
                     </p>
                   </div>
@@ -273,7 +273,7 @@ export function AccountSecurityCard() {
             Delete Account
           </h2>
         </div>
-        <p className="max-w-xl text-xs leading-relaxed text-neutral-600">
+        <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
           Permanently delete your VibeLock account, order history, saved addresses, and profile
           details. This action cannot be undone.
         </p>

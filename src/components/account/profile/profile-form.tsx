@@ -158,7 +158,7 @@ export function ProfileForm({
       {/* ── 1. Modern Studio Avatar Uploader ── */}
       <div className="flex flex-col gap-4 border-b border-vl-dark-900/8 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-vl-dark-900/15 bg-neutral-100 shadow-2xs sm:size-18">
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-vl-dark-900/15 bg-vl-white-200 shadow-2xs sm:size-18">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -189,7 +189,7 @@ export function ProfileForm({
             <span className="text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
               Profile Photo
             </span>
-            <p className="mt-0.5 text-xs text-neutral-500">
+            <p className="mt-0.5 text-xs text-muted-foreground">
               Upload a high-resolution JPG, PNG or WebP image (Max 5MB).
             </p>
           </div>
@@ -204,7 +204,7 @@ export function ProfileForm({
             loading={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
           >
-            {!uploadingAvatar && <Camera className="size-3.5 text-neutral-500" />}
+            {!uploadingAvatar && <Camera className="size-3.5 text-muted-foreground" />}
             <span>{uploadingAvatar ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}</span>
           </Button>
 
@@ -264,7 +264,7 @@ export function ProfileForm({
           disabled={pending}
           placeholder="No phone number on this account"
         />
-        <p className="text-[11px] text-neutral-500">
+        <p className="text-[11px] text-muted-foreground">
           Used for delivery courier calls and instant order dispatch SMS updates.
         </p>
       </div>
@@ -297,7 +297,7 @@ export function ProfileForm({
             size="lg"
             value={email}
             disabled
-            className="cursor-not-allowed bg-neutral-50 pr-8 text-neutral-600"
+            className="cursor-not-allowed bg-muted/50 pr-8 text-muted-foreground"
           />
           {emailVerified && (
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600">

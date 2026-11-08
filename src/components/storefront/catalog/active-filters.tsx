@@ -78,7 +78,7 @@ export function ActiveFilters() {
             type="button"
             onClick={() => removeFilter("q")}
             aria-label="Remove search filter"
-            className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="size-3" aria-hidden="true" />
           </button>
@@ -97,7 +97,7 @@ export function ActiveFilters() {
               type="button"
               onClick={() => removeFilter("category", c)}
               aria-label={`Remove ${c} category filter`}
-              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -116,7 +116,7 @@ export function ActiveFilters() {
               type="button"
               onClick={() => removeFilter("size", s)}
               aria-label={`Remove ${s} size filter`}
-              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -135,7 +135,7 @@ export function ActiveFilters() {
               type="button"
               onClick={() => removeFilter("color", c)}
               aria-label={`Remove ${c} color filter`}
-              className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -149,7 +149,7 @@ export function ActiveFilters() {
             type="button"
             onClick={clearPrice}
             aria-label="Remove price filter"
-            className="hover:text-destructive ml-1 rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="size-3" aria-hidden="true" />
           </button>
@@ -161,7 +161,7 @@ export function ActiveFilters() {
         type="button"
         variant="link"
         size="sm"
-        className="hover:text-destructive ml-2 underline underline-offset-4"
+        className="hover:text-destructive ml-2"
       >
         Clear all
       </Button>

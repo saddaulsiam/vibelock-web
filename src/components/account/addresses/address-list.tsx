@@ -78,17 +78,17 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               {/* Address details */}
               <address className="text-vl-dark-900 mt-3 text-xs leading-relaxed break-words not-italic">
                 <p className="font-normal break-words">{address.street}</p>
-                <p className="mt-0.5 break-words text-neutral-500">
+                <p className="mt-0.5 break-words text-muted-foreground">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="break-words text-neutral-500">{address.country}</p>
+                <p className="break-words text-muted-foreground">{address.country}</p>
               </address>
             </div>
 
             {/* Bottom Actions */}
-            <div className="border-vl-dark-900/8 mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3.5">
+            <div className="border-border/60 mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3.5">
               {onEdit ? (
                 <Button
                   type="button"
@@ -102,23 +102,23 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               ) : (
                 <Button asChild variant="outline" size="sm">
                   <Link href={`/account/addresses/${address.id}/edit`}>
-                    <Pencil className="size-3 text-neutral-500" />
+                    <Pencil className="size-3 text-muted-foreground" />
                     <span>Edit</span>
                   </Link>
                 </Button>
               )}
 
-              {/* <Button
+              <Button
                 type="button"
                 variant="ghost"
                 size="sm"
                 onClick={() => remove(address.id)}
                 disabled={isDeleting}
-                className="text-neutral-500 hover:bg-rose-50 hover:text-rose-600"
+                className="text-muted-foreground hover:bg-rose-50 hover:text-rose-600"
               >
                 <Trash2 className="size-3" />
                 <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-              </Button> */}
+              </Button>
             </div>
           </article>
         );
