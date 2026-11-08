@@ -196,38 +196,33 @@ export function ProfileForm({
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             disabled={uploadingAvatar}
+            loading={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-vl-dark-900/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
-            {uploadingAvatar ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin text-neutral-500" />
-                <span>Uploading...</span>
-              </>
-            ) : (
-              <>
-                <Camera className="size-3.5 text-neutral-500" />
-                <span>{imageUrl ? "Change Photo" : "Upload Photo"}</span>
-              </>
-            )}
-          </button>
+            {!uploadingAvatar && <Camera className="size-3.5 text-neutral-500" />}
+            <span>{uploadingAvatar ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}</span>
+          </Button>
 
           {imageUrl && !uploadingAvatar && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 setImageUrl("");
                 toast.info("Photo removed. Click 'Save Changes' to confirm.");
               }}
-              className="inline-flex min-h-[38px] items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50"
+              className="text-rose-600 hover:bg-rose-50"
               title="Remove photo"
             >
               <Trash2 className="size-3.5" />
               <span>Remove</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -316,20 +311,17 @@ export function ProfileForm({
             <span className="text-[11px] text-amber-800">
               Verify your email to receive real-time order tracking and invoice receipts.
             </span>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handleResendVerification}
               disabled={resendingEmail}
-              className="min-h-7 shrink-0 rounded-lg bg-amber-700 px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-amber-800 disabled:opacity-50"
+              loading={resendingEmail}
+              className="h-7 border-amber-300 bg-amber-100 text-xs font-semibold text-amber-900 hover:bg-amber-200"
             >
-              {resendingEmail ? (
-                <span className="flex items-center gap-1">
-                  <Loader2 className="size-3 animate-spin" /> Sending...
-                </span>
-              ) : (
-                "Send Link"
-              )}
-            </button>
+              {resendingEmail ? "Sending..." : "Send Link"}
+            </Button>
           </div>
         )}
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { deleteAddressAction } from "@/lib/account/actions";
 import { Pencil, Trash2, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -53,21 +54,21 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
             key={address.id}
             className={`relative flex flex-col justify-between rounded-xl border p-3.5 transition-all sm:p-5 ${
               isEditingThis
-                ? "border-vl-dark-900 bg-white shadow-sm ring-2 ring-vl-cyan"
+                ? "border-vl-dark-900 ring-vl-cyan bg-white shadow-sm ring-2"
                 : address.isDefault
                   ? "border-vl-dark-900/20 bg-vl-white-100 shadow-xs"
-                  : "border-vl-dark-900/10 bg-white hover:border-vl-dark-900/20"
+                  : "border-vl-dark-900/10 hover:border-vl-dark-900/20 bg-white"
             }`}
           >
             <div className="min-w-0">
               {/* Top Row: Label badge & default check */}
               <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+                <span className="text-vl-dark-900 min-w-0 flex-1 truncate text-xs font-bold tracking-wider uppercase">
                   {label}
                 </span>
 
                 {address.isDefault && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-vl-dark-900 px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
+                  <span className="bg-vl-dark-900 inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
                     <Check className="size-2.5" />
                     Default
                   </span>
@@ -75,51 +76,49 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               </div>
 
               {/* Address details */}
-              <address className="mt-3 text-xs leading-relaxed text-vl-dark-900 not-italic break-words">
+              <address className="text-vl-dark-900 mt-3 text-xs leading-relaxed break-words not-italic">
                 <p className="font-normal break-words">{address.street}</p>
-                <p className="mt-0.5 text-neutral-500 break-words">
+                <p className="mt-0.5 break-words text-neutral-500">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="text-neutral-500 break-words">{address.country}</p>
+                <p className="break-words text-neutral-500">{address.country}</p>
               </address>
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-vl-dark-900/8 pt-3.5">
+            <div className="border-vl-dark-900/8 mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3.5">
               {onEdit ? (
-                <button
+                <Button
                   type="button"
+                  variant={isEditingThis ? "brand" : "outline"}
+                  size="sm"
                   onClick={() => onEdit(address)}
-                  className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-normal tracking-wider uppercase transition-colors active:scale-95 ${
-                    isEditingThis
-                      ? "border-vl-dark-900 bg-vl-dark-900 text-white"
-                      : "border-vl-dark-900/15 bg-white text-vl-dark-900 hover:bg-neutral-50"
-                  }`}
                 >
                   <Pencil className="size-3" />
                   <span>{isEditingThis ? "Editing..." : "Edit"}</span>
-                </button>
+                </Button>
               ) : (
-                <Link
-                  href={`/account/addresses/${address.id}/edit`}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-vl-dark-900/15 bg-white px-3 py-1.5 text-xs font-normal tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-50 active:scale-95"
-                >
-                  <Pencil className="size-3 text-neutral-500" />
-                  <span>Edit</span>
-                </Link>
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/account/addresses/${address.id}/edit`}>
+                    <Pencil className="size-3 text-neutral-500" />
+                    <span>Edit</span>
+                  </Link>
+                </Button>
               )}
 
-              <button
+              {/* <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => remove(address.id)}
                 disabled={isDeleting}
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-normal tracking-wider text-neutral-400 uppercase transition-colors hover:bg-rose-50 hover:text-rose-600 active:scale-95 disabled:opacity-50"
+                className="text-neutral-500 hover:bg-rose-50 hover:text-rose-600"
               >
                 <Trash2 className="size-3" />
                 <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-              </button>
+              </Button> */}
             </div>
           </article>
         );

@@ -240,14 +240,16 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:justify-center">
                   {popularTerms.map((term) => (
-                    <button
+                    <Button
                       key={term}
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleSelectTerm(term)}
-                      className="hover:border-vl-cyan-300 cursor-pointer rounded-full border border-gray-200 bg-gray-50/80 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-100 hover:text-black"
+                      className="rounded-full border-gray-200 bg-gray-50/80 px-3.5 py-1 text-xs font-medium text-gray-700 hover:border-vl-cyan hover:bg-gray-100 hover:text-black"
                     >
                       {term}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

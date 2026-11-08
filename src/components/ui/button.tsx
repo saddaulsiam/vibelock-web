@@ -14,13 +14,13 @@ const buttonVariants = cva(
          * Main actions and primary calls to action across VibeLock.
          */
         primary:
-          "bg-vl-black text-vl-white hover:bg-black/90 hover:shadow-[0_0_20px_rgba(0,217,255,0.22)] active:scale-[0.98] focus-visible:ring-vl-cyan",
+          "bg-vl-black text-vl-white hover:bg-black/90 active:scale-[0.98] focus-visible:ring-vl-cyan",
         /**
          * brand — Electric Cyber Cyan background, obsidian black text, cyan glow on hover.
          * High-energy brand calls to action, promotional highlights, and cyber accents.
          */
         brand:
-          "bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 hover:shadow-[0_0_20px_rgba(0,217,255,0.35)] active:bg-vl-cyan-600 active:scale-[0.98] focus-visible:ring-vl-dark-900",
+          "bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 active:bg-vl-cyan-600 active:scale-[0.98] focus-visible:ring-vl-dark-900",
         /**
          * secondary — Neutral background, dark text, subtle border.
          * Secondary and supporting actions.

@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
 
@@ -172,15 +173,17 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         </div>
 
         {/* ── Wishlist Button (Top-Right) ── */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           aria-label={
             isWishlisted ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "focus-visible:ring-vl-cyan absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none",
-            isWishlisted ? "text-rose-500" : "text-vl-dark-900/30 hover:text-rose-500"
+            "absolute top-2 right-2 z-10 size-7 rounded-full p-0 transition-all duration-200 hover:bg-white/80 focus-visible:ring-2 focus-visible:ring-vl-cyan",
+            isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
           )}
         >
           <Heart
@@ -190,7 +193,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
             )}
             aria-hidden="true"
           />
-        </button>
+        </Button>
       </Link>
 
       {/* ── Product Info ── */}

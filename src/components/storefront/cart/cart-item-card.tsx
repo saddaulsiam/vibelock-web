@@ -127,15 +127,17 @@ export function CartItemCard({ item }: CartItemCardProps) {
             className="flex h-10 items-center border border-vl-dark-900/20"
             aria-label={`Quantity for ${item.productName}`}
           >
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => handleUpdateQuantity(item.quantity - 1)}
               disabled={item.quantity <= 1 || isPending}
               aria-label={`Decrease ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+              className="size-10 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
             >
               <Minus className="size-4" aria-hidden="true" />
-            </button>
+            </Button>
             <span className="min-w-10 text-center text-sm font-medium" aria-live="polite">
               {isPending ? (
                 <LoaderCircle className="mx-auto size-4 animate-spin" aria-label="Updating cart" />
@@ -143,8 +145,10 @@ export function CartItemCard({ item }: CartItemCardProps) {
                 item.quantity
               )}
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => handleUpdateQuantity(item.quantity + 1)}
               disabled={
                 isPending ||
@@ -153,10 +157,10 @@ export function CartItemCard({ item }: CartItemCardProps) {
                 isUnavailable
               }
               aria-label={`Increase ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+              className="size-10 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
             >
               <Plus className="size-4" aria-hidden="true" />
-            </button>
+            </Button>
           </div>
 
           <Button

@@ -5,7 +5,6 @@ import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
 import { Button } from "@/components/ui/button";
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
-import { cn } from "@/lib/utils";
 import * as React from "react";
 
 interface FeaturedProductsProps {
@@ -90,19 +89,16 @@ export function FeaturedProducts({
             {tabs.map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
-                <button
+                <Button
                   key={tab.slug}
                   type="button"
+                  variant={isActive ? "brand" : "outline"}
+                  size="sm"
                   onClick={() => setActiveTab(tab.slug)}
-                  className={cn(
-                    "shrink-0 cursor-pointer rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase transition-all duration-200 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:px-5 sm:py-2 sm:text-xs",
-                    isActive
-                      ? "border border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
-                      : "border border-vl-dark-900/30 bg-white text-vl-dark-900 hover:border-vl-dark-900 hover:bg-black/5"
-                  )}
+                  className="rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase sm:px-5 sm:py-2"
                 >
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
           </div>

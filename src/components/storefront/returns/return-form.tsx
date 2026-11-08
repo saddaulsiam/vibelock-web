@@ -12,7 +12,6 @@ import {
   X,
   AlertTriangle,
   ArrowRight,
-  Loader2,
   Package,
   FileText,
   CreditCard,
@@ -333,34 +332,38 @@ export function ReturnForm({
                       <span className="text-[11px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-xs">
                         Return Quantity:
                       </span>
-                      <div className="flex items-center rounded-xl border border-vl-dark-900/15 bg-white shadow-2xs">
-                        <button
+                      <div className="flex items-center rounded-xl border border-vl-dark-900/15 bg-white shadow-2xs overflow-hidden">
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStepQuantity(item.id, -1, item.returnableQuantity);
                           }}
                           disabled={currentQty <= 1}
                           aria-label="Decrease quantity"
-                          className="flex size-8 items-center justify-center rounded-l-xl text-vl-dark-900 transition hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Minus className="size-3.5" />
-                        </button>
+                        </Button>
                         <span className="w-8 text-center text-xs font-semibold text-vl-dark-900">
                           {currentQty}
                         </span>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStepQuantity(item.id, 1, item.returnableQuantity);
                           }}
                           disabled={currentQty >= item.returnableQuantity}
                           aria-label="Increase quantity"
-                          className="flex size-8 items-center justify-center rounded-r-xl text-vl-dark-900 transition hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Plus className="size-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -478,17 +481,16 @@ export function ReturnForm({
                   id="return-photo-upload"
                   disabled={isUploadingImage}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-vl-dark-900/20 bg-white p-4 text-xs font-normal tracking-wider text-vl-dark-900 uppercase transition hover:border-vl-dark-900/50 hover:bg-neutral-50 disabled:opacity-50"
+                  loading={isUploadingImage}
+                  className="h-auto w-full flex-wrap gap-2 rounded-xl border-dashed border-vl-dark-900/20 bg-white p-4 text-xs font-normal tracking-wider text-vl-dark-900 uppercase hover:border-vl-dark-900/50 hover:bg-neutral-50"
                 >
                   {isUploadingImage ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin text-vl-dark-900" />
-                      <span>Uploading to Cloudinary...</span>
-                    </>
+                    <span>Uploading to Cloudinary...</span>
                   ) : (
                     <>
                       <Camera className="size-4 text-vl-dark-900" />
@@ -498,7 +500,7 @@ export function ReturnForm({
                       </span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             )}
           </div>

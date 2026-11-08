@@ -33,12 +33,12 @@ export default function VibeLockLoaderDark({
       {/* Restrained atmospheric Electric Cyan glow */}
       <div
         aria-hidden="true"
-        className="bg-vl-cyan-50 pointer-events-none absolute top-1/2 left-1/2 size-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl motion-reduce:hidden"
+        className="bg-vl-cyan-900/40 pointer-events-none absolute top-1/2 left-1/2 size-72 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl motion-reduce:hidden"
       />
 
       <div className="relative z-10 flex flex-col items-center">
         {/* Logo Emblem reveal */}
-        <div className="border-vl-border relative flex size-14 items-center justify-center rounded-2xl border bg-vl-dark-800 shadow-[0_0_24px_rgba(0,217,255,0.2)] transition-all sm:size-16">
+        <div className="border-vl-border bg-vl-dark-800 relative flex size-14 items-center justify-center rounded-2xl border shadow-[0_0_24px_rgba(0,217,255,0.2)] transition-all sm:size-16">
           <Image
             src="/images/vibelock-logo.png"
             alt="VibeLock"

@@ -239,12 +239,15 @@ export function AccountSecurityCard() {
                     </p>
                   </div>
                   {!s.isCurrent && (
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleRevokeSession(s.id)}
-                      className="min-h-9 rounded-md px-2.5 py-1 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
+                      className="h-7 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                     >
                       Revoke
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}

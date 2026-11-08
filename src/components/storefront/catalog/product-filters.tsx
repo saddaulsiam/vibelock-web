@@ -114,7 +114,7 @@ export function ProductFilters({
             type="submit"
             size="icon"
             aria-label="Search products"
-            className="h-9 w-10 bg-vl-dark-900 text-white hover:bg-vl-dark-900/85"
+            className="bg-vl-dark-900 hover:bg-vl-dark-900/85 h-9 w-10 text-white"
           >
             <Search aria-hidden="true" />
           </Button>
@@ -136,7 +136,7 @@ export function ProductFilters({
         >
           <SelectTrigger
             aria-label="Sort products"
-            className="h-10 w-full rounded-sm border-vl-dark-900/20"
+            className="border-vl-dark-900/20 h-10 w-full rounded-sm"
           >
             <SelectValue placeholder="Sort products" />
           </SelectTrigger>
@@ -161,7 +161,7 @@ export function ProductFilters({
               >
                 <input
                   type="checkbox"
-                  className="border-border size-4 rounded accent-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="border-border accent-vl-dark-900 focus-visible:ring-vl-cyan size-4 rounded focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                   checked={
                     selectedCategories.includes(category.slug) ||
                     category.slug === lockedCategorySlug
@@ -185,19 +185,17 @@ export function ProductFilters({
             {options.sizes.map((size) => {
               const selected = selectedSizes.includes(size);
               return (
-                <button
+                <Button
                   key={size}
                   type="button"
+                  variant={selected ? "brand" : "outline"}
+                  size="sm"
                   aria-pressed={selected}
                   onClick={() => toggleArrayFilter("size", size)}
-                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-                    selected
-                      ? "border-vl-dark-900 bg-vl-dark-900 text-white"
-                      : "border-border bg-white hover:border-vl-dark-900"
-                  }`}
+                  className="min-h-9 min-w-10 rounded-sm"
                 >
                   {size}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -217,7 +215,7 @@ export function ProductFilters({
               >
                 <input
                   type="checkbox"
-                  className="border-border size-4 rounded accent-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="border-border accent-vl-dark-900 focus-visible:ring-vl-cyan size-4 rounded focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                   checked={selectedColors.includes(color)}
                   onChange={() => toggleArrayFilter("color", color)}
                 />
@@ -265,7 +263,7 @@ export function ProductFilters({
           <Button
             type="submit"
             variant="outline"
-            className="h-10 w-full rounded-sm border-vl-dark-900/20"
+            className="border-vl-dark-900/20 h-10 w-full rounded-sm"
           >
             Apply price
           </Button>
@@ -277,7 +275,7 @@ export function ProductFilters({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-vl-dark-900/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none">
+        <SheetTrigger className="border-vl-dark-900/20 hover:bg-vl-white-300 focus-visible:ring-vl-cyan inline-flex h-10 items-center justify-center gap-2 rounded-sm border bg-white px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none">
           <SlidersHorizontal className="size-4" aria-hidden="true" />
           Filters
         </SheetTrigger>

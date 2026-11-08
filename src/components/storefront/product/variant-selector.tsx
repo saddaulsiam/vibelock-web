@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
@@ -189,15 +190,17 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
           Quantity
         </label>
         <div className="flex h-12 w-36 items-center border border-vl-black/20">
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
             disabled={quantity <= 1}
             aria-label="Decrease quantity"
-            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+            className="size-11 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
           >
             <Minus className="size-4" aria-hidden="true" />
-          </button>
+          </Button>
           <Input
             id="product-quantity"
             type="number"
@@ -214,15 +217,17 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
             size="sm"
             className="h-full w-14 border-0 bg-transparent p-0 text-center text-sm font-semibold shadow-none focus-visible:ring-0"
           />
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setQuantity((current) => Math.min(MAX_QUANTITY, current + 1))}
             disabled={quantity >= MAX_QUANTITY}
             aria-label="Increase quantity"
-            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+            className="size-11 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
           >
             <Plus className="size-4" aria-hidden="true" />
-          </button>
+          </Button>
         </div>
         <AddToCartButton
           variantId={matchingVariant?.id ?? null}

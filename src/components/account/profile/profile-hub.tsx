@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { MapPin, Plus, Check, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ProfileForm } from "./profile-form";
 import { NotificationPreferencesCard } from "./notification-preferences-card";
 import { AccountSecurityCard } from "./account-security-card";
@@ -116,10 +117,12 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
             </div>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => setShowSecurityDetails(!showSecurityDetails)}
-            className="inline-flex min-h-[38px] w-full items-center justify-center gap-1.5 rounded-xl border border-vl-dark-900/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-50 active:scale-95 sm:w-auto"
+            className="w-full sm:w-auto"
           >
             <span>
               {showSecurityDetails
@@ -133,7 +136,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
             ) : (
               <ChevronDown className="size-3.5 text-neutral-400" />
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Collapsible Security & Password Manager */}
@@ -166,14 +169,15 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
             </p>
           </div>
 
-          <button
+          <Button
             type="button"
+            variant={showAddAddress ? "outline" : "brand"}
+            size="sm"
             onClick={handleStartAdd}
-            className="inline-flex min-h-[38px] shrink-0 items-center gap-1.5 rounded-xl bg-vl-dark-900 px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95"
           >
             <Plus className="size-3.5" />
             <span>{showAddAddress ? "Cancel" : "Add Address"}</span>
-          </button>
+          </Button>
         </div>
 
         {/* Instant Add or Edit Address Form (Inline) */}
@@ -188,13 +192,15 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
                   ? `Edit Address — ${editingAddress.label || "Saved Address"}`
                   : "Add New Shipping Address"}
               </h3>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleCloseAddressForm}
-                className="shrink-0 text-xs font-semibold tracking-wider text-neutral-500 uppercase hover:text-vl-dark-900"
+                className="text-neutral-500 hover:text-vl-dark-900"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
             <AddressForm
               key={editingAddress?.id ?? "new"}
