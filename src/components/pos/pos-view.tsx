@@ -357,7 +357,8 @@ export function PosView({
             }
           } else {
             if (paymentMethod === "CASH") cashAdd = saleAmt;
-            else if (paymentMethod === "BANGLA_QR" || paymentMethod === "BKASH") banglaQrAdd = saleAmt;
+            else if (paymentMethod === "BANGLA_QR" || paymentMethod === "BKASH")
+              banglaQrAdd = saleAmt;
             else if (paymentMethod === "CARD") cardAdd = saleAmt;
           }
 
@@ -473,7 +474,7 @@ export function PosView({
   ]);
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-vl-white-300 select-none">
+    <div className="bg-vl-white-300 flex h-screen w-screen flex-col overflow-hidden select-none">
       {/* Top Header with Live Drawer Badge & Returns Button */}
       <PosHeader
         cashierName={cashierName}
@@ -494,7 +495,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-b border-vl-white-500 bg-white p-2.5 shadow-2xs sm:p-3">
+          <div className="border-vl-white-500 border-b bg-white p-2.5 shadow-2xs sm:p-3">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -517,7 +518,7 @@ export function PosView({
         </section>
 
         {/* Desktop Section: Billing Cart Panel (35-40% width, permanently visible on lg+) */}
-        <aside className="z-10 hidden h-full w-96 border-l border-vl-white-500 shadow-md lg:block lg:w-[400px] xl:w-[460px]">
+        <aside className="border-vl-white-500 z-10 hidden h-full w-96 border-l shadow-md lg:block lg:w-[400px] xl:w-[460px]">
           <PosCartPanel
             cartItems={cartItems}
             customerPhone={customerPhone}

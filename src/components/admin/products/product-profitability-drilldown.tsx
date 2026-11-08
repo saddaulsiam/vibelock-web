@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, AlertTriangle, Layers, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type {
   ProductProfitabilityProduct,
@@ -109,17 +110,19 @@ export function ProductProfitabilityDrilldown({
 
           <div className="flex flex-wrap items-center gap-2">
             {data.products.length > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={toggleAll}
-                className="hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/15 bg-white px-3 text-xs font-medium text-vl-dark-900"
+                className="gap-1.5"
                 aria-label={
                   allExpanded ? "Collapse all product variants" : "Expand all product variants"
                 }
               >
                 <Layers className="size-3.5" aria-hidden="true" />
                 {allExpanded ? "Collapse all" : "Expand all"}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -147,12 +150,13 @@ export function ProductProfitabilityDrilldown({
             {to ? <input type="hidden" name="to" value={to} /> : null}
             {currentSort ? <input type="hidden" name="sort" value={currentSort} /> : null}
             {page ? <input type="hidden" name="page" value={page} /> : null}
-            <button
+            <Button
               type="submit"
-              className="inline-flex h-9 items-center justify-center rounded-sm bg-vl-dark-900 px-3.5 text-xs font-semibold text-white hover:bg-vl-dark-900/85"
+              size="sm"
+              className="px-3.5"
             >
               Search
-            </button>
+            </Button>
           </form>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -310,10 +314,12 @@ function ProductRowGroup({
       <tr className="group hover:bg-muted/30 transition-colors">
         <td className="p-3.5">
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={onToggle}
-              className="hover:bg-muted inline-flex size-6 shrink-0 items-center justify-center rounded-sm border border-vl-dark-900/15 text-vl-dark-900 transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="size-6 shrink-0"
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? "Collapse" : "Expand"} variants for ${product.productName}`}
             >
@@ -322,7 +328,7 @@ function ProductRowGroup({
               ) : (
                 <ChevronRight className="size-3.5" aria-hidden="true" />
               )}
-            </button>
+            </Button>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="font-semibold text-vl-dark-900">{product.productName}</span>

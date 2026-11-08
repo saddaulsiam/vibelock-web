@@ -106,28 +106,27 @@ export function ReturnStatusForm({
                   <input type="hidden" name={`item_grade_${it.id}`} value={currentGrade} />
 
                   <div className="flex shrink-0 items-center gap-1.5">
-                    <button
+                    <Button
                       type="button"
+                      size="xs"
+                      variant={currentGrade === "RESELLABLE" ? "primary" : "secondary"}
                       onClick={() => setItemGrading((prev) => ({ ...prev, [it.id]: "RESELLABLE" }))}
-                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
+                      className={
                         currentGrade === "RESELLABLE"
-                          ? "bg-emerald-600 text-white shadow-2xs"
-                          : "border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100"
-                      }`}
+                          ? "bg-emerald-600 text-white hover:bg-emerald-700"
+                          : ""
+                      }
                     >
                       ✓ Resellable (Grade A)
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      size="xs"
+                      variant={currentGrade === "DAMAGED" ? "destructive" : "secondary"}
                       onClick={() => setItemGrading((prev) => ({ ...prev, [it.id]: "DAMAGED" }))}
-                      className={`rounded-md px-2.5 py-1 text-[11px] font-bold transition ${
-                        currentGrade === "DAMAGED"
-                          ? "bg-rose-600 text-white shadow-2xs"
-                          : "border border-neutral-200 bg-neutral-50 text-neutral-600 hover:bg-neutral-100"
-                      }`}
                     >
                       ⚠ Damaged / Defect
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -186,30 +185,30 @@ export function StoreCreditRefundForm({
     <div className="space-y-4">
       {/* Mode Switcher Tabs */}
       <div className="grid grid-cols-2 gap-1.5 rounded-lg border border-neutral-200 bg-neutral-100/70 p-1 text-xs">
-        <button
+        <Button
           type="button"
+          variant={tab === "CREDIT" ? "secondary" : "ghost"}
+          size="sm"
           onClick={() => setTab("CREDIT")}
-          className={`flex items-center justify-center gap-1.5 rounded-md py-2 font-bold transition ${
-            tab === "CREDIT"
-              ? "bg-white text-emerald-950 shadow-2xs"
-              : "text-neutral-600 hover:text-neutral-900"
+          className={`justify-center gap-1.5 font-bold ${
+            tab === "CREDIT" ? "bg-white text-emerald-950 shadow-2xs" : "text-neutral-600"
           }`}
         >
           <Gift className="size-3.5 text-emerald-600" />
           <span>105% Store Credit (Recommended)</span>
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant={tab === "CASH" ? "secondary" : "ghost"}
+          size="sm"
           onClick={() => setTab("CASH")}
-          className={`flex items-center justify-center gap-1.5 rounded-md py-2 font-bold transition ${
-            tab === "CASH"
-              ? "bg-white text-neutral-950 shadow-2xs"
-              : "text-neutral-600 hover:text-neutral-900"
+          className={`justify-center gap-1.5 font-bold ${
+            tab === "CASH" ? "bg-white text-neutral-950 shadow-2xs" : "text-neutral-600"
           }`}
         >
           <CreditCard className="size-3.5 text-neutral-600" />
           <span>Cash / Gateway (100%)</span>
-        </button>
+        </Button>
       </div>
 
       {tab === "CREDIT" ? (
@@ -377,13 +376,15 @@ export function ProcessRefundForm({
     <form action={formAction}>
       <input type="hidden" name="returnId" value={returnId} />
       <input type="hidden" name="refundId" value={refundId} />
-      <button
+      <Button
         type="submit"
+        variant="ghost"
+        size="sm"
         disabled={pending}
-        className="text-primary text-sm font-medium hover:underline disabled:opacity-60"
+        className="text-primary h-auto p-0 font-medium hover:underline disabled:opacity-60"
       >
         {pending ? "Processing..." : "Process with provider"}
-      </button>
+      </Button>
       <ActionResult state={state} />
     </form>
   );

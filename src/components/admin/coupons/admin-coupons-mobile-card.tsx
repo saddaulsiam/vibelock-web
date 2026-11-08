@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check, Copy, Edit, MessageCircle, Power, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 import { formatCurrency, getValidityNote } from "./coupon-table-utils";
 
@@ -53,17 +54,19 @@ export function AdminCouponsMobileCard({
           <span className="rounded border border-purple-200 bg-purple-50 px-2 py-0.5 font-mono text-xs font-black tracking-wider text-purple-900">
             {coupon.code}
           </span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => onCopyCode(coupon.code)}
-            className="p-1 text-neutral-400 hover:text-neutral-700"
+            className="size-6 p-0 text-neutral-400 hover:text-neutral-700"
           >
             {copiedCode === coupon.code ? (
               <Check className="size-3.5 text-emerald-600" />
             ) : (
               <Copy className="size-3.5" />
             )}
-          </button>
+          </Button>
         </div>
         <span
           className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -108,45 +111,53 @@ export function AdminCouponsMobileCard({
       </div>
 
       <div className="flex items-center justify-end gap-2 border-t border-neutral-100 pt-2.5">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="xs"
           onClick={() => onToggleStatus(coupon)}
           disabled={isToggling}
-          className={`flex h-8 items-center gap-1 rounded-md px-2.5 text-xs font-semibold ${
+          className={`h-8 gap-1 px-2.5 text-xs font-semibold ${
             coupon.isActive
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border border-neutral-200 bg-neutral-100 text-neutral-600"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+              : "border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
           }`}
         >
           <Power className="size-3" />
           <span>{coupon.isActive ? "Active" : "Paused"}</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="xs"
           onClick={() => onShareWhatsApp(coupon)}
-          className="flex h-8 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700"
+          className="h-8 gap-1 border-emerald-200 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
         >
           <MessageCircle className="size-3" />
           <span>Share</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="xs"
           onClick={() => onEdit(coupon)}
-          className="flex h-8 items-center gap-1 rounded-md border border-neutral-200 px-2.5 text-xs font-semibold text-neutral-700"
+          className="h-8 gap-1 border-neutral-200 px-2.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
         >
           <Edit className="size-3" />
           <span>Edit</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon-xs"
           onClick={() => onDelete(coupon)}
-          className="flex h-8 items-center justify-center rounded-md border border-neutral-200 px-2 text-neutral-500 hover:text-rose-600"
+          className="size-8 text-neutral-500 hover:text-rose-600"
         >
           <Trash2 className="size-3.5" />
-        </button>
+        </Button>
       </div>
     </div>
   );

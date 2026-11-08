@@ -98,13 +98,15 @@ export function AdminProductQuickPriceModal({
             <Tag className="size-4 text-vl-dark-900" />
             <h3 className="text-sm font-semibold text-vl-dark-900">Quick Price & Discount Edit</h3>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded p-1 text-vl-dark-900/40 hover:text-vl-dark-900"
+            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Modal Body */}

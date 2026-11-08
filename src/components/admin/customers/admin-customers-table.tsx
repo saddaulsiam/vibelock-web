@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { loadMoreAdminCustomersAction } from "@/lib/admin/customers/customer-actions";
 import type {
   AdminCustomerListItem,
@@ -363,25 +364,29 @@ export function AdminCustomersTable({
           />
 
           {/* Export CSV Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={exportCsv}
             disabled={loadedCustomers.length === 0}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="gap-1.5"
           >
-            <Download className="size-3.5 text-neutral-500" />
+            <Download className="size-3.5" />
             <span>Export CSV</span>
-          </button>
+          </Button>
 
           {/* Add Customer Modal Trigger */}
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             onClick={() => setIsCreateOpen(true)}
-            className={ADMIN_TABLE_CLASSES.buttonPrimary}
+            className="gap-1.5"
           >
             <UserPlus className="size-3.5" />
             <span>Add Customer</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -410,17 +415,19 @@ export function AdminCustomersTable({
               : "No customer accounts found for the selected segment."}
           </p>
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={() => {
                 setSearchTerm("");
                 router.push("/admin/customers");
               }}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white hover:bg-vl-dark-900/90"
+              className="mt-4 gap-1.5"
             >
               <RotateCcw className="size-3.5" />
               <span>Reset all filters</span>
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -471,10 +478,12 @@ export function AdminCustomersTable({
                           {c.phone ? (
                             <div className="flex items-center gap-1.5">
                               <span className="font-mono text-xs text-neutral-800">{c.phone}</span>
-                              <button
+                              <Button
                                 type="button"
+                                variant="ghost"
+                                size="icon"
                                 onClick={(e) => handleCopyPhone(c.id, c.phone!, e)}
-                                className="rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                                className="size-6 text-neutral-400 hover:text-neutral-700"
                                 title="Copy phone"
                               >
                                 {isCopied ? (
@@ -482,7 +491,7 @@ export function AdminCustomersTable({
                                 ) : (
                                   <Copy className="size-3" />
                                 )}
-                              </button>
+                              </Button>
                               <a
                                 href={generateCustomerWhatsAppUrl(c.phone, c.name)}
                                 target="_blank"
@@ -641,10 +650,12 @@ export function AdminCustomersTable({
                       <div className="flex items-center gap-1.5 font-mono text-neutral-800">
                         <Phone className="size-3 text-neutral-500" />
                         <span>{c.phone}</span>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => handleCopyPhone(c.id, c.phone!, e)}
-                          className="rounded p-0.5 text-neutral-400 hover:text-neutral-700"
+                          className="size-5 text-neutral-400 hover:text-neutral-700"
                           title="Copy phone"
                         >
                           {isCopied ? (
@@ -652,7 +663,7 @@ export function AdminCustomersTable({
                           ) : (
                             <Copy className="size-3" />
                           )}
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="flex items-center gap-1.5">

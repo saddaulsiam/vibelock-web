@@ -370,13 +370,15 @@ export function AdminInventoryTable({
       {feedbackMessage && (
         <div className="flex items-center justify-between rounded-lg border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-900">
           <span>{feedbackMessage}</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setFeedbackMessage(null)}
-            className="text-emerald-700 hover:text-emerald-900"
+            className="size-6 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -461,34 +463,40 @@ export function AdminInventoryTable({
           {currentFilters.q && (
             <span className="inline-flex items-center gap-1 rounded-xs border border-vl-dark-900/15 bg-vl-white-300 px-2 py-0.5 font-medium text-vl-dark-900">
               Search: “{currentFilters.q}”
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={handleClearSearch}
-                className="text-vl-dark-900/60 hover:text-vl-dark-900"
+                className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
               >
                 <X className="size-3" />
-              </button>
+              </Button>
             </span>
           )}
           {currentFilters.filter !== "all" && (
             <span className="inline-flex items-center gap-1 rounded-xs border border-vl-dark-900/15 bg-vl-white-300 px-2 py-0.5 font-medium text-vl-dark-900">
               Filter: {currentFilters.filter}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => updateQuery({ filter: "all" })}
-                className="text-vl-dark-900/60 hover:text-vl-dark-900"
+                className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
               >
                 <X className="size-3" />
-              </button>
+              </Button>
             </span>
           )}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => updateQuery({ q: null, filter: "all" })}
             className="text-xs font-semibold text-vl-dark-900 underline hover:text-vl-dark-900/70"
           >
             Clear all
-          </button>
+          </Button>
         </div>
       )}
 
@@ -536,13 +544,15 @@ export function AdminInventoryTable({
                   <p className="text-muted-foreground text-xs">
                     Try searching for a different SKU, variant attribute, or clear active filters.
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => updateQuery({ q: null, filter: "all" })}
-                    className="mt-2 inline-flex h-8 items-center rounded-sm bg-vl-dark-900 px-3 font-semibold text-white hover:bg-vl-dark-900/85"
+                    className="mt-2"
                   >
                     Clear all filters
-                  </button>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
@@ -651,10 +661,12 @@ export function AdminInventoryTable({
                     <TableCell>
                       <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-vl-dark-900">
                         <span>{item.sku}</span>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleCopySku(item.sku)}
-                          className="rounded p-1 text-vl-dark-900/40 hover:bg-vl-dark-900/10 hover:text-vl-dark-900"
+                          className="size-6 text-vl-dark-900/40 hover:text-vl-dark-900"
                           title="Copy SKU to clipboard"
                         >
                           {copiedSku === item.sku ? (
@@ -662,7 +674,7 @@ export function AdminInventoryTable({
                           ) : (
                             <Copy className="size-3" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                     </TableCell>
                   )}
@@ -775,39 +787,45 @@ export function AdminInventoryTable({
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       {/* Quick Adjust Button */}
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="xs"
                         onClick={() => handleOpenAdjustModal(item)}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="h-8 gap-1 px-2.5"
                         title="Quick adjust stock for this variant"
                       >
                         <Plus className="size-3 text-emerald-600" />
                         <Minus className="-ml-1 size-3 text-red-600" />
                         <span>Adjust</span>
-                      </button>
+                      </Button>
 
                       {/* Print Tag Button */}
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="icon"
                         onClick={() => setBarcodeModalItems([item])}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="size-8"
                         title="Print barcode price tag for this variant"
                       >
                         <Printer className="size-3.5" />
-                      </button>
+                      </Button>
 
                       {/* Add to PO / Reorder Button */}
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="icon"
                         onClick={() => {
                           setPoInitialItems([item]);
                           setShowPoModal(true);
                         }}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="size-8"
                         title="Add variant to Supplier Purchase Order / Reorder Sheet"
                       >
                         <Factory className="size-3.5 text-amber-700" />
-                      </button>
+                      </Button>
 
                       {/* History Link */}
                       <Link
@@ -849,55 +867,62 @@ export function AdminInventoryTable({
           <div className="h-4 w-px bg-white/20" />
 
           {/* Bulk Restock Button */}
-          <button
+          <Button
             type="button"
+            size="xs"
             onClick={() => setShowBulkAdjustModal(true)}
-            className="inline-flex items-center gap-1.5 rounded-xs bg-emerald-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+            className="gap-1.5 bg-emerald-600 text-white hover:bg-emerald-500"
             title="Bulk adjust or restock selected variants"
           >
             <Plus className="size-3.5" />
             <span>Bulk Restock</span>
-          </button>
+          </Button>
 
           {/* Bulk Print Barcode Tags */}
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="xs"
             onClick={() => {
               const selected = loadedVariants.filter((v) => selectedIds.has(v.id));
               setBarcodeModalItems(selected);
             }}
-            className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+            className="gap-1.5 bg-white/10 text-white hover:bg-white/20"
             title="Print barcode tags for selected items"
           >
             <Printer className="size-3.5" />
             <span>Print Tags</span>
-          </button>
+          </Button>
 
           {/* Bulk Create Purchase Order (PO) */}
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="xs"
             onClick={() => {
               const selected = loadedVariants.filter((v) => selectedIds.has(v.id));
               setPoInitialItems(selected);
               setShowPoModal(true);
             }}
-            className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+            className="gap-1.5 bg-white/10 text-white hover:bg-white/20"
             title="Create Supplier Purchase Order for selected variants"
           >
             <Factory className="size-3.5" />
             <span>Create PO ({selectedIds.size})</span>
-          </button>
+          </Button>
 
           <div className="h-4 w-px bg-white/20" />
 
           {/* Deselect All */}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => setSelectedIds(new Set())}
-            className="text-white/60 transition-colors hover:text-white"
+            className="text-white/60 hover:text-white"
           >
             Clear
-          </button>
+          </Button>
         </div>
       )}
 

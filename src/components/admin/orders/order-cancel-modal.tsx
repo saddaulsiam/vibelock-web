@@ -172,14 +172,16 @@ function OrderCancelModalContent({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+            className="size-8 text-neutral-400 hover:text-neutral-700"
             aria-label="Close modal"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* ── Auto-Restock Guarantee Banner ── */}
@@ -222,18 +224,15 @@ function OrderCancelModalContent({
               {CANCELLATION_REASONS.slice(0, 4).map((reason) => {
                 const isSelected = selectedReasonId === reason.id;
                 return (
-                  <button
+                  <Button
                     key={reason.id}
                     type="button"
+                    variant={isSelected ? "destructive" : "secondary"}
+                    size="xs"
                     onClick={() => setSelectedReasonId(reason.id)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
-                      isSelected
-                        ? "bg-rose-600 text-white shadow-2xs"
-                        : "border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
-                    }`}
                   >
                     {reason.shortLabel}
-                  </button>
+                  </Button>
                 );
               })}
             </div>

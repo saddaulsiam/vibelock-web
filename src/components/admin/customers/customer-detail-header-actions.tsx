@@ -4,6 +4,7 @@ import { CustomerEditModal } from "@/components/admin/customers/customer-edit-mo
 import { CustomerSmartCrmActions } from "@/components/admin/customers/customer-smart-crm-actions";
 import { Edit3, Mail, Phone } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerDetailHeaderActionsProps {
   customer: {
@@ -39,14 +40,16 @@ export function CustomerDetailHeaderActions({
     <>
       <div className="flex flex-wrap items-center gap-2">
         {/* 1. Edit Profile Button */}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => setIsEditOpen(true)}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200/90 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
+          className="gap-1.5"
         >
-          <Edit3 className="size-3.5 text-neutral-500" />
+          <Edit3 className="size-3.5" />
           <span>Edit Profile</span>
-        </button>
+        </Button>
 
         {/* 2. WhatsApp Smart CRM Actions (with templates) */}
         {customer.phone && (

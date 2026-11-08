@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
 import type { OrderColumnKey } from "./order-table-types";
 import { AdminOrdersDesktopRow } from "./admin-orders-desktop-row";
@@ -57,7 +58,7 @@ export function AdminOrdersDesktopTable({
                 checked={isAllSelected}
                 onChange={onToggleSelectAll}
                 aria-label="Select all orders"
-                className="size-3.5 rounded-xs border-neutral-300 accent-vl-dark-900 focus:ring-1 focus:ring-vl-cyan"
+                className="accent-vl-dark-900 focus:ring-vl-cyan size-3.5 rounded-xs border-neutral-300 focus:ring-1"
               />
             </TableHead>
             {visibleColumns.date && (
@@ -92,14 +93,16 @@ export function AdminOrdersDesktopTable({
                   Try adjusting your search query or filter options.
                 </p>
                 {hasActiveFilters && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={onResetAllFilters}
-                    className="mt-3.5 inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition hover:bg-neutral-50"
+                    className="mt-3.5 gap-1.5"
                   >
-                    <RotateCcw className="size-3.5 text-neutral-500" />
+                    <RotateCcw className="size-3.5" />
                     <span>Reset All Filters</span>
-                  </button>
+                  </Button>
                 )}
               </TableCell>
             </TableRow>

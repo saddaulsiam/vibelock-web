@@ -249,10 +249,12 @@ export function ProductImageUploader({
             display.
           </p>
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={() => setUseUrlInput((prev) => !prev)}
-          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-vl-dark-900"
+          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold hover:text-vl-dark-900"
         >
           {useUrlInput ? (
             <>
@@ -263,7 +265,7 @@ export function ProductImageUploader({
               <Globe className="size-3.5" /> Or use external image URLs
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* File Upload Mode (Drag & Drop / Click zone) */}
@@ -372,26 +374,30 @@ export function ProductImageUploader({
                   {/* Bottom Action Bar */}
                   <div className="absolute right-2 bottom-2 left-2 flex items-center justify-between gap-1">
                     {!isPrimary ? (
-                      <button
+                      <Button
                         type="button"
+                        size="xs"
+                        variant="secondary"
                         onClick={() => handleMakePrimary(index)}
-                        className="rounded bg-black/75 px-2 py-1 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm transition hover:bg-black"
+                        className="h-6 rounded bg-black/75 px-2 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm hover:bg-black"
                       >
                         Set primary
-                      </button>
+                      </Button>
                     ) : (
                       <span className="text-[10px] font-medium text-white/80">Main cover</span>
                     )}
 
-                    <button
+                    <Button
                       type="button"
+                      size="xs"
+                      variant="destructive"
                       onClick={() => handleRemove(index)}
                       title="Remove image"
-                      className="inline-flex items-center gap-1 rounded bg-red-600/90 px-2 py-1 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm transition hover:bg-red-600"
+                      className="h-6 inline-flex items-center gap-1 rounded px-2 text-[10px] font-semibold text-white shadow-xs backdrop-blur-sm"
                     >
                       <Trash2 className="size-3" />
                       <span>Remove</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );

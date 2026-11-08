@@ -241,13 +241,15 @@ export function AdminProductsToolbar({
       {bulkFeedback && (
         <div className="flex items-center justify-between rounded-sm border border-emerald-300 bg-emerald-50 px-3.5 py-2 text-xs font-medium text-emerald-900">
           <span>{bulkFeedback}</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClearBulkFeedback}
-            className="text-emerald-700 hover:text-emerald-900"
+            className="size-6 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-900"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 

@@ -2,6 +2,7 @@
 
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
 import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 import { Eye, EyeOff } from "lucide-react";
@@ -182,10 +183,12 @@ export function ProductForm({
             </span>
           )}
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={() => setShowLivePreview((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 font-semibold text-vl-dark-900 hover:underline"
+          className="inline-flex items-center gap-1.5 font-semibold text-vl-dark-900"
         >
           {showLivePreview ? (
             <>
@@ -196,7 +199,7 @@ export function ProductForm({
               <Eye className="size-3.5" /> Show live storefront preview
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* LIVE STOREFRONT CARD PREVIEW */}

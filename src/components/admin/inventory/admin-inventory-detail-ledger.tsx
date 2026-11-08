@@ -111,15 +111,17 @@ export function AdminInventoryDetailLedger({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportLedgerCsv}
             disabled={transactions.length === 0}
-            className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 disabled:opacity-50"
+            className="gap-1.5"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-700" />
             <span>Export Ledger CSV</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -136,18 +138,16 @@ export function AdminInventoryDetailLedger({
         ].map((pill) => {
           const isActive = typeFilter === pill.id;
           return (
-            <button
+            <Button
               key={pill.id}
               type="button"
+              variant={isActive ? "primary" : "secondary"}
+              size="xs"
               onClick={() => onFilterChange(pill.id)}
-              className={`rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
-                isActive
-                  ? "bg-vl-dark-900 text-white"
-                  : "border border-vl-dark-900/15 bg-white text-vl-dark-900/70 hover:bg-vl-dark-900/10 hover:text-vl-dark-900"
-              }`}
+              className="h-6 font-semibold"
             >
               {pill.label}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -228,10 +228,12 @@ export function AdminInventoryDetailLedger({
                         <span className="max-w-[140px] truncate" title={tx.referenceId}>
                           {tx.referenceId}
                         </span>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => handleCopyRef(tx.referenceId!)}
-                          className="text-vl-dark-900/40 hover:text-vl-dark-900"
+                          className="size-4 text-vl-dark-900/40 hover:text-vl-dark-900"
                           title="Copy Reference"
                         >
                           {copiedRef === tx.referenceId ? (
@@ -239,7 +241,7 @@ export function AdminInventoryDetailLedger({
                           ) : (
                             <Copy className="size-2.5" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                     ) : (
                       <span className="text-zinc-400">—</span>

@@ -478,22 +478,26 @@ export function AdminShipmentsTable({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => exportCsv()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white transition-colors hover:bg-white/20"
+              className="gap-1.5 bg-white/10 text-white hover:bg-white/20"
             >
               <Download className="size-3.5" />
               Export Selected CSV
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-neutral-400 transition-colors hover:text-white"
+              className="gap-1 text-neutral-400 hover:text-white"
             >
               <X className="size-3.5" />
               Deselect
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -534,17 +538,19 @@ export function AdminShipmentsTable({
                       : "Orders ready for dispatch will appear here once booked."}
                   </p>
                   {hasActiveFilters && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setSearchValue("");
                         updateQueryParams({ q: "", filter: "all", provider: "ALL" });
                       }}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                      className="mt-2 gap-1.5"
                     >
                       <RotateCcw className="size-3" />
                       Clear filters
-                    </button>
+                    </Button>
                   )}
                 </div>
               </TableCell>
@@ -632,8 +638,10 @@ export function AdminShipmentsTable({
                             <span className="font-mono text-[11px] font-medium text-neutral-800">
                               {shipment.trackingNumber || shipment.providerShipmentId}
                             </span>
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() =>
                                 handleCopyTracking(
                                   shipment.id,
@@ -641,14 +649,14 @@ export function AdminShipmentsTable({
                                 )
                               }
                               title="Copy tracking number"
-                              className="rounded p-1 text-neutral-400 transition-colors hover:text-neutral-700"
+                              className="size-6 text-neutral-400 hover:text-neutral-700"
                             >
                               {copiedTrackingId === shipment.id ? (
                                 <Check className="size-3 text-emerald-600" />
                               ) : (
                                 <Copy className="size-3" />
                               )}
-                            </button>
+                            </Button>
                           </>
                         ) : (
                           <span className="text-[11px] text-neutral-400 italic">

@@ -3,6 +3,7 @@
 import { Check, Copy } from "lucide-react";
 import * as React from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 interface OrderCopyButtonProps {
   text: string;
@@ -52,10 +53,12 @@ export function OrderCopyButton({
 
   if (variant === "button") {
     return (
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="xs"
         onClick={handleCopy}
-        className={`inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 active:scale-95 ${className}`}
+        className={`gap-1.5 active:scale-95 ${className}`}
         title={title}
       >
         {copied ? (
@@ -69,16 +72,18 @@ export function OrderCopyButton({
             <span>{label || "Copy"}</span>
           </>
         )}
-      </button>
+      </Button>
     );
   }
 
   if (variant === "pill") {
     return (
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        size="xs"
         onClick={handleCopy}
-        className={`inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-[10px] font-bold text-neutral-700 transition hover:bg-neutral-200 hover:text-neutral-900 active:scale-95 ${className}`}
+        className={`h-5 gap-1 rounded-md px-2 text-[10px] font-bold active:scale-95 ${className}`}
         title={title}
       >
         {copied ? (
@@ -92,16 +97,18 @@ export function OrderCopyButton({
             <span>{label || "Copy"}</span>
           </>
         )}
-      </button>
+      </Button>
     );
   }
 
   // Default: icon button with subtle feedback
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       onClick={handleCopy}
-      className={`inline-flex items-center justify-center rounded p-1 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-900 active:scale-90 ${
+      className={`size-6 text-neutral-400 hover:text-neutral-900 active:scale-90 ${
         copied ? "text-emerald-600 hover:text-emerald-700" : ""
       } ${className}`}
       title={copied ? "Copied!" : title}
@@ -114,6 +121,6 @@ export function OrderCopyButton({
       ) : (
         <Copy className="size-3.5" />
       )}
-    </button>
+    </Button>
   );
 }

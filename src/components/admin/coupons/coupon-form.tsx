@@ -99,14 +99,16 @@ export function CouponForm({
           <div className="flex items-center justify-between">
             <label className="text-xs font-bold text-neutral-700">Coupon Code *</label>
             {!coupon && (
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={() => setCode(generateRandomCode())}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 hover:text-purple-800"
+                className="h-auto p-0 font-semibold text-purple-600 hover:text-purple-800"
               >
                 <Dices className="size-3" />
                 <span>Random</span>
-              </button>
+              </Button>
             )}
           </div>
           <div className="mt-1.5">

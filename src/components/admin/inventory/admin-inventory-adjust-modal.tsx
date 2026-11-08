@@ -114,13 +114,15 @@ export function AdminInventoryAdjustModal({
             <SlidersHorizontal className="size-4 text-vl-dark-900" />
             <h3 className="text-sm font-semibold text-vl-dark-900">Quick Stock Adjust: {item.sku}</h3>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded p-1 text-vl-dark-900/40 hover:text-vl-dark-900"
+            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Modal Body */}
@@ -179,9 +181,11 @@ export function AdminInventoryAdjustModal({
             <label className="block text-xs font-semibold text-vl-dark-900">Adjustment Type</label>
             <div className="mt-1.5 grid grid-cols-4 gap-1.5 text-xs">
               {(["RESTOCK", "ADJUSTMENT", "DAMAGE", "RETURN"] as const).map((t) => (
-                <button
+                <Button
                   key={t}
                   type="button"
+                  variant={adjustType === t ? "primary" : "outline"}
+                  size="xs"
                   onClick={() => {
                     setAdjustType(t);
                     setAdjustReason(COMMON_REASONS[t][0]);
@@ -191,11 +195,7 @@ export function AdminInventoryAdjustModal({
                       setAdjustQuantity("10");
                     }
                   }}
-                  className={`rounded-xs px-2 py-1.5 text-center font-semibold transition-colors ${
-                    adjustType === t
-                      ? "bg-vl-dark-900 text-white shadow-2xs"
-                      : "border border-vl-dark-900/20 bg-white text-vl-dark-900 hover:bg-vl-white-300"
-                  }`}
+                  className="font-semibold"
                 >
                   {t === "RESTOCK"
                     ? "Restock"
@@ -204,7 +204,7 @@ export function AdminInventoryAdjustModal({
                       : t === "DAMAGE"
                         ? "Damage"
                         : "Return"}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -236,14 +236,16 @@ export function AdminInventoryAdjustModal({
                 ? ["-1", "-2", "-5", "-10"]
                 : ["+5", "+10", "+25", "+50", "+100"]
               ).map((val) => (
-                <button
+                <Button
                   key={val}
                   type="button"
+                  variant="secondary"
+                  size="xs"
                   onClick={() => setAdjustQuantity(val.replace("+", ""))}
-                  className="rounded-xs border border-vl-dark-900/15 bg-vl-white-200 px-2 py-0.5 font-mono text-xs font-medium text-vl-dark-900 hover:bg-vl-white-300"
+                  className="h-6 px-2 font-mono text-xs"
                 >
                   {val}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -294,14 +296,16 @@ export function AdminInventoryAdjustModal({
             {/* Reason Suggestions */}
             <div className="mt-1.5 flex flex-wrap gap-1">
               {COMMON_REASONS[adjustType].map((reasonText) => (
-                <button
+                <Button
                   key={reasonText}
                   type="button"
+                  variant="secondary"
+                  size="xs"
                   onClick={() => setAdjustReason(reasonText)}
-                  className="rounded-2xs border border-vl-dark-900/10 bg-vl-white-200 px-1.5 py-0.5 text-[10px] text-vl-dark-900/70 hover:bg-vl-white-300 hover:text-vl-dark-900"
+                  className="h-5 px-1.5 text-[10px] text-vl-dark-900/70"
                 >
                   {reasonText}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

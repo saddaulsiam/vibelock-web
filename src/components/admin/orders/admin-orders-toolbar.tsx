@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
   AdminTableMetaBar,
@@ -127,16 +127,18 @@ export function AdminOrdersToolbar({
             onReset={onColumnReset}
           />
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onExportCsv}
             disabled={isExportDisabled}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="gap-1.5"
             title="Export orders to CSV"
           >
-            <Download className="size-3.5 text-neutral-500" />
+            <Download className="size-3.5" />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
         </div>
       </div>
 

@@ -27,6 +27,7 @@ import {
 import { NativeSelect } from "@/components/ui/select-native";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface AdminReviewsTableProps {
   reviews: AdminReviewItem[];
@@ -179,16 +180,17 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
           </span>
 
           {(currentSearch || currentRating || currentVerified) && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => {
                 setSearchTerm("");
                 router.push(pathname);
               }}
-              className="rounded-md border border-vl-dark-900/15 px-3 py-2 text-xs font-bold text-vl-dark-900/70 hover:bg-vl-dark-900/5"
             >
               Reset
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -294,11 +296,13 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
 
                   {/* Actions Column */}
                   <TableCell className="text-right whitespace-nowrap">
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="icon"
                       onClick={() => handleDelete(review.id)}
                       disabled={isPending && deletingId === review.id}
-                      className="inline-flex size-8 items-center justify-center rounded-md border border-rose-200 bg-white text-rose-600 transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-rose-500"
+                      className="size-8 border-rose-200 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                       title="Delete spam/inappropriate review"
                       aria-label="Delete review"
                     >
@@ -307,7 +311,7 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
                       ) : (
                         <Trash2 className="size-3.5" />
                       )}
-                    </button>
+                    </Button>
                   </TableCell>
                 </TableRow>
               );

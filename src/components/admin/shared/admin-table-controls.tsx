@@ -3,6 +3,7 @@
 import * as React from "react";
 import { RotateCcw, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export interface AdminTableTabItem<T extends string = string> {
@@ -33,15 +34,17 @@ export function AdminTableTabs<T extends string = string>({
         const Icon = tab.icon;
 
         return (
-          <button
+          <Button
             key={tab.key}
             type="button"
+            variant={isActive ? "primary" : "outline"}
+            size="sm"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none",
+              "h-8 gap-1.5 px-3 text-xs font-semibold normal-case tracking-normal",
               isActive
-                ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-                : "border border-neutral-200 bg-white font-medium text-neutral-800 hover:bg-neutral-50"
+                ? "bg-vl-dark-900 text-white shadow-2xs"
+                : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
             )}
           >
             {Icon && <Icon className="size-3.5 shrink-0" />}
@@ -54,7 +57,7 @@ export function AdminTableTabs<T extends string = string>({
                 ({tab.count})
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </div>
@@ -94,15 +97,17 @@ export function AdminTableSearchInput({
         className="pr-10 pl-9"
       />
       {value ? (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-xs"
           onClick={onClear}
-          className="absolute top-1/2 right-2.5 -translate-y-1/2 rounded p-1 text-neutral-400 transition-colors hover:text-neutral-900"
+          className="absolute top-1/2 right-2.5 z-10 size-6 -translate-y-1/2 p-0 text-neutral-400 hover:text-neutral-900"
           title="Clear search"
           aria-label="Clear search"
         >
           <X className="size-3.5" />
-        </button>
+        </Button>
       ) : (
         <kbd
           className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-neutral-200 bg-vl-white-300 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 sm:inline-flex"
@@ -160,14 +165,16 @@ export function AdminTableMetaBar({
             ` (filtered from ${totalCount})`}
         </p>
         {hasActiveFilters && onResetFilters && (
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={onResetFilters}
-            className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-medium text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
+            className="h-auto gap-1 p-0 font-medium text-red-600 hover:text-red-700"
           >
             <RotateCcw className="size-3" />
             Reset filters
-          </button>
+          </Button>
         )}
       </div>
       {actionSlot && <div>{actionSlot}</div>}

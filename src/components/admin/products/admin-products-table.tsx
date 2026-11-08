@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import {
   deleteProductAction,
   loadMoreAdminProductsAction,
@@ -326,13 +327,15 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       : "Create your first product to begin building the VibeLock streetwear catalog."}
                   </p>
                   {hasActiveFilters ? (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={handleResetFilters}
-                      className="inline-flex items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 py-1.5 text-xs font-semibold text-vl-dark-900 hover:bg-vl-white-300"
+                      className="gap-1.5"
                     >
                       <RotateCcw className="size-3.5" /> Clear all filters
-                    </button>
+                    </Button>
                   ) : (
                     <Link
                       href="/admin/products/new"
@@ -439,14 +442,16 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                           {/* Variant Breakdown Trigger & Popover */}
                           <div className="relative inline-block">
-                            <button
+                            <Button
                               type="button"
+                              variant="secondary"
+                              size="xs"
                               onClick={() =>
                                 setExpandedVariantId(
                                   expandedVariantId === product.id ? null : product.id
                                 )
                               }
-                              className="inline-flex items-center gap-1 rounded-xs bg-vl-dark-900/5 px-1.5 py-0.5 text-[10px] font-semibold text-vl-dark-900/75 transition-colors hover:bg-vl-dark-900/10 hover:text-vl-dark-900"
+                              className="h-5 gap-1 rounded-xs px-1.5 text-[10px] font-semibold"
                               title="Click to view variant stock details"
                             >
                               <Layers className="size-3 text-vl-dark-900/60" />
@@ -459,7 +464,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                   expandedVariantId === product.id ? "rotate-180" : ""
                                 }`}
                               />
-                            </button>
+                            </Button>
 
                             {/* Variant Details Popover Dropdown */}
                             {expandedVariantId === product.id && product.variants && (
@@ -468,13 +473,15 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                   <p className="text-xs font-semibold text-vl-dark-900">
                                     Variant Stock Breakdown
                                   </p>
-                                  <button
+                                  <Button
                                     type="button"
+                                    variant="ghost"
+                                    size="icon"
                                     onClick={() => setExpandedVariantId(null)}
-                                    className="text-vl-dark-900/40 hover:text-vl-dark-900"
+                                    className="size-6 text-vl-dark-900/40 hover:text-vl-dark-900"
                                   >
                                     <X className="size-3.5" />
-                                  </button>
+                                  </Button>
                                 </div>
 
                                 <div className="mt-2 max-h-56 divide-y divide-vl-dark-900/5 overflow-y-auto pr-1 text-xs">
@@ -531,19 +538,17 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           {product.categories.map((c) => {
                             const isSelected = currentFilters.category === c.slug;
                             return (
-                              <button
+                              <Button
                                 key={c.id}
                                 type="button"
+                                variant={isSelected ? "primary" : "secondary"}
+                                size="xs"
                                 onClick={() =>
                                   updateQuery({
                                     category: isSelected ? "all" : c.slug,
                                   })
                                 }
-                                className={`inline-flex items-center rounded-xs px-2 py-0.5 text-xs font-medium transition-colors ${
-                                  isSelected
-                                    ? "bg-vl-dark-900 text-white shadow-2xs"
-                                    : "border border-vl-dark-900/15 bg-vl-white-200 text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-300"
-                                }`}
+                                className="h-5 rounded-xs px-2 text-xs font-medium"
                                 title={
                                   isSelected
                                     ? `Clear filter: ${c.name}`
@@ -551,7 +556,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                 }
                               >
                                 {c.name}
-                              </button>
+                              </Button>
                             );
                           })}
                         </div>
@@ -585,14 +590,16 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           </span>
                         )}
 
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setPriceEditProduct(product)}
-                          className="rounded p-1 text-vl-dark-900/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:bg-vl-dark-900/10 hover:text-vl-dark-900 focus:opacity-100"
+                          className="size-6 text-vl-dark-900/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:text-vl-dark-900 focus:opacity-100"
                           title="Quick edit price & discount"
                         >
                           <Pencil className="size-3" />
-                        </button>
+                        </Button>
                       </div>
                     </TableCell>
                   )}
@@ -681,14 +688,16 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       </Link>
 
                       {/* Print Barcode Price Tag */}
-                      <button
+                      <Button
                         type="button"
+                        variant="outline"
+                        size="icon"
                         onClick={() => setBarcodeModalProducts([product])}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="size-8"
                         title="Print price tag barcode labels for this product"
                       >
                         <Printer className="size-3.5" />
-                      </button>
+                      </Button>
 
                       {/* Publish / Unpublish Toggle */}
                       <AdminMutationForm

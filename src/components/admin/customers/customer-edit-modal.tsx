@@ -167,15 +167,17 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
+            className="size-8 text-neutral-400 hover:text-neutral-700"
             aria-label="Close modal"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Feedback Messages */}

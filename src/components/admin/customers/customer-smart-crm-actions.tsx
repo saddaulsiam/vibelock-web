@@ -163,15 +163,17 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
           <MessageCircle className="size-3.5 text-emerald-600" />
           <span>WhatsApp</span>
         </a>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
-          className="border-l border-emerald-200 px-1.5 hover:bg-emerald-200/50"
+          className="h-9 w-7 rounded-none rounded-r-lg border-l border-emerald-200 p-0 text-emerald-700 hover:bg-emerald-200/50"
           aria-label="Smart CRM Templates"
           title="Smart WhatsApp CRM Templates"
         >
-          <ChevronDown className="size-3.5 text-emerald-700" />
-        </button>
+          <ChevronDown className="size-3.5" />
+        </Button>
       </div>
 
       {/* Dropdown Menu */}
@@ -186,11 +188,13 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
             {CRM_TEMPLATES.map((tpl) => {
               const Icon = tpl.icon;
               return (
-                <button
+                <Button
                   key={tpl.id}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleSelectTemplate(tpl)}
-                  className="flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-neutral-50"
+                  className="h-auto w-full items-start justify-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-normal"
                 >
                   <div className={`mt-0.5 rounded-md border p-1 ${tpl.color}`}>
                     <Icon className="size-3.5" />
@@ -199,7 +203,7 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
                     <div className="font-semibold text-neutral-900">{tpl.title}</div>
                     <span className="text-[10px] text-neutral-500">Click to preview message</span>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -227,13 +231,15 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedTemplate(null)}
-                className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+                className="size-8 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             {/* Editable Textarea */}

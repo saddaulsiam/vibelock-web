@@ -319,14 +319,16 @@ export function AdminInventoryPoModal({
                   className="w-44 font-mono text-xs font-semibold"
                   title="Click to edit PO Number"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => {
                     navigator.clipboard.writeText(poNumber);
                     setCopiedPoNumber(true);
                     setTimeout(() => setCopiedPoNumber(false), 2000);
                   }}
-                  className="text-vl-dark-900/50 hover:text-vl-dark-900"
+                  className="size-5 text-vl-dark-900/50 hover:text-vl-dark-900"
                   title="Copy PO Number"
                 >
                   {copiedPoNumber ? (
@@ -334,7 +336,7 @@ export function AdminInventoryPoModal({
                   ) : (
                     <Copy className="size-3" />
                   )}
-                </button>
+                </Button>
               </div>
               <p className="text-xs text-vl-dark-900/60">
                 Generate, review, and print apparel manufacturing work orders for factory
@@ -344,13 +346,15 @@ export function AdminInventoryPoModal({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="rounded p-1 text-vl-dark-900/40 hover:text-vl-dark-900"
+              className="size-8 text-vl-dark-900/40 hover:text-vl-dark-900"
             >
               <X className="size-5" />
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -372,14 +376,16 @@ export function AdminInventoryPoModal({
               </div>
               <div className="flex flex-wrap gap-1 pt-1">
                 {DEFAULT_SUPPLIERS.slice(0, 2).map((sup) => (
-                  <button
+                  <Button
                     key={sup}
                     type="button"
+                    variant="secondary"
+                    size="xs"
                     onClick={() => setSupplierName(sup)}
-                    className="rounded-2xs py-0.2 max-w-[140px] truncate bg-vl-white-300 px-1.5 text-[10px] text-vl-dark-900/70 hover:bg-vl-dark-900/10"
+                    className="h-5 max-w-[140px] truncate px-1.5 text-[10px]"
                   >
                     {sup.split(" ")[0]}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -424,18 +430,16 @@ export function AdminInventoryPoModal({
               </div>
               <div className="flex items-center gap-1">
                 {[10, 20, 30, 50, 100].map((level) => (
-                  <button
+                  <Button
                     key={level}
                     type="button"
+                    variant={targetBuffer === level ? "primary" : "outline"}
+                    size="xs"
                     onClick={() => setTargetBuffer(level)}
-                    className={`flex-1 rounded-xs py-1 text-center text-[10px] font-bold transition-colors ${
-                      targetBuffer === level
-                        ? "bg-vl-dark-900 text-white"
-                        : "border border-vl-dark-900/15 bg-white text-vl-dark-900 hover:bg-vl-white-300"
-                    }`}
+                    className="h-6 flex-1 px-1 text-[10px] font-bold"
                   >
                     {level}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -516,16 +520,18 @@ export function AdminInventoryPoModal({
                   className="pr-8 pl-8"
                 />
                 {searchQuery && (
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => {
                       setSearchQuery("");
                       setIsSearchOpen(false);
                     }}
-                    className="absolute right-2.5 text-vl-dark-900/40 hover:text-vl-dark-900 z-10"
+                    className="absolute right-2.5 z-10 size-5 text-vl-dark-900/40 hover:text-vl-dark-900"
                   >
                     <X className="size-3" />
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -533,11 +539,13 @@ export function AdminInventoryPoModal({
               {isSearchOpen && filteredSearchVariants.length > 0 && (
                 <div className="absolute top-10 right-0 left-0 z-50 max-h-56 overflow-y-auto rounded-sm border border-vl-dark-900/15 bg-white p-1 shadow-lg">
                   {filteredSearchVariants.map((v) => (
-                    <button
+                    <Button
                       key={v.id}
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleAddVariant(v)}
-                      className="flex w-full items-center justify-between gap-2 rounded-xs px-2.5 py-1.5 text-left text-xs transition-colors hover:bg-vl-white-300"
+                      className="h-auto w-full items-center justify-between gap-2 rounded-xs px-2.5 py-1.5 text-left text-xs font-normal hover:bg-vl-white-300"
                     >
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-vl-dark-900">{v.product.name}</p>
@@ -548,7 +556,7 @@ export function AdminInventoryPoModal({
                       <span className="shrink-0 font-mono text-[11px] font-bold text-amber-700">
                         Stock: {v.available}
                       </span>
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -651,13 +659,15 @@ export function AdminInventoryPoModal({
                           {/* Order Quantity Stepper */}
                           <td className="px-2 py-2.5 text-center">
                             <div className="inline-flex items-center rounded-xs border border-vl-dark-900/20 bg-white">
-                              <button
+                              <Button
                                 type="button"
+                                variant="secondary"
+                                size="icon"
                                 onClick={() => handleUpdateQty(item.id, item.orderQuantity - 1)}
-                                className="flex size-7 items-center justify-center rounded-l-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
+                                className="size-7 rounded-none rounded-l-xs"
                               >
                                 <Minus className="size-3" />
-                              </button>
+                              </Button>
                               <Input
                                 type="number"
                                 min="1"
@@ -669,13 +679,15 @@ export function AdminInventoryPoModal({
                                 size="sm"
                                 className="h-7 w-16 text-center font-mono text-xs font-bold"
                               />
-                              <button
+                              <Button
                                 type="button"
+                                variant="secondary"
+                                size="icon"
                                 onClick={() => handleUpdateQty(item.id, item.orderQuantity + 1)}
-                                className="flex size-7 items-center justify-center rounded-r-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
+                                className="size-7 rounded-none rounded-r-xs"
                               >
                                 <Plus className="size-3" />
-                              </button>
+                              </Button>
                             </div>
                           </td>
 
@@ -706,14 +718,16 @@ export function AdminInventoryPoModal({
 
                           {/* Remove */}
                           <td className="py-2.5 pr-4 pl-2 text-center">
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() => handleRemoveItem(item.id)}
-                              className="rounded p-1 text-vl-dark-900/40 hover:bg-red-50 hover:text-red-700"
+                              className="size-7 text-vl-dark-900/40 hover:bg-red-50 hover:text-red-700"
                               title="Remove item"
                             >
                               <X className="size-3.5" />
-                            </button>
+                            </Button>
                           </td>
                         </tr>
                       );

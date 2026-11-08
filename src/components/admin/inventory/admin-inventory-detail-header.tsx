@@ -14,6 +14,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { BarcodeSvg } from "./admin-inventory-barcode-modal";
+import { Button } from "@/components/ui/button";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 
 function currency(value: number) {
@@ -80,33 +81,39 @@ export function AdminInventoryDetailHeader({
             <span>Storefront View</span>
           </Link>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onOpenPrintTag}
-            className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300"
+            className="gap-1.5"
           >
             <Barcode className="size-3.5" />
             <span>Print Tag</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onOpenPo}
-            className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300"
+            className="gap-1.5"
             title="Create Supplier Purchase Order / Reorder Sheet for this variant"
           >
             <Factory className="size-3.5 text-amber-700" />
             <span>Reorder / PO</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             onClick={onOpenAdjust}
-            className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-vl-dark-900 px-4 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-vl-dark-900/85"
+            className="gap-1.5"
           >
             <SlidersHorizontal className="size-3.5" />
             <span>Adjust Stock</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -154,10 +161,12 @@ export function AdminInventoryDetailHeader({
               <div className="flex flex-wrap items-center gap-3 text-xs text-vl-dark-900/70">
                 <div className="flex items-center gap-1.5 rounded-xs bg-vl-white-300 px-2 py-0.5 font-mono text-xs font-bold text-vl-dark-900">
                   <span>{variant.sku}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={handleCopySku}
-                    className="text-vl-dark-900/60 transition-colors hover:text-vl-dark-900"
+                    className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
                     title="Copy SKU"
                   >
                     {copiedSku ? (
@@ -165,7 +174,7 @@ export function AdminInventoryDetailHeader({
                     ) : (
                       <Copy className="size-3" />
                     )}
-                  </button>
+                  </Button>
                 </div>
 
                 <span>•</span>

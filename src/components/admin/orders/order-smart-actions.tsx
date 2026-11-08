@@ -364,17 +364,19 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
 
                   <div className="max-h-72 space-y-1 overflow-y-auto">
                     {whatsappTemplates.map((tmpl, idx) => (
-                      <button
+                      <Button
                         key={idx}
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => openWhatsApp(tmpl.text)}
-                        className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50 focus-visible:ring-1 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                        className="h-auto w-full flex-col items-start rounded-lg p-2 text-left hover:bg-emerald-50"
                       >
                         <p className="text-xs font-bold text-neutral-900">{tmpl.title}</p>
                         <p className="mt-0.5 line-clamp-2 text-[10px] text-neutral-500">
                           {tmpl.text}
                         </p>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -402,8 +404,10 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
 
       {/* ── Manual Override & Payment Accordion ── */}
       <div className="rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setShowManualOverride(!showManualOverride)}
           className="flex w-full items-center justify-between text-xs font-bold text-neutral-700 hover:text-neutral-900"
         >
@@ -416,7 +420,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
               showManualOverride ? "rotate-180" : ""
             }`}
           />
-        </button>
+        </Button>
 
         {showManualOverride && (
           <div className="mt-4 space-y-4 border-t border-neutral-100 pt-4">

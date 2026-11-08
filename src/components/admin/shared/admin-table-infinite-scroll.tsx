@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface AdminTableInfiniteScrollProps {
   /** Whether there are more items available to load */
@@ -79,11 +80,13 @@ export function AdminTableInfiniteScroll({
 
       {hasMore ? (
         <div className="flex flex-col items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-vl-dark-900/20 bg-white px-5 py-2 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan disabled:cursor-not-allowed disabled:opacity-60"
+            className="gap-2 px-5 text-xs font-semibold text-vl-dark-900 shadow-2xs hover:bg-vl-white-300"
           >
             {isLoadingMore ? (
               <>
@@ -98,7 +101,7 @@ export function AdminTableInfiniteScroll({
                 </span>
               </>
             )}
-          </button>
+          </Button>
           <p className="text-muted-foreground text-[11px]">
             Scroll down or click the button above to load more items
           </p>

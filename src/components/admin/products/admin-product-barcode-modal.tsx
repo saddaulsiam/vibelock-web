@@ -81,13 +81,15 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
               {products.length === 1 ? "product" : "products"})
             </h3>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded p-1 text-vl-dark-900/40 hover:text-vl-dark-900"
+            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Modal Settings Bar */}
@@ -135,14 +137,16 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
               <div className="flex flex-wrap items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-2 py-1 shadow-2xs">
                 <span className="text-[11px] font-semibold text-vl-dark-900/70">Copies:</span>
                 <div className="flex items-center">
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon"
                     onClick={() => setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))}
-                    className="flex size-6 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 transition-colors hover:bg-vl-dark-900/15"
+                    className="size-6 rounded-xs"
                     title="Decrease"
                   >
                     <Minus className="size-3" />
-                  </button>
+                  </Button>
                   <Input
                     type="number"
                     min="1"
@@ -157,30 +161,30 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                     size="sm"
                     className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
+                    size="icon"
                     onClick={() => setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))}
-                    className="flex size-6 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 transition-colors hover:bg-vl-dark-900/15"
+                    className="size-6 rounded-xs"
                     title="Increase"
                   >
                     <Plus className="size-3" />
-                  </button>
+                  </Button>
                 </div>
 
                 <div className="flex items-center gap-1 border-l border-vl-dark-900/10 pl-1">
                   {[1, 2, 5, 10, 25, 50].map((preset) => (
-                    <button
+                    <Button
                       key={preset}
                       type="button"
+                      variant={barcodeCustomQuantity === preset ? "primary" : "secondary"}
+                      size="xs"
                       onClick={() => setBarcodeCustomQuantity(preset)}
-                      className={`rounded-xs px-1.5 py-0.5 text-[10px] font-semibold transition-colors ${
-                        barcodeCustomQuantity === preset
-                          ? "bg-vl-dark-900 text-white"
-                          : "bg-vl-white-300 text-vl-dark-900/80 hover:bg-vl-dark-900/15"
-                      }`}
+                      className="h-5 px-1.5 text-[10px]"
                     >
                       {preset}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -232,21 +236,25 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
         {products.some((p) => (p.variants && p.variants.length > 1) || products.length > 1) && (
           <div className="border-b border-vl-dark-900/10 bg-white px-5 py-2">
             <div className="flex items-center justify-between text-xs">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setShowVariantTuning(!showVariantTuning)}
-                className="inline-flex items-center gap-1.5 font-semibold text-vl-dark-900 hover:underline"
+                className="gap-1.5 font-semibold text-vl-dark-900"
               >
                 <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant</span>
-              </button>
+              </Button>
               {Object.keys(barcodeVariantOverrides).length > 0 && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setBarcodeVariantOverrides({})}
-                  className="text-[11px] text-red-600 hover:underline"
+                  className="text-[11px] text-red-600 hover:text-red-700"
                 >
                   Reset variant overrides
-                </button>
+                </Button>
               )}
             </div>
 
@@ -298,18 +306,20 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                         </div>
 
                         <div className="flex shrink-0 items-center gap-1">
-                          <button
+                          <Button
                             type="button"
+                            variant="secondary"
+                            size="icon"
                             onClick={() =>
                               setBarcodeVariantOverrides((prev) => ({
                                 ...prev,
                                 [v.id]: Math.max(1, count - 1),
                               }))
                             }
-                            className="flex size-5 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
+                            className="size-5 rounded-xs"
                           >
                             <Minus className="size-2.5" />
-                          </button>
+                          </Button>
                           <Input
                             type="number"
                             min="1"
@@ -327,18 +337,20 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                             size="sm"
                             className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                           />
-                          <button
+                          <Button
                             type="button"
+                            variant="secondary"
+                            size="icon"
                             onClick={() =>
                               setBarcodeVariantOverrides((prev) => ({
                                 ...prev,
                                 [v.id]: Math.min(500, count + 1),
                               }))
                             }
-                            className="flex size-5 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
+                            className="size-5 rounded-xs"
                           >
                             <Plus className="size-2.5" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     );
@@ -424,13 +436,15 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
         {/* Modal Footer */}
         <div className="flex items-center justify-between border-t border-vl-dark-900/10 bg-white px-5 py-2.5 text-xs text-vl-dark-900/60">
           <span>Previewing labels before printing. Press Print Now to send to printer.</span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={onClose}
-            className="font-semibold text-vl-dark-900 hover:underline"
+            className="font-semibold text-vl-dark-900"
           >
             Close
-          </button>
+          </Button>
         </div>
       </div>
 

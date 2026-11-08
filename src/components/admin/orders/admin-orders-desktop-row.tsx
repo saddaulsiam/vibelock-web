@@ -2,18 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import {
-  Check,
-  CheckCircle2,
-  Copy,
-  Eye,
-  MessageCircle,
-  Package,
-  Phone,
-  Truck,
-} from "lucide-react";
+import { Check, CheckCircle2, Copy, Eye, MessageCircle, Package, Phone, Truck } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
 import { TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
 import {
   getOrderStatusBadge,
@@ -53,7 +45,7 @@ export function AdminOrdersDesktopRow({
           checked={isSelected}
           onChange={() => onToggleSelect(order.id)}
           aria-label={`Select order ${order.orderNumber}`}
-          className="size-3.5 rounded-xs border-neutral-300 accent-vl-dark-900 focus:ring-1 focus:ring-vl-cyan"
+          className="accent-vl-dark-900 focus:ring-vl-cyan size-3.5 rounded-xs border-neutral-300 focus:ring-1"
         />
       </TableCell>
 
@@ -63,7 +55,7 @@ export function AdminOrdersDesktopRow({
           <div className="flex flex-wrap items-center gap-1.5">
             <Link
               href={`/admin/orders/${order.id}`}
-              className="font-mono text-xs font-bold text-vl-dark-900 hover:text-vl-cyan hover:underline"
+              className="text-vl-dark-900 hover:text-vl-cyan font-mono text-xs font-bold hover:underline"
             >
               {order.orderNumber}
             </Link>
@@ -129,7 +121,7 @@ export function AdminOrdersDesktopRow({
       {visibleColumns.items && (
         <TableCell className="text-center">
           <div className="flex flex-col items-center gap-0.5">
-            <span className="inline-flex items-center gap-1 rounded-sm bg-vl-white-300 px-2 py-0.5 text-xs font-semibold text-vl-dark-900">
+            <span className="bg-vl-white-300 text-vl-dark-900 inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold">
               <Package className="size-3 text-neutral-600" />
               {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
             </span>
@@ -148,7 +140,7 @@ export function AdminOrdersDesktopRow({
       {/* Total Amount in BDT */}
       {visibleColumns.total && (
         <TableCell className="text-right whitespace-nowrap tabular-nums">
-          <div className="font-bold text-vl-dark-900">{formatBdt(order.total)}</div>
+          <div className="text-vl-dark-900 font-bold">{formatBdt(order.total)}</div>
           {order.discount > 0 && (
             <div className="text-[10px] text-neutral-500">Saved {formatBdt(order.discount)}</div>
           )}
@@ -185,10 +177,12 @@ export function AdminOrdersDesktopRow({
               {order.shipment.trackingNumber && (
                 <div className="flex items-center gap-1 font-mono text-[11px] text-neutral-700">
                   <span>{order.shipment.trackingNumber}</span>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onCopyTracking(order.shipment!.trackingNumber!)}
-                    className="rounded p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-800"
+                    className="size-5 text-neutral-400 hover:text-neutral-800"
                     title="Copy tracking code"
                   >
                     {copiedTracking === order.shipment.trackingNumber ? (
@@ -196,7 +190,7 @@ export function AdminOrdersDesktopRow({
                     ) : (
                       <Copy className="size-2.5" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -218,34 +212,37 @@ export function AdminOrdersDesktopRow({
         <div className="flex items-center justify-end gap-1.5">
           {/* 1-Click Status Quick Actions */}
           {order.status === "PENDING" && (
-            <button
+            <Button
               type="button"
+              size="xs"
               disabled={updatingOrderId === order.id}
               onClick={() => onQuickStatus(order.id, "CONFIRMED")}
-              className="inline-flex h-7 items-center gap-1 rounded-sm bg-emerald-600 px-2 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-emerald-700 disabled:opacity-50"
+              className="h-7 gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
               title="Confirm order after customer verification"
             >
               <CheckCircle2 className="size-3" />
               <span>{updatingOrderId === order.id ? "..." : "Confirm"}</span>
-            </button>
+            </Button>
           )}
 
           {order.status === "CONFIRMED" && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="xs"
               disabled={updatingOrderId === order.id}
               onClick={() => onQuickStatus(order.id, "PROCESSING")}
-              className="inline-flex h-7 items-center gap-1 rounded-sm border border-neutral-300 bg-white px-2 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 disabled:opacity-50"
+              className="h-7 gap-1"
               title="Mark order as Processing / Package"
             >
               <Package className="size-3 text-indigo-600" />
               <span>{updatingOrderId === order.id ? "..." : "Pack"}</span>
-            </button>
+            </Button>
           )}
 
           <Link
             href={`/admin/orders/${order.id}`}
-            className="inline-flex h-7 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300"
+            className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex h-7 items-center gap-1 rounded-sm border bg-white px-2.5 text-xs font-semibold shadow-2xs transition-colors"
           >
             <Eye className="size-3" />
             <span>View</span>

@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface OrderItemData {
   id: string;
@@ -143,13 +144,14 @@ export function OrderPickPackChecklist({
           </div>
 
           {!isAllPacked ? (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="xs"
               onClick={markAllPacked}
-              className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50"
             >
               Pack All
-            </button>
+            </Button>
           ) : (
             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800">
               <CheckCircle2 className="size-3 text-emerald-600" />
@@ -192,18 +194,20 @@ export function OrderPickPackChecklist({
                 >
                   {/* Pick & Pack Toggle Button (Hidden in print) */}
                   <TableCell className="px-4 py-3.5 text-center print:hidden">
-                    <button
+                    <Button
                       type="button"
+                      variant={isPacked ? "primary" : "outline"}
+                      size="icon"
                       onClick={() => toggleItemPacked(item.id)}
-                      className={`inline-flex size-6 items-center justify-center rounded-md border transition-all ${
+                      className={`size-6 ${
                         isPacked
-                          ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
-                          : "border-neutral-300 bg-white text-transparent hover:border-neutral-500"
+                          ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs hover:bg-emerald-700"
+                          : "text-transparent"
                       }`}
                       title={isPacked ? "Mark unpacked" : "Mark packed"}
                     >
                       <Check className="size-3.5 stroke-[3]" />
-                    </button>
+                    </Button>
                   </TableCell>
 
                   {/* Product Details with Thumbnail & Warehouse Hover Zoom */}

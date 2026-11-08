@@ -2,6 +2,7 @@
 
 import { generateWhatsAppUrl } from "@/components/admin/orders/admin-order-badges";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers/customer-risk";
 import { checkCustomerRiskAction } from "@/lib/admin/orders/order-actions";
 import {
@@ -143,17 +144,20 @@ export function OrderCustomerRiskCard({
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
+              className="gap-1.5"
               title="Refresh live fraud check from Steadfast API"
             >
               <RotateCw
                 className={`size-3.5 ${isRefreshing ? "animate-spin text-blue-600" : ""}`}
               />
               <span className="hidden md:inline">Check API</span>
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -310,9 +314,12 @@ export function OrderCustomerRiskCard({
                   <span className="font-mono text-xs font-bold text-neutral-800">
                     {customerPhone}
                   </span>
-                  <button
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
                     onClick={copyPhoneNumber}
-                    className="inline-flex size-6 items-center justify-center rounded border border-neutral-200 text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-900"
+                    className="size-6 text-neutral-500 hover:text-neutral-900"
                     title="Copy phone number"
                   >
                     {copiedPhone ? (
@@ -320,7 +327,7 @@ export function OrderCustomerRiskCard({
                     ) : (
                       <Copy className="size-3" />
                     )}
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <span className="text-xs text-neutral-400">No phone provided</span>

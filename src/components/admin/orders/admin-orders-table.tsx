@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Check, X } from "lucide-react";
 import type { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import {
   AdminTableInfiniteScroll,
   useAdminTableColumns,
@@ -409,13 +410,15 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
             <Check className="size-4 text-emerald-700" />
             <span>{feedbackMessage}</span>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={() => setFeedbackMessage(null)}
-            className="text-emerald-700 hover:text-emerald-950"
+            className="size-6 text-emerald-700 hover:text-emerald-950"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 

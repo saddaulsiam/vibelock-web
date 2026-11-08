@@ -133,13 +133,16 @@ export function CustomerAbandonedCartCard({
         {/* Quick WhatsApp Action Button */}
         <div>
           {formattedPhone ? (
-            <button
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
               onClick={handleOpenRecoveryModal}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
             >
               <MessageCircle className="size-3.5 fill-white/20" />
               <span>Send WhatsApp Recovery</span>
-            </button>
+            </Button>
           ) : (
             <span className="text-[11px] text-amber-700 italic">
               Phone number required for WhatsApp
@@ -277,12 +280,15 @@ export function CustomerAbandonedCartCard({
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsPreviewOpen(false)}
-                className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+                className="size-7 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-1.5">

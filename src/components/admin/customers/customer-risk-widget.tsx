@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerRiskWidgetProps {
   initialProfile: CombinedCustomerRiskProfile | null;
@@ -103,15 +104,13 @@ export function CustomerRiskWidget({
                   : "Customer is allowed to place Cash on Delivery orders."}
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant={isBlocked ? "outline" : "destructive"}
+              size="sm"
               onClick={handleToggleCod}
               disabled={isTogglingCod}
-              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition disabled:opacity-50 ${
-                isBlocked
-                  ? "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                  : "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-              }`}
+              className="gap-1.5"
             >
               {isTogglingCod ? (
                 <Loader2 className="size-3 animate-spin" />
@@ -121,7 +120,7 @@ export function CustomerRiskWidget({
                 <Ban className="size-3 text-rose-600" />
               )}
               <span>{isBlocked ? "Restore COD Access" : "Restrict COD Orders"}</span>
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -303,15 +302,13 @@ export function CustomerRiskWidget({
               </p>
             </div>
             <div className="shrink-0">
-              <button
+              <Button
                 type="button"
+                variant={isBlocked ? "outline" : "destructive"}
+                size="sm"
                 onClick={handleToggleCod}
                 disabled={isTogglingCod}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition disabled:opacity-50 ${
-                  isBlocked
-                    ? "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                    : "border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                }`}
+                className="gap-1.5"
               >
                 {isTogglingCod ? (
                   <Loader2 className="size-3 animate-spin" />
@@ -321,7 +318,7 @@ export function CustomerRiskWidget({
                   <Ban className="size-3 text-rose-600" />
                 )}
                 <span>{isBlocked ? "Restore COD Access" : "Restrict COD Orders"}</span>
-              </button>
+              </Button>
             </div>
           </div>
         )}

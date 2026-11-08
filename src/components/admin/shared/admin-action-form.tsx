@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
 import type { AdminActionState } from "@/lib/admin/catalog/catalog-actions";
 
 const initialState: AdminActionState = { error: null };
@@ -20,27 +21,16 @@ function SubmitButton({
   variant?: "solid" | "outline";
 }) {
   const { pending } = useFormStatus();
-  const sizeClasses =
-    size === "sm" ? "min-h-8 px-2.5 text-xs font-medium" : "min-h-10 px-4 text-sm font-semibold";
-
-  let colorClasses = "";
-  if (destructive) {
-    colorClasses = "border-red-300 text-red-700 hover:bg-red-50";
-  } else {
-    colorClasses =
-      variant === "outline"
-        ? "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:bg-vl-white-300"
-        : "border-vl-dark-900 bg-vl-dark-900 text-white hover:bg-vl-dark-900/85";
-  }
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className={`inline-flex items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none disabled:cursor-wait disabled:opacity-60 ${sizeClasses} ${colorClasses}`}
+      variant={destructive ? "destructive" : variant === "outline" ? "outline" : "primary"}
+      size={size}
     >
       {pending ? (pendingLabel ?? "Saving…") : label}
-    </button>
+    </Button>
   );
 }
 

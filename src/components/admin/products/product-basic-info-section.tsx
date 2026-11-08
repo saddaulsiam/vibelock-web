@@ -2,6 +2,7 @@
 
 import { Globe, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -106,14 +107,16 @@ export function ProductBasicInfoSection({
                   Auto-syncing
                 </span>
               ) : null}
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={onGenerateSlug}
-                className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
+                className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
               >
                 <Sparkles className="size-3.5 text-vl-cyan" />
                 Generate from name
-              </button>
+              </Button>
             </div>
           </div>
           <div className="mt-1.5">
@@ -151,14 +154,16 @@ export function ProductBasicInfoSection({
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-muted-foreground text-[11px]">Quick presets:</span>
               {STREETWEAR_TEMPLATES.map((tmpl) => (
-                <button
+                <Button
                   key={tmpl.label}
                   type="button"
+                  variant="outline"
+                  size="xs"
                   onClick={() => insertTemplateSnippet(tmpl.snippet)}
-                  className="inline-flex items-center gap-1 rounded border border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 transition-colors hover:bg-vl-dark-900 hover:text-white"
+                  className="h-6 gap-1 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:bg-vl-dark-900 hover:text-white"
                 >
                   + {tmpl.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

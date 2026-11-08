@@ -28,6 +28,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Banknote,
   CheckCircle2,
@@ -330,16 +331,18 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
           />
 
           {/* Export CSV Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportCsv}
             disabled={filteredPayments.length === 0}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="gap-1.5"
             title="Export filtered transactions to CSV"
           >
-            <Download className="size-3.5 text-neutral-500" />
+            <Download className="size-3.5" />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
         </div>
       </div>
 

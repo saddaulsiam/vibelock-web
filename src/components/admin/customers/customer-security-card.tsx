@@ -240,14 +240,14 @@ export function CustomerSecurityCard({
           </p>
 
           <div className="mt-3">
-            <button
+            <Button
               type="button"
+              variant={isSuspended ? "outline" : "secondary"}
+              size="sm"
               onClick={handleToggleSuspension}
               disabled={isTogglingSuspension}
-              className={`flex w-full items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-2xs transition disabled:opacity-50 ${
-                isSuspended
-                  ? "border border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
-                  : "border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+              className={`w-full justify-center gap-1.5 ${
+                !isSuspended ? "border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100" : ""
               }`}
             >
               {isTogglingSuspension ? (
@@ -258,7 +258,7 @@ export function CustomerSecurityCard({
                 <UserX className="size-3.5 text-amber-700" />
               )}
               <span>{isSuspended ? "Reactivate Account" : "Suspend / Block Login"}</span>
-            </button>
+            </Button>
           </div>
         </div>
 
