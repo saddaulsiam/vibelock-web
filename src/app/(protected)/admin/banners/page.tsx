@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { BannerPlacement } from "@prisma/client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getAdminBanners } from "@/lib/admin/banners";
 import { deleteBannerAction, toggleBannerAction } from "@/lib/admin/banners";
 
@@ -23,12 +25,9 @@ export default async function AdminBannersPage() {
             Manage full-width category and search campaign banners.
           </p>
         </div>
-        <Link
-          href="/admin/banners/new"
-          className="inline-flex min-h-10 items-center justify-center bg-vl-dark-900 px-4 text-sm font-semibold text-white"
-        >
-          Create banner
-        </Link>
+        <Button asChild variant="brand">
+          <Link href="/admin/banners/new">Create banner</Link>
+        </Button>
       </div>
       {banners.length === 0 ? (
         <div className="border border-dashed p-12 text-center">
@@ -57,11 +56,9 @@ export default async function AdminBannersPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-semibold">{banner.title}</h2>
-                    <span
-                      className={`border px-2 py-0.5 text-xs ${banner.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900/70"}`}
-                    >
+                    <Badge variant={banner.isActive ? "success" : "secondary"}>
                       {banner.isActive ? "Active" : "Inactive"}
-                    </span>
+                    </Badge>
                   </div>
                   <p className="text-muted-foreground mt-1 text-sm">
                     {placementLabel(banner.placement)} · Order {banner.sortOrder}
@@ -77,25 +74,22 @@ export default async function AdminBannersPage() {
                     </p>
                   ) : null}
                 </div>
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href={`/admin/banners/${banner.id}/edit`}
-                    className="inline-flex min-h-9 items-center border border-vl-dark-900/20 px-3 text-sm font-medium hover:bg-vl-white-300"
-                  >
-                    Edit
-                  </Link>
+                <div className="flex flex-wrap gap-2">
+                  <Button asChild variant="secondary" size="sm">
+                    <Link href={`/admin/banners/${banner.id}/edit`}>Edit</Link>
+                  </Button>
                   <form action={toggleBannerAction}>
                     <input type="hidden" name="id" value={banner.id} />
                     <input type="hidden" name="active" value={String(!banner.isActive)} />
-                    <button className="inline-flex min-h-9 items-center border border-vl-dark-900/20 px-3 text-sm font-medium hover:bg-vl-white-300">
+                    <Button type="submit" variant="secondary" size="sm">
                       {banner.isActive ? "Deactivate" : "Activate"}
-                    </button>
+                    </Button>
                   </form>
                   <form action={deleteBannerAction}>
                     <input type="hidden" name="id" value={banner.id} />
-                    <button className="inline-flex min-h-9 items-center border border-red-200 px-3 text-sm font-medium text-red-700 hover:bg-red-50">
+                    <Button type="submit" variant="destructive" size="sm">
                       Delete
-                    </button>
+                    </Button>
                   </form>
                 </div>
               </div>

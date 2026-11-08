@@ -317,12 +317,9 @@ export default async function AdminReportsPage({
             <input type="hidden" name="from" value={from ?? ""} />
             <input type="hidden" name="to" value={to ?? ""} />
             {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
-            <button
-              className="border-input hover:bg-muted border px-3 text-sm font-medium"
-              type="submit"
-            >
+            <Button type="submit" variant="outline">
               Search
-            </button>
+            </Button>
           </form>
         </div>
         <div className="overflow-x-auto">

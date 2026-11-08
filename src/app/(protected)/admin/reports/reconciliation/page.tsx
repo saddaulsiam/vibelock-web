@@ -446,12 +446,9 @@ export default async function AdminReconciliationPage({
             {classification ? (
               <input type="hidden" name="classification" value={classification} />
             ) : null}
-            <button
-              className="border-input hover:bg-muted border px-3 text-sm font-medium"
-              type="submit"
-            >
+            <Button type="submit" variant="outline">
               Search
-            </button>
+            </Button>
           </Form>
         </div>
 
