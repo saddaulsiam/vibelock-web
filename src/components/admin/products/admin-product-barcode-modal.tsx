@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import type { AdminProductItem } from "@/lib/admin/catalog/catalog-queries";
 import { Minus, Plus, Printer, Tag, X } from "lucide-react";
@@ -142,7 +143,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                   >
                     <Minus className="size-3" />
                   </button>
-                  <input
+                  <Input
                     type="number"
                     min="1"
                     max="500"
@@ -153,7 +154,8 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                         setBarcodeCustomQuantity(Math.min(500, val));
                       }
                     }}
-                    className="h-6 w-12 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                    size="sm"
+                    className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                   />
                   <button
                     type="button"
@@ -308,7 +310,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                           >
                             <Minus className="size-2.5" />
                           </button>
-                          <input
+                          <Input
                             type="number"
                             min="1"
                             max="500"
@@ -322,7 +324,8 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                                 }));
                               }
                             }}
-                            className="h-5 w-10 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                            size="sm"
+                            className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                           />
                           <button
                             type="button"

@@ -20,6 +20,8 @@ import {
   type StocktakeReconcileItem,
 } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 
 function playStocktakeBeep(type: "success" | "warning" | "error") {
@@ -361,19 +363,20 @@ export function AdminInventoryStocktakeModal({
               }}
               className="relative flex-1"
             >
-              <Barcode className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-emerald-700" />
-              <input
+              <Barcode className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-emerald-700 z-10" />
+              <Input
                 ref={stocktakeInputRef}
                 type="text"
                 autoFocus
                 value={stocktakeInput}
                 onChange={(e) => setStocktakeInput(e.target.value)}
                 placeholder="Scan barcode tag or type SKU (press Enter)..."
-                className="h-10 w-full rounded-sm border border-[#101114]/20 bg-white pr-20 pl-9 font-mono text-xs text-[#101114] shadow-xs outline-none focus:border-emerald-600 focus-visible:ring-2 focus-visible:ring-emerald-500"
+                size="default"
+                className="pr-24 pl-9 font-mono text-xs shadow-xs focus-visible:ring-emerald-500"
               />
               <button
                 type="submit"
-                className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-xs bg-[#101114] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#101114]/85"
+                className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-xs bg-[#101114] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#101114]/85 z-10"
               >
                 Scan / Add
               </button>
@@ -573,7 +576,7 @@ export function AdminInventoryStocktakeModal({
                             >
                               <Minus className="size-2.5" />
                             </button>
-                            <input
+                            <Input
                               type="number"
                               min="0"
                               max="5000"
@@ -594,7 +597,8 @@ export function AdminInventoryStocktakeModal({
                                   });
                                 }
                               }}
-                              className="h-5 w-12 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                              size="sm"
+                              className="h-6 w-14 px-1 text-center font-mono text-xs font-bold"
                             />
                             <button
                               type="button"
@@ -634,7 +638,7 @@ export function AdminInventoryStocktakeModal({
                           )}
                         </td>
                         <td className="px-3 py-3">
-                          <input
+                          <Input
                             type="text"
                             placeholder="Audit note..."
                             value={notes}
@@ -652,7 +656,8 @@ export function AdminInventoryStocktakeModal({
                                 return next;
                               });
                             }}
-                            className="h-7 w-full min-w-28 rounded-xs border border-[#101114]/15 bg-white px-2 text-[11px] outline-none focus:border-[#101114]"
+                            size="sm"
+                            className="w-full min-w-28 text-[11px]"
                           />
                         </td>
                         <td className="px-3 py-3 text-right">
@@ -703,26 +708,30 @@ export function AdminInventoryStocktakeModal({
               </div>
 
               <div className="flex items-center gap-2">
-                <input
+                <Input
                   type="text"
                   value={auditNote}
                   onChange={(e) => setAuditNote(e.target.value)}
                   placeholder="Audit reason / ledger note..."
-                  className="h-8 rounded-sm border border-amber-300 bg-white px-2.5 text-xs text-[#101114] outline-none"
+                  size="sm"
+                  className="bg-white text-xs"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   disabled={isReconciling}
                   onClick={() => setShowReconcileConfirm(false)}
-                  className="inline-flex h-8 items-center rounded-sm border border-amber-300 bg-white px-3 text-xs font-semibold text-amber-900 hover:bg-amber-100"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="primary"
+                  size="sm"
                   disabled={isReconciling}
                   onClick={handleExecuteReconcile}
-                  className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-emerald-700 px-4 text-xs font-semibold text-white shadow-xs hover:bg-emerald-600 disabled:opacity-50"
+                  className="bg-emerald-700 text-white hover:bg-emerald-600"
                 >
                   {isReconciling ? (
                     <>
@@ -732,7 +741,7 @@ export function AdminInventoryStocktakeModal({
                   ) : (
                     <span>Confirm & Apply Ledger Changes</span>
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

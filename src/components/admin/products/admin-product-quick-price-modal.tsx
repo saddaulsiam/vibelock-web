@@ -2,6 +2,8 @@
 
 import { quickUpdateProductPricesAction } from "@/lib/admin/catalog/catalog-actions";
 import type { AdminProductItem } from "@/lib/admin/catalog/catalog-queries";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Loader2, Tag, X } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
@@ -142,37 +144,42 @@ export function AdminProductQuickPriceModal({
                   🔒 Disabled (Main Price / No Change)
                 </span>
               </div>
-              <input
-                type="text"
-                disabled
-                readOnly
-                value={
-                  product.minCostPrice !== null
-                    ? product.minCostPrice === product.maxCostPrice
-                      ? `৳${product.minCostPrice}`
-                      : `৳${product.minCostPrice} – ৳${product.maxCostPrice}`
-                    : "৳0"
-                }
-                className="mt-1 h-9 w-full cursor-not-allowed rounded-sm border border-[#101114]/15 bg-[#F3F0E8]/70 px-3 text-xs font-semibold text-[#101114]/70 select-none"
-                title="Cost price cannot be edited here. Change it from the full product edit page."
-              />
+              <div className="mt-1">
+                <Input
+                  type="text"
+                  disabled
+                  readOnly
+                  value={
+                    product.minCostPrice !== null
+                      ? product.minCostPrice === product.maxCostPrice
+                        ? `৳${product.minCostPrice}`
+                        : `৳${product.minCostPrice} – ৳${product.maxCostPrice}`
+                      : "৳0"
+                  }
+                  size="default"
+                  className="cursor-not-allowed select-none font-semibold text-[#101114]/70"
+                  title="Cost price cannot be edited here. Change it from the full product edit page."
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-[#101114]">
                 Selling Price (BDT ৳) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                value={priceForm.sellingPrice}
-                onChange={(e) =>
-                  setPriceForm((prev) => ({ ...prev, sellingPrice: e.target.value }))
-                }
-                placeholder="e.g. 1600"
-                className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-medium text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-              />
+              <div className="mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={priceForm.sellingPrice}
+                  onChange={(e) =>
+                    setPriceForm((prev) => ({ ...prev, sellingPrice: e.target.value }))
+                  }
+                  placeholder="e.g. 1600"
+                  size="default"
+                />
+              </div>
             </div>
 
             <div>
@@ -180,17 +187,19 @@ export function AdminProductQuickPriceModal({
                 Discount Price (BDT ৳){" "}
                 <span className="font-normal text-[#101114]/60">(Optional)</span>
               </label>
-              <input
-                type="number"
-                min="0"
-                step="any"
-                value={priceForm.discountPrice}
-                onChange={(e) =>
-                  setPriceForm((prev) => ({ ...prev, discountPrice: e.target.value }))
-                }
-                placeholder="Leave blank for regular price"
-                className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-medium text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-              />
+              <div className="mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={priceForm.discountPrice}
+                  onChange={(e) =>
+                    setPriceForm((prev) => ({ ...prev, discountPrice: e.target.value }))
+                  }
+                  placeholder="Leave blank for regular price"
+                  size="default"
+                />
+              </div>
             </div>
 
             {/* Live Savings calculation */}
@@ -236,22 +245,24 @@ export function AdminProductQuickPriceModal({
 
         {/* Modal Footer */}
         <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={onClose}
-            className="rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 font-semibold text-[#101114] hover:bg-[#F3F0E8]"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="primary"
+            size="default"
             disabled={isUpdatingPrice || !priceForm.sellingPrice}
             onClick={handleSaveQuickPrice}
-            className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-1.5 font-semibold text-white transition-colors hover:bg-[#101114]/85 disabled:opacity-50"
           >
             {isUpdatingPrice ? <Loader2 className="size-3.5 animate-spin" /> : null}
             <span>Save Prices</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

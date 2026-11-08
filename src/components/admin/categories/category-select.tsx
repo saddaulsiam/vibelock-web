@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check, ChevronDown, FolderTree, Search, Tag, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export interface CategorySearchableSelectProps {
   categories: { id: string; name: string }[];
@@ -192,14 +193,15 @@ export function CategorySearchableSelect({
           {/* Search Box */}
           <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-2.5">
             <div className="relative flex items-center">
-              <Search className="pointer-events-none absolute left-3 size-4 text-[#101114]/40" />
-              <input
+              <Search className="pointer-events-none absolute left-3 size-4 text-[#101114]/40 z-10" />
+              <Input
                 ref={searchInputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={placeholder}
-                className="placeholder:text-muted-foreground h-9 w-full border border-[#101114]/20 bg-white pr-8 pl-9 text-xs text-[#101114] transition-colors outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF]"
+                size="sm"
+                className="bg-white pr-8 pl-9"
               />
               {query && (
                 <button
@@ -208,7 +210,7 @@ export function CategorySearchableSelect({
                     setQuery("");
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2.5 text-[#101114]/40 hover:text-[#101114]"
+                  className="absolute right-2.5 z-10 text-[#101114]/40 hover:text-[#101114]"
                 >
                   <X className="size-3.5" />
                   <span className="sr-only">Clear search</span>

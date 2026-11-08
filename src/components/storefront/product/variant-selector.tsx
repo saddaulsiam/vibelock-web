@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Minus, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
 
@@ -197,7 +198,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
           >
             <Minus className="size-4" aria-hidden="true" />
           </button>
-          <input
+          <Input
             id="product-quantity"
             type="number"
             min={1}
@@ -209,7 +210,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                 setQuantity(value);
               }
             }}
-            className="h-full w-12 border-0 bg-transparent p-0 text-center text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-inset"
+            variant="brand"
+            size="sm"
+            className="h-full w-14 border-0 bg-transparent p-0 text-center text-sm font-semibold shadow-none focus-visible:ring-0"
           />
           <button
             type="button"

@@ -2,6 +2,8 @@
 
 import { Globe, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export const slugify = (value: string) =>
   value
@@ -30,9 +32,6 @@ export const STREETWEAR_TEMPLATES = [
     snippet: "\n• Model is 5'11\" wearing Size L for a relaxed streetwear fit",
   },
 ];
-
-const fieldClass =
-  "min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/35 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export interface ProductBasicInfoSectionProps {
   name: string;
@@ -77,17 +76,19 @@ export function ProductBasicInfoSection({
               *
             </span>
           </label>
-          <input
-            id="product-name"
-            className={`${fieldClass} mt-1.5`}
-            name="name"
-            required
-            maxLength={120}
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="e.g. VibeLock Oversized Heavyweight Hoodie"
-            autoComplete="off"
-          />
+          <div className="mt-1.5">
+            <Input
+              id="product-name"
+              name="name"
+              required
+              maxLength={120}
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="e.g. VibeLock Oversized Heavyweight Hoodie"
+              autoComplete="off"
+              size="lg"
+            />
+          </div>
         </div>
 
         <div>
@@ -115,16 +116,19 @@ export function ProductBasicInfoSection({
               </button>
             </div>
           </div>
-          <input
-            id="product-slug"
-            className={`${fieldClass} mt-1.5 font-mono text-xs`}
-            name="slug"
-            maxLength={160}
-            value={slug}
-            onChange={(e) => onSlugChange(e.target.value)}
-            placeholder="vibelock-oversized-heavyweight-hoodie"
-            autoComplete="off"
-          />
+          <div className="mt-1.5">
+            <Input
+              id="product-slug"
+              name="slug"
+              maxLength={160}
+              value={slug}
+              onChange={(e) => onSlugChange(e.target.value)}
+              placeholder="vibelock-oversized-heavyweight-hoodie"
+              autoComplete="off"
+              size="default"
+              className="font-mono text-xs"
+            />
+          </div>
           <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
             <Globe className="size-3.5 text-[#101114]/40" />
             <span>Preview:</span>
@@ -158,15 +162,17 @@ export function ProductBasicInfoSection({
               ))}
             </div>
           </div>
-          <textarea
-            id="product-description"
-            className={`${fieldClass} mt-1.5 min-h-36 resize-y font-sans`}
-            name="description"
-            maxLength={5000}
-            value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Provide a detailed description of fabric, fit, styling, and care notes..."
-          />
+          <div className="mt-1.5">
+            <Textarea
+              id="product-description"
+              name="description"
+              maxLength={5000}
+              value={description}
+              onChange={(e) => onDescriptionChange(e.target.value)}
+              placeholder="Provide a detailed description of fabric, fit, styling, and care notes..."
+              className="min-h-36 resize-y font-sans"
+            />
+          </div>
         </div>
       </div>
     </div>

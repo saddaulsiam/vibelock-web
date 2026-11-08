@@ -3,6 +3,7 @@ import { Edit, Globe, MapPin, Plus, RotateCcw, Truck } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ShippingSubNav } from "@/components/admin/shipping";
+import { Input } from "@/components/ui/input";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import { getAdminShippingZones } from "@/lib/admin/shipping";
 
@@ -69,12 +70,12 @@ export default async function ShippingZonesPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form method="get" className="flex w-full max-w-md items-center gap-2">
           <div className="relative flex-1">
-            <input
+            <Input
               type="text"
               name="q"
               defaultValue={q}
               placeholder="Search zone name..."
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3.5 text-xs text-[#101114] transition-colors outline-none placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              size="default"
             />
           </div>
           <button type="submit" className={ADMIN_TABLE_CLASSES.buttonSecondary}>

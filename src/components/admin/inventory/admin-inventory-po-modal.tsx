@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
+import { Input } from "@/components/ui/input";
 
 function currency(val: number) {
   return `৳${Number(val || 0).toLocaleString("en-BD", {
@@ -309,11 +310,12 @@ export function AdminInventoryPoModal({
                 <h2 className="text-base font-bold text-[#101114]">
                   Supplier Purchase Order (PO) & Reorder Sheet
                 </h2>
-                <input
+                <Input
                   type="text"
                   value={poNumber}
                   onChange={(e) => setPoNumber(e.target.value)}
-                  className="rounded-xs border border-[#101114]/15 bg-[#F3F0E8] px-2 py-0.5 font-mono text-xs font-semibold text-[#101114] outline-none"
+                  size="sm"
+                  className="w-44 font-mono text-xs font-semibold"
                   title="Click to edit PO Number"
                 />
                 <button
@@ -358,12 +360,12 @@ export function AdminInventoryPoModal({
             {/* Supplier / Factory */}
             <div className="space-y-1">
               <label className="font-semibold text-[#101114]">Supplier / Factory Name</label>
-              <div className="relative">
-                <input
+              <div>
+                <Input
                   type="text"
                   value={supplierName}
                   onChange={(e) => setSupplierName(e.target.value)}
-                  className="h-8 w-full rounded-xs border border-[#101114]/20 bg-white px-2.5 font-medium text-[#101114] outline-none"
+                  size="sm"
                   placeholder="Enter or select factory"
                 />
               </div>
@@ -384,13 +386,14 @@ export function AdminInventoryPoModal({
             {/* Order Date */}
             <div className="space-y-1">
               <label className="font-semibold text-[#101114]">Order Issue Date</label>
-              <div className="flex h-8 items-center gap-1.5 rounded-xs border border-[#101114]/20 bg-white px-2">
-                <Calendar className="size-3.5 text-[#101114]/50" />
-                <input
+              <div className="relative flex items-center">
+                <Calendar className="pointer-events-none absolute left-2.5 size-3.5 text-[#101114]/50 z-10" />
+                <Input
                   type="date"
                   value={orderDate}
                   onChange={(e) => setOrderDate(e.target.value)}
-                  className="w-full bg-transparent text-xs text-[#101114] outline-none"
+                  size="sm"
+                  className="pl-8"
                 />
               </div>
             </div>
@@ -398,13 +401,14 @@ export function AdminInventoryPoModal({
             {/* Delivery Deadline */}
             <div className="space-y-1">
               <label className="font-semibold text-[#101114]">Delivery Deadline</label>
-              <div className="flex h-8 items-center gap-1.5 rounded-xs border border-[#101114]/20 bg-white px-2">
-                <Calendar className="size-3.5 text-amber-600" />
-                <input
+              <div className="relative flex items-center">
+                <Calendar className="pointer-events-none absolute left-2.5 size-3.5 text-amber-600 z-10" />
+                <Input
                   type="date"
                   value={deliveryDeadline}
                   onChange={(e) => setDeliveryDeadline(e.target.value)}
-                  className="w-full bg-transparent text-xs text-[#101114] outline-none"
+                  size="sm"
+                  className="pl-8"
                 />
               </div>
             </div>
@@ -440,11 +444,11 @@ export function AdminInventoryPoModal({
               <label className="font-semibold text-[#101114]">
                 Production & Quality Specifications
               </label>
-              <input
+              <Input
                 type="text"
                 value={productionNotes}
                 onChange={(e) => setProductionNotes(e.target.value)}
-                className="h-8 w-full rounded-xs border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none"
+                size="sm"
                 placeholder="Stitching requirements, GSM, wash notes, packaging requirements..."
               />
             </div>
@@ -489,9 +493,9 @@ export function AdminInventoryPoModal({
 
             {/* Manual Variant Search & Add */}
             <div className="relative min-w-[260px]">
-              <div className="flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-2.5 shadow-2xs">
-                <Search className="size-3.5 text-[#101114]/40" />
-                <input
+              <div className="relative flex items-center">
+                <Search className="pointer-events-none absolute left-2.5 size-3.5 text-[#101114]/40 z-10" />
+                <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => {
@@ -500,7 +504,8 @@ export function AdminInventoryPoModal({
                   }}
                   onFocus={() => setIsSearchOpen(true)}
                   placeholder="Search SKU or style to add..."
-                  className="w-full text-xs text-[#101114] outline-none"
+                  size="default"
+                  className="pr-8 pl-8"
                 />
                 {searchQuery && (
                   <button
@@ -509,7 +514,7 @@ export function AdminInventoryPoModal({
                       setSearchQuery("");
                       setIsSearchOpen(false);
                     }}
-                    className="text-[#101114]/40 hover:text-[#101114]"
+                    className="absolute right-2.5 text-[#101114]/40 hover:text-[#101114] z-10"
                   >
                     <X className="size-3" />
                   </button>
@@ -645,7 +650,7 @@ export function AdminInventoryPoModal({
                               >
                                 <Minus className="size-3" />
                               </button>
-                              <input
+                              <Input
                                 type="number"
                                 min="1"
                                 max="10000"
@@ -653,7 +658,8 @@ export function AdminInventoryPoModal({
                                 onChange={(e) =>
                                   handleUpdateQty(item.id, parseInt(e.target.value, 10))
                                 }
-                                className="h-7 w-14 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                                size="sm"
+                                className="h-7 w-16 text-center font-mono text-xs font-bold"
                               />
                               <button
                                 type="button"
@@ -669,7 +675,7 @@ export function AdminInventoryPoModal({
                           <td className="px-2 py-2.5 text-right">
                             <div className="inline-flex items-center gap-1">
                               <span className="text-[10px] text-[#101114]/50">৳</span>
-                              <input
+                              <Input
                                 type="number"
                                 min="0"
                                 step="1"
@@ -677,7 +683,8 @@ export function AdminInventoryPoModal({
                                 onChange={(e) =>
                                   handleUpdateUnitCost(item.id, parseFloat(e.target.value))
                                 }
-                                className="h-7 w-16 rounded-xs border border-[#101114]/20 bg-white px-1.5 text-right font-mono text-xs font-semibold text-[#101114] outline-none"
+                                size="sm"
+                                className="h-7 w-20 text-right font-mono text-xs font-semibold"
                               />
                             </div>
                           </td>

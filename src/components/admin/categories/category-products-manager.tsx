@@ -20,6 +20,7 @@ import {
   Star,
 } from "lucide-react";
 import { ProductStatus } from "@prisma/client";
+import { Input } from "@/components/ui/input";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   assignProductsToCategoryAction,
@@ -302,19 +303,20 @@ export function CategoryProductsManager({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2.5">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-            <input
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+            <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search assigned products by name or slug...`}
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white pr-8 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
+              size="default"
+              className="pr-8 pl-9"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
+                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 z-10"
               >
                 <X className="size-3.5" />
               </button>
@@ -604,13 +606,14 @@ export function CategoryProductsManager({
             <div className="border-b border-neutral-100 bg-neutral-50/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                  <input
+                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Input
                     type="text"
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
                     placeholder="Search unassigned products..."
-                    className="h-9.5 w-full rounded-lg border border-neutral-200 bg-white pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
+                    size="default"
+                    className="pr-3 pl-9"
                   />
                 </div>
 

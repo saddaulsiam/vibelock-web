@@ -19,6 +19,8 @@ import {
 import { DiscountType } from "@prisma/client";
 import { saveCouponAction } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface CouponToEditData {
   id: string;
@@ -255,14 +257,17 @@ function CouponCreateDialog({
                   </button>
                 )}
               </div>
-              <input
-                type="text"
-                required
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="e.g. VIP20 or EID15"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 font-mono text-xs font-bold tracking-wider text-neutral-900 uppercase focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="text"
+                  required
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  placeholder="e.g. VIP20 or EID15"
+                  size="default"
+                  className="font-mono text-xs font-bold tracking-wider uppercase"
+                />
+              </div>
               <p className="mt-1 text-[10px] text-neutral-400">
                 Letters, numbers, hyphens or underscores (3-50 chars).
               </p>
@@ -304,17 +309,19 @@ function CouponCreateDialog({
               <label className="text-xs font-bold text-neutral-700">
                 Discount Amount * ({discountType === "PERCENTAGE" ? "Percentage %" : "BDT ৳"})
               </label>
-              <input
-                type="number"
-                required
-                min="0.01"
-                max={discountType === "PERCENTAGE" ? "100" : undefined}
-                step="0.01"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(e.target.value)}
-                placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 200"}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="number"
+                  required
+                  min="0.01"
+                  max={discountType === "PERCENTAGE" ? "100" : undefined}
+                  step="0.01"
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value)}
+                  placeholder={discountType === "PERCENTAGE" ? "e.g. 15" : "e.g. 200"}
+                  size="default"
+                />
+              </div>
             </div>
 
             {/* Minimum Order Value */}
@@ -322,15 +329,17 @@ function CouponCreateDialog({
               <label className="text-xs font-bold text-neutral-700">
                 Minimum Order Spend (৳) (Optional)
               </label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={minOrderValue}
-                onChange={(e) => setMinOrderValue(e.target.value)}
-                placeholder="e.g. 1500 (Leave empty for no minimum)"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={minOrderValue}
+                  onChange={(e) => setMinOrderValue(e.target.value)}
+                  placeholder="e.g. 1500 (Leave empty for no minimum)"
+                  size="default"
+                />
+              </div>
             </div>
 
             {/* Usage Limit */}
@@ -338,15 +347,17 @@ function CouponCreateDialog({
               <label className="text-xs font-bold text-neutral-700">
                 Usage Limit (Max Redemptions) (Optional)
               </label>
-              <input
-                type="number"
-                min="1"
-                step="1"
-                value={usageLimit}
-                onChange={(e) => setUsageLimit(e.target.value)}
-                placeholder="e.g. 100 (Leave empty for unlimited)"
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={usageLimit}
+                  onChange={(e) => setUsageLimit(e.target.value)}
+                  placeholder="e.g. 100 (Leave empty for unlimited)"
+                  size="default"
+                />
+              </div>
             </div>
 
             {/* Active Status */}
@@ -371,12 +382,14 @@ function CouponCreateDialog({
                 <Calendar className="size-3 text-neutral-500" />
                 <span>Start Date &amp; Time (Optional)</span>
               </label>
-              <input
-                type="datetime-local"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="datetime-local"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  size="default"
+                />
+              </div>
             </div>
 
             {/* End Date */}
@@ -385,12 +398,14 @@ function CouponCreateDialog({
                 <Calendar className="size-3 text-neutral-500" />
                 <span>Expiry Date &amp; Time (Optional)</span>
               </label>
-              <input
-                type="datetime-local"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1 h-9.5 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 focus:outline-none"
-              />
+              <div className="mt-1">
+                <Input
+                  type="datetime-local"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  size="default"
+                />
+              </div>
             </div>
           </div>
 
@@ -431,18 +446,20 @@ function CouponCreateDialog({
 
           {/* Modal Actions Footer */}
           <div className="flex items-center justify-end gap-3 border-t border-neutral-100 pt-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
               disabled={isPending}
-              className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
+              size="default"
               disabled={isPending}
-              className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-5 text-xs font-bold text-white shadow-xs transition hover:bg-neutral-800 disabled:opacity-50"
             >
               {isPending ? (
                 <>
@@ -452,7 +469,7 @@ function CouponCreateDialog({
               ) : (
                 <span>{isEditing ? "Update Coupon" : "Create Coupon"}</span>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

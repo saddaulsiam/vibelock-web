@@ -331,28 +331,29 @@ export function RefundForm({ returnId, action }: { returnId: string; action: Act
   return (
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="returnId" value={returnId} />
-      <input
+      <Input
         name="amount"
         type="number"
         min="0.01"
         step="0.01"
         required
         placeholder="Amount (৳)"
-        className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+        size="default"
       />
-      <input
+      <Input
         name="reason"
         maxLength={500}
         placeholder="Refund reason"
-        className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+        size="default"
       />
-      <button
+      <Button
         type="submit"
+        variant="primary"
+        size="default"
         disabled={pending}
-        className="inline-flex min-h-10 items-center justify-center border border-[#101114] bg-[#101114] px-4 text-sm font-semibold text-white disabled:opacity-60"
       >
         {pending ? "Creating..." : "Create pending refund"}
-      </button>
+      </Button>
       <p className="text-muted-foreground text-xs">
         This creates a pending refund; it does not claim provider success.
       </p>

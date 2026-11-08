@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Minus, Plus, X } from "lucide-react";
 import type { InventoryTransactionType } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 import { COMMON_REASONS } from "./admin-inventory-adjust-modal";
@@ -191,13 +193,14 @@ export function AdminInventoryDetailAdjustModal({
                 >
                   <Minus className="size-4" />
                 </button>
-                <input
+                <Input
                   type="number"
                   step="1"
                   required
                   value={adjustQuantity}
                   onChange={(e) => setAdjustQuantity(parseInt(e.target.value, 10) || 0)}
-                  className="h-9 flex-1 rounded-xs border border-[#101114]/20 text-center font-mono text-base font-bold text-[#101114] outline-none"
+                  size="default"
+                  className="flex-1 text-center font-mono text-base font-bold"
                 />
                 <button
                   type="button"
@@ -227,14 +230,17 @@ export function AdminInventoryDetailAdjustModal({
               <label className="text-xs font-semibold text-[#101114]">
                 Target Physical Stock (Currently: {totalStock})
               </label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={targetQuantity}
-                onChange={(e) => setTargetQuantity(parseInt(e.target.value, 10) || 0)}
-                className="mt-1.5 h-9 w-full rounded-xs border border-[#101114]/20 px-3 font-mono text-base font-bold text-[#101114] outline-none"
-              />
+              <div className="mt-1.5">
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={targetQuantity}
+                  onChange={(e) => setTargetQuantity(parseInt(e.target.value, 10) || 0)}
+                  size="default"
+                  className="font-mono text-base font-bold"
+                />
+              </div>
               <p className="mt-1 text-[11px] text-[#101114]/60">
                 Delta to record:{" "}
                 <strong>{computedDelta > 0 ? `+${computedDelta}` : computedDelta}</strong>
@@ -272,13 +278,13 @@ export function AdminInventoryDetailAdjustModal({
             <label className="mb-1 block text-xs font-semibold text-[#101114]">
               Reason / Audit Note
             </label>
-            <input
+            <Input
               type="text"
               required
               value={adjustReason}
               onChange={(e) => setAdjustReason(e.target.value)}
               placeholder="Explain why this adjustment is being made"
-              className="h-9 w-full rounded-xs border border-[#101114]/20 px-3 text-xs text-[#101114] outline-none"
+              size="default"
             />
 
             {/* Quick Reason Chips */}
@@ -314,21 +320,23 @@ export function AdminInventoryDetailAdjustModal({
 
           {/* Submit Buttons */}
           <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 pt-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
               disabled={isSubmittingAdjust}
-              className="h-9 rounded-xs border border-[#101114]/20 bg-white px-4 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
+              size="default"
               disabled={isSubmittingAdjust}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xs bg-[#101114] px-5 text-xs font-bold text-white shadow-xs hover:bg-[#101114]/85 disabled:opacity-50"
             >
               {isSubmittingAdjust ? "Saving Ledger Entry..." : "Confirm & Save"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

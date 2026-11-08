@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Tag, X, Minus, Plus, Printer } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
 
@@ -147,7 +148,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                   >
                     <Minus className="size-3" />
                   </button>
-                  <input
+                  <Input
                     type="number"
                     min="1"
                     max="500"
@@ -158,7 +159,8 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                         setBarcodeCustomQuantity(Math.min(500, val));
                       }
                     }}
-                    className="h-6 w-12 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                    size="sm"
+                    className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                   />
                   <button
                     type="button"
@@ -295,7 +297,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                         >
                           <Minus className="size-2.5" />
                         </button>
-                        <input
+                        <Input
                           type="number"
                           min="1"
                           max="500"
@@ -309,7 +311,8 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                               }));
                             }
                           }}
-                          className="h-5 w-10 text-center font-mono text-xs font-bold text-[#101114] outline-none"
+                          size="sm"
+                          className="h-6 w-12 px-1 text-center font-mono text-xs font-bold"
                         />
                         <button
                           type="button"

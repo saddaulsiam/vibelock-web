@@ -4,6 +4,8 @@ import * as React from "react";
 import Image from "next/image";
 import { SlidersHorizontal, X, Loader2 } from "lucide-react";
 import type { InventoryTransactionType } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryItem } from "@/lib/admin/inventory/inventory-queries";
 
@@ -215,14 +217,17 @@ export function AdminInventoryAdjustModal({
               </label>
               <span className="text-[10px] text-[#101114]/50">Use (+) to add, (-) to deduct</span>
             </div>
-            <input
-              type="number"
-              step="1"
-              value={adjustQuantity}
-              onChange={(e) => setAdjustQuantity(e.target.value)}
-              placeholder="e.g. 10 or -2"
-              className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 font-mono text-sm font-bold text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                step="1"
+                value={adjustQuantity}
+                onChange={(e) => setAdjustQuantity(e.target.value)}
+                placeholder="e.g. 10 or -2"
+                size="default"
+                className="font-mono text-sm font-bold"
+              />
+            </div>
 
             {/* Quick Preset Buttons */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
@@ -277,13 +282,15 @@ export function AdminInventoryAdjustModal({
             <label className="block text-xs font-semibold text-[#101114]">
               Adjustment Reason <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={adjustReason}
-              onChange={(e) => setAdjustReason(e.target.value)}
-              placeholder="e.g. Factory delivery intake"
-              className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs text-[#101114] outline-none focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
-            />
+            <div className="mt-1">
+              <Input
+                type="text"
+                value={adjustReason}
+                onChange={(e) => setAdjustReason(e.target.value)}
+                placeholder="e.g. Factory delivery intake"
+                size="default"
+              />
+            </div>
             {/* Reason Suggestions */}
             <div className="mt-1.5 flex flex-wrap gap-1">
               {COMMON_REASONS[adjustType].map((reasonText) => (
@@ -302,22 +309,19 @@ export function AdminInventoryAdjustModal({
 
         {/* Modal Footer */}
         <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 font-semibold text-[#101114] hover:bg-[#F3F0E8]"
-          >
+          <Button type="button" variant="outline" size="default" onClick={onClose}>
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="primary"
+            size="default"
             disabled={isSubmittingAdjust || !adjustQuantity}
             onClick={handleExecuteAdjust}
-            className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-1.5 font-semibold text-white transition-colors hover:bg-[#101114]/85 disabled:opacity-50"
           >
             {isSubmittingAdjust ? <Loader2 className="size-3.5 animate-spin" /> : null}
             <span>Record Adjustment</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

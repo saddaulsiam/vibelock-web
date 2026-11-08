@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertTriangle, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { COLOR_HEX } from "./product-form-preview";
 
 export type VariantFormValue = {
@@ -105,9 +107,6 @@ export const COLOR_OPTIONS = [
 
 export const comboKey = (size: string, color: string) =>
   `${size.trim().toLowerCase()}::${color.trim().toLowerCase()}`;
-
-const fieldClass =
-  "min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/35 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export interface ProductVariantGeneratorProps {
   variants: VariantFormValue[];
@@ -371,8 +370,9 @@ export function ProductVariantGenerator({
           })}
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
-          <input
-            className="min-h-9 w-full border border-[#101114]/20 bg-white px-3 text-xs text-[#101114] outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
+          <Input
+            size="default"
+            className="w-full text-xs"
             value={customSize}
             onChange={(e) => setCustomSize(e.target.value)}
             onKeyDown={(e) => {
@@ -383,13 +383,15 @@ export function ProductVariantGenerator({
             }}
             placeholder="Add custom size (e.g. 42, 3XL)"
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={addCustomSize}
-            className="min-h-9 shrink-0 border border-[#101114]/20 bg-[#F9F8F6] px-3 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+            className="shrink-0"
           >
             Add Size
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -438,8 +440,9 @@ export function ProductVariantGenerator({
           })}
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
-          <input
-            className="min-h-9 w-full border border-[#101114]/20 bg-white px-3 text-xs text-[#101114] outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
+          <Input
+            size="default"
+            className="w-full text-xs"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
             onKeyDown={(e) => {
@@ -450,13 +453,15 @@ export function ProductVariantGenerator({
             }}
             placeholder="Add custom color (e.g. Lavender)"
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={addCustomColor}
-            className="min-h-9 shrink-0 border border-[#101114]/20 bg-[#F9F8F6] px-3 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+            className="shrink-0"
           >
             Add Color
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -489,71 +494,81 @@ export function ProductVariantGenerator({
             <label className="text-muted-foreground block text-[11px] font-medium">
               Cost Price (৳)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              value={bulkCostPrice}
-              onChange={(e) => setBulkCostPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={bulkCostPrice}
+                onChange={(e) => setBulkCostPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Selling Price (৳) *
             </label>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              placeholder="0.00"
-              value={bulkSellingPrice}
-              onChange={(e) => setBulkSellingPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                value={bulkSellingPrice}
+                onChange={(e) => setBulkSellingPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Discount Price (৳)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Optional"
-              value={bulkDiscountPrice}
-              onChange={(e) => setBulkDiscountPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Optional"
+                value={bulkDiscountPrice}
+                onChange={(e) => setBulkDiscountPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Initial Stock (Qty)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              placeholder="0"
-              value={bulkStock}
-              onChange={(e) => setBulkStock(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                value={bulkStock}
+                onChange={(e) => setBulkStock(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Weight (kg)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="e.g. 0.40"
-              value={bulkWeight}
-              onChange={(e) => setBulkWeight(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 0.40"
+                value={bulkWeight}
+                onChange={(e) => setBulkWeight(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div className="col-span-2 flex items-end sm:col-span-1 md:col-span-1">
             <button
@@ -670,85 +685,97 @@ export function ProductVariantGenerator({
                         Auto
                       </button>
                     </div>
-                    <input
-                      className={fieldClass}
-                      value={variant.sku}
-                      onChange={(event) => updateVariant(index, "sku", event.target.value)}
-                      maxLength={100}
-                      placeholder={generateSku(productIdentifier, variant.size, variant.color)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        value={variant.sku}
+                        onChange={(event) => updateVariant(index, "sku", event.target.value)}
+                        maxLength={100}
+                        placeholder={generateSku(productIdentifier, variant.size, variant.color)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Cost price (৳)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      required
-                      value={variant.costPrice}
-                      onChange={(event) => updateVariant(index, "costPrice", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        value={variant.costPrice}
+                        onChange={(event) => updateVariant(index, "costPrice", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Selling price (৳) *
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      required
-                      value={variant.sellingPrice}
-                      onChange={(event) => updateVariant(index, "sellingPrice", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        value={variant.sellingPrice}
+                        onChange={(event) => updateVariant(index, "sellingPrice", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Discount price (৳)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Optional"
-                      value={variant.discountPrice}
-                      onChange={(event) =>
-                        updateVariant(index, "discountPrice", event.target.value)
-                      }
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Optional"
+                        value={variant.discountPrice}
+                        onChange={(event) =>
+                          updateVariant(index, "discountPrice", event.target.value)
+                        }
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-[#101114]">
                       Initial Stock (Qty)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="0"
-                      value={variant.stock ?? "0"}
-                      onChange={(event) => updateVariant(index, "stock", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        value={variant.stock ?? "0"}
+                        onChange={(event) => updateVariant(index, "stock", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Weight (kg)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="e.g. 0.40"
-                      value={variant.weight ?? ""}
-                      onChange={(event) => updateVariant(index, "weight", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="e.g. 0.40"
+                        value={variant.weight ?? ""}
+                        onChange={(event) => updateVariant(index, "weight", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
