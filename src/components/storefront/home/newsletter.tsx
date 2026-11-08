@@ -37,7 +37,7 @@ export function Newsletter() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 w-full">
-      <div className="flex h-9 w-11/12 overflow-hidden rounded-brand border border-white/10 sm:w-10/12">
+      <div className="rounded-brand flex h-9 w-11/12 overflow-hidden border border-white/10 sm:w-10/12">
         <Input
           type="email"
           value={email}
@@ -49,17 +49,17 @@ export function Newsletter() {
           aria-label="Email for newsletter"
           variant="dark"
           size="sm"
-          className="min-w-0 flex-1 rounded-none border-0 bg-white/5 text-white placeholder:text-vl-white/35 focus-visible:ring-0"
+          className="placeholder:text-vl-white/35 h-full min-w-0 flex-1 rounded-none border-0 bg-white/5 text-white focus-visible:ring-0"
         />
         <Button
           type="submit"
-          variant="primary"
+          variant="brand"
           size="sm"
           disabled={loading}
           loading={loading}
-          className="bg-vl-cyan text-2xs hover:bg-vl-cyan h-full shrink-0 rounded-none px-4 font-extrabold tracking-wider text-vl-dark-900 uppercase hover:opacity-90"
+          className="text-vl-dark-900 h-full rounded-none font-medium tracking-wider hover:opacity-90"
         >
-          SUBSCRIBE
+          Subscribe
         </Button>
       </div>
       <p className="text-2xs text-vl-white/35 mt-1.5">No spam. Unsubscribe anytime.</p>

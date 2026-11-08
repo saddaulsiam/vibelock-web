@@ -6,6 +6,7 @@ describe("Unified Global Button Component", () => {
   describe("Variants", () => {
     const variants = [
       { name: "primary", expectedClass: "bg-vl-black text-vl-white" },
+      { name: "brand", expectedClass: "bg-vl-cyan text-vl-dark-900" },
       { name: "secondary", expectedClass: "bg-secondary text-secondary-foreground" },
       { name: "outline", expectedClass: "border border-border bg-transparent text-foreground" },
       { name: "ghost", expectedClass: "border-transparent bg-transparent hover:bg-muted" },

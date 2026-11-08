@@ -141,6 +141,10 @@ When modifying existing code or creating new features, follow these rules strict
 ### 🛑 RULE 3: Use UI Primitives First
 - ❌ **Forbidden:** Creating raw `<input>`, `<button>`, `<select>`, `<textarea>` or manual card containers with raw borders.
 - ✅ **Required:** Import from `@/components/ui/` (`Button`, `Input`, `Textarea`, `Card`, `Dialog`, `Table`, `Select`, `Badge`).
+- **Button Variants:**
+  - `variant="primary"`: Obsidian black background (`bg-vl-black`), white text, subtle cyan glow hover.
+  - `variant="brand"`: Electric cyan background (`bg-vl-cyan`), obsidian dark text (`text-vl-dark-900`), cyan glow hover.
+  - `variant="secondary"`, `variant="outline"`, `variant="ghost"`, `variant="destructive"`, `variant="danger"`, `variant="link"`.
 
 ### 🛑 RULE 4: Translucent States Use Tailwind Slash Syntax
 - ❌ **Forbidden:** `rgba(0, 217, 255, 0.2)` in inline styles or bracket classes.
