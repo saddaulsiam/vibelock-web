@@ -132,12 +132,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
               {/* Action Buttons: MY ACCOUNT + Circular Sign Out */}
               <div className="mt-4 flex items-center gap-2">
-                <Button
-                  asChild
-                  variant="primary"
-                  size="default"
-                  className="text-compact flex-1 rounded-full font-bold tracking-[0.12em] uppercase shadow-2xs"
-                >
+                <Button asChild variant="primary" size="default" className="flex-1 rounded-full">
                   <Link href="/account" onClick={() => setIsOpen(false)}>
                     MY ACCOUNT
                   </Link>

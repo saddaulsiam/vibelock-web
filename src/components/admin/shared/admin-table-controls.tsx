@@ -3,6 +3,7 @@
 import * as React from "react";
 import { RotateCcw, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export interface AdminTableTabItem<T extends string = string> {
   key: T;
@@ -80,7 +81,7 @@ export function AdminTableSearchInput({
   return (
     <div className={cn("relative max-w-lg flex-1", className)}>
       <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-      <input
+      <Input
         ref={inputRef}
         type="text"
         value={value}
@@ -89,7 +90,8 @@ export function AdminTableSearchInput({
         autoComplete="off"
         spellCheck={false}
         suppressHydrationWarning
-        className="h-10 w-full rounded-lg border border-neutral-200 bg-white pr-10 pl-9 text-xs text-[#101114] transition-colors outline-none placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        size="default"
+        className="pr-10 pl-9"
       />
       {value ? (
         <button

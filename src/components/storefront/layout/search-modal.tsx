@@ -5,6 +5,7 @@ import { ImageOff, Loader2, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
@@ -194,14 +195,16 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 aria-hidden="true"
               />
 
-              <input
+              <Input
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder="Search drops..."
                 aria-label="Search drops"
-                className="border-vl-cyan/60 focus:border-vl-cyan focus:ring-vl-cyan/30 h-10 w-full rounded-full border bg-white pr-9 pl-9 text-sm text-gray-900 transition-all placeholder:text-gray-400 focus:ring-2 focus:outline-none"
+                variant="brand"
+                size="default"
+                className="h-10 w-full rounded-full border-vl-cyan/60 pr-9 pl-9 text-sm text-gray-900 placeholder:text-gray-400"
               />
 
               {/* Clear button (X) */}

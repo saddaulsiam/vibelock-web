@@ -5,6 +5,7 @@ import type { DiscountType } from "@prisma/client";
 import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar, Layers } from "lucide-react";
 
@@ -45,9 +46,6 @@ export function CouponForm({
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
     coupon?.categories?.map((c) => c.id) ?? []
   );
-
-  const inputClass =
-    "mt-1.5 flex h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-xs text-neutral-900 placeholder:text-neutral-400 outline-none transition hover:border-neutral-300 focus:border-[#101114] focus:ring-1 focus:ring-[#101114]";
 
   const dateValue = (value: Date | null | undefined) => {
     if (!value) return "";
@@ -111,14 +109,17 @@ export function CouponForm({
               </button>
             )}
           </div>
-          <input
-            name="code"
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            className={`${inputClass} font-mono font-bold tracking-wider uppercase`}
-            placeholder="e.g. VIP20 or SUMMER15"
-          />
+          <div className="mt-1.5">
+            <Input
+              name="code"
+              required
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              size="default"
+              className="font-mono font-bold tracking-wider uppercase"
+              placeholder="e.g. VIP20 or SUMMER15"
+            />
+          </div>
         </div>
 
         {/* Discount Type */}
@@ -143,17 +144,19 @@ export function CouponForm({
           <label className="text-xs font-bold text-neutral-700">
             Discount Value * ({discountType === "PERCENTAGE" ? "%" : "৳"})
           </label>
-          <input
-            name="discountValue"
-            required
-            type="number"
-            min="0.01"
-            max={discountType === "PERCENTAGE" ? "100" : undefined}
-            step="0.01"
-            value={discountValue}
-            onChange={(e) => setDiscountValue(e.target.value)}
-            className={inputClass}
-          />
+          <div className="mt-1.5">
+            <Input
+              name="discountValue"
+              required
+              type="number"
+              min="0.01"
+              max={discountType === "PERCENTAGE" ? "100" : undefined}
+              step="0.01"
+              value={discountValue}
+              onChange={(e) => setDiscountValue(e.target.value)}
+              size="default"
+            />
+          </div>
         </div>
 
         {/* Min Order Value */}
@@ -161,15 +164,17 @@ export function CouponForm({
           <label className="text-xs font-bold text-neutral-700">
             Minimum Order Value (৳) (Optional)
           </label>
-          <input
-            name="minOrderValue"
-            type="number"
-            min="0"
-            step="0.01"
-            defaultValue={coupon?.minOrderValue?.toString() ?? ""}
-            placeholder="e.g. 1500 (No minimum if empty)"
-            className={inputClass}
-          />
+          <div className="mt-1.5">
+            <Input
+              name="minOrderValue"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={coupon?.minOrderValue?.toString() ?? ""}
+              placeholder="e.g. 1500 (No minimum if empty)"
+              size="default"
+            />
+          </div>
         </div>
 
         {/* Usage Limit */}
@@ -177,15 +182,17 @@ export function CouponForm({
           <label className="text-xs font-bold text-neutral-700">
             Usage Limit (Max Redemptions) (Optional)
           </label>
-          <input
-            name="usageLimit"
-            type="number"
-            min={coupon?.usageLimit ?? 1}
-            step="1"
-            defaultValue={coupon?.usageLimit ?? ""}
-            placeholder="e.g. 50 (Unlimited if empty)"
-            className={inputClass}
-          />
+          <div className="mt-1.5">
+            <Input
+              name="usageLimit"
+              type="number"
+              min={coupon?.usageLimit ?? 1}
+              step="1"
+              defaultValue={coupon?.usageLimit ?? ""}
+              placeholder="e.g. 50 (Unlimited if empty)"
+              size="default"
+            />
+          </div>
         </div>
 
         {/* Active Toggle */}
@@ -211,12 +218,14 @@ export function CouponForm({
             <Calendar className="size-3 text-neutral-500" />
             <span>Start Date &amp; Time (Optional)</span>
           </label>
-          <input
-            name="startDate"
-            type="datetime-local"
-            defaultValue={dateValue(coupon?.startDate)}
-            className={inputClass}
-          />
+          <div className="mt-1.5">
+            <Input
+              name="startDate"
+              type="datetime-local"
+              defaultValue={dateValue(coupon?.startDate)}
+              size="default"
+            />
+          </div>
         </div>
 
         {/* End Date */}
@@ -225,12 +234,14 @@ export function CouponForm({
             <Calendar className="size-3 text-neutral-500" />
             <span>Expiry Date &amp; Time (Optional)</span>
           </label>
-          <input
-            name="endDate"
-            type="datetime-local"
-            defaultValue={dateValue(coupon?.endDate)}
-            className={inputClass}
-          />
+          <div className="mt-1.5">
+            <Input
+              name="endDate"
+              type="datetime-local"
+              defaultValue={dateValue(coupon?.endDate)}
+              size="default"
+            />
+          </div>
         </div>
       </div>
 

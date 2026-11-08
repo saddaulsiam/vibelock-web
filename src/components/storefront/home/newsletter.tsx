@@ -4,6 +4,7 @@ import { useState } from "react";
 import { subscribeNewsletterAction } from "@/app/actions/newsletter";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -36,8 +37,8 @@ export function Newsletter() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 w-full">
-      <div className="flex h-9 w-11/12 overflow-hidden rounded-sm border border-white/10 sm:w-10/12">
-        <input
+      <div className="flex h-9 w-11/12 overflow-hidden rounded-brand border border-white/10 sm:w-10/12">
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -46,7 +47,9 @@ export function Newsletter() {
           suppressHydrationWarning
           autoComplete="email"
           aria-label="Email for newsletter"
-          className="placeholder:text-vl-white/35 min-w-0 flex-1 bg-white/5 px-3 text-xs text-white focus:outline-none"
+          variant="dark"
+          size="sm"
+          className="min-w-0 flex-1 rounded-none border-0 bg-white/5 text-white placeholder:text-vl-white/35 focus-visible:ring-0"
         />
         <Button
           type="submit"

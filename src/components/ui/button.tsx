@@ -43,8 +43,7 @@ const buttonVariants = cva(
          * link — Transparent, borderless, text-based appearance.
          * Inline actions and navigation links.
          */
-        link:
-          "text-primary underline-offset-4 hover:underline border-transparent bg-transparent shadow-none font-normal normal-case tracking-normal",
+        link: "text-primary underline-offset-4 hover:underline border-transparent bg-transparent shadow-none font-normal normal-case tracking-normal",
         /**
          * danger — Solid red background, white text.
          * High-contrast permanent deletion and critical actions.
@@ -58,15 +57,13 @@ const buttonVariants = cva(
         /** sm — 32px small controls (filters, table actions, small pills) */
         sm: "h-8 gap-1.5 px-3 text-xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3.5",
         /** default — 40px standard actions (inputs, forms, admin, dialogs) */
-        default:
-          "h-10 gap-2 px-4 text-xs font-bold tracking-wider",
+        default: "h-10 gap-2 px-4 text-xs font-bold tracking-wider",
         /** lg — 48px prominent storefront CTAs (Add to cart, Checkout, Place Order, Hero) */
         lg: "h-12 gap-2.5 px-6 text-xs font-black tracking-widest",
         /** xl — alias to 48px prominent action */
         xl: "h-12 gap-2.5 px-6 text-xs font-black tracking-widest",
         /** 2xl — alias to 48px prominent action */
-        "2xl":
-          "h-12 gap-2.5 px-6 text-xs font-black tracking-widest",
+        "2xl": "h-12 gap-2.5 px-6 text-xs font-black tracking-widest",
         /** icon — 32px icon actions */
         icon: "size-8",
         /** icon-xs — 24px compact icon */

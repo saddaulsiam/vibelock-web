@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { CategorySearchableSelect } from "./category-select";
 import { saveCategoryAction } from "@/lib/admin/catalog/catalog-actions";
 
@@ -163,9 +165,6 @@ export function CategoryForm({
     toast.info("Image marked for removal on save.");
   };
 
-  const fieldClass =
-    "mt-1.5 min-h-11 w-full rounded-sm border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
-
   return (
     <AdminSaveForm
       action={async (state, formData) => {
@@ -220,17 +219,19 @@ export function CategoryForm({
                 *
               </span>
             </label>
-            <input
-              id="category-name"
-              className={fieldClass}
-              name="name"
-              required
-              maxLength={120}
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Oversized Heavyweight Hoodies"
-              autoComplete="off"
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-name"
+                name="name"
+                required
+                maxLength={120}
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="e.g. Oversized Heavyweight Hoodies"
+                autoComplete="off"
+                size="default"
+              />
+            </div>
           </div>
 
           {/* Category Slug with Auto-Sync & Manual Edit */}
@@ -259,16 +260,19 @@ export function CategoryForm({
                 </button>
               </div>
             </div>
-            <input
-              id="category-slug"
-              className={`${fieldClass} font-mono text-xs`}
-              name="slug"
-              maxLength={160}
-              value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="e.g. oversized-heavyweight-hoodies"
-              autoComplete="off"
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-slug"
+                name="slug"
+                maxLength={160}
+                value={slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="e.g. oversized-heavyweight-hoodies"
+                autoComplete="off"
+                size="default"
+                className="font-mono text-xs"
+              />
+            </div>
             <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
               <Globe className="size-3.5 text-[#101114]/40" />
               <span>Preview:</span>
@@ -309,18 +313,20 @@ export function CategoryForm({
                 ))}
               </div>
             </div>
-            <textarea
-              id="category-description"
-              className={`${fieldClass} min-h-24 resize-y`}
-              name="description"
-              maxLength={1000}
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setIsDirty(true);
-              }}
-              placeholder="Enter a compelling description for catalog listing and search engine optimization..."
-            />
+            <div className="mt-1.5">
+              <Textarea
+                id="category-description"
+                name="description"
+                maxLength={1000}
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setIsDirty(true);
+                }}
+                placeholder="Enter a compelling description for catalog listing and search engine optimization..."
+                size="default"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -437,20 +443,22 @@ export function CategoryForm({
             >
               Public Image URL (HTTPS or Cloudinary CDN)
             </label>
-            <input
-              id="category-image-url"
-              type="url"
-              name="imageUrl"
-              value={externalUrl}
-              onChange={(e) => {
-                setExternalUrl(e.target.value);
-                setPreviewUrl(e.target.value.trim() || null);
-                setIsRemoved(false);
-                setIsDirty(true);
-              }}
-              placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-image-url"
+                type="url"
+                name="imageUrl"
+                value={externalUrl}
+                onChange={(e) => {
+                  setExternalUrl(e.target.value);
+                  setPreviewUrl(e.target.value.trim() || null);
+                  setIsRemoved(false);
+                  setIsDirty(true);
+                }}
+                placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
+                size="default"
+              />
+            </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Directly links an external CDN image without re-uploading.
             </p>
@@ -504,18 +512,20 @@ export function CategoryForm({
             <label className="mb-1.5 block text-sm font-medium text-[#101114]">
               Display Priority (Sort Order)
             </label>
-            <input
-              type="number"
-              name="sortOrder"
-              value={sortOrder}
-              onChange={(e) => {
-                setSortOrder(Number(e.target.value));
-                setIsDirty(true);
-              }}
-              min="0"
-              className={fieldClass}
-              placeholder="0"
-            />
+            <div className="mt-1.5">
+              <Input
+                type="number"
+                name="sortOrder"
+                value={sortOrder}
+                onChange={(e) => {
+                  setSortOrder(Number(e.target.value));
+                  setIsDirty(true);
+                }}
+                min="0"
+                size="default"
+                placeholder="0"
+              />
+            </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Lower numbers appear first in the navigation menu (0, 1, 2...).
             </p>
@@ -643,23 +653,25 @@ export function CategoryForm({
               )}
             </div>
           </div>
-          <input
-            id="category-meta-title"
-            className={`${fieldClass} mt-1`}
-            name="metaTitle"
-            maxLength={100}
-            value={metaTitle}
-            onChange={(e) => {
-              setMetaTitle(e.target.value);
-              setIsDirty(true);
-            }}
-            placeholder={
-              name.trim()
-                ? `${name.trim()} | VibeLock`
-                : "e.g. Oversized Graphic Tees | VibeLock Dhaka"
-            }
-            autoComplete="off"
-          />
+          <div className="mt-1">
+            <Input
+              id="category-meta-title"
+              name="metaTitle"
+              maxLength={100}
+              value={metaTitle}
+              onChange={(e) => {
+                setMetaTitle(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder={
+                name.trim()
+                  ? `${name.trim()} | VibeLock`
+                  : "e.g. Oversized Graphic Tees | VibeLock Dhaka"
+              }
+              autoComplete="off"
+              size="default"
+            />
+          </div>
           <p className="text-muted-foreground mt-1 text-xs">
             Recommended length: 50–60 characters. Displayed as the primary clickable headline in
             search engines.
@@ -700,18 +712,20 @@ export function CategoryForm({
               )}
             </div>
           </div>
-          <textarea
-            id="category-meta-desc"
-            className={`${fieldClass} mt-1 min-h-20 resize-y`}
-            name="metaDescription"
-            maxLength={300}
-            value={metaDescription}
-            onChange={(e) => {
-              setMetaDescription(e.target.value);
-              setIsDirty(true);
-            }}
-            placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
-          />
+          <div className="mt-1">
+            <Textarea
+              id="category-meta-desc"
+              name="metaDescription"
+              maxLength={300}
+              value={metaDescription}
+              onChange={(e) => {
+                setMetaDescription(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
+              size="sm"
+            />
+          </div>
           <p className="text-muted-foreground mt-1 text-xs">
             Recommended length: 120–160 characters. A concise summary shown beneath the page title
             in search results.

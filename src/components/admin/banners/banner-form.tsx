@@ -9,6 +9,7 @@ import { BannerPlacement } from "@prisma/client";
 import { toast } from "sonner";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import { saveBannerAction, type BannerActionState } from "@/lib/admin/banners/banner-actions";
 
@@ -41,9 +42,6 @@ const DESTINATION_PRESETS = [
   { label: "Cargo Pants", url: "/category/pants" },
   { label: "Sale Items", url: "/products?sort=sale" },
 ];
-
-const fieldClass =
-  "mt-1.5 min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export function BannerForm({
   banner,
@@ -257,17 +255,19 @@ export function BannerForm({
                 {title.length} / 120 chars
               </span>
             </div>
-            <input
-              id="banner-title"
-              name="title"
-              required
-              minLength={2}
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Winter 2026 Heavyweight Collection"
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="banner-title"
+                name="title"
+                required
+                minLength={2}
+                maxLength={120}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Winter 2026 Heavyweight Collection"
+                size="default"
+              />
+            </div>
 
             {/* Quick Title Presets */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -303,14 +303,16 @@ export function BannerForm({
                 </a>
               )}
             </div>
-            <input
-              id="banner-link"
-              name="linkUrl"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="/products or /category/t-shirts or https://..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="banner-link"
+                name="linkUrl"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="/products or /category/t-shirts or https://..."
+                size="default"
+              />
+            </div>
 
             {/* Destination Presets */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -366,17 +368,19 @@ export function BannerForm({
               >
                 Sort Order Priority
               </label>
-              <input
-                id="banner-sort-order"
-                name="sortOrder"
-                type="number"
-                min={-99999}
-                max={99999}
-                step="1"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
-                className={fieldClass}
-              />
+              <div className="mt-1.5">
+                <Input
+                  id="banner-sort-order"
+                  name="sortOrder"
+                  type="number"
+                  min={-99999}
+                  max={99999}
+                  step="1"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
+                  size="default"
+                />
+              </div>
               <p className="text-muted-foreground mt-1 text-[11px]">
                 Lower numbers (e.g. 0, 1) take display priority over higher numbers.
               </p>
@@ -497,16 +501,18 @@ export function BannerForm({
             <label className="block text-xs font-semibold text-[#101114]">
               Direct Image URL (Cloudinary)
             </label>
-            <input
-              type="url"
-              value={desktopUrl}
-              onChange={(e) => {
-                setDesktopUrl(e.target.value);
-                setDesktopPreview(e.target.value || null);
-              }}
-              placeholder="https://res.cloudinary.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                type="url"
+                value={desktopUrl}
+                onChange={(e) => {
+                  setDesktopUrl(e.target.value);
+                  setDesktopPreview(e.target.value || null);
+                }}
+                placeholder="https://res.cloudinary.com/..."
+                size="default"
+              />
+            </div>
             <span className="text-muted-foreground mt-1 block text-xs">
               Paste a secure Cloudinary image URL.
             </span>
@@ -617,16 +623,18 @@ export function BannerForm({
             <label className="block text-xs font-semibold text-[#101114]">
               Mobile Image URL (Cloudinary)
             </label>
-            <input
-              type="url"
-              value={mobileUrl}
-              onChange={(e) => {
-                setMobileUrl(e.target.value);
-                setMobilePreview(e.target.value || null);
-              }}
-              placeholder="https://res.cloudinary.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                type="url"
+                value={mobileUrl}
+                onChange={(e) => {
+                  setMobileUrl(e.target.value);
+                  setMobilePreview(e.target.value || null);
+                }}
+                placeholder="https://res.cloudinary.com/..."
+                size="default"
+              />
+            </div>
             <span className="text-muted-foreground mt-1 block text-xs">
               Optional mobile-specific Cloudinary image URL.
             </span>

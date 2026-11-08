@@ -609,11 +609,13 @@ export function CheckoutForm({
                   </Label>
                   <Input
                     id="shippingCountry"
+                    variant="brand"
+                    size="lg"
                     readOnly
                     value="Bangladesh"
                     tabIndex={-1}
                     aria-readonly="true"
-                    className="border-vl-black/20 text-vl-black/70 focus-visible:border-vl-black/20 h-11 cursor-not-allowed rounded-xs bg-neutral-100/70 px-3.5 text-sm font-medium select-none focus-visible:ring-0"
+                    className="text-vl-black/70 cursor-not-allowed bg-neutral-100/70 select-none focus-visible:ring-0"
                   />
                 </div>
 
@@ -820,11 +822,12 @@ export function CheckoutForm({
                     </div>
                     <Input
                       id="customerEmail"
+                      variant="brand"
+                      size="lg"
                       type="email"
                       value={customerEmail}
                       onChange={(e) => setCustomerEmail(e.target.value)}
                       placeholder="your.email@example.com"
-                      className="border-vl-black/20 h-10 rounded-xs bg-white text-xs"
                     />
                   </div>
                 )}

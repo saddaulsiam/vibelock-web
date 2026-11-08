@@ -25,6 +25,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { NativeSelect } from "@/components/ui/select-native";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 
 interface AdminReviewsTableProps {
@@ -134,13 +135,14 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
       {/* Filter & Search Bar */}
       <div className="flex flex-col gap-3 rounded-xl border border-[#101114]/10 bg-white p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         <form onSubmit={handleSearchSubmit} className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-[#101114]/40" />
-          <input
+          <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-[#101114]/40" />
+          <Input
             type="search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by product, customer name, email, or comment..."
-            className="w-full rounded-md border border-[#101114]/15 bg-white py-2 pr-3 pl-9 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
+            size="default"
+            className="pl-9"
           />
         </form>
 
