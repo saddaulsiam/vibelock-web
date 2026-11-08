@@ -14,8 +14,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
 
 function money(value: number | null | undefined): string {
@@ -197,47 +199,55 @@ export default async function AdminReconciliationPage({
       >
         <label className="text-sm font-medium">
           Cohort Period
-          <select
-            name="range"
-            defaultValue={range}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-40"
-          >
-            {ranges.map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="range"
+              defaultValue={range}
+              size="default"
+              className="w-full lg:w-40"
+            >
+              {ranges.map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         <label className="text-sm font-medium">
           From
-          <Input name="from" type="date" defaultValue={from} className="mt-2" />
+          <Input name="from" type="date" defaultValue={from} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           To
-          <Input name="to" type="date" defaultValue={to} className="mt-2" />
+          <Input name="to" type="date" defaultValue={to} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           Classification
-          <select
-            name="classification"
-            defaultValue={classification ?? "all"}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-56"
-          >
-            {classificationOptions.map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="classification"
+              defaultValue={classification ?? "all"}
+              size="default"
+              className="w-full lg:w-56"
+            >
+              {classificationOptions.map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         {search ? <input type="hidden" name="q" value={search} /> : null}
-        <button
-          className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85"
+        <Button
           type="submit"
+          variant="primary"
+          size="default"
+          className="mt-auto"
         >
           Apply
-        </button>
+        </Button>
         <p className="text-muted-foreground col-span-full text-xs">
           Date filters select orders placed within the window to reconcile their complete lifecycle
           (gateway captures, refunds, and courier deliveries).

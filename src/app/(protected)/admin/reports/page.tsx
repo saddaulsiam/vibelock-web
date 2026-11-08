@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BarChart3, CreditCard, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import { ReportCharts, ReportExportMenu } from "@/components/admin/reports";
 
 import { ProductProfitabilityDrilldown } from "@/components/admin/products";
@@ -110,34 +112,39 @@ export default async function AdminReportsPage({
       <form className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto]">
         <label className="text-sm font-medium">
           Period
-          <select
-            name="range"
-            defaultValue={range}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-44"
-          >
-            {ranges.map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="range"
+              defaultValue={range}
+              size="default"
+              className="w-full lg:w-44"
+            >
+              {ranges.map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         <label className="text-sm font-medium">
           From
-          <Input name="from" type="date" defaultValue={from} className="mt-2" />
+          <Input name="from" type="date" defaultValue={from} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           To
-          <Input name="to" type="date" defaultValue={to} className="mt-2" />
+          <Input name="to" type="date" defaultValue={to} className="mt-2" size="default" />
         </label>
         {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
         {value("q") ? <input type="hidden" name="q" value={value("q")!} /> : null}
-        <button
-          className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85"
+        <Button
           type="submit"
+          variant="primary"
+          size="default"
+          className="mt-auto"
         >
           Apply
-        </button>
+        </Button>
       </form>
 
       <section>

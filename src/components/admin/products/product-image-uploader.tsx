@@ -4,6 +4,8 @@ import * as React from "react";
 import Image from "next/image";
 import { Globe, ImagePlus, Star, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export type ProductImageItem = {
   id: string;
@@ -222,9 +224,6 @@ export function ProductImageUploader({
     return images.filter((i) => !i.file).map((i) => i.url);
   }, [images]);
 
-  const fieldClass =
-    "mt-1.5 min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
-
   return (
     <fieldset className="space-y-4 border border-[#101114]/15 bg-[#FBF9F5] p-4 sm:p-5">
       {/* Hidden inputs to feed formData */}
@@ -298,21 +297,24 @@ export function ProductImageUploader({
         <div className="space-y-2">
           <label className="block text-xs font-semibold text-[#101114]">
             Paste Image URLs (One URL per line)
-            <textarea
-              className={`${fieldClass} min-h-24 resize-y font-mono text-xs`}
-              value={externalUrlText}
-              onChange={(e) => setExternalUrlText(e.target.value)}
-              placeholder="https://res.cloudinary.com/.../front.webp&#10;https://res.cloudinary.com/.../back.webp"
-            />
+            <div className="mt-1.5">
+              <Textarea
+                className="min-h-24 resize-y font-mono text-xs"
+                value={externalUrlText}
+                onChange={(e) => setExternalUrlText(e.target.value)}
+                placeholder="https://res.cloudinary.com/.../front.webp&#10;https://res.cloudinary.com/.../back.webp"
+              />
+            </div>
           </label>
           <div className="flex justify-end">
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handleAddExternalUrls}
-              className="inline-flex h-9 items-center border border-[#101114] bg-[#101114] px-3.5 text-xs font-medium text-[#F3F0E8] transition-colors hover:bg-black/85"
             >
               Add to gallery
-            </button>
+            </Button>
           </div>
         </div>
       )}

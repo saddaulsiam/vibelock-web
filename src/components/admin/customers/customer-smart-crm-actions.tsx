@@ -11,6 +11,8 @@ import {
   X,
 } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SmartCrmCustomer {
   id: string;
@@ -239,31 +241,34 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
               <label className="text-xs font-semibold text-neutral-700">
                 Message Preview (You can edit before sending):
               </label>
-              <textarea
+              <Textarea
                 rows={6}
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
-                className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs leading-relaxed text-neutral-900 focus:border-neutral-900 focus:bg-white focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                className="text-xs leading-relaxed"
               />
             </div>
 
             {/* Footer Buttons */}
             <div className="mt-5 flex items-center justify-end gap-2 border-t border-neutral-100 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="default"
                 onClick={() => setSelectedTemplate(null)}
-                className="rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="primary"
+                size="default"
                 onClick={handleSendWhatsApp}
-                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-emerald-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 <Send className="size-3.5" />
                 <span>Open in WhatsApp</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -13,7 +13,9 @@ import {
 import * as React from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface CancellationReasonOption {
   id: string;
@@ -93,10 +95,11 @@ function CancelSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
+      variant="danger"
+      size="default"
       disabled={pending}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 active:scale-95 disabled:opacity-50"
     >
       {pending ? (
         <>
@@ -109,7 +112,7 @@ function CancelSubmitButton() {
           <span>Confirm Cancellation</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -267,13 +270,13 @@ function OrderCancelModalContent({
             >
               Additional Staff Notes (Optional)
             </label>
-            <textarea
+            <Textarea
               id="cancel-custom-note"
               rows={2}
               value={customNote}
               onChange={(e) => setCustomNote(e.target.value)}
               placeholder="e.g., Called customer 3 times with no response, customer requested size exchange..."
-              className="w-full rounded-xl border border-neutral-300 bg-white p-2.5 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+              className="text-xs"
             />
           </div>
 
@@ -289,13 +292,14 @@ function OrderCancelModalContent({
 
           {/* ── Action Buttons ── */}
           <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
-              className="h-10 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
             >
               Keep Order
-            </button>
+            </Button>
             <CancelSubmitButton />
           </div>
         </form>

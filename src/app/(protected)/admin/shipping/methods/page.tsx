@@ -3,6 +3,7 @@ import { CheckCircle2, Coins, Edit, MapPin, Plus, RotateCcw, Truck } from "lucid
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ShippingSubNav, ToggleShippingMethodForm } from "@/components/admin/shipping";
+import { NativeSelect } from "@/components/ui/select-native";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import { getAdminShippingMethods, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
 
@@ -87,11 +88,12 @@ export default async function ShippingMethodsPage({
       {/* ── Filter Form ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form method="get" className="flex flex-wrap items-center gap-2.5">
-          <select
+          <NativeSelect
             name="zoneId"
             defaultValue={query.zoneId ?? ""}
-            className={ADMIN_TABLE_CLASSES.select}
+            size="default"
             aria-label="Filter by delivery zone"
+            className="w-auto"
           >
             <option value="">All Delivery Zones</option>
             {zones.map((zone) => (
@@ -99,18 +101,19 @@ export default async function ShippingMethodsPage({
                 {zone.name}
               </option>
             ))}
-          </select>
+          </NativeSelect>
 
-          <select
+          <NativeSelect
             name="active"
             defaultValue={query.active ?? ""}
-            className={ADMIN_TABLE_CLASSES.select}
+            size="default"
             aria-label="Filter by active status"
+            className="w-auto"
           >
             <option value="">All Statuses</option>
             <option value="true">Active Only</option>
             <option value="false">Inactive Only</option>
-          </select>
+          </NativeSelect>
 
           <button type="submit" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
             Filter

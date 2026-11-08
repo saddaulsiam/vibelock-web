@@ -13,6 +13,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { addOrderNoteAction } from "@/lib/admin/orders/order-actions";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface OrderHistoryEntry {
   id: string;
@@ -155,12 +157,12 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
       {/* ── Add Note Composer Box ── */}
       <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-3.5">
         <form onSubmit={handleSubmit} className="space-y-2.5">
-          <textarea
+          <Textarea
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             rows={2}
             placeholder="Write an internal note for the team (e.g., customer called, size change, evening delivery requested)..."
-            className="w-full resize-y rounded-lg border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+            className="text-xs"
             disabled={isSubmitting}
           />
 
@@ -202,10 +204,11 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
               <span className="text-[11px] text-neutral-400">Visible only to team members</span>
             )}
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="sm"
               disabled={isSubmitting || !noteText.trim()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -218,7 +221,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                   <span>Post Note</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
