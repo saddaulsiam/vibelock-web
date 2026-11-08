@@ -2,8 +2,18 @@
 
 import { bulkAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { InventoryTransactionType } from "@prisma/client";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 interface AdminInventoryBulkAdjustModalProps {
   isOpen: boolean;
@@ -23,8 +33,6 @@ export function AdminInventoryBulkAdjustModal({
   const [bulkAdjustReason, setBulkAdjustReason] = React.useState<string>("Bulk factory restock");
   const [isSubmittingBulkAdjust, setIsSubmittingBulkAdjust] = React.useState(false);
 
-  if (!isOpen) return null;
-
   const handleExecuteBulkAdjust = async () => {
     if (selectedIds.size === 0 || isSubmittingBulkAdjust) return;
     const qty = parseInt(bulkAdjustQuantity, 10);
@@ -38,98 +46,96 @@ export function AdminInventoryBulkAdjustModal({
       const res = await bulkAdjustInventoryAction({
         variantIds: Array.from(selectedIds),
         quantity: qty,
-        reason: bulkAdjustReason.trim() || "Bulk inventory adjustment",
         type: bulkAdjustType,
+        reason: bulkAdjustReason || "Bulk stock operation",
       });
 
-      if (res.error) {
-        alert(res.error);
-      } else {
-        onSuccess(res.message || "Bulk adjustment completed.");
+      if (!res.error) {
+        onSuccess(
+          `Successfully applied ${bulkAdjustType} of ${qty} units across ${selectedIds.size} variants.`
+        );
         onClose();
+      } else {
+        alert(res.error || "Bulk update failed.");
       }
     } catch {
-      alert("Bulk adjustment failed.");
+      alert("An unexpected error occurred during bulk operation.");
     } finally {
       setIsSubmittingBulkAdjust(false);
     }
   };
 
   return (
-    <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
-      <div className="w-full max-w-md rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
-          <h3 className="text-sm font-semibold text-[#101114]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent variant="brand" size="default">
+        <DialogHeader>
+          <DialogTitle>
             Bulk Restock ({selectedIds.size} variants selected)
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded p-1 text-[#101114]/40 hover:text-[#101114]"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+          </DialogTitle>
+        </DialogHeader>
 
-        <div className="space-y-4 p-5 text-xs">
-          <div>
-            <label className="block font-semibold text-[#101114]">Type</label>
-            <select
+        <div className="space-y-4 py-2 text-xs">
+          <div className="space-y-1.5">
+            <Label className="font-semibold text-[#101114]">Type</Label>
+            <NativeSelect
               value={bulkAdjustType}
               onChange={(e) => setBulkAdjustType(e.target.value as InventoryTransactionType)}
-              className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114]"
+              size="default"
             >
               <option value="RESTOCK">Restock (Add stock)</option>
               <option value="ADJUSTMENT">Audit Count Adjustment</option>
               <option value="DAMAGE">Damage write-off (Deduct stock)</option>
-            </select>
+            </NativeSelect>
           </div>
 
-          <div>
-            <label className="block font-semibold text-[#101114]">
+          <div className="space-y-1.5">
+            <Label className="font-semibold text-[#101114]">
               Quantity to apply to each variant
-            </label>
-            <input
+            </Label>
+            <Input
               type="number"
               step="1"
               value={bulkAdjustQuantity}
               onChange={(e) => setBulkAdjustQuantity(e.target.value)}
               placeholder="e.g. 10"
-              className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 font-mono text-sm font-bold text-[#101114]"
+              size="default"
+              className="font-mono font-bold"
             />
           </div>
 
-          <div>
-            <label className="block font-semibold text-[#101114]">Reason</label>
-            <input
+          <div className="space-y-1.5">
+            <Label className="font-semibold text-[#101114]">Reason</Label>
+            <Input
               type="text"
               value={bulkAdjustReason}
               onChange={(e) => setBulkAdjustReason(e.target.value)}
               placeholder="e.g. Bulk seasonal delivery intake"
-              className="mt-1 h-9 w-full rounded-sm border border-[#101114]/20 bg-white px-3 text-xs text-[#101114]"
+              size="default"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
-          <button
+        <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 px-5 py-3.5 rounded-b-2xl">
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
-            className="rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 font-semibold text-[#101114] hover:bg-[#F3F0E8]"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             disabled={isSubmittingBulkAdjust || !bulkAdjustQuantity}
             onClick={handleExecuteBulkAdjust}
-            className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-1.5 font-semibold text-white transition-colors hover:bg-[#101114]/85 disabled:opacity-50"
           >
-            {isSubmittingBulkAdjust ? <Loader2 className="size-3.5 animate-spin" /> : null}
+            {isSubmittingBulkAdjust && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
             <span>Apply Bulk Adjustment</span>
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -12,6 +12,16 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 function formatDate(dateInput: Date | string) {
   const d = new Date(dateInput);
@@ -154,110 +164,107 @@ export function AdminInventoryDetailLedger({
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[#101114]/10 bg-[#F3F0E8]/50 text-[11px] font-semibold text-[#101114]/70">
-              <tr>
-                <th className="py-3 pr-3 pl-5">Event Type</th>
-                <th className="px-3 py-3">Channel</th>
-                <th className="px-3 py-3 text-right">Quantity Delta</th>
-                <th className="px-3 py-3">Reference ID</th>
-                <th className="px-3 py-3">Notes & Reason</th>
-                <th className="py-3 pr-5 pl-3 text-right">Date & Time</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#101114]/5">
-              {transactions.map((tx) => {
-                const isPositive = tx.quantity > 0;
-                return (
-                  <tr key={tx.id} className="transition-colors hover:bg-[#F3F0E8]/30">
-                    {/* Type Badge */}
-                    <td className="py-3 pr-3 pl-5">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-xs px-2 py-0.5 text-[11px] font-bold ${
-                          tx.type === "RESTOCK"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : tx.type === "SALE"
-                              ? "bg-blue-100 text-blue-800"
-                              : tx.type === "DAMAGE"
-                                ? "bg-rose-100 text-rose-800"
-                                : tx.type === "RETURN"
-                                  ? "bg-amber-100 text-amber-800"
-                                  : "bg-purple-100 text-purple-800"
-                        }`}
-                      >
-                        {tx.type === "RESTOCK" && <PackagePlus className="size-3" />}
-                        {tx.type === "SALE" && <PackageMinus className="size-3" />}
-                        {tx.type === "DAMAGE" && <PackageX className="size-3" />}
-                        {tx.type === "RETURN" && <RotateCcw className="size-3" />}
-                        {tx.type === "ADJUSTMENT" && <SlidersHorizontal className="size-3" />}
-                        <span>{tx.type}</span>
-                      </span>
-                    </td>
+        <Table hideContainer>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="py-3 pr-3 pl-5">Event Type</TableHead>
+              <TableHead className="px-3 py-3">Channel</TableHead>
+              <TableHead className="px-3 py-3 text-right">Quantity Delta</TableHead>
+              <TableHead className="px-3 py-3">Reference ID</TableHead>
+              <TableHead className="px-3 py-3">Notes & Reason</TableHead>
+              <TableHead className="py-3 pr-5 pl-3 text-right">Date & Time</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transactions.map((tx) => {
+              const isPositive = tx.quantity > 0;
+              const badgeVariant =
+                tx.type === "RESTOCK"
+                  ? "success"
+                  : tx.type === "SALE"
+                    ? "brand"
+                    : tx.type === "DAMAGE"
+                      ? "error"
+                      : tx.type === "RETURN"
+                        ? "warning"
+                        : "secondary";
 
-                    {/* Sales Channel */}
-                    <td className="px-3 py-3">
-                      <span className="font-mono text-[10px] font-medium text-[#101114]/60">
-                        {tx.salesChannel || "SYSTEM"}
-                      </span>
-                    </td>
+              return (
+                <TableRow key={tx.id} className="transition-colors hover:bg-[#F3F0E8]/30">
+                  {/* Type Badge */}
+                  <TableCell className="py-3 pr-3 pl-5">
+                    <Badge variant={badgeVariant} size="sm" className="gap-1 font-bold">
+                      {tx.type === "RESTOCK" && <PackagePlus className="size-3" />}
+                      {tx.type === "SALE" && <PackageMinus className="size-3" />}
+                      {tx.type === "DAMAGE" && <PackageX className="size-3" />}
+                      {tx.type === "RETURN" && <RotateCcw className="size-3" />}
+                      {tx.type === "ADJUSTMENT" && <SlidersHorizontal className="size-3" />}
+                      <span>{tx.type}</span>
+                    </Badge>
+                  </TableCell>
 
-                    {/* Quantity Delta */}
-                    <td className="px-3 py-3 text-right">
-                      <span
-                        className={`inline-flex items-center font-mono text-xs font-extrabold ${
-                          isPositive ? "text-emerald-700" : "text-rose-700"
-                        }`}
-                      >
-                        {isPositive ? `+${tx.quantity}` : tx.quantity}
-                      </span>
-                    </td>
+                  {/* Sales Channel */}
+                  <TableCell className="px-3 py-3">
+                    <span className="font-mono text-[10px] font-medium text-[#101114]/60">
+                      {tx.salesChannel || "SYSTEM"}
+                    </span>
+                  </TableCell>
 
-                    {/* Reference ID */}
-                    <td className="px-3 py-3 font-mono text-[11px] text-[#101114]/70">
-                      {tx.referenceId ? (
-                        <div className="flex items-center gap-1">
-                          <span className="max-w-[140px] truncate" title={tx.referenceId}>
-                            {tx.referenceId}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyRef(tx.referenceId!)}
-                            className="text-[#101114]/40 hover:text-[#101114]"
-                            title="Copy Reference"
-                          >
-                            {copiedRef === tx.referenceId ? (
-                              <Check className="size-2.5 text-emerald-600" />
-                            ) : (
-                              <Copy className="size-2.5" />
-                            )}
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-zinc-400">—</span>
-                      )}
-                    </td>
+                  {/* Quantity Delta */}
+                  <TableCell className="px-3 py-3 text-right">
+                    <span
+                      className={`inline-flex items-center font-mono text-xs font-extrabold ${
+                        isPositive ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {isPositive ? `+${tx.quantity}` : tx.quantity}
+                    </span>
+                  </TableCell>
 
-                    {/* Notes / Reason */}
-                    <td className="max-w-xs truncate px-3 py-3 text-[#101114]/80">
-                      {tx.notes || <span className="text-zinc-400 italic">No notes</span>}
-                    </td>
+                  {/* Reference ID */}
+                  <TableCell className="px-3 py-3 font-mono text-[11px] text-[#101114]/70">
+                    {tx.referenceId ? (
+                      <div className="flex items-center gap-1">
+                        <span className="max-w-[140px] truncate" title={tx.referenceId}>
+                          {tx.referenceId}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyRef(tx.referenceId!)}
+                          className="text-[#101114]/40 hover:text-[#101114]"
+                          title="Copy Reference"
+                        >
+                          {copiedRef === tx.referenceId ? (
+                            <Check className="size-2.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="size-2.5" />
+                          )}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-zinc-400">—</span>
+                    )}
+                  </TableCell>
 
-                    {/* Timestamp */}
-                    <td className="py-3 pr-5 pl-3 text-right">
-                      <span className="block font-medium text-[#101114]">
-                        {formatRelativeTime(tx.createdAt)}
-                      </span>
-                      <span className="block text-[10px] text-[#101114]/50">
-                        {formatDate(tx.createdAt)}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  {/* Notes / Reason */}
+                  <TableCell className="max-w-xs truncate px-3 py-3 text-[#101114]/80">
+                    {tx.notes || <span className="text-zinc-400 italic">No notes</span>}
+                  </TableCell>
+
+                  {/* Timestamp */}
+                  <TableCell className="py-3 pr-5 pl-3 text-right">
+                    <span className="block font-medium text-[#101114]">
+                      {formatRelativeTime(tx.createdAt)}
+                    </span>
+                    <span className="block text-[10px] text-[#101114]/50">
+                      {formatDate(tx.createdAt)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       )}
 
       {/* Pagination Bar */}
@@ -266,23 +273,25 @@ export function AdminInventoryDetailLedger({
           <span className="text-[#101114]/60">
             Page <strong>{page}</strong> of <strong>{totalPages}</strong>
           </span>
-          <div className="flex items-center gap-1">
-            <button
+          <div className="flex items-center gap-1.5">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => onPageChange(Math.max(1, page - 1))}
               disabled={page <= 1}
-              className="h-8 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] disabled:opacity-40"
             >
               Previous
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => onPageChange(Math.min(totalPages, page + 1))}
               disabled={page >= totalPages}
-              className="h-8 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] disabled:opacity-40"
             >
               Next
-            </button>
+            </Button>
           </div>
         </div>
       )}

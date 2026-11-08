@@ -16,6 +16,16 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Badge } from "@/components/ui/badge";
 
 interface AdminReviewsTableProps {
   reviews: AdminReviewItem[];
@@ -136,10 +146,11 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Rating Filter */}
-          <select
+          <NativeSelect
             value={currentRating}
             onChange={(e) => updateFilters("rating", e.target.value)}
-            className="rounded-md border border-[#101114]/15 bg-white px-3 py-2 text-xs font-medium text-[#101114] focus:border-[#00D9FF] focus:outline-none"
+            size="sm"
+            className="w-auto min-w-32 bg-white"
           >
             <option value="">All Ratings</option>
             <option value="5">5 Stars (★★★★★)</option>
@@ -147,18 +158,19 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
             <option value="3">3 Stars (★★★)</option>
             <option value="2">2 Stars (★★)</option>
             <option value="1">1 Star (★)</option>
-          </select>
+          </NativeSelect>
 
           {/* Verified Filter */}
-          <select
+          <NativeSelect
             value={currentVerified}
             onChange={(e) => updateFilters("verified", e.target.value)}
-            className="rounded-md border border-[#101114]/15 bg-white px-3 py-2 text-xs font-medium text-[#101114] focus:border-[#00D9FF] focus:outline-none"
+            size="sm"
+            className="w-auto min-w-36 bg-white"
           >
             <option value="">All Purchases</option>
             <option value="true">Verified Purchases Only</option>
             <option value="false">Unverified Only</option>
-          </select>
+          </NativeSelect>
 
           <span className="text-xs font-semibold text-[#101114]/60">
             {reviews.length} of {totalCount} reviews
@@ -180,131 +192,127 @@ export function AdminReviewsTable({ reviews, kpis, totalCount }: AdminReviewsTab
       </div>
 
       {/* Reviews Table */}
-      <div className="overflow-hidden rounded-xl border border-[#101114]/10 bg-white shadow-2xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[#101114]/10 bg-[#101114]/2 font-bold tracking-wider text-[#101114]/70 uppercase">
-              <tr>
-                <th className="px-4 py-3 sm:px-6">Product</th>
-                <th className="px-4 py-3">Customer</th>
-                <th className="px-4 py-3">Rating</th>
-                <th className="px-4 py-3">Review Comment</th>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#101114]/5">
-              {reviews.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-8 text-center text-xs text-[#101114]/50">
-                    No reviews found matching your criteria.
-                  </td>
-                </tr>
-              ) : (
-                reviews.map((review) => {
-                  const dateStr = new Date(review.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  });
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="sm:px-6">Product</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Rating</TableHead>
+            <TableHead>Review Comment</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {reviews.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="p-8 text-center text-xs text-[#101114]/50">
+                No reviews found matching your criteria.
+              </TableCell>
+            </TableRow>
+          ) : (
+            reviews.map((review) => {
+              const dateStr = new Date(review.createdAt).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              });
 
-                  return (
-                    <tr key={review.id} className="transition-colors hover:bg-[#101114]/1">
-                      {/* Product Column */}
-                      <td className="px-4 py-3.5 sm:px-6">
-                        <div className="flex items-center gap-3">
-                          {review.product.primaryImage ? (
-                            <Image
-                              src={review.product.primaryImage}
-                              alt={review.product.name}
-                              width={40}
-                              height={40}
-                              className="size-10 rounded-md border border-[#101114]/10 object-cover"
-                            />
-                          ) : (
-                            <div className="flex size-10 items-center justify-center rounded-md bg-[#101114]/5 font-bold text-[#101114]/40">
-                              VL
-                            </div>
-                          )}
-                          <div className="max-w-48 min-w-0">
-                            <Link
-                              href={`/products/${review.product.slug}`}
-                              target="_blank"
-                              className="hover:text-vl-cyan flex items-center gap-1 font-bold text-[#101114] transition-colors"
-                            >
-                              <span className="truncate">{review.product.name}</span>
-                              <ExternalLink className="size-3 shrink-0 opacity-60" />
-                            </Link>
-                          </div>
+              return (
+                <TableRow key={review.id}>
+                  {/* Product Column */}
+                  <TableCell className="sm:px-6">
+                    <div className="flex items-center gap-3">
+                      {review.product.primaryImage ? (
+                        <Image
+                          src={review.product.primaryImage}
+                          alt={review.product.name}
+                          width={40}
+                          height={40}
+                          className="size-10 rounded-md border border-[#101114]/10 object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-10 items-center justify-center rounded-md bg-[#101114]/5 font-bold text-[#101114]/40">
+                          VL
                         </div>
-                      </td>
-
-                      {/* Customer Column */}
-                      <td className="px-4 py-3.5">
-                        <div className="min-w-0">
-                          <p className="font-bold text-[#101114]">
-                            {review.user?.name || "Customer"}
-                          </p>
-                          <p className="truncate text-[11px] text-[#101114]/50">
-                            {review.user?.email || "No email"}
-                          </p>
-                          {review.verified && (
-                            <span className="py-0.2 mt-1 inline-flex items-center gap-0.5 rounded-full bg-[#00D9FF]/15 px-1.5 text-[9px] font-bold text-[#008ca6]">
-                              <CheckCircle2 className="size-2.5" /> Verified Buyer
-                            </span>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* Rating Column */}
-                      <td className="px-4 py-3.5">
-                        <div className="flex items-center gap-1">
-                          <span className="font-bold text-[#101114]">{review.rating}</span>
-                          <span className="text-amber-500">★</span>
-                        </div>
-                      </td>
-
-                      {/* Comment Column */}
-                      <td className="max-w-xs px-4 py-3.5 sm:max-w-md">
-                        {review.comment ? (
-                          <p className="line-clamp-2 text-xs leading-relaxed text-[#101114]/80">
-                            {review.comment}
-                          </p>
-                        ) : (
-                          <span className="text-[11px] text-[#101114]/40 italic">
-                            Rating only (No comment)
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Date Column */}
-                      <td className="px-4 py-3.5 whitespace-nowrap text-[#101114]/60">{dateStr}</td>
-
-                      {/* Actions Column */}
-                      <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(review.id)}
-                          disabled={isPending && deletingId === review.id}
-                          className="inline-flex size-8 items-center justify-center rounded-md border border-rose-200 bg-white text-rose-600 transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-rose-500"
-                          title="Delete spam/inappropriate review"
-                          aria-label="Delete review"
+                      )}
+                      <div className="max-w-48 min-w-0">
+                        <Link
+                          href={`/products/${review.product.slug}`}
+                          target="_blank"
+                          className="hover:text-vl-cyan flex items-center gap-1 font-bold text-[#101114] transition-colors"
                         >
-                          {isPending && deletingId === review.id ? (
-                            <Loader2 className="size-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="size-3.5" />
-                          )}
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                          <span className="truncate">{review.product.name}</span>
+                          <ExternalLink className="size-3 shrink-0 opacity-60" />
+                        </Link>
+                      </div>
+                    </div>
+                  </TableCell>
+
+                  {/* Customer Column */}
+                  <TableCell>
+                    <div className="min-w-0">
+                      <p className="font-bold text-[#101114]">
+                        {review.user?.name || "Customer"}
+                      </p>
+                      <p className="truncate text-[11px] text-[#101114]/50">
+                        {review.user?.email || "No email"}
+                      </p>
+                      {review.verified && (
+                        <Badge variant="cyan" size="sm" className="mt-1 gap-1">
+                          <CheckCircle2 className="size-2.5" /> Verified Buyer
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+
+                  {/* Rating Column */}
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <span className="font-bold text-[#101114]">{review.rating}</span>
+                      <span className="text-amber-500">★</span>
+                    </div>
+                  </TableCell>
+
+                  {/* Comment Column */}
+                  <TableCell className="max-w-xs sm:max-w-md">
+                    {review.comment ? (
+                      <p className="line-clamp-2 text-xs leading-relaxed text-[#101114]/80">
+                        {review.comment}
+                      </p>
+                    ) : (
+                      <span className="text-[11px] text-[#101114]/40 italic">
+                        Rating only (No comment)
+                      </span>
+                    )}
+                  </TableCell>
+
+                  {/* Date Column */}
+                  <TableCell className="whitespace-nowrap text-[#101114]/60">{dateStr}</TableCell>
+
+                  {/* Actions Column */}
+                  <TableCell className="text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(review.id)}
+                      disabled={isPending && deletingId === review.id}
+                      className="inline-flex size-8 items-center justify-center rounded-md border border-rose-200 bg-white text-rose-600 transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-rose-500"
+                      title="Delete spam/inappropriate review"
+                      aria-label="Delete review"
+                    >
+                      {isPending && deletingId === review.id ? (
+                        <Loader2 className="size-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="size-3.5" />
+                      )}
+                    </button>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 }

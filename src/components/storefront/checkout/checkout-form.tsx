@@ -5,7 +5,6 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Check,
-  ChevronDown,
   CreditCard,
   ImageOff,
   LoaderCircle,
@@ -27,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/select-native";
 import { SelectableCard } from "@/components/shared/selectable-card";
 
 // ── 64 Districts of Bangladesh ───────────────────────────────────────────────
@@ -624,35 +624,28 @@ export function CheckoutForm({
                   >
                     Delivery District <span className="text-red-500">*</span>
                   </Label>
-                  <div className="relative">
-                    <select
-                      id="shippingCity"
-                      value={shippingCity}
-                      onChange={(e) => {
-                        setShippingCity(e.target.value);
-                        if (errors.shippingCity)
-                          setErrors((prev) => ({ ...prev, shippingCity: undefined }));
-                      }}
-                      aria-invalid={Boolean(errors.shippingCity)}
-                      className={`focus:ring-vl-cyan h-11 w-full cursor-pointer appearance-none rounded-xs border bg-white px-3.5 pr-10 text-sm font-medium transition-colors focus:ring-2 focus:outline-none ${
-                        errors.shippingCity
-                          ? "border-destructive text-vl-black"
-                          : "border-vl-black/20 text-vl-black hover:border-vl-black/40"
-                      } ${!shippingCity ? "text-neutral-400" : ""}`}
-                    >
-                      <option value="" disabled>
-                        Select your district
+                  <NativeSelect
+                    id="shippingCity"
+                    variant="brand"
+                    size="lg"
+                    value={shippingCity}
+                    onChange={(e) => {
+                      setShippingCity(e.target.value);
+                      if (errors.shippingCity)
+                        setErrors((prev) => ({ ...prev, shippingCity: undefined }));
+                    }}
+                    aria-invalid={Boolean(errors.shippingCity)}
+                    className={!shippingCity ? "text-neutral-400" : ""}
+                  >
+                    <option value="" disabled>
+                      Select your district
+                    </option>
+                    {BD_DISTRICTS.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
                       </option>
-                      {BD_DISTRICTS.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-neutral-400">
-                      <ChevronDown className="size-4" />
-                    </div>
-                  </div>
+                    ))}
+                  </NativeSelect>
                   {fieldError("shippingCity")}
                 </div>
               </div>

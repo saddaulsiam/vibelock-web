@@ -9,6 +9,7 @@ import {
   toggleShippingMethodAction,
   type ShippingActionState,
 } from "@/lib/admin/shipping/shipping-actions";
+import { NativeSelect } from "@/components/ui/select-native";
 
 const initialState: ShippingActionState = { error: null };
 const inputClass =
@@ -145,13 +146,13 @@ export function ShippingMethodForm({
         <label className="block text-xs font-semibold text-neutral-800">
           Assigned Zone <span className="text-rose-500">*</span>
         </label>
-        <select name="zoneId" required defaultValue={method?.zoneId} className={inputClass}>
+        <NativeSelect name="zoneId" required defaultValue={method?.zoneId} size="lg" className="mt-1.5">
           {zones.map((zone) => (
             <option key={zone.id} value={zone.id}>
               {zone.name}
             </option>
           ))}
-        </select>
+        </NativeSelect>
         <span className="mt-1 block text-[11px] text-neutral-400">
           Which geographical delivery zone this pricing applies to.
         </span>

@@ -13,6 +13,7 @@ import {
 import * as React from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { NativeSelect } from "@/components/ui/select-native";
 
 export interface CancellationReasonOption {
   id: string;
@@ -243,18 +244,18 @@ function OrderCancelModalContent({
             >
               Cancellation Reason *
             </label>
-            <select
+            <NativeSelect
               id="cancel-reason-select"
               value={selectedReasonId}
               onChange={(e) => setSelectedReasonId(e.target.value)}
-              className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-xs font-medium text-neutral-900 shadow-2xs focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+              size="lg"
             >
               {CANCELLATION_REASONS.map((reason) => (
                 <option key={reason.id} value={reason.id}>
                   {reason.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <p className="text-[11px] text-neutral-500 italic">{currentReason.description}</p>
           </div>
 

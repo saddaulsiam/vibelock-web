@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select-native";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
 import { Check, Loader2, ShieldCheck, ShieldAlert, Camera, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -358,18 +359,19 @@ export function ProfileForm({
           >
             Gender
           </Label>
-          <select
+          <NativeSelect
             id="profile-gender"
+            variant="brand"
+            size="lg"
             value={gender}
             onChange={(e) => setGender(e.target.value)}
             disabled={pending}
-            className="flex min-h-11 w-full rounded-xl border border-[#101114]/15 bg-white px-3.5 py-2 text-xs text-[#101114] transition-colors focus:border-[#101114] focus:outline-none"
           >
             <option value="Prefer not to say">Prefer not to say</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

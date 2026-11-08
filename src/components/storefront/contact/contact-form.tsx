@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select-native";
 
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -156,18 +157,19 @@ export function ContactForm() {
           >
             Inquiry Type
           </label>
-          <select
+          <NativeSelect
             id="contact-subject"
+            variant="brand"
+            size="lg"
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-            className="border-vl-black/15 focus:ring-vl-cyan h-10 rounded-xs border bg-white px-3 text-xs text-[#101114] transition-colors focus:border-vl-black focus:ring-2 focus:outline-none"
           >
             <option value="Order Status & Tracking">Order Status & Tracking</option>
             <option value="Size & Fit Consultation">Size & Fit Consultation</option>
             <option value="Return & Exchange Request">Return & Exchange Request</option>
             <option value="Flagship Storefront Inquiry">Flagship Storefront Inquiry</option>
             <option value="Collaboration & Press">Collaboration & Press</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

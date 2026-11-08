@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { NativeSelect } from "@/components/ui/select-native";
 import type {
   PosOrderLookupResult,
   PosReturnReason,
@@ -367,7 +368,7 @@ export function PosReturnModal({
                             <Label className="font-heading text-[10px] font-black text-slate-700 uppercase">
                               Reason:
                             </Label>
-                            <select
+                            <NativeSelect
                               value={selectedConfig.reason}
                               onChange={(e) =>
                                 handleUpdateItemReason(
@@ -375,7 +376,8 @@ export function PosReturnModal({
                                   e.target.value as PosReturnReason
                                 )
                               }
-                              className="focus:ring-vl-cyan mt-1 h-8.5 w-full rounded-lg border border-[#d6d2c4] bg-white px-2 text-xs"
+                              size="sm"
+                              className="mt-1"
                             >
                               <option value="SIZE_MISMATCH">Size Mismatch</option>
                               <option value="DEFECTIVE_OR_DAMAGED">Defective / Damaged</option>
@@ -384,14 +386,14 @@ export function PosReturnModal({
                                 Customer Change of Mind
                               </option>
                               <option value="OTHER">Other Reason</option>
-                            </select>
+                            </NativeSelect>
                           </div>
 
                           <div>
                             <Label className="font-heading text-[10px] font-black text-slate-700 uppercase">
                               Condition:
                             </Label>
-                            <select
+                            <NativeSelect
                               value={selectedConfig.condition}
                               onChange={(e) =>
                                 handleUpdateItemCondition(
@@ -399,11 +401,12 @@ export function PosReturnModal({
                                   e.target.value as PosItemCondition
                                 )
                               }
-                              className="focus:ring-vl-cyan mt-1 h-8.5 w-full rounded-lg border border-[#d6d2c4] bg-white px-2 text-xs font-medium"
+                              size="sm"
+                              className="mt-1 font-medium"
                             >
                               <option value="RESELLABLE">Resellable (Stock +1)</option>
                               <option value="DAMAGED">Damaged (No Restock)</option>
-                            </select>
+                            </NativeSelect>
                           </div>
                         </div>
                       )}
