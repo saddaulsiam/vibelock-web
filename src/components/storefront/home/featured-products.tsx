@@ -95,10 +95,10 @@ export function FeaturedProducts({
                   type="button"
                   onClick={() => setActiveTab(tab.slug)}
                   className={cn(
-                    "shrink-0 cursor-pointer rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:px-5 sm:py-2 sm:text-xs",
+                    "shrink-0 cursor-pointer rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase transition-all duration-200 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:px-5 sm:py-2 sm:text-xs",
                     isActive
-                      ? "border border-[#101114] bg-[#101114] text-white shadow-xs"
-                      : "border border-[#101114]/30 bg-white text-[#101114] hover:border-[#101114] hover:bg-black/5"
+                      ? "border border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
+                      : "border border-vl-dark-900/30 bg-white text-vl-dark-900 hover:border-vl-dark-900 hover:bg-black/5"
                   )}
                 >
                   {tab.label}
@@ -124,8 +124,8 @@ export function FeaturedProducts({
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/2 px-4 py-16 text-center sm:mt-12">
-            <p className="text-sm font-bold tracking-wider text-[#101114] uppercase">
+          <div className="mt-8 rounded-xs border border-dashed border-vl-dark-900/20 bg-vl-dark-900/2 px-4 py-16 text-center sm:mt-12">
+            <p className="text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
               No products found in {activeTabLabel} yet
             </p>
             <p className="text-muted-foreground mt-1 text-xs">

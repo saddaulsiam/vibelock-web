@@ -105,7 +105,7 @@ export function OrdersInfiniteList({
                 <td className="py-4 pr-4">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="font-semibold text-[#101114] hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    className="font-semibold text-vl-dark-900 hover:underline focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
                   >
                     #{order.orderNumber}
                   </Link>
@@ -128,7 +128,7 @@ export function OrdersInfiniteList({
                 </td>
 
                 {/* Total */}
-                <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
+                <td className="px-4 py-4 font-bold whitespace-nowrap text-vl-dark-900">
                   ৳ {order.total.toLocaleString("en-BD")}
                 </td>
 
@@ -141,10 +141,10 @@ export function OrdersInfiniteList({
                 <td className="py-4 pl-4 text-right whitespace-nowrap">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-vl-dark-900"
                   >
                     <span>Details</span>
-                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
                   </Link>
                 </td>
               </tr>
@@ -160,7 +160,7 @@ export function OrdersInfiniteList({
             <div className="flex items-center justify-between gap-2">
               <Link
                 href={`/account/orders/${order.orderNumber}`}
-                className="truncate text-xs font-semibold text-[#101114] hover:underline sm:text-sm"
+                className="truncate text-xs font-semibold text-vl-dark-900 hover:underline sm:text-sm"
               >
                 #{order.orderNumber}
               </Link>
@@ -188,7 +188,7 @@ export function OrdersInfiniteList({
             )}
 
             <div className="mt-2.5 flex items-center justify-between pt-1">
-              <span className="text-xs font-bold text-[#101114] sm:text-sm">
+              <span className="text-xs font-bold text-vl-dark-900 sm:text-sm">
                 ৳ {order.total.toLocaleString("en-BD")}
               </span>
               <Link
@@ -213,15 +213,15 @@ export function OrdersInfiniteList({
 
       {/* Infinite Scroll Indicator */}
       {isLoadingMore && (
-        <div className="flex items-center justify-center gap-2 border-t border-[#101114]/8 py-5 text-xs font-medium text-neutral-500">
-          <Loader2 className="size-4 animate-spin text-[#101114]" />
+        <div className="flex items-center justify-center gap-2 border-t border-vl-dark-900/8 py-5 text-xs font-medium text-neutral-500">
+          <Loader2 className="size-4 animate-spin text-vl-dark-900" />
           <span>Loading more orders...</span>
         </div>
       )}
 
       {/* Fallback button if needed */}
       {hasMore && !isLoadingMore && (
-        <div className="flex justify-center border-t border-[#101114]/8 pt-4 pb-2">
+        <div className="flex justify-center border-t border-vl-dark-900/8 pt-4 pb-2">
           <Button
             type="button"
             variant="outline"
@@ -236,7 +236,7 @@ export function OrdersInfiniteList({
 
       {/* End of results message */}
       {!hasMore && orders.length >= pageSize && (
-        <div className="flex items-center justify-center border-t border-[#101114]/8 py-5 text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+        <div className="flex items-center justify-center border-t border-vl-dark-900/8 py-5 text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
           <span>All {total} orders loaded</span>
         </div>
       )}

@@ -163,7 +163,7 @@ export function ProductForm({
       secondaryAction={
         <Link
           href="/admin/products"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex min-h-10 items-center justify-center border border-vl-dark-900/20 bg-white px-4 text-sm font-medium text-vl-dark-900 transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -172,9 +172,9 @@ export function ProductForm({
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
       {/* TOP CONTROLS BAR: PREVIEW TOGGLE & STATUS BADGES */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-[#101114]/10 bg-[#F9F8F6] p-3 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-vl-dark-900/10 bg-vl-white-100 p-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#101114]">Product Form</span>
+          <span className="font-semibold text-vl-dark-900">Product Form</span>
           {isDirty && (
             <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
               <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
@@ -185,7 +185,7 @@ export function ProductForm({
         <button
           type="button"
           onClick={() => setShowLivePreview((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
+          className="inline-flex items-center gap-1.5 font-semibold text-vl-dark-900 hover:underline"
         >
           {showLivePreview ? (
             <>
@@ -232,9 +232,9 @@ export function ProductForm({
       />
 
       {/* SECTION 2: CATEGORIES */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Product Categories</h3>
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Product Categories</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Select one or more store categories to help shoppers discover this product.
           </p>
@@ -264,15 +264,15 @@ export function ProductForm({
       />
 
       {/* SECTION 5: PUBLICATION & VISIBILITY */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Publishing Status</h3>
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Publishing Status</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Control whether this product is visible to customers on the online storefront.
           </p>
         </div>
         <div className="max-w-md">
-          <label htmlFor="product-status" className="block text-sm font-medium text-[#101114]">
+          <label htmlFor="product-status" className="block text-sm font-medium text-vl-dark-900">
             Storefront Visibility
           </label>
           <div className="mt-1.5">

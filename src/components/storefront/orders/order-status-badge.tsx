@@ -26,8 +26,8 @@ export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
     : negative.includes(normalized)
       ? "border-rose-200 bg-rose-50 text-rose-800"
       : inProgress.includes(normalized)
-        ? "border-[#00D9FF]/40 bg-[#00D9FF]/10 text-[#101114]"
-        : "border-[#101114]/15 bg-[#F3F0E8] text-[#101114]";
+        ? "border-vl-cyan-200 bg-vl-cyan-50 text-vl-dark-900"
+        : "border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900";
   const label = normalized
     .toLowerCase()
     .split("_")

@@ -53,7 +53,7 @@ export function MobileSearch() {
           />
 
           {/* Search Bar Container - Perfectly Aligned Edge-to-Edge */}
-          <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-[#0C0D0E] px-4 py-3 shadow-2xl sm:top-18">
+          <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-vl-dark-900 px-4 py-3 shadow-2xl sm:top-18">
             <div className="mx-auto max-w-lg">
               <form
                 action="/shop"
@@ -72,7 +72,7 @@ export function MobileSearch() {
                   name="q"
                   placeholder="Search for products, categories..."
                   aria-label="Search products"
-                  className="h-10 w-full rounded-full border border-white/15 bg-[#181B1F] pr-10 pl-10 text-xs text-vl-white placeholder:text-vl-white/40 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan"
+                  className="h-10 w-full rounded-full border border-white/15 bg-vl-dark-900 pr-10 pl-10 text-xs text-vl-white placeholder:text-vl-white/40 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan"
                 />
 
                 <button

@@ -38,9 +38,9 @@ export function AdminTableTabs<T extends string = string>({
             type="button"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
+              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none",
               isActive
-                ? "bg-[#101114] font-semibold text-white shadow-2xs"
+                ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
                 : "border border-neutral-200 bg-white font-medium text-neutral-800 hover:bg-neutral-50"
             )}
           >
@@ -105,7 +105,7 @@ export function AdminTableSearchInput({
         </button>
       ) : (
         <kbd
-          className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-neutral-200 bg-[#F3F0E8] px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 sm:inline-flex"
+          className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-neutral-200 bg-vl-white-300 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 sm:inline-flex"
           title="Press / to search"
         >
           /
@@ -205,7 +205,7 @@ export function AdminTableFilterSelect<T extends string = string>({
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors focus-within:ring-2 focus-within:ring-[#00D9FF] hover:border-neutral-300",
+        "inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors focus-within:ring-2 focus-within:ring-vl-cyan hover:border-neutral-300",
         disabled && "pointer-events-none opacity-50",
         className
       )}

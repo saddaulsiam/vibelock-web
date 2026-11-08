@@ -53,7 +53,7 @@ export function AdminCouponsBulkBar({
           type="button"
           disabled={isBulkOperating}
           onClick={onBulkPause}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-vl-dark-900 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-vl-dark-900/85 disabled:opacity-50"
         >
           {isBulkOperating ? (
             <Loader2 className="size-3.5 animate-spin" />

@@ -225,7 +225,7 @@ export function ProductImageUploader({
   }, [images]);
 
   return (
-    <fieldset className="space-y-4 border border-[#101114]/15 bg-[#FBF9F5] p-4 sm:p-5">
+    <fieldset className="space-y-4 border border-vl-dark-900/15 bg-vl-white-200 p-4 sm:p-5">
       {/* Hidden inputs to feed formData */}
       <input
         ref={fileInputRef}
@@ -243,7 +243,7 @@ export function ProductImageUploader({
       {/* Header with Title and Mode Toggle */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <legend className="px-1 text-sm font-semibold text-[#101114]">Product images</legend>
+          <legend className="px-1 text-sm font-semibold text-vl-dark-900">Product images</legend>
           <p className="text-muted-foreground px-1 text-xs">
             Upload product gallery and thumbnail images. The first image is used as the primary
             display.
@@ -252,7 +252,7 @@ export function ProductImageUploader({
         <button
           type="button"
           onClick={() => setUseUrlInput((prev) => !prev)}
-          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-[#101114]"
+          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-vl-dark-900"
         >
           {useUrlInput ? (
             <>
@@ -276,14 +276,14 @@ export function ProductImageUploader({
             onDrop={handleDrop}
             className={`flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center transition-all ${
               isDragging
-                ? "scale-[1.01] border-[#00D9FF] bg-[#00D9FF]/10"
-                : "border-[#101114]/20 bg-white/50 hover:border-[#00D9FF] hover:bg-white/70"
+                ? "scale-[1.01] border-vl-cyan bg-vl-cyan-50"
+                : "border-vl-dark-900/20 bg-white/50 hover:border-vl-cyan hover:bg-white/70"
             }`}
           >
-            <div className="flex size-12 items-center justify-center rounded-full bg-[#101114]/5 text-[#101114]">
-              <ImagePlus className="size-6 text-[#101114]/70" />
+            <div className="flex size-12 items-center justify-center rounded-full bg-vl-dark-900/5 text-vl-dark-900">
+              <ImagePlus className="size-6 text-vl-dark-900/70" />
             </div>
-            <span className="mt-3 text-sm font-semibold text-[#101114]">
+            <span className="mt-3 text-sm font-semibold text-vl-dark-900">
               {images.length > 0 ? "Add more product images" : "Click or drag to upload images"}
             </span>
             <span className="text-muted-foreground mt-1 text-xs">
@@ -295,7 +295,7 @@ export function ProductImageUploader({
       ) : (
         /* External URL Input Mode */
         <div className="space-y-2">
-          <label className="block text-xs font-semibold text-[#101114]">
+          <label className="block text-xs font-semibold text-vl-dark-900">
             Paste Image URLs (One URL per line)
             <div className="mt-1.5">
               <Textarea
@@ -335,8 +335,8 @@ export function ProductImageUploader({
               return (
                 <div
                   key={item.id}
-                  className={`group relative aspect-square overflow-hidden rounded border bg-[#F3F0E8] shadow-xs transition-all ${
-                    isPrimary ? "border-[#101114] ring-2 ring-[#00D9FF]" : "border-[#101114]/20"
+                  className={`group relative aspect-square overflow-hidden rounded border bg-vl-white-300 shadow-xs transition-all ${
+                    isPrimary ? "border-vl-dark-900 ring-2 ring-vl-cyan" : "border-vl-dark-900/20"
                   }`}
                 >
                   <Image
@@ -353,8 +353,8 @@ export function ProductImageUploader({
                   {/* Top Badge */}
                   <div className="absolute top-2 right-2 left-2 flex items-center justify-between">
                     {isPrimary ? (
-                      <span className="inline-flex items-center gap-1 rounded bg-[#101114] px-2 py-0.5 text-[10px] font-bold tracking-wider text-[#00D9FF] uppercase shadow-xs backdrop-blur-sm">
-                        <Star className="size-3 fill-[#00D9FF]" /> Primary
+                      <span className="inline-flex items-center gap-1 rounded bg-vl-dark-900 px-2 py-0.5 text-[10px] font-bold tracking-wider text-vl-cyan uppercase shadow-xs backdrop-blur-sm">
+                        <Star className="size-3 fill-vl-cyan" /> Primary
                       </span>
                     ) : (
                       <span className="rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">

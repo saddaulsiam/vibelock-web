@@ -19,11 +19,11 @@ export default function AccountError({
   }, [error]);
 
   return (
-    <Section className="flex min-h-[60vh] items-center justify-center bg-[#F3F0E8] py-14">
+    <Section className="flex min-h-[60vh] items-center justify-center bg-vl-white-300 py-14">
       <Container>
-        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10">
-          <AlertCircle className="mx-auto mb-5 size-8 text-[#101114]" aria-hidden="true" />
-          <h1 className="text-2xl font-semibold tracking-tight text-[#101114]">
+        <div className="mx-auto max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10">
+          <AlertCircle className="mx-auto mb-5 size-8 text-vl-dark-900" aria-hidden="true" />
+          <h1 className="text-2xl font-semibold tracking-tight text-vl-dark-900">
             Account page unavailable
           </h1>
           <p className="text-muted-foreground mt-3 text-sm leading-6">

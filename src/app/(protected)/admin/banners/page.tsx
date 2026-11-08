@@ -25,7 +25,7 @@ export default async function AdminBannersPage() {
         </div>
         <Link
           href="/admin/banners/new"
-          className="inline-flex min-h-10 items-center justify-center bg-[#101114] px-4 text-sm font-semibold text-white"
+          className="inline-flex min-h-10 items-center justify-center bg-vl-dark-900 px-4 text-sm font-semibold text-white"
         >
           Create banner
         </Link>
@@ -44,7 +44,7 @@ export default async function AdminBannersPage() {
               key={banner.id}
               className="grid gap-4 border bg-white p-4 md:grid-cols-[240px_1fr]"
             >
-              <div className="relative aspect-16/7 overflow-hidden bg-[#F3F0E8]">
+              <div className="relative aspect-16/7 overflow-hidden bg-vl-white-300">
                 <Image
                   src={banner.imageUrl}
                   alt={banner.title}
@@ -58,7 +58,7 @@ export default async function AdminBannersPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="font-semibold">{banner.title}</h2>
                     <span
-                      className={`border px-2 py-0.5 text-xs ${banner.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-[#101114]/15 bg-[#F3F0E8] text-[#101114]/70"}`}
+                      className={`border px-2 py-0.5 text-xs ${banner.isActive ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900/70"}`}
                     >
                       {banner.isActive ? "Active" : "Inactive"}
                     </span>
@@ -80,14 +80,14 @@ export default async function AdminBannersPage() {
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href={`/admin/banners/${banner.id}/edit`}
-                    className="inline-flex min-h-9 items-center border border-[#101114]/20 px-3 text-sm font-medium hover:bg-[#F3F0E8]"
+                    className="inline-flex min-h-9 items-center border border-vl-dark-900/20 px-3 text-sm font-medium hover:bg-vl-white-300"
                   >
                     Edit
                   </Link>
                   <form action={toggleBannerAction}>
                     <input type="hidden" name="id" value={banner.id} />
                     <input type="hidden" name="active" value={String(!banner.isActive)} />
-                    <button className="inline-flex min-h-9 items-center border border-[#101114]/20 px-3 text-sm font-medium hover:bg-[#F3F0E8]">
+                    <button className="inline-flex min-h-9 items-center border border-vl-dark-900/20 px-3 text-sm font-medium hover:bg-vl-white-300">
                       {banner.isActive ? "Deactivate" : "Activate"}
                     </button>
                   </form>

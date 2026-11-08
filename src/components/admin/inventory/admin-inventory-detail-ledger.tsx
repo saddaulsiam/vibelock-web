@@ -100,12 +100,12 @@ export function AdminInventoryDetailLedger({
   };
 
   return (
-    <div className="rounded-md border border-[#101114]/10 bg-white shadow-xs">
+    <div className="rounded-md border border-vl-dark-900/10 bg-white shadow-xs">
       {/* Table Header & Controls */}
-      <div className="flex flex-col gap-4 border-b border-[#101114]/10 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-vl-dark-900/10 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-base font-bold text-[#101114]">Stock Movement Timeline & Ledger</h2>
-          <p className="text-xs text-[#101114]/60">
+          <h2 className="text-base font-bold text-vl-dark-900">Stock Movement Timeline & Ledger</h2>
+          <p className="text-xs text-vl-dark-900/60">
             Immutable ledger of all inbound, outbound, and adjustment events for this variant.
           </p>
         </div>
@@ -115,7 +115,7 @@ export function AdminInventoryDetailLedger({
             type="button"
             onClick={handleExportLedgerCsv}
             disabled={transactions.length === 0}
-            className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] disabled:opacity-50"
+            className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 disabled:opacity-50"
           >
             <FileSpreadsheet className="size-3.5 text-emerald-700" />
             <span>Export Ledger CSV</span>
@@ -124,8 +124,8 @@ export function AdminInventoryDetailLedger({
       </div>
 
       {/* Filter Pills Bar */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-[#101114]/10 bg-[#FBF9F5] px-5 py-2.5 text-xs">
-        <span className="mr-1 font-semibold text-[#101114]/70">Filter Event:</span>
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-vl-dark-900/10 bg-vl-white-200 px-5 py-2.5 text-xs">
+        <span className="mr-1 font-semibold text-vl-dark-900/70">Filter Event:</span>
         {[
           { id: "ALL", label: "All Movements" },
           { id: "RESTOCK", label: "Restock (+)" },
@@ -142,8 +142,8 @@ export function AdminInventoryDetailLedger({
               onClick={() => onFilterChange(pill.id)}
               className={`rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
                 isActive
-                  ? "bg-[#101114] text-white"
-                  : "border border-[#101114]/15 bg-white text-[#101114]/70 hover:bg-[#101114]/10 hover:text-[#101114]"
+                  ? "bg-vl-dark-900 text-white"
+                  : "border border-vl-dark-900/15 bg-white text-vl-dark-900/70 hover:bg-vl-dark-900/10 hover:text-vl-dark-900"
               }`}
             >
               {pill.label}
@@ -155,9 +155,9 @@ export function AdminInventoryDetailLedger({
       {/* Ledger Table */}
       {transactions.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 text-center">
-          <RotateCcw className="size-8 text-[#101114]/30" />
-          <p className="mt-3 text-sm font-semibold text-[#101114]">No transactions recorded</p>
-          <p className="text-xs text-[#101114]/60">
+          <RotateCcw className="size-8 text-vl-dark-900/30" />
+          <p className="mt-3 text-sm font-semibold text-vl-dark-900">No transactions recorded</p>
+          <p className="text-xs text-vl-dark-900/60">
             {typeFilter !== "ALL"
               ? `No transactions found matching filter "${typeFilter}".`
               : "No inventory events have occurred for this variant yet."}
@@ -190,7 +190,7 @@ export function AdminInventoryDetailLedger({
                         : "secondary";
 
               return (
-                <TableRow key={tx.id} className="transition-colors hover:bg-[#F3F0E8]/30">
+                <TableRow key={tx.id} className="transition-colors hover:bg-vl-white-300/30">
                   {/* Type Badge */}
                   <TableCell className="py-3 pr-3 pl-5">
                     <Badge variant={badgeVariant} size="sm" className="gap-1 font-bold">
@@ -205,7 +205,7 @@ export function AdminInventoryDetailLedger({
 
                   {/* Sales Channel */}
                   <TableCell className="px-3 py-3">
-                    <span className="font-mono text-[10px] font-medium text-[#101114]/60">
+                    <span className="font-mono text-[10px] font-medium text-vl-dark-900/60">
                       {tx.salesChannel || "SYSTEM"}
                     </span>
                   </TableCell>
@@ -222,7 +222,7 @@ export function AdminInventoryDetailLedger({
                   </TableCell>
 
                   {/* Reference ID */}
-                  <TableCell className="px-3 py-3 font-mono text-[11px] text-[#101114]/70">
+                  <TableCell className="px-3 py-3 font-mono text-[11px] text-vl-dark-900/70">
                     {tx.referenceId ? (
                       <div className="flex items-center gap-1">
                         <span className="max-w-[140px] truncate" title={tx.referenceId}>
@@ -231,7 +231,7 @@ export function AdminInventoryDetailLedger({
                         <button
                           type="button"
                           onClick={() => handleCopyRef(tx.referenceId!)}
-                          className="text-[#101114]/40 hover:text-[#101114]"
+                          className="text-vl-dark-900/40 hover:text-vl-dark-900"
                           title="Copy Reference"
                         >
                           {copiedRef === tx.referenceId ? (
@@ -247,16 +247,16 @@ export function AdminInventoryDetailLedger({
                   </TableCell>
 
                   {/* Notes / Reason */}
-                  <TableCell className="max-w-xs truncate px-3 py-3 text-[#101114]/80">
+                  <TableCell className="max-w-xs truncate px-3 py-3 text-vl-dark-900/80">
                     {tx.notes || <span className="text-zinc-400 italic">No notes</span>}
                   </TableCell>
 
                   {/* Timestamp */}
                   <TableCell className="py-3 pr-5 pl-3 text-right">
-                    <span className="block font-medium text-[#101114]">
+                    <span className="block font-medium text-vl-dark-900">
                       {formatRelativeTime(tx.createdAt)}
                     </span>
-                    <span className="block text-[10px] text-[#101114]/50">
+                    <span className="block text-[10px] text-vl-dark-900/50">
                       {formatDate(tx.createdAt)}
                     </span>
                   </TableCell>
@@ -269,8 +269,8 @@ export function AdminInventoryDetailLedger({
 
       {/* Pagination Bar */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
-          <span className="text-[#101114]/60">
+        <div className="flex items-center justify-between border-t border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
+          <span className="text-vl-dark-900/60">
             Page <strong>{page}</strong> of <strong>{totalPages}</strong>
           </span>
           <div className="flex items-center gap-1.5">

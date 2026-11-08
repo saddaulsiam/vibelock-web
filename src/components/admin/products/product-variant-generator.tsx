@@ -303,10 +303,10 @@ export function ProductVariantGenerator({
   };
 
   return (
-    <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-4">
+    <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 pb-4">
         <div>
-          <h3 className="text-base font-semibold text-[#101114]">
+          <h3 className="text-base font-semibold text-vl-dark-900">
             Variant Generator — Sizes, Colors, Stock &amp; Weight
           </h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -315,8 +315,8 @@ export function ProductVariantGenerator({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#101114]/15 bg-[#F9F8F6] px-3 py-1 text-xs font-semibold text-[#101114]">
-            <span className="size-2 rounded-full bg-[#101114]" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-vl-dark-900/15 bg-vl-white-100 px-3 py-1 text-xs font-semibold text-vl-dark-900">
+            <span className="size-2 rounded-full bg-vl-dark-900" />
             {variants.length} {variants.length === 1 ? "Variant" : "Variants"}
           </span>
         </div>
@@ -325,20 +325,20 @@ export function ProductVariantGenerator({
       {/* Sizes Selection */}
       <div className="space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <label className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             1. Select Sizes
           </label>
           <div className="flex items-center gap-2 text-xs">
             <button
               type="button"
               onClick={selectAllSizes}
-              className="font-medium text-[#101114] underline underline-offset-2 hover:opacity-70"
+              className="font-medium text-vl-dark-900 underline underline-offset-2 hover:opacity-70"
             >
               Select standard sizes
             </button>
             {selectedSizes.length > 0 && (
               <>
-                <span className="text-[#101114]/30">·</span>
+                <span className="text-vl-dark-900/30">·</span>
                 <button
                   type="button"
                   onClick={clearSizes}
@@ -360,8 +360,8 @@ export function ProductVariantGenerator({
                 onClick={() => toggleSize(size)}
                 className={`inline-flex min-h-9 items-center justify-center rounded border px-3 text-xs font-semibold transition-all ${
                   isSelected
-                    ? "border-[#101114] bg-[#101114] text-white shadow-xs"
-                    : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]/40 hover:bg-[#F9F8F6]"
+                    ? "border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
+                    : "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:border-vl-dark-900/40 hover:bg-vl-white-100"
                 }`}
               >
                 {size}
@@ -396,9 +396,9 @@ export function ProductVariantGenerator({
       </div>
 
       {/* Colors Selection */}
-      <div className="space-y-2.5 border-t border-[#101114]/10 pt-4">
+      <div className="space-y-2.5 border-t border-vl-dark-900/10 pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <label className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             2. Select Colors
           </label>
           {selectedColors.length > 0 && (
@@ -426,8 +426,8 @@ export function ProductVariantGenerator({
                 onClick={() => toggleColor(color)}
                 className={`inline-flex min-h-9 items-center gap-2 rounded border px-3 text-xs font-semibold transition-all ${
                   isSelected
-                    ? "border-[#101114] bg-[#101114] text-white shadow-xs"
-                    : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]/40 hover:bg-[#F9F8F6]"
+                    ? "border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
+                    : "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:border-vl-dark-900/40 hover:bg-vl-white-100"
                 }`}
               >
                 <span
@@ -466,11 +466,11 @@ export function ProductVariantGenerator({
       </div>
 
       {/* BULK APPLICATOR BAR WITH WEIGHT */}
-      <div className="space-y-3 rounded-md border border-[#101114]/15 bg-[#F9F8F6] p-4">
+      <div className="space-y-3 rounded-md border border-vl-dark-900/15 bg-vl-white-100 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="size-4 text-[#101114]" />
-            <p className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+            <Sparkles className="size-4 text-vl-dark-900" />
+            <p className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
               Quick Fill All Variants
             </p>
           </div>
@@ -478,9 +478,9 @@ export function ProductVariantGenerator({
             <button
               type="button"
               onClick={handleRegenerateAllSkus}
-              className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium underline underline-offset-2 hover:text-[#101114]"
+              className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium underline underline-offset-2 hover:text-vl-dark-900"
             >
-              <RefreshCw className="size-3 text-[#101114]/60" />
+              <RefreshCw className="size-3 text-vl-dark-900/60" />
               Regenerate all SKUs
             </button>
             <span className="text-muted-foreground hidden text-xs sm:inline">·</span>
@@ -574,7 +574,7 @@ export function ProductVariantGenerator({
             <button
               type="button"
               onClick={handleApplyBulkValues}
-              className="min-h-9 w-full border border-[#101114] bg-[#101114] px-3 text-xs font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="min-h-9 w-full border border-vl-dark-900 bg-vl-dark-900 px-3 text-xs font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-vl-cyan"
             >
               Apply to all
             </button>
@@ -588,7 +588,7 @@ export function ProductVariantGenerator({
       {/* GENERATED VARIANTS LIST WITH LIVE PROFIT MARGIN & WEIGHT */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <h4 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             Variant Details ({variants.length})
           </h4>
           <span className="text-muted-foreground text-xs">
@@ -612,9 +612,9 @@ export function ProductVariantGenerator({
             return (
               <div
                 key={variant.id ?? `${comboKey(variant.size, variant.color)}-${index}`}
-                className="rounded-sm border border-[#101114]/15 bg-white p-4 shadow-2xs transition-colors hover:border-[#101114]/30"
+                className="rounded-sm border border-vl-dark-900/15 bg-white p-4 shadow-2xs transition-colors hover:border-vl-dark-900/30"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#101114]/10 pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vl-dark-900/10 pb-3">
                   <div className="flex flex-wrap items-center gap-2.5">
                     {variant.color && (
                       <span
@@ -623,7 +623,7 @@ export function ProductVariantGenerator({
                         title={variant.color}
                       />
                     )}
-                    <span className="text-sm font-semibold text-[#101114]">
+                    <span className="text-sm font-semibold text-vl-dark-900">
                       {variant.color || "Default color"} · {variant.size || "Default size"}
                     </span>
                     {variant.id ? (
@@ -679,7 +679,7 @@ export function ProductVariantGenerator({
                           const gen = generateSku(productIdentifier, variant.size, variant.color);
                           updateVariant(index, "sku", gen);
                         }}
-                        className="text-muted-foreground text-[10px] underline hover:text-[#101114]"
+                        className="text-muted-foreground text-[10px] underline hover:text-vl-dark-900"
                         title="Generate SKU for this variant"
                       >
                         Auto
@@ -746,7 +746,7 @@ export function ProductVariantGenerator({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#101114]">
+                    <label className="block text-xs font-medium text-vl-dark-900">
                       Initial Stock (Qty)
                     </label>
                     <div className="mt-1">

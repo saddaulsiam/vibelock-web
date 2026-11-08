@@ -165,7 +165,7 @@ function AdminNavLinks({
                 onClick={onNavigate}
                 title={collapsed ? label : undefined}
                 className={cn(
-                  "group relative flex min-h-10 items-center overflow-hidden rounded-xl text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
+                  "group relative flex min-h-10 items-center overflow-hidden rounded-xl text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none",
                   collapsed ? "mx-auto size-10 justify-center px-0" : "w-full gap-3 px-3",
                   active
                     ? "bg-white/10 font-semibold text-white shadow-2xs"
@@ -176,7 +176,7 @@ function AdminNavLinks({
                   className={cn(
                     collapsed ? "size-4" : "size-4",
                     "shrink-0 transition-colors",
-                    active ? "text-[#00D9FF]" : "text-white/60 group-hover:text-white"
+                    active ? "text-vl-cyan" : "text-white/60 group-hover:text-white"
                   )}
                   aria-hidden="true"
                 />
@@ -210,14 +210,14 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col overflow-hidden overflow-x-hidden bg-[#101114] text-white transition-[width] duration-300 ease-in-out [-ms-overflow-style:none] lg:flex lg:h-full [&::-webkit-scrollbar]:hidden",
+        "hidden shrink-0 flex-col overflow-hidden overflow-x-hidden bg-vl-dark-900 text-white transition-[width] duration-300 ease-in-out [-ms-overflow-style:none] lg:flex lg:h-full [&::-webkit-scrollbar]:hidden",
         isCollapsed ? "w-18" : "w-64"
       )}
     >
       {/* Header with Brand & Collapse Trigger */}
       <div
         className={cn(
-          "flex min-h-16 shrink-0 items-center overflow-hidden overflow-x-hidden border-b border-white/10 bg-[#101114] whitespace-nowrap",
+          "flex min-h-16 shrink-0 items-center overflow-hidden overflow-x-hidden border-b border-white/10 bg-vl-dark-900 whitespace-nowrap",
           isCollapsed ? "justify-center px-2 py-3" : "justify-between px-5 py-3"
         )}
       >
@@ -226,9 +226,9 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
             <div className="min-w-0 overflow-hidden whitespace-nowrap">
               <Link
                 href="/admin"
-                className="font-heading rounded-sm text-lg font-black tracking-tight whitespace-nowrap text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                className="font-heading rounded-sm text-lg font-black tracking-tight whitespace-nowrap text-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
               >
-                VibeLock<span className="text-[#00D9FF]">.</span>
+                VibeLock<span className="text-vl-cyan">.</span>
               </Link>
               <p className="text-[10px] font-bold tracking-[0.16em] whitespace-nowrap text-white/50 uppercase">
                 Operations
@@ -249,10 +249,10 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
           <div className="flex flex-col items-center gap-1.5 overflow-hidden">
             <Link
               href="/admin"
-              className="font-heading rounded-sm text-lg font-black tracking-tight text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="font-heading rounded-sm text-lg font-black tracking-tight text-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
               title="VibeLock Operations"
             >
-              VL<span className="text-[#00D9FF]">.</span>
+              VL<span className="text-vl-cyan">.</span>
             </Link>
             <Button
               type="button"
@@ -291,7 +291,7 @@ export function AdminMobileNavigation({ userRole }: { userRole?: Role }) {
           <Button
             variant="outline"
             size="sm"
-            className="size-9 rounded-xl border-[#101114]/15 bg-white text-[#101114] shadow-2xs hover:bg-[#F3F0E8] sm:size-10 lg:hidden"
+            className="size-9 rounded-xl border-vl-dark-900/15 bg-white text-vl-dark-900 shadow-2xs hover:bg-vl-white-300 sm:size-10 lg:hidden"
             aria-label="Open admin navigation"
           />
         }
@@ -300,11 +300,11 @@ export function AdminMobileNavigation({ userRole }: { userRole?: Role }) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-[min(86vw,20rem)] border-0 bg-[#101114] p-0 text-white"
+        className="w-[min(86vw,20rem)] border-0 bg-vl-dark-900 p-0 text-white"
       >
         <SheetHeader className="border-b border-white/10 px-5 py-6">
           <SheetTitle className="text-left text-xl font-extrabold tracking-[-0.06em] text-white">
-            VibeLock<span className="text-[#00D9FF]">.</span>
+            VibeLock<span className="text-vl-cyan">.</span>
             <span className="ml-2 text-xs font-medium tracking-[0.16em] text-white/55 uppercase">
               Operations
             </span>

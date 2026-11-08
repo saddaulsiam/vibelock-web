@@ -57,7 +57,7 @@ export function Newsletter() {
           size="sm"
           disabled={loading}
           loading={loading}
-          className="bg-vl-cyan text-2xs hover:bg-vl-cyan h-full shrink-0 rounded-none px-4 font-extrabold tracking-wider text-[#0B0F14] uppercase hover:opacity-90"
+          className="bg-vl-cyan text-2xs hover:bg-vl-cyan h-full shrink-0 rounded-none px-4 font-extrabold tracking-wider text-vl-dark-900 uppercase hover:opacity-90"
         >
           SUBSCRIBE
         </Button>

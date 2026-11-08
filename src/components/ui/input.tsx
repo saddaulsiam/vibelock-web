@@ -31,7 +31,7 @@ const inputVariants = cva(
         /**
          * dark — Auth page & POS terminal dark-surface style.
          */
-        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-muted-foreground focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-muted-foreground focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
       size: {
         /**

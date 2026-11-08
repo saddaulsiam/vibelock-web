@@ -187,7 +187,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           onClick={() => setFilter("ALL")}
           className={`rounded-lg px-2.5 py-1 font-semibold transition ${
             filter === "ALL"
-              ? "bg-[#101114] text-white shadow-xs"
+              ? "bg-vl-dark-900 text-white shadow-xs"
               : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
           }`}
         >
@@ -197,7 +197,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           onClick={() => setFilter("ORDERS")}
           className={`rounded-lg px-2.5 py-1 font-semibold transition ${
             filter === "ORDERS"
-              ? "bg-[#101114] text-white shadow-xs"
+              ? "bg-vl-dark-900 text-white shadow-xs"
               : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
           }`}
         >
@@ -207,7 +207,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           onClick={() => setFilter("NOTES")}
           className={`rounded-lg px-2.5 py-1 font-semibold transition ${
             filter === "NOTES"
-              ? "bg-[#101114] text-white shadow-xs"
+              ? "bg-vl-dark-900 text-white shadow-xs"
               : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
           }`}
         >
@@ -217,7 +217,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           onClick={() => setFilter("REVIEWS")}
           className={`rounded-lg px-2.5 py-1 font-semibold transition ${
             filter === "REVIEWS"
-              ? "bg-[#101114] text-white shadow-xs"
+              ? "bg-vl-dark-900 text-white shadow-xs"
               : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
           }`}
         >
@@ -227,7 +227,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
           onClick={() => setFilter("SECURITY")}
           className={`rounded-lg px-2.5 py-1 font-semibold transition ${
             filter === "SECURITY"
-              ? "bg-[#101114] text-white shadow-xs"
+              ? "bg-vl-dark-900 text-white shadow-xs"
               : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
           }`}
         >

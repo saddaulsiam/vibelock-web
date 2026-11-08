@@ -263,7 +263,7 @@ export function HeroSection({
 
   return (
     <section
-      className="relative flex h-screen overflow-hidden bg-[#080A0C]"
+      className="relative flex h-screen overflow-hidden bg-vl-dark-900"
       aria-label="VibeLock hero — shop by category"
     >
       {formattedCategories.length > 0 && <InfiniteTrack categories={formattedCategories} />}
@@ -276,13 +276,13 @@ export function HeroSection({
         <div className="relative max-w-85 sm:max-w-110 lg:max-w-full">
           {/* Typewriter headline */}
           <h1
-            className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
+            className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-vl-cyan uppercase select-none"
             aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}
             <span
               aria-hidden="true"
-              className="ml-0.5 inline-block bg-[#00D9FF] align-middle"
+              className="ml-0.5 inline-block bg-vl-cyan align-middle"
               style={{
                 width: "4px",
                 height: "0.8em",
@@ -295,14 +295,14 @@ export function HeroSection({
             {tagline}
           </p>
 
-          <p className="mt-1.5 text-[10px] font-black tracking-[0.22em] text-[#00D9FF] uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
+          <p className="mt-1.5 text-[10px] font-black tracking-[0.22em] text-vl-cyan uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
             {subtagline}
           </p>
 
           <div className="mt-4 sm:mt-7" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="inline-flex items-center gap-2.5 rounded-full border border-[#00D9FF]/40 bg-[#00D9FF]/10 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-[#00D9FF] uppercase backdrop-blur-sm transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF] hover:text-[#080A0C] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
+              className="inline-flex items-center gap-2.5 rounded-full border border-vl-cyan-200 bg-vl-cyan-50 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-vl-cyan uppercase backdrop-blur-sm transition-all duration-300 hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
             >
               SHOP ALL DROPS
               <svg
@@ -334,11 +334,11 @@ export function HeroSection({
             window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
           }
         }}
-        className="group absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        className="group absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan"
         aria-label="Scroll down"
       >
-        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors group-hover:border-[#00D9FF]">
-          <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-[#00D9FF] shadow-[0_0_6px_#00D9FF]" />
+        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors group-hover:border-vl-cyan">
+          <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-vl-cyan shadow-[0_0_6px_#00D9FF]" />
         </div>
       </button>
     </section>

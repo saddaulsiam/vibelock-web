@@ -59,7 +59,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
       <Link
         href={`/product/${item.productSlug}`}
         aria-label={`View ${item.productName}`}
-        className="relative aspect-3/4 overflow-hidden bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="relative aspect-3/4 overflow-hidden bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         {item.productImage && !imageFailed ? (
           <Image
@@ -104,7 +104,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
 
           <div className="flex shrink-0 flex-row items-baseline justify-between gap-4 sm:flex-col sm:items-end sm:gap-1">
             <span
-              className="text-base font-semibold text-[#101114]"
+              className="text-base font-semibold text-vl-dark-900"
               aria-label={`Line total ${formatPrice(item.lineTotal)}`}
             >
               {formatPrice(item.lineTotal)}
@@ -124,7 +124,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
-            className="flex h-10 items-center border border-[#101114]/20"
+            className="flex h-10 items-center border border-vl-dark-900/20"
             aria-label={`Quantity for ${item.productName}`}
           >
             <button
@@ -132,7 +132,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
               onClick={() => handleUpdateQuantity(item.quantity - 1)}
               disabled={item.quantity <= 1 || isPending}
               aria-label={`Decrease ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Minus className="size-4" aria-hidden="true" />
             </button>
@@ -153,7 +153,7 @@ export function CartItemCard({ item }: CartItemCardProps) {
                 isUnavailable
               }
               aria-label={`Increase ${item.productName} quantity`}
-              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex size-10 items-center justify-center transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Plus className="size-4" aria-hidden="true" />
             </button>

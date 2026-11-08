@@ -82,23 +82,23 @@ export default async function CategoryPage({
 
         <header className="mb-6 sm:mb-8">
           <nav aria-label="Breadcrumb" className="mb-2">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">
-              VibeLock <span className="px-1 text-[#00D9FF]">/</span> Category
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-vl-dark-900/55 uppercase">
+              VibeLock <span className="px-1 text-vl-cyan">/</span> Category
             </p>
           </nav>
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
             <div className="min-w-0">
-              <h1 className="text-3xl font-semibold tracking-[-0.04em] text-[#101114] sm:text-4xl">
+              <h1 className="text-3xl font-semibold tracking-[-0.04em] text-vl-dark-900 sm:text-4xl">
                 {category.name}
               </h1>
               {category.description ? (
-                <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-[#101114]/60 sm:text-sm sm:leading-6">
+                <p className="mt-1.5 max-w-2xl text-xs leading-relaxed text-vl-dark-900/60 sm:text-sm sm:leading-6">
                   {category.description}
                 </p>
               ) : null}
             </div>
-            <p className="shrink-0 pb-0.5 text-xs text-[#101114]/60 sm:text-sm" aria-live="polite">
-              <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
+            <p className="shrink-0 pb-0.5 text-xs text-vl-dark-900/60 sm:text-sm" aria-live="polite">
+              <span className="font-semibold text-vl-dark-900">{discoveryResult.totalCount}</span>{" "}
               {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
           </div>

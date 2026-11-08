@@ -127,27 +127,27 @@ export function CategorySearchableSelect({
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex min-h-11 w-full items-center justify-between border border-[#101114]/20 bg-white px-3 py-2 text-left text-sm text-[#101114] transition-colors hover:border-[#101114]/40 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        className="flex min-h-11 w-full items-center justify-between border border-vl-dark-900/20 bg-white px-3 py-2 text-left text-sm text-vl-dark-900 transition-colors hover:border-vl-dark-900/40 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
       >
         <div className="flex items-center gap-2 overflow-hidden pr-2">
           {value ? (
-            <Tag className="size-4 shrink-0 text-[#101114]/60" />
+            <Tag className="size-4 shrink-0 text-vl-dark-900/60" />
           ) : (
-            <FolderTree className="size-4 shrink-0 text-[#101114]/40" />
+            <FolderTree className="size-4 shrink-0 text-vl-dark-900/40" />
           )}
 
           {value ? (
             <div className="flex items-center gap-2 overflow-hidden">
-              <span className="truncate font-semibold text-[#101114]">
+              <span className="truncate font-semibold text-vl-dark-900">
                 {selectedCategoryName ?? value}
               </span>
-              <span className="shrink-0 rounded-xs bg-[#101114]/5 px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/70">
+              <span className="shrink-0 rounded-xs bg-vl-dark-900/5 px-1.5 py-0.5 text-[10px] font-semibold text-vl-dark-900/70">
                 Sub-category
               </span>
             </div>
           ) : (
             <div className="flex items-center gap-2 overflow-hidden">
-              <span className="truncate font-medium text-[#101114]">
+              <span className="truncate font-medium text-vl-dark-900">
                 No parent (Top-level category)
               </span>
               <span className="shrink-0 rounded-xs bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
@@ -169,14 +169,14 @@ export function CategorySearchableSelect({
                 }
               }}
               title="Reset to top-level category"
-              className="rounded-xs p-1 text-[#101114]/50 hover:bg-black/10 hover:text-red-700 focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="rounded-xs p-1 text-vl-dark-900/50 hover:bg-black/10 hover:text-red-700 focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
             >
               <X className="size-3.5" />
               <span className="sr-only">Reset to top-level</span>
             </span>
           ) : null}
           <ChevronDown
-            className={`size-4 text-[#101114]/60 transition-transform duration-200 ${
+            className={`size-4 text-vl-dark-900/60 transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
@@ -186,14 +186,14 @@ export function CategorySearchableSelect({
       {/* Popover Dropdown Menu */}
       {isOpen && (
         <div
-          className={`absolute left-0 z-50 w-full border border-[#101114]/20 bg-white shadow-2xl ${
+          className={`absolute left-0 z-50 w-full border border-vl-dark-900/20 bg-white shadow-2xl ${
             openUpwards ? "bottom-full mb-1" : "top-full mt-1"
           }`}
         >
           {/* Search Box */}
-          <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-2.5">
+          <div className="border-b border-vl-dark-900/10 bg-vl-white-200 p-2.5">
             <div className="relative flex items-center">
-              <Search className="pointer-events-none absolute left-3 size-4 text-[#101114]/40 z-10" />
+              <Search className="pointer-events-none absolute left-3 size-4 text-vl-dark-900/40 z-10" />
               <Input
                 ref={searchInputRef}
                 type="text"
@@ -210,7 +210,7 @@ export function CategorySearchableSelect({
                     setQuery("");
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2.5 z-10 text-[#101114]/40 hover:text-[#101114]"
+                  className="absolute right-2.5 z-10 text-vl-dark-900/40 hover:text-vl-dark-900"
                 >
                   <X className="size-3.5" />
                   <span className="sr-only">Clear search</span>
@@ -220,7 +220,7 @@ export function CategorySearchableSelect({
           </div>
 
           {/* Available count info */}
-          <div className="text-muted-foreground flex items-center justify-between border-b border-[#101114]/10 bg-white px-3 py-1.5 text-[11px]">
+          <div className="text-muted-foreground flex items-center justify-between border-b border-vl-dark-900/10 bg-white px-3 py-1.5 text-[11px]">
             <span>
               {filteredCategories.length === availableCategories.length
                 ? `${availableCategories.length} categories available`
@@ -235,17 +235,17 @@ export function CategorySearchableSelect({
             <button
               type="button"
               onClick={() => handleSelect("")}
-              className={`flex w-full items-center justify-between border-b border-[#101114]/10 px-3 py-2.5 text-left text-xs transition-colors ${
+              className={`flex w-full items-center justify-between border-b border-vl-dark-900/10 px-3 py-2.5 text-left text-xs transition-colors ${
                 value === ""
-                  ? "bg-[#101114]/5 font-semibold text-[#101114]"
-                  : "text-[#101114] hover:bg-[#F3F0E8]"
+                  ? "bg-vl-dark-900/5 font-semibold text-vl-dark-900"
+                  : "text-vl-dark-900 hover:bg-vl-white-300"
               }`}
             >
               <div className="flex items-center gap-2.5">
-                <FolderTree className="size-4 shrink-0 text-[#101114]/60" />
+                <FolderTree className="size-4 shrink-0 text-vl-dark-900/60" />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[#101114]">
+                    <span className="font-semibold text-vl-dark-900">
                       No parent (Top-level category)
                     </span>
                     <span className="py-0.2 rounded-xs bg-emerald-50 px-1.5 text-[10px] font-semibold text-emerald-800">
@@ -257,12 +257,12 @@ export function CategorySearchableSelect({
                   </span>
                 </div>
               </div>
-              {value === "" && <Check className="size-4 text-[#00D9FF]" />}
+              {value === "" && <Check className="size-4 text-vl-cyan" />}
             </button>
 
             {/* Filtered Parent Categories */}
             {filteredCategories.length > 0 ? (
-              <ul className="divide-y divide-[#101114]/5 py-1">
+              <ul className="divide-y divide-vl-dark-900/5 py-1">
                 {filteredCategories.map((cat) => {
                   const isSelected = value === cat.id;
                   return (
@@ -272,15 +272,15 @@ export function CategorySearchableSelect({
                         onClick={() => handleSelect(cat.id)}
                         className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors ${
                           isSelected
-                            ? "bg-[#101114]/5 font-semibold text-[#101114]"
-                            : "text-[#101114] hover:bg-[#F3F0E8]"
+                            ? "bg-vl-dark-900/5 font-semibold text-vl-dark-900"
+                            : "text-vl-dark-900 hover:bg-vl-white-300"
                         }`}
                       >
                         <div className="flex items-center gap-2.5">
-                          <Tag className="size-3.5 shrink-0 text-[#101114]/40" />
+                          <Tag className="size-3.5 shrink-0 text-vl-dark-900/40" />
                           <span>{cat.name}</span>
                         </div>
-                        {isSelected && <Check className="size-4 text-[#00D9FF]" />}
+                        {isSelected && <Check className="size-4 text-vl-cyan" />}
                       </button>
                     </li>
                   );

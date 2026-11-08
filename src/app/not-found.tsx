@@ -6,9 +6,9 @@ import { ArrowRight } from "lucide-react";
 
 export default function NotFound() {
   return (
-    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-[#F3F0E8] py-16">
+    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-vl-white-300 py-16">
       <Container>
-        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+        <div className="mx-auto max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
           <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / 404
           </p>

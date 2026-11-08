@@ -416,7 +416,7 @@ export function AdminCustomersTable({
                 setSearchTerm("");
                 router.push("/admin/customers");
               }}
-              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white hover:bg-[#101114]/90"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white hover:bg-vl-dark-900/90"
             >
               <RotateCcw className="size-3.5" />
               <span>Reset all filters</span>

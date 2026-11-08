@@ -301,9 +301,9 @@ export function AdminInventoryStocktakeModal({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150">
-      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col rounded-sm border border-vl-dark-900/20 bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 bg-[#101114] px-5 py-3 text-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 bg-vl-dark-900 px-5 py-3 text-white">
           <div className="flex items-center gap-2.5">
             <span className="rounded bg-emerald-500/20 p-1 text-emerald-400">
               <Barcode className="size-4.5" />
@@ -351,7 +351,7 @@ export function AdminInventoryStocktakeModal({
         </div>
 
         {/* Scanner Input Station & Manual Adder Bar */}
-        <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-4">
+        <div className="border-b border-vl-dark-900/10 bg-vl-white-200 p-4">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center">
             {/* Rapid Scanner Input */}
             <form
@@ -376,7 +376,7 @@ export function AdminInventoryStocktakeModal({
               />
               <button
                 type="submit"
-                className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-xs bg-[#101114] px-2.5 py-1 text-xs font-semibold text-white hover:bg-[#101114]/85 z-10"
+                className="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-xs bg-vl-dark-900 px-2.5 py-1 text-xs font-semibold text-white hover:bg-vl-dark-900/85 z-10"
               >
                 Scan / Add
               </button>
@@ -433,10 +433,10 @@ export function AdminInventoryStocktakeModal({
         </div>
 
         {/* Audit KPI Overview Bar */}
-        <div className="grid grid-cols-2 gap-2 border-b border-[#101114]/10 bg-white p-3 sm:grid-cols-4 sm:gap-4 sm:px-5">
-          <div className="rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-2.5">
+        <div className="grid grid-cols-2 gap-2 border-b border-vl-dark-900/10 bg-white p-3 sm:grid-cols-4 sm:gap-4 sm:px-5">
+          <div className="rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2.5">
             <span className="text-[10px] font-bold text-zinc-500 uppercase">Total Scanned</span>
-            <div className="mt-0.5 text-xl font-black text-[#101114]">
+            <div className="mt-0.5 text-xl font-black text-vl-dark-900">
               {Array.from(stocktakeScans.values()).reduce((acc, s) => acc + s.count, 0)} units
             </div>
             <span className="text-[10px] text-zinc-400">
@@ -500,20 +500,20 @@ export function AdminInventoryStocktakeModal({
         {/* Scanned Items Audit Table */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           {stocktakeScans.size === 0 ? (
-            <div className="flex h-64 flex-col items-center justify-center gap-2.5 rounded-sm border border-dashed border-[#101114]/20 p-8 text-center">
+            <div className="flex h-64 flex-col items-center justify-center gap-2.5 rounded-sm border border-dashed border-vl-dark-900/20 p-8 text-center">
               <div className="flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                 <Barcode className="size-6" />
               </div>
-              <h4 className="text-sm font-bold text-[#101114]">No items scanned yet</h4>
-              <p className="max-w-md text-xs text-[#101114]/60">
+              <h4 className="text-sm font-bold text-vl-dark-900">No items scanned yet</h4>
+              <p className="max-w-md text-xs text-vl-dark-900/60">
                 Aim your wireless/USB barcode scanner at clothing price tags, or pick items from the
                 dropdown to start auditing store inventory.
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-sm border border-[#101114]/10 bg-white">
+            <div className="overflow-x-auto rounded-sm border border-vl-dark-900/10 bg-white">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F3F0E8]/70 text-[11px] font-semibold text-[#101114]/70 uppercase">
+                <thead className="bg-vl-white-300/70 text-[11px] font-semibold text-vl-dark-900/70 uppercase">
                   <tr>
                     <th className="px-4 py-2.5">Product & Variant</th>
                     <th className="px-3 py-2.5 font-mono">SKU</th>
@@ -524,7 +524,7 @@ export function AdminInventoryStocktakeModal({
                     <th className="px-3 py-2.5 text-right">Remove</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#101114]/5">
+                <tbody className="divide-y divide-vl-dark-900/5">
                   {Array.from(stocktakeScans.values()).map(({ item, count, notes }) => {
                     const delta = count - item.totalStock;
                     const isMatch = delta === 0;
@@ -538,7 +538,7 @@ export function AdminInventoryStocktakeModal({
                         }`}
                       >
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-[#101114]">{item.product.name}</div>
+                          <div className="font-semibold text-vl-dark-900">{item.product.name}</div>
                           <div className="text-[10px] text-zinc-500">
                             {[
                               item.size ? `Size: ${item.size}` : null,
@@ -548,14 +548,14 @@ export function AdminInventoryStocktakeModal({
                               .join(" • ") || "Default variant"}
                           </div>
                         </td>
-                        <td className="px-3 py-3 font-mono font-medium text-[#101114]">
+                        <td className="px-3 py-3 font-mono font-medium text-vl-dark-900">
                           {item.sku}
                         </td>
                         <td className="px-3 py-3 text-center font-mono font-bold text-zinc-600">
                           {item.totalStock}
                         </td>
                         <td className="px-3 py-3 text-center">
-                          <div className="inline-flex items-center gap-1 rounded-sm border border-[#101114]/15 bg-white p-0.5 shadow-2xs">
+                          <div className="inline-flex items-center gap-1 rounded-sm border border-vl-dark-900/15 bg-white p-0.5 shadow-2xs">
                             <button
                               type="button"
                               onClick={() =>
@@ -571,7 +571,7 @@ export function AdminInventoryStocktakeModal({
                                   return next;
                                 })
                               }
-                              className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                              className="flex size-5 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
                               title="Decrease count"
                             >
                               <Minus className="size-2.5" />
@@ -615,7 +615,7 @@ export function AdminInventoryStocktakeModal({
                                   return next;
                                 })
                               }
-                              className="flex size-5 items-center justify-center rounded-xs bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/15"
+                              className="flex size-5 items-center justify-center rounded-xs bg-vl-white-300 text-vl-dark-900 hover:bg-vl-dark-900/15"
                               title="Increase count"
                             >
                               <Plus className="size-2.5" />
@@ -670,7 +670,7 @@ export function AdminInventoryStocktakeModal({
                                 return next;
                               })
                             }
-                            className="rounded p-1 text-[#101114]/40 hover:bg-rose-50 hover:text-rose-600"
+                            className="rounded p-1 text-vl-dark-900/40 hover:bg-rose-50 hover:text-rose-600"
                             title="Remove from current stocktake"
                           >
                             <X className="size-3.5" />
@@ -748,7 +748,7 @@ export function AdminInventoryStocktakeModal({
         )}
 
         {/* Modal Bottom Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 bg-white px-5 py-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 bg-white px-5 py-3 text-xs">
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -762,7 +762,7 @@ export function AdminInventoryStocktakeModal({
                 setStocktakeScans(new Map());
                 setStocktakeFeedback(null);
               }}
-              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-rose-50 hover:text-rose-700"
+              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 font-semibold text-vl-dark-900 transition-colors hover:bg-rose-50 hover:text-rose-700"
             >
               <RefreshCw className="size-3.5" />
               <span>Clear Session</span>
@@ -772,7 +772,7 @@ export function AdminInventoryStocktakeModal({
               type="button"
               onClick={handleExportStocktakeCsv}
               disabled={stocktakeScans.size === 0}
-              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 disabled:opacity-50"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-700" />
               <span>Export Audit CSV</span>
@@ -783,7 +783,7 @@ export function AdminInventoryStocktakeModal({
             <button
               type="button"
               onClick={onClose}
-              className="inline-flex h-9 items-center rounded-sm border border-[#101114]/20 bg-white px-4 font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8]"
+              className="inline-flex h-9 items-center rounded-sm border border-vl-dark-900/20 bg-white px-4 font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300"
             >
               Close
             </button>

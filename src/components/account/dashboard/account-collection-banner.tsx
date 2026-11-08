@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 export function AccountCollectionBanner() {
   return (
-    <section className="relative mt-6 w-full overflow-hidden rounded-xl border border-white/10 bg-[#101114] text-white sm:mt-10">
+    <section className="relative mt-6 w-full overflow-hidden rounded-xl border border-white/10 bg-vl-dark-900 text-white sm:mt-10">
       {/* Background Campaign Image */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -16,7 +16,7 @@ export function AccountCollectionBanner() {
         />
         {/* Dark Gradient Overlay for optimal contrast */}
         <div
-          className="absolute inset-0 bg-linear-to-r from-[#101114] via-[#101114]/85 to-transparent sm:via-[#101114]/75"
+          className="absolute inset-0 bg-linear-to-r from-vl-dark-900 via-vl-dark-900/85 to-transparent sm:via-vl-dark-900/75"
           aria-hidden="true"
         />
       </div>
@@ -25,8 +25,8 @@ export function AccountCollectionBanner() {
         {/* Left Content */}
         <div className="max-w-xl">
           <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#00D9FF]" />
-            <span className="text-2xs font-semibold tracking-streetwear text-[#F3F0E8]/70 uppercase sm:text-compact">
+            <span className="h-1.5 w-1.5 rounded-full bg-vl-cyan" />
+            <span className="text-2xs font-semibold tracking-streetwear text-vl-white-300/70 uppercase sm:text-compact">
               Limited Releases
             </span>
           </div>
@@ -35,7 +35,7 @@ export function AccountCollectionBanner() {
             Explore New Drop Essentials
           </h3>
 
-          <p className="mt-1.5 text-xs leading-relaxed text-[#F3F0E8]/80 sm:mt-2 sm:text-sm">
+          <p className="mt-1.5 text-xs leading-relaxed text-vl-white-300/80 sm:mt-2 sm:text-sm">
             Curated heavyweights, relaxed silhouettes, and cultural streetwear crafted for Dhaka
             youth.
           </p>
@@ -43,7 +43,7 @@ export function AccountCollectionBanner() {
           <div className="mt-4 sm:mt-5">
             <Link
               href="/shop"
-              className="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
+              className="group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-100 sm:w-auto"
             >
               <span>Shop All Products</span>
               <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

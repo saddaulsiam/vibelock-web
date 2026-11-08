@@ -43,13 +43,13 @@ const selectableCardVariants = cva(
         variant: "brand",
         isSelected: true,
         withRing: true,
-        className: "border-vl-black bg-[#F3F0E8]/70 shadow-xs ring-1 ring-vl-black",
+        className: "border-vl-black bg-vl-white-300/70 shadow-xs ring-1 ring-vl-black",
       },
       {
         variant: "brand",
         isSelected: true,
         withRing: false,
-        className: "border-vl-black bg-[#F3F0E8]/60 shadow-xs",
+        className: "border-vl-black bg-vl-white-300/60 shadow-xs",
       },
       {
         variant: "brand",
@@ -61,18 +61,18 @@ const selectableCardVariants = cva(
         variant: "dark",
         isSelected: true,
         withRing: true,
-        className: "border-vl-cyan bg-[#0c0d10] shadow-xs ring-1 ring-vl-cyan",
+        className: "border-vl-cyan bg-vl-dark-900 shadow-xs ring-1 ring-vl-cyan",
       },
       {
         variant: "dark",
         isSelected: true,
         withRing: false,
-        className: "border-vl-cyan bg-[#0c0d10] shadow-xs",
+        className: "border-vl-cyan bg-vl-dark-900 shadow-xs",
       },
       {
         variant: "dark",
         isSelected: false,
-        className: "border-border-dark bg-surface-dark hover:border-vl-cyan/40",
+        className: "border-border-dark bg-surface-dark hover:border-vl-cyan-200",
       },
     ],
     defaultVariants: {

@@ -39,6 +39,6 @@ describe("PromoBanner component", () => {
     expect(element.props.href).toBe("/products?category=monsoon");
     expect(element.props["aria-label"]).toBe("Monsoon Drop 2026");
     expect(element.props.className).toContain("mb-10");
-    expect(element.props.className).toContain("focus-visible:ring-[#00D9FF]");
+    expect(element.props.className).toContain("focus-visible:ring-vl-cyan");
   });
 });

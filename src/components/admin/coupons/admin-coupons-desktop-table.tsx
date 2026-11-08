@@ -89,7 +89,7 @@ export function AdminCouponsDesktopTable({
                 <button
                   type="button"
                   onClick={onCreateCoupon}
-                  className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800"
+                  className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800"
                 >
                   <Plus className="size-3.5" />
                   <span>Create Coupon</span>

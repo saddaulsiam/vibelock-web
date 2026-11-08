@@ -14,11 +14,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const initials = (user.name || user.email || "VL").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F3F0E8] text-[#101114]">
+    <div className="flex h-screen w-full overflow-hidden bg-vl-white-300 text-vl-dark-900">
       <AdminSidebar userRole={user.role} />
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         {/* ── Top Dashboard Header ── */}
-        <header className="z-30 shrink-0 border-b border-[#101114]/10 bg-white/95 shadow-xs backdrop-blur-md">
+        <header className="z-30 shrink-0 border-b border-vl-dark-900/10 bg-white/95 shadow-xs backdrop-blur-md">
           <div className="flex min-h-16 items-center justify-between gap-3 px-3.5 py-2.5 sm:px-6 sm:py-3 lg:px-8">
             {/* Left: Mobile Nav Toggle & Brand on Mobile, User Profile on Desktop */}
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
@@ -26,16 +26,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
               <Link
                 href="/admin"
-                className="font-heading text-base font-black tracking-tight text-[#101114] lg:hidden"
+                className="font-heading text-base font-black tracking-tight text-vl-dark-900 lg:hidden"
               >
                 <span>VibeLock</span>
-                <span className="text-[#00D9FF]">.</span>
+                <span className="text-vl-cyan">.</span>
               </Link>
 
               {/* Desktop User Profile Chip */}
               <div className="hidden items-center gap-2.5 lg:flex">
                 <div
-                  className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101114] font-mono text-xs font-bold text-[#00D9FF] shadow-2xs ring-1 ring-black/5"
+                  className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-vl-dark-900 font-mono text-xs font-bold text-vl-cyan shadow-2xs ring-1 ring-black/5"
                   title={`${displayName} (${user.role})`}
                 >
                   {user.image ? (
@@ -46,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   )}
                 </div>
                 <div className="text-left">
-                  <p className="max-w-[150px] truncate text-xs leading-tight font-bold text-[#101114] xl:max-w-[180px]">
+                  <p className="max-w-[150px] truncate text-xs leading-tight font-bold text-vl-dark-900 xl:max-w-[180px]">
                     {displayName}
                   </p>
                   <div className="mt-0.5">
@@ -87,9 +87,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 className="hidden md:inline-flex"
                 title="Open live customer storefront in a new tab"
               >
-                <Store className="size-3.5 text-[#101114]/60" />
+                <Store className="size-3.5 text-vl-dark-900/60" />
                 <span>Live Store</span>
-                <ExternalLink className="size-3 text-[#101114]/40" />
+                <ExternalLink className="size-3 text-vl-dark-900/40" />
               </Button>
 
               {/* High-Impact POS Counter Button */}

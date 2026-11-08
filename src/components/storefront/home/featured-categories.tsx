@@ -27,7 +27,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
                 <Link
                   key={category.id}
                   href={`/category/${category.slug}`}
-                  className="group relative flex aspect-3/4 flex-col justify-end overflow-hidden bg-[#101114] text-white focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                  className="group relative flex aspect-3/4 flex-col justify-end overflow-hidden bg-vl-dark-900 text-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
                 >
                   {/* Category Image */}
                   <Image
@@ -55,7 +55,7 @@ export function FeaturedCategories({ categories }: FeaturedCategoriesProps) {
             })}
           </div>
         ) : (
-          <div className="text-muted-foreground rounded-sm border border-dashed border-[#101114]/20 px-4 py-12 text-center text-sm">
+          <div className="text-muted-foreground rounded-sm border border-dashed border-vl-dark-900/20 px-4 py-12 text-center text-sm">
             No categories available yet.
           </div>
         )}

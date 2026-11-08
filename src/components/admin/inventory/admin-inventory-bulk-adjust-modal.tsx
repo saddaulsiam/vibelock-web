@@ -76,7 +76,7 @@ export function AdminInventoryBulkAdjustModal({
 
         <div className="space-y-4 py-2 text-xs">
           <div className="space-y-1.5">
-            <Label className="font-semibold text-[#101114]">Type</Label>
+            <Label className="font-semibold text-vl-dark-900">Type</Label>
             <NativeSelect
               value={bulkAdjustType}
               onChange={(e) => setBulkAdjustType(e.target.value as InventoryTransactionType)}
@@ -89,7 +89,7 @@ export function AdminInventoryBulkAdjustModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="font-semibold text-[#101114]">
+            <Label className="font-semibold text-vl-dark-900">
               Quantity to apply to each variant
             </Label>
             <Input
@@ -104,7 +104,7 @@ export function AdminInventoryBulkAdjustModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="font-semibold text-[#101114]">Reason</Label>
+            <Label className="font-semibold text-vl-dark-900">Reason</Label>
             <Input
               type="text"
               value={bulkAdjustReason}
@@ -115,7 +115,7 @@ export function AdminInventoryBulkAdjustModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 px-5 py-3.5 rounded-b-2xl">
+        <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 bg-vl-white-200 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 px-5 py-3.5 rounded-b-2xl">
           <Button
             type="button"
             variant="outline"

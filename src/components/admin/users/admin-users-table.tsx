@@ -296,7 +296,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
             </DialogTrigger>
             <DialogContent className="bg-white sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-lg font-bold text-[#101114]">
+                <DialogTitle className="text-lg font-bold text-vl-dark-900">
                   Register Staff or Administrator
                 </DialogTitle>
                 <DialogDescription className="text-xs text-neutral-600">
@@ -447,7 +447,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   {visibleColumns.member && (
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#101114] text-xs font-bold text-white">
+                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
                           {initials}
                         </div>
                         <div className="min-w-0">

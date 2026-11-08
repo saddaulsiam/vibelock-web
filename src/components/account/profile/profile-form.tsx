@@ -156,9 +156,9 @@ export function ProfileForm({
       />
 
       {/* ── 1. Modern Studio Avatar Uploader ── */}
-      <div className="flex flex-col gap-4 border-b border-[#101114]/8 pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 border-b border-vl-dark-900/8 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-[#101114]/15 bg-neutral-100 shadow-2xs sm:size-18">
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-vl-dark-900/15 bg-neutral-100 shadow-2xs sm:size-18">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -173,7 +173,7 @@ export function ProfileForm({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#101114] text-xl font-bold text-white">
+              <div className="flex h-full w-full items-center justify-center bg-vl-dark-900 text-xl font-bold text-white">
                 {(name || email || "V").slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -186,7 +186,7 @@ export function ProfileForm({
           </div>
 
           <div>
-            <span className="text-xs font-semibold tracking-wider text-[#101114] uppercase">
+            <span className="text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
               Profile Photo
             </span>
             <p className="mt-0.5 text-xs text-neutral-500">
@@ -200,7 +200,7 @@ export function ProfileForm({
             type="button"
             disabled={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
+            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-vl-dark-900/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
             {uploadingAvatar ? (
               <>
@@ -236,7 +236,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-name"
-          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+          className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
         >
           Full Name
         </Label>
@@ -256,7 +256,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-phone"
-          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+          className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
         >
           Phone Number
         </Label>
@@ -279,7 +279,7 @@ export function ProfileForm({
         <div className="flex items-center justify-between">
           <Label
             htmlFor="profile-email"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Email
           </Label>
@@ -339,7 +339,7 @@ export function ProfileForm({
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-dob"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Date of Birth
           </Label>
@@ -349,14 +349,14 @@ export function ProfileForm({
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
+            className="min-h-11 rounded-xl border-vl-dark-900/15 bg-white text-xs text-vl-dark-900 focus-visible:ring-1 focus-visible:ring-vl-dark-900"
           />
         </div>
 
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-gender"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Gender
           </Label>

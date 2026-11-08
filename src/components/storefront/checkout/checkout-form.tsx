@@ -656,7 +656,7 @@ export function CheckoutForm({
               {shippingCity && (
                 <div className="mt-2 transition-all duration-200">
                   {isLoadingShipping ? (
-                    <div className="border-border text-muted-foreground flex items-center gap-2.5 rounded-xs border bg-[#F3F0E8]/50 p-3 text-xs font-medium">
+                    <div className="border-border text-muted-foreground flex items-center gap-2.5 rounded-xs border bg-vl-white-300/50 p-3 text-xs font-medium">
                       <LoaderCircle className="text-vl-cyan size-4 animate-spin" />
                       <span>Calculating shipping to {shippingCity}...</span>
                     </div>
@@ -714,7 +714,7 @@ export function CheckoutForm({
                       </div>
                     </div>
                   ) : shippingMethods.length === 1 && selectedMethod ? (
-                    <div className="border-vl-black/15 flex items-center justify-between rounded-xs border bg-[#F3F0E8]/70 px-4 py-3">
+                    <div className="border-vl-black/15 flex items-center justify-between rounded-xs border bg-vl-white-300/70 px-4 py-3">
                       <div className="flex items-center gap-2.5">
                         <div className="bg-vl-black flex size-6 items-center justify-center rounded-full text-white">
                           <Check className="size-3.5 stroke-[2.5]" />

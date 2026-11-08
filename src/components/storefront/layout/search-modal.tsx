@@ -204,7 +204,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 aria-label="Search drops"
                 variant="brand"
                 size="default"
-                className="h-10 w-full rounded-full border-vl-cyan/60 pr-9 pl-9 text-sm text-gray-900 placeholder:text-gray-400"
+                className="h-10 w-full rounded-full border-vl-cyan-300 pr-9 pl-9 text-sm text-gray-900 placeholder:text-gray-400"
               />
 
               {/* Clear button (X) */}
@@ -246,7 +246,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                       key={term}
                       type="button"
                       onClick={() => handleSelectTerm(term)}
-                      className="hover:border-vl-cyan/50 cursor-pointer rounded-full border border-gray-200 bg-gray-50/80 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-100 hover:text-black"
+                      className="hover:border-vl-cyan-300 cursor-pointer rounded-full border border-gray-200 bg-gray-50/80 px-3.5 py-1.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-100 hover:text-black"
                     >
                       {term}
                     </button>
@@ -316,7 +316,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                               <h4 className="line-clamp-1 text-xs font-semibold text-gray-900 group-hover:text-black sm:text-sm">
                                 {product.name}
                               </h4>
-                              <p className="mt-0.5 text-xs font-bold text-[#0088A8]">
+                              <p className="mt-0.5 text-xs font-bold text-vl-cyan-700">
                                 {formatPrice(price)}
                               </p>
                             </div>
@@ -329,7 +329,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                     <Link
                       href={`/shop?q=${encodeURIComponent(query.trim())}`}
                       onClick={onClose}
-                      className="border-vl-cyan/60 text-vl-cyan hover:bg-vl-cyan/10 mt-4 flex w-full items-center justify-center rounded-full border py-2.5 text-xs font-bold tracking-wider uppercase transition-colors"
+                      className="border-vl-cyan-300 text-vl-cyan hover:bg-vl-cyan-50 mt-4 flex w-full items-center justify-center rounded-full border py-2.5 text-xs font-bold tracking-wider uppercase transition-colors"
                     >
                       VIEW ALL RESULTS
                     </Link>

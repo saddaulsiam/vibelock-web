@@ -405,7 +405,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
                     <TableCell>
                       <Link
                         href={`/admin/orders/${p.orderId}`}
-                        className="font-semibold text-neutral-900 hover:text-[#00B4D8] hover:underline"
+                        className="font-semibold text-neutral-900 hover:text-vl-cyan-500 hover:underline"
                       >
                         {p.orderNumber}
                       </Link>

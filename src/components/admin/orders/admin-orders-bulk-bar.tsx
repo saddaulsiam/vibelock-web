@@ -47,7 +47,7 @@ export function AdminOrdersBulkBar({
           type="button"
           disabled={isBulkUpdating}
           onClick={onBulkPack}
-          className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-[#101114] px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-vl-dark-900 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-vl-dark-900/85 disabled:opacity-50"
         >
           <Package className="size-3.5" />
           <span>Pack Selected</span>

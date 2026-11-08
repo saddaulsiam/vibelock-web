@@ -150,8 +150,8 @@ function PosPaymentModalContent({
     (method === "SPLIT" && (isSplitShortage || isSplitCashTenderShortage));
 
   return (
-    <DialogContent className="max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-xl">
-      <DialogHeader className="border-b border-[#f0ede6] pb-3">
+    <DialogContent className="max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-xl">
+      <DialogHeader className="border-b border-vl-white-200 pb-3">
         <div className="flex items-center justify-between">
           <DialogTitle className="font-heading text-vl-black text-xl font-black tracking-tight">
             Counter Payment & Settlement
@@ -187,7 +187,7 @@ function PosPaymentModalContent({
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "CASH"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border border-vl-white-400 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <Banknote className="h-5 w-5 text-emerald-500" />
@@ -203,7 +203,7 @@ function PosPaymentModalContent({
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "BANGLA_QR"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border border-vl-white-400 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <QrCode className="h-5 w-5 text-teal-600" />
@@ -219,7 +219,7 @@ function PosPaymentModalContent({
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "CARD"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border border-vl-white-400 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <CreditCard className="h-5 w-5 text-blue-500" />
@@ -237,7 +237,7 @@ function PosPaymentModalContent({
             className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "SPLIT"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border border-vl-white-400 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <Layers className="text-vl-cyan h-5 w-5" />
@@ -259,7 +259,7 @@ function PosPaymentModalContent({
                 autoFocus
                 value={tenderAmount || ""}
                 onChange={(e) => setTenderAmount(Number(e.target.value) || 0)}
-                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
+                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 mt-1 h-12 rounded-xl border border-vl-white-500 bg-vl-white-100 font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
               />
             </div>
 
@@ -273,7 +273,7 @@ function PosPaymentModalContent({
                   key={preset}
                   type="button"
                   onClick={() => setTenderAmount(preset)}
-                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 rounded-lg border border-[#d6d2c4] bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
+                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 rounded-lg border border-vl-white-500 bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
                 >
                   ৳{preset}
                 </button>
@@ -529,13 +529,13 @@ function PosPaymentModalContent({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
+        <div className="flex items-center space-x-2 border-t border-vl-white-200 pt-3">
           <Button
             type="button"
             variant="outline"
             disabled={isSubmitting}
             onClick={onClose}
-            className="text-vl-black h-12 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+            className="text-vl-black h-12 w-1/3 rounded-xl border border-vl-white-500 text-xs font-bold hover:bg-vl-white-100"
           >
             Cancel [Esc]
           </Button>
@@ -543,7 +543,7 @@ function PosPaymentModalContent({
           <Button
             type="submit"
             disabled={isSubmitDisabled}
-            className="bg-vl-cyan text-vl-black font-heading flex h-12 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-[#2ae0ff] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)] active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
+            className="bg-vl-cyan text-vl-black font-heading flex h-12 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-vl-cyan-400 hover:shadow-[0_0_32px_rgba(0,217,255,0.5)] active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
           >
             {isSubmitting ? (
               <>

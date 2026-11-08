@@ -12,7 +12,7 @@ const TRUST_BENEFITS = [
 export function TrustBenefits() {
   return (
     <section
-      className="w-full max-w-full overflow-hidden border-y border-black bg-vl-cyan py-3 text-[#080A0C] select-none"
+      className="w-full max-w-full overflow-hidden border-y border-black bg-vl-cyan py-3 text-vl-dark-900 select-none"
       aria-label="VibeLock Trust and Service Benefits"
     >
       <div className="animate-marquee hover:hover:paused flex w-max items-center text-xs font-black tracking-streetwear whitespace-nowrap uppercase sm:text-sm">

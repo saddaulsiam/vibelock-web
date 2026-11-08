@@ -18,11 +18,11 @@ export default async function OrdersPage() {
   return (
     <div className="flex flex-col gap-6">
       {/* Orders Container */}
-      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+      <div className="rounded-xl border border-vl-dark-900/8 bg-white p-4 sm:p-6">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/8 pb-4 sm:pb-5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/8 pb-4 sm:pb-5">
           <div>
-            <h1 className="text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
+            <h1 className="text-base font-bold tracking-tight text-vl-dark-900 uppercase sm:text-lg">
               Order History
             </h1>
             <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -40,13 +40,13 @@ export default async function OrdersPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
               <PackageOpen className="size-6" />
             </div>
-            <h2 className="mt-4 text-sm font-semibold text-[#101114]">No orders found</h2>
+            <h2 className="mt-4 text-sm font-semibold text-vl-dark-900">No orders found</h2>
             <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-500">
               You haven&apos;t placed any orders yet. Once you make a purchase, it will appear here.
             </p>
             <Link
               href="/shop"
-              className="mt-5 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+              className="mt-5 inline-flex min-h-[40px] items-center gap-2 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
             >
               <span>Explore Collection</span>
               <ArrowRight className="size-3" />

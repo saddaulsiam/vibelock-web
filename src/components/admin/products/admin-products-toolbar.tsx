@@ -126,9 +126,9 @@ export function AdminProductsToolbar({
         <button
           type="button"
           onClick={() => onUpdateQuery({ status: "all", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
             currentFilters.status === "all" && currentFilters.stock === "all"
-              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
               : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
@@ -148,9 +148,9 @@ export function AdminProductsToolbar({
         <button
           type="button"
           onClick={() => onUpdateQuery({ status: "PUBLISHED", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
             currentFilters.status === "PUBLISHED" && currentFilters.stock === "all"
-              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
               : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
@@ -170,9 +170,9 @@ export function AdminProductsToolbar({
         <button
           type="button"
           onClick={() => onUpdateQuery({ status: "DRAFT", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
             currentFilters.status === "DRAFT" && currentFilters.stock === "all"
-              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
               : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
@@ -192,9 +192,9 @@ export function AdminProductsToolbar({
         <button
           type="button"
           onClick={() => onUpdateQuery({ stock: "low-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
             currentFilters.stock === "low-stock"
-              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
               : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
@@ -210,9 +210,9 @@ export function AdminProductsToolbar({
         <button
           type="button"
           onClick={() => onUpdateQuery({ stock: "out-of-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
             currentFilters.stock === "out-of-stock"
-              ? "bg-[#101114] font-semibold text-white shadow-2xs"
+              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
               : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
           }`}
         >
@@ -231,9 +231,9 @@ export function AdminProductsToolbar({
           <button
             type="button"
             onClick={() => onUpdateQuery({ status: "ARCHIVED", stock: "all" })}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
               currentFilters.status === "ARCHIVED"
-                ? "bg-[#101114] font-semibold text-white shadow-2xs"
+                ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
                 : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
             }`}
           >

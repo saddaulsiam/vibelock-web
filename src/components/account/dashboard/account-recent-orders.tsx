@@ -37,9 +37,9 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
   return (
     <Card variant="brand" className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
+      <div className="flex items-center justify-between border-b border-vl-dark-900/8 pb-3.5 sm:pb-4">
         <div>
-          <h3 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+          <h3 className="text-sm font-bold tracking-tight text-vl-dark-900 uppercase sm:text-base">
             Recent Orders
           </h3>
           <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -48,10 +48,10 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
         </div>
         <Link
           href="/account/orders"
-          className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+          className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-vl-dark-900"
         >
           <span>View all</span>
-          <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+          <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
         </Link>
       </div>
 
@@ -60,14 +60,14 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
             <PackageOpen className="size-5" />
           </div>
-          <h4 className="mt-3 text-sm font-semibold text-[#101114]">No orders yet</h4>
+          <h4 className="mt-3 text-sm font-semibold text-vl-dark-900">No orders yet</h4>
           <p className="mt-1 max-w-xs text-xs text-neutral-500">
             Your recent purchase history and delivery tracking will appear here once you place an
             order.
           </p>
           <Link
             href="/shop"
-            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+            className="mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             <span>Explore Collection</span>
             <ArrowRight className="size-3" />
@@ -92,10 +92,10 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                 {orders.map((order) => (
                   <tr key={order.orderNumber} className="transition-colors hover:bg-neutral-50/70">
                     {/* Order Number */}
-                    <td className="py-4 pr-4 font-semibold text-[#101114]">
+                    <td className="py-4 pr-4 font-semibold text-vl-dark-900">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                        className="hover:underline focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
                       >
                         #{order.orderNumber}
                       </Link>
@@ -112,7 +112,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     </td>
 
                     {/* Total Price */}
-                    <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
+                    <td className="px-4 py-4 font-bold whitespace-nowrap text-vl-dark-900">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </td>
 
@@ -125,10 +125,10 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     <td className="py-4 pl-4 text-right whitespace-nowrap">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+                        className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-vl-dark-900"
                       >
                         <span>Details</span>
-                        <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                        <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
                       </Link>
                     </td>
                   </tr>
@@ -145,7 +145,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                 <div className="flex items-center justify-between gap-2">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="truncate text-xs font-bold tracking-tight text-[#101114] hover:underline sm:text-sm"
+                    className="truncate text-xs font-bold tracking-tight text-vl-dark-900 hover:underline sm:text-sm"
                   >
                     #{order.orderNumber}
                   </Link>
@@ -161,17 +161,17 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                       {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
                     </span>
                     <span>·</span>
-                    <span className="font-bold text-[#101114]">
+                    <span className="font-bold text-vl-dark-900">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </span>
                   </div>
 
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-vl-dark-900 active:scale-95"
                   >
                     <span>Details</span>
-                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
                   </Link>
                 </div>
               </div>

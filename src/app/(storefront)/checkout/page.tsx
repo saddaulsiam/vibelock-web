@@ -45,7 +45,7 @@ export default async function CheckoutPage() {
           <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / Checkout
           </p>
-          <h1 className="text-3xl font-semibold tracking-tight text-[#101114] sm:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight text-vl-dark-900 sm:text-4xl">
             Checkout
           </h1>
           <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">

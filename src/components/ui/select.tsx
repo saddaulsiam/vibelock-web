@@ -39,7 +39,7 @@ const selectTriggerVariants = cva(
         brand:
           "rounded-brand border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
         /** dark — POS & dark mode surface */
-        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
       size: {
         sm: "h-7 text-xs px-2.5 rounded-[min(var(--radius-md),10px)]",

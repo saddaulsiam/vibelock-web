@@ -637,7 +637,7 @@ export function AdminReturnsTable({
                       )}
                       <Link
                         href={`/admin/returns/${ret.id}`}
-                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-vl-dark-900 px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
                         title="Review return items, update status, and process refund"
                       >
                         <Eye className="size-3.5" />

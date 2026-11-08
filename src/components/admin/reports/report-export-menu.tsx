@@ -7,7 +7,7 @@ export function ReportExportMenu({ query }: { query: string }) {
     <div className="group relative">
       <button
         type="button"
-        className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#101114] px-4 text-sm font-semibold text-white hover:bg-[#101114]/85"
+        className="inline-flex h-10 items-center gap-2 rounded-lg bg-vl-dark-900 px-4 text-sm font-semibold text-white hover:bg-vl-dark-900/85"
         aria-label="Export reports"
       >
         <Download className="size-4" /> Export

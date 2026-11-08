@@ -175,7 +175,7 @@ export function CategoryForm({
       secondaryAction={
         <Link
           href="/admin/categories"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex min-h-10 items-center justify-center border border-vl-dark-900/20 bg-white px-4 text-sm font-medium text-vl-dark-900 transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -201,9 +201,9 @@ export function CategoryForm({
       ) : null}
 
       {/* SECTION 1: BASIC INFORMATION */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Basic Information</h3>
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Basic Information</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Category name, instant auto-syncing URL handle, and description presets for storefront
             SEO.
@@ -213,7 +213,7 @@ export function CategoryForm({
         <div className="space-y-4">
           {/* Category Name */}
           <div>
-            <label htmlFor="category-name" className="block text-sm font-medium text-[#101114]">
+            <label htmlFor="category-name" className="block text-sm font-medium text-vl-dark-900">
               Category Name{" "}
               <span aria-hidden="true" className="text-red-700">
                 *
@@ -237,7 +237,7 @@ export function CategoryForm({
           {/* Category Slug with Auto-Sync & Manual Edit */}
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label htmlFor="category-slug" className="block text-sm font-medium text-[#101114]">
+              <label htmlFor="category-slug" className="block text-sm font-medium text-vl-dark-900">
                 Category Slug{" "}
                 <span className="text-muted-foreground text-xs font-normal">
                   (unique storefront URL handle)
@@ -253,9 +253,9 @@ export function CategoryForm({
                 <button
                   type="button"
                   onClick={handleGenerateSlug}
-                  className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3.5 text-[#00D9FF]" />
+                  <Sparkles className="size-3.5 text-vl-cyan" />
                   Generate from name
                 </button>
               </div>
@@ -274,11 +274,11 @@ export function CategoryForm({
               />
             </div>
             <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
-              <Globe className="size-3.5 text-[#101114]/40" />
+              <Globe className="size-3.5 text-vl-dark-900/40" />
               <span>Preview:</span>
-              <span className="font-mono text-[#101114]">
+              <span className="font-mono text-vl-dark-900">
                 vibelock.bd/category/
-                <strong className="font-semibold text-[#101114]">{slug || "category-slug"}</strong>
+                <strong className="font-semibold text-vl-dark-900">{slug || "category-slug"}</strong>
               </span>
             </div>
           </div>
@@ -288,7 +288,7 @@ export function CategoryForm({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label
                 htmlFor="category-description"
-                className="block text-sm font-medium text-[#101114]"
+                className="block text-sm font-medium text-vl-dark-900"
               >
                 Description{" "}
                 <span className="text-muted-foreground text-xs font-normal">
@@ -306,7 +306,7 @@ export function CategoryForm({
                       setIsDirty(true);
                       toast.success(`Applied ${tmpl.label} description!`);
                     }}
-                    className="border border-[#101114]/15 bg-[#F9F8F6] px-2 py-0.5 text-[11px] font-medium text-[#101114] transition-colors hover:border-[#101114] hover:bg-[#F3F0E8]"
+                    className="border border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 transition-colors hover:border-vl-dark-900 hover:bg-vl-white-300"
                   >
                     {tmpl.label}
                   </button>
@@ -332,11 +332,11 @@ export function CategoryForm({
       </div>
 
       {/* SECTION 2: CATEGORY HERO / COVER IMAGE */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-base font-semibold text-[#101114]">
+              <h3 className="text-base font-semibold text-vl-dark-900">
                 Category Hero &amp; Cover Image
               </h3>
               <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -350,7 +350,7 @@ export function CategoryForm({
                 setUseUrlInput((prev) => !prev);
                 setIsDirty(true);
               }}
-              className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+              className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
             >
               {useUrlInput ? (
                 <>
@@ -358,7 +358,7 @@ export function CategoryForm({
                 </>
               ) : (
                 <>
-                  <Globe className="size-3.5 text-[#00D9FF]" /> Or use external image URL
+                  <Globe className="size-3.5 text-vl-cyan" /> Or use external image URL
                 </>
               )}
             </button>
@@ -368,7 +368,7 @@ export function CategoryForm({
         {/* Active Image Card */}
         {previewUrl && !isRemoved ? (
           <div className="space-y-3">
-            <div className="relative aspect-video max-w-md overflow-hidden rounded-sm border border-[#101114]/20 bg-black/5 shadow-xs">
+            <div className="relative aspect-video max-w-md overflow-hidden rounded-sm border border-vl-dark-900/20 bg-black/5 shadow-xs">
               <Image
                 src={previewUrl}
                 alt="Category image preview"
@@ -409,14 +409,14 @@ export function CategoryForm({
               onDrop={handleDrop}
               className={`flex cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed p-6 text-center transition-colors ${
                 isDragging
-                  ? "border-[#00D9FF] bg-[#00D9FF]/5"
-                  : "border-[#101114]/20 bg-[#FBF9F5] hover:border-[#101114] hover:bg-[#F3F0E8]"
+                  ? "border-vl-cyan bg-vl-cyan-50"
+                  : "border-vl-dark-900/20 bg-vl-white-200 hover:border-vl-dark-900 hover:bg-vl-white-300"
               }`}
             >
               <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-xs">
-                <ImagePlus className="size-6 text-[#101114]/70" />
+                <ImagePlus className="size-6 text-vl-dark-900/70" />
               </div>
-              <span className="mt-3 text-sm font-semibold text-[#101114]">
+              <span className="mt-3 text-sm font-semibold text-vl-dark-900">
                 {previewUrl && !isRemoved
                   ? "Choose a different image file"
                   : "Click or drag & drop to upload image"}
@@ -439,7 +439,7 @@ export function CategoryForm({
           <div>
             <label
               htmlFor="category-image-url"
-              className="block text-xs font-semibold text-[#101114]"
+              className="block text-xs font-semibold text-vl-dark-900"
             >
               Public Image URL (HTTPS or Cloudinary CDN)
             </label>
@@ -467,11 +467,11 @@ export function CategoryForm({
       </div>
 
       {/* SECTION 3: HIERARCHY & PLACEMENT */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex items-center gap-2">
-            <Layers className="size-4 text-[#101114]" />
-            <h3 className="text-base font-semibold text-[#101114]">Hierarchy &amp; Placement</h3>
+            <Layers className="size-4 text-vl-dark-900" />
+            <h3 className="text-base font-semibold text-vl-dark-900">Hierarchy &amp; Placement</h3>
           </div>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Organize categories into parent-child nesting for multi-level navigation and catalog
@@ -480,7 +480,7 @@ export function CategoryForm({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+          <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
             Parent Category <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
           <CategorySearchableSelect
@@ -509,7 +509,7 @@ export function CategoryForm({
         {/* Display Priority & Merchandising */}
         <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+            <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
               Display Priority (Sort Order)
             </label>
             <div className="mt-1.5">
@@ -532,7 +532,7 @@ export function CategoryForm({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+            <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
               Storefront Visibility
             </label>
             <div className="flex h-11 items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3.5">
@@ -566,11 +566,11 @@ export function CategoryForm({
         </div>
       </div>
       {/* SECTION 4: SEARCH ENGINE OPTIMIZATION (SEO) */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex items-center gap-2">
-            <Search className="size-4 text-[#101114]" />
-            <h3 className="text-base font-semibold text-[#101114]">
+            <Search className="size-4 text-vl-dark-900" />
+            <h3 className="text-base font-semibold text-vl-dark-900">
               Search Engine Optimization (SEO)
             </h3>
           </div>
@@ -581,7 +581,7 @@ export function CategoryForm({
         </div>
 
         {/* Live Google Search Snippet Preview Box */}
-        <div className="rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4">
+        <div className="rounded-lg border border-neutral-200/90 bg-vl-white-200 p-4">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-wider text-neutral-500 uppercase">
               Google Search Result Preview
@@ -626,7 +626,7 @@ export function CategoryForm({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="category-meta-title"
-              className="block text-sm font-medium text-[#101114]"
+              className="block text-sm font-medium text-vl-dark-900"
             >
               Page Title (Meta Title)
             </label>
@@ -645,9 +645,9 @@ export function CategoryForm({
                     setMetaTitle(`${name.trim()} | VibeLock`);
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  <Sparkles className="size-3 text-vl-cyan" />
                   Auto-fill
                 </button>
               )}
@@ -683,7 +683,7 @@ export function CategoryForm({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="category-meta-desc"
-              className="block text-sm font-medium text-[#101114]"
+              className="block text-sm font-medium text-vl-dark-900"
             >
               Meta Description
             </label>
@@ -704,9 +704,9 @@ export function CategoryForm({
                     setMetaDescription(description.slice(0, 160).trim());
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  <Sparkles className="size-3 text-vl-cyan" />
                   Copy from description
                 </button>
               )}
@@ -734,15 +734,15 @@ export function CategoryForm({
       </div>
 
       {/* SECTION 5: PROMOTIONAL BANNERS NOTICE */}
-      <div className="flex items-start gap-3 rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4 text-xs text-neutral-600">
-        <Megaphone className="mt-0.5 size-4 shrink-0 text-[#101114]" />
+      <div className="flex items-start gap-3 rounded-lg border border-neutral-200/90 bg-vl-white-200 p-4 text-xs text-neutral-600">
+        <Megaphone className="mt-0.5 size-4 shrink-0 text-vl-dark-900" />
         <div className="flex-1 space-y-1">
           <p className="font-semibold text-neutral-900">Campaign &amp; Promotional Banners</p>
           <p>
             Promotional banners for this category are managed centrally in{" "}
             <Link
               href="/admin/banners"
-              className="font-medium text-[#101114] underline underline-offset-2 hover:text-[#00D9FF]"
+              className="font-medium text-vl-dark-900 underline underline-offset-2 hover:text-vl-cyan"
             >
               Admin → Banners
             </Link>

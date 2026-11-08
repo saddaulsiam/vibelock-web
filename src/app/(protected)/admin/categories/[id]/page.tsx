@@ -188,7 +188,7 @@ export default async function AdminCategoryDetailPage({
             <div className="mt-3">
               <Link
                 href="/admin/banners/new"
-                className="inline-flex items-center gap-1.5 rounded-md bg-[#101114] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800"
+                className="inline-flex items-center gap-1.5 rounded-md bg-vl-dark-900 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-neutral-800"
               >
                 <Plus className="size-3.5" />
                 <span>Create Campaign Banner</span>
@@ -245,7 +245,7 @@ export default async function AdminCategoryDetailPage({
                     </span>
                     <Link
                       href={`/admin/banners/${banner.id}/edit`}
-                      className="inline-flex items-center gap-1 font-semibold text-neutral-900 underline underline-offset-4 hover:text-[#00D9FF]"
+                      className="inline-flex items-center gap-1 font-semibold text-neutral-900 underline underline-offset-4 hover:text-vl-cyan"
                     >
                       <span>Edit</span>
                       <ExternalLink className="size-3" />

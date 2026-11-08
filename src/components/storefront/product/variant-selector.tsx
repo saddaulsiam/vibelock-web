@@ -140,9 +140,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   aria-pressed={selected}
                   className={`focus-visible:ring-vl-cyan min-h-11 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
-                      ? "border-vl-black bg-[#101114] text-white"
-                      : "border-vl-black/20 bg-white text-[#101114] hover:border-vl-black"
-                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
+                      ? "border-vl-black bg-vl-dark-900 text-white"
+                      : "border-vl-black/20 bg-white text-vl-dark-900 hover:border-vl-black"
+                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-vl-white-300 disabled:opacity-60`}
                 >
                   {color}
                   {!available && <span className="sr-only">, unavailable</span>}
@@ -171,9 +171,9 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
                   aria-pressed={selected}
                   className={`focus-visible:ring-vl-cyan min-h-11 min-w-12 rounded-sm border px-4 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
                     selected
-                      ? "border-vl-black bg-[#101114] text-white"
-                      : "border-vl-black/20 bg-white text-[#101114] hover:border-vl-black"
-                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-[#F3F0E8] disabled:opacity-60`}
+                      ? "border-vl-black bg-vl-dark-900 text-white"
+                      : "border-vl-black/20 bg-white text-vl-dark-900 hover:border-vl-black"
+                  } disabled:border-border disabled:text-muted-foreground disabled:cursor-not-allowed disabled:bg-vl-white-300 disabled:opacity-60`}
                 >
                   {size}
                   {!available && <span className="sr-only">, unavailable</span>}
@@ -194,7 +194,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
             disabled={quantity <= 1}
             aria-label="Decrease quantity"
-            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Minus className="size-4" aria-hidden="true" />
           </button>
@@ -219,7 +219,7 @@ export function VariantSelector({ variants, productAvailable }: VariantSelectorP
             onClick={() => setQuantity((current) => Math.min(MAX_QUANTITY, current + 1))}
             disabled={quantity >= MAX_QUANTITY}
             aria-label="Increase quantity"
-            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex size-11 items-center justify-center focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus className="size-4" aria-hidden="true" />
           </button>

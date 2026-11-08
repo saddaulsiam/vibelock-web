@@ -60,9 +60,9 @@ export function ProductBasicInfoSection({
   };
 
   return (
-    <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-      <div className="border-b border-[#101114]/10 pb-4">
-        <h3 className="text-base font-semibold text-[#101114]">Basic Information</h3>
+    <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+      <div className="border-b border-vl-dark-900/10 pb-4">
+        <h3 className="text-base font-semibold text-vl-dark-900">Basic Information</h3>
         <p className="text-muted-foreground mt-1 text-xs leading-5">
           Title, live auto-generating URL handle, and rich catalog description.
         </p>
@@ -70,7 +70,7 @@ export function ProductBasicInfoSection({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="product-name" className="block text-sm font-medium text-[#101114]">
+          <label htmlFor="product-name" className="block text-sm font-medium text-vl-dark-900">
             Product Title / Name{" "}
             <span aria-hidden="true" className="text-red-700">
               *
@@ -93,7 +93,7 @@ export function ProductBasicInfoSection({
 
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="product-slug" className="block text-sm font-medium text-[#101114]">
+            <label htmlFor="product-slug" className="block text-sm font-medium text-vl-dark-900">
               Product Slug{" "}
               <span className="text-muted-foreground text-xs font-normal">
                 (unique storefront URL handle)
@@ -109,9 +109,9 @@ export function ProductBasicInfoSection({
               <button
                 type="button"
                 onClick={onGenerateSlug}
-                className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
               >
-                <Sparkles className="size-3.5 text-[#00D9FF]" />
+                <Sparkles className="size-3.5 text-vl-cyan" />
                 Generate from name
               </button>
             </div>
@@ -130,11 +130,11 @@ export function ProductBasicInfoSection({
             />
           </div>
           <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
-            <Globe className="size-3.5 text-[#101114]/40" />
+            <Globe className="size-3.5 text-vl-dark-900/40" />
             <span>Preview:</span>
-            <span className="font-mono text-[#101114]">
+            <span className="font-mono text-vl-dark-900">
               vibelock.bd/products/
-              <strong className="font-semibold text-[#101114]">{slug || "product-slug"}</strong>
+              <strong className="font-semibold text-vl-dark-900">{slug || "product-slug"}</strong>
             </span>
           </div>
         </div>
@@ -144,7 +144,7 @@ export function ProductBasicInfoSection({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="product-description"
-              className="block text-sm font-medium text-[#101114]"
+              className="block text-sm font-medium text-vl-dark-900"
             >
               Description &amp; Specifications
             </label>
@@ -155,7 +155,7 @@ export function ProductBasicInfoSection({
                   key={tmpl.label}
                   type="button"
                   onClick={() => insertTemplateSnippet(tmpl.snippet)}
-                  className="inline-flex items-center gap-1 rounded border border-[#101114]/15 bg-[#F9F8F6] px-2 py-0.5 text-[11px] font-medium text-[#101114] transition-colors hover:bg-[#101114] hover:text-white"
+                  className="inline-flex items-center gap-1 rounded border border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 transition-colors hover:bg-vl-dark-900 hover:text-white"
                 >
                   + {tmpl.label}
                 </button>

@@ -67,7 +67,7 @@ export function AccountMetrics({
   return (
     /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
     <Card variant="brand" className="overflow-hidden p-0">
-      <div className="grid grid-cols-2 divide-x divide-y divide-[#101114]/6 sm:grid-cols-4 sm:divide-y-0">
+      <div className="grid grid-cols-2 divide-x divide-y divide-vl-dark-900/6 sm:grid-cols-4 sm:divide-y-0">
         {metrics.map((metric) => (
           <div
             key={metric.label}
@@ -77,7 +77,7 @@ export function AccountMetrics({
               <span className="block truncate text-[10px] font-semibold tracking-wider text-neutral-400 uppercase sm:text-[11px]">
                 {metric.label}
               </span>
-              <p className="mt-1 truncate text-lg font-bold tracking-tight text-[#101114] sm:mt-2 sm:text-2xl lg:text-3xl">
+              <p className="mt-1 truncate text-lg font-bold tracking-tight text-vl-dark-900 sm:mt-2 sm:text-2xl lg:text-3xl">
                 {metric.value}
               </p>
             </div>
@@ -85,10 +85,10 @@ export function AccountMetrics({
             <div className="mt-3 pt-1 sm:mt-4">
               <Link
                 href={metric.href}
-                className="group inline-flex min-h-8 items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-[#101114]"
+                className="group inline-flex min-h-8 items-center gap-1 text-[11px] font-normal text-neutral-500 transition-colors hover:text-vl-dark-900"
               >
                 <span>{metric.actionText}</span>
-                <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                <ArrowRight className="size-2.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
               </Link>
             </div>
           </div>

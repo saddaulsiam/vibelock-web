@@ -61,7 +61,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition-colors hover:bg-zinc-50 hover:text-zinc-950 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
+          "inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition-colors hover:bg-zinc-50 hover:text-zinc-950 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none",
           buttonClassName
         )}
         title="Customize visible columns"
@@ -105,7 +105,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
                     type="checkbox"
                     checked={isChecked}
                     onChange={(e) => onChange(col.key, e.target.checked)}
-                    className="size-3.5 cursor-pointer rounded-xs accent-[#101114]"
+                    className="size-3.5 cursor-pointer rounded-xs accent-vl-dark-900"
                   />
                 </label>
               );

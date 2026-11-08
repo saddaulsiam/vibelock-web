@@ -186,7 +186,7 @@ export function ShippingMethodForm({
             type="checkbox"
             value="on"
             defaultChecked={method?.isActive ?? true}
-            className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+            className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
           />
           <span>Active for customer checkout</span>
         </label>

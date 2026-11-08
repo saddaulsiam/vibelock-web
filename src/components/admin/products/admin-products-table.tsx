@@ -290,7 +290,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 checked={isAllSelected}
                 onChange={handleToggleSelectAll}
                 aria-label="Select all products"
-                className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+                className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
               />
             </TableHead>
             <TableHead>Product</TableHead>
@@ -316,8 +316,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 className="px-5 py-14 text-center"
               >
                 <div className="mx-auto max-w-sm space-y-3">
-                  <Boxes className="mx-auto size-8 text-[#101114]/30" />
-                  <h3 className="text-sm font-semibold text-[#101114]">
+                  <Boxes className="mx-auto size-8 text-vl-dark-900/30" />
+                  <h3 className="text-sm font-semibold text-vl-dark-900">
                     {hasActiveFilters ? "No products match your filters" : "No products yet"}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-5">
@@ -329,14 +329,14 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     <button
                       type="button"
                       onClick={handleResetFilters}
-                      className="inline-flex items-center gap-1.5 rounded-sm border border-[#101114]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+                      className="inline-flex items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 py-1.5 text-xs font-semibold text-vl-dark-900 hover:bg-vl-white-300"
                     >
                       <RotateCcw className="size-3.5" /> Clear all filters
                     </button>
                   ) : (
                     <Link
                       href="/admin/products/new"
-                      className="inline-flex items-center gap-1.5 rounded-sm bg-[#101114] px-4 py-2 text-xs font-semibold text-white hover:bg-[#101114]/85"
+                      className="inline-flex items-center gap-1.5 rounded-sm bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white hover:bg-vl-dark-900/85"
                     >
                       Create product
                     </Link>
@@ -365,7 +365,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
               const isSelected = selectedIds.has(product.id);
 
               return (
-                <TableRow key={product.id} className={isSelected ? "bg-[#F3F0E8]/50" : undefined}>
+                <TableRow key={product.id} className={isSelected ? "bg-vl-white-300/50" : undefined}>
                   {/* ── Selection Checkbox ── */}
                   <TableCell className="w-10 px-4 text-center">
                     <input
@@ -373,7 +373,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       checked={isSelected}
                       onChange={() => handleToggleSelect(product.id)}
                       aria-label={`Select ${product.name}`}
-                      className="size-4 cursor-pointer rounded-xs border-[#101114]/30 accent-[#101114]"
+                      className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
                     />
                   </TableCell>
 
@@ -382,7 +382,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     <div className="flex items-center gap-3.5">
                       {/* Thumbnail with High-Res Hover Preview */}
                       <div className="group/thumb relative size-12 shrink-0">
-                        <div className="relative size-12 overflow-hidden rounded-sm border border-[#101114]/15 bg-[#F2F2F2]">
+                        <div className="relative size-12 overflow-hidden rounded-sm border border-vl-dark-900/15 bg-vl-white-300">
                           {product.primaryImage ? (
                             <Image
                               src={product.primaryImage}
@@ -394,7 +394,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               unoptimized={product.primaryImage.startsWith("blob:")}
                             />
                           ) : (
-                            <div className="flex size-full items-center justify-center text-[#101114]/25">
+                            <div className="flex size-full items-center justify-center text-vl-dark-900/25">
                               <ImageOff className="size-5" />
                             </div>
                           )}
@@ -402,8 +402,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                         {/* Hover preview card */}
                         {product.primaryImage && (
-                          <div className="pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border border-[#101114]/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
-                            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-[#F2F2F2]">
+                          <div className="pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border border-vl-dark-900/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
+                            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-vl-white-300">
                               <Image
                                 src={product.primaryImage}
                                 alt={product.name}
@@ -414,10 +414,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                 unoptimized={product.primaryImage.startsWith("blob:")}
                               />
                             </div>
-                            <p className="mt-2 truncate text-xs font-semibold text-[#101114]">
+                            <p className="mt-2 truncate text-xs font-semibold text-vl-dark-900">
                               {product.name}
                             </p>
-                            <div className="mt-0.5 flex items-center justify-between text-[10px] text-[#101114]/60">
+                            <div className="mt-0.5 flex items-center justify-between text-[10px] text-vl-dark-900/60">
                               <span className="font-mono">/{product.slug}</span>
                               <span>{product.totalStock} in stock</span>
                             </div>
@@ -429,7 +429,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       <div className="min-w-0">
                         <Link
                           href={`/admin/products/${product.id}/edit`}
-                          className="font-semibold text-[#101114] hover:underline"
+                          className="font-semibold text-vl-dark-900 hover:underline"
                         >
                           {product.name}
                         </Link>
@@ -446,10 +446,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                   expandedVariantId === product.id ? null : product.id
                                 )
                               }
-                              className="inline-flex items-center gap-1 rounded-xs bg-[#101114]/5 px-1.5 py-0.5 text-[10px] font-semibold text-[#101114]/75 transition-colors hover:bg-[#101114]/10 hover:text-[#101114]"
+                              className="inline-flex items-center gap-1 rounded-xs bg-vl-dark-900/5 px-1.5 py-0.5 text-[10px] font-semibold text-vl-dark-900/75 transition-colors hover:bg-vl-dark-900/10 hover:text-vl-dark-900"
                               title="Click to view variant stock details"
                             >
-                              <Layers className="size-3 text-[#101114]/60" />
+                              <Layers className="size-3 text-vl-dark-900/60" />
                               <span>
                                 {product.variantCount}{" "}
                                 {product.variantCount === 1 ? "variant" : "variants"}
@@ -463,31 +463,31 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                             {/* Variant Details Popover Dropdown */}
                             {expandedVariantId === product.id && product.variants && (
-                              <div className="animate-in fade-in zoom-in-95 absolute top-full left-0 z-40 mt-1.5 w-80 rounded-sm border border-[#101114]/15 bg-white p-3 shadow-xl duration-150">
-                                <div className="flex items-center justify-between border-b border-[#101114]/10 pb-2">
-                                  <p className="text-xs font-semibold text-[#101114]">
+                              <div className="animate-in fade-in zoom-in-95 absolute top-full left-0 z-40 mt-1.5 w-80 rounded-sm border border-vl-dark-900/15 bg-white p-3 shadow-xl duration-150">
+                                <div className="flex items-center justify-between border-b border-vl-dark-900/10 pb-2">
+                                  <p className="text-xs font-semibold text-vl-dark-900">
                                     Variant Stock Breakdown
                                   </p>
                                   <button
                                     type="button"
                                     onClick={() => setExpandedVariantId(null)}
-                                    className="text-[#101114]/40 hover:text-[#101114]"
+                                    className="text-vl-dark-900/40 hover:text-vl-dark-900"
                                   >
                                     <X className="size-3.5" />
                                   </button>
                                 </div>
 
-                                <div className="mt-2 max-h-56 divide-y divide-[#101114]/5 overflow-y-auto pr-1 text-xs">
+                                <div className="mt-2 max-h-56 divide-y divide-vl-dark-900/5 overflow-y-auto pr-1 text-xs">
                                   {product.variants.map((v) => (
                                     <div
                                       key={v.id}
                                       className="flex items-center justify-between py-1.5"
                                     >
                                       <div>
-                                        <p className="font-mono text-[11px] font-medium text-[#101114]">
+                                        <p className="font-mono text-[11px] font-medium text-vl-dark-900">
                                           {v.sku}
                                         </p>
-                                        <p className="text-[10px] text-[#101114]/60">
+                                        <p className="text-[10px] text-vl-dark-900/60">
                                           {[
                                             v.size ? `Size: ${v.size}` : null,
                                             v.color ? `Color: ${v.color}` : null,
@@ -508,7 +508,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                         >
                                           {v.stock <= 0 ? "Out of Stock" : `${v.stock} in stock`}
                                         </span>
-                                        <p className="mt-0.5 font-mono text-[10px] text-[#101114]/70">
+                                        <p className="mt-0.5 font-mono text-[10px] text-vl-dark-900/70">
                                           ৳{v.discountPrice ?? v.sellingPrice}
                                         </p>
                                       </div>
@@ -541,8 +541,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                 }
                                 className={`inline-flex items-center rounded-xs px-2 py-0.5 text-xs font-medium transition-colors ${
                                   isSelected
-                                    ? "bg-[#101114] text-white shadow-2xs"
-                                    : "border border-[#101114]/15 bg-[#FBF9F5] text-[#101114] hover:border-[#101114] hover:bg-[#F3F0E8]"
+                                    ? "bg-vl-dark-900 text-white shadow-2xs"
+                                    : "border border-vl-dark-900/15 bg-vl-white-200 text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-300"
                                 }`}
                                 title={
                                   isSelected
@@ -568,7 +568,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         {hasDiscount ? (
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-[#101114]">
+                              <span className="font-bold text-vl-dark-900">
                                 {formatPrice(product.minDiscountPrice)}
                               </span>
                               <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
@@ -580,7 +580,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             </span>
                           </div>
                         ) : (
-                          <span className="font-semibold text-[#101114]">
+                          <span className="font-semibold text-vl-dark-900">
                             {formatPrice(product.minSellingPrice)}
                           </span>
                         )}
@@ -588,7 +588,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         <button
                           type="button"
                           onClick={() => setPriceEditProduct(product)}
-                          className="rounded p-1 text-[#101114]/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:bg-[#101114]/10 hover:text-[#101114] focus:opacity-100"
+                          className="rounded p-1 text-vl-dark-900/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:bg-vl-dark-900/10 hover:text-vl-dark-900 focus:opacity-100"
                           title="Quick edit price & discount"
                         >
                           <Pencil className="size-3" />
@@ -646,7 +646,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800"
                             : product.status === "DRAFT"
                               ? "border-amber-200 bg-amber-50 text-amber-800"
-                              : "border-[#101114]/15 bg-[#F3F0E8] text-[#101114]"
+                              : "border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900"
                         }`}
                       >
                         {product.status === "PUBLISHED"
@@ -664,7 +664,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       {/* Edit Link */}
                       <Link
                         href={`/admin/products/${product.id}/edit`}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
                         title="Edit product"
                       >
                         <Pencil className="size-3.5" />
@@ -674,7 +674,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       {/* Duplicate Link */}
                       <Link
                         href={`/admin/products/new?duplicateFrom=${product.id}`}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
                         title="Duplicate as new product"
                       >
                         <Copy className="size-3.5" />
@@ -684,7 +684,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       <button
                         type="button"
                         onClick={() => setBarcodeModalProducts([product])}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2 text-xs font-semibold text-[#101114]/80 shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
                         title="Print price tag barcode labels for this product"
                       >
                         <Printer className="size-3.5" />
@@ -718,7 +718,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           href={`/product/${product.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex h-8 items-center rounded-sm border border-[#101114]/20 bg-white px-2 text-xs text-[#101114]/70 shadow-2xs transition-colors hover:bg-[#F3F0E8] hover:text-[#101114]"
+                          className="inline-flex h-8 items-center rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs text-vl-dark-900/70 shadow-2xs transition-colors hover:bg-vl-white-300 hover:text-vl-dark-900"
                           title="View product on live store"
                         >
                           <ExternalLink className="size-3.5" />
@@ -778,9 +778,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
       {/* ── Barcode Scanner Auto-Detection Toast Indicator ── */}
       {scannedIndicator && (
-        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-[#00D9FF]/40 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
-          <span className="flex size-2 animate-ping rounded-full bg-[#00D9FF]" />
-          <span className="font-semibold text-[#00D9FF]">⚡ Scanner Active:</span>
+        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-vl-cyan-200 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
+          <span className="flex size-2 animate-ping rounded-full bg-vl-cyan" />
+          <span className="font-semibold text-vl-cyan">⚡ Scanner Active:</span>
           <span>{scannedIndicator}</span>
         </div>
       )}

@@ -19,7 +19,7 @@ function SubmitButton({ isEnabled }: { isEnabled: boolean }) {
       className={`inline-flex min-h-8 items-center justify-center rounded px-3 text-xs font-semibold transition-colors disabled:opacity-60 ${
         isEnabled
           ? "border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800"
-          : "border border-[#101114] bg-[#101114] text-white hover:bg-[#101114]/80"
+          : "border border-vl-dark-900 bg-vl-dark-900 text-white hover:bg-vl-dark-900/80"
       }`}
     >
       {pending ? "Saving..." : isEnabled ? "Disable" : "Enable"}

@@ -91,17 +91,17 @@ export function AdminProductQuickPriceModal({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
-      <div className="w-full max-w-md rounded-sm border border-[#101114]/20 bg-white shadow-2xl">
+      <div className="w-full max-w-md rounded-sm border border-vl-dark-900/20 bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-3.5">
+        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-3.5">
           <div className="flex items-center gap-2">
-            <Tag className="size-4 text-[#101114]" />
-            <h3 className="text-sm font-semibold text-[#101114]">Quick Price & Discount Edit</h3>
+            <Tag className="size-4 text-vl-dark-900" />
+            <h3 className="text-sm font-semibold text-vl-dark-900">Quick Price & Discount Edit</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-1 text-[#101114]/40 hover:text-[#101114]"
+            className="rounded p-1 text-vl-dark-900/40 hover:text-vl-dark-900"
           >
             <X className="size-4" />
           </button>
@@ -109,9 +109,9 @@ export function AdminProductQuickPriceModal({
 
         {/* Modal Body */}
         <div className="space-y-4 p-5">
-          <div className="flex items-center gap-3 rounded-sm border border-[#101114]/10 bg-[#FBF9F5] p-3">
+          <div className="flex items-center gap-3 rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-3">
             {product.primaryImage ? (
-              <div className="relative size-10 shrink-0 overflow-hidden rounded-xs border border-[#101114]/15 bg-white">
+              <div className="relative size-10 shrink-0 overflow-hidden rounded-xs border border-vl-dark-900/15 bg-white">
                 <Image
                   src={product.primaryImage}
                   alt={product.name}
@@ -122,8 +122,8 @@ export function AdminProductQuickPriceModal({
               </div>
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-[#101114]">{product.name}</p>
-              <p className="font-mono text-[10px] text-[#101114]/60">
+              <p className="truncate text-xs font-semibold text-vl-dark-900">{product.name}</p>
+              <p className="font-mono text-[10px] text-vl-dark-900/60">
                 /{product.slug} • {product.variantCount} variant(s)
               </p>
             </div>
@@ -139,8 +139,8 @@ export function AdminProductQuickPriceModal({
             {/* Cost Price (কেনা দাম - Disabled / Read-only) */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-[#101114]">Cost Price</label>
-                <span className="text-[10px] font-medium text-[#101114]/50">
+                <label className="block text-xs font-semibold text-vl-dark-900">Cost Price</label>
+                <span className="text-[10px] font-medium text-vl-dark-900/50">
                   🔒 Disabled (Main Price / No Change)
                 </span>
               </div>
@@ -157,14 +157,14 @@ export function AdminProductQuickPriceModal({
                       : "৳0"
                   }
                   size="default"
-                  className="cursor-not-allowed select-none font-semibold text-[#101114]/70"
+                  className="cursor-not-allowed select-none font-semibold text-vl-dark-900/70"
                   title="Cost price cannot be edited here. Change it from the full product edit page."
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#101114]">
+              <label className="block text-xs font-semibold text-vl-dark-900">
                 Selling Price (BDT ৳) <span className="text-red-500">*</span>
               </label>
               <div className="mt-1">
@@ -183,9 +183,9 @@ export function AdminProductQuickPriceModal({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#101114]">
+              <label className="block text-xs font-semibold text-vl-dark-900">
                 Discount Price (BDT ৳){" "}
-                <span className="font-normal text-[#101114]/60">(Optional)</span>
+                <span className="font-normal text-vl-dark-900/60">(Optional)</span>
               </label>
               <div className="mt-1">
                 <Input
@@ -238,13 +238,13 @@ export function AdminProductQuickPriceModal({
             )}
           </div>
 
-          <p className="text-[11px] leading-relaxed text-[#101114]/50">
+          <p className="text-[11px] leading-relaxed text-vl-dark-900/50">
             Note: Updating the price will apply to all variants of this product.
           </p>
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 bg-[#FBF9F5] px-5 py-3 text-xs">
+        <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
           <Button
             type="button"
             variant="outline"

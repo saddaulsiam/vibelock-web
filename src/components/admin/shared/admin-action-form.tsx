@@ -29,15 +29,15 @@ function SubmitButton({
   } else {
     colorClasses =
       variant === "outline"
-        ? "border-[#101114]/20 bg-white text-[#101114] hover:bg-[#F3F0E8]"
-        : "border-[#101114] bg-[#101114] text-white hover:bg-[#101114]/85";
+        ? "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:bg-vl-white-300"
+        : "border-vl-dark-900 bg-vl-dark-900 text-white hover:bg-vl-dark-900/85";
   }
 
   return (
     <button
       type="submit"
       disabled={pending}
-      className={`inline-flex items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-wait disabled:opacity-60 ${sizeClasses} ${colorClasses}`}
+      className={`inline-flex items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none disabled:cursor-wait disabled:opacity-60 ${sizeClasses} ${colorClasses}`}
     >
       {pending ? (pendingLabel ?? "Saving…") : label}
     </button>
@@ -72,7 +72,7 @@ export function AdminSaveForm({
           {state.message}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 pt-4">
         {secondaryAction ?? <div />}
         <SubmitButton label={submitLabel} />
       </div>

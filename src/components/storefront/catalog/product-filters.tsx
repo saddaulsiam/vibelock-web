@@ -114,7 +114,7 @@ export function ProductFilters({
             type="submit"
             size="icon"
             aria-label="Search products"
-            className="h-9 w-10 bg-[#101114] text-white hover:bg-[#101114]/85"
+            className="h-9 w-10 bg-vl-dark-900 text-white hover:bg-vl-dark-900/85"
           >
             <Search aria-hidden="true" />
           </Button>
@@ -136,7 +136,7 @@ export function ProductFilters({
         >
           <SelectTrigger
             aria-label="Sort products"
-            className="h-10 w-full rounded-sm border-[#101114]/20"
+            className="h-10 w-full rounded-sm border-vl-dark-900/20"
           >
             <SelectValue placeholder="Sort products" />
           </SelectTrigger>
@@ -161,7 +161,7 @@ export function ProductFilters({
               >
                 <input
                   type="checkbox"
-                  className="border-border size-4 rounded accent-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="border-border size-4 rounded accent-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
                   checked={
                     selectedCategories.includes(category.slug) ||
                     category.slug === lockedCategorySlug
@@ -190,10 +190,10 @@ export function ProductFilters({
                   type="button"
                   aria-pressed={selected}
                   onClick={() => toggleArrayFilter("size", size)}
-                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+                  className={`min-h-9 min-w-10 rounded-sm border px-3 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
                     selected
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-border bg-white hover:border-[#101114]"
+                      ? "border-vl-dark-900 bg-vl-dark-900 text-white"
+                      : "border-border bg-white hover:border-vl-dark-900"
                   }`}
                 >
                   {size}
@@ -217,7 +217,7 @@ export function ProductFilters({
               >
                 <input
                   type="checkbox"
-                  className="border-border size-4 rounded accent-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="border-border size-4 rounded accent-vl-dark-900 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
                   checked={selectedColors.includes(color)}
                   onChange={() => toggleArrayFilter("color", color)}
                 />
@@ -265,7 +265,7 @@ export function ProductFilters({
           <Button
             type="submit"
             variant="outline"
-            className="h-10 w-full rounded-sm border-[#101114]/20"
+            className="h-10 w-full rounded-sm border-vl-dark-900/20"
           >
             Apply price
           </Button>
@@ -277,7 +277,7 @@ export function ProductFilters({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none">
+        <SheetTrigger className="inline-flex h-10 items-center justify-center gap-2 rounded-sm border border-vl-dark-900/20 bg-white px-4 text-sm font-medium transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none">
           <SlidersHorizontal className="size-4" aria-hidden="true" />
           Filters
         </SheetTrigger>

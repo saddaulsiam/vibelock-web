@@ -50,7 +50,7 @@ export function OrderPrintAction({ orderNumber: propOrderNumber, order }: OrderP
             </>
           ) : (
             <>
-              <Copy className="size-3.5 text-neutral-400 group-hover:text-[#101114]" />
+              <Copy className="size-3.5 text-neutral-400 group-hover:text-vl-dark-900" />
               <span>Copy ID</span>
             </>
           )}

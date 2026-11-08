@@ -58,8 +58,8 @@ export default async function ShopPage({
     <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         <header className="mb-6 sm:mb-8">
-          <p className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">
-            VibeLock <span className="px-1 text-[#00D9FF]">/</span> {hasSearch ? "Search" : "Shop"}
+          <p className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-vl-dark-900/55 uppercase">
+            VibeLock <span className="px-1 text-vl-cyan">/</span> {hasSearch ? "Search" : "Shop"}
           </p>
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div className="min-w-0">
@@ -67,24 +67,24 @@ export default async function ShopPage({
                 {hasSearch ? "Search results" : "All products"}
               </h1>
               {hasSearch ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 wrap-break-word text-[#101114]/60 sm:text-base">
-                  Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
+                <p className="mt-2 max-w-2xl text-sm leading-6 wrap-break-word text-vl-dark-900/60 sm:text-base">
+                  Results for <span className="font-medium text-vl-dark-900">“{searchTerm}”</span>
                 </p>
               ) : (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#101114]/60 sm:text-base">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-vl-dark-900/60 sm:text-base">
                   Everyday pieces and easy layers for your city rotation.
                 </p>
               )}
             </div>
-            <p className="shrink-0 pb-1 text-sm text-[#101114]/60" aria-live="polite">
-              <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
+            <p className="shrink-0 pb-1 text-sm text-vl-dark-900/60" aria-live="polite">
+              <span className="font-semibold text-vl-dark-900">{discoveryResult.totalCount}</span>{" "}
               {discoveryResult.totalCount === 1 ? "product" : "products"}
             </p>
           </div>
           {hasSearch ? (
             <Link
               href={clearSearchHref}
-              className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="mt-4 inline-flex min-h-10 items-center justify-center border border-vl-dark-900/20 px-4 text-sm font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
             >
               Clear search
             </Link>

@@ -76,7 +76,7 @@ export default async function AdminPaymentSettingsPage() {
     <div className="space-y-8">
       {/* Header Description */}
       <div>
-        <h2 className="text-xl font-semibold tracking-tight text-[#101114]">
+        <h2 className="text-xl font-semibold tracking-tight text-vl-dark-900">
           Payment Gateways & Checkout Controls
         </h2>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -132,21 +132,21 @@ export default async function AdminPaymentSettingsPage() {
           return (
             <Card
               key={method.code}
-              className="flex flex-col justify-between border-[#101114]/10 bg-white shadow-sm"
+              className="flex flex-col justify-between border-vl-dark-900/10 bg-white shadow-sm"
             >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-[#101114]/10 bg-[#F3F0E8]">
-                      <Icon className="size-5 text-[#101114]" />
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-md border border-vl-dark-900/10 bg-vl-white-300">
+                      <Icon className="size-5 text-vl-dark-900" />
                     </div>
                     <div>
-                      <CardTitle className="text-base font-semibold text-[#101114]">
+                      <CardTitle className="text-base font-semibold text-vl-dark-900">
                         {method.name}
                       </CardTitle>
                       <CardDescription className="text-muted-foreground text-xs">
                         {method.type.replace("_", " ")} · Code:{" "}
-                        <code className="font-mono text-[#101114]">{method.code}</code>
+                        <code className="font-mono text-vl-dark-900">{method.code}</code>
                       </CardDescription>
                     </div>
                   </div>
@@ -158,10 +158,10 @@ export default async function AdminPaymentSettingsPage() {
                 <p className="text-muted-foreground leading-relaxed">{method.description}</p>
 
                 {/* Environment & Configuration Details */}
-                <div className="space-y-1.5 rounded-md border border-[#101114]/5 bg-[#F3F0E8]/40 p-3 text-xs">
+                <div className="space-y-1.5 rounded-md border border-vl-dark-900/5 bg-vl-white-300/40 p-3 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground font-medium">Runtime State:</span>
-                    <span className="font-semibold text-[#101114]">
+                    <span className="font-semibold text-vl-dark-900">
                       {method.isEnabled ? "Available in Checkout" : "Unavailable / Disabled"}
                     </span>
                   </div>
@@ -169,7 +169,7 @@ export default async function AdminPaymentSettingsPage() {
                   {method.environmentMode && (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground font-medium">Environment:</span>
-                      <span className="font-mono text-[#101114] uppercase">
+                      <span className="font-mono text-vl-dark-900 uppercase">
                         {method.environmentMode}
                       </span>
                     </div>
@@ -189,13 +189,13 @@ export default async function AdminPaymentSettingsPage() {
                   <p className="text-muted-foreground flex items-center gap-1 text-xs font-semibold tracking-wider uppercase">
                     <Info className="size-3" /> Checkout Impact
                   </p>
-                  <p className="rounded border border-[#101114]/5 bg-[#101114]/2 p-2.5 text-xs leading-relaxed text-[#101114]/80">
+                  <p className="rounded border border-vl-dark-900/5 bg-vl-dark-900/2 p-2.5 text-xs leading-relaxed text-vl-dark-900/80">
                     {method.checkoutImpact}
                   </p>
                 </div>
 
                 {/* Admin Toggle Control */}
-                <div className="border-t border-[#101114]/10 pt-3">
+                <div className="border-t border-vl-dark-900/10 pt-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground font-medium">Admin Control:</span>
                     {canToggle ? (
@@ -218,10 +218,10 @@ export default async function AdminPaymentSettingsPage() {
       </div>
 
       {/* Security & Enforcement Summary */}
-      <Card className="border-[#101114]/10 bg-[#101114] text-white">
+      <Card className="border-vl-dark-900/10 bg-vl-dark-900 text-white">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <Lock className="size-4 text-[#00D9FF]" />
+            <Lock className="size-4 text-vl-cyan" />
             Server-Side Enforcement Guarantees
           </CardTitle>
           <CardDescription className="text-xs text-white/70">
@@ -232,7 +232,7 @@ export default async function AdminPaymentSettingsPage() {
           <ul className="list-inside list-disc space-y-1">
             <li>
               <strong>Server-Authoritative:</strong> Checkout methods are enforced by{" "}
-              <code className="text-[#00D9FF]">createOrderAction</code>. Bypassing client UI forms
+              <code className="text-vl-cyan">createOrderAction</code>. Bypassing client UI forms
               will not allow unconfigured or disabled payment methods.
             </li>
             <li>
@@ -246,7 +246,7 @@ export default async function AdminPaymentSettingsPage() {
             </li>
             <li>
               <strong>Auditability:</strong> All payment setting modifications generate atomic
-              records in the <code className="text-[#00D9FF]">AuditLog</code> table with actor ID
+              records in the <code className="text-vl-cyan">AuditLog</code> table with actor ID
               and state transitions.
             </li>
           </ul>

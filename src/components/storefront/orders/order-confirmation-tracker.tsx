@@ -67,11 +67,11 @@ export function OrderConfirmationTracker({
   ];
 
   return (
-    <div className="rounded-xl border border-[#101114]/10 bg-[#FAF9F5] p-4 sm:p-5">
-      <div className="mb-4 flex items-center justify-between border-b border-[#101114]/10 pb-3">
+    <div className="rounded-xl border border-vl-dark-900/10 bg-vl-white-100 p-4 sm:p-5">
+      <div className="mb-4 flex items-center justify-between border-b border-vl-dark-900/10 pb-3">
         <div className="flex items-center gap-2">
           <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider text-[#101114]">
+          <span className="text-xs font-bold uppercase tracking-wider text-vl-dark-900">
             Live Order Status
           </span>
         </div>
@@ -87,9 +87,9 @@ export function OrderConfirmationTracker({
               key={step.id}
               className={`relative flex items-center gap-3 rounded-lg border p-3 transition-colors sm:flex-col sm:items-start sm:p-3.5 ${
                 step.isComplete
-                  ? "border-emerald-200 bg-emerald-50/50 text-[#101114]"
+                  ? "border-emerald-200 bg-emerald-50/50 text-vl-dark-900"
                   : step.isCurrent
-                    ? "border-[#101114] bg-white text-[#101114] shadow-xs"
+                    ? "border-vl-dark-900 bg-white text-vl-dark-900 shadow-xs"
                     : "border-transparent bg-transparent text-muted-foreground"
               }`}
             >
@@ -99,19 +99,19 @@ export function OrderConfirmationTracker({
                     step.isComplete
                       ? "bg-emerald-600 text-white"
                       : step.isCurrent
-                        ? "bg-[#101114] text-white"
-                        : "bg-[#101114]/10 text-muted-foreground"
+                        ? "bg-vl-dark-900 text-white"
+                        : "bg-vl-dark-900/10 text-muted-foreground"
                   }`}
                 >
                   {step.isComplete ? (
                     <Check className="size-3.5 stroke-[3]" />
                   ) : step.isCurrent ? (
-                    <span className="size-2 rounded-full bg-[#00D9FF] animate-ping" />
+                    <span className="size-2 rounded-full bg-vl-cyan animate-ping" />
                   ) : (
                     <span>{idx + 1}</span>
                   )}
                 </div>
-                <span className="text-xs font-bold tracking-tight text-[#101114]">
+                <span className="text-xs font-bold tracking-tight text-vl-dark-900">
                   {step.title}
                 </span>
               </div>

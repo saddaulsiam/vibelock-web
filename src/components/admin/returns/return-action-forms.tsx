@@ -538,7 +538,7 @@ export function ReturnSteadfastPickupCard({
               href={reverseLogistics.trackingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+              className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg bg-vl-dark-900 px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
               title="Open Steadfast live tracking portal"
             >
               <Truck className="size-3.5" />

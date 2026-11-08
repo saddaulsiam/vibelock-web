@@ -169,8 +169,8 @@ export function PosShiftModal({
   if (!shift || !shift.isOpen) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-        <DialogContent className="max-w-xl rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
-          <DialogHeader className="border-b border-[#f0ede6] pb-3">
+        <DialogContent className="max-w-xl rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
+          <DialogHeader className="border-b border-vl-white-200 pb-3">
             <div className="text-vl-cyan flex items-center space-x-2">
               <Lock className="h-5 w-5" />
               <DialogTitle className="font-heading text-vl-black text-lg font-black tracking-tight">
@@ -195,7 +195,7 @@ export function PosShiftModal({
                 value={openingFloat || ""}
                 onChange={(e) => setOpeningFloat(Number(e.target.value) || 0)}
                 placeholder="2000"
-                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
+                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 mt-1 h-12 rounded-xl border border-vl-white-500 bg-vl-white-100 font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
               />
             </div>
 
@@ -209,7 +209,7 @@ export function PosShiftModal({
                   key={preset}
                   type="button"
                   onClick={() => setOpeningFloat(preset)}
-                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 rounded-lg border border-[#d6d2c4] bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
+                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 rounded-lg border border-vl-white-500 bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
                 >
                   ৳{preset}
                 </button>
@@ -225,24 +225,24 @@ export function PosShiftModal({
                 value={openNotes}
                 onChange={(e) => setOpenNotes(e.target.value)}
                 placeholder="e.g. Morning counter shift"
-                className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-10 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] text-xs focus-visible:bg-white focus-visible:ring-4"
+                className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 mt-1 h-10 rounded-xl border border-vl-white-500 bg-vl-white-100 text-xs focus-visible:bg-white focus-visible:ring-4"
               />
             </div>
 
-            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
+            <div className="flex items-center space-x-2 border-t border-vl-white-200 pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={onClose}
-                className="text-vl-black h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+                className="text-vl-black h-11 w-1/3 rounded-xl border border-vl-white-500 text-xs font-bold hover:bg-vl-white-100"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-vl-cyan font-heading text-vl-black flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-[#2ae0ff] active:scale-[0.99]"
+                className="bg-vl-cyan font-heading text-vl-black flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-vl-cyan-400 active:scale-[0.99]"
               >
                 {isSubmitting ? (
                   <>
@@ -268,8 +268,8 @@ export function PosShiftModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="w-full rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-md">
-        <DialogHeader className="border-b border-[#f0ede6] pb-3">
+      <DialogContent className="w-full rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-md">
+        <DialogHeader className="border-b border-vl-white-200 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-emerald-600">
               <Banknote className="h-5 w-5" />
@@ -312,7 +312,7 @@ export function PosShiftModal({
             </div>
 
             {/* Shift Breakdown Table */}
-            <div className="space-y-1.5 rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3 font-mono text-xs">
+            <div className="space-y-1.5 rounded-xl border border-vl-white-400 bg-vl-white-100 p-3 font-mono text-xs">
               <div className="text-vl-grey flex justify-between">
                 <span>Opening Cash Float:</span>
                 <span className="text-vl-black font-bold">৳{shift.openingFloat.toFixed(0)}</span>
@@ -327,7 +327,7 @@ export function PosShiftModal({
                   <span className="font-bold text-red-600">- ৳{shift.cashDrops.toFixed(0)}</span>
                 </div>
               )}
-              <div className="text-vl-grey flex justify-between border-t border-[#e2ded2] pt-1 text-[11px]">
+              <div className="text-vl-grey flex justify-between border-t border-vl-white-400 pt-1 text-[11px]">
                 <span>Bangla QR Sales (Digital):</span>
                 <span className="text-vl-black font-medium">৳{(shift.banglaQrSales ?? shift.bkashSales).toFixed(0)}</span>
               </div>
@@ -343,7 +343,7 @@ export function PosShiftModal({
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab("CASH_DROP")}
-                className="text-vl-black hover:border-vl-cyan h-11 rounded-xl border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+                className="text-vl-black hover:border-vl-cyan h-11 rounded-xl border-vl-white-500 text-xs font-bold hover:bg-vl-white-100"
               >
                 <ArrowDownCircle className="mr-1.5 h-4 w-4 text-amber-500" />
                 Cash Drop / Payout
@@ -408,13 +408,13 @@ export function PosShiftModal({
               />
             </div>
 
-            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
+            <div className="flex items-center space-x-2 border-t border-vl-white-200 pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="text-vl-black h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+                className="text-vl-black h-11 w-1/3 rounded-xl border border-vl-white-500 text-xs font-bold hover:bg-vl-white-100"
               >
                 Back
               </Button>
@@ -457,7 +457,7 @@ export function PosShiftModal({
                 autoFocus
                 value={countedCash || ""}
                 onChange={(e) => setCountedCash(Number(e.target.value) || 0)}
-                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
+                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 mt-1 h-12 rounded-xl border border-vl-white-500 bg-vl-white-100 font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
               />
             </div>
 
@@ -499,17 +499,17 @@ export function PosShiftModal({
                 value={closeNotes}
                 onChange={(e) => setCloseNotes(e.target.value)}
                 placeholder="e.g. Shift balanced, cash handed to supervisor"
-                className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-10 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] text-xs focus-visible:bg-white focus-visible:ring-4"
+                className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 mt-1 h-10 rounded-xl border border-vl-white-500 bg-vl-white-100 text-xs focus-visible:bg-white focus-visible:ring-4"
               />
             </div>
 
-            <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
+            <div className="flex items-center space-x-2 border-t border-vl-white-200 pt-3">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="text-vl-black h-11 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+                className="text-vl-black h-11 w-1/3 rounded-xl border border-vl-white-500 text-xs font-bold hover:bg-vl-white-100"
               >
                 Back
               </Button>

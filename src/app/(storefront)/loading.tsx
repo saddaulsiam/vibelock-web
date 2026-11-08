@@ -10,17 +10,17 @@ export default function StorefrontLoading() {
       className="bg-background min-h-[70vh] pt-20 pb-10 sm:pt-24 sm:pb-14"
     >
       <Container className="max-w-6xl">
-        <div className="mb-8 space-y-4 border-b border-[#101114]/10 pb-7 sm:mb-10">
-          <Skeleton className="h-3 w-28 bg-[#101114]/10" />
-          <Skeleton className="h-10 w-3/4 max-w-xl bg-[#101114]/10 sm:h-12" />
-          <Skeleton className="h-5 w-full max-w-2xl bg-[#101114]/10" />
+        <div className="mb-8 space-y-4 border-b border-vl-dark-900/10 pb-7 sm:mb-10">
+          <Skeleton className="h-3 w-28 bg-vl-dark-900/10" />
+          <Skeleton className="h-10 w-3/4 max-w-xl bg-vl-dark-900/10 sm:h-12" />
+          <Skeleton className="h-5 w-full max-w-2xl bg-vl-dark-900/10" />
         </div>
         <div className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
           {Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="space-y-3">
               <Skeleton className="aspect-3/4 w-full rounded-sm bg-white" />
-              <Skeleton className="h-4 w-3/4 bg-[#101114]/10" />
-              <Skeleton className="h-4 w-1/3 bg-[#101114]/10" />
+              <Skeleton className="h-4 w-3/4 bg-vl-dark-900/10" />
+              <Skeleton className="h-4 w-1/3 bg-vl-dark-900/10" />
             </div>
           ))}
         </div>

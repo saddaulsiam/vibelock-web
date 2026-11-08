@@ -17,7 +17,7 @@ const badgeVariants = cva(
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
         /** Electric cyan accent (verified buyer, featured drops, in-stock) */
-        cyan: "bg-vl-cyan/15 text-vl-cyan-dark dark:text-vl-cyan border border-vl-cyan/30 font-bold uppercase tracking-wider",
+        cyan: "bg-vl-cyan-100 text-vl-cyan-dark dark:text-vl-cyan border border-vl-cyan-200 font-bold uppercase tracking-wider",
         /** Obsidian brand label */
         brand:
           "bg-vl-black text-vl-white border border-vl-border font-bold uppercase tracking-wider",

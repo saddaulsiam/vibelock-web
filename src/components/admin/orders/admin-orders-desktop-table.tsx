@@ -57,7 +57,7 @@ export function AdminOrdersDesktopTable({
                 checked={isAllSelected}
                 onChange={onToggleSelectAll}
                 aria-label="Select all orders"
-                className="size-3.5 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
+                className="size-3.5 rounded-xs border-neutral-300 accent-vl-dark-900 focus:ring-1 focus:ring-vl-cyan"
               />
             </TableHead>
             {visibleColumns.date && (

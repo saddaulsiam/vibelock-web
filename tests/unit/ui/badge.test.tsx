@@ -12,7 +12,7 @@ describe("Unified Global Badge Component", () => {
       { name: "default", expectedClass: "bg-primary text-primary-foreground" },
       { name: "secondary", expectedClass: "bg-secondary text-secondary-foreground" },
       { name: "outline", expectedClass: "border-border text-foreground" },
-      { name: "cyan", expectedClass: "bg-vl-cyan/15 text-vl-cyan-dark" },
+      { name: "cyan", expectedClass: "bg-vl-cyan-100 text-vl-cyan-dark" },
       { name: "brand", expectedClass: "bg-vl-black text-vl-white" },
       {name: "sale", expectedClass: "bg-status-sale text-white" },
       { name: "new", expectedClass: "bg-status-sale text-white" },
@@ -59,7 +59,7 @@ describe("Unified Global Badge Component", () => {
         <Badge variant="cyan" className="custom-extra-class">Verified</Badge>
       );
       expect(html).toContain("custom-extra-class");
-      expect(html).toContain("bg-vl-cyan/15");
+      expect(html).toContain("bg-vl-cyan-100");
     });
   });
 });

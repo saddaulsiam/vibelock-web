@@ -111,9 +111,9 @@ export function AccountSecurityCard() {
     <div className="flex flex-col gap-5 sm:gap-6">
       {/* 1. Change Password */}
       <Card variant="brand" className="p-4 sm:p-6">
-        <div className="mb-4 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-5 sm:pb-4">
-          <Lock className="size-4 text-[#101114]" />
-          <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+        <div className="mb-4 flex items-center gap-2 border-b border-vl-dark-900/8 pb-3.5 sm:mb-5 sm:pb-4">
+          <Lock className="size-4 text-vl-dark-900" />
+          <h2 className="text-sm font-bold tracking-tight text-vl-dark-900 uppercase sm:text-base">
             Change Password
           </h2>
         </div>
@@ -138,7 +138,7 @@ export function AccountSecurityCard() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="currentPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="currentPassword" className="text-xs font-semibold text-vl-dark-900">
               Current Password
             </Label>
             <Input
@@ -154,7 +154,7 @@ export function AccountSecurityCard() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="newPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="newPassword" className="text-xs font-semibold text-vl-dark-900">
               New Password
             </Label>
             <Input
@@ -170,7 +170,7 @@ export function AccountSecurityCard() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmNewPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="confirmNewPassword" className="text-xs font-semibold text-vl-dark-900">
               Confirm New Password
             </Label>
             <Input
@@ -204,9 +204,9 @@ export function AccountSecurityCard() {
 
       {/* 2. Active Sessions */}
       <Card variant="brand" className="p-4 sm:p-6">
-        <div className="mb-3.5 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-4 sm:pb-4">
-          <Laptop className="size-4 text-[#101114]" />
-          <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+        <div className="mb-3.5 flex items-center gap-2 border-b border-vl-dark-900/8 pb-3.5 sm:mb-4 sm:pb-4">
+          <Laptop className="size-4 text-vl-dark-900" />
+          <h2 className="text-sm font-bold tracking-tight text-vl-dark-900 uppercase sm:text-base">
             Active Device Sessions
           </h2>
         </div>
@@ -214,19 +214,19 @@ export function AccountSecurityCard() {
         {sessionLoading ? (
           <p className="py-4 text-xs text-neutral-500">Loading active sessions...</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-[#101114]/10 p-6 text-center text-xs text-neutral-500">
+          <p className="rounded-lg border border-dashed border-vl-dark-900/10 p-6 text-center text-xs text-neutral-500">
             No other active sessions detected.
           </p>
         ) : (
           <div>
-            <div className="divide-y divide-[#101114]/6">
+            <div className="divide-y divide-vl-dark-900/6">
               {sessions.map((s) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between py-3.5 first:pt-0 last:pb-2"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#101114]">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-vl-dark-900">
                       <span>Device Session</span>
                       {s.isCurrent && (
                         <Badge variant="secondary" size="sm">

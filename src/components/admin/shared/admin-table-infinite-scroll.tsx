@@ -70,7 +70,7 @@ export function AdminTableInfiniteScroll({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 border-t border-[#101114]/10 pt-4 pb-2",
+        "flex flex-col items-center justify-center gap-3 border-t border-vl-dark-900/10 pt-4 pb-2",
         className
       )}
     >
@@ -83,11 +83,11 @@ export function AdminTableInfiniteScroll({
             type="button"
             onClick={onLoadMore}
             disabled={isLoadingMore}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-[#101114]/20 bg-white px-5 py-2 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-sm border border-vl-dark-900/20 bg-white px-5 py-2 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoadingMore ? (
               <>
-                <Loader2 className="size-3.5 animate-spin text-[#101114]" />
+                <Loader2 className="size-3.5 animate-spin text-vl-dark-900" />
                 <span>Loading more {itemName}...</span>
               </>
             ) : (
@@ -107,7 +107,7 @@ export function AdminTableInfiniteScroll({
         <div className="text-muted-foreground flex items-center justify-center gap-1.5 py-2 text-xs">
           <span className="font-semibold text-emerald-600">✓</span>
           <span>
-            All <strong className="text-[#101114]">{loadedCount}</strong> {itemName} loaded
+            All <strong className="text-vl-dark-900">{loadedCount}</strong> {itemName} loaded
             {filterSummary ? ` (${filterSummary})` : ""}
           </span>
         </div>

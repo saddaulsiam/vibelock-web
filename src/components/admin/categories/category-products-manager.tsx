@@ -388,7 +388,7 @@ export function CategoryProductsManager({
                           setSelectedProductIds([]);
                           setIsAddModalOpen(true);
                         }}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
                       >
                         <Plus className="size-3.5" />
                         <span>Assign Products Now</span>
@@ -727,7 +727,7 @@ export function CategoryProductsManager({
                   type="button"
                   onClick={handleAssignSelected}
                   disabled={selectedProductIds.length === 0 || modalSubmitting}
-                  className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-40"
+                  className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-vl-dark-900/85 disabled:opacity-40"
                 >
                   {modalSubmitting ? (
                     <>

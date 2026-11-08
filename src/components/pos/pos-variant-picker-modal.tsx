@@ -28,10 +28,10 @@ export function PosVariantPickerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl gap-0 overflow-hidden rounded-2xl border border-[#d6d2c4] bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="max-w-xl gap-0 overflow-hidden rounded-2xl border border-vl-white-500 bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
         {/* Header Preview */}
-        <div className="flex items-center gap-3.5 border-b border-[#e2ded2] bg-[#fbfaf7] p-4 sm:p-5">
-          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-[#e2ded2] bg-white shadow-2xs sm:h-20 sm:w-20">
+        <div className="flex items-center gap-3.5 border-b border-vl-white-400 bg-vl-white-100 p-4 sm:p-5">
+          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-vl-white-400 bg-white shadow-2xs sm:h-20 sm:w-20">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
@@ -92,7 +92,7 @@ export function PosVariantPickerModal({
                   className={`group relative flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
                     vOutOfStock
                       ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
-                      : "hover:border-vl-cyan hover:bg-vl-cyan/5 border-[#e2ded2] bg-white hover:shadow-xs active:scale-[0.98]"
+                      : "hover:border-vl-cyan hover:bg-vl-cyan-50 border-vl-white-400 bg-white hover:shadow-xs active:scale-[0.98]"
                   }`}
                 >
                   <div className="flex w-full items-start justify-between gap-1">

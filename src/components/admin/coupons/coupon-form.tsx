@@ -204,7 +204,7 @@ export function CouponForm({
               type="checkbox"
               value="on"
               defaultChecked={coupon?.isActive ?? true}
-              className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#101114]"
+              className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-dark-900"
             />
             <span className="text-xs font-medium text-neutral-800">
               Active and usable on checkout

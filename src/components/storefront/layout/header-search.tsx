@@ -31,7 +31,7 @@ export function HeaderSearch({ categories = [] }: HeaderSearchProps) {
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Search drops"
-        className="group border-vl-white/15 bg-vl-white/10 text-vl-white/40 hover:border-vl-cyan/60 hover:bg-vl-white/15 relative hidden h-8 w-36 cursor-pointer items-center rounded-full border pr-3.5 pl-9 text-left text-xs transition-all lg:flex xl:w-48"
+        className="group border-vl-white/15 bg-vl-white/10 text-vl-white/40 hover:border-vl-cyan-300 hover:bg-vl-white/15 relative hidden h-8 w-36 cursor-pointer items-center rounded-full border pr-3.5 pl-9 text-left text-xs transition-all lg:flex xl:w-48"
       >
         <Search
           className="text-vl-white/40 group-hover:text-vl-cyan pointer-events-none absolute left-3.5 size-3.5 transition-colors"

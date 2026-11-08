@@ -463,9 +463,9 @@ export function AdminShipmentsTable({
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
-        <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-between rounded-xl border border-neutral-900 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-lg">
+        <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-between rounded-xl border border-neutral-900 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-lg">
           <div className="flex items-center gap-3">
-            <span className="flex size-5 items-center justify-center rounded-full bg-[#00D9FF] text-[11px] font-bold text-[#101114]">
+            <span className="flex size-5 items-center justify-center rounded-full bg-vl-cyan text-[11px] font-bold text-vl-dark-900">
               {selectedIds.size}
             </span>
             <span className="font-medium text-neutral-200">
@@ -504,7 +504,7 @@ export function AdminShipmentsTable({
                 checked={shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))}
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 aria-label="Select all shipments"
-                className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+                className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
               />
             </TableHead>
             <TableHead>Order</TableHead>
@@ -570,7 +570,7 @@ export function AdminShipmentsTable({
                       checked={isSelected}
                       onChange={() => handleToggleSelect(shipment.id)}
                       aria-label={`Select shipment for order ${shipment.orderNumber}`}
-                      className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+                      className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
                     />
                   </TableCell>
 

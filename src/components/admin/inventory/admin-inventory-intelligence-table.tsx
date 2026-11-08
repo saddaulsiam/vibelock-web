@@ -437,7 +437,7 @@ export function AdminInventoryIntelligenceTable({
                   <button
                     type="button"
                     onClick={() => updateUrlParams({ q: null, status: null, page: 1 })}
-                    className="mt-2 inline-flex h-8 items-center rounded-lg bg-[#101114] px-3 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                    className="mt-2 inline-flex h-8 items-center rounded-lg bg-vl-dark-900 px-3 font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
                   >
                     Clear all filters
                   </button>
@@ -597,7 +597,7 @@ export function AdminInventoryIntelligenceTable({
                         href={`/admin/inventory/${item.id}`}
                         className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
                           isUrgent
-                            ? "bg-[#101114] text-white hover:bg-[#101114]/85"
+                            ? "bg-vl-dark-900 text-white hover:bg-vl-dark-900/85"
                             : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
                         }`}
                         title="View inventory transactions, adjustments, and supplier purchase orders"

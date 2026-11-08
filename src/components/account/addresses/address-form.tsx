@@ -74,7 +74,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5 sm:col-span-2">
           <Label
             htmlFor="address-label"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Label (optional)
           </Label>
@@ -92,7 +92,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5 sm:col-span-2">
           <Label
             htmlFor="address-street"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Street Address
           </Label>
@@ -111,7 +111,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-city"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             City
           </Label>
@@ -130,7 +130,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-state"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             State / Division
           </Label>
@@ -148,7 +148,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-zip"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Postal Code
           </Label>
@@ -166,7 +166,7 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
         <div className="space-y-1.5">
           <Label
             htmlFor="address-country"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
           >
             Country
           </Label>
@@ -183,13 +183,13 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
       </div>
 
       <div className="pt-2">
-        <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-xs font-medium text-[#101114]">
+        <label className="flex min-h-10 cursor-pointer items-center gap-2.5 text-xs font-medium text-vl-dark-900">
           <input
             type="checkbox"
             checked={values.isDefault}
             onChange={(e) => update("isDefault", e.target.checked)}
             disabled={pending}
-            className="h-4 w-4 rounded border-[#101114]/20 text-[#101114] focus:ring-[#101114]"
+            className="h-4 w-4 rounded border-vl-dark-900/20 text-vl-dark-900 focus:ring-vl-dark-900"
           />
           <span>Set as default shipping address</span>
         </label>

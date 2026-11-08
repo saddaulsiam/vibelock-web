@@ -118,7 +118,7 @@ export function ReportCharts({
         )}
         <div className="text-muted-foreground mt-3 flex items-center gap-4 text-xs">
           <span className="inline-flex items-center gap-2">
-            <i className="size-2 rounded-full bg-[#00a8c6]" /> Net sales
+            <i className="size-2 rounded-full bg-vl-cyan-600" /> Net sales
           </span>
           <span>Hover points for exact values</span>
         </div>
@@ -213,7 +213,7 @@ export function ReportCharts({
                   </div>
                   <div className="bg-muted h-2 rounded-full">
                     <div
-                      className="h-2 rounded-full bg-[#00a8c6]"
+                      className="h-2 rounded-full bg-vl-cyan-600"
                       style={{ width: `${Math.max((value / maxProducts) * 100, 2)}%` }}
                     />
                   </div>
@@ -250,7 +250,7 @@ export function ReportCharts({
                   </div>
                   <div className="bg-muted h-2 rounded-full">
                     <div
-                      className={`h-2 rounded-full ${index % 2 ? "bg-amber-500" : "bg-[#00a8c6]"}`}
+                      className={`h-2 rounded-full ${index % 2 ? "bg-amber-500" : "bg-vl-cyan-600"}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>

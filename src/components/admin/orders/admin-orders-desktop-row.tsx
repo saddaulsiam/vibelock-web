@@ -53,7 +53,7 @@ export function AdminOrdersDesktopRow({
           checked={isSelected}
           onChange={() => onToggleSelect(order.id)}
           aria-label={`Select order ${order.orderNumber}`}
-          className="size-3.5 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
+          className="size-3.5 rounded-xs border-neutral-300 accent-vl-dark-900 focus:ring-1 focus:ring-vl-cyan"
         />
       </TableCell>
 
@@ -63,7 +63,7 @@ export function AdminOrdersDesktopRow({
           <div className="flex flex-wrap items-center gap-1.5">
             <Link
               href={`/admin/orders/${order.id}`}
-              className="font-mono text-xs font-bold text-[#101114] hover:text-[#00D9FF] hover:underline"
+              className="font-mono text-xs font-bold text-vl-dark-900 hover:text-vl-cyan hover:underline"
             >
               {order.orderNumber}
             </Link>
@@ -129,7 +129,7 @@ export function AdminOrdersDesktopRow({
       {visibleColumns.items && (
         <TableCell className="text-center">
           <div className="flex flex-col items-center gap-0.5">
-            <span className="inline-flex items-center gap-1 rounded-sm bg-[#F3F0E8] px-2 py-0.5 text-xs font-semibold text-[#101114]">
+            <span className="inline-flex items-center gap-1 rounded-sm bg-vl-white-300 px-2 py-0.5 text-xs font-semibold text-vl-dark-900">
               <Package className="size-3 text-neutral-600" />
               {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
             </span>
@@ -148,7 +148,7 @@ export function AdminOrdersDesktopRow({
       {/* Total Amount in BDT */}
       {visibleColumns.total && (
         <TableCell className="text-right whitespace-nowrap tabular-nums">
-          <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
+          <div className="font-bold text-vl-dark-900">{formatBdt(order.total)}</div>
           {order.discount > 0 && (
             <div className="text-[10px] text-neutral-500">Saved {formatBdt(order.discount)}</div>
           )}
@@ -245,7 +245,7 @@ export function AdminOrdersDesktopRow({
 
           <Link
             href={`/admin/orders/${order.id}`}
-            className="inline-flex h-7 items-center gap-1 rounded-sm border border-[#101114]/20 bg-white px-2.5 text-xs font-semibold text-[#101114] shadow-2xs transition-colors hover:bg-[#F3F0E8]"
+            className="inline-flex h-7 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300"
           >
             <Eye className="size-3" />
             <span>View</span>

@@ -53,21 +53,21 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
             key={address.id}
             className={`relative flex flex-col justify-between rounded-xl border p-3.5 transition-all sm:p-5 ${
               isEditingThis
-                ? "border-[#101114] bg-white shadow-sm ring-2 ring-[#00D9FF]"
+                ? "border-vl-dark-900 bg-white shadow-sm ring-2 ring-vl-cyan"
                 : address.isDefault
-                  ? "border-[#101114]/20 bg-[#FAF9F5] shadow-xs"
-                  : "border-[#101114]/10 bg-white hover:border-[#101114]/20"
+                  ? "border-vl-dark-900/20 bg-vl-white-100 shadow-xs"
+                  : "border-vl-dark-900/10 bg-white hover:border-vl-dark-900/20"
             }`}
           >
             <div className="min-w-0">
               {/* Top Row: Label badge & default check */}
               <div className="flex items-center justify-between gap-2">
-                <span className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-[#101114] uppercase">
+                <span className="min-w-0 flex-1 truncate text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
                   {label}
                 </span>
 
                 {address.isDefault && (
-                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-[#101114] px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
+                  <span className="inline-flex shrink-0 items-center gap-1 rounded-md bg-vl-dark-900 px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
                     <Check className="size-2.5" />
                     Default
                   </span>
@@ -75,7 +75,7 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               </div>
 
               {/* Address details */}
-              <address className="mt-3 text-xs leading-relaxed text-[#101114] not-italic break-words">
+              <address className="mt-3 text-xs leading-relaxed text-vl-dark-900 not-italic break-words">
                 <p className="font-normal break-words">{address.street}</p>
                 <p className="mt-0.5 text-neutral-500 break-words">
                   {address.city}
@@ -87,15 +87,15 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
             </div>
 
             {/* Bottom Actions */}
-            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-[#101114]/8 pt-3.5">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-vl-dark-900/8 pt-3.5">
               {onEdit ? (
                 <button
                   type="button"
                   onClick={() => onEdit(address)}
                   className={`inline-flex min-h-9 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-normal tracking-wider uppercase transition-colors active:scale-95 ${
                     isEditingThis
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-[#101114]/15 bg-white text-[#101114] hover:bg-neutral-50"
+                      ? "border-vl-dark-900 bg-vl-dark-900 text-white"
+                      : "border-vl-dark-900/15 bg-white text-vl-dark-900 hover:bg-neutral-50"
                   }`}
                 >
                   <Pencil className="size-3" />
@@ -104,7 +104,7 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
               ) : (
                 <Link
                   href={`/account/addresses/${address.id}/edit`}
-                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-[#101114]/15 bg-white px-3 py-1.5 text-xs font-normal tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+                  className="inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-vl-dark-900/15 bg-white px-3 py-1.5 text-xs font-normal tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-neutral-50 active:scale-95"
                 >
                   <Pencil className="size-3 text-neutral-500" />
                   <span>Edit</span>

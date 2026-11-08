@@ -177,12 +177,12 @@ export function CategoryMultiSelect({
             setIsOpen(true);
           }
         }}
-        className="flex min-h-11 w-full items-center justify-between border border-[#101114]/20 bg-white px-3 py-2 text-left text-sm text-[#101114] transition-colors hover:border-[#101114]/40 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+        className="flex min-h-11 w-full items-center justify-between border border-vl-dark-900/20 bg-white px-3 py-2 text-left text-sm text-vl-dark-900 transition-colors hover:border-vl-dark-900/40 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
       >
         <div className="flex items-center gap-2 overflow-hidden pr-2">
-          <Tag className="size-4 shrink-0 text-[#101114]/50" />
+          <Tag className="size-4 shrink-0 text-vl-dark-900/50" />
           {triggerSummary ? (
-            <span className="truncate font-medium text-[#101114]">{triggerSummary}</span>
+            <span className="truncate font-medium text-vl-dark-900">{triggerSummary}</span>
           ) : (
             <span className="text-muted-foreground truncate">{placeholder}</span>
           )}
@@ -190,12 +190,12 @@ export function CategoryMultiSelect({
 
         <div className="flex shrink-0 items-center gap-1.5">
           {selectedIds.length > 0 && (
-            <span className="inline-flex items-center justify-center rounded-xs bg-[#101114] px-1.5 py-0.5 text-[10px] font-semibold text-[#F3F0E8]">
+            <span className="inline-flex items-center justify-center rounded-xs bg-vl-dark-900 px-1.5 py-0.5 text-[10px] font-semibold text-vl-white-300">
               {selectedIds.length}
             </span>
           )}
           <ChevronDown
-            className={`size-4 text-[#101114]/60 transition-transform duration-200 ${
+            className={`size-4 text-vl-dark-900/60 transition-transform duration-200 ${
               isOpen ? "rotate-180" : ""
             }`}
           />
@@ -210,14 +210,14 @@ export function CategoryMultiSelect({
             return (
               <span
                 key={id}
-                className="group inline-flex items-center gap-1.5 border border-[#101114]/15 bg-[#F3F0E8] px-2.5 py-1 text-xs font-medium text-[#101114] transition-colors hover:border-[#101114]/30"
+                className="group inline-flex items-center gap-1.5 border border-vl-dark-900/15 bg-vl-white-300 px-2.5 py-1 text-xs font-medium text-vl-dark-900 transition-colors hover:border-vl-dark-900/30"
               >
                 <span>{label}</span>
                 <button
                   type="button"
                   onClick={(e) => removeCategory(id, e)}
                   title={`Remove ${label}`}
-                  className="rounded-xs p-0.5 text-[#101114]/60 hover:bg-black/10 hover:text-red-700 focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                  className="rounded-xs p-0.5 text-vl-dark-900/60 hover:bg-black/10 hover:text-red-700 focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
                 >
                   <X className="size-3" />
                   <span className="sr-only">Remove {label}</span>
@@ -241,14 +241,14 @@ export function CategoryMultiSelect({
       {/* Dropdown Menu / Popover */}
       {isOpen && (
         <div
-          className={`absolute left-0 z-50 w-full border border-[#101114]/20 bg-white shadow-2xl ${
+          className={`absolute left-0 z-50 w-full border border-vl-dark-900/20 bg-white shadow-2xl ${
             openUpwards ? "bottom-full mb-1" : "top-full mt-1"
           }`}
         >
           {/* Search Bar */}
-          <div className="border-b border-[#101114]/10 bg-[#FBF9F5] p-2.5">
+          <div className="border-b border-vl-dark-900/10 bg-vl-white-200 p-2.5">
             <div className="relative flex items-center">
-              <Search className="pointer-events-none absolute left-3 size-4 text-[#101114]/40 z-10" />
+              <Search className="pointer-events-none absolute left-3 size-4 text-vl-dark-900/40 z-10" />
               <Input
                 ref={searchInputRef}
                 type="text"
@@ -265,7 +265,7 @@ export function CategoryMultiSelect({
                     setQuery("");
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2.5 z-10 text-[#101114]/40 hover:text-[#101114]"
+                  className="absolute right-2.5 z-10 text-vl-dark-900/40 hover:text-vl-dark-900"
                 >
                   <X className="size-3.5" />
                   <span className="sr-only">Clear search</span>
@@ -276,7 +276,7 @@ export function CategoryMultiSelect({
 
           {/* Quick Selection Toolbar */}
           {categories.length > 0 && (
-            <div className="text-muted-foreground flex items-center justify-between border-b border-[#101114]/10 bg-white px-3 py-1.5 text-[11px]">
+            <div className="text-muted-foreground flex items-center justify-between border-b border-vl-dark-900/10 bg-white px-3 py-1.5 text-[11px]">
               <span>
                 {filteredCategories.length === categories.length
                   ? `${categories.length} categories`
@@ -287,7 +287,7 @@ export function CategoryMultiSelect({
                   <button
                     type="button"
                     onClick={areAllFilteredSelected ? deselectAllFiltered : selectAllFiltered}
-                    className="font-medium text-[#101114] hover:underline focus-visible:outline-none"
+                    className="font-medium text-vl-dark-900 hover:underline focus-visible:outline-none"
                   >
                     {areAllFilteredSelected ? "Deselect matching" : "Select matching"}
                   </button>
@@ -309,7 +309,7 @@ export function CategoryMultiSelect({
           <div
             role="listbox"
             aria-multiselectable="true"
-            className="max-h-60 divide-y divide-[#101114]/5 overflow-y-auto"
+            className="max-h-60 divide-y divide-vl-dark-900/5 overflow-y-auto"
           >
             {filteredCategories.map((category) => {
               const isSelected = selectedIds.includes(category.id);
@@ -319,16 +319,16 @@ export function CategoryMultiSelect({
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => toggleCategory(category.id)}
-                  className={`flex cursor-pointer items-center justify-between px-3.5 py-2.5 text-xs transition-colors hover:bg-[#F3F0E8] ${
-                    isSelected ? "bg-[#F3F0E8]/70 font-semibold text-[#101114]" : "text-[#101114]"
+                  className={`flex cursor-pointer items-center justify-between px-3.5 py-2.5 text-xs transition-colors hover:bg-vl-white-300 ${
+                    isSelected ? "bg-vl-white-300/70 font-semibold text-vl-dark-900" : "text-vl-dark-900"
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <div
                       className={`flex size-4 items-center justify-center border transition-colors ${
                         isSelected
-                          ? "border-[#101114] bg-[#101114] text-[#F3F0E8]"
-                          : "border-[#101114]/30 bg-white"
+                          ? "border-vl-dark-900 bg-vl-dark-900 text-vl-white-300"
+                          : "border-vl-dark-900/30 bg-white"
                       }`}
                     >
                       {isSelected && <Check className="size-3 stroke-3" />}
@@ -353,7 +353,7 @@ export function CategoryMultiSelect({
                 <button
                   type="button"
                   onClick={() => setQuery("")}
-                  className="mt-1.5 text-xs font-medium text-[#101114] underline hover:text-[#00D9FF]"
+                  className="mt-1.5 text-xs font-medium text-vl-dark-900 underline hover:text-vl-cyan"
                 >
                   Reset search
                 </button>
@@ -369,7 +369,7 @@ export function CategoryMultiSelect({
                 <Link
                   href="/admin/categories/new"
                   target="_blank"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-[#101114] underline hover:text-[#00D9FF]"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-vl-dark-900 underline hover:text-vl-cyan"
                 >
                   <Plus className="size-3" />
                   Create a category
@@ -379,12 +379,12 @@ export function CategoryMultiSelect({
           </div>
 
           {/* Footer note / close button */}
-          <div className="text-muted-foreground flex items-center justify-between border-t border-[#101114]/10 bg-[#FBF9F5] px-3 py-2 text-[11px]">
+          <div className="text-muted-foreground flex items-center justify-between border-t border-vl-dark-900/10 bg-vl-white-200 px-3 py-2 text-[11px]">
             <span>Press Esc or click outside to close</span>
             <button
               type="button"
               onClick={closeDropdown}
-              className="font-medium text-[#101114] hover:underline"
+              className="font-medium text-vl-dark-900 hover:underline"
             >
               Done
             </button>

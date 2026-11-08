@@ -75,7 +75,7 @@ export default async function AdminReturnsPage({
         fallback={
           <div className="flex min-h-[300px] items-center justify-center rounded-xl border border-neutral-200/90 bg-white p-12 text-center text-xs text-neutral-500">
             <div className="flex items-center gap-2 font-medium">
-              <span className="size-4 animate-spin rounded-full border-2 border-[#101114] border-t-transparent" />
+              <span className="size-4 animate-spin rounded-full border-2 border-vl-dark-900 border-t-transparent" />
               <span>Loading return requests...</span>
             </div>
           </div>

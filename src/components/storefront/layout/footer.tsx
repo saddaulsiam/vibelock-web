@@ -69,7 +69,7 @@ export function Footer() {
           <div className="flex flex-col items-start lg:col-span-4">
             {/* Circular Logo Badge + Brand Name */}
             <div className="relative flex items-center gap-3">
-              <div className="border-vl-border relative flex size-10 items-center justify-center rounded-full border bg-[#16171b] shadow-[0_0_16px_rgba(0,217,255,0.2)]">
+              <div className="border-vl-border relative flex size-10 items-center justify-center rounded-full border bg-vl-dark-800 shadow-[0_0_16px_rgba(0,217,255,0.2)]">
                 <Image
                   src="/images/vibelock-logo.png"
                   alt="VibeLock Emblem"
@@ -116,7 +116,7 @@ export function Footer() {
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   SHOP CATEGORIES
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
                 <ul className="mt-4.5 flex flex-col gap-2.5">
                   {shopLinks.map((link) => (
@@ -125,8 +125,8 @@ export function Footer() {
                         href={link.href}
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
-                        <ChevronRight className="text-vl-cyan/60 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan/50 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
+                        <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
                           {link.label}
                         </span>
                       </Link>
@@ -143,7 +143,7 @@ export function Footer() {
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   CUSTOMER &amp; SUPPORT
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
                 <ul className="mt-4.5 flex flex-col gap-2.5">
                   {customerLinks.map((link) => (
@@ -152,8 +152,8 @@ export function Footer() {
                         href={link.href}
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
-                        <ChevronRight className="text-vl-cyan/60 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan/50 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
+                        <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
                           {link.label}
                         </span>
                       </Link>
@@ -170,9 +170,9 @@ export function Footer() {
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   OUR RETAIL LOCATION
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
-                <div className="group border-vl-border hover:border-vl-cyan/40 relative mt-4.5 flex flex-1 flex-col justify-between rounded-xl border bg-[#0B0F13]/90 p-4.5 transition-all hover:bg-[#0D1318]">
+                <div className="group border-vl-border hover:border-vl-cyan-200 relative mt-4.5 flex flex-1 flex-col justify-between rounded-xl border bg-vl-dark-900/90 p-4.5 transition-all hover:bg-vl-dark-900">
                   <div>
                     {/* Badge */}
                     <div className="text-vl-cyan flex items-center gap-1.5">
@@ -222,7 +222,7 @@ export function Footer() {
               href="https://facebook.com/vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-[#1877F2]/60 hover:bg-[#1877F2]/10"
+              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-vl-dark-900 px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-[#1877F2]/60 hover:bg-[#1877F2]/10"
             >
               <Image src="/icons/facebook.svg" alt="Facebook" width={20} height={20} />
               <span>Facebook</span>
@@ -233,7 +233,7 @@ export function Footer() {
               href="https://instagram.com/vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-pink-500/60 hover:bg-pink-500/10"
+              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-vl-dark-900 px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-pink-500/60 hover:bg-pink-500/10"
             >
               <Image src="/icons/instagram.svg" alt="Instagram" width={20} height={20} />
               <span>Instagram</span>
@@ -243,7 +243,7 @@ export function Footer() {
               href="https://wa.me/+8801311333277"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"
+              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-vl-dark-900 px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"
             >
               <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={20} height={20} />
               <span>WhatsApp</span>
@@ -253,7 +253,7 @@ export function Footer() {
               href="https://tiktok.com/@vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 hover:border-vl-cyan/60 hover:bg-vl-cyan/10 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all"
+              className="border-vl-border text-vl-white/90 hover:border-vl-cyan-300 hover:bg-vl-cyan-50 inline-flex items-center gap-2 rounded-full border bg-vl-dark-900 px-3.5 py-1.5 text-xs font-semibold transition-all"
             >
               <Image src="/icons/tiktok.svg" alt="TikTok" width={20} height={20} />
               <span>TikTok</span>
@@ -263,7 +263,7 @@ export function Footer() {
               href="https://youtube.com/@vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-red-500/60 hover:bg-red-500/10"
+              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-vl-dark-900 px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-red-500/60 hover:bg-red-500/10"
             >
               <Image src="/icons/youtube.svg" alt="YouTube" width={20} height={20} />
               <span>YouTube</span>
@@ -280,7 +280,7 @@ export function Footer() {
             style={{ height: "clamp(60px, 12vw, 160px)" }}
           >
             <span
-              className="block leading-none font-black tracking-tight whitespace-nowrap text-[#1a2329] uppercase"
+              className="block leading-none font-black tracking-tight whitespace-nowrap text-vl-dark-900 uppercase"
               style={{
                 fontSize: "clamp(72px, 14vw, 200px)",
                 lineHeight: 1,

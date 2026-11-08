@@ -84,7 +84,7 @@ export function ReturnsInfiniteList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-vl-black/8 bg-[#FAF9F5] text-[10px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-[11px]">
+            <tr className="border-b border-vl-black/8 bg-vl-white-100 text-[10px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-[11px]">
               <th className="py-4 pr-4 pl-7">Return ID</th>
               <th className="px-4 py-4">Order &amp; Date</th>
               <th className="px-4 py-4">Items Returned</th>
@@ -101,7 +101,7 @@ export function ReturnsInfiniteList({
                 <td className="py-4 pr-4 pl-7">
                   <Link
                     href={`/account/returns/${request.id}`}
-                    className="font-semibold text-[#101114] hover:underline"
+                    className="font-semibold text-vl-dark-900 hover:underline"
                   >
                     #RET-{request.id.slice(0, 8).toUpperCase()}
                   </Link>
@@ -115,7 +115,7 @@ export function ReturnsInfiniteList({
                 <td className="px-4 py-4 text-xs">
                   <Link
                     href={`/account/orders/${request.order.orderNumber}`}
-                    className="font-semibold text-[#101114] hover:underline"
+                    className="font-semibold text-vl-dark-900 hover:underline"
                   >
                     #{request.order.orderNumber}
                   </Link>
@@ -127,7 +127,7 @@ export function ReturnsInfiniteList({
                 {/* Items Returned */}
                 <td className="px-4 py-4 text-xs">
                   <div className="max-w-[220px]">
-                    <span className="font-semibold text-[#101114]">
+                    <span className="font-semibold text-vl-dark-900">
                       {request.itemCount} {request.itemCount === 1 ? "item" : "items"}
                     </span>
                     {request.items && request.items.length > 0 && (
@@ -146,7 +146,7 @@ export function ReturnsInfiniteList({
                 </td>
 
                 {/* Est. Refund */}
-                <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
+                <td className="px-4 py-4 font-bold whitespace-nowrap text-vl-dark-900">
                   ৳ {request.requestedAmount.toLocaleString("en-BD")}
                 </td>
 
@@ -159,7 +159,7 @@ export function ReturnsInfiniteList({
                 <td className="py-4 pr-7 pl-4 text-right whitespace-nowrap">
                   <Link
                     href={`/account/returns/${request.id}`}
-                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-[#101114]"
+                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-vl-dark-900"
                   >
                     <span>Details</span>
                     <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -179,7 +179,7 @@ export function ReturnsInfiniteList({
               <div>
                 <Link
                   href={`/account/returns/${request.id}`}
-                  className="text-xs font-semibold text-[#101114] hover:underline"
+                  className="text-xs font-semibold text-vl-dark-900 hover:underline"
                 >
                   #RET-{request.id.slice(0, 8).toUpperCase()}
                 </Link>
@@ -187,7 +187,7 @@ export function ReturnsInfiniteList({
                   Order{" "}
                   <Link
                     href={`/account/orders/${request.order.orderNumber}`}
-                    className="font-semibold text-[#101114] hover:underline"
+                    className="font-semibold text-vl-dark-900 hover:underline"
                   >
                     #{request.order.orderNumber}
                   </Link>{" "}
@@ -209,7 +209,7 @@ export function ReturnsInfiniteList({
                       className="flex justify-between text-[11px] text-neutral-600"
                     >
                       <span className="truncate pr-2">• {it.productName}</span>
-                      <span className="shrink-0 font-semibold text-[#101114]">
+                      <span className="shrink-0 font-semibold text-vl-dark-900">
                         Qty: {it.quantity}
                       </span>
                     </li>
@@ -223,13 +223,13 @@ export function ReturnsInfiniteList({
                 <span className="block text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
                   Est. Refund
                 </span>
-                <span className="text-sm font-bold text-[#101114]">
+                <span className="text-sm font-bold text-vl-dark-900">
                   ৳ {request.requestedAmount.toLocaleString("en-BD")}
                 </span>
               </div>
               <Link
                 href={`/account/returns/${request.id}`}
-                className="group inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-[#101114] px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase shadow-2xs transition-colors hover:bg-neutral-800"
+                className="group inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-vl-dark-900 px-4 py-1.5 text-xs font-semibold tracking-wider text-white uppercase shadow-2xs transition-colors hover:bg-neutral-800"
               >
                 <span>View Details</span>
                 <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -249,15 +249,15 @@ export function ReturnsInfiniteList({
 
       {/* Loading indicator */}
       {isLoadingMore && (
-        <div className="flex items-center justify-center gap-2 border-t border-[#101114]/8 py-5 text-xs font-medium text-neutral-500">
-          <Loader2 className="size-4 animate-spin text-[#101114]" />
+        <div className="flex items-center justify-center gap-2 border-t border-vl-dark-900/8 py-5 text-xs font-medium text-neutral-500">
+          <Loader2 className="size-4 animate-spin text-vl-dark-900" />
           <span>Loading more returns...</span>
         </div>
       )}
 
       {/* Manual fallback button */}
       {hasMore && !isLoadingMore && (
-        <div className="flex justify-center border-t border-[#101114]/8 pt-4 pb-2">
+        <div className="flex justify-center border-t border-vl-dark-900/8 pt-4 pb-2">
           <Button
             type="button"
             variant="outline"
@@ -274,7 +274,7 @@ export function ReturnsInfiniteList({
 
       {/* End of results */}
       {!hasMore && returns.length >= pageSize && (
-        <div className="flex items-center justify-center border-t border-[#101114]/8 py-5 text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
+        <div className="flex items-center justify-center border-t border-vl-dark-900/8 py-5 text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
           <span>All {total} returns loaded</span>
         </div>
       )}
