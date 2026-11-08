@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CategorySearchableSelect } from "./category-select";
@@ -250,14 +251,16 @@ export function CategoryForm({
                     Auto-syncing
                   </span>
                 ) : null}
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={handleGenerateSlug}
-                  className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
                   <Sparkles className="size-3.5 text-vl-cyan" />
                   Generate from name
-                </button>
+                </Button>
               </div>
             </div>
             <div className="mt-1.5">
@@ -298,18 +301,20 @@ export function CategoryForm({
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-muted-foreground text-[11px]">Quick presets:</span>
                 {STREETWEAR_CATEGORY_PRESETS.map((tmpl) => (
-                  <button
+                  <Button
                     key={tmpl.label}
                     type="button"
+                    variant="outline"
+                    size="xs"
                     onClick={() => {
                       setDescription(tmpl.text);
                       setIsDirty(true);
                       toast.success(`Applied ${tmpl.label} description!`);
                     }}
-                    className="border border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 transition-colors hover:border-vl-dark-900 hover:bg-vl-white-300"
+                    className="h-6 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-300"
                   >
                     {tmpl.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -344,13 +349,15 @@ export function CategoryForm({
                 cards.
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={() => {
                 setUseUrlInput((prev) => !prev);
                 setIsDirty(true);
               }}
-              className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
+              className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
             >
               {useUrlInput ? (
                 <>
@@ -361,7 +368,7 @@ export function CategoryForm({
                   <Globe className="size-3.5 text-vl-cyan" /> Or use external image URL
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -381,13 +388,15 @@ export function CategoryForm({
                 <span className="rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase backdrop-blur-xs">
                   Active Cover Image
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  size="xs"
                   onClick={handleRemoveImage}
-                  className="inline-flex items-center gap-1 rounded bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-red-600"
+                  className="gap-1 shadow-xs"
                 >
                   <Trash2 className="size-3.5" /> Remove
-                </button>
+                </Button>
               </div>
             </div>
             <p className="text-muted-foreground text-xs">
@@ -639,17 +648,19 @@ export function CategoryForm({
                 {metaTitle.length}/70 characters
               </span>
               {!metaTitle && name.trim() && (
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => {
                     setMetaTitle(`${name.trim()} | VibeLock`);
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
                   <Sparkles className="size-3 text-vl-cyan" />
                   Auto-fill
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -698,17 +709,19 @@ export function CategoryForm({
                 {metaDescription.length}/160 characters
               </span>
               {!metaDescription && description.trim() && (
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => {
                     setMetaDescription(description.slice(0, 160).trim());
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-vl-dark-900"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
                   <Sparkles className="size-3 text-vl-cyan" />
                   Copy from description
-                </button>
+                </Button>
               )}
             </div>
           </div>

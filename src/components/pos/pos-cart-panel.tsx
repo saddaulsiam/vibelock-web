@@ -252,29 +252,33 @@ export function PosCartPanel({
               </span>
               {customerProfile.pointsDiscountValue > 0 &&
                 (discount === customerProfile.pointsDiscountValue ? (
-                  <button
+                  <Button
                     type="button"
+                    size="xs"
+                    variant="outline"
                     onClick={() => {
                       setDiscount(0);
                       toast.info("Loyalty discount removed.");
                     }}
-                    className="rounded border border-emerald-400 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                    className="h-6 border-emerald-400 bg-emerald-500/20 px-2 text-[10px] font-bold text-emerald-300 hover:bg-red-500/20 hover:text-red-300"
                   >
                     Points Applied ✓ (Remove)
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    size="xs"
+                    variant="brand"
                     onClick={() => {
                       setDiscount(customerProfile.pointsDiscountValue);
                       toast.success(
                         `Applied ৳${customerProfile.pointsDiscountValue} loyalty discount!`
                       );
                     }}
-                    className="bg-vl-cyan text-vl-black rounded px-2 py-0.5 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)] transition-all hover:bg-vl-cyan-400"
+                    className="h-6 px-2 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)]"
                   >
                     Redeem (-৳{customerProfile.pointsDiscountValue})
-                  </button>
+                  </Button>
                 ))}
             </div>
           </div>
@@ -355,28 +359,32 @@ export function PosCartPanel({
 
                   {/* Quantity Controls & Line Total */}
                   <div className="flex items-center space-x-1">
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="outline"
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
-                      className="text-vl-black flex h-7 w-7 items-center justify-center rounded-lg border border-vl-white-500 bg-white transition-all hover:bg-vl-white-200 active:scale-90"
+                      className="text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
                       title="Decrease quantity"
                     >
                       <Minus className="h-3 w-3" />
-                    </button>
+                    </Button>
 
                     <span className="text-vl-black w-6 text-center font-mono text-xs font-black">
                       {item.quantity}
                     </span>
 
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="outline"
                       disabled={isAtMaxStock}
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
+                      className={
                         isAtMaxStock
                           ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
-                          : "text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200 active:scale-90"
-                      }`}
+                          : "text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
+                      }
                       title={
                         isAtMaxStock
                           ? `Max available stock reached (${item.maxStock})`
@@ -384,7 +392,7 @@ export function PosCartPanel({
                       }
                     >
                       <Plus className="h-3 w-3" />
-                    </button>
+                    </Button>
 
                     {/* Line Total */}
                     <div className="text-vl-black ml-1 w-16 text-right font-mono text-xs font-black">
@@ -392,14 +400,16 @@ export function PosCartPanel({
                     </div>
 
                     {/* Remove Button */}
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="ghost"
                       onClick={() => onRemoveItem(item.variantId)}
-                      className="ml-1 rounded-md p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 active:scale-90"
+                      className="ml-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
                       title="Remove item"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -417,20 +427,24 @@ export function PosCartPanel({
               <Tag className="text-vl-grey mr-1 h-3 w-3" /> Counter Discount
             </span>
             <div className="flex items-center space-x-1">
-              <button
+              <Button
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => applyPercentDiscount(5)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 rounded-md border border-vl-white-500 bg-white px-2 py-0.5 font-mono text-[10px] font-bold transition-colors"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 5%
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => applyPercentDiscount(10)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 rounded-md border border-vl-white-500 bg-white px-2 py-0.5 font-mono text-[10px] font-bold transition-colors"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 10%
-              </button>
+              </Button>
               <div className="relative">
                 <span className="text-vl-grey absolute top-1.5 left-2 text-[10px] font-bold">
                   ৳

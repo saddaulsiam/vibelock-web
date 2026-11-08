@@ -10,7 +10,6 @@ import {
   Package,
   Truck,
   Check,
-  Loader2,
   ChevronUp,
   XCircle,
 } from "lucide-react";
@@ -18,6 +17,7 @@ import { OrderStatus } from "@prisma/client";
 import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
 import { generateWhatsAppUrl } from "@/components/admin/orders/admin-order-badges";
 import { OrderCancelModal } from "@/components/admin/orders/order-cancel-modal";
+import { Button } from "@/components/ui/button";
 
 interface OrderMobileActionBarProps {
   order: {
@@ -51,28 +51,18 @@ function MobileSubmitButton({
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className={`inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl px-2.5 text-xs font-bold shadow-xs transition active:scale-[0.98] disabled:opacity-50 sm:h-11 sm:gap-2 sm:px-4 ${
-        variant === "primary"
-          ? "bg-neutral-900 text-white hover:bg-neutral-800"
-          : "border border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50"
-      }`}
+      loading={pending}
+      variant={variant === "primary" ? "primary" : "secondary"}
+      size="default"
+      className="h-10 min-w-0 flex-1 rounded-xl px-2.5 text-xs font-bold sm:h-11 sm:gap-2 sm:px-4"
     >
-      {pending ? (
-        <>
-          <Loader2 className="size-3.5 shrink-0 animate-spin" />
-          <span className="truncate">Processing...</span>
-        </>
-      ) : (
-        <>
-          <Icon className="size-4 shrink-0" />
-          <span className="hidden truncate min-[360px]:inline">{label}</span>
-          <span className="truncate min-[360px]:hidden">{shortLabel || label}</span>
-        </>
-      )}
-    </button>
+      {!pending && <Icon className="size-4 shrink-0" />}
+      <span className="hidden truncate min-[360px]:inline">{label}</span>
+      <span className="truncate min-[360px]:hidden">{shortLabel || label}</span>
+    </Button>
   );
 }
 
@@ -156,15 +146,17 @@ export function OrderMobileActionBar({ order }: OrderMobileActionBarProps) {
                 <MobileSubmitButton label="Mark Delivered" shortLabel="Delivered" icon={Check} />
               </form>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="brand"
+                size="default"
                 onClick={scrollToFulfillment}
-                className="inline-flex h-10 min-w-0 flex-1 items-center justify-center gap-1.5 rounded-xl bg-purple-600 px-2.5 text-xs font-bold text-white shadow-xs transition hover:bg-purple-700 active:scale-[0.98] sm:h-11 sm:gap-2 sm:px-4"
+                className="h-10 min-w-0 flex-1 gap-1.5 rounded-xl px-2.5 text-xs font-bold sm:h-11 sm:gap-2 sm:px-4"
               >
                 <Truck className="size-4 shrink-0" />
                 <span className="hidden truncate min-[360px]:inline">Dispatch Courier</span>
                 <span className="truncate min-[360px]:hidden">Dispatch</span>
-              </button>
+              </Button>
             )}
           </>
         )}
@@ -199,27 +191,31 @@ export function OrderMobileActionBar({ order }: OrderMobileActionBarProps) {
 
         {/* Structured Cancel button on mobile if order is pending/confirmed */}
         {canCancel && (
-          <button
+          <Button
             type="button"
+            size="icon"
+            variant="outline"
             onClick={() => setShowCancelModal(true)}
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-rose-200 bg-rose-50 text-rose-600 shadow-2xs transition hover:bg-rose-100 active:scale-95 sm:size-10"
+            className="size-9 shrink-0 rounded-xl border-rose-200 bg-rose-50 text-rose-600 shadow-2xs hover:bg-rose-100 sm:size-10"
             title="Cancel order and restock inventory"
             aria-label="Cancel order and restock inventory"
           >
             <XCircle className="size-4" />
-          </button>
+          </Button>
         )}
 
         {/* Jump to actions button */}
-        <button
+        <Button
           type="button"
+          size="icon"
+          variant="outline"
           onClick={scrollToFulfillment}
-          className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 shadow-2xs transition hover:bg-neutral-50 active:scale-95 sm:size-10"
+          className="size-9 shrink-0 rounded-xl border-neutral-200 bg-white text-neutral-600 shadow-2xs hover:bg-neutral-50 sm:size-10"
           title="Scroll to full fulfillment details"
           aria-label="Scroll to fulfillment details"
         >
           <ChevronUp className="size-4" />
-        </button>
+        </Button>
       </div>
 
       {/* ── Structured Cancellation & Inventory Restock Modal ── */}

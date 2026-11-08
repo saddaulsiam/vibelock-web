@@ -17,6 +17,7 @@ import type {
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { PosCartPanel } from "./pos-cart-panel";
 import { PosHeader } from "./pos-header";
 import { PosParkedModal } from "./pos-parked-modal";
@@ -569,10 +570,11 @@ export function PosView({
 
         {/* Mobile & Tablet Floating Cart Bar (< lg) */}
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-2.5 sm:p-3 lg:hidden">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setIsMobileCartOpen(true)}
-            className="bg-vl-black text-vl-white border-vl-cyan-200 hover:border-vl-cyan pointer-events-auto flex w-full items-center justify-between rounded-2xl border p-3 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-[0.99] sm:p-3.5"
+            className="bg-vl-black text-vl-white border-vl-cyan-200 hover:border-vl-cyan pointer-events-auto flex h-auto w-full items-center justify-between rounded-2xl border p-3 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-[0.99] sm:p-3.5"
           >
             <div className="flex items-center space-x-2.5 sm:space-x-3">
               <div className="bg-vl-cyan text-vl-black relative flex h-9 w-9 items-center justify-center rounded-xl font-black sm:h-10 sm:w-10">
@@ -601,7 +603,7 @@ export function PosView({
                 View Ticket →
               </div>
             </div>
-          </button>
+          </Button>
         </div>
       </main>
 

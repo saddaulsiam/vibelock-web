@@ -420,10 +420,11 @@ export function PosReturnModal({
             {selectedItems.length > 0 && (
               <div className="space-y-3 pt-1">
                 <div className="grid grid-cols-2 gap-2.5">
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => setResolution("REFUND_CASH")}
-                    className={`font-heading flex items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
+                    className={`font-heading flex h-auto items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
                       resolution === "REFUND_CASH"
                         ? "border-vl-cyan bg-vl-black text-vl-cyan border-2 shadow-[0_0_15px_rgba(0,217,255,0.25)]"
                         : "text-vl-grey border-vl-white-500 bg-vl-white-100 hover:bg-vl-white-400"
@@ -431,12 +432,13 @@ export function PosReturnModal({
                   >
                     <Banknote className="h-4 w-4 text-emerald-400" />
                     <span>Cash Refund from Drawer</span>
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => setResolution("EXCHANGE")}
-                    className={`font-heading flex items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
+                    className={`font-heading flex h-auto items-center justify-center space-x-2 rounded-xl border p-3 text-xs font-black transition-all ${
                       resolution === "EXCHANGE"
                         ? "border-vl-cyan bg-vl-black text-vl-cyan border-2 shadow-[0_0_15px_rgba(0,217,255,0.25)]"
                         : "text-vl-grey border-vl-white-500 bg-vl-white-100 hover:bg-vl-white-400"
@@ -444,7 +446,7 @@ export function PosReturnModal({
                   >
                     <ArrowRightLeft className="text-vl-cyan h-4 w-4" />
                     <span>Product Exchange (Swap)</span>
-                  </button>
+                  </Button>
                 </div>
 
                 {/* Exchange Replacement Selection */}
@@ -480,16 +482,18 @@ export function PosReturnModal({
                               <p className="font-semibold text-slate-900">{prod.name}</p>
                               <div className="mt-1.5 flex flex-wrap gap-1.5">
                                 {prod.variants.map((v) => (
-                                  <button
+                                  <Button
                                     key={v.id}
                                     type="button"
+                                    size="xs"
+                                    variant="outline"
                                     disabled={v.availableStock <= 0}
                                     onClick={() => handleAddReplacement(prod, v.id)}
-                                    className="hover:bg-vl-cyan-100 hover:border-vl-cyan rounded-lg border border-vl-white-500 bg-vl-white-100 px-2 py-0.5 font-mono text-[10px] transition-colors disabled:opacity-40"
+                                    className="hover:bg-vl-cyan-100 hover:border-vl-cyan h-6 rounded-lg border-vl-white-500 bg-vl-white-100 px-2 font-mono text-[10px] disabled:opacity-40"
                                   >
                                     {[v.size, v.color].filter(Boolean).join("/") || v.sku} (৳
                                     {v.effectivePrice})
-                                  </button>
+                                  </Button>
                                 ))}
                               </div>
                             </div>
@@ -519,17 +523,19 @@ export function PosReturnModal({
                                 {rep.quantity} x ৳{rep.unitPrice}
                               </span>
                             </div>
-                            <button
+                            <Button
                               type="button"
+                              size="icon-xs"
+                              variant="ghost"
                               onClick={() =>
                                 setExchangeItems((prev) =>
                                   prev.filter((i) => i.variantId !== rep.variantId)
                                 )
                               }
-                              className="text-slate-400 transition-colors hover:text-red-500"
+                              className="text-slate-400 hover:text-red-500"
                             >
                               <Trash2 className="h-4 w-4" />
-                            </button>
+                            </Button>
                           </div>
                         ))}
                       </div>

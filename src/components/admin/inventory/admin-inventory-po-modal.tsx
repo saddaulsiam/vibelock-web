@@ -24,6 +24,7 @@ import {
 import Image from "next/image";
 import * as React from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 function currency(val: number) {
   return `৳${Number(val || 0).toLocaleString("en-BD", {
@@ -458,36 +459,43 @@ export function AdminInventoryPoModal({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
               {/* Auto-fill Low & Out-of-Stock */}
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="brand"
                 onClick={() => handleAutoFill(5)}
                 disabled={isLoadingAutoFill}
-                className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-emerald-700 px-3.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-emerald-800 disabled:opacity-50"
+                loading={isLoadingAutoFill}
+                className="h-9 gap-1.5 px-3.5 text-xs font-bold"
               >
-                <Sparkles className="size-3.5" />
+                {!isLoadingAutoFill && <Sparkles className="size-3.5" />}
                 <span>
                   {isLoadingAutoFill ? "Scanning Catalog..." : "⚡ Auto-fill Low & Out-of-Stock"}
                 </span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={() => handleAutoFill(0)}
                 disabled={isLoadingAutoFill}
-                className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-rose-300 bg-rose-50 px-3 text-xs font-semibold text-rose-800 transition-colors hover:bg-rose-100 disabled:opacity-50"
+                className="h-9 border-rose-300 bg-rose-50 px-3 text-xs font-semibold text-rose-800 hover:bg-rose-100 disabled:opacity-50"
               >
                 <span>Out-of-Stock Only</span>
-              </button>
+              </Button>
 
               {poItems.length > 0 && (
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="ghost"
                   onClick={() => setPoItems([])}
-                  className="inline-flex h-9 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-medium text-vl-dark-900/70 hover:text-red-700"
+                  className="h-9 gap-1 px-2.5 text-xs font-medium text-vl-dark-900/70 hover:text-red-700"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Clear All</span>
-                </button>
+                </Button>
               )}
             </div>
 
@@ -745,11 +753,13 @@ export function AdminInventoryPoModal({
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 bg-white px-6 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {/* Copy WhatsApp Memo */}
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={handleCopyMemo}
               disabled={poItems.length === 0}
-              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 disabled:opacity-40"
+              className="h-9 gap-1.5 px-3 text-xs font-semibold"
             >
               {copiedMemo ? (
                 <>
@@ -762,39 +772,45 @@ export function AdminInventoryPoModal({
                   <span>Copy WhatsApp / Email Memo</span>
                 </>
               )}
-            </button>
+            </Button>
 
             {/* Export PO CSV */}
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={handleExportCsv}
               disabled={poItems.length === 0}
-              className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300 disabled:opacity-40"
+              className="h-9 gap-1.5 px-3 text-xs font-semibold"
             >
               <FileSpreadsheet className="size-3.5 text-emerald-700" />
               <span>Export PO CSV</span>
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={onClose}
-              className="h-9 rounded-sm border border-vl-dark-900/20 bg-white px-4 text-xs font-semibold text-vl-dark-900 hover:bg-vl-white-300"
+              className="h-9 px-4 text-xs font-semibold"
             >
               Close
-            </button>
+            </Button>
 
             {/* Print Official Factory PO Sheet */}
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="primary"
               onClick={() => window.print()}
               disabled={poItems.length === 0}
-              className="inline-flex h-9 items-center gap-1.5 rounded-sm bg-vl-dark-900 px-5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-vl-dark-900/85 disabled:opacity-40"
+              className="h-9 gap-1.5 px-5 text-xs font-bold"
             >
               <Printer className="size-3.5" />
               <span>Print Factory PO (A4)</span>
-            </button>
+            </Button>
           </div>
         </div>
 

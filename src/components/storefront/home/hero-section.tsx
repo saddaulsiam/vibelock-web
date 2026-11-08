@@ -271,7 +271,7 @@ export function HeroSection({
           <div className="mt-5 sm:mt-8" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 active:bg-vl-cyan-600 focus-visible:ring-vl-cyan inline-flex items-center gap-2.5 rounded-full border px-5.5 py-2.5 text-[11px] font-black tracking-[0.18em] uppercase backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(0,217,255,0.45)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] sm:gap-3 sm:px-7 sm:py-3 sm:text-xs"
+              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 active:bg-vl-cyan-600 focus-visible:ring-vl-cyan inline-flex items-center gap-2.5 rounded-full border px-5.5 py-2.5 text-[11px] font-extrabold tracking-[0.18em] uppercase backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(0,217,255,0.45)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] sm:gap-3 sm:px-7 sm:py-3 sm:text-xs"
             >
               <span>SHOP ALL DROPS</span>
               <ArrowRight

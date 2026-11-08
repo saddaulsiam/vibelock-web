@@ -329,23 +329,27 @@ export function ProductVariantGenerator({
             1. Select Sizes
           </label>
           <div className="flex items-center gap-2 text-xs">
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={selectAllSizes}
-              className="font-medium text-vl-dark-900 underline underline-offset-2 hover:opacity-70"
+              className="h-auto p-0 font-medium text-vl-dark-900 underline underline-offset-2 hover:opacity-70"
             >
               Select standard sizes
-            </button>
+            </Button>
             {selectedSizes.length > 0 && (
               <>
                 <span className="text-vl-dark-900/30">·</span>
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={clearSizes}
-                  className="text-muted-foreground hover:text-red-600"
+                  className="h-auto p-0 text-muted-foreground hover:text-red-600"
                 >
                   Clear sizes
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -354,18 +358,20 @@ export function ProductVariantGenerator({
           {availableSizes.map((size) => {
             const isSelected = selectedSizes.includes(size);
             return (
-              <button
+              <Button
                 key={size}
                 type="button"
+                variant={isSelected ? "primary" : "outline"}
+                size="sm"
                 onClick={() => toggleSize(size)}
-                className={`inline-flex min-h-9 items-center justify-center rounded border px-3 text-xs font-semibold transition-all ${
+                className={`min-h-9 px-3 text-xs font-semibold ${
                   isSelected
-                    ? "border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
-                    : "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:border-vl-dark-900/40 hover:bg-vl-white-100"
+                    ? "bg-vl-dark-900 text-white shadow-xs"
+                    : "bg-white text-vl-dark-900 hover:bg-vl-white-100"
                 }`}
               >
                 {size}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -402,13 +408,15 @@ export function ProductVariantGenerator({
             2. Select Colors
           </label>
           {selectedColors.length > 0 && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={clearColors}
-              className="text-muted-foreground text-xs hover:text-red-600"
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-red-600"
             >
               Clear colors
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -420,14 +428,16 @@ export function ProductVariantGenerator({
               hex.toLowerCase() === "#f5f5dc" ||
               hex.toLowerCase() === "#eab308";
             return (
-              <button
+              <Button
                 key={color}
                 type="button"
+                variant={isSelected ? "primary" : "outline"}
+                size="sm"
                 onClick={() => toggleColor(color)}
-                className={`inline-flex min-h-9 items-center gap-2 rounded border px-3 text-xs font-semibold transition-all ${
+                className={`min-h-9 gap-2 px-3 text-xs font-semibold ${
                   isSelected
-                    ? "border-vl-dark-900 bg-vl-dark-900 text-white shadow-xs"
-                    : "border-vl-dark-900/20 bg-white text-vl-dark-900 hover:border-vl-dark-900/40 hover:bg-vl-white-100"
+                    ? "bg-vl-dark-900 text-white shadow-xs"
+                    : "bg-white text-vl-dark-900 hover:bg-vl-white-100"
                 }`}
               >
                 <span
@@ -435,7 +445,7 @@ export function ProductVariantGenerator({
                   style={{ backgroundColor: hex }}
                 />
                 <span>{color}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -475,14 +485,16 @@ export function ProductVariantGenerator({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={handleRegenerateAllSkus}
-              className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium underline underline-offset-2 hover:text-vl-dark-900"
+              className="h-auto p-0 font-medium text-xs text-muted-foreground underline underline-offset-2 hover:text-vl-dark-900"
             >
               <RefreshCw className="size-3 text-vl-dark-900/60" />
               Regenerate all SKUs
-            </button>
+            </Button>
             <span className="text-muted-foreground hidden text-xs sm:inline">·</span>
             <p className="text-muted-foreground hidden text-xs sm:inline">
               Apply common pricing, stock &amp; weight across all {variants.length} variant(s)
@@ -571,13 +583,15 @@ export function ProductVariantGenerator({
             </div>
           </div>
           <div className="col-span-2 flex items-end sm:col-span-1 md:col-span-1">
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handleApplyBulkValues}
-              className="min-h-9 w-full border border-vl-dark-900 bg-vl-dark-900 px-3 text-xs font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+              className="min-h-9 w-full text-xs font-semibold"
             >
               Apply to all
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -659,13 +673,15 @@ export function ProductVariantGenerator({
                   </div>
 
                   {variants.length > 1 && (
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
+                      size="xs"
                       onClick={() => removeVariant(index)}
-                      className="text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
+                      className="h-auto p-0 text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
                     >
                       Remove
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -673,17 +689,19 @@ export function ProductVariantGenerator({
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-muted-foreground block text-xs font-medium">SKU</label>
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="xs"
                         onClick={() => {
                           const gen = generateSku(productIdentifier, variant.size, variant.color);
                           updateVariant(index, "sku", gen);
                         }}
-                        className="text-muted-foreground text-[10px] underline hover:text-vl-dark-900"
+                        className="h-auto p-0 text-muted-foreground text-[10px] underline hover:text-vl-dark-900"
                         title="Generate SKU for this variant"
                       >
                         Auto
-                      </button>
+                      </Button>
                     </div>
                     <div className="mt-1">
                       <Input

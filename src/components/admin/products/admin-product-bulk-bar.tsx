@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
 import {
   bulkAssignProductCategoryAction,
@@ -112,42 +113,46 @@ export function AdminProductBulkBar({
       <div className="h-4 w-px bg-white/20" />
 
       {/* Bulk Publish */}
-      <button
+      <Button
         type="button"
+        size="xs"
         disabled={isBulkOperating}
         onClick={() => handleBulkStatus("PUBLISHED")}
-        className="inline-flex items-center gap-1.5 rounded-xs bg-emerald-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+        className="gap-1.5 bg-emerald-600 font-semibold text-white hover:bg-emerald-500"
         title="Publish all selected products"
       >
         <Eye className="size-3.5" />
         <span>Publish</span>
-      </button>
+      </Button>
 
       {/* Bulk Unpublish (Draft) */}
-      <button
+      <Button
         type="button"
+        size="xs"
         disabled={isBulkOperating}
         onClick={() => handleBulkStatus("DRAFT")}
-        className="inline-flex items-center gap-1.5 rounded-xs bg-amber-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-amber-500 disabled:opacity-50"
+        className="gap-1.5 bg-amber-600 font-semibold text-white hover:bg-amber-500"
         title="Set all selected products to Draft"
       >
         <EyeOff className="size-3.5" />
         <span>Draft</span>
-      </button>
+      </Button>
 
       {/* Bulk Assign Category */}
       <div className="relative">
-        <button
+        <Button
           type="button"
+          size="xs"
+          variant="outline"
           disabled={isBulkOperating}
           onClick={() => setShowBulkCategoryMenu(!showBulkCategoryMenu)}
-          className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+          className="gap-1.5 border-white/20 bg-white/10 font-semibold text-white hover:bg-white/20"
           title="Assign category to selected products"
         >
           <Tag className="size-3.5" />
           <span>Category</span>
           <ChevronDown className="size-3" />
-        </button>
+        </Button>
 
         {showBulkCategoryMenu && (
           <div className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 mb-2 w-64 rounded-sm border border-white/20 bg-vl-dark-900 p-3 text-white shadow-2xl">
@@ -192,64 +197,73 @@ export function AdminProductBulkBar({
             </div>
 
             <div className="mt-3 flex items-center justify-end gap-2 border-t border-white/10 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={() => setShowBulkCategoryMenu(false)}
-                className="px-2 py-1 text-[11px] text-white/60 hover:text-white"
+                className="text-white/60 hover:text-white"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="brand"
+                size="xs"
                 disabled={!selectedBulkCategoryId || isBulkCategoryApplying}
                 onClick={handleBulkAssignCategory}
-                className="rounded-xs bg-vl-cyan px-2.5 py-1 text-[11px] font-bold text-black hover:bg-vl-cyan-400 disabled:opacity-50"
               >
                 {isBulkCategoryApplying ? "Applying..." : "Apply"}
-              </button>
+              </Button>
             </div>
           </div>
         )}
       </div>
 
       {/* Bulk Print Barcode Tags */}
-      <button
+      <Button
         type="button"
+        size="xs"
+        variant="outline"
         disabled={isBulkOperating}
         onClick={() => {
           const selected = loadedProducts.filter((p) => selectedIds.has(p.id));
           onOpenBarcodeModal(selected);
         }}
-        className="inline-flex items-center gap-1.5 rounded-xs bg-white/10 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-white/20 disabled:opacity-50"
+        className="gap-1.5 border-white/20 bg-white/10 font-semibold text-white hover:bg-white/20"
         title="Print price tag barcode labels for selected products"
       >
         <Printer className="size-3.5" />
         <span>Print Tags</span>
-      </button>
+      </Button>
 
       {/* Bulk Delete */}
-      <button
+      <Button
         type="button"
+        size="xs"
+        variant="danger"
         disabled={isBulkOperating}
         onClick={handleBulkDelete}
-        className="inline-flex items-center gap-1.5 rounded-xs bg-red-600 px-2.5 py-1 font-semibold text-white transition-colors hover:bg-red-500 disabled:opacity-50"
+        className="gap-1.5"
         title="Delete all selected products"
       >
         <Trash2 className="size-3.5" />
         <span>Delete</span>
-      </button>
+      </Button>
 
       <div className="h-4 w-px bg-white/20" />
 
       {/* Deselect All */}
-      <button
+      <Button
         type="button"
+        size="xs"
+        variant="ghost"
         disabled={isBulkOperating}
         onClick={onClearSelection}
-        className="text-white/60 transition-colors hover:text-white"
+        className="text-white/60 hover:text-white"
       >
         Clear
-      </button>
+      </Button>
     </div>
   );
 }

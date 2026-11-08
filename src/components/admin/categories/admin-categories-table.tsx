@@ -19,6 +19,7 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -243,17 +244,19 @@ export function AdminCategoriesTable({
                       : "Create your first category to start organizing products."}
                   </p>
                   {hasActiveFilters ? (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setSearch("");
                         setActiveTab("all");
                       }}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                      className="mt-2 gap-1.5"
                     >
                       <RotateCcw className="size-3" />
                       Clear filters
-                    </button>
+                    </Button>
                   ) : (
                     <Link
                       href="/admin/categories/new"
@@ -360,12 +363,14 @@ export function AdminCategoriesTable({
                   {/* Storefront Visibility Toggle */}
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleToggleStatus(category.id, category.isActive)}
                         disabled={isToggling}
                         title={`Click to ${category.isActive ? "hide from" : "publish to"} storefront`}
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold transition-colors disabled:opacity-50 ${
+                        className={`h-auto gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${
                           category.isActive
                             ? "border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
                             : "border-neutral-200 bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
@@ -381,7 +386,7 @@ export function AdminCategoriesTable({
                           />
                         )}
                         <span>{category.isActive ? "Active Live" : "Hidden / Draft"}</span>
-                      </button>
+                      </Button>
                     </div>
                   </TableCell>
 

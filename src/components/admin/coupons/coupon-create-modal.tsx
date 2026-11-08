@@ -153,14 +153,16 @@ function CouponCreateDialog({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={onClose}
             disabled={isPending}
-            className="flex size-8 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+            className="text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Live Coupon Badge Preview */}
@@ -247,14 +249,16 @@ function CouponCreateDialog({
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-neutral-700">Coupon Code *</label>
                 {!isEditing && (
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="xs"
                     onClick={() => setCode(generateRandomCode())}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 hover:text-purple-800"
+                    className="h-auto p-0 font-semibold text-purple-600 hover:text-purple-800"
                   >
                     <Dices className="size-3" />
                     <span>Generate</span>
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="mt-1">
@@ -277,30 +281,34 @@ function CouponCreateDialog({
             <div>
               <label className="text-xs font-bold text-neutral-700">Discount Type *</label>
               <div className="mt-1 grid grid-cols-2 gap-2">
-                <button
+                <Button
                   type="button"
+                  variant={discountType === "PERCENTAGE" ? "primary" : "outline"}
+                  size="sm"
                   onClick={() => setDiscountType("PERCENTAGE")}
-                  className={`flex h-9.5 items-center justify-center gap-1.5 rounded-lg border text-xs font-bold transition ${
+                  className={`gap-1.5 font-bold ${
                     discountType === "PERCENTAGE"
-                      ? "border-purple-600 bg-purple-50 text-purple-900 ring-1 ring-purple-600"
+                      ? "border-purple-600 bg-purple-50 text-purple-900 ring-1 ring-purple-600 hover:bg-purple-100"
                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                   }`}
                 >
                   <Percent className="size-3.5" />
                   <span>Percentage (%)</span>
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant={discountType === "FIXED" ? "primary" : "outline"}
+                  size="sm"
                   onClick={() => setDiscountType("FIXED")}
-                  className={`flex h-9.5 items-center justify-center gap-1.5 rounded-lg border text-xs font-bold transition ${
+                  className={`gap-1.5 font-bold ${
                     discountType === "FIXED"
-                      ? "border-purple-600 bg-purple-50 text-purple-900 ring-1 ring-purple-600"
+                      ? "border-purple-600 bg-purple-50 text-purple-900 ring-1 ring-purple-600 hover:bg-purple-100"
                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                   }`}
                 >
                   <DollarSign className="size-3.5" />
                   <span>Fixed (৳ BDT)</span>
-                </button>
+                </Button>
               </div>
             </div>
 

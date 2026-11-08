@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerSecurityCardProps {
   customerId: string;
@@ -177,35 +178,36 @@ export function CustomerSecurityCard({
           </p>
 
           <div className="mt-3 flex flex-col gap-2">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={handleSendResetEmail}
               disabled={isSendingEmail}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
+              loading={isSendingEmail}
+              className="gap-1.5 text-xs font-semibold"
             >
-              {isSendingEmail ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <Mail className="size-3.5 text-neutral-500" />
-              )}
+              {!isSendingEmail && <Mail className="size-3.5 text-neutral-500" />}
               <span>Send Reset Email</span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
               onClick={handleCopyDirectLink}
               disabled={isGeneratingLink}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 disabled:opacity-50"
+              loading={isGeneratingLink}
+              className="gap-1.5 text-xs font-semibold"
             >
-              {isGeneratingLink ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : copiedLink ? (
-                <Check className="size-3.5 text-emerald-600" />
-              ) : (
-                <Copy className="size-3.5 text-blue-600" />
-              )}
+              {!isGeneratingLink &&
+                (copiedLink ? (
+                  <Check className="size-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="size-3.5 text-blue-600" />
+                ))}
               <span>{copiedLink ? "Link Copied!" : "Copy WhatsApp Reset Link"}</span>
-            </button>
+            </Button>
           </div>
 
           {emailStatus && (
@@ -286,24 +288,30 @@ export function CustomerSecurityCard({
 
           <div className="mt-3">
             {hasOrders ? (
-              <button
+              <Button
                 type="button"
                 disabled
-                className="flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-400 opacity-75"
+                size="sm"
+                variant="secondary"
+                fullWidth
+                className="cursor-not-allowed gap-1.5 opacity-75"
                 title="Protected: Customer has order history"
               >
                 <Trash2 className="size-3.5 text-neutral-400" />
                 <span>Delete Blocked (Has Orders)</span>
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="danger"
+                fullWidth
                 onClick={() => setIsDeleteModalOpen(true)}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 shadow-2xs transition hover:bg-rose-100"
+                className="gap-1.5"
               >
-                <Trash2 className="size-3.5 text-rose-600" />
+                <Trash2 className="size-3.5" />
                 <span>Delete Customer Profile</span>
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -338,32 +346,27 @@ export function CustomerSecurityCard({
             )}
 
             <div className="mt-5 flex items-center justify-end gap-2 border-t border-neutral-100 pt-3">
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={() => setIsDeleteModalOpen(false)}
                 disabled={isDeleting}
-                className="rounded-lg border border-neutral-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="sm"
+                variant="danger"
                 onClick={handleDeleteCustomer}
                 disabled={isDeleting}
-                className="flex items-center gap-1.5 rounded-lg bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-rose-700 disabled:opacity-50"
+                loading={isDeleting}
+                className="gap-1.5"
               >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="size-3 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="size-3" />
-                    <span>Yes, Delete</span>
-                  </>
-                )}
-              </button>
+                {!isDeleting && <Trash2 className="size-3" />}
+                <span>Yes, Delete</span>
+              </Button>
             </div>
           </div>
         </div>

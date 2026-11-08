@@ -4,6 +4,7 @@ import * as React from "react";
 import { useTransition, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, X, Loader2, PauseCircle, Trash2, ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { deleteCouponAction, toggleCouponStatusAction } from "@/lib/admin/coupons/coupon-actions";
 import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 
@@ -82,14 +83,16 @@ function CouponDeleteDialog({
               <p className="font-mono text-xs font-bold text-neutral-600">{coupon.code}</p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={onClose}
             disabled={isPending}
-            className="flex size-7 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+            className="text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -130,22 +133,24 @@ function CouponDeleteDialog({
 
         {/* Actions Footer */}
         <div className="flex items-center justify-end gap-2.5 pt-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onClose}
             disabled={isPending}
-            className="h-9 rounded-lg border border-neutral-200 px-3.5 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
           >
             Cancel
-          </button>
+          </Button>
 
           {hasUsage ? (
             coupon.isActive ? (
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={handleDeactivate}
                 disabled={isPending}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-500 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-amber-600 disabled:opacity-50"
+                className="gap-1.5 border-amber-300 bg-amber-500 font-bold text-white shadow-xs hover:bg-amber-600"
               >
                 {isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />
@@ -153,22 +158,25 @@ function CouponDeleteDialog({
                   <PauseCircle className="size-3.5" />
                 )}
                 <span>Deactivate Coupon</span>
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="primary"
+                size="sm"
                 onClick={onClose}
-                className="h-9 rounded-lg bg-neutral-900 px-4 text-xs font-semibold text-white"
               >
                 Already Paused (Keep)
-              </button>
+              </Button>
             )
           ) : (
-            <button
+            <Button
               type="button"
+              variant="danger"
+              size="sm"
               onClick={handleDelete}
               disabled={isPending}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-rose-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-rose-700 disabled:opacity-50"
+              className="gap-1.5 font-bold shadow-xs"
             >
               {isPending ? (
                 <Loader2 className="size-3.5 animate-spin" />
@@ -176,7 +184,7 @@ function CouponDeleteDialog({
                 <Trash2 className="size-3.5" />
               )}
               <span>Delete Permanently</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

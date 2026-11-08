@@ -236,10 +236,12 @@ export function PosHeader({
         {onOpenShiftModal && (
           <div>
             {shift && shift.isOpen ? (
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={onOpenShiftModal}
-                className="flex items-center space-x-1 rounded-xl border border-white/10 bg-vl-dark-900 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs transition-all hover:border-emerald-500/50 hover:bg-vl-dark-800 sm:space-x-1.5 sm:px-3"
+                className="flex items-center space-x-1 rounded-xl border-white/10 bg-vl-dark-900 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 hover:bg-vl-dark-800 sm:space-x-1.5 sm:px-3"
                 title="Click to view Cash Drawer & Shift details"
               >
                 <Banknote className="h-3.5 w-3.5" />
@@ -247,18 +249,20 @@ export function PosHeader({
                   Drawer: ৳{shift.expectedCash.toFixed(0)}
                 </span>
                 <span className="font-bold sm:hidden">৳{shift.expectedCash.toFixed(0)}</span>
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="brand"
                 onClick={onOpenShiftModal}
-                className="bg-vl-cyan-100 hover:bg-vl-cyan-100 text-vl-cyan border-vl-cyan-200 font-heading flex animate-pulse items-center space-x-1 rounded-xl border px-2 py-1.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] transition-all sm:space-x-1.5 sm:px-3"
+                className="font-heading flex animate-pulse items-center space-x-1 rounded-xl px-2 py-1.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] sm:space-x-1.5 sm:px-3"
                 title="Register Shift is Closed. Click to Open Register."
               >
-                <Lock className="text-vl-cyan h-3.5 w-3.5" />
+                <Lock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Open Register</span>
                 <span className="text-[11px] sm:hidden">Open</span>
-              </button>
+              </Button>
             )}
           </div>
         )}

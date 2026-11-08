@@ -6,7 +6,6 @@ import {
   type ColumnOption,
 } from "@/components/admin/shared";
 import {
-  ADMIN_TABLE_CLASSES,
   AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
@@ -21,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { AdminTableInfiniteScroll } from "@/components/admin/shared";
 import {
   loadMoreAdminShipmentsAction,
@@ -412,17 +412,19 @@ export function AdminShipmentsTable({
 
           {/* Reset Filters */}
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              size="default"
+              variant="outline"
               onClick={() => {
                 setSearchValue("");
                 updateQueryParams({ q: "", filter: "all", provider: "ALL" });
               }}
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:text-neutral-900"
+              className="h-10 gap-1.5 border-dashed border-neutral-300 text-xs font-medium text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
             >
               <RotateCcw className="size-3.5" />
-              Reset filters
-            </button>
+              <span>Reset filters</span>
+            </Button>
           )}
         </div>
 
@@ -435,17 +437,19 @@ export function AdminShipmentsTable({
             onReset={handleColumnReset}
           />
 
-          <button
+          <Button
             type="button"
+            size="default"
+            variant="outline"
             onClick={() => exportCsv()}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="h-10 gap-1.5 px-3.5 text-xs font-semibold"
             title="Export CSV of parcels"
           >
             <Download className="size-4" />
             <span>
               {selectedIds.size > 0 ? `Export Selected (${selectedIds.size})` : "Export CSV"}
             </span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -730,20 +734,22 @@ export function AdminShipmentsTable({
                     <div className="flex items-center justify-end gap-1">
                       {/* 1-Click Steadfast Sync Button */}
                       {isSteadfast && shipment.providerShipmentId && (
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="icon-xs"
                           onClick={() => handleSyncShipment(shipment.id)}
                           disabled={isSyncing}
                           title="Sync live status from Steadfast"
                           aria-label="Sync live status from Steadfast"
-                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50"
+                          className="size-8 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                         >
                           {isSyncing ? (
                             <Loader2 className="size-3.5 animate-spin text-amber-600" />
                           ) : (
                             <RefreshCw className="size-3.5" />
                           )}
-                        </button>
+                        </Button>
                       )}
 
                       {/* 1-Click WhatsApp Parcel Alert */}

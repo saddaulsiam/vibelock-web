@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
   AdminTableMetaBar,
@@ -10,8 +9,9 @@ import {
 } from "@/components/admin/shared";
 import { exportAdminProductsCsvAction } from "@/lib/admin/catalog/catalog-actions";
 import type { AdminProductsResult } from "@/lib/admin/catalog/catalog-queries";
-import { AlertTriangle, Download, Layers, Loader2, X } from "lucide-react";
+import { AlertTriangle, Download, Layers, X } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export interface AdminProductsToolbarProps {
   counts: AdminProductsResult["counts"];
@@ -123,14 +123,12 @@ export function AdminProductsToolbar({
     <div className="space-y-4">
       {/* ── 1. Top Quick-Filter Status Tabs ── */}
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.status === "all" && currentFilters.stock === "all" ? "primary" : "outline"}
           onClick={() => onUpdateQuery({ status: "all", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.status === "all" && currentFilters.stock === "all"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <Layers className="size-3.5" />
           <span>All Products</span>
@@ -143,16 +141,14 @@ export function AdminProductsToolbar({
           >
             ({counts.total})
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.status === "PUBLISHED" && currentFilters.stock === "all" ? "primary" : "outline"}
           onClick={() => onUpdateQuery({ status: "PUBLISHED", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.status === "PUBLISHED" && currentFilters.stock === "all"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
           <span>Published</span>
@@ -165,16 +161,14 @@ export function AdminProductsToolbar({
           >
             ({counts.published})
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.status === "DRAFT" && currentFilters.stock === "all" ? "primary" : "outline"}
           onClick={() => onUpdateQuery({ status: "DRAFT", stock: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.status === "DRAFT" && currentFilters.stock === "all"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-amber-500" />
           <span>Drafts</span>
@@ -187,16 +181,14 @@ export function AdminProductsToolbar({
           >
             ({counts.draft})
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.stock === "low-stock" ? "primary" : "outline"}
           onClick={() => onUpdateQuery({ stock: "low-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.stock === "low-stock"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <AlertTriangle className="size-3 shrink-0 text-amber-500" />
           <span>Low Stock</span>
@@ -205,16 +197,14 @@ export function AdminProductsToolbar({
           >
             ({counts.lowStock})
           </span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.stock === "out-of-stock" ? "primary" : "outline"}
           onClick={() => onUpdateQuery({ stock: "out-of-stock", status: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.stock === "out-of-stock"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <span className="size-1.5 shrink-0 rounded-full bg-rose-500" />
           <span>Out of Stock</span>
@@ -225,17 +215,15 @@ export function AdminProductsToolbar({
           >
             ({counts.outOfStock})
           </span>
-        </button>
+        </Button>
 
         {counts.archived > 0 && (
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant={currentFilters.status === "ARCHIVED" ? "primary" : "outline"}
             onClick={() => onUpdateQuery({ status: "ARCHIVED", stock: "all" })}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-              currentFilters.status === "ARCHIVED"
-                ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-                : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-            }`}
+            className="gap-1.5 rounded-lg text-xs font-semibold"
           >
             <span>Archived</span>
             <span
@@ -245,7 +233,7 @@ export function AdminProductsToolbar({
             >
               ({counts.archived})
             </span>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -332,20 +320,19 @@ export function AdminProductsToolbar({
           />
 
           {/* Export to CSV Button */}
-          <button
+          <Button
             type="button"
+            size="default"
+            variant="outline"
             disabled={isExporting}
+            loading={isExporting}
             onClick={handleExportCsv}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="h-10 gap-1.5 px-3.5 text-xs font-semibold"
             title="Export filtered catalog to CSV"
           >
-            {isExporting ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Download className="size-3.5 text-neutral-500" />
-            )}
+            {!isExporting && <Download className="size-3.5 text-neutral-500" />}
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
 
           {/* Column Visibility Customizer */}
           <AdminTableColumnVisibility

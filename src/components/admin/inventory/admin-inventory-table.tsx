@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { loadMoreAdminInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type {
   AdminInventoryItem,
@@ -303,71 +304,65 @@ export function AdminInventoryTable({
     <div className="space-y-4">
       {/* ── 1. Quick Filter Pills ── */}
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.filter === "all" ? "primary" : "outline"}
           onClick={() => updateQuery({ filter: "all" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.filter === "all"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <Boxes className="size-3.5" />
           <span>All Items</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.filter === "in-stock" ? "primary" : "outline"}
           onClick={() => updateQuery({ filter: "in-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.filter === "in-stock"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <span className="size-1.5 rounded-full bg-emerald-500" />
           <span>In Stock (&gt;0)</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.filter === "low-stock" ? "primary" : "outline"}
           onClick={() => updateQuery({ filter: "low-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.filter === "low-stock"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <AlertTriangle className="size-3 text-amber-500" />
           <span>Low Stock (1–5)</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant={currentFilters.filter === "out-of-stock" ? "primary" : "outline"}
           onClick={() => updateQuery({ filter: "out-of-stock" })}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
-            currentFilters.filter === "out-of-stock"
-              ? "bg-vl-dark-900 font-semibold text-white shadow-2xs"
-              : "border border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
-          }`}
+          className="gap-1.5 rounded-lg text-xs font-semibold"
         >
           <span className="size-1.5 rounded-full bg-rose-500" />
           <span>Out of Stock (0)</span>
-        </button>
+        </Button>
 
         {hasNegativeAnomaly && (
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant={currentFilters.filter === "negative" ? "danger" : "outline"}
             onClick={() => updateQuery({ filter: "negative" })}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-bold transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none ${
+            className={`gap-1.5 rounded-lg text-xs font-bold ${
               currentFilters.filter === "negative"
-                ? "bg-red-900 text-white shadow-2xs"
-                : "border border-red-300 bg-red-50 text-red-900 hover:bg-red-100"
+                ? "bg-red-900 text-white"
+                : "border-red-300 bg-red-50 text-red-900 hover:bg-red-100"
             }`}
           >
             <AlertTriangle className="size-3.5 animate-pulse text-red-600" />
             <span>Negative Anomaly</span>
-          </button>
+          </Button>
         )}
       </div>
 
@@ -399,31 +394,35 @@ export function AdminInventoryTable({
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Purchase Order (PO) / Reorder Sheet Button */}
-          <button
+          <Button
             type="button"
+            size="default"
+            variant="outline"
             onClick={() => {
               setPoInitialItems([]);
               setShowPoModal(true);
             }}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="h-10 gap-1.5 px-3.5 text-xs font-semibold"
             title="Generate Supplier Purchase Order / Factory Reorder Sheet"
           >
             <Factory className="size-4 text-neutral-500" />
             <span>Purchase Order (PO)</span>
-          </button>
+          </Button>
 
           {/* Rapid Stocktake / Audit Mode Button */}
-          <button
+          <Button
             type="button"
+            size="default"
+            variant="outline"
             onClick={() => {
               setShowStocktakeModal(true);
             }}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-emerald-600/30 bg-emerald-50 px-3.5 text-xs font-semibold text-emerald-800 shadow-2xs transition-colors hover:bg-emerald-100 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
+            className="h-10 gap-1.5 border-emerald-600/30 bg-emerald-50 px-3.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
             title="Open Rapid Barcode Stocktaking & Physical Audit Station"
           >
             <Barcode className="size-4 text-emerald-700" />
             <span>Stocktake Audit</span>
-          </button>
+          </Button>
 
           {/* Column Visibility Customizer */}
           <AdminTableColumnVisibility

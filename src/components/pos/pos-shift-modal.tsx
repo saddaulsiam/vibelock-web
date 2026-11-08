@@ -205,14 +205,16 @@ export function PosShiftModal({
                 Presets:
               </span>
               {[1000, 2000, 3000, 5000].map((preset) => (
-                <button
+                <Button
                   key={preset}
                   type="button"
+                  size="xs"
+                  variant="outline"
                   onClick={() => setOpeningFloat(preset)}
-                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 rounded-lg border border-vl-white-500 bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
+                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-7 border-vl-white-500 bg-white px-2.5 font-mono text-xs font-bold shadow-2xs"
                 >
                   ৳{preset}
-                </button>
+                </Button>
               ))}
             </div>
 

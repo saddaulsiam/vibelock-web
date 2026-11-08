@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Check, ChevronDown, Plus, Search, Tag, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export type CategoryOption = {
@@ -213,27 +214,31 @@ export function CategoryMultiSelect({
                 className="group inline-flex items-center gap-1.5 border border-vl-dark-900/15 bg-vl-white-300 px-2.5 py-1 text-xs font-medium text-vl-dark-900 transition-colors hover:border-vl-dark-900/30"
               >
                 <span>{label}</span>
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={(e) => removeCategory(id, e)}
                   title={`Remove ${label}`}
-                  className="rounded-xs p-0.5 text-vl-dark-900/60 hover:bg-black/10 hover:text-red-700 focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                  className="size-4 p-0 text-vl-dark-900/60 hover:bg-black/10 hover:text-red-700"
                 >
                   <X className="size-3" />
                   <span className="sr-only">Remove {label}</span>
-                </button>
+                </Button>
               </span>
             );
           })}
 
           {selectedIds.length > 1 && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={clearAll}
-              className="text-muted-foreground text-xs underline underline-offset-2 transition-colors hover:text-red-600 focus-visible:outline-none"
+              className="h-auto p-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-red-600"
             >
               Clear all
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -259,17 +264,19 @@ export function CategoryMultiSelect({
                 className="bg-white pr-8 pl-9"
               />
               {query && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon-xs"
                   onClick={() => {
                     setQuery("");
                     searchInputRef.current?.focus();
                   }}
-                  className="absolute right-2.5 z-10 text-vl-dark-900/40 hover:text-vl-dark-900"
+                  className="absolute right-2.5 z-10 size-4 p-0 text-vl-dark-900/40 hover:text-vl-dark-900"
                 >
                   <X className="size-3.5" />
                   <span className="sr-only">Clear search</span>
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -284,22 +291,26 @@ export function CategoryMultiSelect({
               </span>
               <div className="flex items-center gap-3">
                 {filteredCategories.length > 0 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="xs"
                     onClick={areAllFilteredSelected ? deselectAllFiltered : selectAllFiltered}
-                    className="font-medium text-vl-dark-900 hover:underline focus-visible:outline-none"
+                    className="h-auto p-0 font-medium text-[11px] text-vl-dark-900 hover:underline"
                   >
                     {areAllFilteredSelected ? "Deselect matching" : "Select matching"}
-                  </button>
+                  </Button>
                 )}
                 {selectedIds.length > 0 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="link"
+                    size="xs"
                     onClick={clearAll}
-                    className="text-red-600 hover:underline focus-visible:outline-none"
+                    className="h-auto p-0 text-[11px] text-red-600 hover:underline"
                   >
                     Clear selection
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -350,13 +361,15 @@ export function CategoryMultiSelect({
                 <p className="text-muted-foreground text-xs">
                   No categories found matching &quot;{query}&quot;
                 </p>
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => setQuery("")}
-                  className="mt-1.5 text-xs font-medium text-vl-dark-900 underline hover:text-vl-cyan"
+                  className="mt-1.5 h-auto p-0 text-xs font-medium text-vl-dark-900 underline hover:text-vl-cyan"
                 >
                   Reset search
-                </button>
+                </Button>
               </div>
             )}
 
@@ -381,13 +394,15 @@ export function CategoryMultiSelect({
           {/* Footer note / close button */}
           <div className="text-muted-foreground flex items-center justify-between border-t border-vl-dark-900/10 bg-vl-white-200 px-3 py-2 text-[11px]">
             <span>Press Esc or click outside to close</span>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={closeDropdown}
-              className="font-medium text-vl-dark-900 hover:underline"
+              className="h-auto p-0 font-medium text-[11px] text-vl-dark-900 hover:underline"
             >
               Done
-            </button>
+            </Button>
           </div>
         </div>
       )}

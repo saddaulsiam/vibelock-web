@@ -277,16 +277,18 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
           />
 
           {/* Export CSV Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportCsv}
             disabled={filteredUsers.length === 0}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export filtered staff/admins to CSV"
+            className="gap-1.5"
           >
             <Download className="size-3.5 text-neutral-500" />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
 
           {/* Create Admin Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

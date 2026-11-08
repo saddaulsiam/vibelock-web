@@ -241,13 +241,15 @@ export function PosProductGrid({
           ref={categoryScrollRef}
           className="no-scrollbar flex [scrollbar-width:none] items-center space-x-2 overflow-x-auto px-1 pt-0.5 pb-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant={selectedCategory === "all" ? "primary" : "outline"}
             onClick={() => setSelectedCategory("all")}
-            className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
+            className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
               selectedCategory === "all"
                 ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border border-vl-white-400 bg-white font-medium shadow-2xs"
+                : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
             }`}
           >
             <span>All Items</span>
@@ -260,19 +262,21 @@ export function PosProductGrid({
             >
               {products.length}
             </span>
-          </button>
+          </Button>
           {categories.map((cat) => {
             const count = categoryCounts[cat.id] ?? 0;
             const isSelected = selectedCategory === cat.id;
             return (
-              <button
+              <Button
                 key={cat.id}
                 type="button"
+                size="sm"
+                variant={isSelected ? "primary" : "outline"}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
+                className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
                   isSelected
                     ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                    : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border border-vl-white-400 bg-white font-medium shadow-2xs"
+                    : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
                 }`}
               >
                 <span>{cat.name}</span>
@@ -283,17 +287,19 @@ export function PosProductGrid({
                 >
                   {count}
                 </span>
-              </button>
+              </Button>
             );
           })}
           {uncategorizedCount > 0 && (
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant={selectedCategory === "uncategorized" ? "primary" : "outline"}
               onClick={() => setSelectedCategory("uncategorized")}
-              className={`flex items-center rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
+              className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
                 selectedCategory === "uncategorized"
                   ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                  : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border border-vl-white-400 bg-white font-medium shadow-2xs"
+                  : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
               }`}
             >
               <span>Uncategorized</span>
@@ -306,7 +312,7 @@ export function PosProductGrid({
               >
                 {uncategorizedCount}
               </span>
-            </button>
+            </Button>
           )}
         </div>
       </div>

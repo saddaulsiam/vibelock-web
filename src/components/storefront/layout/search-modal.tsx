@@ -202,9 +202,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder="Search drops..."
                 aria-label="Search drops"
-                variant="brand"
-                size="default"
-                className="h-10 w-full rounded-full border-vl-cyan-300 pr-9 pl-9 text-sm text-gray-900 placeholder:text-gray-400"
+                className="border-vl-cyan-500 text-vl-black rounded-full px-9 text-sm placeholder:text-gray-400"
               />
 
               {/* Clear button (X) */}
@@ -212,7 +210,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 <button
                   type="button"
                   onClick={handleClear}
-                  className="absolute top-1/2 right-3 flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-700"
+                  className="absolute top-1/2 right-3 flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-red-100 hover:text-red-400"
                   aria-label="Clear search"
                 >
                   <X className="size-3.5" />
@@ -226,7 +224,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="shrink-0 text-xs font-bold tracking-wider text-gray-500 uppercase hover:text-black"
+              className="text-vl-dark-500 hover:text-vl-black font-semibold tracking-wider uppercase"
             >
               CANCEL
             </Button>
@@ -237,7 +235,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             {!query.trim() ? (
               /* State 1: POPULAR SEARCH TERMS */
               <div className="mx-auto max-w-2xl sm:text-center">
-                <h3 className="mb-3 text-compact font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="text-compact mb-3 font-bold tracking-wider text-gray-400 uppercase">
                   POPULAR SEARCH TERMS
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:justify-center">
@@ -261,7 +259,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                     MATCHES
                   </h3>
                   {isLoading && (
-                    <span className="flex items-center gap-1.5 text-compact text-gray-400">
+                    <span className="text-compact flex items-center gap-1.5 text-gray-400">
                       <Loader2 className="text-vl-cyan size-3 animate-spin" />
                       Searching...
                     </span>
@@ -316,7 +314,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                               <h4 className="line-clamp-1 text-xs font-semibold text-gray-900 group-hover:text-black sm:text-sm">
                                 {product.name}
                               </h4>
-                              <p className="mt-0.5 text-xs font-bold text-vl-cyan-700">
+                              <p className="text-vl-cyan-700 mt-0.5 text-xs font-bold">
                                 {formatPrice(price)}
                               </p>
                             </div>

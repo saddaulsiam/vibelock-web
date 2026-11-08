@@ -208,10 +208,12 @@ export function ToggleShippingMethodForm({ id, active }: { id: string; active: b
   return (
     <form action={action} className="inline-flex items-center gap-1.5">
       <input type="hidden" name="id" value={id} />
-      <button
+      <Button
         type="submit"
+        variant="outline"
+        size="xs"
         disabled={pending}
-        className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+        className={`gap-1 font-medium ${
           active
             ? "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
             : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
@@ -220,7 +222,7 @@ export function ToggleShippingMethodForm({ id, active }: { id: string; active: b
       >
         <Power className="size-3" />
         <span>{pending ? "..." : active ? "Deactivate" : "Activate"}</span>
-      </button>
+      </Button>
       {state.error ? <span className="text-[10px] text-rose-600">{state.error}</span> : null}
     </form>
   );

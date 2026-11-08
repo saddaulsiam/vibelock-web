@@ -273,14 +273,16 @@ export function BannerForm({
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="text-muted-foreground text-[11px]">Quick suggestions:</span>
               {TITLE_SUGGESTIONS.map((preset) => (
-                <button
+                <Button
                   key={preset}
                   type="button"
+                  variant="outline"
+                  size="xs"
                   onClick={() => setTitle(preset)}
-                  className="inline-flex items-center rounded border border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 transition-colors hover:bg-vl-dark-900 hover:text-white"
+                  className="h-6 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:bg-vl-dark-900 hover:text-white"
                 >
                   + {preset}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -318,18 +320,16 @@ export function BannerForm({
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="text-muted-foreground text-[11px]">Common destinations:</span>
               {DESTINATION_PRESETS.map((dest) => (
-                <button
+                <Button
                   key={dest.url}
                   type="button"
+                  variant={linkUrl === dest.url ? "primary" : "outline"}
+                  size="xs"
                   onClick={() => setLinkUrl(dest.url)}
-                  className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                    linkUrl === dest.url
-                      ? "border-vl-dark-900 bg-vl-dark-900 text-white"
-                      : "border-vl-dark-900/15 bg-vl-white-100 text-vl-dark-900 hover:bg-vl-dark-900 hover:text-white"
-                  }`}
+                  className="h-6 rounded px-2 py-0.5 text-[11px] font-medium"
                 >
                   {dest.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -448,10 +448,12 @@ export function BannerForm({
               (1920 × 600px).
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => setUseDesktopUrlInput((prev) => !prev)}
-            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-vl-dark-900"
+            className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
           >
             {useDesktopUrlInput ? (
               <>
@@ -462,7 +464,7 @@ export function BannerForm({
                 <Globe className="size-3.5" /> Or use external / Cloudinary URL
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {!useDesktopUrlInput ? (
@@ -524,14 +526,16 @@ export function BannerForm({
           <div className="mt-3 space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold text-vl-dark-900">
               <span>Desktop Preview (16:7)</span>
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={handleClearDesktop}
-                className="inline-flex items-center gap-1 text-red-600 hover:underline"
+                className="h-auto p-0 text-red-600 hover:underline"
               >
                 <Trash2 className="size-3.5" />
                 <span>Remove</span>
-              </button>
+              </Button>
             </div>
             <div className="relative aspect-16/7 w-full overflow-hidden border border-vl-dark-900/15 bg-vl-white-100">
               <Image
@@ -570,10 +574,12 @@ export function BannerForm({
               down automatically. Recommended: 3:2 or 1:1.
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => setUseMobileUrlInput((prev) => !prev)}
-            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-vl-dark-900"
+            className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
           >
             {useMobileUrlInput ? (
               <>
@@ -584,7 +590,7 @@ export function BannerForm({
                 <Globe className="size-3.5" /> Or use external / Cloudinary URL
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {!useMobileUrlInput ? (
@@ -646,14 +652,16 @@ export function BannerForm({
           <div className="mt-3 max-w-xs space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold text-vl-dark-900">
               <span>Mobile Preview (3:2)</span>
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={handleClearMobile}
-                className="inline-flex items-center gap-1 text-red-600 hover:underline"
+                className="h-auto p-0 text-red-600 hover:underline"
               >
                 <Trash2 className="size-3.5" />
                 <span>Remove</span>
-              </button>
+              </Button>
             </div>
             <div className="relative aspect-3/2 w-full overflow-hidden border border-vl-dark-900/15 bg-vl-white-100">
               <Image
