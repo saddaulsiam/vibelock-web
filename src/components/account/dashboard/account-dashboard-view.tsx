@@ -1,6 +1,5 @@
 "use client";
 
-import { AccountCollectionBanner } from "./account-collection-banner";
 import { AccountMetrics } from "./account-metrics";
 import { AccountRecentOrders } from "./account-recent-orders";
 
@@ -55,12 +54,7 @@ export function AccountDashboardView({ account }: AccountDashboardViewProps) {
       />
 
       {/* Recent Orders Section */}
-      <div className="">
-        <AccountRecentOrders orders={account.recentOrders} />
-      </div>
-
-      {/* Collection Promotion Campaign Banner */}
-      <AccountCollectionBanner />
+      <AccountRecentOrders orders={account.recentOrders} />
     </div>
   );
 }
