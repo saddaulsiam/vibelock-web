@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Plus, Pencil, Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface AddressItem {
   id: string;
@@ -19,7 +21,7 @@ interface AccountAddressesCardProps {
 
 export function AccountAddressesCard({ addresses, userName }: AccountAddressesCardProps) {
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-vl-black/8 bg-white p-4 sm:p-6">
+    <Card variant="brand" className="flex flex-col justify-between p-4 sm:p-6">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between border-b border-vl-black/8 pb-3.5 sm:pb-4">
@@ -57,10 +59,10 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-[#101114]">{label}</span>
                       {addr.isDefault && (
-                        <span className="inline-flex items-center gap-1 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-700">
+                        <Badge variant="secondary" size="sm" className="gap-1 font-semibold">
                           <Check className="size-2.5" />
                           Default
-                        </span>
+                        </Badge>
                       )}
                     </div>
 
@@ -98,6 +100,6 @@ export function AccountAddressesCard({ addresses, userName }: AccountAddressesCa
           <span>Add New Address</span>
         </Link>
       </div>
-    </div>
+    </Card>
   );
 }

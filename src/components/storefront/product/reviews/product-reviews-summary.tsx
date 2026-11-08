@@ -1,6 +1,7 @@
 "use client";
 
 import { StarRating } from "./star-rating";
+import { Badge } from "@/components/ui/badge";
 import type { ReviewSummary } from "@/lib/reviews/types";
 
 interface ProductReviewsSummaryProps {
@@ -26,9 +27,9 @@ export function ProductReviewsSummary({ summary }: ProductReviewsSummaryProps) {
               ? "No reviews yet"
               : `Based on ${totalReviews} ${totalReviews === 1 ? "review" : "reviews"}`}
           </p>
-          <span className="bg-vl-cyan/15 text-vl-cyan-dark mt-2 inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold tracking-wider uppercase">
+          <Badge variant="cyan" size="default" className="mt-2">
             100% Verified Buyers
-          </span>
+          </Badge>
         </div>
 
         {/* Right Side: Rating Distribution Bars */}

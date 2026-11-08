@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -32,7 +34,7 @@ export function AccountMembershipCard({
   const isGoogle = authProvider === "google";
 
   return (
-    <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+    <Card variant="brand" className="p-4 sm:p-6">
       {/* Header */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/8 pb-4 sm:mb-6 sm:pb-5">
         <div>
@@ -44,9 +46,9 @@ export function AccountMembershipCard({
           </p>
         </div>
 
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-2.5 py-0.5 text-[11px] font-bold text-neutral-700">
+        <Badge variant="secondary" size="sm">
           Member ID: {userId.slice(0, 8).toUpperCase()}
-        </span>
+        </Badge>
       </div>
 
       <div className="space-y-6">
@@ -188,6 +190,6 @@ export function AccountMembershipCard({
           </Link>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

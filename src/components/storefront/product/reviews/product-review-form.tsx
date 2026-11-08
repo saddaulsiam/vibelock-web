@@ -9,6 +9,7 @@ import { CheckCircle2, AlertCircle, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductReviewFormProps {
   productId: string;
@@ -103,9 +104,9 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
             <h3 className="text-base font-black tracking-tight text-[#101114] sm:text-lg">
               {isEditing ? "Edit Your Review" : "Write a Verified Review"}
             </h3>
-            <span className="bg-vl-cyan/15 text-vl-cyan-dark inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase">
+            <Badge variant="cyan" size="sm">
               <Sparkles className="size-3" /> Verified Buyer
-            </span>
+            </Badge>
           </div>
           <p className="mt-1 text-xs text-[#101114]/65">
             Help other streetwear enthusiasts with honest feedback on sizing, fit, and fabric feel.

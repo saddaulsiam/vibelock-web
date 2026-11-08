@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 const badgeVariants = cva(
-  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
       variant: {
@@ -16,48 +16,57 @@ const badgeVariants = cva(
         outline: "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
-        /** Existing — Electric cyan accent (new feature labels, in-stock, shipping info) */
-        cyan: "bg-vl-cyan/15 text-[#00a3c4] dark:text-vl-cyan border border-vl-cyan/30 font-bold uppercase tracking-wider text-2xs",
-        /** Existing — Obsidian brand label */
+        /** Electric cyan accent (verified buyer, featured drops, in-stock) */
+        cyan: "bg-vl-cyan/15 text-vl-cyan-dark dark:text-vl-cyan border border-vl-cyan/30 font-bold uppercase tracking-wider",
+        /** Obsidian brand label */
         brand:
-          "bg-vl-black text-vl-white border border-vl-border font-bold uppercase tracking-wider text-2xs",
+          "bg-vl-black text-vl-white border border-vl-border font-bold uppercase tracking-wider",
 
-        // ── New status variants (Phase 2C) ────────────────────────────────
+        // ── Streetwear & Status variants ────────────────────────────────
         /**
          * sale — Storefront price / discount label.
-         * Solid red-500: high-contrast attention signal for price reduction.
-         * Pattern confirmed: raw <span> sales labels across product cards.
+         * Solid red-500 (#E50010): high-contrast attention signal for price reduction.
          * Uses rounded-xs (2px) to match storefront sharp-corner aesthetic.
-         * Uppercase + tracking for readability at small size.
          */
-        sale: "rounded-xs bg-red-500 text-white border-transparent font-black uppercase tracking-wider",
+        sale: "rounded-xs bg-[#E50010] text-white border-transparent font-black uppercase tracking-wider shadow-xs",
+
+        /**
+         * new — New collection / streetwear drop badge.
+         */
+        new: "rounded-xs bg-[#E50010] text-white border-transparent font-black uppercase tracking-wider shadow-xs",
+
+        /**
+         * featured — Highlighted product / editor's pick badge.
+         */
+        featured: "rounded-xs bg-amber-400 text-vl-black border-transparent font-black uppercase tracking-wider shadow-xs",
 
         /**
          * success — Order confirmed, payment verified, in-stock, completed status.
-         * Pattern: emerald-100 bg / emerald-700 text / emerald-200 border.
-         * Confirmed across: account/orders, admin/orders, checkout success states.
          */
-        success: "bg-emerald-100 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
+        success: "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800",
 
         /**
          * warning — Pending payment, low stock, needs attention.
-         * Pattern: amber-100 bg / amber-700 text / amber-200 border.
-         * Confirmed across: admin order status, inventory low-stock indicators.
          */
-        warning: "bg-amber-100 text-amber-700 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
+        warning: "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800",
 
         /**
          * error — Failed payment, cancelled, out-of-stock, validation failure.
-         * Pattern (light): red-50 bg / red-700 text / red-200 border.
-         * Note: the dark-surface pattern (red-500/10 bg + red-400 text) is intentional
-         * for auth pages only and is not represented here — those pages use inline classes
-         * on a dark canvas and would not use a Badge component in that context.
          */
-        error: "bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800",
+        error: "bg-rose-100 text-rose-800 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800",
+      },
+      size: {
+        /** sm — 18px compact tag */
+        sm: "h-4.5 px-1.5 py-0.5 text-3xs font-bold uppercase tracking-wider",
+        /** default — 20px standard status pill */
+        default: "h-5 px-2 py-0.5 text-2xs font-bold uppercase tracking-wider",
+        /** lg — 24px prominent tag */
+        lg: "h-6 px-2.5 py-1 text-xs font-bold uppercase tracking-wider",
       },
     },
     defaultVariants: {
       variant: "default",
+      size: "default",
     },
   }
 );
@@ -65,6 +74,7 @@ const badgeVariants = cva(
 function Badge({
   className,
   variant = "default",
+  size = "default",
   render,
   ...props
 }: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
@@ -72,7 +82,7 @@ function Badge({
     defaultTagName: "span",
     props: mergeProps<"span">(
       {
-        className: cn(badgeVariants({ variant }), className),
+        className: cn(badgeVariants({ variant, size }), className),
       },
       props
     ),
@@ -80,6 +90,7 @@ function Badge({
     state: {
       slot: "badge",
       variant,
+      size,
     },
   });
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { User, Lock, MessageSquare, ChevronRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 export function AccountQuickActions() {
   const actions = [
@@ -24,7 +25,7 @@ export function AccountQuickActions() {
   ];
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+    <Card variant="brand" className="flex flex-col justify-between p-4 sm:p-6">
       <div>
         {/* Header */}
         <div className="border-b border-[#101114]/8 pb-3.5 sm:pb-4">
@@ -65,6 +66,6 @@ export function AccountQuickActions() {
           <span>Track Active Deliveries</span>
         </Link>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -3,6 +3,7 @@
 import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { subscribeWishlist, getWishlistSnapshot, getWishlistServerSnapshot } from "@/lib/wishlist";
 
 interface AccountMetricsProps {
@@ -65,7 +66,7 @@ export function AccountMetrics({
 
   return (
     /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
-    <div className="overflow-hidden rounded-xl border border-[#101114]/8 bg-white">
+    <Card variant="brand" className="overflow-hidden p-0">
       <div className="grid grid-cols-2 divide-x divide-y divide-[#101114]/6 sm:grid-cols-4 sm:divide-y-0">
         {metrics.map((metric) => (
           <div
@@ -93,6 +94,6 @@ export function AccountMetrics({
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

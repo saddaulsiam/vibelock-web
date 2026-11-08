@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, PackageOpen } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { Card } from "@/components/ui/card";
 
 interface OrderItemInfo {
   id: string;
@@ -34,7 +35,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
   };
 
   return (
-    <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+    <Card variant="brand" className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
         <div>
@@ -178,6 +179,6 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           </div>
         </>
       )}
-    </div>
+    </Card>
   );
 }

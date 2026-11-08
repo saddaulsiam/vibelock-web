@@ -8,6 +8,7 @@ import type { ReviewItem } from "@/lib/reviews/types";
 import { CheckCircle2, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductReviewListProps {
   reviews: ReviewItem[];
@@ -91,10 +92,10 @@ export function ProductReviewList({
                       {review.user?.name || "Verified Customer"}
                     </span>
                     {review.verified && (
-                      <span className="bg-vl-cyan/15 text-vl-cyan-dark inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold">
+                      <Badge variant="cyan" size="sm">
                         <CheckCircle2 className="size-3" />
                         Verified Purchase
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <div className="mt-1 flex items-center gap-2">

@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { SelectableCard } from "@/components/shared/selectable-card";
 
 // ── 64 Districts of Bangladesh ───────────────────────────────────────────────
@@ -886,9 +887,9 @@ export function CheckoutForm({
                         <div className="flex items-center justify-between">
                           <span className="text-vl-black text-sm font-bold">{method.title}</span>
                           {method.value === "COD" && (
-                            <span className="bg-vl-black/5 text-2xs text-vl-black rounded-full px-2 py-0.5 font-bold tracking-wider uppercase">
+                            <Badge variant="outline" size="sm">
                               Popular in BD
-                            </span>
+                            </Badge>
                           )}
                           {method.value === "ONLINE" && (
                             <span className="text-compact flex items-center gap-1 font-semibold text-neutral-500">

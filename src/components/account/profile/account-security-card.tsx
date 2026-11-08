@@ -14,6 +14,8 @@ import { deleteAccountAction } from "@/app/actions/account-deletion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Lock, Laptop, AlertTriangle, Check } from "lucide-react";
 
 export function AccountSecurityCard() {
@@ -108,7 +110,7 @@ export function AccountSecurityCard() {
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
       {/* 1. Change Password */}
-      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+      <Card variant="brand" className="p-4 sm:p-6">
         <div className="mb-4 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-5 sm:pb-4">
           <Lock className="size-4 text-[#101114]" />
           <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
@@ -198,10 +200,10 @@ export function AccountSecurityCard() {
             </Button>
           </div>
         </form>
-      </div>
+      </Card>
 
       {/* 2. Active Sessions */}
-      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+      <Card variant="brand" className="p-4 sm:p-6">
         <div className="mb-3.5 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-4 sm:pb-4">
           <Laptop className="size-4 text-[#101114]" />
           <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
@@ -227,9 +229,9 @@ export function AccountSecurityCard() {
                     <div className="flex items-center gap-2 text-xs font-semibold text-[#101114]">
                       <span>Device Session</span>
                       {s.isCurrent && (
-                        <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-700">
+                        <Badge variant="secondary" size="sm">
                           Current Device
-                        </span>
+                        </Badge>
                       )}
                     </div>
                     <p className="mt-0.5 text-[11px] text-neutral-500">
@@ -258,10 +260,10 @@ export function AccountSecurityCard() {
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* 3. Delete Account */}
-      <div className="rounded-xl border border-rose-200 bg-white p-4 sm:p-6">
+      <Card variant="brand" className="border-rose-200 p-4 sm:p-6">
         <div className="mb-3.5 flex items-center gap-2 border-b border-rose-100 pb-3.5 sm:mb-4 sm:pb-4">
           <AlertTriangle className="size-4 text-rose-600" />
           <h2 className="text-sm font-bold tracking-tight text-rose-700 uppercase sm:text-base">
@@ -319,7 +321,7 @@ export function AccountSecurityCard() {
             </div>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

@@ -3,44 +3,36 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
 
 const cardVariants = cva(
-  // Base — identical to original flat class string; all existing consumers
-  // using no variant prop will receive the exact same computed classes.
-  "group/card bg-card text-card-foreground ring-foreground/10 flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl py-(--card-spacing) text-sm ring-1 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+  "group/card flex flex-col text-card-foreground overflow-hidden text-sm transition-all",
   {
     variants: {
       variant: {
         /**
-         * default — original card appearance unchanged.
-         * bg-card surface, ring-1 border, rounded-xl. Admin data cards,
-         * generic content containers.
+         * default — standard admin and operational surface.
          */
-        default: "",
+        default: "bg-card border border-border rounded-xl ring-1 ring-foreground/10",
 
         /**
-         * brand — Storefront / account white card with vl-black tinted border.
-         * Pattern confirmed: account pages (rounded-2xl, border-[#101114]/8,
-         * bg-white, shadow-2xs). Overrides base ring with explicit border + shadow.
-         * Uses --color-vl-black for border opacity utility.
+         * brand — Storefront & Account clean white card with subtle obsidian border.
+         * High-contrast, clean 16px/24px rounded corners with soft 2xs elevation.
          */
-        brand:
-          "bg-white ring-0 border border-vl-black/8 rounded-2xl shadow-2xs",
+        brand: "bg-white border border-vl-black/8 rounded-2xl shadow-2xs",
 
         /**
          * dark — Auth pages and POS dark-surface card.
-         * Pattern confirmed: auth forms use bg-[#16171b] (surface-dark token),
-         * border-[#303137] (border-dark token), rounded-lg, no shadow.
-         * Overrides bg-card and ring with explicit dark surface tokens.
          */
-        dark: "bg-surface-dark text-vl-white ring-0 border border-border-dark rounded-lg",
+        dark: "bg-surface-dark text-vl-white border border-border-dark rounded-xl",
 
         /**
          * panel — Checkout, order summary, FAQ warm-off-white panel.
-         * Pattern confirmed: #FAF9F5 bg (surface-warm-soft token) with
-         * #101114/8 border across checkout-form and order-summary loading states.
-         * Rounded-xl preserved (same as default base). Removes default ring.
          */
-        panel:
-          "bg-surface-warm-soft ring-0 border border-vl-black/8 rounded-xl",
+        panel: "bg-surface-warm-soft border border-vl-black/8 rounded-xl",
+
+        /**
+         * interactive — Storefront hoverable cards (coupons, action tiles).
+         */
+        interactive:
+          "bg-white border border-vl-black/10 rounded-2xl shadow-2xs hover:border-vl-black/30 hover:shadow-xs",
       },
     },
     defaultVariants: {
