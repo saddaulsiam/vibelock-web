@@ -145,6 +145,7 @@ When modifying existing code or creating new features, follow these rules strict
   - `variant="primary"`: Obsidian black background (`bg-vl-black`), white text, subtle cyan glow hover.
   - `variant="brand"`: Electric cyan background (`bg-vl-cyan`), obsidian dark text (`text-vl-dark-900`), cyan glow hover.
   - `variant="secondary"`, `variant="outline"`, `variant="ghost"`, `variant="destructive"`, `variant="danger"`, `variant="link"`.
+- **Badge Component:** Full visual catalog, status dots, e-commerce drops & lifecycle rules are documented in [`docs/BADGE_USAGE_GUIDE.md`](./BADGE_USAGE_GUIDE.md).
 
 ### 🛑 RULE 4: Translucent States Use Tailwind Slash Syntax
 - ❌ **Forbidden:** `rgba(0, 217, 255, 0.2)` in inline styles or bracket classes.

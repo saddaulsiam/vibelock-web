@@ -1,10 +1,8 @@
 "use client";
 
+import { AccountCollectionBanner } from "./account-collection-banner";
 import { AccountMetrics } from "./account-metrics";
 import { AccountRecentOrders } from "./account-recent-orders";
-import { AccountAddressesCard } from "../addresses/account-addresses-card";
-import { AccountQuickActions } from "./account-quick-actions";
-import { AccountCollectionBanner } from "./account-collection-banner";
 
 interface AccountDashboardViewProps {
   account: {
@@ -57,14 +55,8 @@ export function AccountDashboardView({ account }: AccountDashboardViewProps) {
       />
 
       {/* Recent Orders Section */}
-      <div className="mt-6">
+      <div className="">
         <AccountRecentOrders orders={account.recentOrders} />
-      </div>
-
-      {/* Bottom Two-Column: Shipping Addresses & Quick Actions */}
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <AccountAddressesCard addresses={account.addresses} userName={account.profile.name} />
-        <AccountQuickActions />
       </div>
 
       {/* Collection Promotion Campaign Banner */}

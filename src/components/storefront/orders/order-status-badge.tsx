@@ -21,21 +21,25 @@ export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
     "RETURN_PROCESSING",
     "PARTIALLY_REFUNDED",
   ];
-  const color = positive.includes(normalized)
-    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-    : negative.includes(normalized)
-      ? "border-rose-200 bg-rose-50 text-rose-800"
-      : inProgress.includes(normalized)
-        ? "border-vl-cyan-200 bg-vl-cyan-50 text-vl-dark-900"
-        : "border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900";
+  const pending = ["PENDING", "AWAITING_PAYMENT", "ON_HOLD", "PAYMENT_PENDING"];
+  const variant = positive.includes(normalized)
+    ? "success"
+    : pending.includes(normalized)
+      ? "warning"
+      : negative.includes(normalized)
+        ? "error"
+        : inProgress.includes(normalized)
+          ? "cyan"
+          : "secondary";
   const label = normalized
     .toLowerCase()
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+  const isPulse = inProgress.includes(normalized) || pending.includes(normalized);
 
   return (
-    <Badge variant="outline" className={`h-6 rounded-sm px-2 font-medium ${color}`}>
+    <Badge variant={variant} dot={isPulse ? "pulse" : true}>
       {label}
     </Badge>
   );

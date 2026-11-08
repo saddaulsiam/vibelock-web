@@ -156,9 +156,9 @@ export function ProfileForm({
       />
 
       {/* ── 1. Modern Studio Avatar Uploader ── */}
-      <div className="flex flex-col gap-4 border-b border-vl-dark-900/8 pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-vl-dark-900/8 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-vl-dark-900/15 bg-vl-white-200 shadow-2xs sm:size-18">
+          <div className="border-vl-dark-900/15 bg-vl-white-200 relative size-16 shrink-0 overflow-hidden rounded-full border shadow-2xs sm:size-18">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -173,7 +173,7 @@ export function ProfileForm({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-vl-dark-900 text-xl font-bold text-white">
+              <div className="bg-vl-dark-900 flex h-full w-full items-center justify-center text-xl font-bold text-white">
                 {(name || email || "V").slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -186,10 +186,10 @@ export function ProfileForm({
           </div>
 
           <div>
-            <span className="text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
+            <span className="text-vl-dark-900 text-xs font-semibold tracking-wider uppercase">
               Profile Photo
             </span>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-0.5 text-xs">
               Upload a high-resolution JPG, PNG or WebP image (Max 5MB).
             </p>
           </div>
@@ -204,20 +204,21 @@ export function ProfileForm({
             loading={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
           >
-            {!uploadingAvatar && <Camera className="size-3.5 text-muted-foreground" />}
-            <span>{uploadingAvatar ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}</span>
+            {!uploadingAvatar && <Camera className="text-muted-foreground size-3.5" />}
+            <span>
+              {uploadingAvatar ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}
+            </span>
           </Button>
 
           {imageUrl && !uploadingAvatar && (
             <Button
               type="button"
-              variant="ghost"
+              variant="destructive"
               size="sm"
               onClick={() => {
                 setImageUrl("");
                 toast.info("Photo removed. Click 'Save Changes' to confirm.");
               }}
-              className="text-rose-600 hover:bg-rose-50"
               title="Remove photo"
             >
               <Trash2 className="size-3.5" />
@@ -231,7 +232,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-name"
-          className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
+          className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
         >
           Full Name
         </Label>
@@ -251,7 +252,7 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-phone"
-          className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
+          className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
         >
           Phone Number
         </Label>
@@ -264,7 +265,7 @@ export function ProfileForm({
           disabled={pending}
           placeholder="No phone number on this account"
         />
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-muted-foreground text-[11px]">
           Used for delivery courier calls and instant order dispatch SMS updates.
         </p>
       </div>
@@ -274,7 +275,7 @@ export function ProfileForm({
         <div className="flex items-center justify-between">
           <Label
             htmlFor="profile-email"
-            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Email
           </Label>
@@ -297,7 +298,7 @@ export function ProfileForm({
             size="lg"
             value={email}
             disabled
-            className="cursor-not-allowed bg-muted/50 pr-8 text-muted-foreground"
+            className="bg-muted/50 text-muted-foreground cursor-not-allowed pr-8"
           />
           {emailVerified && (
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600">
@@ -331,7 +332,7 @@ export function ProfileForm({
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-dob"
-            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Date of Birth
           </Label>
@@ -341,14 +342,14 @@ export function ProfileForm({
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             disabled={pending}
-            className="min-h-11 rounded-xl border-vl-dark-900/15 bg-white text-xs text-vl-dark-900 focus-visible:ring-1 focus-visible:ring-vl-dark-900"
+            className="border-vl-dark-900/15 text-vl-dark-900 focus-visible:ring-vl-dark-900 min-h-11 rounded-xl bg-white text-xs focus-visible:ring-1"
           />
         </div>
 
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-gender"
-            className="text-[11px] font-semibold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Gender
           </Label>
@@ -373,7 +374,6 @@ export function ProfileForm({
         <Button
           type="submit"
           variant="primary"
-          size="lg"
           loading={pending}
           disabled={pending || uploadingAvatar}
         >

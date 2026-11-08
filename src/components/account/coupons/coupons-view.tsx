@@ -44,12 +44,12 @@ export function CouponsView({ coupons }: CouponsViewProps) {
   return (
     <div className="flex flex-col gap-6">
       {/* ── Main Coupons Container ── */}
-      <div className="overflow-hidden rounded-2xl border border-vl-dark-900/8 bg-white shadow-2xs">
+      <div className="border-vl-dark-900/8 overflow-hidden rounded-2xl border bg-white shadow-2xs">
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
+        <div className="border-vl-dark-900/8 flex flex-wrap items-center justify-between gap-3 border-b p-4 sm:p-6 md:p-7">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold tracking-[0.15em] text-vl-cyan uppercase sm:text-[11px] sm:tracking-[0.2em]">
+              <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
                 Vouchers & Rewards
               </span>
               <span className="text-neutral-300">•</span>
@@ -57,7 +57,7 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                 Official VibeLock Vault
               </span>
             </div>
-            <h1 className="mt-0.5 text-base font-bold tracking-tight text-vl-dark-900 uppercase sm:text-2xl">
+            <h1 className="text-vl-dark-900 mt-0.5 text-base font-bold tracking-tight uppercase sm:text-2xl">
               Coupons & Vouchers
             </h1>
             <p className="mt-0.5 text-xs text-neutral-500">
@@ -66,19 +66,19 @@ export function CouponsView({ coupons }: CouponsViewProps) {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
+            <Badge variant="info">
               {coupons.length} {coupons.length === 1 ? "Coupon Available" : "Coupons Available"}
-            </span>
+            </Badge>
           </div>
         </div>
 
         {/* Content */}
         {coupons.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-8 py-16 text-center sm:p-14">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-neutral-100 text-vl-dark-900">
+            <div className="text-vl-dark-900 flex size-14 items-center justify-center rounded-2xl bg-neutral-100">
               <Sparkles className="size-6 text-neutral-400" />
             </div>
-            <h2 className="mt-4 text-base font-bold text-vl-dark-900 uppercase">
+            <h2 className="text-vl-dark-900 mt-4 text-base font-bold uppercase">
               No active coupons right now
             </h2>
             <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-neutral-500 sm:text-sm">
@@ -88,7 +88,7 @@ export function CouponsView({ coupons }: CouponsViewProps) {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/shop"
-                className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-vl-dark-900 px-5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
+                className="bg-vl-dark-900 inline-flex min-h-11 items-center gap-2 rounded-xl px-5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
               >
                 <span>Explore Drops</span>
                 <ArrowRight className="size-3.5" />
@@ -110,38 +110,38 @@ export function CouponsView({ coupons }: CouponsViewProps) {
                   <Card
                     key={coupon.id}
                     variant="interactive"
-                    className="p-4 sm:p-5 justify-between"
+                    className="justify-between p-4 sm:p-5"
                   >
                     <div>
                       {/* Top Row: Type & Discount Badge */}
                       <div className="flex items-center justify-between gap-2">
                         {coupon.isPersonalCredit ? (
-                          <Badge variant="warning" size="sm" className="gap-1 font-semibold">
+                          <Badge variant="warning" className="gap-1 font-semibold">
                             <ShieldCheck className="size-3 text-amber-600" />
                             Store Credit Voucher
                           </Badge>
                         ) : (
-                          <Badge variant="secondary" size="sm" className="gap-1 font-semibold">
+                          <Badge variant="secondary" className="gap-1 font-semibold">
                             <Tag className="size-3 text-neutral-500" />
                             Member Promo
                           </Badge>
                         )}
 
-                        <Badge variant="brand" size="sm" className="font-bold">
+                        <Badge variant="brand" className="font-bold">
                           {discountDisplay}
                         </Badge>
                       </div>
 
                       {/* Code Block */}
-                      <div className="mt-3.5 flex items-center justify-between gap-2 rounded-xl border border-dashed border-vl-dark-900/20 bg-vl-white-100 p-3">
-                        <span className="font-mono text-sm font-bold tracking-wider text-vl-dark-900 uppercase sm:text-base">
+                      <div className="border-vl-dark-900/20 bg-vl-white-100 mt-3.5 flex items-center justify-between gap-2 rounded-xl border border-dashed p-3">
+                        <span className="text-vl-dark-900 font-mono text-sm font-bold tracking-wider uppercase sm:text-base">
                           {coupon.code}
                         </span>
 
                         <Button
                           type="button"
                           variant="outline"
-                          size="xs"
+                          size="sm"
                           onClick={() => handleCopy(coupon.code)}
                           className="gap-1 font-semibold uppercase"
                         >
@@ -179,22 +179,22 @@ export function CouponsView({ coupons }: CouponsViewProps) {
             </div>
 
             {/* How to Redeem Banner */}
-            <div className="mt-6 rounded-2xl border border-vl-dark-900/8 bg-vl-white-100 p-4 sm:p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
-                <Ticket className="size-3.5 text-vl-dark-900" />
+            <div className="border-vl-dark-900/8 bg-vl-white-100 mt-6 rounded-2xl border p-4 sm:p-5">
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
+                <Ticket className="text-vl-dark-900 size-3.5" />
                 <span>How to Redeem at Checkout</span>
               </div>
               <ul className="mt-2.5 grid grid-cols-1 gap-2 text-xs text-neutral-600 sm:grid-cols-3">
                 <li className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">1.</span>
+                  <span className="text-vl-dark-900 font-semibold">1.</span>
                   <span>Copy any eligible coupon code from this page.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">2.</span>
+                  <span className="text-vl-dark-900 font-semibold">2.</span>
                   <span>Paste the code in the &quot;Have a promo code?&quot; box at checkout.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">3.</span>
+                  <span className="text-vl-dark-900 font-semibold">3.</span>
                   <span>Instant discount will deduct from your final payable total.</span>
                 </li>
               </ul>

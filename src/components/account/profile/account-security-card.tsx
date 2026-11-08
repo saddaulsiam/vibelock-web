@@ -111,9 +111,9 @@ export function AccountSecurityCard() {
     <div className="flex flex-col gap-5 sm:gap-6">
       {/* 1. Change Password */}
       <Card variant="brand" className="p-4 sm:p-6">
-        <div className="mb-4 flex items-center gap-2 border-b border-vl-dark-900/8 pb-3.5 sm:mb-5 sm:pb-4">
-          <Lock className="size-4 text-vl-dark-900" />
-          <h2 className="text-sm font-bold tracking-tight text-vl-dark-900 uppercase sm:text-base">
+        <div className="border-vl-dark-900/8 mb-4 flex items-center gap-2 border-b pb-3.5 sm:mb-5 sm:pb-4">
+          <Lock className="text-vl-dark-900 size-4" />
+          <h2 className="text-vl-dark-900 text-sm font-bold tracking-tight uppercase sm:text-base">
             Change Password
           </h2>
         </div>
@@ -138,7 +138,7 @@ export function AccountSecurityCard() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="currentPassword" className="text-xs font-semibold text-vl-dark-900">
+            <Label htmlFor="currentPassword" className="text-vl-dark-900 text-xs font-semibold">
               Current Password
             </Label>
             <Input
@@ -154,7 +154,7 @@ export function AccountSecurityCard() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="newPassword" className="text-xs font-semibold text-vl-dark-900">
+            <Label htmlFor="newPassword" className="text-vl-dark-900 text-xs font-semibold">
               New Password
             </Label>
             <Input
@@ -170,7 +170,7 @@ export function AccountSecurityCard() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmNewPassword" className="text-xs font-semibold text-vl-dark-900">
+            <Label htmlFor="confirmNewPassword" className="text-vl-dark-900 text-xs font-semibold">
               Confirm New Password
             </Label>
             <Input
@@ -191,10 +191,9 @@ export function AccountSecurityCard() {
             <Button
               type="submit"
               variant="primary"
-              size="lg"
+              size="default"
               loading={pwLoading}
               disabled={!!pwSuccess}
-              className="w-full sm:w-auto"
             >
               Update Password
             </Button>
@@ -204,29 +203,29 @@ export function AccountSecurityCard() {
 
       {/* 2. Active Sessions */}
       <Card variant="brand" className="p-4 sm:p-6">
-        <div className="mb-3.5 flex items-center gap-2 border-b border-vl-dark-900/8 pb-3.5 sm:mb-4 sm:pb-4">
-          <Laptop className="size-4 text-vl-dark-900" />
-          <h2 className="text-sm font-bold tracking-tight text-vl-dark-900 uppercase sm:text-base">
+        <div className="border-vl-dark-900/8 mb-3.5 flex items-center gap-2 border-b pb-3.5 sm:mb-4 sm:pb-4">
+          <Laptop className="text-vl-dark-900 size-4" />
+          <h2 className="text-vl-dark-900 text-sm font-bold tracking-tight uppercase sm:text-base">
             Active Device Sessions
           </h2>
         </div>
 
         {sessionLoading ? (
-          <p className="py-4 text-xs text-muted-foreground">Loading active sessions...</p>
+          <p className="text-muted-foreground py-4 text-xs">Loading active sessions...</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-vl-dark-900/10 p-6 text-center text-xs text-muted-foreground">
+          <p className="border-vl-dark-900/10 text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
             No other active sessions detected.
           </p>
         ) : (
           <div>
-            <div className="divide-y divide-vl-dark-900/6">
+            <div className="divide-vl-dark-900/6 divide-y">
               {sessions.map((s) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between py-3.5 first:pt-0 last:pb-2"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-vl-dark-900">
+                    <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-semibold">
                       <span>Device Session</span>
                       {s.isCurrent && (
                         <Badge variant="secondary" size="sm">
@@ -234,17 +233,16 @@ export function AccountSecurityCard() {
                         </Badge>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="text-muted-foreground mt-0.5 text-[11px]">
                       Expires on {new Date(s.expires).toLocaleDateString()}
                     </p>
                   </div>
                   {!s.isCurrent && (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="destructive"
                       size="sm"
                       onClick={() => handleRevokeSession(s.id)}
-                      className="h-7 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                     >
                       Revoke
                     </Button>
@@ -273,14 +271,14 @@ export function AccountSecurityCard() {
             Delete Account
           </h2>
         </div>
-        <p className="max-w-xl text-xs leading-relaxed text-muted-foreground">
+        <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
           Permanently delete your VibeLock account, order history, saved addresses, and profile
           details. This action cannot be undone.
         </p>
 
         {!delConfirmMode ? (
           <div className="pt-4">
-            <Button onClick={() => setDelConfirmMode(true)} variant="danger" size="lg">
+            <Button onClick={() => setDelConfirmMode(true)} variant="danger" size="default">
               Delete My Account
             </Button>
           </div>
