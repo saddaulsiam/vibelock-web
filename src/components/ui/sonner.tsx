@@ -10,7 +10,7 @@ import {
   Loader2Icon,
 } from "lucide-react";
 
-const Toaster = ({ ...props }: ToasterProps) => {
+const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
 
   return (
@@ -32,12 +32,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
+      {...props}
       toastOptions={{
+        ...toastOptions,
         classNames: {
           toast: "cn-toast",
+          ...toastOptions?.classNames,
         },
       }}
-      {...props}
     />
   );
 };
