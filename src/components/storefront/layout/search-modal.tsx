@@ -1,7 +1,7 @@
 "use client";
 
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
-import { ImageOff, Loader2, Search, X } from "lucide-react";
+import { ArrowRight, ImageOff, Loader2, Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
   const [results, setResults] = useState<ProductSummary[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
 
@@ -82,6 +83,37 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, handleClose]);
+
+  // Focus trap — keep Tab/Shift+Tab inside the panel
+  useEffect(() => {
+    if (!isOpen) return;
+    const panel = panelRef.current;
+    if (!panel) return;
+    const trap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((el) => !el.closest("[aria-hidden='true']"));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener("keydown", trap);
+    return () => window.removeEventListener("keydown", trap);
+  }, [isOpen]);
 
   // Live search effect with debouncing & aborting previous requests
   useEffect(() => {
@@ -162,7 +194,13 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
       />
 
       {/* Top search panel */}
-      <div className="animate-in fade-in slide-in-from-top-3 relative z-10 w-full border-b border-gray-200 bg-white shadow-2xl duration-200">
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search products"
+        className="animate-in fade-in slide-in-from-top-3 relative z-10 w-full border-b border-gray-200 bg-white shadow-2xl duration-200"
+      >
         <div className="w-full px-4 py-4 sm:px-8 sm:py-5 lg:px-12 xl:px-16">
           {/* ── Header search bar row ── */}
           <div className="flex w-full items-center gap-3 sm:gap-6">
@@ -202,7 +240,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 onChange={(e) => handleQueryChange(e.target.value)}
                 placeholder="Search drops..."
                 aria-label="Search drops"
-                className="border-vl-cyan-500 text-vl-black rounded-full px-9 text-sm placeholder:text-gray-400"
+                className="border-vl-cyan-500 text-vl-black rounded-full pr-10 pl-10 text-sm placeholder:text-gray-400"
               />
 
               {/* Clear button (X) */}
@@ -219,14 +257,8 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             </form>
 
             {/* CANCEL Button */}
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="text-vl-dark-500 hover:text-vl-black font-semibold tracking-wider uppercase"
-            >
-              CANCEL
+            <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
+              <X className="size-4" />
             </Button>
           </div>
 
@@ -235,7 +267,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             {!query.trim() ? (
               /* State 1: POPULAR SEARCH TERMS */
               <div className="mx-auto max-w-2xl sm:text-center">
-                <h3 className="text-compact mb-3 font-bold tracking-wider text-gray-400 uppercase">
+                <h3 className="text-compact text-vl-dark-400 mb-3 font-semibold tracking-wider uppercase">
                   POPULAR SEARCH TERMS
                 </h3>
                 <div className="flex flex-wrap gap-2 sm:justify-center">
@@ -243,10 +275,10 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                     <Button
                       key={term}
                       type="button"
-                      variant="secondary"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleSelectTerm(term)}
-                      className="rounded-full"
+                      className="rounded-full text-xs font-semibold"
                     >
                       {term}
                     </Button>
@@ -284,7 +316,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                 ) : results.length > 0 ? (
                   /* Product items list */
                   <div>
-                    <div className="max-h-85 scrollbar-thin space-y-1.5 overflow-y-auto pr-1.5">
+                    <div className="max-h-[60vh] scrollbar-thin space-y-1.5 overflow-y-auto pr-1.5">
                       {results.map((product) => {
                         const price = product.minPrice;
                         return (
@@ -316,23 +348,38 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                               <h4 className="line-clamp-1 text-xs font-semibold text-gray-900 group-hover:text-black sm:text-sm">
                                 {product.name}
                               </h4>
-                              <p className="text-vl-cyan-700 mt-0.5 text-xs font-bold">
+                              <p className="text-vl-dark-900 mt-0.5 text-xs font-bold">
                                 {formatPrice(price)}
                               </p>
                             </div>
+
+                            {/* Directional cue */}
+                            <ArrowRight
+                              className="size-4 shrink-0 text-gray-400 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-gray-900"
+                              aria-hidden="true"
+                            />
                           </Link>
                         );
                       })}
                     </div>
 
                     {/* View all results button */}
-                    <Link
-                      href={`/shop?q=${encodeURIComponent(query.trim())}`}
-                      onClick={onClose}
-                      className="border-vl-cyan-300 text-vl-cyan hover:bg-vl-cyan-50 mt-4 flex w-full items-center justify-center rounded-full border py-2.5 text-xs font-bold tracking-wider uppercase transition-colors"
-                    >
-                      VIEW ALL RESULTS
-                    </Link>
+                    <div className="mt-3">
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="default"
+                        fullWidth
+                        className="rounded-4xl"
+                      >
+                        <Link
+                          href={`/shop?q=${encodeURIComponent(query.trim())}`}
+                          onClick={onClose}
+                        >
+                          VIEW ALL RESULTS
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   /* No results found */
@@ -343,13 +390,13 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
                     <p className="mt-1 text-xs text-gray-400">
                       Try searching with a different keyword or browse our categories.
                     </p>
-                    <Link
-                      href="/shop"
-                      onClick={onClose}
-                      className="mt-4 inline-flex items-center justify-center rounded-full border border-gray-300 px-5 py-2 text-xs font-bold tracking-wider text-gray-700 uppercase hover:bg-gray-50"
-                    >
-                      BROWSE ALL PRODUCTS
-                    </Link>
+                    <div className="mt-4 flex justify-center">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/shop" onClick={onClose}>
+                          BROWSE ALL PRODUCTS
+                        </Link>
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
