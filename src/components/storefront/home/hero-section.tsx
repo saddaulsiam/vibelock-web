@@ -6,6 +6,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import type { CategorySummary } from "@/lib/catalog/types";
+import { Badge } from "@/components/ui/badge";
 
 export interface HeroCategory {
   id: string;
@@ -237,45 +238,54 @@ export function HeroSection({
     >
       {formattedCategories.length > 0 && <InfiniteTrack categories={formattedCategories} />}
 
-      {/* Left content panel positioned at the top left empty space */}
+      {/* Left content panel */}
       <div
-        className="relative z-20 flex flex-col justify-start px-7 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20"
+        className="relative z-20 flex flex-col justify-start px-6 pt-20 sm:px-10 sm:pt-24 lg:px-14 lg:pt-28 xl:px-20 xl:pt-32"
         style={{ pointerEvents: "none" }}
       >
-        <div className="relative max-w-85 sm:max-w-110 lg:max-w-full">
+        <div className="relative w-full">
           {/* Typewriter headline */}
           <h1
-            className="font-heading text-vl-cyan text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight uppercase drop-shadow-[0_0_35px_rgba(0,217,255,0.25)] select-none"
+            className="font-heading text-vl-cyan text-[clamp(3rem,10vw,8rem)] leading-[0.88] font-black tracking-[-0.02em] uppercase drop-shadow-[0_0_28px_rgba(0,217,255,0.22)] select-none"
             aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}
             <span
               aria-hidden="true"
-              className="bg-vl-cyan ml-1 inline-block align-middle shadow-[0_0_10px_rgba(0,217,255,0.8)]"
+              className="bg-vl-cyan ml-0.5 inline-block"
               style={{
-                width: "4px",
-                height: "0.8em",
+                width: "clamp(3px, 0.08em, 7px)",
+                height: "0.82em",
+                verticalAlign: "-0.05em",
                 animation: "vl-blink 1s step-end infinite",
               }}
             />
           </h1>
 
-          <p className="mt-3 text-[10px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/70 uppercase sm:mt-5 sm:text-xs lg:text-[13px]">
-            {tagline}
+          {/* Divider */}
+          <div className="bg-vl-cyan-900 mt-3 h-px w-20 sm:w-30 lg:w-40 xl:w-xs" />
+
+          {/* Tagline */}
+          <p className="mt-3 max-w-xl text-[10px] leading-[1.6] font-medium tracking-[0.08em] whitespace-pre-line text-white/55 uppercase sm:mt-3.5 sm:text-[11px] lg:text-[12px]">
+            VIBELOCK — PREMIUM STREETWEAR CATALOG,
+            <br />
+            CURATING CULTURE FOR THE REAL ONES.
           </p>
 
-          <p className="text-vl-cyan mt-1.5 text-[10px] font-black tracking-[0.22em] uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
+          {/* Subtagline */}
+          <p className="text-vl-cyan/80 mt-2 text-[10px] font-semibold tracking-widest capitalize sm:mt-2.5">
             {subtagline}
           </p>
 
-          <div className="mt-5 sm:mt-8" style={{ pointerEvents: "auto" }}>
+          {/* CTA */}
+          <div className="mt-5 sm:mt-6" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 active:bg-vl-cyan-600 focus-visible:ring-vl-cyan inline-flex items-center gap-2.5 rounded-full border px-5.5 py-2.5 text-[11px] font-extrabold tracking-[0.18em] uppercase backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(0,217,255,0.45)] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.98] sm:gap-3 sm:px-7 sm:py-3 sm:text-xs"
+              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-vl-cyan inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[9px] font-extrabold tracking-[0.2em] uppercase backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] sm:gap-2 sm:px-5 sm:py-2.5 sm:text-[10px] lg:gap-2.5 lg:px-6 lg:py-3 lg:text-[11px] xl:px-7 xl:text-xs"
             >
               <span>SHOP ALL DROPS</span>
               <ArrowRight
-                className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 sm:size-4"
+                className="size-2.5 transition-transform duration-300 group-hover:translate-x-0.5 sm:size-3 lg:size-3.5"
                 aria-hidden="true"
               />
             </Link>

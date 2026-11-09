@@ -10,7 +10,7 @@ import { cn } from "cn";
  * Engineered for elevated brutalist streetwear aesthetics (Nike, Kith, Supreme, Shopify Plus).
  */
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap select-none transition-all outline-none font-heading text-xs font-bold tracking-wider uppercase focus-visible:ring-2 focus-visible:ring-vl-cyan [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap select-none transition-all outline-none font-heading text-xs font-bold tracking-wider uppercase border focus-visible:ring-2 focus-visible:ring-vl-cyan [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3",
   {
     variants: {
       variant: {
@@ -19,7 +19,8 @@ const badgeVariants = cva(
         secondary: "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
         destructive:
           "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
-        outline: "border border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        outline:
+          "border border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost: "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",
 
@@ -29,7 +30,7 @@ const badgeVariants = cva(
 
         /** Obsidian brutalist brand label */
         brand:
-          "bg-vl-black text-vl-white border border-vl-border font-bold uppercase tracking-wider",
+          "bg-vl-black text-vl-white border-vl-border font-bold uppercase tracking-wider shadow-2xs",
 
         /** Neon cyber pulse glow — signature VibeLock drop aesthetics */
         glow: "bg-vl-cyan/15 text-vl-cyan border border-vl-cyan/40 shadow-[0_0_12px_rgba(0,217,255,0.25)]",
@@ -159,8 +160,7 @@ function getDotColor(variant?: string | null) {
 }
 
 export interface BadgeProps
-  extends useRender.ComponentProps<"span">,
-    VariantProps<typeof badgeVariants> {
+  extends useRender.ComponentProps<"span">, VariantProps<typeof badgeVariants> {
   /**
    * Status dot indicator:
    * - `true`: Solid status dot
@@ -222,7 +222,7 @@ function Badge({
           type="button"
           onClick={onRemove}
           aria-label={removeLabel}
-          className="-mr-1 inline-flex size-3.5 cursor-pointer items-center justify-center rounded-full opacity-70 transition-opacity hover:opacity-100 hover:bg-black/10 focus-visible:outline-none"
+          className="-mr-1 inline-flex size-3.5 cursor-pointer items-center justify-center rounded-full opacity-70 transition-opacity hover:bg-black/10 hover:opacity-100 focus-visible:outline-none"
         >
           <X className="size-2.5" />
         </button>
