@@ -198,12 +198,7 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
   );
 }
 
-export function HeroSection({
-  categories = [],
-  words,
-  tagline = "VIBELOCK — PREMIUM STREETWEAR CATALOG,\nCURATING CULTURE FOR THE REAL ONES.",
-  subtagline = "EXCLUSIVE. LIMITED. HIGH-END.",
-}: HeroSectionProps) {
+export function HeroSection({ categories = [], words }: HeroSectionProps) {
   const formattedCategories: HeroCategory[] = React.useMemo(() => {
     return categories
       .filter((c) => Boolean(c && c.name))
@@ -274,7 +269,7 @@ export function HeroSection({
 
           {/* Subtagline */}
           <p className="text-vl-cyan/80 mt-2 text-[10px] font-semibold tracking-widest capitalize sm:mt-2.5">
-            {subtagline}
+            EXCLUSIVE. LIMITED. HIGH-END.
           </p>
 
           {/* CTA */}
