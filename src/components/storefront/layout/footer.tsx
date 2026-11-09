@@ -40,11 +40,11 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-vl-border bg-vl-black text-vl-white relative overflow-hidden border-t">
+    <footer className="border-vl-border bg-vl-black text-vl-white relative z-0 overflow-hidden border-t">
       {/* ── Technical Grid Pattern (Dark Coordinate Grid) ── */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-70"
+        className="pointer-events-none absolute inset-0 opacity-70"
         style={{
           backgroundImage:
             "linear-gradient(to right, rgba(0, 217, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 217, 255, 0.05) 1px, transparent 1px)",
@@ -62,7 +62,7 @@ export function Footer() {
         className="pointer-events-none absolute right-0 -bottom-40 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(0,217,255,0.07),transparent_70%)] blur-3xl"
       />
 
-      <Container className="relative z-10 pt-14 pb-8 sm:pt-16 sm:pb-10">
+      <Container className="relative pt-14 pb-8 sm:pt-16 sm:pb-10">
         {/* ── 1. Top Section: Brand Info & Retail Outlets + Quick Links ── */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Brand & About (Col-span 4) */}

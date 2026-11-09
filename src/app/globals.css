@@ -377,6 +377,30 @@ input:-webkit-autofill:active {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* VibeLock Cyber Sleek Scrollbar */
+.vibelock-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-vl-cyan-500) transparent;
+}
+
+.vibelock-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.vibelock-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vibelock-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-vl-cyan-500);
+  border-radius: 9999px;
+}
+
+.vibelock-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-vl-cyan-400);
+}
+
 /* Avoid Next.js dev server overlay covering mobile bottom action bars during testing */
 @media (max-width: 1023px) {
   nextjs-portal {

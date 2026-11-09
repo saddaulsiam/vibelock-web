@@ -69,16 +69,21 @@ export function ActiveFilters() {
 
   return (
     <div className="mb-6 flex flex-wrap items-center gap-2" aria-label="Active filters">
-      <span className="text-muted-foreground mr-1 text-sm">Active filters</span>
+      <span className="text-vl-dark-400 mr-1 text-xs font-bold tracking-wider uppercase">
+        Active filters:
+      </span>
 
       {q && (
-        <Badge variant="secondary" className="flex items-center gap-1 py-1 text-sm">
+        <Badge
+          variant="outline"
+          className="border-vl-dark-200 bg-vl-white-50 text-vl-dark-900 flex items-center gap-1.5 rounded-none py-1 text-xs font-semibold uppercase"
+        >
           Search: {q}
           <button
             type="button"
             onClick={() => removeFilter("q")}
             aria-label="Remove search filter"
-            className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+            className="hover:text-status-error focus-visible:ring-vl-cyan ml-0.5 rounded-none focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="size-3" aria-hidden="true" />
           </button>
@@ -89,15 +94,15 @@ export function ActiveFilters() {
         category.split(",").map((c) => (
           <Badge
             key={`cat-${c}`}
-            variant="secondary"
-            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
+            variant="outline"
+            className="border-vl-dark-200 bg-vl-white-50 text-vl-dark-900 flex items-center gap-1.5 rounded-none py-1 text-xs font-semibold uppercase"
           >
-            Category: {c}
+            {c.replace(/-/g, " ")}
             <button
               type="button"
               onClick={() => removeFilter("category", c)}
               aria-label={`Remove ${c} category filter`}
-              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:text-status-error focus-visible:ring-vl-cyan ml-0.5 rounded-none focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -108,15 +113,15 @@ export function ActiveFilters() {
         size.split(",").map((s) => (
           <Badge
             key={`size-${s}`}
-            variant="secondary"
-            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
+            variant="outline"
+            className="border-vl-dark-200 bg-vl-white-50 text-vl-dark-900 flex items-center gap-1.5 rounded-none py-1 text-xs font-semibold uppercase"
           >
             Size: {s}
             <button
               type="button"
               onClick={() => removeFilter("size", s)}
               aria-label={`Remove ${s} size filter`}
-              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:text-status-error focus-visible:ring-vl-cyan ml-0.5 rounded-none focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -127,15 +132,15 @@ export function ActiveFilters() {
         color.split(",").map((c) => (
           <Badge
             key={`color-${c}`}
-            variant="secondary"
-            className="hover:bg-secondary/80 flex items-center gap-1 py-1 text-sm"
+            variant="outline"
+            className="border-vl-dark-200 bg-vl-white-50 text-vl-dark-900 flex items-center gap-1.5 rounded-none py-1 text-xs font-semibold uppercase"
           >
             Color: {c}
             <button
               type="button"
               onClick={() => removeFilter("color", c)}
               aria-label={`Remove ${c} color filter`}
-              className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+              className="hover:text-status-error focus-visible:ring-vl-cyan ml-0.5 rounded-none focus-visible:ring-2 focus-visible:outline-none"
             >
               <X className="size-3" aria-hidden="true" />
             </button>
@@ -143,13 +148,16 @@ export function ActiveFilters() {
         ))}
 
       {(minPrice || maxPrice) && (
-        <Badge variant="secondary" className="flex items-center gap-1 py-1 text-sm">
-          Price: {minPrice ? `৳${minPrice}` : "0"} - {maxPrice ? `৳${maxPrice}` : "Any"}
+        <Badge
+          variant="outline"
+          className="border-vl-dark-200 bg-vl-white-50 text-vl-dark-900 flex items-center gap-1.5 rounded-none py-1 text-xs font-semibold uppercase"
+        >
+          Price: {minPrice ? `Tk ${minPrice}` : "Tk 0"} - {maxPrice ? `Tk ${maxPrice}` : "Any"}
           <button
             type="button"
             onClick={clearPrice}
             aria-label="Remove price filter"
-            className="hover:text-destructive focus-visible:ring-vl-cyan ml-1 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+            className="hover:text-status-error focus-visible:ring-vl-cyan ml-0.5 rounded-none focus-visible:ring-2 focus-visible:outline-none"
           >
             <X className="size-3" aria-hidden="true" />
           </button>
@@ -161,7 +169,7 @@ export function ActiveFilters() {
         type="button"
         variant="link"
         size="sm"
-        className="hover:text-destructive ml-2"
+        className="text-vl-dark-400 hover:text-vl-dark-900 ml-1 text-xs font-bold tracking-wider uppercase"
       >
         Clear all
       </Button>
