@@ -2,9 +2,8 @@ import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
 import { CatalogSort } from "@/components/storefront/catalog/catalog-sort";
-import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
-import { ProductGrid } from "@/components/storefront/catalog/product-grid";
+import { ProductInfiniteGrid } from "@/components/storefront/catalog/product-infinite-grid";
 import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
 import { getSearchPromoBanner } from "@/lib/catalog/banners";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
@@ -119,14 +118,14 @@ export default async function ShopPage({
               <CatalogSort currentSort={parsedParams.sort} />
             </div>
             <ActiveFilters />
-            <ProductGrid
-              products={discoveryResult.products}
+            <ProductInfiniteGrid
+              key={JSON.stringify(params)}
+              initialProducts={discoveryResult.products}
+              totalCount={discoveryResult.totalCount}
+              totalPages={discoveryResult.totalPages}
+              searchParams={params}
               searchTerm={hasSearch ? searchTerm : undefined}
               clearSearchHref={clearSearchHref}
-            />
-            <DiscoveryPagination
-              currentPage={discoveryResult.currentPage}
-              totalPages={discoveryResult.totalPages}
             />
           </div>
         </div>
