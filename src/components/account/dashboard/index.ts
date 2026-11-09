@@ -1,4 +1,3 @@
-export { AccountCollectionBanner } from "./account-collection-banner";
 export { AccountCouponsModal, type CouponItem } from "./account-coupons-modal";
 export { AccountDashboardView } from "./account-dashboard-view";
 export { AccountHero } from "./account-hero";

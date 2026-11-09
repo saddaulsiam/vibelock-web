@@ -81,7 +81,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-label"
             variant="brand"
-            size="lg"
             value={values.label}
             onChange={(e) => update("label", e.target.value)}
             placeholder="e.g. Home, Studio, Office"
@@ -99,7 +98,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-street"
             variant="brand"
-            size="lg"
             required
             value={values.street}
             onChange={(e) => update("street", e.target.value)}
@@ -118,7 +116,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-city"
             variant="brand"
-            size="lg"
             required
             value={values.city}
             onChange={(e) => update("city", e.target.value)}
@@ -137,7 +134,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-state"
             variant="brand"
-            size="lg"
             value={values.state}
             onChange={(e) => update("state", e.target.value)}
             placeholder="Dhaka"
@@ -155,7 +151,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-zip"
             variant="brand"
-            size="lg"
             value={values.zip}
             onChange={(e) => update("zip", e.target.value)}
             placeholder="1230"
@@ -173,7 +168,6 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
           <Input
             id="address-country"
             variant="brand"
-            size="lg"
             required
             value={values.country}
             onChange={(e) => update("country", e.target.value)}
@@ -189,15 +183,22 @@ export function AddressForm({ address, onDone }: { address?: AddressValues; onDo
             checked={values.isDefault}
             onChange={(e) => update("isDefault", e.target.checked)}
             disabled={pending}
-            className="border-vl-dark-900/20 text-vl-dark-900 focus:ring-vl-dark-900 h-4 w-4 rounded"
+            className="border-vl-cyan/30 accent-vl-cyan focus-visible:ring-vl-cyan size-4 cursor-pointer rounded focus-visible:ring-2 focus-visible:outline-none"
           />
           <span>Set as default shipping address</span>
         </label>
       </div>
 
-      <Button type="submit" variant="primary" loading={pending}>
-        {address ? "Save Changes" : "Save Address"}
-      </Button>
+      <div className="flex items-center gap-2 pt-2">
+        <Button type="submit" variant="primary" loading={pending}>
+          {address ? "Save Changes" : "Save Address"}
+        </Button>
+        {onDone && (
+          <Button type="button" variant="outline" onClick={onDone} disabled={pending}>
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

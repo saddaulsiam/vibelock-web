@@ -239,7 +239,6 @@ export function ProfileForm({
         <Input
           id="profile-name"
           variant="brand"
-          size="lg"
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
@@ -259,7 +258,6 @@ export function ProfileForm({
         <Input
           id="profile-phone"
           variant="brand"
-          size="lg"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
           disabled={pending}
@@ -295,7 +293,6 @@ export function ProfileForm({
           <Input
             id="profile-email"
             variant="brand"
-            size="lg"
             value={email}
             disabled
             className="bg-muted/50 text-muted-foreground cursor-not-allowed pr-8"
@@ -342,7 +339,6 @@ export function ProfileForm({
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             disabled={pending}
-            className="border-vl-dark-900/15 text-vl-dark-900 focus-visible:ring-vl-dark-900 min-h-11 rounded-xl bg-white text-xs focus-visible:ring-1"
           />
         </div>
 

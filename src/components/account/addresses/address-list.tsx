@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { deleteAddressAction } from "@/lib/account/actions";
-import { Pencil, Trash2, Check } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export type Address = {
@@ -52,61 +53,57 @@ export function AddressList({ addresses, onEdit, editingId }: AddressListProps) 
         return (
           <article
             key={address.id}
-            className={`relative flex flex-col justify-between rounded-xl border p-3.5 transition-all sm:p-5 ${
+            className={cn(
+              "relative flex flex-col justify-between rounded-xl border p-3.5 transition-all duration-200 sm:p-5",
+              "focus-within:border-vl-cyan/60 focus-within:ring-vl-cyan/20 focus-within:ring-2",
               isEditingThis
-                ? "border-vl-dark-900 ring-vl-cyan bg-white shadow-sm ring-2"
+                ? "border-vl-cyan ring-vl-cyan/35 shadow-vl-cyan/10 bg-white shadow-md ring-2"
                 : address.isDefault
-                  ? "border-vl-dark-900/20 bg-vl-white-100 shadow-xs"
-                  : "border-vl-dark-900/10 hover:border-vl-dark-900/20 bg-white"
-            }`}
+                  ? "border-vl-dark-900/20 bg-vl-white-100/60 hover:border-vl-dark-900/35 shadow-2xs hover:shadow-xs"
+                  : "border-vl-dark-900/10 hover:border-vl-dark-900/25 bg-white hover:shadow-2xs"
+            )}
           >
             <div className="min-w-0">
               {/* Top Row: Label badge & default check */}
               <div className="flex items-center justify-between gap-2">
-                <span className="text-vl-dark-900 min-w-0 flex-1 truncate text-xs font-bold tracking-wider uppercase">
+                <Badge
+                  variant={isEditingThis ? "brand" : "drop"}
+                  dot={isEditingThis ? "pulse" : undefined}
+                >
                   {label}
-                </span>
+                </Badge>
 
                 {address.isDefault && (
-                  <span className="bg-vl-dark-900 inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-[9px] font-normal tracking-wider text-white uppercase">
+                  <Badge variant="default" size="sm" className="gap-1 font-semibold uppercase">
                     <Check className="size-2.5" />
                     Default
-                  </span>
+                  </Badge>
                 )}
               </div>
 
               {/* Address details */}
-              <address className="text-vl-dark-900 mt-3 text-xs leading-relaxed break-words not-italic">
-                <p className="font-normal break-words">{address.street}</p>
-                <p className="text-muted-foreground mt-0.5 break-words">
+              <address className="text-vl-dark-900 mt-3 text-xs leading-relaxed wrap-break-word not-italic">
+                <p className="font-normal wrap-break-word">{address.street}</p>
+                <p className="text-muted-foreground mt-0.5 wrap-break-word">
                   {address.city}
                   {address.state ? `, ${address.state}` : ""}
                   {address.zip ? ` - ${address.zip}` : ""}
                 </p>
-                <p className="text-muted-foreground break-words">{address.country}</p>
+                <p className="text-muted-foreground wrap-break-word">{address.country}</p>
               </address>
             </div>
 
             {/* Bottom Actions */}
             <div className="border-border/60 mt-4 flex flex-wrap items-center justify-end gap-2 border-t pt-3.5">
-              {onEdit ? (
-                <Button
-                  type="button"
-                  variant={isEditingThis ? "brand" : "outline"}
-                  size="sm"
-                  onClick={() => onEdit?.(address)}
-                >
-                  <Pencil className="size-3" />
-                  <span>{isEditingThis ? "Editing..." : "Edit"}</span>
-                </Button>
-              ) : (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/account/profile#addresses`}>
-                    <Pencil className="text-muted-foreground size-3" />
-                    <span>Edit</span>
-                  </Link>
-                </Button>
-              )}
+              <Button
+                type="button"
+                variant={isEditingThis ? "ghost" : "outline"}
+                size="sm"
+                onClick={() => onEdit?.(address)}
+              >
+                <Pencil className="size-3" />
+                <span>{isEditingThis ? "Editing..." : "Edit"}</span>
+              </Button>
 
               <Button
                 type="button"

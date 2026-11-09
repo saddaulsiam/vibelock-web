@@ -34,7 +34,7 @@ const nativeSelectVariants = cva(
         default: "rounded-brand",
         /** Brand — storefront style: governed by master brand radius, vl-black focus border */
         brand:
-          "rounded-brand border-neutral-200 focus-visible:border-vl-black focus-visible:ring-vl-black/10",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
         /** Dark — auth/POS dark-surface style */
         dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
@@ -53,8 +53,7 @@ const nativeSelectVariants = cva(
 );
 
 export interface NativeSelectProps
-  extends Omit<React.ComponentProps<"select">, "size">,
-    VariantProps<typeof nativeSelectVariants> {
+  extends Omit<React.ComponentProps<"select">, "size">, VariantProps<typeof nativeSelectVariants> {
   /** Render a wrapper div with the chevron overlay. Defaults to true. */
   withChevron?: boolean;
 }

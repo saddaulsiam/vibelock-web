@@ -144,7 +144,6 @@ export function AccountSecurityCard() {
             <Input
               id="currentPassword"
               variant="brand"
-              size="md"
               type="password"
               required
               value={pwData.currentPassword}
@@ -160,7 +159,6 @@ export function AccountSecurityCard() {
             <Input
               id="newPassword"
               variant="brand"
-              size="md"
               type="password"
               required
               value={pwData.newPassword}
@@ -176,7 +174,6 @@ export function AccountSecurityCard() {
             <Input
               id="confirmNewPassword"
               variant="brand"
-              size="md"
               type="password"
               required
               value={pwData.confirmNewPassword}
@@ -241,7 +238,6 @@ export function AccountSecurityCard() {
                     <Button
                       type="button"
                       variant="destructive"
-                      size="sm"
                       onClick={() => handleRevokeSession(s.id)}
                     >
                       Revoke

@@ -27,7 +27,7 @@ const inputVariants = cva(
          * obsidian border, and electric cyber cyan focus ring.
          */
         brand:
-          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
         /**
          * dark — Auth page & POS terminal dark-surface style.
          */

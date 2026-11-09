@@ -48,15 +48,9 @@ export function CouponsView({ coupons }: CouponsViewProps) {
         {/* Header */}
         <div className="border-vl-dark-900/8 flex flex-wrap items-center justify-between gap-3 border-b p-4 sm:p-6 md:p-7">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
-                Vouchers & Rewards
-              </span>
-              <span className="text-neutral-300">•</span>
-              <span className="text-[11px] text-neutral-500 sm:text-xs">
-                Official VibeLock Vault
-              </span>
-            </div>
+            <p className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+              Vouchers & Rewards
+            </p>
             <h1 className="text-vl-dark-900 mt-0.5 text-base font-bold tracking-tight uppercase sm:text-2xl">
               Coupons & Vouchers
             </h1>
