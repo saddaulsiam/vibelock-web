@@ -12,7 +12,7 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import { exportToCsv } from "@/lib/admin/shared";
 import {
   Table,
@@ -657,7 +657,7 @@ export function AdminReturnsTable({
       </Table>
 
       {/* ── 4. Unified Infinite Scroll Sentinel & Pagination Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         loadedCount={returns.length}

@@ -6,7 +6,7 @@ import { Check, X } from "lucide-react";
 import type { OrderStatus, PaymentMethod, PaymentStatus, SalesChannel } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import {
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   useAdminTableColumns,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
@@ -451,7 +451,7 @@ export function AdminOrdersTable({ initialData, currentFilters }: AdminOrdersTab
       />
 
       {/* Shared Infinite Scroll Sentinel */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

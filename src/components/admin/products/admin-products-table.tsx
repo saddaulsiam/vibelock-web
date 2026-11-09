@@ -2,7 +2,7 @@
 
 import {
   AdminMutationForm,
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/shared";
@@ -291,7 +291,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 checked={isAllSelected}
                 onChange={handleToggleSelectAll}
                 aria-label="Select all products"
-                className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
+                className="border-vl-dark-900/30 accent-vl-dark-900 size-4 cursor-pointer rounded-xs"
               />
             </TableHead>
             <TableHead>Product</TableHead>
@@ -317,8 +317,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                 className="px-5 py-14 text-center"
               >
                 <div className="mx-auto max-w-sm space-y-3">
-                  <Boxes className="mx-auto size-8 text-vl-dark-900/30" />
-                  <h3 className="text-sm font-semibold text-vl-dark-900">
+                  <Boxes className="text-vl-dark-900/30 mx-auto size-8" />
+                  <h3 className="text-vl-dark-900 text-sm font-semibold">
                     {hasActiveFilters ? "No products match your filters" : "No products yet"}
                   </h3>
                   <p className="text-muted-foreground text-xs leading-5">
@@ -339,7 +339,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                   ) : (
                     <Link
                       href="/admin/products/new"
-                      className="inline-flex items-center gap-1.5 rounded-sm bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white hover:bg-vl-dark-900/85"
+                      className="bg-vl-dark-900 hover:bg-vl-dark-900/85 inline-flex items-center gap-1.5 rounded-sm px-4 py-2 text-xs font-semibold text-white"
                     >
                       Create product
                     </Link>
@@ -368,7 +368,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
               const isSelected = selectedIds.has(product.id);
 
               return (
-                <TableRow key={product.id} className={isSelected ? "bg-vl-white-300/50" : undefined}>
+                <TableRow
+                  key={product.id}
+                  className={isSelected ? "bg-vl-white-300/50" : undefined}
+                >
                   {/* ── Selection Checkbox ── */}
                   <TableCell className="w-10 px-4 text-center">
                     <input
@@ -376,7 +379,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       checked={isSelected}
                       onChange={() => handleToggleSelect(product.id)}
                       aria-label={`Select ${product.name}`}
-                      className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
+                      className="border-vl-dark-900/30 accent-vl-dark-900 size-4 cursor-pointer rounded-xs"
                     />
                   </TableCell>
 
@@ -385,7 +388,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                     <div className="flex items-center gap-3.5">
                       {/* Thumbnail with High-Res Hover Preview */}
                       <div className="group/thumb relative size-12 shrink-0">
-                        <div className="relative size-12 overflow-hidden rounded-sm border border-vl-dark-900/15 bg-vl-white-300">
+                        <div className="border-vl-dark-900/15 bg-vl-white-300 relative size-12 overflow-hidden rounded-sm border">
                           {product.primaryImage ? (
                             <Image
                               src={product.primaryImage}
@@ -397,7 +400,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               unoptimized={product.primaryImage.startsWith("blob:")}
                             />
                           ) : (
-                            <div className="flex size-full items-center justify-center text-vl-dark-900/25">
+                            <div className="text-vl-dark-900/25 flex size-full items-center justify-center">
                               <ImageOff className="size-5" />
                             </div>
                           )}
@@ -405,8 +408,8 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                         {/* Hover preview card */}
                         {product.primaryImage && (
-                          <div className="pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border border-vl-dark-900/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
-                            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-vl-white-300">
+                          <div className="border-vl-dark-900/20 pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border bg-white p-2 shadow-2xl group-hover/thumb:block">
+                            <div className="bg-vl-white-300 relative aspect-[2/3] w-full overflow-hidden rounded-xs">
                               <Image
                                 src={product.primaryImage}
                                 alt={product.name}
@@ -417,10 +420,10 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                 unoptimized={product.primaryImage.startsWith("blob:")}
                               />
                             </div>
-                            <p className="mt-2 truncate text-xs font-semibold text-vl-dark-900">
+                            <p className="text-vl-dark-900 mt-2 truncate text-xs font-semibold">
                               {product.name}
                             </p>
-                            <div className="mt-0.5 flex items-center justify-between text-[10px] text-vl-dark-900/60">
+                            <div className="text-vl-dark-900/60 mt-0.5 flex items-center justify-between text-[10px]">
                               <span className="font-mono">/{product.slug}</span>
                               <span>{product.totalStock} in stock</span>
                             </div>
@@ -432,7 +435,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       <div className="min-w-0">
                         <Link
                           href={`/admin/products/${product.id}/edit`}
-                          className="font-semibold text-vl-dark-900 hover:underline"
+                          className="text-vl-dark-900 font-semibold hover:underline"
                         >
                           {product.name}
                         </Link>
@@ -454,7 +457,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                               className="h-5 gap-1 rounded-xs px-1.5 text-[10px] font-semibold"
                               title="Click to view variant stock details"
                             >
-                              <Layers className="size-3 text-vl-dark-900/60" />
+                              <Layers className="text-vl-dark-900/60 size-3" />
                               <span>
                                 {product.variantCount}{" "}
                                 {product.variantCount === 1 ? "variant" : "variants"}
@@ -468,9 +471,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
                             {/* Variant Details Popover Dropdown */}
                             {expandedVariantId === product.id && product.variants && (
-                              <div className="animate-in fade-in zoom-in-95 absolute top-full left-0 z-40 mt-1.5 w-80 rounded-sm border border-vl-dark-900/15 bg-white p-3 shadow-xl duration-150">
-                                <div className="flex items-center justify-between border-b border-vl-dark-900/10 pb-2">
-                                  <p className="text-xs font-semibold text-vl-dark-900">
+                              <div className="animate-in fade-in zoom-in-95 border-vl-dark-900/15 absolute top-full left-0 z-40 mt-1.5 w-80 rounded-sm border bg-white p-3 shadow-xl duration-150">
+                                <div className="border-vl-dark-900/10 flex items-center justify-between border-b pb-2">
+                                  <p className="text-vl-dark-900 text-xs font-semibold">
                                     Variant Stock Breakdown
                                   </p>
                                   <Button
@@ -478,23 +481,23 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setExpandedVariantId(null)}
-                                    className="size-6 text-vl-dark-900/40 hover:text-vl-dark-900"
+                                    className="text-vl-dark-900/40 hover:text-vl-dark-900 size-6"
                                   >
                                     <X className="size-3.5" />
                                   </Button>
                                 </div>
 
-                                <div className="mt-2 max-h-56 divide-y divide-vl-dark-900/5 overflow-y-auto pr-1 text-xs">
+                                <div className="divide-vl-dark-900/5 mt-2 max-h-56 divide-y overflow-y-auto pr-1 text-xs">
                                   {product.variants.map((v) => (
                                     <div
                                       key={v.id}
                                       className="flex items-center justify-between py-1.5"
                                     >
                                       <div>
-                                        <p className="font-mono text-[11px] font-medium text-vl-dark-900">
+                                        <p className="text-vl-dark-900 font-mono text-[11px] font-medium">
                                           {v.sku}
                                         </p>
-                                        <p className="text-[10px] text-vl-dark-900/60">
+                                        <p className="text-vl-dark-900/60 text-[10px]">
                                           {[
                                             v.size ? `Size: ${v.size}` : null,
                                             v.color ? `Color: ${v.color}` : null,
@@ -515,7 +518,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                         >
                                           {v.stock <= 0 ? "Out of Stock" : `${v.stock} in stock`}
                                         </span>
-                                        <p className="mt-0.5 font-mono text-[10px] text-vl-dark-900/70">
+                                        <p className="text-vl-dark-900/70 mt-0.5 font-mono text-[10px]">
                                           ৳{v.discountPrice ?? v.sellingPrice}
                                         </p>
                                       </div>
@@ -573,7 +576,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         {hasDiscount ? (
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5">
-                              <span className="font-bold text-vl-dark-900">
+                              <span className="text-vl-dark-900 font-bold">
                                 {formatPrice(product.minDiscountPrice)}
                               </span>
                               <span className="py-0.2 rounded-xs bg-red-100 px-1.5 text-[10px] font-bold text-red-700">
@@ -585,7 +588,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                             </span>
                           </div>
                         ) : (
-                          <span className="font-semibold text-vl-dark-900">
+                          <span className="text-vl-dark-900 font-semibold">
                             {formatPrice(product.minSellingPrice)}
                           </span>
                         )}
@@ -595,7 +598,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           variant="ghost"
                           size="icon"
                           onClick={() => setPriceEditProduct(product)}
-                          className="size-6 text-vl-dark-900/40 opacity-0 transition-opacity group-hover/price:opacity-100 hover:text-vl-dark-900 focus:opacity-100"
+                          className="text-vl-dark-900/40 hover:text-vl-dark-900 size-6 opacity-0 transition-opacity group-hover/price:opacity-100 focus:opacity-100"
                           title="Quick edit price & discount"
                         >
                           <Pencil className="size-3" />
@@ -671,7 +674,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       {/* Edit Link */}
                       <Link
                         href={`/admin/products/${product.id}/edit`}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2.5 text-xs font-semibold text-vl-dark-900 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 focus-visible:ring-vl-cyan inline-flex h-8 items-center gap-1 rounded-sm border bg-white px-2.5 text-xs font-semibold shadow-2xs transition-colors focus-visible:ring-2"
                         title="Edit product"
                       >
                         <Pencil className="size-3.5" />
@@ -681,7 +684,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                       {/* Duplicate Link */}
                       <Link
                         href={`/admin/products/new?duplicateFrom=${product.id}`}
-                        className="inline-flex h-8 items-center gap-1 rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs font-semibold text-vl-dark-900/80 shadow-2xs transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                        className="border-vl-dark-900/20 text-vl-dark-900/80 hover:bg-vl-white-300 focus-visible:ring-vl-cyan inline-flex h-8 items-center gap-1 rounded-sm border bg-white px-2 text-xs font-semibold shadow-2xs transition-colors focus-visible:ring-2"
                         title="Duplicate as new product"
                       >
                         <Copy className="size-3.5" />
@@ -727,7 +730,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                           href={`/product/${product.slug}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex h-8 items-center rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs text-vl-dark-900/70 shadow-2xs transition-colors hover:bg-vl-white-300 hover:text-vl-dark-900"
+                          className="border-vl-dark-900/20 text-vl-dark-900/70 hover:bg-vl-white-300 hover:text-vl-dark-900 inline-flex h-8 items-center rounded-sm border bg-white px-2 text-xs shadow-2xs transition-colors"
                           title="View product on live store"
                         >
                           <ExternalLink className="size-3.5" />
@@ -743,7 +746,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
       </Table>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}
@@ -787,9 +790,9 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
 
       {/* ── Barcode Scanner Auto-Detection Toast Indicator ── */}
       {scannedIndicator && (
-        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-vl-cyan-200 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
-          <span className="flex size-2 animate-ping rounded-full bg-vl-cyan" />
-          <span className="font-semibold text-vl-cyan">⚡ Scanner Active:</span>
+        <div className="animate-in slide-in-from-top-3 fade-in border-vl-cyan-200 bg-vl-dark-900 fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
+          <span className="bg-vl-cyan flex size-2 animate-ping rounded-full" />
+          <span className="text-vl-cyan font-semibold">⚡ Scanner Active:</span>
           <span>{scannedIndicator}</span>
         </div>
       )}

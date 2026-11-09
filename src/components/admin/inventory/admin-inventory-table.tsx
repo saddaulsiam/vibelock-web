@@ -2,7 +2,7 @@
 
 import {
   AdminTableColumnVisibility,
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   AdminTableSearchInput,
   useAdminTableColumns,
 } from "@/components/admin/shared";
@@ -438,7 +438,7 @@ export function AdminInventoryTable({
           <a
             href={`/api/admin/inventory/export?q=${encodeURIComponent(currentFilters.q)}&filter=${currentFilters.filter}`}
             download
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="focus-visible:ring-vl-cyan inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:outline-none"
             title="Export filtered inventory to CSV"
           >
             <Download className="size-3.5 text-neutral-500" />
@@ -448,7 +448,7 @@ export function AdminInventoryTable({
           {/* Intelligence Dashboard Link */}
           <Link
             href="/admin/inventory-intelligence"
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-vl-dark-900 px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-vl-dark-900/85 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="bg-vl-dark-900 hover:bg-vl-dark-900/85 focus-visible:ring-vl-cyan inline-flex h-10 items-center justify-center gap-1.5 rounded-lg px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             <span>Intelligence</span>
             <ArrowRight className="size-3.5" />
@@ -461,28 +461,28 @@ export function AdminInventoryTable({
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="text-muted-foreground">Active filters:</span>
           {currentFilters.q && (
-            <span className="inline-flex items-center gap-1 rounded-xs border border-vl-dark-900/15 bg-vl-white-300 px-2 py-0.5 font-medium text-vl-dark-900">
+            <span className="border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900 inline-flex items-center gap-1 rounded-xs border px-2 py-0.5 font-medium">
               Search: “{currentFilters.q}”
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={handleClearSearch}
-                className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
+                className="text-vl-dark-900/60 hover:text-vl-dark-900 size-4"
               >
                 <X className="size-3" />
               </Button>
             </span>
           )}
           {currentFilters.filter !== "all" && (
-            <span className="inline-flex items-center gap-1 rounded-xs border border-vl-dark-900/15 bg-vl-white-300 px-2 py-0.5 font-medium text-vl-dark-900">
+            <span className="border-vl-dark-900/15 bg-vl-white-300 text-vl-dark-900 inline-flex items-center gap-1 rounded-xs border px-2 py-0.5 font-medium">
               Filter: {currentFilters.filter}
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
                 onClick={() => updateQuery({ filter: "all" })}
-                className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
+                className="text-vl-dark-900/60 hover:text-vl-dark-900 size-4"
               >
                 <X className="size-3" />
               </Button>
@@ -493,7 +493,7 @@ export function AdminInventoryTable({
             variant="ghost"
             size="xs"
             onClick={() => updateQuery({ q: null, filter: "all" })}
-            className="text-xs font-semibold text-vl-dark-900 underline hover:text-vl-dark-900/70"
+            className="text-vl-dark-900 hover:text-vl-dark-900/70 text-xs font-semibold underline"
           >
             Clear all
           </Button>
@@ -519,7 +519,7 @@ export function AdminInventoryTable({
                 checked={isAllSelected}
                 onChange={handleToggleSelectAll}
                 aria-label="Select all inventory items"
-                className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
+                className="border-vl-dark-900/30 accent-vl-dark-900 size-4 cursor-pointer rounded-xs"
               />
             </TableHead>
             <TableHead>Product & Variant</TableHead>
@@ -537,8 +537,8 @@ export function AdminInventoryTable({
             <TableRow>
               <TableCell colSpan={visibleColumnCount} className="px-5 py-12 text-center">
                 <div className="mx-auto flex max-w-sm flex-col items-center justify-center gap-2">
-                  <Boxes className="size-8 text-vl-dark-900/30" />
-                  <p className="text-sm font-semibold text-vl-dark-900">
+                  <Boxes className="text-vl-dark-900/30 size-8" />
+                  <p className="text-vl-dark-900 text-sm font-semibold">
                     No inventory items match your search
                   </p>
                   <p className="text-muted-foreground text-xs">
@@ -581,7 +581,7 @@ export function AdminInventoryTable({
                       checked={isSelected}
                       onChange={() => handleToggleSelect(item.id)}
                       aria-label={`Select ${item.sku}`}
-                      className="size-4 cursor-pointer rounded-xs border-vl-dark-900/30 accent-vl-dark-900"
+                      className="border-vl-dark-900/30 accent-vl-dark-900 size-4 cursor-pointer rounded-xs"
                     />
                   </TableCell>
 
@@ -590,7 +590,7 @@ export function AdminInventoryTable({
                     <div className="flex items-center gap-3">
                       {/* Thumbnail with Hover Zoom */}
                       <div className="group/thumb relative size-11 shrink-0">
-                        <div className="relative size-11 overflow-hidden rounded-sm border border-vl-dark-900/15 bg-vl-white-300">
+                        <div className="border-vl-dark-900/15 bg-vl-white-300 relative size-11 overflow-hidden rounded-sm border">
                           {item.primaryImage ? (
                             <Image
                               src={item.primaryImage}
@@ -602,7 +602,7 @@ export function AdminInventoryTable({
                               unoptimized={item.primaryImage.startsWith("blob:")}
                             />
                           ) : (
-                            <div className="flex size-full items-center justify-center text-vl-dark-900/25">
+                            <div className="text-vl-dark-900/25 flex size-full items-center justify-center">
                               <ImageOff className="size-4" />
                             </div>
                           )}
@@ -610,8 +610,8 @@ export function AdminInventoryTable({
 
                         {/* Hover preview card */}
                         {item.primaryImage && (
-                          <div className="pointer-events-none absolute top-0 left-13 z-50 hidden w-48 rounded-sm border border-vl-dark-900/20 bg-white p-2 shadow-2xl group-hover/thumb:block">
-                            <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xs bg-vl-white-300">
+                          <div className="border-vl-dark-900/20 pointer-events-none absolute top-0 left-13 z-50 hidden w-48 rounded-sm border bg-white p-2 shadow-2xl group-hover/thumb:block">
+                            <div className="bg-vl-white-300 relative aspect-[2/3] w-full overflow-hidden rounded-xs">
                               <Image
                                 src={item.primaryImage}
                                 alt={item.product.name}
@@ -621,10 +621,10 @@ export function AdminInventoryTable({
                                 className="object-cover object-center"
                               />
                             </div>
-                            <p className="mt-1.5 truncate text-xs font-semibold text-vl-dark-900">
+                            <p className="text-vl-dark-900 mt-1.5 truncate text-xs font-semibold">
                               {item.product.name}
                             </p>
-                            <p className="font-mono text-[10px] text-vl-dark-900/60">{item.sku}</p>
+                            <p className="text-vl-dark-900/60 font-mono text-[10px]">{item.sku}</p>
                           </div>
                         )}
                       </div>
@@ -633,12 +633,12 @@ export function AdminInventoryTable({
                       <div className="min-w-0">
                         <Link
                           href={`/admin/inventory/${item.id}`}
-                          className="font-semibold text-vl-dark-900 hover:underline"
+                          className="text-vl-dark-900 font-semibold hover:underline"
                         >
                           {item.product.name}
                         </Link>
                         <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                          <span className="rounded-2xs py-0.2 inline-flex items-center border border-vl-dark-900/15 bg-vl-white-200 px-1.5 text-[10px] font-semibold text-vl-dark-900">
+                          <span className="rounded-2xs py-0.2 border-vl-dark-900/15 bg-vl-white-200 text-vl-dark-900 inline-flex items-center border px-1.5 text-[10px] font-semibold">
                             {[
                               item.size ? `Size: ${item.size}` : null,
                               item.color ? `Color: ${item.color}` : null,
@@ -647,7 +647,7 @@ export function AdminInventoryTable({
                               .join(" • ") || "Default"}
                           </span>
                           {item.product.slug && (
-                            <span className="font-mono text-[10px] text-vl-dark-900/50">
+                            <span className="text-vl-dark-900/50 font-mono text-[10px]">
                               /{item.product.slug}
                             </span>
                           )}
@@ -659,14 +659,14 @@ export function AdminInventoryTable({
                   {/* SKU with 1-click copy */}
                   {visibleColumns.sku && (
                     <TableCell>
-                      <div className="flex items-center gap-1.5 font-mono text-xs font-medium text-vl-dark-900">
+                      <div className="text-vl-dark-900 flex items-center gap-1.5 font-mono text-xs font-medium">
                         <span>{item.sku}</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           onClick={() => handleCopySku(item.sku)}
-                          className="size-6 text-vl-dark-900/40 hover:text-vl-dark-900"
+                          className="text-vl-dark-900/40 hover:text-vl-dark-900 size-6"
                           title="Copy SKU to clipboard"
                         >
                           {copiedSku === item.sku ? (
@@ -725,10 +725,10 @@ export function AdminInventoryTable({
                   {visibleColumns.pricing && (
                     <TableCell className="text-xs tabular-nums">
                       <div className="space-y-0.5">
-                        <div className="font-semibold text-vl-dark-900">
+                        <div className="text-vl-dark-900 font-semibold">
                           {formatCurrency(item.sellingPrice)}
                         </div>
-                        <div className="text-[10px] text-vl-dark-900/50">
+                        <div className="text-vl-dark-900/50 text-[10px]">
                           Cost: {formatCurrency(item.costPrice)}
                         </div>
                       </div>
@@ -830,7 +830,7 @@ export function AdminInventoryTable({
                       {/* History Link */}
                       <Link
                         href={`/admin/inventory/${item.id}`}
-                        className="inline-flex h-8 items-center rounded-sm border border-vl-dark-900/20 bg-white px-2 text-xs text-vl-dark-900/70 shadow-2xs transition-colors hover:bg-vl-white-300 hover:text-vl-dark-900"
+                        className="border-vl-dark-900/20 text-vl-dark-900/70 hover:bg-vl-white-300 hover:text-vl-dark-900 inline-flex h-8 items-center rounded-sm border bg-white px-2 text-xs shadow-2xs transition-colors"
                         title="View complete transaction audit history"
                       >
                         <ExternalLink className="size-3.5" />
@@ -845,7 +845,7 @@ export function AdminInventoryTable({
       </Table>
 
       {/* ── 4. Infinite Scroll Sentinel & Load More Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}
@@ -856,7 +856,7 @@ export function AdminInventoryTable({
 
       {/* ── 5. Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-sm border border-white/15 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-2xl backdrop-blur-md duration-200 sm:gap-4">
+        <div className="animate-in fade-in slide-in-from-bottom-4 bg-vl-dark-900 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-sm border border-white/15 px-4 py-2.5 text-xs text-white shadow-2xl backdrop-blur-md duration-200 sm:gap-4">
           <div className="flex items-center gap-2 font-medium">
             <span className="flex size-5 items-center justify-center rounded-full bg-white/20 text-[11px] font-bold">
               {selectedIds.size}
@@ -989,9 +989,9 @@ export function AdminInventoryTable({
 
       {/* ── 9. Barcode Scanner Auto-Detection Toast Indicator ── */}
       {scannedIndicator && (
-        <div className="animate-in slide-in-from-top-3 fade-in fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border border-vl-cyan-200 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
-          <span className="flex size-2 animate-ping rounded-full bg-vl-cyan" />
-          <span className="font-semibold text-vl-cyan">⚡ Scanner Active:</span>
+        <div className="animate-in slide-in-from-top-3 fade-in border-vl-cyan-200 bg-vl-dark-900 fixed top-6 right-6 z-50 flex items-center gap-2 rounded-sm border px-4 py-2.5 text-xs text-white shadow-2xl duration-200">
+          <span className="bg-vl-cyan flex size-2 animate-ping rounded-full" />
+          <span className="text-vl-cyan font-semibold">⚡ Scanner Active:</span>
           <span>{scannedIndicator}</span>
         </div>
       )}

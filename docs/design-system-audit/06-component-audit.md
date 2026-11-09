@@ -8,12 +8,12 @@
 
 The central shadcn UI primitives located in `src/components/ui/` are drastically under-utilized across the codebase. Instead of importing and configuring `<Button>`, `<Input>`, and `<Card>`, developers predominantly wrote raw HTML tags with massive, duplicated class strings:
 
-| Component Type | Central Primitive Usage | Raw HTML Tag Usage | Primitive Adoption Rate |
-|---|---|---|---|
-| **Buttons** | `<Button>`: **70** | `<button>`: **471** | **12.9%** (87% bypass primitive) |
-| **Inputs** | `<Input>`: **66** | `<input>`: **216** | **23.4%** (76% bypass primitive) |
-| **Cards** | `<Card>`: **14** | Custom `div`: **~150** | **8.5%** (91% bypass primitive) |
-| **Badges** | `<Badge>`: **90** | Custom `span`: **~120** | **42.8%** |
+| Component Type | Central Primitive Usage | Raw HTML Tag Usage      | Primitive Adoption Rate          |
+| -------------- | ----------------------- | ----------------------- | -------------------------------- |
+| **Buttons**    | `<Button>`: **70**      | `<button>`: **471**     | **12.9%** (87% bypass primitive) |
+| **Inputs**     | `<Input>`: **66**       | `<input>`: **216**      | **23.4%** (76% bypass primitive) |
+| **Cards**      | `<Card>`: **14**        | Custom `div`: **~150**  | **8.5%** (91% bypass primitive)  |
+| **Badges**     | `<Badge>`: **90**       | Custom `span`: **~120** | **42.8%**                        |
 
 ### Root Cause Analysis: Why Did Developers Bypass the Primitives?
 
@@ -29,18 +29,22 @@ The central shadcn UI primitives located in `src/components/ui/` are drastically
 ### 2.1 Buttons
 
 #### Central Implementation: `src/components/ui/button.tsx`
+
 - **Variants Declared:** `default` (primary dark), `outline`, `secondary`, `ghost`, `destructive`, `link`, `cyan` (electric glow), `brand` (obsidian + border).
 - **Sizes Declared:** `xs` (24px), `sm` (28px), `default` (32px), `lg` (36px), `icon` (32px), `icon-xs`, `icon-sm`, `icon-lg`.
 - **Missing Sizes:** No `xl` (44px) or `2xl` (48px) size exists in the primitive!
 
 #### Inconsistencies & Duplications:
+
 - In `src/components/storefront/checkout/checkout-form.tsx:1044`, the primary checkout submit button is a raw `<button>` with 24 utility classes:
   ```tsx
-  className="font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all duration-200 hover:bg-black hover:shadow-[0_0_24px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+  className =
+    "font-heading bg-vl-black text-vl-white focus-visible:ring-vl-cyan mt-5 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xs px-5 text-xs font-black tracking-widest uppercase transition-all duration-200 hover:bg-black hover:shadow-[0_0_24px_rgba(0,217,255,0.25)] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60";
   ```
 - In `src/app/(auth)/login/page.tsx:392`, the login CTA uses another custom button implementation with `h-11 rounded-lg bg-[#00D9FF] text-[#101114]`.
 
 #### Recommendation:
+
 Add `xl` (`h-11` / 44px) and `2xl` (`h-12` / 48px) sizes to `buttonVariants`, and add a `streetwear` variant with `rounded-xs font-black tracking-widest uppercase`.
 
 ---
@@ -48,10 +52,12 @@ Add `xl` (`h-11` / 44px) and `2xl` (`h-12` / 48px) sizes to `buttonVariants`, an
 ### 2.2 Inputs
 
 #### Central Implementation: `src/components/ui/input.tsx`
+
 - **Base Classes:** `h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors md:text-sm`
 - **Styling Incompatibilities:** Hardcoded `h-8` (32px) and `rounded-lg` (8px).
 
 #### Raw Input Divergence:
+
 - **Checkout Form Inputs (`checkout-form.tsx:320`):**
   `h-11 rounded-xs border-[#101114]/20 bg-white px-3.5 text-sm`
 - **Coupon Code Input (`checkout-form.tsx:986`):**
@@ -60,7 +66,9 @@ Add `xl` (`h-11` / 44px) and `2xl` (`h-12` / 48px) sizes to `buttonVariants`, an
   Uses `<Input>` but overrides with `h-11 rounded-lg border-white/10 bg-[#16171B] text-[#F3F0E8]`
 
 #### Recommendation:
+
 Add size variants to `src/components/ui/input.tsx`:
+
 - `size: "default"` (`h-9` / 36px)
 - `size: "lg"` (`h-11` / 44px) for mobile-first checkout forms
 - `size: "sm"` (`h-8` / 32px) for admin data tables
@@ -70,17 +78,21 @@ Add size variants to `src/components/ui/input.tsx`:
 ### 2.3 Cards & Containers
 
 #### Central Implementation: `src/components/ui/card.tsx`
+
 - **Base Classes:** `rounded-xl ring-1 ring-foreground/10 bg-card text-card-foreground`
 - **Usage:** Used only 14 times in the entire application (primarily admin KPI cards).
 
 #### Custom Card Proliferation:
+
 Every major feature created its own bespoke card container:
+
 - **Storefront Checkout Section:** `border-border bg-background rounded-xs border p-5 sm:p-6`
 - **Storefront Cart Item:** `border-border bg-background rounded-xs border p-4 sm:p-5`
 - **Account Dashboard Card:** `border-[#101114]/10 bg-white rounded-lg border p-6`
 - **Admin Customer Timeline:** `border-[#101114]/10 bg-white rounded-xl border p-5`
 
 #### Recommendation:
+
 Add `variant="sharp"` (`rounded-xs border border-border bg-background`) to `src/components/ui/card.tsx` so storefront and checkout components can adopt the central `<Card>`.
 
 ---
@@ -97,6 +109,7 @@ VibeLock currently maintains **three competing badge implementations**:
    - Compact rectangular badge (`rounded-xs px-1.5 py-0.5 text-[10px]`), dedicated gateway color mappings (SSLCOMMERZ, bKash, Nagad, COD).
 
 #### Assessment:
+
 - The separation between `ProductBadge` (streetwear sale tags) and `PaymentGatewayBadge` (financial gateway identification) is **functionally justified**.
 - However, `ProductBadge` should reference central semantic colors (`--color-status-sale`) instead of hardcoding `#E50010`.
 
@@ -118,7 +131,7 @@ VibeLock currently maintains **three competing badge implementations**:
   - Header: `bg-neutral-50/50 text-[11px] font-bold tracking-wider text-muted-foreground uppercase`
   - Rows: `hover:bg-neutral-50/80 transition-colors text-xs border-b border-[#101114]/5`
   - Actions: Sticky right column on horizontal overflow with `bg-white/95 backdrop-blur-xs`
-- **Reusability Controls:** Built using `AdminTableControls`, `AdminTableColumnVisibility`, and `AdminTableInfiniteScroll`.
+- **Reusability Controls:** Built using `AdminTableControls`, `AdminTableColumnVisibility`, and `InfiniteScroll`.
 
 ---
 
@@ -140,4 +153,3 @@ VibeLock currently maintains **three competing badge implementations**:
 - **Toaster:** Centralized on `sonner` via `src/components/ui/sonner.tsx` mounted in `RootLayout`.
 - **Position:** `top-center` with `richColors` and `duration: 3500ms`.
 - **Inline Alerts:** Handled via custom warning banners (`rounded-xs border border-amber-300 bg-amber-50 p-4 text-xs font-semibold text-amber-900`).
-

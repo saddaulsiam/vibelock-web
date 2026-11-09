@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
+import { InfiniteScroll } from "@/components/shared/infinite-scroll";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { loadMoreProductsAction } from "@/lib/catalog/actions";
@@ -36,8 +36,8 @@ export function ProductInfiniteGrid({
     initialProducts.length < totalCount && totalPages > 1
   );
   const [loadError, setLoadError] = React.useState<string | null>(null);
-  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
 
+  // Sync state if initialProducts changes across renders (e.g. from filter changes)
   const [prevInitialProducts, setPrevInitialProducts] = React.useState(initialProducts);
   if (prevInitialProducts !== initialProducts) {
     setPrevInitialProducts(initialProducts);
@@ -74,29 +74,6 @@ export function ProductInfiniteGrid({
       setIsLoadingMore(false);
     }
   }, [isLoadingMore, hasMore, page, searchParams]);
-
-  // Setup IntersectionObserver for auto-infinite scrolling
-  React.useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel || !hasMore || typeof IntersectionObserver === "undefined") return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const first = entries[0];
-        if (first?.isIntersecting && hasMore && !isLoadingMore) {
-          loadMore();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "400px",
-        threshold: 0,
-      }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [hasMore, isLoadingMore, loadMore]);
 
   // Empty state handling matching ProductGrid
   if (products.length === 0) {
@@ -167,9 +144,6 @@ export function ProductInfiniteGrid({
         ))}
       </div>
 
-      {/* Sentinel for IntersectionObserver to trigger auto-fetch */}
-      <div ref={sentinelRef} className="h-1 w-full" aria-hidden="true" />
-
       {/* Loading Skeletons */}
       {isLoadingMore && (
         <div
@@ -207,40 +181,18 @@ export function ProductInfiniteGrid({
         </div>
       )}
 
-      {/* Fallback button when observer hasn't triggered */}
-      {hasMore && !isLoadingMore && !loadError && (
-        <div className="flex justify-center pt-8 pb-4">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={loadMore}
-            className="border-vl-dark-200 text-vl-dark-800 hover:text-vl-dark-900 rounded-none text-xs font-bold tracking-wider uppercase"
-          >
-            <Loader2 className="mr-1.5 size-3.5 animate-spin opacity-0" aria-hidden="true" />
-            <span>Load more drops</span>
-            <span className="text-vl-dark-400 font-normal">
-              ({products.length} of {totalCount})
-            </span>
-          </Button>
-        </div>
+      {/* Reusable Shared Infinite Scroll Sentinel & Controls */}
+      {!loadError && (
+        <InfiniteScroll
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={loadMore}
+          loadedCount={products.length}
+          totalCount={totalCount}
+          itemName="releases"
+          variant="storefront"
+        />
       )}
-
-      {/* End of results indicator */}
-      {!hasMore && products.length > 0 && products.length >= 12 && (
-        <div className="flex items-center justify-center pt-10 pb-4 text-center select-none">
-          <div className="bg-vl-dark-200 h-px w-10 sm:w-16" aria-hidden="true" />
-          <span className="text-vl-dark-400 px-4 text-[11px] font-bold tracking-wider uppercase">
-            All {totalCount} releases loaded
-          </span>
-          <div className="bg-vl-dark-200 h-px w-10 sm:w-16" aria-hidden="true" />
-        </div>
-      )}
-
-      {/* Screen reader live region */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        Showing {products.length} of {totalCount} releases.
-      </div>
     </div>
   );
 }

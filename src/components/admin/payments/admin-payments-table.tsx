@@ -12,7 +12,7 @@ import {
   AdminTableTabItem,
   AdminTableTabs,
 } from "@/components/admin/shared";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import {
   AdminTableColumnVisibility,
   useAdminTableColumns,
@@ -408,7 +408,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
                     <TableCell>
                       <Link
                         href={`/admin/orders/${p.orderId}`}
-                        className="font-semibold text-neutral-900 hover:text-vl-cyan-500 hover:underline"
+                        className="hover:text-vl-cyan-500 font-semibold text-neutral-900 hover:underline"
                       >
                         {p.orderNumber}
                       </Link>
@@ -487,7 +487,7 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
       </Table>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

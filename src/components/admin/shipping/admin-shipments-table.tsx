@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import {
   loadMoreAdminShipmentsAction,
   syncSingleShipmentAction,
@@ -467,9 +467,9 @@ export function AdminShipmentsTable({
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
-        <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-between rounded-xl border border-neutral-900 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-lg">
+        <div className="animate-in fade-in slide-in-from-top-2 bg-vl-dark-900 flex items-center justify-between rounded-xl border border-neutral-900 px-4 py-2.5 text-xs text-white shadow-lg">
           <div className="flex items-center gap-3">
-            <span className="flex size-5 items-center justify-center rounded-full bg-vl-cyan text-[11px] font-bold text-vl-dark-900">
+            <span className="bg-vl-cyan text-vl-dark-900 flex size-5 items-center justify-center rounded-full text-[11px] font-bold">
               {selectedIds.size}
             </span>
             <span className="font-medium text-neutral-200">
@@ -512,7 +512,7 @@ export function AdminShipmentsTable({
                 checked={shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))}
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 aria-label="Select all shipments"
-                className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
+                className="text-vl-dark-900 focus:ring-vl-cyan size-4 rounded border-neutral-300"
               />
             </TableHead>
             <TableHead>Order</TableHead>
@@ -580,7 +580,7 @@ export function AdminShipmentsTable({
                       checked={isSelected}
                       onChange={() => handleToggleSelect(shipment.id)}
                       aria-label={`Select shipment for order ${shipment.orderNumber}`}
-                      className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
+                      className="text-vl-dark-900 focus:ring-vl-cyan size-4 rounded border-neutral-300"
                     />
                   </TableCell>
 
@@ -793,7 +793,7 @@ export function AdminShipmentsTable({
       </Table>
 
       {/* ── Infinite Scroll Sentinel & Loader ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={shipments.length < total}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

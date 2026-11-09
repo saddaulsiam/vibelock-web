@@ -4,7 +4,7 @@ import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   AdminTableSearchInput,
   AdminTableTabs,
   useAdminTableColumns,
@@ -604,7 +604,7 @@ export function AdminInventoryIntelligenceTable({
                         href={`/admin/inventory/${item.id}`}
                         className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
                           isUrgent
-                            ? "bg-vl-dark-900 text-white hover:bg-vl-dark-900/85"
+                            ? "bg-vl-dark-900 hover:bg-vl-dark-900/85 text-white"
                             : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
                         }`}
                         title="View inventory transactions, adjustments, and supplier purchase orders"
@@ -622,7 +622,7 @@ export function AdminInventoryIntelligenceTable({
       </Table>
 
       {/* Infinite Scroll Sentinel & Load More Controls matching Inventory Control Center */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

@@ -304,7 +304,7 @@ describe("POS UI Components", () => {
       expect(html).not.toContain("scrollbar-thin");
     });
 
-    test("renders AdminTableInfiniteScroll sentinel and status in PosProductGrid", () => {
+    test("renders InfiniteScroll sentinel and status in PosProductGrid", () => {
       // 1. With <= 24 items: renders all loaded state
       const htmlFew = renderToStaticMarkup(
         <PosProductGrid

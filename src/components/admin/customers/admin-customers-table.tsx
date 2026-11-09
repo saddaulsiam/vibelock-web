@@ -6,7 +6,7 @@ import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -720,8 +720,8 @@ export function AdminCustomersTable({
             })}
           </div>
 
-          {/* 6. Shared AdminTableInfiniteScroll Sentinel & Load More Controls */}
-          <AdminTableInfiniteScroll
+          {/* 6. Shared InfiniteScroll Sentinel & Load More Controls */}
+          <InfiniteScroll
             hasMore={hasMore}
             isLoadingMore={isLoadingMore}
             onLoadMore={handleLoadMore}

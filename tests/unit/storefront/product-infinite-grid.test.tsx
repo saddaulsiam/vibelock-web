@@ -93,7 +93,7 @@ describe("ProductInfiniteGrid Component", () => {
       />
     );
 
-    expect(html).toContain("Load more drops");
+    expect(html).toContain("Load more releases");
     expect(html).toContain("2 of 50");
   });
 });

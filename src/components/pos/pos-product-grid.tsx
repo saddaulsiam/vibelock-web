@@ -6,7 +6,7 @@ import { Package, Plus, Layers } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PosVariantPickerModal } from "./pos-variant-picker-modal";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import type { PosCategory, PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
 
 interface PosProductGridProps {
@@ -234,9 +234,9 @@ export function PosProductGrid({
   }, [filteredProducts, visibleCount]);
 
   return (
-    <div className="flex h-full flex-col border-r border-vl-white-500 bg-vl-white-300">
+    <div className="border-vl-white-500 bg-vl-white-300 flex h-full flex-col border-r">
       {/* Categories Bar (Scrollbar hidden, horizontal mouse wheel scrollable) */}
-      <div className="border-b border-vl-white-500 bg-white px-3 py-2.5 shadow-2xs">
+      <div className="border-vl-white-500 border-b bg-white px-3 py-2.5 shadow-2xs">
         <div
           ref={categoryScrollRef}
           className="no-scrollbar flex [scrollbar-width:none] items-center space-x-2 overflow-x-auto px-1 pt-0.5 pb-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -321,7 +321,7 @@ export function PosProductGrid({
       <div className="flex-1 overflow-y-auto p-2 pb-24 sm:p-3 lg:pb-4">
         {filteredProducts.length === 0 ? (
           <div className="flex h-64 flex-col items-center justify-center text-center text-slate-400">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-vl-white-400 bg-white shadow-2xs">
+            <div className="border-vl-white-400 mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border bg-white shadow-2xs">
               <Package className="h-7 w-7 stroke-1 text-slate-400" />
             </div>
             <p className="font-heading text-vl-black text-sm font-bold">
@@ -338,7 +338,7 @@ export function PosProductGrid({
                 onClearSearch?.();
                 setSelectedCategory("all");
               }}
-              className="hover:border-vl-cyan h-8 rounded-lg border-vl-white-500 text-xs font-semibold hover:bg-white"
+              className="hover:border-vl-cyan border-vl-white-500 h-8 rounded-lg text-xs font-semibold hover:bg-white"
             >
               Reset Filters
             </Button>
@@ -364,13 +364,13 @@ export function PosProductGrid({
                     }}
                     className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-200 ${
                       isOutOfStock
-                        ? "cursor-not-allowed border-vl-white-400 bg-vl-white-100 opacity-60"
-                        : "hover:border-vl-cyan cursor-pointer border-vl-white-400 hover:shadow-[0_8px_24px_rgba(0,217,255,0.14)] active:scale-[0.99]"
+                        ? "border-vl-white-400 bg-vl-white-100 cursor-not-allowed opacity-60"
+                        : "hover:border-vl-cyan border-vl-white-400 cursor-pointer hover:shadow-[0_8px_24px_rgba(0,217,255,0.14)] active:scale-[0.99]"
                     }`}
                   >
                     <div>
                       {/* Image / Thumbnail with smooth zoom on hover */}
-                      <div className="relative h-36 w-full overflow-hidden bg-vl-white-200 sm:h-40">
+                      <div className="bg-vl-white-200 relative h-36 w-full overflow-hidden sm:h-40">
                         {prod.imageUrl ? (
                           <Image
                             src={prod.imageUrl}
@@ -460,7 +460,7 @@ export function PosProductGrid({
                     {/* Uniform Action Row (Refined Boutique POS Outline Design) */}
                     <div className="p-3 pt-0">
                       {isNoVariants ? (
-                        <div className="flex h-9.5 w-full items-center justify-center rounded-xl border border-dashed border-vl-white-500 bg-vl-white-100 text-xs font-medium text-slate-400">
+                        <div className="border-vl-white-500 bg-vl-white-100 flex h-9.5 w-full items-center justify-center rounded-xl border border-dashed text-xs font-medium text-slate-400">
                           No Variants
                         </div>
                       ) : isSingleVariant ? (
@@ -473,7 +473,7 @@ export function PosProductGrid({
                             e.stopPropagation();
                             onAddVariant(prod.variants[0], prod);
                           }}
-                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black relative flex h-9.5 w-full items-center justify-center gap-1.5 rounded-xl border border-vl-white-500 bg-white text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
+                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black border-vl-white-500 relative flex h-9.5 w-full items-center justify-center gap-1.5 rounded-xl border bg-white text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
                         >
                           <Plus className="group-hover/btn:text-vl-black h-3.5 w-3.5 text-slate-500 transition-transform duration-200 group-hover/btn:rotate-90" />
                           <span>Add to Cart</span>
@@ -488,13 +488,13 @@ export function PosProductGrid({
                             e.stopPropagation();
                             setActivePickerProduct(prod);
                           }}
-                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black relative flex h-9.5 w-full items-center justify-between rounded-xl border border-vl-white-500 bg-white px-3 text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
+                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black border-vl-white-500 relative flex h-9.5 w-full items-center justify-between rounded-xl border bg-white px-3 text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
                         >
                           <span className="flex items-center gap-1.5">
                             <Layers className="group-hover/btn:text-vl-black h-3.5 w-3.5 text-slate-500 transition-colors" />
                             <span>Select Variant:</span>
                           </span>
-                          <span className="group-hover/btn:bg-vl-cyan-100 group-hover/btn:text-vl-black rounded-md bg-vl-white-200 px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-700 transition-colors">
+                          <span className="group-hover/btn:bg-vl-cyan-100 group-hover/btn:text-vl-black bg-vl-white-200 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-700 transition-colors">
                             {prod.variants.length}
                           </span>
                         </Button>
@@ -506,14 +506,14 @@ export function PosProductGrid({
             </div>
 
             {/* Infinite Scroll Sentinel & Load More Controls */}
-            <AdminTableInfiniteScroll
+            <InfiniteScroll
               hasMore={hasMore}
               isLoadingMore={isLoadingMore}
               onLoadMore={handleLoadMore}
               loadedCount={visibleProducts.length}
               totalCount={filteredProducts.length}
               itemName="products"
-              className="border-t border-vl-white-500/50 pt-2 pb-6"
+              className="border-vl-white-500/50 border-t pt-2 pb-6"
             />
           </div>
         )}

@@ -15,7 +15,7 @@ import {
   AdminTableTabItem,
   AdminTableTabs,
 } from "@/components/admin/shared";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import {
   AdminTableColumnVisibility,
   useAdminTableColumns,
@@ -298,7 +298,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
             </DialogTrigger>
             <DialogContent className="bg-white sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-lg font-bold text-vl-dark-900">
+                <DialogTitle className="text-vl-dark-900 text-lg font-bold">
                   Register Staff or Administrator
                 </DialogTitle>
                 <DialogDescription className="text-xs text-neutral-600">
@@ -392,12 +392,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="default"
-                    loading={isPending}
-                  >
+                  <Button type="submit" variant="primary" size="default" loading={isPending}>
                     Create Account
                   </Button>
                 </DialogFooter>
@@ -449,7 +444,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   {visibleColumns.member && (
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
+                        <div className="bg-vl-dark-900 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                           {initials}
                         </div>
                         <div className="min-w-0">
@@ -505,7 +500,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
                       size="sm"
-                      className="w-auto inline-flex"
+                      className="inline-flex w-auto"
                     >
                       <option value="ADMIN">ADMIN</option>
                       <option value="MANAGER">MANAGER</option>
@@ -521,7 +516,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
       </Table>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}
