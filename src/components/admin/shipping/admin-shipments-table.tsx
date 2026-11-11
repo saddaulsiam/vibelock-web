@@ -6,7 +6,6 @@ import {
   type ColumnOption,
 } from "@/components/admin/shared";
 import {
-  ADMIN_TABLE_CLASSES,
   AdminTableFilterSelect,
   AdminTableMetaBar,
   AdminTableSearchInput,
@@ -21,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
+import { InfiniteScroll } from "@/components/admin/shared";
 import {
   loadMoreAdminShipmentsAction,
   syncSingleShipmentAction,
@@ -412,17 +412,19 @@ export function AdminShipmentsTable({
 
           {/* Reset Filters */}
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              size="default"
+              variant="outline"
               onClick={() => {
                 setSearchValue("");
                 updateQueryParams({ q: "", filter: "all", provider: "ALL" });
               }}
-              className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:border-neutral-400 hover:text-neutral-900"
+              className="h-10 gap-1.5 border-dashed border-neutral-300 text-xs font-medium text-neutral-600 hover:border-neutral-400 hover:text-neutral-900"
             >
               <RotateCcw className="size-3.5" />
-              Reset filters
-            </button>
+              <span>Reset filters</span>
+            </Button>
           )}
         </div>
 
@@ -435,17 +437,19 @@ export function AdminShipmentsTable({
             onReset={handleColumnReset}
           />
 
-          <button
+          <Button
             type="button"
+            size="default"
+            variant="outline"
             onClick={() => exportCsv()}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
+            className="h-10 gap-1.5 px-3.5 text-xs font-semibold"
             title="Export CSV of parcels"
           >
             <Download className="size-4" />
             <span>
               {selectedIds.size > 0 ? `Export Selected (${selectedIds.size})` : "Export CSV"}
             </span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -463,9 +467,9 @@ export function AdminShipmentsTable({
 
       {/* ── Floating Bulk Action Bar ── */}
       {selectedIds.size > 0 && (
-        <div className="animate-in fade-in slide-in-from-top-2 flex items-center justify-between rounded-xl border border-neutral-900 bg-[#101114] px-4 py-2.5 text-xs text-white shadow-lg">
+        <div className="animate-in fade-in slide-in-from-top-2 bg-vl-dark-900 flex items-center justify-between rounded-xl border border-neutral-900 px-4 py-2.5 text-xs text-white shadow-lg">
           <div className="flex items-center gap-3">
-            <span className="flex size-5 items-center justify-center rounded-full bg-[#00D9FF] text-[11px] font-bold text-[#101114]">
+            <span className="bg-vl-cyan text-vl-dark-900 flex size-5 items-center justify-center rounded-full text-[11px] font-bold">
               {selectedIds.size}
             </span>
             <span className="font-medium text-neutral-200">
@@ -474,22 +478,26 @@ export function AdminShipmentsTable({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               onClick={() => exportCsv()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5 font-semibold text-white transition-colors hover:bg-white/20"
+              className="gap-1.5 bg-white/10 text-white hover:bg-white/20"
             >
               <Download className="size-3.5" />
               Export Selected CSV
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setSelectedIds(new Set())}
-              className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-neutral-400 transition-colors hover:text-white"
+              className="gap-1 text-neutral-400 hover:text-white"
             >
               <X className="size-3.5" />
               Deselect
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -504,7 +512,7 @@ export function AdminShipmentsTable({
                 checked={shipments.length > 0 && shipments.every((s) => selectedIds.has(s.id))}
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 aria-label="Select all shipments"
-                className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+                className="text-vl-dark-900 focus:ring-vl-cyan size-4 rounded border-neutral-300"
               />
             </TableHead>
             <TableHead>Order</TableHead>
@@ -530,17 +538,19 @@ export function AdminShipmentsTable({
                       : "Orders ready for dispatch will appear here once booked."}
                   </p>
                   {hasActiveFilters && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => {
                         setSearchValue("");
                         updateQueryParams({ q: "", filter: "all", provider: "ALL" });
                       }}
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
+                      className="mt-2 gap-1.5"
                     >
                       <RotateCcw className="size-3" />
                       Clear filters
-                    </button>
+                    </Button>
                   )}
                 </div>
               </TableCell>
@@ -570,7 +580,7 @@ export function AdminShipmentsTable({
                       checked={isSelected}
                       onChange={() => handleToggleSelect(shipment.id)}
                       aria-label={`Select shipment for order ${shipment.orderNumber}`}
-                      className="size-4 rounded border-neutral-300 text-[#101114] focus:ring-[#00D9FF]"
+                      className="text-vl-dark-900 focus:ring-vl-cyan size-4 rounded border-neutral-300"
                     />
                   </TableCell>
 
@@ -628,8 +638,10 @@ export function AdminShipmentsTable({
                             <span className="font-mono text-[11px] font-medium text-neutral-800">
                               {shipment.trackingNumber || shipment.providerShipmentId}
                             </span>
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="icon"
                               onClick={() =>
                                 handleCopyTracking(
                                   shipment.id,
@@ -637,14 +649,14 @@ export function AdminShipmentsTable({
                                 )
                               }
                               title="Copy tracking number"
-                              className="rounded p-1 text-neutral-400 transition-colors hover:text-neutral-700"
+                              className="size-6 text-neutral-400 hover:text-neutral-700"
                             >
                               {copiedTrackingId === shipment.id ? (
                                 <Check className="size-3 text-emerald-600" />
                               ) : (
                                 <Copy className="size-3" />
                               )}
-                            </button>
+                            </Button>
                           </>
                         ) : (
                           <span className="text-[11px] text-neutral-400 italic">
@@ -730,20 +742,22 @@ export function AdminShipmentsTable({
                     <div className="flex items-center justify-end gap-1">
                       {/* 1-Click Steadfast Sync Button */}
                       {isSteadfast && shipment.providerShipmentId && (
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="icon-xs"
                           onClick={() => handleSyncShipment(shipment.id)}
                           disabled={isSyncing}
                           title="Sync live status from Steadfast"
                           aria-label="Sync live status from Steadfast"
-                          className="inline-flex size-8 items-center justify-center rounded-lg border border-neutral-200 text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-50"
+                          className="size-8 rounded-lg text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
                         >
                           {isSyncing ? (
                             <Loader2 className="size-3.5 animate-spin text-amber-600" />
                           ) : (
                             <RefreshCw className="size-3.5" />
                           )}
-                        </button>
+                        </Button>
                       )}
 
                       {/* 1-Click WhatsApp Parcel Alert */}
@@ -779,7 +793,7 @@ export function AdminShipmentsTable({
       </Table>
 
       {/* ── Infinite Scroll Sentinel & Loader ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={shipments.length < total}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

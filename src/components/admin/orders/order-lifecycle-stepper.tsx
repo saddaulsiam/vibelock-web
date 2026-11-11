@@ -201,7 +201,7 @@ export function OrderLifecycleStepper({
                     isCompleted
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
                       : isCurrent
-                        ? "border-neutral-900 bg-neutral-900 text-white shadow-sm ring-4 ring-neutral-900/10"
+                        ? "border-neutral-900 bg-neutral-900 text-white shadow-sm ring ring-neutral-900/10"
                         : "border-neutral-300 bg-white text-neutral-400"
                   }`}
                 >

@@ -129,7 +129,7 @@ export function PosCartPanel({
   };
 
   return (
-    <div className="flex h-full flex-col border-l border-[#d6d2c4] bg-white">
+    <div className="flex h-full flex-col border-l border-vl-white-500 bg-white">
       {/* Cart Header */}
       <div className="bg-vl-black text-vl-white border-vl-border flex items-center justify-between border-b p-3">
         <div className="flex items-center space-x-2">
@@ -162,7 +162,7 @@ export function PosCartPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onParkCart}
-                className="text-vl-cyan hover:bg-vl-cyan/15 flex h-7 items-center space-x-1 px-2 text-xs hover:text-white"
+                className="text-vl-cyan hover:bg-vl-cyan-100 flex h-7 items-center space-x-1 px-2 text-xs hover:text-white"
                 title="Hold / Suspend this cart [F4]"
               >
                 <PauseCircle className="h-3.5 w-3.5" />
@@ -187,7 +187,7 @@ export function PosCartPanel({
       </div>
 
       {/* Customer Quick Capture (Phone & Name) */}
-      <div className="space-y-2 border-b border-[#e2ded2] bg-[#faf9f5] p-3 text-xs">
+      <div className="space-y-2 border-b border-vl-white-400 bg-vl-white-100 p-3 text-xs">
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-vl-grey mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider uppercase">
@@ -201,7 +201,7 @@ export function PosCartPanel({
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="017XXXXXXXX"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 h-8 border-[#d6d2c4] bg-white font-mono text-xs"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-8 border-vl-white-500 bg-white font-mono text-xs"
             />
           </div>
           <div>
@@ -213,14 +213,14 @@ export function PosCartPanel({
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Walk-in Customer"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/20 h-8 border-[#d6d2c4] bg-white text-xs"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-8 border-vl-white-500 bg-white text-xs"
             />
           </div>
         </div>
 
         {/* Customer Recognized Loyalty Banner */}
         {customerProfile ? (
-          <div className="animate-in fade-in-50 border-vl-cyan/40 bg-vl-black text-vl-white space-y-1.5 rounded-md border p-2.5 shadow-xs duration-200">
+          <div className="animate-in fade-in-50 border-vl-cyan-200 bg-vl-black text-vl-white space-y-1.5 rounded-md border p-2.5 shadow-xs duration-200">
             <div className="flex items-center justify-between">
               <div className="flex min-w-0 items-center space-x-1.5">
                 <Crown className="text-vl-cyan h-3.5 w-3.5 flex-shrink-0" />
@@ -252,29 +252,33 @@ export function PosCartPanel({
               </span>
               {customerProfile.pointsDiscountValue > 0 &&
                 (discount === customerProfile.pointsDiscountValue ? (
-                  <button
+                  <Button
                     type="button"
+                    size="xs"
+                    variant="outline"
                     onClick={() => {
                       setDiscount(0);
                       toast.info("Loyalty discount removed.");
                     }}
-                    className="rounded border border-emerald-400 bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 transition-colors hover:bg-red-500/20 hover:text-red-300"
+                    className="h-6 border-emerald-400 bg-emerald-500/20 px-2 text-[10px] font-bold text-emerald-300 hover:bg-red-500/20 hover:text-red-300"
                   >
                     Points Applied ✓ (Remove)
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
                     type="button"
+                    size="xs"
+                    variant="brand"
                     onClick={() => {
                       setDiscount(customerProfile.pointsDiscountValue);
                       toast.success(
                         `Applied ৳${customerProfile.pointsDiscountValue} loyalty discount!`
                       );
                     }}
-                    className="bg-vl-cyan text-vl-black rounded px-2 py-0.5 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)] transition-all hover:bg-[#2ae0ff]"
+                    className="h-6 px-2 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)]"
                   >
                     Redeem (-৳{customerProfile.pointsDiscountValue})
-                  </button>
+                  </Button>
                 ))}
             </div>
           </div>
@@ -293,7 +297,7 @@ export function PosCartPanel({
       <div className="flex-1 divide-y divide-slate-100 overflow-y-auto p-2">
         {cartItems.length === 0 ? (
           <div className="flex h-56 flex-col items-center justify-center px-4 text-center text-slate-400">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e2ded2] bg-[#faf9f5] text-slate-300">
+            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-vl-white-400 bg-vl-white-100 text-slate-300">
               <ShoppingCart className="h-7 w-7 stroke-1 text-slate-400" />
             </div>
             <p className="font-heading text-vl-black text-xs font-bold">Counter Cart is Empty</p>
@@ -311,10 +315,10 @@ export function PosCartPanel({
               return (
                 <div
                   key={item.variantId}
-                  className="group flex items-center justify-between rounded-xl border border-transparent p-2 transition-all hover:border-[#e2ded2] hover:bg-[#faf9f5]"
+                  className="group flex items-center justify-between rounded-xl border border-transparent p-2 transition-all hover:border-vl-white-400 hover:bg-vl-white-100"
                 >
                   {/* Item Thumbnail */}
-                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-[#e2ded2] bg-[#f2f2f2]">
+                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-vl-white-400 bg-vl-white-300">
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -342,7 +346,7 @@ export function PosCartPanel({
                       {variantDesc && (
                         <Badge
                           variant="outline"
-                          className="text-vl-black border-[#d6d2c4] bg-white px-1.5 py-0 text-[9px] font-medium"
+                          className="text-vl-black border-vl-white-500 bg-white px-1.5 py-0 text-[9px] font-medium"
                         >
                           {variantDesc}
                         </Badge>
@@ -355,28 +359,32 @@ export function PosCartPanel({
 
                   {/* Quantity Controls & Line Total */}
                   <div className="flex items-center space-x-1">
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="outline"
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
-                      className="text-vl-black flex h-7 w-7 items-center justify-center rounded-lg border border-[#d6d2c4] bg-white transition-all hover:bg-[#f0ede6] active:scale-90"
+                      className="text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
                       title="Decrease quantity"
                     >
                       <Minus className="h-3 w-3" />
-                    </button>
+                    </Button>
 
                     <span className="text-vl-black w-6 text-center font-mono text-xs font-black">
                       {item.quantity}
                     </span>
 
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="outline"
                       disabled={isAtMaxStock}
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all ${
+                      className={
                         isAtMaxStock
                           ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
-                          : "text-vl-black border-[#d6d2c4] bg-white hover:bg-[#f0ede6] active:scale-90"
-                      }`}
+                          : "text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
+                      }
                       title={
                         isAtMaxStock
                           ? `Max available stock reached (${item.maxStock})`
@@ -384,7 +392,7 @@ export function PosCartPanel({
                       }
                     >
                       <Plus className="h-3 w-3" />
-                    </button>
+                    </Button>
 
                     {/* Line Total */}
                     <div className="text-vl-black ml-1 w-16 text-right font-mono text-xs font-black">
@@ -392,14 +400,16 @@ export function PosCartPanel({
                     </div>
 
                     {/* Remove Button */}
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="ghost"
                       onClick={() => onRemoveItem(item.variantId)}
-                      className="ml-1 rounded-md p-1 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500 active:scale-90"
+                      className="ml-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
                       title="Remove item"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -409,7 +419,7 @@ export function PosCartPanel({
       </div>
 
       {/* Bill Calculation & Summary */}
-      <div className="space-y-3 border-t border-[#e2ded2] bg-[#faf9f5] p-3.5">
+      <div className="space-y-3 border-t border-vl-white-400 bg-vl-white-100 p-3.5">
         {/* Discount Row & Quick Presets */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
@@ -417,20 +427,24 @@ export function PosCartPanel({
               <Tag className="text-vl-grey mr-1 h-3 w-3" /> Counter Discount
             </span>
             <div className="flex items-center space-x-1">
-              <button
+              <Button
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => applyPercentDiscount(5)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 rounded-md border border-[#d6d2c4] bg-white px-2 py-0.5 font-mono text-[10px] font-bold transition-colors"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 5%
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                size="xs"
+                variant="outline"
                 onClick={() => applyPercentDiscount(10)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 rounded-md border border-[#d6d2c4] bg-white px-2 py-0.5 font-mono text-[10px] font-bold transition-colors"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 10%
-              </button>
+              </Button>
               <div className="relative">
                 <span className="text-vl-grey absolute top-1.5 left-2 text-[10px] font-bold">
                   ৳
@@ -442,7 +456,7 @@ export function PosCartPanel({
                   value={discount === 0 ? "" : discount}
                   onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
                   placeholder="0"
-                  className="focus-visible:border-vl-cyan h-7 w-20 rounded-md border-[#d6d2c4] bg-white pr-1 pl-4 text-right font-mono text-xs font-bold"
+                  className="focus-visible:border-vl-cyan h-7 w-20 rounded-md border-vl-white-500 bg-white pr-1 pl-4 text-right font-mono text-xs font-bold"
                 />
               </div>
             </div>
@@ -450,7 +464,7 @@ export function PosCartPanel({
         </div>
 
         {/* Totals Breakdown */}
-        <div className="space-y-2 border-t border-[#e2ded2] pt-2 text-xs">
+        <div className="space-y-2 border-t border-vl-white-400 pt-2 text-xs">
           <div className="text-vl-grey flex justify-between font-medium">
             <span>Subtotal ({totalItemsCount} items):</span>
             <span className="text-vl-black font-mono font-semibold">৳{subtotal.toFixed(0)}</span>
@@ -486,8 +500,8 @@ export function PosCartPanel({
           onClick={onOpenPaymentModal}
           className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline
-              ? "border-vl-border text-vl-grey cursor-not-allowed border bg-[#212228]"
-              : "bg-vl-cyan text-vl-black shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:bg-[#2ae0ff] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
+              ? "border-vl-border text-vl-grey cursor-not-allowed border bg-vl-dark-700"
+              : "bg-vl-cyan text-vl-black shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:bg-vl-cyan-400 hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
           }`}
         >
           <span>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { CheckCircle2, Download, Loader2, Power, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface AdminCouponsBulkBarProps {
   selectedCount: number;
@@ -34,11 +35,12 @@ export function AdminCouponsBulkBar({
 
       <div className="flex flex-wrap items-center gap-2">
         {/* Bulk Activate */}
-        <button
+        <Button
           type="button"
+          size="sm"
           disabled={isBulkOperating}
           onClick={onBulkActivate}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-emerald-700 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-emerald-800 disabled:opacity-50"
+          className="gap-1.5 bg-emerald-700 font-semibold text-white shadow-2xs hover:bg-emerald-800"
         >
           {isBulkOperating ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -46,14 +48,15 @@ export function AdminCouponsBulkBar({
             <CheckCircle2 className="size-3.5" />
           )}
           <span>Activate Selected</span>
-        </button>
+        </Button>
 
         {/* Bulk Pause */}
-        <button
+        <Button
           type="button"
+          size="sm"
           disabled={isBulkOperating}
           onClick={onBulkPause}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-50"
+          className="gap-1.5 bg-vl-dark-900 font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
         >
           {isBulkOperating ? (
             <Loader2 className="size-3.5 animate-spin" />
@@ -61,37 +64,43 @@ export function AdminCouponsBulkBar({
             <Power className="size-3.5" />
           )}
           <span>Pause Selected</span>
-        </button>
+        </Button>
 
         {/* Export Selected to CSV */}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={onBulkExportCsv}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-purple-300 bg-white px-3 text-xs font-semibold text-purple-950 shadow-2xs hover:bg-purple-100/50"
+          className="gap-1.5 border-purple-300 bg-white font-semibold text-purple-950 shadow-2xs hover:bg-purple-100/50"
         >
           <Download className="size-3.5" />
           <span>Export Selected CSV</span>
-        </button>
+        </Button>
 
         {/* Bulk Delete */}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           disabled={isBulkOperating}
           onClick={onBulkDelete}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-rose-300 bg-white px-3 text-xs font-semibold text-rose-700 shadow-2xs hover:bg-rose-50 disabled:opacity-50"
+          className="gap-1.5 border-rose-300 bg-white font-semibold text-rose-700 shadow-2xs hover:bg-rose-50"
         >
           <Trash2 className="size-3.5 text-rose-600" />
           <span>Delete Selected</span>
-        </button>
+        </Button>
 
         {/* Clear Selection */}
-        <button
+        <Button
           type="button"
+          variant="link"
+          size="xs"
           onClick={onDeselectAll}
-          className="cursor-pointer text-xs text-neutral-600 underline-offset-2 hover:underline"
+          className="h-auto p-0 text-xs text-neutral-600 underline-offset-2 hover:underline"
         >
           Deselect All
-        </button>
+        </Button>
       </div>
     </div>
   );

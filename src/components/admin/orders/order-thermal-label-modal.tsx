@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Printer, X, Tag, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ThermalLabelProps {
   orderNumber: string;
@@ -87,13 +88,15 @@ export function OrderThermalLabelModal({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+            className="size-8 text-neutral-400 hover:text-neutral-700"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* ── Actual Thermal Printable Label Box ── */}
@@ -196,21 +199,24 @@ export function OrderThermalLabelModal({
           )}
 
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={onClose}
-              className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50"
             >
               Close
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-1.5 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800 focus-visible:ring-2 focus-visible:ring-neutral-900"
+              className="gap-1.5"
             >
               <Printer className="size-3.5" />
               <span>Print Thermal Label</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

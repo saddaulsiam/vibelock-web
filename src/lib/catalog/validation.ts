@@ -1,6 +1,12 @@
 import { z } from "zod";
 
-export const SortOption = z.enum(["newest", "name-asc", "name-desc"]);
+export const SortOption = z.enum([
+  "newest",
+  "price-asc",
+  "price-desc",
+  "name-asc",
+  "name-desc",
+]);
 export type SortOptionType = z.infer<typeof SortOption>;
 
 export const DiscoverySearchParamsSchema = z.object({

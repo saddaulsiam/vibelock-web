@@ -7,13 +7,12 @@ import {
   type ColumnOption,
 } from "@/components/admin/shared";
 import {
-  ADMIN_TABLE_CLASSES,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import { exportToCsv } from "@/lib/admin/shared";
 import {
   Table,
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { loadMoreAdminReturnsAction } from "@/lib/admin/returns/return-actions";
 import type { AdminReturnListItem } from "@/lib/admin/returns/return-queries";
 import { parseReturnReason } from "@/lib/returns/utils";
@@ -380,16 +380,18 @@ export function AdminReturnsTable({
             />
 
             {/* Export CSV Button */}
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handleExportCsv}
               disabled={returns.length === 0}
-              className={ADMIN_TABLE_CLASSES.buttonSecondary}
+              className="gap-1.5"
               title="Export filtered returns to CSV"
             >
-              <Download className="size-3.5 text-neutral-500" />
+              <Download className="size-3.5" />
               <span className="hidden sm:inline">Export CSV</span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -434,13 +436,15 @@ export function AdminReturnsTable({
                       : "Customer return requests will appear here once submitted."}
                   </p>
                   {(currentSearch || currentStatus) && (
-                    <button
+                    <Button
                       type="button"
+                      variant="outline"
+                      size="sm"
                       onClick={() => router.push("/admin/returns")}
-                      className="mt-2 inline-flex h-8 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
+                      className="mt-2"
                     >
                       Clear Filters
-                    </button>
+                    </Button>
                   )}
                 </div>
               </TableCell>
@@ -637,7 +641,7 @@ export function AdminReturnsTable({
                       )}
                       <Link
                         href={`/admin/returns/${ret.id}`}
-                        className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+                        className="bg-vl-dark-900 inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
                         title="Review return items, update status, and process refund"
                       >
                         <Eye className="size-3.5" />
@@ -653,7 +657,7 @@ export function AdminReturnsTable({
       </Table>
 
       {/* ── 4. Unified Infinite Scroll Sentinel & Pagination Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         loadedCount={returns.length}

@@ -3,8 +3,8 @@
 import { Container } from "@/components/shared/container";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
+import { Button } from "@/components/ui/button";
 import type { CategorySummary, ProductSummary } from "@/lib/catalog/types";
-import { cn } from "@/lib/utils";
 import * as React from "react";
 
 interface FeaturedProductsProps {
@@ -89,19 +89,16 @@ export function FeaturedProducts({
             {tabs.map((tab) => {
               const isActive = activeTab === tab.slug;
               return (
-                <button
+                <Button
                   key={tab.slug}
                   type="button"
+                  variant={isActive ? "brand" : "outline"}
+                  size="sm"
                   onClick={() => setActiveTab(tab.slug)}
-                  className={cn(
-                    "shrink-0 cursor-pointer rounded-full px-4.5 py-1.5 text-xs font-bold tracking-wider uppercase transition-all duration-200 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:px-5 sm:py-2 sm:text-xs",
-                    isActive
-                      ? "border border-[#101114] bg-[#101114] text-white shadow-xs"
-                      : "border border-[#101114]/30 bg-white text-[#101114] hover:border-[#101114] hover:bg-black/5"
-                  )}
+                  className="rounded-full px-5"
                 >
                   {tab.label}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -123,20 +120,21 @@ export function FeaturedProducts({
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-xs border border-dashed border-[#101114]/20 bg-[#101114]/2 px-4 py-16 text-center sm:mt-12">
-            <p className="text-sm font-bold tracking-wider text-[#101114] uppercase">
+          <div className="mt-8 rounded-xs border border-dashed border-vl-dark-900/20 bg-vl-dark-900/2 px-4 py-16 text-center sm:mt-12">
+            <p className="text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
               No products found in {activeTabLabel} yet
             </p>
             <p className="text-muted-foreground mt-1 text-xs">
               New drops are in production. Check back soon or browse all items.
             </p>
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={() => setActiveTab("all")}
-              className="bg-vl-black font-heading text-vl-white mt-4 inline-flex cursor-pointer items-center rounded-xs px-5 py-2 text-xs font-black tracking-widest uppercase transition-opacity hover:opacity-90"
+              className="mt-4 px-5"
             >
               Show All Products
-            </button>
+            </Button>
           </div>
         )}
       </Container>

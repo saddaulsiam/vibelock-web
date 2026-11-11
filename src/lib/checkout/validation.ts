@@ -10,6 +10,7 @@ export const checkoutSchema = z.object({
   shippingState: z.string().trim().max(100).optional(),
   shippingZip: z.string().trim().max(20).optional(),
   shippingCountry: z.string().trim().min(2, "Country is required").max(100),
+  deliveryNote: z.string().trim().max(250).optional().nullable(),
 
   paymentMethod: z.enum(["COD", "ONLINE", "BKASH", "NAGAD"], {
     required_error: "Please select a payment method",

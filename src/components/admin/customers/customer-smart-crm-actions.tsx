@@ -11,6 +11,8 @@ import {
   X,
 } from "lucide-react";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface SmartCrmCustomer {
   id: string;
@@ -161,15 +163,17 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
           <MessageCircle className="size-3.5 text-emerald-600" />
           <span>WhatsApp</span>
         </a>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => setIsDropdownOpen((prev) => !prev)}
-          className="border-l border-emerald-200 px-1.5 hover:bg-emerald-200/50"
+          className="h-9 w-7 rounded-none rounded-r-lg border-l border-emerald-200 p-0 text-emerald-700 hover:bg-emerald-200/50"
           aria-label="Smart CRM Templates"
           title="Smart WhatsApp CRM Templates"
         >
-          <ChevronDown className="size-3.5 text-emerald-700" />
-        </button>
+          <ChevronDown className="size-3.5" />
+        </Button>
       </div>
 
       {/* Dropdown Menu */}
@@ -184,11 +188,13 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
             {CRM_TEMPLATES.map((tpl) => {
               const Icon = tpl.icon;
               return (
-                <button
+                <Button
                   key={tpl.id}
                   type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleSelectTemplate(tpl)}
-                  className="flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-neutral-50"
+                  className="h-auto w-full items-start justify-start gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs font-normal"
                 >
                   <div className={`mt-0.5 rounded-md border p-1 ${tpl.color}`}>
                     <Icon className="size-3.5" />
@@ -197,7 +203,7 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
                     <div className="font-semibold text-neutral-900">{tpl.title}</div>
                     <span className="text-[10px] text-neutral-500">Click to preview message</span>
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -225,13 +231,15 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setSelectedTemplate(null)}
-                className="rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+                className="size-8 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             {/* Editable Textarea */}
@@ -239,31 +247,34 @@ export function CustomerSmartCrmActions({ customer }: CustomerSmartCrmActionsPro
               <label className="text-xs font-semibold text-neutral-700">
                 Message Preview (You can edit before sending):
               </label>
-              <textarea
+              <Textarea
                 rows={6}
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
-                className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs leading-relaxed text-neutral-900 focus:border-neutral-900 focus:bg-white focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                className="text-xs leading-relaxed"
               />
             </div>
 
             {/* Footer Buttons */}
             <div className="mt-5 flex items-center justify-end gap-2 border-t border-neutral-100 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="default"
                 onClick={() => setSelectedTemplate(null)}
-                className="rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="primary"
+                size="default"
                 onClick={handleSendWhatsApp}
-                className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-emerald-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 <Send className="size-3.5" />
                 <span>Open in WhatsApp</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Check, Copy, Edit, Loader2, MessageCircle, Power, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
 import type { CouponColumnKey } from "./coupon-table-types";
@@ -60,18 +61,20 @@ export function AdminCouponsDesktopRow({
           <span className="inline-flex items-center rounded-md border border-purple-200 bg-purple-50 px-2.5 py-1 font-mono text-xs font-black tracking-wider text-purple-900 shadow-2xs">
             {coupon.code}
           </span>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => onCopyCode(coupon.code)}
             title="Copy coupon code"
-            className="flex size-7 items-center justify-center rounded-md text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+            className="size-7 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
           >
             {copiedCode === coupon.code ? (
               <Check className="size-3.5 text-emerald-600" />
             ) : (
               <Copy className="size-3.5" />
             )}
-          </button>
+          </Button>
         </div>
         <span className="mt-1 block text-[10px] text-neutral-400">
           Created {formatDate(coupon.createdAt)}
@@ -195,12 +198,14 @@ export function AdminCouponsDesktopRow({
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1.5">
           {/* Quick Active Toggle */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon-xs"
             onClick={() => onToggleStatus(coupon)}
             disabled={isToggling}
             title={coupon.isActive ? "Pause Coupon" : "Activate Coupon"}
-            className={`flex size-8 items-center justify-center rounded-lg border transition ${
+            className={`size-8 ${
               coupon.isActive
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                 : "border-neutral-200 bg-white text-neutral-400 hover:bg-neutral-50 hover:text-neutral-700"
@@ -211,37 +216,43 @@ export function AdminCouponsDesktopRow({
             ) : (
               <Power className="size-3.5" />
             )}
-          </button>
+          </Button>
 
           {/* WhatsApp Promo Blast Share */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon-xs"
             onClick={() => onShareWhatsApp(coupon)}
             title="Share promotional message on WhatsApp"
-            className="flex size-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100"
+            className="size-8 border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
           >
             <MessageCircle className="size-3.5" />
-          </button>
+          </Button>
 
           {/* Edit Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon-xs"
             onClick={() => onEdit(coupon)}
             title="Edit coupon settings"
-            className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 transition hover:bg-neutral-50 hover:text-neutral-900"
+            className="size-8 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
           >
             <Edit className="size-3.5" />
-          </button>
+          </Button>
 
           {/* Safe Delete / Deactivate Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="icon-xs"
             onClick={() => onDelete(coupon)}
             title={coupon.usageCount > 0 ? "Deactivate Coupon" : "Delete Unused Coupon"}
-            className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+            className="size-8 text-neutral-500 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
           >
             <Trash2 className="size-3.5" />
-          </button>
+          </Button>
         </div>
       </TableCell>
     </TableRow>

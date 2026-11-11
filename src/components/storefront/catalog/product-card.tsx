@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
 
@@ -130,7 +131,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan relative block overflow-hidden bg-[#f2f2f2] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+        className="focus-visible:ring-vl-cyan relative block overflow-hidden bg-vl-white-300 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
         style={{ aspectRatio: "2 / 3" }}
       >
         {hasImage ? (
@@ -158,8 +159,8 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           </>
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <ImageOff className="size-8 text-[#101114]/20" aria-hidden="true" />
-            <span className="text-[11px] font-medium text-[#101114]/40">No image</span>
+            <ImageOff className="size-8 text-vl-dark-900/20" aria-hidden="true" />
+            <span className="text-[11px] font-medium text-vl-dark-900/40">No image</span>
           </span>
         )}
 
@@ -172,15 +173,17 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         </div>
 
         {/* ── Wishlist Button (Top-Right) ── */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-sm"
           aria-label={
             isWishlisted ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "focus-visible:ring-vl-cyan absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none",
-            isWishlisted ? "text-rose-500" : "text-[#101114]/30 hover:text-rose-500"
+            "absolute top-2 right-2 z-10 rounded-full hover:bg-white/80",
+            isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
           )}
         >
           <Heart
@@ -190,7 +193,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
             )}
             aria-hidden="true"
           />
-        </button>
+        </Button>
       </Link>
 
       {/* ── Product Info ── */}
@@ -206,7 +209,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         <Link
           href={`/product/${item.slug}`}
           title={item.name}
-          className="mt-0.5 line-clamp-2 block text-[13px] leading-snug font-bold text-[#101114] transition-colors hover:text-[#101114]/70"
+          className="mt-0.5 line-clamp-2 block text-[13px] leading-snug font-bold text-vl-dark-900 transition-colors hover:text-vl-dark-900/70"
         >
           {item.name}
         </Link>
@@ -216,10 +219,10 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           <Price
             amount={item.price}
             originalAmount={item.originalPrice}
-            className="text-[13px] font-bold text-[#101114]"
+            className="text-[13px] font-bold text-vl-dark-900"
           />
           {item.rating && item.rating > 0 ? (
-            <span className="ml-auto flex items-center gap-0.5 text-[11px] text-[#101114]/50">
+            <span className="ml-auto flex items-center gap-0.5 text-[11px] text-vl-dark-900/50">
               <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden="true" />
               {item.rating.toFixed(1)}
             </span>

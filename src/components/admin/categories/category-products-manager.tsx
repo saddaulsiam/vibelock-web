@@ -20,6 +20,8 @@ import {
   Star,
 } from "lucide-react";
 import { ProductStatus } from "@prisma/client";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   assignProductsToCategoryAction,
@@ -288,13 +290,15 @@ export function CategoryProductsManager({
             )}
             <span>{notification.message}</span>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setNotification(null)}
-            className="rounded p-1 hover:bg-black/5"
+            className="size-6 p-0 text-current hover:bg-black/5"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -302,22 +306,25 @@ export function CategoryProductsManager({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2.5">
           <div className="relative w-full sm:max-w-md">
-            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-            <input
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+            <Input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search assigned products by name or slug...`}
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white pr-8 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
+              size="default"
+              className="pr-8 pl-9"
             />
             {search && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setSearch("")}
-                className="absolute top-1/2 right-2.5 -translate-y-1/2 text-neutral-400 hover:text-neutral-700"
+                className="absolute top-1/2 right-2.5 z-10 size-5 -translate-y-1/2 p-0 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-3.5" />
-              </button>
+              </Button>
             )}
           </div>
 
@@ -337,18 +344,20 @@ export function CategoryProductsManager({
           </div>
         </div>
 
-        <button
+        <Button
           type="button"
+          variant="primary"
+          size="sm"
           onClick={() => {
             setModalSearch("");
             setSelectedProductIds([]);
             setIsAddModalOpen(true);
           }}
-          className={ADMIN_TABLE_CLASSES.buttonPrimary}
+          className="gap-1.5"
         >
           <Plus className="size-3.5" />
           <span>Add Products to Category</span>
-        </button>
+        </Button>
       </div>
 
       {/* ── Assigned Products Table ── */}
@@ -379,18 +388,20 @@ export function CategoryProductsManager({
                         : `Organize your catalog by assigning products to "${categoryName}".`}
                     </p>
                     {!search && (
-                      <button
+                      <Button
                         type="button"
+                        variant="primary"
+                        size="sm"
                         onClick={() => {
                           setModalSearch("");
                           setSelectedProductIds([]);
                           setIsAddModalOpen(true);
                         }}
-                        className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                        className="mt-2 gap-1.5 shadow-2xs"
                       >
                         <Plus className="size-3.5" />
                         <span>Assign Products Now</span>
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </td>
@@ -455,8 +466,10 @@ export function CategoryProductsManager({
 
                     {/* Pin / Feature */}
                     <td className="px-4 py-3.5 text-center">
-                      <button
+                      <Button
                         type="button"
+                        variant={product.isFeatured ? "outline" : "secondary"}
+                        size="xs"
                         onClick={() => handleToggleFeatured(product)}
                         disabled={togglingFeaturedId === product.id}
                         title={
@@ -464,11 +477,11 @@ export function CategoryProductsManager({
                             ? "Product is pinned to the top of this category. Click to unpin."
                             : "Pin product to the top of this category"
                         }
-                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${
+                        className={`gap-1.5 font-semibold ${
                           product.isFeatured
                             ? "border-amber-300 bg-amber-50 text-amber-800 shadow-2xs hover:border-amber-400 hover:bg-amber-100"
                             : "border-neutral-200 bg-white text-neutral-600 shadow-2xs hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-900"
-                        } disabled:opacity-50`}
+                        }`}
                       >
                         {togglingFeaturedId === product.id ? (
                           <Loader2 className="size-3.5 animate-spin text-amber-600" />
@@ -482,7 +495,7 @@ export function CategoryProductsManager({
                           />
                         )}
                         <span>{product.isFeatured ? "Pinned" : "Pin"}</span>
-                      </button>
+                      </Button>
                     </td>
 
                     {/* Status */}
@@ -541,12 +554,14 @@ export function CategoryProductsManager({
                           <span>Edit</span>
                         </Link>
 
-                        <button
+                        <Button
                           type="button"
+                          variant="outline"
+                          size="xs"
                           onClick={() => handleRemoveProduct(product.id, product.name)}
                           disabled={isRemoving}
                           title={`Remove from ${categoryName}`}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg border border-rose-200 bg-white px-2.5 text-xs font-semibold text-rose-700 shadow-2xs transition-colors hover:bg-rose-50 hover:text-rose-900 disabled:opacity-50"
+                          className="h-8 gap-1 border-rose-200 text-rose-700 shadow-2xs hover:bg-rose-50 hover:text-rose-900"
                         >
                           {isRemoving ? (
                             <Loader2 className="size-3 animate-spin text-rose-600" />
@@ -554,7 +569,7 @@ export function CategoryProductsManager({
                             <Trash2 className="size-3 text-rose-500" />
                           )}
                           <span>Remove</span>
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>
@@ -590,40 +605,45 @@ export function CategoryProductsManager({
                   </p>
                 </div>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setIsAddModalOpen(false)}
                 disabled={modalSubmitting}
-                className="flex size-8 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+                className="text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             {/* Modal Filter / Search */}
             <div className="border-b border-neutral-100 bg-neutral-50/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="relative flex-1">
-                  <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                  <input
+                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Input
                     type="text"
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
                     placeholder="Search unassigned products..."
-                    className="h-9.5 w-full rounded-lg border border-neutral-200 bg-white pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-2 focus:ring-[#00D9FF] focus:outline-none"
+                    size="default"
+                    className="pr-3 pl-9"
                   />
                 </div>
 
                 {filteredAvailable.length > 0 && (
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="sm"
                     onClick={handleSelectAllFiltered}
-                    className="inline-flex h-9.5 shrink-0 items-center rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50"
+                    className="shrink-0 text-xs font-semibold"
                   >
                     {filteredAvailable.every((p) => selectedProductIds.includes(p.id))
                       ? "Deselect All"
                       : "Select All"}
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -712,32 +732,27 @@ export function CategoryProductsManager({
               </span>
 
               <div className="flex items-center gap-2">
-                <button
+                <Button
                   type="button"
+                  size="sm"
+                  variant="outline"
                   onClick={() => setIsAddModalOpen(false)}
                   disabled={modalSubmitting}
-                  className="h-9.5 rounded-lg border border-neutral-200 px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  size="sm"
+                  variant="primary"
                   onClick={handleAssignSelected}
                   disabled={selectedProductIds.length === 0 || modalSubmitting}
-                  className="inline-flex h-9.5 items-center justify-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-40"
+                  loading={modalSubmitting}
+                  className="gap-1.5"
                 >
-                  {modalSubmitting ? (
-                    <>
-                      <Loader2 className="size-3.5 animate-spin" />
-                      <span>Assigning...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Assign Selected ({selectedProductIds.length})</span>
-                      <ArrowRight className="size-3.5" />
-                    </>
-                  )}
-                </button>
+                  <span>Assign Selected ({selectedProductIds.length})</span>
+                  {!modalSubmitting && <ArrowRight className="size-3.5" />}
+                </Button>
               </div>
             </div>
           </div>

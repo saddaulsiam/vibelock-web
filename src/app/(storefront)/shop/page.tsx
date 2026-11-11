@@ -1,17 +1,17 @@
-import type { Metadata } from "next";
-import Link from "next/link";
 import { Container } from "@/components/shared/container";
-import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
 import { Section } from "@/components/shared/section";
 import { ActiveFilters } from "@/components/storefront/catalog/active-filters";
-import { DiscoveryPagination } from "@/components/storefront/catalog/pagination";
+import { CatalogSort } from "@/components/storefront/catalog/catalog-sort";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
-import { ProductGrid } from "@/components/storefront/catalog/product-grid";
-import { getCategories, getCatalogFilterOptions } from "@/lib/catalog/queries";
-import { getSearchPromoBanner } from "@/lib/catalog/banners";
+import { ProductInfiniteGrid } from "@/components/storefront/catalog/product-infinite-grid";
+import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
+import { getSearchPromoBanners } from "@/lib/catalog/banners";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
+import { getCatalogFilterOptions, getCategories } from "@/lib/catalog/queries";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
+import { cn } from "cn";
+import type { Metadata } from "next";
 
 function getClearSearchHref(params: ReturnType<typeof parseDiscoverySearchParams>) {
   const retained = new URLSearchParams();
@@ -39,80 +39,104 @@ export default async function ShopPage({
   const params = await searchParams;
   const parsedParams = parseDiscoverySearchParams(params);
 
-  const [discoveryResult, categories, filterOptionsData, promoBanner] = await Promise.all([
+  const [discoveryResult, categories, filterOptionsData, promoBanners] = await Promise.all([
     getDiscoveredProducts(parsedParams),
     getCategories(),
     getCatalogFilterOptions(),
-    getSearchPromoBanner(parsedParams.category?.split(",").filter(Boolean) ?? []),
+    getSearchPromoBanners(parsedParams.category?.split(",").filter(Boolean) ?? []),
   ]);
   const hasSearch = Boolean(parsedParams.q?.trim());
   const searchTerm = parsedParams.q?.trim() ?? "";
   const clearSearchHref = getClearSearchHref(parsedParams);
 
+  const hasCategory = Boolean(parsedParams.category);
+  const hasPrice = parsedParams.minPrice !== undefined || parsedParams.maxPrice !== undefined;
+  const hasSize = Boolean(parsedParams.size);
+  const hasColor = Boolean(parsedParams.color);
+  const hasActiveFilters = hasCategory || hasPrice || hasSize || hasColor;
+
   const filterOptions = {
-    categories: categories.map((category) => ({ name: category.name, slug: category.slug })),
+    categories: categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      slug: category.slug,
+      parentId: category.parentId ?? null,
+    })),
     ...filterOptionsData,
   };
 
   return (
-    <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
+    <Section
+      className={cn(
+        "relative z-10 min-h-screen bg-white pb-12 sm:pb-16",
+        promoBanners.length > 0 ? "pt-16 sm:pt-20 lg:pt-24" : "pt-20 sm:pt-24 lg:pt-28"
+      )}
+    >
       <Container>
-        <header className="mb-6 sm:mb-8">
-          <p className="mb-2 text-[11px] font-semibold tracking-[0.18em] text-[#101114]/55 uppercase">
-            VibeLock <span className="px-1 text-[#00D9FF]">/</span> {hasSearch ? "Search" : "Shop"}
-          </p>
-          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        {promoBanners.length > 0 ? (
+          <div className="mb-5 sm:mb-6">
+            <PromoBanner banners={promoBanners} />
+          </div>
+        ) : null}
+
+        <header className="mb-4">
+          <nav aria-label="Breadcrumb" className="mb-1">
+            <p className="text-vl-dark-900/55 text-[11px] font-semibold tracking-[0.18em] uppercase">
+              VibeLock <span className="text-vl-cyan px-1">/</span> Shop
+            </p>
+          </nav>
+          <div className="border-border/50 mb-8 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <h1 className="font-heading text-vl-black text-3xl font-black tracking-tight wrap-break-word uppercase sm:text-4xl lg:text-5xl">
-                {hasSearch ? "Search results" : "All products"}
+              <h1 className="font-heading text-vl-black text-xl font-bold tracking-tight wrap-break-word uppercase sm:text-2xl lg:text-3xl">
+                {hasSearch
+                  ? "Search Results"
+                  : hasActiveFilters
+                    ? "Filtered Drops"
+                    : "All Releases"}
               </h1>
               {hasSearch ? (
-                <p className="mt-2 max-w-2xl text-sm leading-6 wrap-break-word text-[#101114]/60 sm:text-base">
-                  Results for <span className="font-medium text-[#101114]">“{searchTerm}”</span>
+                <p className="text-vl-dark-400 mt-1 max-w-2xl text-xs wrap-break-word sm:text-sm">
+                  Results for <span className="text-vl-dark-900 font-bold">“{searchTerm}”</span>
                 </p>
               ) : (
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-[#101114]/60 sm:text-base">
-                  Everyday pieces and easy layers for your city rotation.
+                <p className="text-vl-dark-400 mt-1 text-xs sm:text-sm">
+                  Showing latest available releases
                 </p>
               )}
             </div>
-            <p className="shrink-0 pb-1 text-sm text-[#101114]/60" aria-live="polite">
-              <span className="font-semibold text-[#101114]">{discoveryResult.totalCount}</span>{" "}
-              {discoveryResult.totalCount === 1 ? "product" : "products"}
-            </p>
+
+            {/* Desktop Count + Sort on right */}
+            <div className="hidden shrink-0 items-center gap-4 sm:flex">
+              <p className="text-vl-dark-400 text-xs font-semibold" aria-live="polite">
+                <span className="text-vl-dark-900 font-bold">{discoveryResult.totalCount}</span>{" "}
+                {discoveryResult.totalCount === 1 ? "release" : "releases"}
+              </p>
+              <div className="bg-vl-dark-200 h-4 w-px" aria-hidden="true" />
+              <CatalogSort currentSort={parsedParams.sort} />
+            </div>
           </div>
-          {hasSearch ? (
-            <Link
-              href={clearSearchHref}
-              className="mt-4 inline-flex min-h-10 items-center justify-center border border-[#101114]/20 px-4 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-            >
-              Clear search
-            </Link>
-          ) : null}
         </header>
-      </Container>
 
-      {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}
-
-      <Container>
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-10">
-          <ProductFilters options={filterOptions} />
+        <div className="flex flex-col gap-5 lg:flex-row">
+          <ProductFilters options={filterOptions} totalCount={discoveryResult.totalCount} />
           <div className="min-w-0 flex-1">
-            <div className="mb-5 flex items-center justify-between gap-4 lg:hidden">
-              <ProductFilters options={filterOptions} isMobile />
-              <span className="text-muted-foreground text-sm">
-                {discoveryResult.totalCount} {discoveryResult.totalCount === 1 ? "item" : "items"}
-              </span>
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 lg:hidden">
+              <ProductFilters
+                options={filterOptions}
+                isMobile
+                totalCount={discoveryResult.totalCount}
+              />
+              <CatalogSort currentSort={parsedParams.sort} />
             </div>
             <ActiveFilters />
-            <ProductGrid
-              products={discoveryResult.products}
+            <ProductInfiniteGrid
+              key={JSON.stringify(params)}
+              initialProducts={discoveryResult.products}
+              totalCount={discoveryResult.totalCount}
+              totalPages={discoveryResult.totalPages}
+              searchParams={params}
               searchTerm={hasSearch ? searchTerm : undefined}
               clearSearchHref={clearSearchHref}
-            />
-            <DiscoveryPagination
-              currentPage={discoveryResult.currentPage}
-              totalPages={discoveryResult.totalPages}
             />
           </div>
         </div>

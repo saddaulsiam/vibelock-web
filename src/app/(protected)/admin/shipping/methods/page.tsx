@@ -3,6 +3,8 @@ import { CheckCircle2, Coins, Edit, MapPin, Plus, RotateCcw, Truck } from "lucid
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ShippingSubNav, ToggleShippingMethodForm } from "@/components/admin/shipping";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import { getAdminShippingMethods, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
 
@@ -47,10 +49,12 @@ export default async function ShippingMethodsPage({
         badgeVariant="emerald"
         description="Configure customer delivery options, flat rates, and carrier pricing for inside and outside delivery zones."
       >
-        <Link href="/admin/shipping/methods/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
-          <Plus className="size-3.5" />
-          <span>New Method</span>
-        </Link>
+        <Button asChild variant="brand">
+          <Link href="/admin/shipping/methods/new">
+            <Plus className="size-3.5" />
+            <span>New Method</span>
+          </Link>
+        </Button>
       </AdminPageHeader>
 
       {/* ── Unified Logistics Sub-Navigation ── */}
@@ -87,11 +91,12 @@ export default async function ShippingMethodsPage({
       {/* ── Filter Form ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form method="get" className="flex flex-wrap items-center gap-2.5">
-          <select
+          <NativeSelect
             name="zoneId"
             defaultValue={query.zoneId ?? ""}
-            className={ADMIN_TABLE_CLASSES.select}
+            size="default"
             aria-label="Filter by delivery zone"
+            className="w-auto"
           >
             <option value="">All Delivery Zones</option>
             {zones.map((zone) => (
@@ -99,31 +104,31 @@ export default async function ShippingMethodsPage({
                 {zone.name}
               </option>
             ))}
-          </select>
+          </NativeSelect>
 
-          <select
+          <NativeSelect
             name="active"
             defaultValue={query.active ?? ""}
-            className={ADMIN_TABLE_CLASSES.select}
+            size="default"
             aria-label="Filter by active status"
+            className="w-auto"
           >
             <option value="">All Statuses</option>
             <option value="true">Active Only</option>
             <option value="false">Inactive Only</option>
-          </select>
+          </NativeSelect>
 
-          <button type="submit" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
+          <Button type="submit" variant="secondary">
             Filter
-          </button>
+          </Button>
 
           {hasFilter && (
-            <Link
-              href="/admin/shipping/methods"
-              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-            >
-              <RotateCcw className="size-3.5" />
-              Reset filters
-            </Link>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/shipping/methods">
+                <RotateCcw className="size-3.5" />
+                Reset filters
+              </Link>
+            </Button>
           )}
         </form>
 
@@ -161,7 +166,7 @@ export default async function ShippingMethodsPage({
                     </p>
                     <Link
                       href="/admin/shipping/methods/new"
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
                     >
                       <Plus className="size-3.5" />
                       Add First Method

@@ -150,8 +150,8 @@ function PosPaymentModalContent({
     (method === "SPLIT" && (isSplitShortage || isSplitCashTenderShortage));
 
   return (
-    <DialogContent className="max-h-[92vh] w-full overflow-y-auto rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-xl">
-      <DialogHeader className="border-b border-[#f0ede6] pb-3">
+    <DialogContent className="border-vl-white-400 max-h-[92vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
+      <DialogHeader className="border-vl-white-200 border-b pb-3">
         <div className="flex items-center justify-between">
           <DialogTitle className="font-heading text-vl-black text-xl font-black tracking-tight">
             Counter Payment & Settlement
@@ -178,71 +178,75 @@ function PosPaymentModalContent({
 
         {/* Payment Method Selector */}
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setMethod("CASH");
               setTenderAmount(grandTotal);
             }}
-            className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "CASH"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
             }`}
           >
             <Banknote className="h-5 w-5 text-emerald-500" />
             <span className="text-xs">Cash</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setMethod("BANGLA_QR");
               setTenderAmount(grandTotal);
             }}
-            className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "BANGLA_QR"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
             }`}
           >
             <QrCode className="h-5 w-5 text-teal-600" />
             <span className="text-xs">Bangla QR</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setMethod("CARD");
               setTenderAmount(grandTotal);
             }}
-            className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "CARD"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
             }`}
           >
             <CreditCard className="h-5 w-5 text-blue-500" />
             <span className="text-xs">Card</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => {
               setMethod("SPLIT");
               if (splitCash === 0 && splitBanglaQr === 0 && splitCard === 0) {
                 splitEvenlyCashBanglaQr();
               }
             }}
-            className={`flex flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
               method === "SPLIT"
                 ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan/60 border border-[#e2ded2] bg-[#faf9f5] font-medium hover:bg-white"
+                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
             }`}
           >
             <Layers className="text-vl-cyan h-5 w-5" />
             <span className="text-xs">Split</span>
-          </button>
+          </Button>
         </div>
 
         {/* Method Specific Fields */}
@@ -259,7 +263,7 @@ function PosPaymentModalContent({
                 autoFocus
                 value={tenderAmount || ""}
                 onChange={(e) => setTenderAmount(Number(e.target.value) || 0)}
-                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 mt-1 h-12 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring-4"
+                className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 mt-1 h-12 rounded-xl border font-mono text-2xl font-black shadow-xs focus-visible:bg-white focus-visible:ring"
               />
             </div>
 
@@ -269,14 +273,16 @@ function PosPaymentModalContent({
                 Presets:
               </span>
               {getDenominationPresets().map((preset) => (
-                <button
+                <Button
                   key={preset}
                   type="button"
+                  size="xs"
+                  variant="outline"
                   onClick={() => setTenderAmount(preset)}
-                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan/10 rounded-lg border border-[#d6d2c4] bg-white px-2.5 py-1 font-mono text-xs font-bold shadow-2xs transition-colors"
+                  className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 border-vl-white-500 h-7 bg-white px-2.5 font-mono text-xs font-bold shadow-2xs"
                 >
                   ৳{preset}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -388,27 +394,33 @@ function PosPaymentModalContent({
                 <span className="text-[10px] font-semibold text-slate-400 uppercase">
                   Fill Remainder:
                 </span>
-                <button
+                <Button
                   type="button"
+                  size="xs"
+                  variant="outline"
                   onClick={() => allocateRemainingTo("CASH")}
-                  className="rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 hover:bg-emerald-100"
+                  className="h-6 border-emerald-300 bg-emerald-50 px-2 text-[11px] font-medium text-emerald-700 hover:bg-emerald-100"
                 >
                   + Cash (৳{splitRemaining})
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  size="xs"
+                  variant="outline"
                   onClick={() => allocateRemainingTo("BANGLA_QR")}
-                  className="rounded border border-teal-200 bg-teal-50 px-2 py-0.5 font-medium text-teal-700 hover:bg-teal-100"
+                  className="h-6 border-teal-300 bg-teal-50 px-2 text-[11px] font-medium text-teal-700 hover:bg-teal-100"
                 >
                   + Bangla QR (৳{splitRemaining})
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  size="xs"
+                  variant="outline"
                   onClick={() => allocateRemainingTo("CARD")}
-                  className="rounded border border-blue-200 bg-blue-50 px-2 py-0.5 font-medium text-blue-700 hover:bg-blue-100"
+                  className="h-6 border-blue-300 bg-blue-50 px-2 text-[11px] font-medium text-blue-700 hover:bg-blue-100"
                 >
                   + Card (৳{splitRemaining})
-                </button>
+                </Button>
               </div>
             )}
 
@@ -529,13 +541,13 @@ function PosPaymentModalContent({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center space-x-2 border-t border-[#f0ede6] pt-3">
+        <div className="border-vl-white-200 flex items-center space-x-2 border-t pt-3">
           <Button
             type="button"
             variant="outline"
             disabled={isSubmitting}
             onClick={onClose}
-            className="text-vl-black h-12 w-1/3 rounded-xl border border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+            className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-12 w-1/3 rounded-xl border text-xs font-bold"
           >
             Cancel [Esc]
           </Button>
@@ -543,7 +555,7 @@ function PosPaymentModalContent({
           <Button
             type="submit"
             disabled={isSubmitDisabled}
-            className="bg-vl-cyan text-vl-black font-heading flex h-12 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-[#2ae0ff] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)] active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
+            className="bg-vl-cyan text-vl-black font-heading hover:bg-vl-cyan-400 flex h-12 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:shadow-[0_0_32px_rgba(0,217,255,0.5)] active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
           >
             {isSubmitting ? (
               <>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { AlertTriangle, RefreshCw, Sparkles, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { COLOR_HEX } from "./product-form-preview";
 
 export type VariantFormValue = {
@@ -105,9 +107,6 @@ export const COLOR_OPTIONS = [
 
 export const comboKey = (size: string, color: string) =>
   `${size.trim().toLowerCase()}::${color.trim().toLowerCase()}`;
-
-const fieldClass =
-  "min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/35 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export interface ProductVariantGeneratorProps {
   variants: VariantFormValue[];
@@ -304,10 +303,10 @@ export function ProductVariantGenerator({
   };
 
   return (
-    <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 pb-4">
+    <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 pb-4">
         <div>
-          <h3 className="text-base font-semibold text-[#101114]">
+          <h3 className="text-base font-semibold text-vl-dark-900">
             Variant Generator — Sizes, Colors, Stock &amp; Weight
           </h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -316,8 +315,8 @@ export function ProductVariantGenerator({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-[#101114]/15 bg-[#F9F8F6] px-3 py-1 text-xs font-semibold text-[#101114]">
-            <span className="size-2 rounded-full bg-[#101114]" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-vl-dark-900/15 bg-vl-white-100 px-3 py-1 text-xs font-semibold text-vl-dark-900">
+            <span className="size-2 rounded-full bg-vl-dark-900" />
             {variants.length} {variants.length === 1 ? "Variant" : "Variants"}
           </span>
         </div>
@@ -326,27 +325,31 @@ export function ProductVariantGenerator({
       {/* Sizes Selection */}
       <div className="space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <label className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             1. Select Sizes
           </label>
           <div className="flex items-center gap-2 text-xs">
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={selectAllSizes}
-              className="font-medium text-[#101114] underline underline-offset-2 hover:opacity-70"
+              className="h-auto p-0 font-medium text-vl-dark-900 underline underline-offset-2 hover:opacity-70"
             >
               Select standard sizes
-            </button>
+            </Button>
             {selectedSizes.length > 0 && (
               <>
-                <span className="text-[#101114]/30">·</span>
-                <button
+                <span className="text-vl-dark-900/30">·</span>
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={clearSizes}
-                  className="text-muted-foreground hover:text-red-600"
+                  className="h-auto p-0 text-muted-foreground hover:text-red-600"
                 >
                   Clear sizes
-                </button>
+                </Button>
               </>
             )}
           </div>
@@ -355,24 +358,27 @@ export function ProductVariantGenerator({
           {availableSizes.map((size) => {
             const isSelected = selectedSizes.includes(size);
             return (
-              <button
+              <Button
                 key={size}
                 type="button"
+                variant={isSelected ? "primary" : "outline"}
+                size="sm"
                 onClick={() => toggleSize(size)}
-                className={`inline-flex min-h-9 items-center justify-center rounded border px-3 text-xs font-semibold transition-all ${
+                className={`min-h-9 px-3 text-xs font-semibold ${
                   isSelected
-                    ? "border-[#101114] bg-[#101114] text-white shadow-xs"
-                    : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]/40 hover:bg-[#F9F8F6]"
+                    ? "bg-vl-dark-900 text-white shadow-xs"
+                    : "bg-white text-vl-dark-900 hover:bg-vl-white-100"
                 }`}
               >
                 {size}
-              </button>
+              </Button>
             );
           })}
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
-          <input
-            className="min-h-9 w-full border border-[#101114]/20 bg-white px-3 text-xs text-[#101114] outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
+          <Input
+            size="default"
+            className="w-full text-xs"
             value={customSize}
             onChange={(e) => setCustomSize(e.target.value)}
             onKeyDown={(e) => {
@@ -383,30 +389,34 @@ export function ProductVariantGenerator({
             }}
             placeholder="Add custom size (e.g. 42, 3XL)"
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={addCustomSize}
-            className="min-h-9 shrink-0 border border-[#101114]/20 bg-[#F9F8F6] px-3 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+            className="shrink-0"
           >
             Add Size
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Colors Selection */}
-      <div className="space-y-2.5 border-t border-[#101114]/10 pt-4">
+      <div className="space-y-2.5 border-t border-vl-dark-900/10 pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <label className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <label className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             2. Select Colors
           </label>
           {selectedColors.length > 0 && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={clearColors}
-              className="text-muted-foreground text-xs hover:text-red-600"
+              className="h-auto p-0 text-xs text-muted-foreground hover:text-red-600"
             >
               Clear colors
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -418,14 +428,16 @@ export function ProductVariantGenerator({
               hex.toLowerCase() === "#f5f5dc" ||
               hex.toLowerCase() === "#eab308";
             return (
-              <button
+              <Button
                 key={color}
                 type="button"
+                variant={isSelected ? "primary" : "outline"}
+                size="sm"
                 onClick={() => toggleColor(color)}
-                className={`inline-flex min-h-9 items-center gap-2 rounded border px-3 text-xs font-semibold transition-all ${
+                className={`min-h-9 gap-2 px-3 text-xs font-semibold ${
                   isSelected
-                    ? "border-[#101114] bg-[#101114] text-white shadow-xs"
-                    : "border-[#101114]/20 bg-white text-[#101114] hover:border-[#101114]/40 hover:bg-[#F9F8F6]"
+                    ? "bg-vl-dark-900 text-white shadow-xs"
+                    : "bg-white text-vl-dark-900 hover:bg-vl-white-100"
                 }`}
               >
                 <span
@@ -433,13 +445,14 @@ export function ProductVariantGenerator({
                   style={{ backgroundColor: hex }}
                 />
                 <span>{color}</span>
-              </button>
+              </Button>
             );
           })}
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
-          <input
-            className="min-h-9 w-full border border-[#101114]/20 bg-white px-3 text-xs text-[#101114] outline-none placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
+          <Input
+            size="default"
+            className="w-full text-xs"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
             onKeyDown={(e) => {
@@ -450,34 +463,38 @@ export function ProductVariantGenerator({
             }}
             placeholder="Add custom color (e.g. Lavender)"
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="default"
             onClick={addCustomColor}
-            className="min-h-9 shrink-0 border border-[#101114]/20 bg-[#F9F8F6] px-3 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
+            className="shrink-0"
           >
             Add Color
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* BULK APPLICATOR BAR WITH WEIGHT */}
-      <div className="space-y-3 rounded-md border border-[#101114]/15 bg-[#F9F8F6] p-4">
+      <div className="space-y-3 rounded-md border border-vl-dark-900/15 bg-vl-white-100 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="size-4 text-[#101114]" />
-            <p className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+            <Sparkles className="size-4 text-vl-dark-900" />
+            <p className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
               Quick Fill All Variants
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={handleRegenerateAllSkus}
-              className="text-muted-foreground inline-flex items-center gap-1 text-xs font-medium underline underline-offset-2 hover:text-[#101114]"
+              className="h-auto p-0 font-medium text-xs text-muted-foreground underline underline-offset-2 hover:text-vl-dark-900"
             >
-              <RefreshCw className="size-3 text-[#101114]/60" />
+              <RefreshCw className="size-3 text-vl-dark-900/60" />
               Regenerate all SKUs
-            </button>
+            </Button>
             <span className="text-muted-foreground hidden text-xs sm:inline">·</span>
             <p className="text-muted-foreground hidden text-xs sm:inline">
               Apply common pricing, stock &amp; weight across all {variants.length} variant(s)
@@ -489,80 +506,92 @@ export function ProductVariantGenerator({
             <label className="text-muted-foreground block text-[11px] font-medium">
               Cost Price (৳)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              value={bulkCostPrice}
-              onChange={(e) => setBulkCostPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={bulkCostPrice}
+                onChange={(e) => setBulkCostPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Selling Price (৳) *
             </label>
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              placeholder="0.00"
-              value={bulkSellingPrice}
-              onChange={(e) => setBulkSellingPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0.01"
+                step="0.01"
+                placeholder="0.00"
+                value={bulkSellingPrice}
+                onChange={(e) => setBulkSellingPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Discount Price (৳)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Optional"
-              value={bulkDiscountPrice}
-              onChange={(e) => setBulkDiscountPrice(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Optional"
+                value={bulkDiscountPrice}
+                onChange={(e) => setBulkDiscountPrice(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Initial Stock (Qty)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="1"
-              placeholder="0"
-              value={bulkStock}
-              onChange={(e) => setBulkStock(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                placeholder="0"
+                value={bulkStock}
+                onChange={(e) => setBulkStock(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div>
             <label className="text-muted-foreground block text-[11px] font-medium">
               Weight (kg)
             </label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="e.g. 0.40"
-              value={bulkWeight}
-              onChange={(e) => setBulkWeight(e.target.value)}
-              className="mt-1 min-h-9 w-full border border-[#101114]/20 bg-white px-2.5 text-xs text-[#101114] outline-none focus:border-[#101114]"
-            />
+            <div className="mt-1">
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="e.g. 0.40"
+                value={bulkWeight}
+                onChange={(e) => setBulkWeight(e.target.value)}
+                size="sm"
+              />
+            </div>
           </div>
           <div className="col-span-2 flex items-end sm:col-span-1 md:col-span-1">
-            <button
+            <Button
               type="button"
+              variant="primary"
+              size="sm"
               onClick={handleApplyBulkValues}
-              className="min-h-9 w-full border border-[#101114] bg-[#101114] px-3 text-xs font-semibold text-white hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              className="min-h-9 w-full text-xs font-semibold"
             >
               Apply to all
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -573,7 +602,7 @@ export function ProductVariantGenerator({
       {/* GENERATED VARIANTS LIST WITH LIVE PROFIT MARGIN & WEIGHT */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <h4 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             Variant Details ({variants.length})
           </h4>
           <span className="text-muted-foreground text-xs">
@@ -597,9 +626,9 @@ export function ProductVariantGenerator({
             return (
               <div
                 key={variant.id ?? `${comboKey(variant.size, variant.color)}-${index}`}
-                className="rounded-sm border border-[#101114]/15 bg-white p-4 shadow-2xs transition-colors hover:border-[#101114]/30"
+                className="rounded-sm border border-vl-dark-900/15 bg-white p-4 shadow-2xs transition-colors hover:border-vl-dark-900/30"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#101114]/10 pb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vl-dark-900/10 pb-3">
                   <div className="flex flex-wrap items-center gap-2.5">
                     {variant.color && (
                       <span
@@ -608,7 +637,7 @@ export function ProductVariantGenerator({
                         title={variant.color}
                       />
                     )}
-                    <span className="text-sm font-semibold text-[#101114]">
+                    <span className="text-sm font-semibold text-vl-dark-900">
                       {variant.color || "Default color"} · {variant.size || "Default size"}
                     </span>
                     {variant.id ? (
@@ -644,13 +673,15 @@ export function ProductVariantGenerator({
                   </div>
 
                   {variants.length > 1 && (
-                    <button
+                    <Button
                       type="button"
+                      variant="link"
+                      size="xs"
                       onClick={() => removeVariant(index)}
-                      className="text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
+                      className="h-auto p-0 text-xs font-medium text-red-600 hover:text-red-700 hover:underline"
                     >
                       Remove
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -658,97 +689,111 @@ export function ProductVariantGenerator({
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-muted-foreground block text-xs font-medium">SKU</label>
-                      <button
+                      <Button
                         type="button"
+                        variant="link"
+                        size="xs"
                         onClick={() => {
                           const gen = generateSku(productIdentifier, variant.size, variant.color);
                           updateVariant(index, "sku", gen);
                         }}
-                        className="text-muted-foreground text-[10px] underline hover:text-[#101114]"
+                        className="h-auto p-0 text-muted-foreground text-[10px] underline hover:text-vl-dark-900"
                         title="Generate SKU for this variant"
                       >
                         Auto
-                      </button>
+                      </Button>
                     </div>
-                    <input
-                      className={fieldClass}
-                      value={variant.sku}
-                      onChange={(event) => updateVariant(index, "sku", event.target.value)}
-                      maxLength={100}
-                      placeholder={generateSku(productIdentifier, variant.size, variant.color)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        value={variant.sku}
+                        onChange={(event) => updateVariant(index, "sku", event.target.value)}
+                        maxLength={100}
+                        placeholder={generateSku(productIdentifier, variant.size, variant.color)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Cost price (৳)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      required
-                      value={variant.costPrice}
-                      onChange={(event) => updateVariant(index, "costPrice", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        required
+                        value={variant.costPrice}
+                        onChange={(event) => updateVariant(index, "costPrice", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Selling price (৳) *
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0.01"
-                      step="0.01"
-                      required
-                      value={variant.sellingPrice}
-                      onChange={(event) => updateVariant(index, "sellingPrice", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        value={variant.sellingPrice}
+                        onChange={(event) => updateVariant(index, "sellingPrice", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Discount price (৳)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="Optional"
-                      value={variant.discountPrice}
-                      onChange={(event) =>
-                        updateVariant(index, "discountPrice", event.target.value)
-                      }
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="Optional"
+                        value={variant.discountPrice}
+                        onChange={(event) =>
+                          updateVariant(index, "discountPrice", event.target.value)
+                        }
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-[#101114]">
+                    <label className="block text-xs font-medium text-vl-dark-900">
                       Initial Stock (Qty)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="0"
-                      value={variant.stock ?? "0"}
-                      onChange={(event) => updateVariant(index, "stock", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        value={variant.stock ?? "0"}
+                        onChange={(event) => updateVariant(index, "stock", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                   <div>
                     <label className="text-muted-foreground block text-xs font-medium">
                       Weight (kg)
                     </label>
-                    <input
-                      className={fieldClass}
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="e.g. 0.40"
-                      value={variant.weight ?? ""}
-                      onChange={(event) => updateVariant(index, "weight", event.target.value)}
-                    />
+                    <div className="mt-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="e.g. 0.40"
+                        value={variant.weight ?? ""}
+                        onChange={(event) => updateVariant(index, "weight", event.target.value)}
+                        size="default"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

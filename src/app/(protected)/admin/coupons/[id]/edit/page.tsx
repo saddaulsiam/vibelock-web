@@ -25,7 +25,7 @@ export default async function EditCouponPage({ params }: { params: Promise<{ id:
             <Tag className="size-4" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#101114]">
+            <h1 className="text-2xl font-bold tracking-tight text-vl-dark-900">
               Edit Coupon: <span className="font-mono text-purple-900">{coupon.code}</span>
             </h1>
             <p className="text-xs text-neutral-500">

@@ -1,11 +1,11 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 
-describe("AdminTableInfiniteScroll Component Unit Tests", () => {
+describe("InfiniteScroll Component Unit Tests", () => {
   test("renders nothing if totalCount is 0", () => {
     const html = renderToStaticMarkup(
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={false}
         isLoadingMore={false}
         onLoadMore={vi.fn()}
@@ -19,7 +19,7 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
 
   test("renders load more button and count indicator when hasMore is true", () => {
     const html = renderToStaticMarkup(
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={true}
         isLoadingMore={false}
         onLoadMore={vi.fn()}
@@ -37,7 +37,7 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
 
   test("renders loading state spinner inside button when isLoadingMore is true", () => {
     const html = renderToStaticMarkup(
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={true}
         isLoadingMore={true}
         onLoadMore={vi.fn()}
@@ -54,7 +54,7 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
 
   test("renders checkmark and all loaded message when hasMore is false", () => {
     const html = renderToStaticMarkup(
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={false}
         isLoadingMore={false}
         onLoadMore={vi.fn()}
@@ -65,13 +65,13 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
     );
 
     expect(html).toContain("✓");
-    expect(html).toContain('All <strong class="text-[#101114]">45</strong> orders loaded');
+    expect(html).toContain('All <strong class="text-vl-dark-900">45</strong> orders loaded');
     expect(html).not.toContain("Load more orders");
   });
 
   test("renders filter summary note when all items loaded with active filters", () => {
     const html = renderToStaticMarkup(
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={false}
         isLoadingMore={false}
         onLoadMore={vi.fn()}
@@ -83,7 +83,7 @@ describe("AdminTableInfiniteScroll Component Unit Tests", () => {
     );
 
     expect(html).toContain(
-      'All <strong class="text-[#101114]">5</strong> orders loaded (filtered from 120 total)'
+      'All <strong class="text-vl-dark-900">5</strong> orders loaded (filtered from 120 total)'
     );
   });
 });

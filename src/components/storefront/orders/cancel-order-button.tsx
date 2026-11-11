@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { cancelOrderAction } from "@/lib/orders/actions";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CancelOrderButtonProps {
   orderNumber: string;
@@ -43,10 +42,11 @@ export function CancelOrderButton({ orderNumber, className }: CancelOrderButtonP
   return (
     <Button
       variant="destructive"
+      className={className}
       onClick={handleCancel}
       type="button"
+      size="sm"
       disabled={isCancelling}
-      className={cn("focus-visible:ring-vl-cyan w-full focus-visible:ring-2 sm:w-auto", className)}
     >
       {isCancelling ? (
         <>

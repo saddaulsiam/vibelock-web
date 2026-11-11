@@ -2,11 +2,7 @@ import Link from "next/link";
 import { Calculator, ExternalLink, Store } from "lucide-react";
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
-import {
-  AdminMobileNavigation,
-  AdminSidebar,
-  AdminSignOutButton,
-} from "@/components/admin/shared";
+import { AdminMobileNavigation, AdminSidebar, AdminSignOutButton } from "@/components/admin/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,11 +14,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const initials = (user.name || user.email || "VL").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#F3F0E8] text-[#101114]">
+    <div className="flex h-screen w-full overflow-hidden bg-vl-white-300 text-vl-dark-900">
       <AdminSidebar userRole={user.role} />
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         {/* ── Top Dashboard Header ── */}
-        <header className="shrink-0 z-30 border-b border-[#101114]/10 bg-white/95 shadow-xs backdrop-blur-md">
+        <header className="z-30 shrink-0 border-b border-vl-dark-900/10 bg-white/95 shadow-xs backdrop-blur-md">
           <div className="flex min-h-16 items-center justify-between gap-3 px-3.5 py-2.5 sm:px-6 sm:py-3 lg:px-8">
             {/* Left: Mobile Nav Toggle & Brand on Mobile, User Profile on Desktop */}
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
@@ -30,16 +26,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
               <Link
                 href="/admin"
-                className="font-heading text-base font-black tracking-tight text-[#101114] lg:hidden"
+                className="font-heading text-base font-black tracking-tight text-vl-dark-900 lg:hidden"
               >
                 <span>VibeLock</span>
-                <span className="text-[#00D9FF]">.</span>
+                <span className="text-vl-cyan">.</span>
               </Link>
 
               {/* Desktop User Profile Chip */}
               <div className="hidden items-center gap-2.5 lg:flex">
                 <div
-                  className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#101114] font-mono text-xs font-bold text-[#00D9FF] shadow-2xs ring-1 ring-black/5"
+                  className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-vl-dark-900 font-mono text-xs font-bold text-vl-cyan shadow-2xs ring-1 ring-black/5"
                   title={`${displayName} (${user.role})`}
                 >
                   {user.image ? (
@@ -50,7 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                   )}
                 </div>
                 <div className="text-left">
-                  <p className="max-w-[150px] truncate text-xs font-bold leading-tight text-[#101114] xl:max-w-[180px]">
+                  <p className="max-w-[150px] truncate text-xs leading-tight font-bold text-vl-dark-900 xl:max-w-[180px]">
                     {displayName}
                   </p>
                   <div className="mt-0.5">
@@ -88,21 +84,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 nativeButton={false}
                 variant="outline"
                 size="sm"
-                className="hidden h-9 gap-1.5 rounded-xl border-[#101114]/15 bg-white px-3 text-xs font-semibold text-[#101114]/80 shadow-2xs hover:border-[#101114]/30 hover:bg-[#F3F0E8] hover:text-[#101114] md:inline-flex"
+                className="hidden md:inline-flex"
                 title="Open live customer storefront in a new tab"
               >
-                <Store className="size-3.5 text-[#101114]/60" />
+                <Store className="size-3.5 text-vl-dark-900/60" />
                 <span>Live Store</span>
-                <ExternalLink className="size-3 text-[#101114]/40" />
+                <ExternalLink className="size-3 text-vl-dark-900/40" />
               </Button>
 
               {/* High-Impact POS Counter Button */}
               <Button
                 render={<Link href="/pos" />}
                 nativeButton={false}
-                variant="cyan"
                 size="sm"
-                className="h-9 gap-2 rounded-xl px-3.5 font-heading text-xs font-black tracking-wide shadow-[0_2px_10px_rgba(0,217,255,0.3)] transition-all hover:shadow-[0_4px_16px_rgba(0,217,255,0.45)] sm:h-9.5 sm:px-4 sm:text-xs"
                 title="Launch Counter POS Cashier Register"
               >
                 <Calculator className="size-4 shrink-0" aria-hidden="true" />

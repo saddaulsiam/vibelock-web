@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Minus, Plus, X } from "lucide-react";
 import type { InventoryTransactionType } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { quickAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 import { COMMON_REASONS } from "./admin-inventory-adjust-modal";
@@ -102,140 +104,150 @@ export function AdminInventoryDetailAdjustModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="animate-in fade-in-0 zoom-in-95 relative w-full max-w-lg rounded-md border border-[#101114]/15 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#101114]/10 px-5 py-4">
+      <div className="animate-in fade-in-0 zoom-in-95 relative w-full max-w-lg rounded-md border border-vl-dark-900/15 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-4">
           <div>
-            <h3 className="font-bold text-[#101114]">Record Stock Movement / Adjustment</h3>
-            <p className="text-xs text-[#101114]/60">
+            <h3 className="font-bold text-vl-dark-900">Record Stock Movement / Adjustment</h3>
+            <p className="text-xs text-vl-dark-900/60">
               {variant.product.name} ({variant.sku})
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded p-1 text-[#101114]/40 hover:text-[#101114]"
+            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </div>
 
         <form onSubmit={handleQuickAdjustSubmit} className="space-y-4 p-5">
           {/* Type Selection */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-[#101114]">
+            <label className="mb-1 block text-xs font-semibold text-vl-dark-900">
               Adjustment Type
             </label>
             <div className="grid grid-cols-4 gap-2">
               {(["RESTOCK", "ADJUSTMENT", "DAMAGE", "RETURN"] as const).map((type) => (
-                <button
+                <Button
                   key={type}
                   type="button"
+                  variant={adjustType === type ? "primary" : "outline"}
+                  size="xs"
                   onClick={() => handleTypeChange(type)}
-                  className={`rounded-xs border p-2 text-center text-xs font-bold transition-colors ${
-                    adjustType === type
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-[#101114]/20 bg-white text-[#101114] hover:bg-[#F3F0E8]"
-                  }`}
+                  className="font-bold"
                 >
                   {type}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
 
           {/* Mode Toggle */}
-          <div className="flex items-center justify-between rounded-xs border border-[#101114]/10 bg-[#FBF9F5] p-1.5 text-xs">
-            <button
+          <div className="flex items-center justify-between rounded-xs border border-vl-dark-900/10 bg-vl-white-200 p-1.5 text-xs">
+            <Button
               type="button"
+              variant={adjustMode === "delta" ? "secondary" : "ghost"}
+              size="xs"
               onClick={() => setAdjustMode("delta")}
-              className={`flex-1 rounded-xs py-1 font-semibold transition-colors ${
-                adjustMode === "delta"
-                  ? "bg-white text-[#101114] shadow-2xs"
-                  : "text-[#101114]/60 hover:text-[#101114]"
+              className={`flex-1 font-semibold ${
+                adjustMode === "delta" ? "bg-white text-vl-dark-900 shadow-2xs" : "text-vl-dark-900/60"
               }`}
             >
               Add / Remove Delta
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={adjustMode === "target" ? "secondary" : "ghost"}
+              size="xs"
               onClick={() => {
                 setAdjustMode("target");
                 setTargetQuantity(totalStock);
               }}
-              className={`flex-1 rounded-xs py-1 font-semibold transition-colors ${
-                adjustMode === "target"
-                  ? "bg-white text-[#101114] shadow-2xs"
-                  : "text-[#101114]/60 hover:text-[#101114]"
+              className={`flex-1 font-semibold ${
+                adjustMode === "target" ? "bg-white text-vl-dark-900 shadow-2xs" : "text-vl-dark-900/60"
               }`}
             >
               Set Total Target Stock
-            </button>
+            </Button>
           </div>
 
           {/* Delta Stepper or Target Input */}
           {adjustMode === "delta" ? (
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-[#101114]">Quantity to Adjust</label>
-                <span className="text-[11px] text-[#101114]/60">
+                <label className="text-xs font-semibold text-vl-dark-900">Quantity to Adjust</label>
+                <span className="text-[11px] text-vl-dark-900/60">
                   {adjustType === "DAMAGE"
                     ? "Negative delta will reduce stock"
                     : "Positive delta will increase stock"}
                 </span>
               </div>
               <div className="mt-1.5 flex items-center gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="icon"
                   onClick={() => setAdjustQuantity((prev) => prev - 1)}
-                  className="flex size-9 items-center justify-center rounded-xs border border-[#101114]/20 bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/10"
+                  className="size-9 rounded-xs"
                 >
                   <Minus className="size-4" />
-                </button>
-                <input
+                </Button>
+                <Input
                   type="number"
                   step="1"
                   required
                   value={adjustQuantity}
                   onChange={(e) => setAdjustQuantity(parseInt(e.target.value, 10) || 0)}
-                  className="h-9 flex-1 rounded-xs border border-[#101114]/20 text-center font-mono text-base font-bold text-[#101114] outline-none"
+                  size="default"
+                  className="flex-1 text-center font-mono text-base font-bold"
                 />
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="icon"
                   onClick={() => setAdjustQuantity((prev) => prev + 1)}
-                  className="flex size-9 items-center justify-center rounded-xs border border-[#101114]/20 bg-[#F3F0E8] text-[#101114] hover:bg-[#101114]/10"
+                  className="size-9 rounded-xs"
                 >
                   <Plus className="size-4" />
-                </button>
+                </Button>
               </div>
 
               {/* Preset Chips */}
               <div className="mt-2 flex flex-wrap items-center gap-1.5">
                 {[5, 10, 25, 50, 100].map((step) => (
-                  <button
+                  <Button
                     key={step}
                     type="button"
+                    variant="secondary"
+                    size="xs"
                     onClick={() => setAdjustQuantity(adjustType === "DAMAGE" ? -step : step)}
-                    className="rounded-xs bg-[#F3F0E8] px-2 py-0.5 text-[11px] font-semibold text-[#101114] hover:bg-[#101114]/15"
+                    className="h-6 px-2 text-[11px] font-semibold"
                   >
                     {adjustType === "DAMAGE" ? `-${step}` : `+${step}`}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
           ) : (
             <div>
-              <label className="text-xs font-semibold text-[#101114]">
+              <label className="text-xs font-semibold text-vl-dark-900">
                 Target Physical Stock (Currently: {totalStock})
               </label>
-              <input
-                type="number"
-                min="0"
-                step="1"
-                value={targetQuantity}
-                onChange={(e) => setTargetQuantity(parseInt(e.target.value, 10) || 0)}
-                className="mt-1.5 h-9 w-full rounded-xs border border-[#101114]/20 px-3 font-mono text-base font-bold text-[#101114] outline-none"
-              />
-              <p className="mt-1 text-[11px] text-[#101114]/60">
+              <div className="mt-1.5">
+                <Input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={targetQuantity}
+                  onChange={(e) => setTargetQuantity(parseInt(e.target.value, 10) || 0)}
+                  size="default"
+                  className="font-mono text-base font-bold"
+                />
+              </div>
+              <p className="mt-1 text-[11px] text-vl-dark-900/60">
                 Delta to record:{" "}
                 <strong>{computedDelta > 0 ? `+${computedDelta}` : computedDelta}</strong>
               </p>
@@ -247,7 +259,7 @@ export function AdminInventoryDetailAdjustModal({
             className={`rounded-xs border p-2.5 text-xs ${
               previewStock < reservedStock
                 ? "border-rose-300 bg-rose-50 text-rose-800"
-                : "border-[#101114]/10 bg-[#FBF9F5] text-[#101114]"
+                : "border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900"
             }`}
           >
             <div className="flex items-center justify-between">
@@ -259,7 +271,7 @@ export function AdminInventoryDetailAdjustModal({
                 New Physical: <strong>{previewStock}</strong>
               </span>
             </div>
-            <div className="mt-1 flex items-center justify-between text-[11px] text-[#101114]/70">
+            <div className="mt-1 flex items-center justify-between text-[11px] text-vl-dark-900/70">
               <span>Reserved: {reservedStock}</span>
               <span>
                 New Available to Sell: <strong>{previewAvailable}</strong>
@@ -269,33 +281,31 @@ export function AdminInventoryDetailAdjustModal({
 
           {/* Reason / Notes */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-[#101114]">
+            <label className="mb-1 block text-xs font-semibold text-vl-dark-900">
               Reason / Audit Note
             </label>
-            <input
+            <Input
               type="text"
               required
               value={adjustReason}
               onChange={(e) => setAdjustReason(e.target.value)}
               placeholder="Explain why this adjustment is being made"
-              className="h-9 w-full rounded-xs border border-[#101114]/20 px-3 text-xs text-[#101114] outline-none"
+              size="default"
             />
 
             {/* Quick Reason Chips */}
             <div className="mt-1.5 flex flex-wrap gap-1">
               {(COMMON_REASONS[adjustType] || []).map((reason) => (
-                <button
+                <Button
                   key={reason}
                   type="button"
+                  variant={adjustReason === reason ? "primary" : "secondary"}
+                  size="xs"
                   onClick={() => setAdjustReason(reason)}
-                  className={`rounded-xs px-2 py-0.5 text-[10px] transition-colors ${
-                    adjustReason === reason
-                      ? "bg-[#101114] text-white"
-                      : "bg-[#F3F0E8] text-[#101114]/80 hover:bg-[#101114]/15"
-                  }`}
+                  className="h-5 px-2 text-[10px]"
                 >
                   {reason}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -313,22 +323,24 @@ export function AdminInventoryDetailAdjustModal({
           )}
 
           {/* Submit Buttons */}
-          <div className="flex items-center justify-end gap-2 border-t border-[#101114]/10 pt-2">
-            <button
+          <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 pt-2">
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
               disabled={isSubmittingAdjust}
-              className="h-9 rounded-xs border border-[#101114]/20 bg-white px-4 text-xs font-semibold text-[#101114] hover:bg-[#F3F0E8]"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
+              size="default"
               disabled={isSubmittingAdjust}
-              className="inline-flex h-9 items-center gap-1.5 rounded-xs bg-[#101114] px-5 text-xs font-bold text-white shadow-xs hover:bg-[#101114]/85 disabled:opacity-50"
             >
               {isSubmittingAdjust ? "Saving Ledger Entry..." : "Confirm & Save"}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

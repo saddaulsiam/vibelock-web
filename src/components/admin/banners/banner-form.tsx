@@ -1,13 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { useState, useActionState, useRef } from "react";
+import { useState, useActionState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Globe, ImagePlus, Loader2, Trash2, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowUpRight, ExternalLink, Globe, ImagePlus, Trash2, Upload, X } from "lucide-react";
 import { BannerPlacement } from "@prisma/client";
 import { toast } from "sonner";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import { saveBannerAction, type BannerActionState } from "@/lib/admin/banners/banner-actions";
 
 const initialState: BannerActionState = { error: null };
@@ -33,15 +37,12 @@ const TITLE_SUGGESTIONS = [
 ];
 
 const DESTINATION_PRESETS = [
-  { label: "All Products", url: "/products" },
+  { label: "All Products", url: "/shop" },
   { label: "T-Shirts", url: "/category/t-shirts" },
   { label: "Hoodies & Sweats", url: "/category/hoodies" },
   { label: "Cargo Pants", url: "/category/pants" },
-  { label: "Sale Items", url: "/products?sort=sale" },
+  { label: "Sale Items", url: "/shop?sort=sale" },
 ];
-
-const fieldClass =
-  "mt-1.5 min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export function BannerForm({
   banner,
@@ -50,7 +51,18 @@ export function BannerForm({
   banner?: BannerFormValue;
   categories: CategoryOption[];
 }) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(saveBannerAction, initialState);
+
+  // Toast feedback & auto-redirect on successful banner creation
+  useEffect(() => {
+    if (state.message) {
+      toast.success(state.message);
+      if (!banner) {
+        router.push("/admin/banners");
+      }
+    }
+  }, [state.message, banner, router]);
 
   // Form Fields
   const [title, setTitle] = useState(banner?.title ?? "");
@@ -236,9 +248,9 @@ export function BannerForm({
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1: BANNER DETAILS
       ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Banner Details</h3>
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Banner Details</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Configure campaign identity, destination navigation, and display placement.
           </p>
@@ -248,37 +260,41 @@ export function BannerForm({
           {/* Internal Title */}
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="banner-title" className="block text-xs font-semibold text-[#101114]">
+              <label htmlFor="banner-title" className="block text-xs font-semibold text-vl-dark-900">
                 Campaign Title <span className="text-red-500">*</span>
               </label>
               <span className="text-muted-foreground font-mono text-[11px]">
                 {title.length} / 120 chars
               </span>
             </div>
-            <input
-              id="banner-title"
-              name="title"
-              required
-              minLength={2}
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Winter 2026 Heavyweight Collection"
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="banner-title"
+                name="title"
+                required
+                minLength={2}
+                maxLength={120}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="e.g. Winter 2026 Heavyweight Collection"
+                size="default"
+              />
+            </div>
 
             {/* Quick Title Presets */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="text-muted-foreground text-[11px]">Quick suggestions:</span>
               {TITLE_SUGGESTIONS.map((preset) => (
-                <button
+                <Button
                   key={preset}
                   type="button"
+                  variant="outline"
+                  size="xs"
                   onClick={() => setTitle(preset)}
-                  className="inline-flex items-center rounded border border-[#101114]/15 bg-[#F9F8F6] px-2 py-0.5 text-[11px] font-medium text-[#101114] transition-colors hover:bg-[#101114] hover:text-white"
+                  className="h-6 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:bg-vl-dark-900 hover:text-white"
                 >
                   + {preset}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -286,7 +302,7 @@ export function BannerForm({
           {/* Click-through Link */}
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="banner-link" className="block text-xs font-semibold text-[#101114]">
+              <label htmlFor="banner-link" className="block text-xs font-semibold text-vl-dark-900">
                 Destination Link URL (Optional)
               </label>
               {linkUrl && (
@@ -301,31 +317,31 @@ export function BannerForm({
                 </a>
               )}
             </div>
-            <input
-              id="banner-link"
-              name="linkUrl"
-              value={linkUrl}
-              onChange={(e) => setLinkUrl(e.target.value)}
-              placeholder="/products or /category/t-shirts or https://..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="banner-link"
+                name="linkUrl"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="/products or /category/t-shirts or https://..."
+                size="default"
+              />
+            </div>
 
             {/* Destination Presets */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               <span className="text-muted-foreground text-[11px]">Common destinations:</span>
               {DESTINATION_PRESETS.map((dest) => (
-                <button
+                <Button
                   key={dest.url}
                   type="button"
+                  variant={linkUrl === dest.url ? "primary" : "outline"}
+                  size="xs"
                   onClick={() => setLinkUrl(dest.url)}
-                  className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                    linkUrl === dest.url
-                      ? "border-[#101114] bg-[#101114] text-white"
-                      : "border-[#101114]/15 bg-[#F9F8F6] text-[#101114] hover:bg-[#101114] hover:text-white"
-                  }`}
+                  className="h-6 rounded px-2 py-0.5 text-[11px] font-medium"
                 >
                   {dest.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -335,21 +351,23 @@ export function BannerForm({
             <div>
               <label
                 htmlFor="banner-placement"
-                className="block text-xs font-semibold text-[#101114]"
+                className="block text-xs font-semibold text-vl-dark-900"
               >
                 Showcase Placement
               </label>
-              <select
-                id="banner-placement"
-                name="placement"
-                value={placement}
-                onChange={(e) => setPlacement(e.target.value as BannerPlacement)}
-                className={fieldClass}
-              >
-                <option value="BOTH">Category pages + Search results (Recommended)</option>
-                <option value="CATEGORY">Category pages only</option>
-                <option value="SEARCH">Search results only</option>
-              </select>
+              <div className="mt-1.5">
+                <NativeSelect
+                  id="banner-placement"
+                  name="placement"
+                  value={placement}
+                  onChange={(e) => setPlacement(e.target.value as BannerPlacement)}
+                  size="default"
+                >
+                  <option value="BOTH">Category pages + Search results (Recommended)</option>
+                  <option value="CATEGORY">Category pages only</option>
+                  <option value="SEARCH">Search results only</option>
+                </NativeSelect>
+              </div>
               <p className="text-muted-foreground mt-1 text-[11px]">
                 Choose where customers encounter this visual banner.
               </p>
@@ -358,37 +376,39 @@ export function BannerForm({
             <div>
               <label
                 htmlFor="banner-sort-order"
-                className="block text-xs font-semibold text-[#101114]"
+                className="block text-xs font-semibold text-vl-dark-900"
               >
                 Sort Order Priority
               </label>
-              <input
-                id="banner-sort-order"
-                name="sortOrder"
-                type="number"
-                min={-99999}
-                max={99999}
-                step="1"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
-                className={fieldClass}
-              />
+              <div className="mt-1.5">
+                <Input
+                  id="banner-sort-order"
+                  name="sortOrder"
+                  type="number"
+                  min={-99999}
+                  max={99999}
+                  step="1"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(Number(e.target.value) || 0)}
+                  size="default"
+                />
+              </div>
               <p className="text-muted-foreground mt-1 text-[11px]">
-                Lower numbers (e.g. 0, 1) take display priority over higher numbers.
+                Controls slide sequence in the carousel. Lower numbers (0, 1, 2) appear first.
               </p>
             </div>
           </div>
 
           {/* Active Status */}
           <div className="pt-2">
-            <label className="flex cursor-pointer items-center gap-2.5 text-xs font-semibold text-[#101114]">
+            <label className="flex cursor-pointer items-center gap-2.5 text-xs font-semibold text-vl-dark-900">
               <input
                 type="checkbox"
                 name="isActive"
                 value="on"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="size-4 rounded border-[#101114]/30 text-[#101114] focus:ring-[#00D9FF]"
+                className="size-4 rounded border-vl-dark-900/30 text-vl-dark-900 focus:ring-vl-cyan"
               />
               <span>Storefront Active (Visible to customers)</span>
             </label>
@@ -403,9 +423,9 @@ export function BannerForm({
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: TARGET CATEGORIES (Matches Product Form)
       ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Target Categories</h3>
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Target Categories</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Select one or more store categories to target. Leave empty to display this campaign
             storewide across all categories.
@@ -419,8 +439,8 @@ export function BannerForm({
           placeholder="Select categories (leave empty for storewide display)..."
         />
 
-        <div className="rounded border border-[#101114]/10 bg-[#F9F8F6] p-3 text-xs text-[#101114]/80">
-          <span className="font-semibold text-[#101114]">Storewide Rule: </span>
+        <div className="rounded border border-vl-dark-900/10 bg-vl-white-100 p-3 text-xs text-vl-dark-900/80">
+          <span className="font-semibold text-vl-dark-900">Storewide Rule: </span>
           If you do not select any category, this banner automatically displays across every
           category page on the storefront.
         </div>
@@ -429,10 +449,10 @@ export function BannerForm({
       {/* ─────────────────────────────────────────────────────────────
           SECTION 3: DESKTOP BANNER IMAGE (Direct Drag & Drop Upload)
       ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#101114]/10 pb-4">
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vl-dark-900/10 pb-4">
           <div>
-            <h3 className="text-base font-semibold text-[#101114]">
+            <h3 className="text-base font-semibold text-vl-dark-900">
               Desktop Banner Image <span className="text-red-500">*</span>
             </h3>
             <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -440,10 +460,12 @@ export function BannerForm({
               (1920 × 600px).
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => setUseDesktopUrlInput((prev) => !prev)}
-            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-[#101114]"
+            className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
           >
             {useDesktopUrlInput ? (
               <>
@@ -454,7 +476,7 @@ export function BannerForm({
                 <Globe className="size-3.5" /> Or use external / Cloudinary URL
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {!useDesktopUrlInput ? (
@@ -469,14 +491,14 @@ export function BannerForm({
               onDrop={handleDesktopDrop}
               className={`flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center transition-all ${
                 isDesktopDragging
-                  ? "scale-[1.01] border-[#00D9FF] bg-[#00D9FF]/10"
-                  : "border-[#101114]/20 bg-[#F9F8F6]/60 hover:border-[#00D9FF] hover:bg-[#F9F8F6]"
+                  ? "scale-[1.01] border-vl-cyan bg-vl-cyan-50"
+                  : "border-vl-dark-900/20 bg-vl-white-100/60 hover:border-vl-cyan hover:bg-vl-white-100"
               }`}
             >
-              <div className="flex size-12 items-center justify-center rounded-full bg-[#101114]/5 text-[#101114]">
-                <ImagePlus className="size-6 text-[#101114]/70" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-vl-dark-900/5 text-vl-dark-900">
+                <ImagePlus className="size-6 text-vl-dark-900/70" />
               </div>
-              <span className="mt-3 text-sm font-semibold text-[#101114]">
+              <span className="mt-3 text-sm font-semibold text-vl-dark-900">
                 {desktopPreview
                   ? "Replace desktop banner image"
                   : "Click or drag to upload desktop banner"}
@@ -490,19 +512,21 @@ export function BannerForm({
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-semibold text-[#101114]">
+            <label className="block text-xs font-semibold text-vl-dark-900">
               Direct Image URL (Cloudinary)
             </label>
-            <input
-              type="url"
-              value={desktopUrl}
-              onChange={(e) => {
-                setDesktopUrl(e.target.value);
-                setDesktopPreview(e.target.value || null);
-              }}
-              placeholder="https://res.cloudinary.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                type="url"
+                value={desktopUrl}
+                onChange={(e) => {
+                  setDesktopUrl(e.target.value);
+                  setDesktopPreview(e.target.value || null);
+                }}
+                placeholder="https://res.cloudinary.com/..."
+                size="default"
+              />
+            </div>
             <span className="text-muted-foreground mt-1 block text-xs">
               Paste a secure Cloudinary image URL.
             </span>
@@ -512,18 +536,20 @@ export function BannerForm({
         {/* Desktop Image Preview */}
         {desktopPreview && (
           <div className="mt-3 space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#101114]">
-              <span>Desktop Preview (16:7)</span>
-              <button
+            <div className="flex items-center justify-between text-xs font-semibold text-vl-dark-900">
+              <span>Storefront Preview (Desktop 16:7)</span>
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={handleClearDesktop}
-                className="inline-flex items-center gap-1 text-red-600 hover:underline"
+                className="h-auto p-0 text-red-600 hover:underline"
               >
                 <Trash2 className="size-3.5" />
                 <span>Remove</span>
-              </button>
+              </Button>
             </div>
-            <div className="relative aspect-16/7 w-full overflow-hidden border border-[#101114]/15 bg-[#F9F8F6]">
+            <div className="relative aspect-16/7 w-full overflow-hidden rounded-2xl bg-vl-white-100 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)]">
               <Image
                 src={desktopPreview}
                 alt="Desktop Banner"
@@ -531,15 +557,24 @@ export function BannerForm({
                 sizes="(max-width: 1024px) 100vw, 896px"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                <span className="text-xs font-bold tracking-wider text-[#00D9FF] uppercase">
-                  {placement}
+              <div
+                className="from-vl-dark-900/30 pointer-events-none absolute inset-0 bg-linear-to-t via-transparent to-transparent"
+                aria-hidden="true"
+              />
+              <div className="pointer-events-none absolute top-3.5 left-4 z-10">
+                <span className="border-vl-dark-900/20 bg-vl-dark-900/85 text-vl-white-300 inline-flex items-center gap-1.5 border px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.18em] uppercase backdrop-blur-xs">
+                  <span className="bg-vl-cyan size-1 rounded-full" aria-hidden="true" />
+                  <span>Featured Drop</span>
                 </span>
-                <h4 className="line-clamp-1 text-lg font-bold text-white">
-                  {title || "Campaign Preview"}
-                </h4>
               </div>
+              {linkUrl ? (
+                <div className="pointer-events-none absolute right-3.5 bottom-3.5 z-10">
+                  <span className="border-vl-dark-900/20 bg-vl-dark-900/90 text-vl-white-300 inline-flex items-center gap-1.5 border px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase backdrop-blur-xs">
+                    <span>Explore</span>
+                    <ArrowUpRight className="text-vl-cyan size-3" aria-hidden="true" />
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
         )}
@@ -548,10 +583,10 @@ export function BannerForm({
       {/* ─────────────────────────────────────────────────────────────
           SECTION 4: MOBILE BANNER IMAGE (Optional Direct Upload)
       ───────────────────────────────────────────────────────────── */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#101114]/10 pb-4">
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vl-dark-900/10 pb-4">
           <div>
-            <h3 className="text-base font-semibold text-[#101114]">
+            <h3 className="text-base font-semibold text-vl-dark-900">
               Mobile Banner Image{" "}
               <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
             </h3>
@@ -560,10 +595,12 @@ export function BannerForm({
               down automatically. Recommended: 3:2 or 1:1.
             </p>
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
+            size="xs"
             onClick={() => setUseMobileUrlInput((prev) => !prev)}
-            className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 hover:text-[#101114]"
+            className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
           >
             {useMobileUrlInput ? (
               <>
@@ -574,7 +611,7 @@ export function BannerForm({
                 <Globe className="size-3.5" /> Or use external / Cloudinary URL
               </>
             )}
-          </button>
+          </Button>
         </div>
 
         {!useMobileUrlInput ? (
@@ -589,14 +626,14 @@ export function BannerForm({
               onDrop={handleMobileDrop}
               className={`flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center transition-all ${
                 isMobileDragging
-                  ? "scale-[1.01] border-[#00D9FF] bg-[#00D9FF]/10"
-                  : "border-[#101114]/20 bg-[#F9F8F6]/60 hover:border-[#00D9FF] hover:bg-[#F9F8F6]"
+                  ? "scale-[1.01] border-vl-cyan bg-vl-cyan-50"
+                  : "border-vl-dark-900/20 bg-vl-white-100/60 hover:border-vl-cyan hover:bg-vl-white-100"
               }`}
             >
-              <div className="flex size-12 items-center justify-center rounded-full bg-[#101114]/5 text-[#101114]">
-                <ImagePlus className="size-6 text-[#101114]/70" />
+              <div className="flex size-12 items-center justify-center rounded-full bg-vl-dark-900/5 text-vl-dark-900">
+                <ImagePlus className="size-6 text-vl-dark-900/70" />
               </div>
-              <span className="mt-3 text-sm font-semibold text-[#101114]">
+              <span className="mt-3 text-sm font-semibold text-vl-dark-900">
                 {mobilePreview
                   ? "Replace mobile banner image"
                   : "Click or drag to upload mobile banner"}
@@ -610,19 +647,21 @@ export function BannerForm({
           </div>
         ) : (
           <div>
-            <label className="block text-xs font-semibold text-[#101114]">
+            <label className="block text-xs font-semibold text-vl-dark-900">
               Mobile Image URL (Cloudinary)
             </label>
-            <input
-              type="url"
-              value={mobileUrl}
-              onChange={(e) => {
-                setMobileUrl(e.target.value);
-                setMobilePreview(e.target.value || null);
-              }}
-              placeholder="https://res.cloudinary.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                type="url"
+                value={mobileUrl}
+                onChange={(e) => {
+                  setMobileUrl(e.target.value);
+                  setMobilePreview(e.target.value || null);
+                }}
+                placeholder="https://res.cloudinary.com/..."
+                size="default"
+              />
+            </div>
             <span className="text-muted-foreground mt-1 block text-xs">
               Optional mobile-specific Cloudinary image URL.
             </span>
@@ -632,18 +671,20 @@ export function BannerForm({
         {/* Mobile Image Preview */}
         {mobilePreview && (
           <div className="mt-3 max-w-xs space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#101114]">
+            <div className="flex items-center justify-between text-xs font-semibold text-vl-dark-900">
               <span>Mobile Preview (3:2)</span>
-              <button
+              <Button
                 type="button"
+                variant="link"
+                size="xs"
                 onClick={handleClearMobile}
-                className="inline-flex items-center gap-1 text-red-600 hover:underline"
+                className="h-auto p-0 text-red-600 hover:underline"
               >
                 <Trash2 className="size-3.5" />
                 <span>Remove</span>
-              </button>
+              </Button>
             </div>
-            <div className="relative aspect-3/2 w-full overflow-hidden border border-[#101114]/15 bg-[#F9F8F6]">
+            <div className="relative aspect-3/2 w-full overflow-hidden rounded-2xl bg-vl-white-100 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)]">
               <Image
                 src={mobilePreview}
                 alt="Mobile Banner"
@@ -659,28 +700,19 @@ export function BannerForm({
       {/* ─────────────────────────────────────────────────────────────
           SECTION 5: ACTION BUTTONS (Matches Product Form)
       ───────────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 pt-6">
-        <Link
-          href="/admin/banners"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F9F8F6]"
-        >
-          Cancel
-        </Link>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 pt-6">
+        <Button asChild variant="outline" size="default">
+          <Link href="/admin/banners">Cancel</Link>
+        </Button>
 
-        <button
+        <Button
           type="submit"
-          disabled={pending}
-          className="inline-flex min-h-10 items-center justify-center gap-2 border border-[#101114] bg-[#101114] px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          variant="primary"
+          size="default"
+          loading={pending}
         >
-          {pending ? (
-            <>
-              <Loader2 className="size-4 animate-spin text-white" />
-              <span>Saving banner...</span>
-            </>
-          ) : (
-            <span>{banner ? "Update banner" : "Save banner"}</span>
-          )}
-        </button>
+          {banner ? "Update banner" : "Save banner"}
+        </Button>
       </div>
     </form>
   );

@@ -32,7 +32,4 @@ export {
   type UseAdminTableUrlFiltersOptions,
   type BuildFilterUrlOptions,
 } from "./admin-table-controls";
-export {
-  AdminTableInfiniteScroll,
-  type AdminTableInfiniteScrollProps,
-} from "./admin-table-infinite-scroll";
+export { InfiniteScroll, type InfiniteScrollProps } from "@/components/shared/infinite-scroll";

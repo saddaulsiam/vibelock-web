@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { DiscountType } from "@prisma/client";
 import { Check, X } from "lucide-react";
-import { useAdminTableColumns, AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
+import { useAdminTableColumns, InfiniteScroll } from "@/components/admin/shared";
 import { CouponCreateModal } from "@/components/admin/coupons/coupon-create-modal";
 import { CouponDeleteModal } from "@/components/admin/coupons/coupon-delete-modal";
 import {
@@ -454,14 +455,16 @@ export function AdminCouponsTable({
             )}
             <span>{feedbackMessage.text}</span>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setFeedbackMessage(null)}
-            className="cursor-pointer text-neutral-500 hover:text-neutral-900"
+            className="size-5 p-0 text-neutral-500 hover:text-neutral-900"
             aria-label="Dismiss message"
           >
             <X className="size-3.5" />
-          </button>
+          </Button>
         </div>
       )}
 
@@ -509,7 +512,7 @@ export function AdminCouponsTable({
       />
 
       {/* ── Shared Infinite Scroll Sentinel ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

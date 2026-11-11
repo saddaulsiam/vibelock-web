@@ -3,6 +3,8 @@ import { Edit, Globe, MapPin, Plus, RotateCcw, Truck } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/shared";
 import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
 import { ShippingSubNav } from "@/components/admin/shipping";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import { getAdminShippingZones } from "@/lib/admin/shipping";
 
@@ -27,10 +29,12 @@ export default async function ShippingZonesPage({
         badgeVariant="blue"
         description="Define geographical delivery boundaries and group countries or regional divisions for localized shipping rates."
       >
-        <Link href="/admin/shipping/zones/new" className={ADMIN_TABLE_CLASSES.buttonPrimary}>
-          <Plus className="size-3.5" />
-          <span>New Zone</span>
-        </Link>
+        <Button asChild variant="brand">
+          <Link href="/admin/shipping/zones/new">
+            <Plus className="size-3.5" />
+            <span>New Zone</span>
+          </Link>
+        </Button>
       </AdminPageHeader>
 
       {/* ── Unified Logistics Sub-Navigation ── */}
@@ -69,25 +73,24 @@ export default async function ShippingZonesPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <form method="get" className="flex w-full max-w-md items-center gap-2">
           <div className="relative flex-1">
-            <input
+            <Input
               type="text"
               name="q"
               defaultValue={q}
               placeholder="Search zone name..."
-              className="h-10 w-full rounded-lg border border-neutral-200 bg-white px-3.5 text-xs text-[#101114] transition-colors outline-none placeholder:text-neutral-400 hover:border-neutral-300 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+              size="default"
             />
           </div>
-          <button type="submit" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
+          <Button type="submit" variant="secondary">
             Search
-          </button>
+          </Button>
           {q && (
-            <Link
-              href="/admin/shipping/zones"
-              className="inline-flex h-10 items-center gap-1 rounded-lg border border-dashed border-neutral-300 px-3 text-xs font-medium text-neutral-600 transition-colors hover:text-neutral-900"
-            >
-              <RotateCcw className="size-3.5" />
-              Clear
-            </Link>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/shipping/zones">
+                <RotateCcw className="size-3.5" />
+                Clear
+              </Link>
+            </Button>
           )}
         </form>
 
@@ -124,7 +127,7 @@ export default async function ShippingZonesPage({
                     </p>
                     <Link
                       href="/admin/shipping/zones/new"
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
                     >
                       <Plus className="size-3.5" />
                       Add First Zone

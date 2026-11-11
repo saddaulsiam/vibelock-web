@@ -20,16 +20,16 @@ export default function StorefrontError({
   }, [error]);
 
   return (
-    <Section className="flex min-h-[75vh] items-center justify-center bg-[#F3F0E8] pt-24 pb-16 sm:pt-28 sm:pb-20">
+    <Section className="flex min-h-[75vh] items-center justify-center bg-vl-white-300 pt-24 pb-16 sm:pt-28 sm:pb-20">
       <Container>
-        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
-          <div className="mx-auto mb-6 flex size-14 items-center justify-center bg-[#F3F0E8] text-[#101114]">
+        <div className="mx-auto max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+          <div className="mx-auto mb-6 flex size-14 items-center justify-center bg-vl-white-300 text-vl-dark-900">
             <AlertCircle className="size-7" aria-hidden="true" />
           </div>
           <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / Storefront
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#101114] sm:text-3xl">
+          <h1 className="text-2xl font-semibold tracking-tight text-vl-dark-900 sm:text-3xl">
             Something went wrong
           </h1>
           <p className="text-muted-foreground mx-auto mt-3 max-w-sm text-sm leading-6 sm:text-base">
@@ -39,16 +39,14 @@ export default function StorefrontError({
             <Button
               onClick={reset}
               size="lg"
-              className="min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
             >
               Try again
             </Button>
-            <Link
-              href="/shop"
-              className="inline-flex min-h-11 items-center justify-center border border-[#101114]/20 px-5 text-sm font-semibold text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
-            >
-              Browse products
-            </Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/shop">
+                Browse products
+              </Link>
+            </Button>
           </div>
         </div>
       </Container>

@@ -140,7 +140,7 @@ describe("AdminInventoryIntelligenceTable Component Unit Tests", () => {
     // Sentinel exists for infinite scroll
     expect(html).toContain('aria-hidden="true"');
     expect(html).toContain(
-      'All <strong class="text-[#101114]">2</strong> inventory variants loaded'
+      'All <strong class="text-vl-dark-900">2</strong> inventory variants loaded'
     );
   });
 

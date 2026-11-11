@@ -110,14 +110,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         >
           <Link
             href="/"
-            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
           >
             Home
           </Link>
           <ChevronRight className="size-4" aria-hidden="true" />
           <Link
             href="/shop"
-            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
           >
             Products
           </Link>
@@ -126,7 +126,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <ChevronRight className="size-4" aria-hidden="true" />
               <Link
                 href={`/category/${mainCategory.slug}`}
-                className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
               >
                 {mainCategory.name}
               </Link>
@@ -163,13 +163,13 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {summary.totalReviews > 0 && (
                 <a
                   href="#reviews"
-                  className="mt-2.5 inline-flex items-center gap-2 text-xs font-semibold text-[#101114]/75 transition-colors hover:text-[#008ca6]"
+                  className="mt-2.5 inline-flex items-center gap-2 text-xs font-semibold text-vl-dark-900/75 transition-colors hover:text-vl-cyan-600"
                 >
                   <StarRating value={Math.round(summary.averageRating)} size="sm" />
-                  <span className="font-bold text-[#101114]">
+                  <span className="font-bold text-vl-dark-900">
                     {summary.averageRating.toFixed(1)}
                   </span>
-                  <span className="text-[#101114]/50">
+                  <span className="text-vl-dark-900/50">
                     ({summary.totalReviews} {summary.totalReviews === 1 ? "review" : "reviews"})
                   </span>
                 </a>

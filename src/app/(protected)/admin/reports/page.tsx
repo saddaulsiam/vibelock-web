@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { BarChart3, CreditCard, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import { ReportCharts, ReportExportMenu } from "@/components/admin/reports";
 
 import { ProductProfitabilityDrilldown } from "@/components/admin/products";
@@ -67,13 +69,13 @@ export default async function AdminReportsPage({
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col gap-5 border-b border-[#101114]/15 pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-5 border-b border-vl-dark-900/15 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <p className="text-muted-foreground text-xs font-semibold tracking-[0.16em] uppercase">
             VibeLock / Admin analytics
           </p>
           <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <BarChart3 className="size-7 text-[#00a8c6]" /> Reports &amp; Profitability
+            <BarChart3 className="size-7 text-vl-cyan-600" /> Reports &amp; Profitability
           </h1>
           <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
             Track sales, returns, inventory cost and profitability.
@@ -82,9 +84,9 @@ export default async function AdminReportsPage({
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/admin/reports/reconciliation?${new URLSearchParams({ range, ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`}
-            className="hover:bg-muted inline-flex h-10 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium text-[#101114]"
+            className="hover:bg-muted inline-flex h-10 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium text-vl-dark-900"
           >
-            <CreditCard className="size-4 text-[#00a8c6]" /> Cash Reconciliation
+            <CreditCard className="size-4 text-vl-cyan-600" /> Cash Reconciliation
           </Link>
           <Badge variant="outline">
             Data: {dateLabel(report.start)} – {dateLabel(new Date(report.end.getTime() - 1))}
@@ -107,37 +109,42 @@ export default async function AdminReportsPage({
         </div>
       </header>
 
-      <form className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto]">
+      <form className="grid gap-3 border border-vl-dark-900/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto]">
         <label className="text-sm font-medium">
           Period
-          <select
-            name="range"
-            defaultValue={range}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-44"
-          >
-            {ranges.map(([key, label]) => (
-              <option key={key} value={key}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="range"
+              defaultValue={range}
+              size="default"
+              className="w-full lg:w-44"
+            >
+              {ranges.map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         <label className="text-sm font-medium">
           From
-          <Input name="from" type="date" defaultValue={from} className="mt-2" />
+          <Input name="from" type="date" defaultValue={from} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           To
-          <Input name="to" type="date" defaultValue={to} className="mt-2" />
+          <Input name="to" type="date" defaultValue={to} className="mt-2" size="default" />
         </label>
         {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
         {value("q") ? <input type="hidden" name="q" value={value("q")!} /> : null}
-        <button
-          className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85"
+        <Button
           type="submit"
+          variant="primary"
+          size="default"
+          className="mt-auto"
         >
           Apply
-        </button>
+        </Button>
       </form>
 
       <section>
@@ -184,15 +191,15 @@ export default async function AdminReportsPage({
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="border border-[#101114]/10 bg-white p-4">
+          <div className="border border-vl-dark-900/10 bg-white p-4">
             <p className="text-muted-foreground text-xs tracking-wide uppercase">COGS</p>
             <p className="mt-2 text-xl font-semibold">{money(report.summary.cogs)}</p>
           </div>
-          <div className="border border-[#101114]/10 bg-white p-4">
+          <div className="border border-vl-dark-900/10 bg-white p-4">
             <p className="text-muted-foreground text-xs tracking-wide uppercase">Gross profit</p>
             <p className="mt-2 text-xl font-semibold">{money(report.summary.grossProfit)}</p>
           </div>
-          <div className="border border-[#101114]/10 bg-white p-4">
+          <div className="border border-vl-dark-900/10 bg-white p-4">
             <p className="text-muted-foreground text-xs tracking-wide uppercase">Gross margin</p>
             <p className="mt-2 text-xl font-semibold">
               {report.summary.grossMargin === null
@@ -207,8 +214,8 @@ export default async function AdminReportsPage({
         </p>
       </section>
 
-      <section className="border border-[#101114]/10 bg-white">
-        <div className="border-b border-[#101114]/10 px-4 py-4">
+      <section className="border border-vl-dark-900/10 bg-white">
+        <div className="border-b border-vl-dark-900/10 px-4 py-4">
           <h2 className="text-xl font-semibold">Daily sales trend</h2>
         </div>
         <div className="overflow-x-auto">
@@ -261,8 +268,8 @@ export default async function AdminReportsPage({
         page={value("page")}
       />
 
-      <section className="border border-[#101114]/10 bg-white">
-        <div className="border-b border-[#101114]/10 px-4 py-4">
+      <section className="border border-vl-dark-900/10 bg-white">
+        <div className="border-b border-vl-dark-900/10 px-4 py-4">
           <h2 className="text-xl font-semibold">Payment methods</h2>
           <p className="text-muted-foreground mt-1 text-xs">
             Sales reflect billed order amounts, not proof of cash collection. Pending online
@@ -294,8 +301,8 @@ export default async function AdminReportsPage({
         </div>
       </section>
 
-      <section className="border border-[#101114]/10 bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4">
+      <section className="border border-vl-dark-900/10 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 px-4 py-4">
           <div>
             <h2 className="text-xl font-semibold">Order profitability</h2>
             <p className="text-muted-foreground mt-1 text-sm">Cancelled orders are excluded.</p>
@@ -310,12 +317,9 @@ export default async function AdminReportsPage({
             <input type="hidden" name="from" value={from ?? ""} />
             <input type="hidden" name="to" value={to ?? ""} />
             {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
-            <button
-              className="border-input hover:bg-muted border px-3 text-sm font-medium"
-              type="submit"
-            >
+            <Button type="submit" variant="outline">
               Search
-            </button>
+            </Button>
           </form>
         </div>
         <div className="overflow-x-auto">
@@ -370,7 +374,7 @@ export default async function AdminReportsPage({
           </table>
         </div>
         {orders.totalPages > 1 ? (
-          <div className="flex justify-center gap-4 border-t border-[#101114]/10 p-4 text-sm">
+          <div className="flex justify-center gap-4 border-t border-vl-dark-900/10 p-4 text-sm">
             <Link
               className={
                 orders.page <= 1 ? "text-muted-foreground/50 pointer-events-none" : "font-medium"

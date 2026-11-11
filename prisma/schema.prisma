@@ -392,6 +392,7 @@ model Order {
   shippingState   String?
   shippingZip     String?
   shippingCountry String
+  deliveryNote    String?
 
   // Snapshot of shipping method used
   shippingMethodName String

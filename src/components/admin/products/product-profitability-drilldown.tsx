@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, AlertTriangle, Layers, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type {
   ProductProfitabilityProduct,
@@ -83,16 +84,16 @@ export function ProductProfitabilityDrilldown({
 
   return (
     <section
-      className="border border-[#101114]/10 bg-white"
+      className="border border-vl-dark-900/10 bg-white"
       aria-labelledby="product-profitability-heading"
     >
-      <div className="border-b border-[#101114]/10 p-4 sm:p-5">
+      <div className="border-b border-vl-dark-900/10 p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2
                 id="product-profitability-heading"
-                className="text-xl font-semibold tracking-tight text-[#101114]"
+                className="text-xl font-semibold tracking-tight text-vl-dark-900"
               >
                 Product &amp; SKU profitability
               </h2>
@@ -109,17 +110,19 @@ export function ProductProfitabilityDrilldown({
 
           <div className="flex flex-wrap items-center gap-2">
             {data.products.length > 0 && (
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={toggleAll}
-                className="hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-sm border border-[#101114]/15 bg-white px-3 text-xs font-medium text-[#101114]"
+                className="gap-1.5"
                 aria-label={
                   allExpanded ? "Collapse all product variants" : "Expand all product variants"
                 }
               >
                 <Layers className="size-3.5" aria-hidden="true" />
                 {allExpanded ? "Collapse all" : "Expand all"}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -147,12 +150,13 @@ export function ProductProfitabilityDrilldown({
             {to ? <input type="hidden" name="to" value={to} /> : null}
             {currentSort ? <input type="hidden" name="sort" value={currentSort} /> : null}
             {page ? <input type="hidden" name="page" value={page} /> : null}
-            <button
+            <Button
               type="submit"
-              className="inline-flex h-9 items-center justify-center rounded-sm bg-[#101114] px-3.5 text-xs font-semibold text-white hover:bg-[#101114]/85"
+              size="sm"
+              className="px-3.5"
             >
               Search
-            </button>
+            </Button>
           </form>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -171,8 +175,8 @@ export function ProductProfitabilityDrilldown({
                   href={buildHref({ sort: key, pPage: undefined })}
                   className={`rounded-sm px-2 py-1 transition-colors ${
                     isActive
-                      ? "bg-[#101114] font-semibold text-white"
-                      : "text-muted-foreground hover:bg-muted hover:text-[#101114]"
+                      ? "bg-vl-dark-900 font-semibold text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-vl-dark-900"
                   }`}
                   aria-current={isActive ? "true" : undefined}
                 >
@@ -186,7 +190,7 @@ export function ProductProfitabilityDrilldown({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-210 text-left text-sm">
-          <thead className="bg-muted/40 text-muted-foreground border-b border-[#101114]/10 text-xs font-semibold tracking-wider uppercase">
+          <thead className="bg-muted/40 text-muted-foreground border-b border-vl-dark-900/10 text-xs font-semibold tracking-wider uppercase">
             <tr>
               <th scope="col" className="p-3.5">
                 Product / Variant SKU
@@ -220,7 +224,7 @@ export function ProductProfitabilityDrilldown({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#101114]/10">
+          <tbody className="divide-y divide-vl-dark-900/10">
             {data.products.length === 0 ? (
               <tr>
                 <td colSpan={10} className="text-muted-foreground p-10 text-center">
@@ -257,10 +261,10 @@ export function ProductProfitabilityDrilldown({
       </div>
 
       {data.totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 p-4 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 p-4 text-xs">
           <p className="text-muted-foreground">
-            Showing page <span className="font-semibold text-[#101114]">{data.page}</span> of{" "}
-            <span className="font-semibold text-[#101114]">{data.totalPages}</span> (
+            Showing page <span className="font-semibold text-vl-dark-900">{data.page}</span> of{" "}
+            <span className="font-semibold text-vl-dark-900">{data.totalPages}</span> (
             {data.total.toLocaleString("en-BD")} products)
           </p>
           <div className="flex items-center gap-2">
@@ -269,7 +273,7 @@ export function ProductProfitabilityDrilldown({
               className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
                 data.page <= 1
                   ? "pointer-events-none opacity-40"
-                  : "hover:bg-muted border-[#101114]/15 bg-white text-[#101114]"
+                  : "hover:bg-muted border-vl-dark-900/15 bg-white text-vl-dark-900"
               }`}
               aria-disabled={data.page <= 1}
             >
@@ -283,7 +287,7 @@ export function ProductProfitabilityDrilldown({
               className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
                 data.page >= data.totalPages
                   ? "pointer-events-none opacity-40"
-                  : "hover:bg-muted border-[#101114]/15 bg-white text-[#101114]"
+                  : "hover:bg-muted border-vl-dark-900/15 bg-white text-vl-dark-900"
               }`}
               aria-disabled={data.page >= data.totalPages}
             >
@@ -310,10 +314,12 @@ function ProductRowGroup({
       <tr className="group hover:bg-muted/30 transition-colors">
         <td className="p-3.5">
           <div className="flex items-center gap-2">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon"
               onClick={onToggle}
-              className="hover:bg-muted inline-flex size-6 shrink-0 items-center justify-center rounded-sm border border-[#101114]/15 text-[#101114] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+              className="size-6 shrink-0"
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? "Collapse" : "Expand"} variants for ${product.productName}`}
             >
@@ -322,10 +328,10 @@ function ProductRowGroup({
               ) : (
                 <ChevronRight className="size-3.5" aria-hidden="true" />
               )}
-            </button>
+            </Button>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-semibold text-[#101114]">{product.productName}</span>
+                <span className="font-semibold text-vl-dark-900">{product.productName}</span>
                 <Badge variant="outline" className="text-muted-foreground h-4.5 px-1.5 text-[10px]">
                   {product.variantCount} {product.variantCount === 1 ? "variant" : "variants"}
                 </Badge>
@@ -345,7 +351,7 @@ function ProductRowGroup({
         <td className="p-3.5 text-right font-medium text-amber-700 tabular-nums">
           {product.returnedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
+        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
           {product.retainedUnits.toLocaleString("en-BD")}
         </td>
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
@@ -354,7 +360,7 @@ function ProductRowGroup({
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
           {formatBdt(product.grossSales)}
         </td>
-        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
+        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
           {formatBdt(product.netSales)}
         </td>
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
@@ -363,7 +369,7 @@ function ProductRowGroup({
         <td className="p-3.5 text-right font-semibold text-emerald-700 tabular-nums">
           {formatBdt(product.profit)}
         </td>
-        <td className="p-3.5 text-right font-semibold text-[#101114] tabular-nums">
+        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
           {product.margin !== null ? `${product.margin.toFixed(1)}%` : "—"}
         </td>
       </tr>
@@ -391,10 +397,10 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
     .join(" · ");
 
   return (
-    <tr className="border-b border-[#101114]/5 bg-[#FAF9F6]/80 text-xs transition-colors hover:bg-[#FAF9F6]">
+    <tr className="border-b border-vl-dark-900/5 bg-vl-white-100/80 text-xs transition-colors hover:bg-vl-white-100">
       <td className="py-2.5 pr-3 pl-11">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[11px] font-medium text-[#101114]">{variant.sku}</span>
+          <span className="font-mono text-[11px] font-medium text-vl-dark-900">{variant.sku}</span>
           {attributes ? (
             <span className="text-muted-foreground text-[11px]">({attributes})</span>
           ) : (
@@ -413,7 +419,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="py-2.5 pr-3.5 text-right text-amber-700 tabular-nums">
         {variant.returnedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
         {variant.retainedUnits.toLocaleString("en-BD")}
       </td>
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
@@ -422,7 +428,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
         {formatBdt(variant.grossSales)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
         {formatBdt(variant.netSales)}
       </td>
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
@@ -431,7 +437,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="py-2.5 pr-3.5 text-right font-medium text-emerald-700 tabular-nums">
         {formatBdt(variant.profit)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-[#101114] tabular-nums">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
         {variant.margin !== null ? `${variant.margin.toFixed(1)}%` : "—"}
       </td>
     </tr>

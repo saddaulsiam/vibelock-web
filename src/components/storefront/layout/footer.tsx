@@ -40,11 +40,11 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="border-vl-border bg-vl-black text-vl-white relative overflow-hidden border-t">
+    <footer className="border-vl-border bg-vl-black text-vl-white relative z-0 overflow-hidden border-t">
       {/* ── Technical Grid Pattern (Dark Coordinate Grid) ── */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 z-0 opacity-70"
+        className="pointer-events-none absolute inset-0 opacity-70"
         style={{
           backgroundImage:
             "linear-gradient(to right, rgba(0, 217, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 217, 255, 0.05) 1px, transparent 1px)",
@@ -62,14 +62,14 @@ export function Footer() {
         className="pointer-events-none absolute right-0 -bottom-40 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(0,217,255,0.07),transparent_70%)] blur-3xl"
       />
 
-      <Container className="relative z-10 pt-14 pb-8 sm:pt-16 sm:pb-10">
+      <Container className="relative pt-14 pb-8 sm:pt-16 sm:pb-10">
         {/* ── 1. Top Section: Brand Info & Retail Outlets + Quick Links ── */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Brand & About (Col-span 4) */}
           <div className="flex flex-col items-start lg:col-span-4">
             {/* Circular Logo Badge + Brand Name */}
             <div className="relative flex items-center gap-3">
-              <div className="border-vl-border relative flex size-10 items-center justify-center rounded-full border bg-[#16171b] shadow-[0_0_16px_rgba(0,217,255,0.2)]">
+              <div className="border-vl-border bg-vl-dark-800 relative flex size-10 items-center justify-center rounded-full border shadow-[0_0_16px_rgba(0,217,255,0.2)]">
                 <Image
                   src="/images/vibelock-logo.png"
                   alt="VibeLock Emblem"
@@ -92,7 +92,7 @@ export function Footer() {
 
             {/* About Label & Paragraph */}
             <div className="mt-6">
-              <span className="text-vl-cyan text-[10px] font-extrabold tracking-widest uppercase">
+              <span className="text-vl-cyan text-2xs font-extrabold tracking-widest uppercase">
                 ABOUT VIBELOCK
               </span>
               <p className="text-vl-grey mt-2 max-w-sm text-xs leading-relaxed">
@@ -110,13 +110,13 @@ export function Footer() {
             <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
               {/* Column 1: Shop Categories (Clean Links List - No Box) */}
               <div className="flex flex-col">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs tracking-streetwear font-extrabold uppercase">
                   COLLECTIONS
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   SHOP CATEGORIES
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
                 <ul className="mt-4.5 flex flex-col gap-2.5">
                   {shopLinks.map((link) => (
@@ -125,8 +125,8 @@ export function Footer() {
                         href={link.href}
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
-                        <ChevronRight className="text-vl-cyan/60 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan/50 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
+                        <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
                           {link.label}
                         </span>
                       </Link>
@@ -137,13 +137,13 @@ export function Footer() {
 
               {/* Column 2: Customer & Support (Clean Links List - No Box) */}
               <div className="flex flex-col">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs tracking-streetwear font-extrabold uppercase">
                   HELP &amp; ACCOUNT
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   CUSTOMER &amp; SUPPORT
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
                 <ul className="mt-4.5 flex flex-col gap-2.5">
                   {customerLinks.map((link) => (
@@ -152,8 +152,8 @@ export function Footer() {
                         href={link.href}
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
-                        <ChevronRight className="text-vl-cyan/60 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan/50 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
+                        <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
+                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
                           {link.label}
                         </span>
                       </Link>
@@ -164,20 +164,20 @@ export function Footer() {
 
               {/* Column 3: Our Retail Location (Preserved Box Card Design) */}
               <div className="col-span-2 flex flex-col sm:col-span-1">
-                <span className="text-vl-cyan text-[10px] font-extrabold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan text-2xs tracking-streetwear font-extrabold uppercase">
                   FLAGSHIP OUTLET
                 </span>
                 <h4 className="text-vl-white mt-1 text-sm font-black tracking-wider uppercase">
                   OUR RETAIL LOCATION
                 </h4>
-                <div className="bg-vl-cyan/80 mt-2 h-0.5 w-6" />
+                <div className="bg-vl-cyan-400 mt-2 h-0.5 w-6" />
 
-                <div className="group border-vl-border hover:border-vl-cyan/40 relative mt-4.5 flex flex-1 flex-col justify-between rounded-xl border bg-[#0B0F13]/90 p-4.5 transition-all hover:bg-[#0D1318]">
+                <div className="group border-vl-border hover:border-vl-cyan-500 bg-vl-dark-900/90 hover:bg-vl-dark-900 relative mt-4.5 flex flex-1 flex-col justify-between rounded-xl border p-4.5 transition-all">
                   <div>
                     {/* Badge */}
                     <div className="text-vl-cyan flex items-center gap-1.5">
                       <MapPin className="size-3.5 shrink-0" />
-                      <span className="text-[11px] font-black tracking-wider uppercase">
+                      <span className="text-compact font-black tracking-wider uppercase">
                         {RETAIL_LOCATION.badge}
                       </span>
                     </div>
@@ -199,7 +199,7 @@ export function Footer() {
                     href={RETAIL_LOCATION.mapUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="border-vl-border text-vl-white/60 group-hover:text-vl-cyan mt-4 flex items-center justify-between border-t pt-2.5 text-[11px] font-bold tracking-wider uppercase transition-colors"
+                    className="border-vl-border text-vl-white/60 group-hover:text-vl-cyan text-compact mt-4 flex items-center justify-between border-t pt-2.5 font-bold tracking-wider uppercase transition-colors"
                   >
                     <span>OPEN IN GOOGLE MAPS</span>
                     <ExternalLink className="size-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
@@ -212,7 +212,7 @@ export function Footer() {
 
         {/* ── 2. Middle Section: Social Networks Row ── */}
         <div className="border-vl-border flex flex-col items-center border-b py-10">
-          <span className="text-vl-white/50 text-[10px] font-extrabold tracking-[0.25em] uppercase">
+          <span className="text-vl-white/50 text-2xs tracking-tag font-extrabold uppercase">
             SOCIAL NETWORKS
           </span>
 
@@ -222,7 +222,7 @@ export function Footer() {
               href="https://facebook.com/vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-[#1877F2]/60 hover:bg-[#1877F2]/10"
+              className="border-vl-border text-vl-white/90 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-[#1877F2]/60 hover:bg-[#1877F2]/10"
             >
               <Image src="/icons/facebook.svg" alt="Facebook" width={20} height={20} />
               <span>Facebook</span>
@@ -233,7 +233,7 @@ export function Footer() {
               href="https://instagram.com/vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-pink-500/60 hover:bg-pink-500/10"
+              className="border-vl-border text-vl-white/90 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-pink-500/60 hover:bg-pink-500/10"
             >
               <Image src="/icons/instagram.svg" alt="Instagram" width={20} height={20} />
               <span>Instagram</span>
@@ -243,7 +243,7 @@ export function Footer() {
               href="https://wa.me/+8801311333277"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"
+              className="border-vl-border text-vl-white/90 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"
             >
               <Image src="/icons/whatsapp.svg" alt="WhatsApp" width={20} height={20} />
               <span>WhatsApp</span>
@@ -253,7 +253,7 @@ export function Footer() {
               href="https://tiktok.com/@vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 hover:border-vl-cyan/60 hover:bg-vl-cyan/10 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all"
+              className="border-vl-border text-vl-white/90 hover:border-vl-dark-500 hover:bg-vl-dark-500/20 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all"
             >
               <Image src="/icons/tiktok.svg" alt="TikTok" width={20} height={20} />
               <span>TikTok</span>
@@ -263,7 +263,7 @@ export function Footer() {
               href="https://youtube.com/@vibelock.bd"
               target="_blank"
               rel="noreferrer"
-              className="border-vl-border text-vl-white/90 inline-flex items-center gap-2 rounded-full border bg-[#0C1014] px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-red-500/60 hover:bg-red-500/10"
+              className="border-vl-border text-vl-white/90 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-red-500/60 hover:bg-red-500/10"
             >
               <Image src="/icons/youtube.svg" alt="YouTube" width={20} height={20} />
               <span>YouTube</span>
@@ -280,7 +280,7 @@ export function Footer() {
             style={{ height: "clamp(60px, 12vw, 160px)" }}
           >
             <span
-              className="block leading-none font-black tracking-tight whitespace-nowrap text-[#1a2329] uppercase"
+              className="text-vl-dark-500/30 block leading-none font-black tracking-tight whitespace-nowrap uppercase"
               style={{
                 fontSize: "clamp(72px, 14vw, 200px)",
                 lineHeight: 1,

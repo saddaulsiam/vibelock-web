@@ -11,7 +11,7 @@ const ACCESSORIES = [
 
 export function CollectionBanner() {
   return (
-    <section className="relative overflow-hidden border-y border-white/10 bg-[#080C0F] text-white">
+    <section className="bg-vl-dark-900 relative overflow-hidden">
       {/* Background texture overlay */}
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50 mix-blend-screen sm:opacity-70"
@@ -21,39 +21,31 @@ export function CollectionBanner() {
 
       {/* Cyan atmospheric glow — top-left */}
       <div
-        className="pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full bg-[#00D9FF]/10 blur-3xl sm:h-96 sm:w-96"
-        aria-hidden="true"
-      />
-      {/* Cyan atmospheric glow — bottom-right */}
-      <div
-        className="pointer-events-none absolute -right-10 -bottom-10 h-48 w-48 rounded-full bg-[#00D9FF]/8 blur-2xl sm:h-64 sm:w-64"
+        className="bg-vl-cyan-500/20 pointer-events-none absolute -top-20 -left-20 h-72 w-72 rounded-full blur-3xl sm:h-96 sm:w-96"
         aria-hidden="true"
       />
 
       <Container>
         {/* ── Mobile-first: 1-col → 2-col at md ── */}
-        <div className="relative z-10 grid grid-cols-1 gap-6 py-12 sm:gap-8 sm:py-14 md:grid-cols-[1.2fr_0.8fr] md:items-center md:gap-8 md:py-16 lg:py-20 xl:py-30">
+        <div className="relative z-10 grid grid-cols-1 gap-6 py-12 sm:gap-8 sm:py-14 md:grid-cols-[1.2fr_0.8fr] md:items-center md:gap-8 md:py-16 lg:py-20 xl:py-26">
           {/* ── 1. Left Column: Typography & CTA ── */}
           <div className="flex flex-col items-start">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#00D9FF]/30 bg-[#00D9FF]/10 px-3 py-1 backdrop-blur-sm">
-              <span className="size-1.5 rounded-full bg-[#00D9FF]" aria-hidden="true" />
-              <p className="text-[10px] font-extrabold tracking-[0.22em] text-[#00D9FF] uppercase sm:text-[11px]">
+            <div className="border-vl-cyan-700 bg-vl-cyan-900 inline-flex items-center gap-2 rounded-full border px-3 py-1 backdrop-blur-sm">
+              <span className="bg-vl-cyan size-1.5 rounded-full" aria-hidden="true" />
+              <p className="text-2xs text-vl-cyan sm:text-compact font-bold tracking-[0.22em] uppercase">
                 THE VIBELOCK COLLECTION
               </p>
             </div>
-
             <h2 className="font-heading mt-4 text-4xl leading-[0.95] font-black tracking-tight text-white uppercase drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-6xl">
               BUILT FOR{" "}
-              <span className="mt-1 block text-[#00D9FF] drop-shadow-[0_0_20px_rgba(0,217,255,0.4)]">
+              <span className="text-vl-cyan mt-1 block drop-shadow-[0_0_20px_rgba(0,217,255,0.4)]">
                 REAL ONES
               </span>
             </h2>
-
-            <p className="mt-4 max-w-sm text-sm leading-relaxed font-medium text-[#F3F0E8] drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] sm:max-w-md sm:text-base">
+            <p className="text-vl-white-300 mt-4 max-w-sm text-sm leading-relaxed font-medium drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)] sm:max-w-md sm:text-base">
               Streetwear that moves with your story. Crafted for comfort, silhouette, and the
               streets of Dhaka.
             </p>
-
             {/* Stats row */}
             <div className="mt-6 flex items-center gap-6 rounded-xl border border-white/10 bg-black/40 px-4 py-3 backdrop-blur-md sm:gap-8 sm:px-5 sm:py-3.5">
               {[
@@ -66,7 +58,7 @@ export function CollectionBanner() {
                     <span className="text-xl font-black tracking-tight text-white drop-shadow-sm sm:text-2xl">
                       {value}
                     </span>
-                    <span className="text-[10px] font-bold tracking-widest text-zinc-300 uppercase sm:text-[11px]">
+                    <span className="text-2xs sm:text-compact font-bold tracking-widest text-zinc-300 uppercase">
                       {label}
                     </span>
                   </div>
@@ -75,25 +67,16 @@ export function CollectionBanner() {
               ))}
             </div>
 
-            <div className="mt-6">
-              <Link
-                href="/shop"
-                className="group relative inline-flex items-center gap-2.5 overflow-hidden rounded-full bg-[#00D9FF] py-2 pr-2 pl-4.5 text-[10px] font-black tracking-[0.16em] text-[#080C0F] uppercase shadow-[0_0_18px_rgba(0,217,255,0.3)] transition-all duration-300 hover:scale-[1.02] hover:bg-[#2ae0ff] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none active:scale-95 sm:py-2.5 sm:pr-2.5 sm:pl-5 sm:text-[11px]"
-              >
-                {/* Subtle sheen highlight on hover */}
-                <span
-                  className="pointer-events-none absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/35 to-transparent transition-transform duration-700 ease-out group-hover:translate-x-full"
-                  aria-hidden="true"
-                />
-                <span className="relative z-10">SHOP COLLECTION</span>
-                <span
-                  className="relative z-10 flex size-5 items-center justify-center rounded-full bg-[#080C0F] text-[#00D9FF] transition-all duration-300 group-hover:translate-x-0.5 group-hover:bg-white group-hover:text-[#080C0F] sm:size-5.5"
-                  aria-hidden="true"
-                >
-                  <ArrowRight className="size-2.5 transition-transform duration-300 group-hover:translate-x-0.5 sm:size-3" />
-                </span>
-              </Link>
-            </div>
+            <Link
+              href="/shop"
+              className="group hover:border-vl-cyan-700 hover:bg-vl-cyan-900 hover:text-vl-cyan border-vl-cyan bg-vl-cyan text-vl-dark-900 mt-6 inline-flex items-center gap-2.5 rounded-full border px-5.5 py-2.5 text-xs font-extrabold tracking-[0.18em] uppercase transition-all duration-300 hover:scale-[1.03] focus-visible:ring-2 active:scale-[0.98] sm:gap-3 sm:px-7 sm:py-3"
+            >
+              <span>SHOP ALL DROPS</span>
+              <ArrowRight
+                className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 sm:size-4"
+                aria-hidden="true"
+              />
+            </Link>
           </div>
 
           {/* ── 2. Right Column: Accessory detail cards ── */}
@@ -102,7 +85,7 @@ export function CollectionBanner() {
               <Link
                 key={label}
                 href="/shop"
-                className="group relative flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#00D9FF]/40 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,217,255,0.12)]"
+                className="group hover:border-vl-cyan-500 relative flex flex-col overflow-hidden rounded-lg border border-white/10 bg-white/5 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:bg-white/10 hover:shadow-[0_0_20px_rgba(0,217,255,0.12)]"
               >
                 {/* Image */}
                 <div className="relative aspect-3/4 w-18 sm:w-20 md:w-22">
@@ -116,7 +99,7 @@ export function CollectionBanner() {
                 </div>
                 {/* Label */}
                 <div className="border-t border-white/8 px-2 py-1.5 text-center">
-                  <span className="text-[9px] font-bold tracking-[0.18em] text-[#F3F0E8]/60 uppercase transition-colors duration-300 group-hover:text-[#00D9FF]">
+                  <span className="text-vl-white-300/60 group-hover:text-vl-cyan text-[9px] font-bold tracking-[0.18em] uppercase transition-colors duration-300">
                     {label}
                   </span>
                 </div>
@@ -128,7 +111,7 @@ export function CollectionBanner() {
 
       {/* Bottom edge accent line */}
       <div
-        className="pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-linear-to-r from-transparent via-[#00D9FF]/30 to-transparent"
+        className="via-vl-cyan-100 pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-linear-to-r from-transparent to-transparent"
         aria-hidden="true"
       />
     </section>

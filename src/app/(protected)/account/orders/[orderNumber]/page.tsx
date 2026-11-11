@@ -18,6 +18,7 @@ import { ReorderButton } from "@/components/storefront/orders/reorder-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
+import { Button } from "@/components/ui/button";
 import { getCustomerOrder } from "@/lib/orders/queries";
 import { formatOrderDateTime, calculateDeliveryEstimate } from "@/lib/format";
 
@@ -89,7 +90,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/account/orders"
-          className="group inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors hover:text-[#101114]"
+          className="group hover:text-vl-dark-900 inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
         >
           <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
           <span>Back to Orders</span>
@@ -100,37 +101,29 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           <OrderPrintAction order={order} />
 
           {/* Buy Again / Reorder for Delivered Orders */}
-          {order.status === "DELIVERED" && (
-            <ReorderButton orderNumber={order.orderNumber} />
-          )}
+          {order.status === "DELIVERED" && <ReorderButton orderNumber={order.orderNumber} />}
 
           {order.isReturnable && (
-            <Link
-              href={`/account/orders/${order.orderNumber}/return`}
-              className="inline-flex min-h-[38px] items-center gap-1.5 rounded-lg border border-[#101114] bg-[#101114] px-3.5 py-1.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800"
-            >
-              <span>Return</span>
-              <ArrowRight className="size-3.5" />
-            </Link>
+            <Button asChild variant="primary" size="sm">
+              <Link href={`/account/orders/${order.orderNumber}/return`}>
+                <span>Return</span>
+                <ArrowRight className="size-3.5" />
+              </Link>
+            </Button>
           )}
 
-          {canCancel && (
-            <CancelOrderButton
-              orderNumber={order.orderNumber}
-              className="min-h-[38px] cursor-pointer rounded-lg border-[1.5px] border-red-200 bg-red-100/60 px-3.5 py-1.5 text-xs font-semibold tracking-wider text-red-500 uppercase transition-colors hover:border-red-300 hover:bg-red-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-            />
-          )}
+          {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
         </div>
       </div>
 
       {/* ── Unified Master Order Receipt Canvas (No fragmented disjointed boxes!) ── */}
-      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white shadow-2xs">
+      <div className="border-vl-dark-900/8 overflow-hidden rounded-2xl border bg-white shadow-2xs">
         {/* 1. Header Section: Order Identity & Meta */}
-        <div className="border-b border-[#101114]/8 p-5 sm:p-7">
+        <div className="border-vl-dark-900/8 border-b p-5 sm:p-7">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold tracking-[0.2em] text-[#00D9FF] uppercase">
+                <span className="text-vl-cyan text-[11px] font-semibold tracking-[0.2em] uppercase">
                   Order Details
                 </span>
                 <span className="text-neutral-300">•</span>
@@ -139,7 +132,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-3">
-                <h1 className="text-xl font-bold tracking-tight text-[#101114] uppercase sm:text-2xl">
+                <h1 className="text-vl-dark-900 text-xl font-bold tracking-tight uppercase sm:text-2xl">
                   Order #{order.orderNumber}
                 </h1>
                 <OrderStatusBadge status={order.status} />
@@ -164,7 +157,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
               </div>
             </div>
           ) : (
-            <div className="mt-6 border-t border-[#101114]/6 pt-6">
+            <div className="border-vl-dark-900/6 mt-6 border-t pt-6">
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
                 {steps.map((st, i) => {
                   return (
@@ -175,7 +168,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                             st.isDone
                               ? "bg-emerald-600 text-white"
                               : st.isCurrent
-                                ? "bg-[#101114] text-white ring-2 ring-[#00D9FF]"
+                                ? "bg-vl-dark-900 ring-vl-cyan text-white ring-2"
                                 : "bg-neutral-100 text-neutral-400"
                           }`}
                         >
@@ -189,7 +182,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                         </div>
                         <span
                           className={`text-xs font-semibold tracking-wider uppercase ${
-                            st.isDone || st.isCurrent ? "text-[#101114]" : "text-neutral-400"
+                            st.isDone || st.isCurrent ? "text-vl-dark-900" : "text-neutral-400"
                           }`}
                         >
                           {st.label}
@@ -206,10 +199,10 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
         {/* 2. Purchased Items Section & Integrated Financial Breakdown */}
         <div className="p-5 sm:p-7">
-          <div className="flex items-center justify-between border-b border-[#101114]/8 pb-4">
+          <div className="border-vl-dark-900/8 flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-2">
-              <Package className="size-4 text-[#101114]" />
-              <h2 className="text-xs font-bold tracking-wider text-[#101114] uppercase sm:text-sm">
+              <Package className="text-vl-dark-900 size-4" />
+              <h2 className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase sm:text-sm">
                 Purchased Items
               </h2>
             </div>
@@ -220,14 +213,14 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           </div>
 
           {/* Item List */}
-          <ul className="divide-y divide-[#101114]/6">
+          <ul className="divide-vl-dark-900/6 divide-y">
             {order.items.map((item) => (
               <li
                 key={item.id}
                 className="flex items-center gap-4 py-4 first:pt-4 last:pb-2 sm:py-5"
               >
                 {/* Product Thumbnail */}
-                <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 sm:size-16">
+                <div className="border-vl-dark-900/10 relative size-14 shrink-0 overflow-hidden rounded-xl border bg-neutral-100 sm:size-16">
                   <Image
                     src={item.imageUrl ?? "/images/categories/cat-t-shirts.jpg"}
                     alt={item.productName}
@@ -239,7 +232,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
                 {/* Product Info */}
                 <div className="min-w-0 flex-1">
-                  <h3 className="line-clamp-2 text-xs font-semibold text-[#101114] sm:text-sm">
+                  <h3 className="text-vl-dark-900 line-clamp-2 text-xs font-semibold sm:text-sm">
                     {item.productName}
                   </h3>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500">
@@ -266,7 +259,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
                 {/* Item Line Total */}
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold text-[#101114] sm:text-base">
+                  <p className="text-vl-dark-900 text-sm font-bold sm:text-base">
                     ৳ {item.lineTotal.toLocaleString("en-BD")}
                   </p>
                 </div>
@@ -275,11 +268,11 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           </ul>
 
           {/* Financial Breakdown (Seamless right-aligned receipt calculation) */}
-          <div className="mt-4 border-t border-[#101114]/8 pt-5 sm:flex sm:justify-end">
+          <div className="border-vl-dark-900/8 mt-4 border-t pt-5 sm:flex sm:justify-end">
             <div className="w-full space-y-2 text-xs sm:w-72 sm:max-w-xs sm:text-sm">
               <div className="flex justify-between text-neutral-500">
                 <span>Subtotal</span>
-                <span className="font-normal text-[#101114]">
+                <span className="text-vl-dark-900 font-normal">
                   ৳ {order.subtotal.toLocaleString("en-BD")}
                 </span>
               </div>
@@ -291,23 +284,23 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
               )}
               <div className="flex justify-between text-neutral-500">
                 <span>Shipping ({order.shippingMethodName || "Standard"})</span>
-                <span className="font-normal text-[#101114]">
+                <span className="text-vl-dark-900 font-normal">
                   ৳ {order.shippingCost.toLocaleString("en-BD")}
                 </span>
               </div>
               {order.taxAmount > 0 && (
                 <div className="flex justify-between text-neutral-500">
                   <span>Estimated Tax</span>
-                  <span className="font-normal text-[#101114]">
+                  <span className="text-vl-dark-900 font-normal">
                     ৳ {order.taxAmount.toLocaleString("en-BD")}
                   </span>
                 </div>
               )}
-              <div className="my-2 flex items-baseline justify-between border-t border-[#101114]/8 pt-3">
-                <span className="text-sm font-bold tracking-wide text-[#101114] uppercase">
+              <div className="border-vl-dark-900/8 my-2 flex items-baseline justify-between border-t pt-3">
+                <span className="text-vl-dark-900 text-sm font-bold tracking-wide uppercase">
                   Total Amount
                 </span>
-                <span className="text-lg font-bold text-[#101114] sm:text-xl">
+                <span className="text-vl-dark-900 text-lg font-bold sm:text-xl">
                   ৳ {order.total.toLocaleString("en-BD")}
                 </span>
               </div>
@@ -316,21 +309,21 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
         </div>
 
         {/* 3. Integrated Metadata Grid (Address, Payment & Delivery - all in one footer panel!) */}
-        <div className="border-t border-[#101114]/8 bg-[#FAF9F5] p-5 sm:p-7">
-          <div className="grid grid-cols-1 gap-6 divide-y divide-[#101114]/8 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
+        <div className="border-vl-dark-900/8 bg-vl-white-100 border-t p-5 sm:p-7">
+          <div className="divide-vl-dark-900/8 grid grid-cols-1 gap-6 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
             {/* Delivery Address */}
             <div className="sm:pr-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                <MapPin className="size-3.5 text-[#101114]" />
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                <MapPin className="text-vl-dark-900 size-3.5" />
                 <span>Delivery Address</span>
               </div>
               <div className="mt-3 space-y-1 text-xs leading-relaxed text-neutral-600">
-                <p className="font-semibold text-[#101114]">{order.customerName || "Customer"}</p>
+                <p className="text-vl-dark-900 font-semibold">{order.customerName || "Customer"}</p>
                 {order.customerPhone && (
                   <p className="font-medium text-neutral-700">{order.customerPhone}</p>
                 )}
                 <p className="text-neutral-500">{order.customerEmail}</p>
-                <div className="pt-2 text-[#101114]">
+                <div className="text-vl-dark-900 pt-2">
                   <p>{order.shippingStreet}</p>
                   <p>
                     {order.shippingCity}
@@ -344,8 +337,8 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
             {/* Payment Details */}
             <div className="pt-5 sm:px-6 sm:pt-0">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                <CreditCard className="size-3.5 text-[#101114]" />
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                <CreditCard className="text-vl-dark-900 size-3.5" />
                 <span>Payment Details</span>
               </div>
               <div className="mt-3 space-y-2.5 text-xs text-neutral-600">
@@ -365,8 +358,8 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
             {/* Shipment / Fulfillment */}
             <div className="pt-5 sm:pt-0 sm:pl-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                <Truck className="size-3.5 text-[#101114]" />
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                <Truck className="text-vl-dark-900 size-3.5" />
                 <span>Fulfillment & Courier</span>
               </div>
               <div className="mt-3 space-y-2 text-xs text-neutral-600">
@@ -374,7 +367,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                   <>
                     <div className="flex items-center justify-between sm:justify-start sm:gap-4">
                       <span className="text-neutral-400">Carrier</span>
-                      <span className="font-semibold text-[#101114] capitalize">
+                      <span className="text-vl-dark-900 font-semibold capitalize">
                         {order.shipment.provider}
                       </span>
                     </div>
@@ -385,7 +378,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                     {order.shipment.trackingNumber && (
                       <div className="flex items-center justify-between sm:justify-start sm:gap-4">
                         <span className="text-neutral-400">Tracking #</span>
-                        <span className="rounded border border-[#101114]/10 bg-white px-2 py-0.5 font-mono font-semibold text-[#101114]">
+                        <span className="border-vl-dark-900/10 text-vl-dark-900 rounded border bg-white px-2 py-0.5 font-mono font-semibold">
                           {order.shipment.trackingNumber}
                         </span>
                       </div>
@@ -393,7 +386,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                   </>
                 ) : (
                   <div className="space-y-1">
-                    <p className="font-normal text-[#101114]">
+                    <p className="text-vl-dark-900 font-normal">
                       {order.shippingMethodName || "Standard Delivery"}
                     </p>
                     <p className="text-[11px] text-neutral-500">
@@ -412,18 +405,18 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
         {/* 4. Returns & Refunds (if any exist) */}
         {(order.returnRequests.length > 0 || order.refunds.length > 0) && (
-          <div className="border-t border-[#101114]/8 p-5 sm:p-7">
-            <h3 className="mb-3.5 text-xs font-bold tracking-wider text-[#101114] uppercase sm:text-sm">
+          <div className="border-vl-dark-900/8 border-t p-5 sm:p-7">
+            <h3 className="text-vl-dark-900 mb-3.5 text-xs font-bold tracking-wider uppercase sm:text-sm">
               Returns & Refunds
             </h3>
             <div className="space-y-3">
               {order.returnRequests.map((req) => (
                 <div
                   key={req.id}
-                  className="flex items-center justify-between rounded-xl border border-[#101114]/8 bg-white p-3.5"
+                  className="border-vl-dark-900/8 flex items-center justify-between rounded-xl border bg-white p-3.5"
                 >
                   <div>
-                    <p className="text-xs font-semibold text-[#101114]">Return Request</p>
+                    <p className="text-vl-dark-900 text-xs font-semibold">Return Request</p>
                     <p className="text-[11px] text-neutral-500">
                       Requested on {formatDate(req.createdAt)}
                     </p>

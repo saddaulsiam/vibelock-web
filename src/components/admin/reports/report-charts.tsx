@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { NativeSelect } from "@/components/ui/select-native";
 
 type TrendPoint = {
   date: Date;
@@ -117,7 +118,7 @@ export function ReportCharts({
         )}
         <div className="text-muted-foreground mt-3 flex items-center gap-4 text-xs">
           <span className="inline-flex items-center gap-2">
-            <i className="size-2 rounded-full bg-[#00a8c6]" /> Net sales
+            <i className="size-2 rounded-full bg-vl-cyan-600" /> Net sales
           </span>
           <span>Hover points for exact values</span>
         </div>
@@ -179,15 +180,16 @@ export function ReportCharts({
               Top 10 from the existing product aggregation
             </p>
           </div>
-          <select
+          <NativeSelect
             value={productMetric}
             onChange={(event) => setProductMetric(event.target.value as typeof productMetric)}
-            className="bg-background h-8 rounded-md border px-2 text-xs"
+            size="sm"
+            className="w-auto"
           >
             <option value="revenue">Revenue</option>
             <option value="profit">Gross profit</option>
             <option value="units">Units sold</option>
-          </select>
+          </NativeSelect>
         </div>
         <div className="space-y-3">
           {topProducts.length ? (
@@ -211,7 +213,7 @@ export function ReportCharts({
                   </div>
                   <div className="bg-muted h-2 rounded-full">
                     <div
-                      className="h-2 rounded-full bg-[#00a8c6]"
+                      className="h-2 rounded-full bg-vl-cyan-600"
                       style={{ width: `${Math.max((value / maxProducts) * 100, 2)}%` }}
                     />
                   </div>
@@ -248,7 +250,7 @@ export function ReportCharts({
                   </div>
                   <div className="bg-muted h-2 rounded-full">
                     <div
-                      className={`h-2 rounded-full ${index % 2 ? "bg-amber-500" : "bg-[#00a8c6]"}`}
+                      className={`h-2 rounded-full ${index % 2 ? "bg-amber-500" : "bg-vl-cyan-600"}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>

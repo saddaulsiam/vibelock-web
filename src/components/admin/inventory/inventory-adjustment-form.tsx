@@ -1,6 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   adjustInventoryAction,
   type InventoryActionState,
@@ -28,13 +30,13 @@ export function InventoryAdjustmentForm({ variantId }: { variantId: string }) {
         <label htmlFor="quantity" className="mb-1 block text-sm font-medium">
           Quantity adjustment
         </label>
-        <input
+        <Input
           id="quantity"
           name="quantity"
           type="number"
           step="1"
           required
-          className="border-input flex h-9 w-full rounded-md border bg-transparent px-3 text-sm"
+          size="default"
           placeholder="Positive to add, negative to remove"
         />
       </div>
@@ -42,12 +44,11 @@ export function InventoryAdjustmentForm({ variantId }: { variantId: string }) {
         <label htmlFor="reason" className="mb-1 block text-sm font-medium">
           Reason
         </label>
-        <textarea
+        <Textarea
           id="reason"
           name="reason"
           required
           maxLength={1000}
-          className="border-input flex min-h-20 w-full rounded-md border bg-transparent px-3 py-2 text-sm"
           placeholder="Explain this adjustment"
         />
       </div>

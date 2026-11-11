@@ -4,16 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  User,
-  ChevronDown,
-  CircleUserRound,
-  Heart,
-  Box,
-  Sparkles,
-  LogOut,
-  Loader2,
-} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, ChevronDown, CircleUserRound, Heart, Box, Sparkles, LogOut } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 
@@ -92,7 +84,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="hover:text-vl-cyan text-vl-white/75 inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF] sm:size-9 sm:w-auto sm:px-2"
+        className="hover:text-vl-cyan text-vl-white/75 inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan sm:size-9 sm:w-auto sm:px-2"
       >
         <User className="size-4 stroke-[2.2] sm:size-4.5" />
         <ChevronDown
@@ -121,16 +113,16 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                     />
                   </div>
                 ) : (
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-[#101114] text-white shadow-2xs">
+                  <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-white shadow-2xs">
                     <CircleUserRound className="size-7 stroke-[1.8] text-white" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <span className="block text-[10px] leading-none font-bold tracking-[0.14em] text-neutral-400 uppercase">
+                  <span className="text-2xs block leading-none font-bold tracking-[0.14em] text-neutral-400 uppercase">
                     HELLO,
                   </span>
                   <h3
-                    className="mt-1 truncate text-[14px] leading-snug font-bold tracking-tight text-[#101114]"
+                    className="mt-1 truncate text-sm leading-snug font-bold tracking-tight text-vl-dark-900"
                     title={user.name || "Customer"}
                   >
                     {user.name || "Customer"}
@@ -140,46 +132,47 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
               {/* Action Buttons: MY ACCOUNT + Circular Sign Out */}
               <div className="mt-4 flex items-center gap-2">
-                <Link
-                  href="/account"
-                  onClick={() => setIsOpen(false)}
-                  className="flex h-9 flex-1 items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
-                >
-                  MY ACCOUNT
-                </Link>
-                <button
+                <Button asChild variant="primary" size="default" className="flex-1 rounded-full">
+                  <Link href="/account" onClick={() => setIsOpen(false)}>
+                    MY ACCOUNT
+                  </Link>
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="icon"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
+                  loading={isLoggingOut}
                   title="Sign Out"
                   aria-label="Sign Out"
-                  className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-200/80 bg-white text-neutral-500 shadow-2xs transition-all duration-150 hover:border-red-200 hover:bg-red-50/50 hover:text-red-600 active:scale-[0.98] disabled:opacity-50"
+                  className="size-9 shrink-0 rounded-full border-neutral-200/80 bg-white text-neutral-500 shadow-2xs hover:border-red-200 hover:bg-red-50/50 hover:text-red-600"
                 >
-                  {isLoggingOut ? (
-                    <Loader2 className="size-4 animate-spin text-neutral-400" />
-                  ) : (
-                    <LogOut className="size-4 stroke-[1.8]" />
-                  )}
-                </button>
+                  <LogOut className="size-4 stroke-[1.8]" />
+                </Button>
               </div>
             </>
           ) : (
             /* ── GUEST / SIGN IN STATE ── */
             <div className="pt-1 text-center">
               <p className="text-xs font-semibold text-neutral-500">Hello, sign in</p>
-              <Link
-                href="/login"
-                onClick={() => setIsOpen(false)}
-                className="mt-3.5 flex h-9 w-full items-center justify-center rounded-full bg-[#101114] text-[11px] font-bold tracking-[0.12em] text-white uppercase shadow-2xs transition-all duration-150 hover:bg-neutral-800 active:scale-[0.98]"
+              <Button
+                asChild
+                variant="primary"
+                size="default"
+                fullWidth
+                className="text-compact mt-3.5 rounded-full font-bold tracking-[0.12em] uppercase shadow-2xs"
               >
-                SIGN IN
-              </Link>
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  SIGN IN
+                </Link>
+              </Button>
               <p className="mt-3 text-xs text-neutral-400">
                 New customer?{" "}
                 <Link
                   href="/register"
                   onClick={() => setIsOpen(false)}
-                  className="font-bold text-[#00D9FF] hover:underline"
+                  className="font-bold text-vl-cyan hover:underline"
                 >
                   Start here
                 </Link>
@@ -194,16 +187,16 @@ export function AccountPopover({ user }: AccountPopoverProps) {
           <div className="grid grid-cols-2 gap-4 text-xs">
             {/* Column 1: YOUR LISTS */}
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
+              <h4 className="text-compact font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR LISTS
               </h4>
               <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
                 >
-                  <Heart className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <Heart className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
                   <span>Wishlist</span>
                 </Link>
               </div>
@@ -211,32 +204,32 @@ export function AccountPopover({ user }: AccountPopoverProps) {
 
             {/* Column 2: YOUR ACCOUNT */}
             <div>
-              <h4 className="text-[11px] font-bold tracking-[0.14em] text-neutral-900 uppercase">
+              <h4 className="text-compact font-bold tracking-[0.14em] text-neutral-900 uppercase">
                 YOUR ACCOUNT
               </h4>
               <div className="mt-3 flex flex-col gap-2.5">
                 <Link
                   href="/account/orders"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
                 >
-                  <Box className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <Box className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
                   <span>Orders</span>
                 </Link>
                 <Link
                   href="/account/coupons"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <Sparkles className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
                   <span>Offers</span>
                 </Link>
                 <Link
                   href="/account/profile"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-[12px] font-medium text-neutral-600 transition-colors hover:text-[#101114]"
+                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
                 >
-                  <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-[#101114]" />
+                  <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
                   <span>Profile</span>
                 </Link>
               </div>

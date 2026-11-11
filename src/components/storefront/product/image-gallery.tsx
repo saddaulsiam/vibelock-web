@@ -26,7 +26,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
   if (!selectedImage) {
     return (
       <div
-        className="text-muted-foreground flex max-h-[75vh] max-w-[calc(75vh*2/3)] items-center justify-center bg-[#f2f2f2] lg:max-h-165 lg:max-w-110"
+        className="text-muted-foreground flex max-h-[75vh] max-w-[calc(75vh*2/3)] items-center justify-center bg-vl-white-300 lg:max-h-165 lg:max-w-110"
         style={{ aspectRatio: "2 / 3" }}
       >
         <div className="flex flex-col items-center gap-3 text-center">
@@ -55,8 +55,8 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                 key={`${image.url}-${index}`}
                 type="button"
                 onClick={() => setSelectedIndex(index)}
-                className={`relative w-16 shrink-0 overflow-hidden border bg-[#f2f2f2] transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:w-20 ${
-                  selected ? "border-[#101114]" : "border-transparent hover:border-[#101114]/35"
+                className={`relative w-16 shrink-0 overflow-hidden border bg-vl-white-300 transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:w-20 ${
+                  selected ? "border-vl-dark-900" : "border-transparent hover:border-vl-dark-900/35"
                 }`}
                 style={{ aspectRatio: "2 / 3" }}
                 aria-label={`View image ${index + 1} of ${images.length}`}
@@ -83,7 +83,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
       )}
 
       <div
-        className="relative order-1 max-h-[75vh] max-w-[calc(75vh*2/3)] min-w-0 flex-1 overflow-hidden bg-[#f2f2f2] lg:order-2 lg:max-h-165 lg:max-w-110"
+        className="relative order-1 max-h-[75vh] max-w-[calc(75vh*2/3)] min-w-0 flex-1 overflow-hidden bg-vl-white-300 lg:order-2 lg:max-h-165 lg:max-w-110"
         style={{ aspectRatio: "2 / 3" }}
       >
         {!selectedImageFailed ? (

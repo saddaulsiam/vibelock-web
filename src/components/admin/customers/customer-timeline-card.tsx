@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 interface CustomerTimelineCardProps {
   timeline: AdminCustomerTimelineEvent[];
@@ -183,56 +184,51 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <button
+        <Button
+          type="button"
+          variant={filter === "ALL" ? "primary" : "secondary"}
+          size="xs"
           onClick={() => setFilter("ALL")}
-          className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-            filter === "ALL"
-              ? "bg-[#101114] text-white shadow-xs"
-              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
-          }`}
+          className="font-semibold"
         >
           All ({timeline.length})
-        </button>
-        <button
+        </Button>
+        <Button
+          type="button"
+          variant={filter === "ORDERS" ? "primary" : "secondary"}
+          size="xs"
           onClick={() => setFilter("ORDERS")}
-          className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-            filter === "ORDERS"
-              ? "bg-[#101114] text-white shadow-xs"
-              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
-          }`}
+          className="font-semibold"
         >
           Orders ({ordersCount})
-        </button>
-        <button
+        </Button>
+        <Button
+          type="button"
+          variant={filter === "NOTES" ? "primary" : "secondary"}
+          size="xs"
           onClick={() => setFilter("NOTES")}
-          className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-            filter === "NOTES"
-              ? "bg-[#101114] text-white shadow-xs"
-              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
-          }`}
+          className="font-semibold"
         >
           Staff Notes ({notesCount})
-        </button>
-        <button
+        </Button>
+        <Button
+          type="button"
+          variant={filter === "REVIEWS" ? "primary" : "secondary"}
+          size="xs"
           onClick={() => setFilter("REVIEWS")}
-          className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-            filter === "REVIEWS"
-              ? "bg-[#101114] text-white shadow-xs"
-              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
-          }`}
+          className="font-semibold"
         >
           Reviews ({reviewsCount})
-        </button>
-        <button
+        </Button>
+        <Button
+          type="button"
+          variant={filter === "SECURITY" ? "primary" : "secondary"}
+          size="xs"
           onClick={() => setFilter("SECURITY")}
-          className={`rounded-lg px-2.5 py-1 font-semibold transition ${
-            filter === "SECURITY"
-              ? "bg-[#101114] text-white shadow-xs"
-              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/70"
-          }`}
+          className="font-semibold"
         >
           Security &amp; Account ({securityCount})
-        </button>
+        </Button>
       </div>
 
       {/* Timeline Stream */}
@@ -308,9 +304,12 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
       {/* Show More / Show Less Toggle */}
       {filteredEvents.length > 6 && (
         <div className="border-t border-neutral-100 pt-2 text-center">
-          <button
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => setIsExpanded(!isExpanded)}
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1 text-xs font-bold text-neutral-700 transition hover:bg-neutral-100 hover:text-neutral-900"
+            className="gap-1 font-bold text-neutral-700"
           >
             {isExpanded ? (
               <>
@@ -323,7 +322,7 @@ export function CustomerTimelineCard({ timeline }: CustomerTimelineCardProps) {
                 <ChevronDown className="size-3.5" />
               </>
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>

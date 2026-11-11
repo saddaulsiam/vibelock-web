@@ -169,7 +169,7 @@ describe("Admin Customers Module Unit Tests", () => {
     expect(html).toContain("wa.me/8801711111111");
   });
 
-  test("renders AdminTableInfiniteScroll with all loaded state when loaded equals total", () => {
+  test("renders InfiniteScroll with all loaded state when loaded equals total", () => {
     const html = renderToStaticMarkup(
       <AdminCustomersTable
         customers={sampleCustomers}
@@ -184,7 +184,7 @@ describe("Admin Customers Module Unit Tests", () => {
     expect(html).toContain("All <strong");
   });
 
-  test("renders AdminTableInfiniteScroll load more button when hasMore is true", () => {
+  test("renders InfiniteScroll load more button when hasMore is true", () => {
     const html = renderToStaticMarkup(
       <AdminCustomersTable
         customers={sampleCustomers}

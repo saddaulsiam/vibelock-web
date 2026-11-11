@@ -87,7 +87,7 @@ describe("Admin Reusable UI Components", () => {
     expect(html).toContain("All Items");
     expect(html).toContain("(42)");
     expect(html).toContain("In Stock (&gt;0)");
-    expect(html).toContain("bg-[#101114]");
+    expect(html).toContain("bg-vl-dark-900");
     expect(html).toContain("bg-emerald-500");
   });
 

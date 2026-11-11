@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { CheckCircle2, Download, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export interface AdminOrdersBulkBarProps {
   selectedCount: number;
@@ -32,45 +33,52 @@ export function AdminOrdersBulkBar({
 
       <div className="flex flex-wrap items-center gap-2">
         {/* Bulk Confirm */}
-        <button
+        <Button
           type="button"
+          size="sm"
           disabled={isBulkUpdating}
           onClick={onBulkConfirm}
-          className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-emerald-700 px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-emerald-800 disabled:opacity-50"
+          className="gap-1.5 bg-emerald-700 text-white hover:bg-emerald-800"
         >
           <CheckCircle2 className="size-3.5" />
           <span>Confirm Selected</span>
-        </button>
+        </Button>
 
         {/* Bulk Mark as Processing / Pack */}
-        <button
+        <Button
           type="button"
+          variant="primary"
+          size="sm"
           disabled={isBulkUpdating}
           onClick={onBulkPack}
-          className="inline-flex h-8 items-center gap-1.5 rounded-sm bg-[#101114] px-3 text-xs font-semibold text-white shadow-2xs transition hover:bg-[#101114]/85 disabled:opacity-50"
+          className="gap-1.5"
         >
           <Package className="size-3.5" />
           <span>Pack Selected</span>
-        </button>
+        </Button>
 
         {/* Export Selected to CSV */}
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={onExportCsv}
-          className="inline-flex h-8 items-center gap-1.5 rounded-sm border border-amber-300 bg-white px-3 text-xs font-semibold text-amber-950 shadow-2xs hover:bg-amber-100/50"
+          className="gap-1.5 border-amber-300 bg-white text-amber-950 hover:bg-amber-100/50"
         >
           <Download className="size-3.5" />
           <span>Export Selected CSV</span>
-        </button>
+        </Button>
 
         {/* Clear Selection */}
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={onDeselectAll}
-          className="text-xs text-neutral-600 underline-offset-2 hover:underline"
+          className="text-neutral-600 hover:text-neutral-900"
         >
           Deselect All
-        </button>
+        </Button>
       </div>
     </div>
   );

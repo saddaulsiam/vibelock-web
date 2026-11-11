@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Columns3, RotateCcw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export interface ColumnOption<T extends string = string> {
   key: T;
@@ -57,11 +58,13 @@ export function AdminTableColumnVisibility<T extends string = string>({
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="sm"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          "inline-flex h-10 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 shadow-2xs transition-colors hover:bg-zinc-50 hover:text-zinc-950 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none",
+          "gap-1.5 px-3 font-semibold",
           buttonClassName
         )}
         title="Customize visible columns"
@@ -74,7 +77,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
             {columns.length - hiddenCount}/{columns.length}
           </span>
         )}
-      </button>
+      </Button>
 
       {isOpen && (
         <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 z-40 mt-1.5 w-56 rounded-xl border border-zinc-200/90 bg-white p-2.5 shadow-xl duration-150">
@@ -82,14 +85,16 @@ export function AdminTableColumnVisibility<T extends string = string>({
             <span className="text-[11px] font-bold tracking-wider text-zinc-600 uppercase">
               Customize Columns
             </span>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-xs"
               onClick={() => setIsOpen(false)}
-              className="rounded p-0.5 text-zinc-400 transition hover:text-zinc-700"
+              className="size-5 p-0 text-zinc-400 hover:text-zinc-700"
               aria-label="Close column customizer"
             >
               <X className="size-3.5" />
-            </button>
+            </Button>
           </div>
 
           <div className="space-y-0.5 text-xs">
@@ -105,7 +110,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
                     type="checkbox"
                     checked={isChecked}
                     onChange={(e) => onChange(col.key, e.target.checked)}
-                    className="size-3.5 cursor-pointer rounded-xs accent-[#101114]"
+                    className="size-3.5 cursor-pointer rounded-xs accent-vl-dark-900"
                   />
                 </label>
               );
@@ -114,14 +119,16 @@ export function AdminTableColumnVisibility<T extends string = string>({
 
           {onReset && hiddenCount > 0 && (
             <div className="mt-2 border-t border-zinc-100 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="xs"
                 onClick={onReset}
-                className="flex w-full items-center justify-center gap-1.5 rounded-lg py-1 text-[11px] font-semibold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-900"
+                className="w-full gap-1.5 py-1 text-[11px] font-semibold text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900"
               >
                 <RotateCcw className="size-3" />
                 <span>Reset to default</span>
-              </button>
+              </Button>
             </div>
           )}
         </div>

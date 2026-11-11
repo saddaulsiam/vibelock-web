@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Send, CheckCircle2, Loader2 } from "lucide-react";
+import { Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/select-native";
 
 export function ContactForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,16 +42,18 @@ export function ContactForm() {
         <div className="flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
           <CheckCircle2 className="size-8" />
         </div>
-        <h3 className="mt-4 text-xl font-black tracking-tight text-[#101114] uppercase">
+        <h3 className="mt-4 text-xl font-black tracking-tight text-vl-dark-900 uppercase">
           Message Dispatched
         </h3>
-        <p className="mt-2 max-w-sm text-xs leading-relaxed text-[#101114]/70">
-          Thanks for reaching out, <span className="font-bold text-[#101114]">{formData.name}</span>
+        <p className="mt-2 max-w-sm text-xs leading-relaxed text-vl-dark-900/70">
+          Thanks for reaching out, <span className="font-bold text-vl-dark-900">{formData.name}</span>
           . Our support crew at VibeLock HQ will review your inquiry and reply via email within 2-4
           business hours.
         </p>
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => {
             setIsSent(false);
             setFormData({
@@ -58,10 +64,10 @@ export function ContactForm() {
               message: "",
             });
           }}
-          className="mt-6 rounded-lg border border-black/15 bg-[#F3F0E8] px-5 py-2 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-black hover:text-white"
+          className="mt-6"
         >
           Send Another Message
-        </button>
+        </Button>
       </div>
     );
   }
@@ -72,10 +78,10 @@ export function ContactForm() {
       className="flex flex-col gap-4 rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8"
     >
       <div>
-        <span className="text-[10px] font-extrabold tracking-[0.2em] text-[#0088A8] uppercase">
+        <span className="text-2xs tracking-streetwear font-extrabold text-vl-cyan-700 uppercase">
           TRANSMISSION FORM
         </span>
-        <h3 className="mt-1 text-lg font-black tracking-tight text-[#101114] uppercase">
+        <h3 className="mt-1 text-lg font-black tracking-tight text-vl-dark-900 uppercase">
           Send Us A Message
         </h3>
       </div>
@@ -85,18 +91,19 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-name"
-            className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
           >
             Your Name <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="contact-name"
+            variant="brand"
+            size="md"
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="e.g. Tanvir Ahmed"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -104,18 +111,19 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-email"
-            className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
           >
             Email Address <span className="text-red-500">*</span>
           </label>
-          <input
+          <Input
             id="contact-email"
+            variant="brand"
+            size="md"
             type="email"
             required
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             placeholder="tanvir@example.com"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
           />
         </div>
       </div>
@@ -125,18 +133,19 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-phone"
-            className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
           >
             Phone Number{" "}
-            <span className="text-xs font-normal text-[#101114]/40 lowercase">(optional)</span>
+            <span className="text-xs font-normal text-vl-dark-900/40 lowercase">(optional)</span>
           </label>
-          <input
+          <Input
             id="contact-phone"
+            variant="brand"
+            size="md"
             type="tel"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             placeholder="01700-000000"
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3.5 text-xs text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
           />
         </div>
 
@@ -144,22 +153,23 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-subject"
-            className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
           >
             Inquiry Type
           </label>
-          <select
+          <NativeSelect
             id="contact-subject"
+            variant="brand"
+            size="lg"
             value={formData.subject}
             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-            className="h-10 rounded-lg border border-black/15 bg-[#F9F8F5] px-3 text-xs text-[#101114] focus:border-[#101114] focus:bg-white focus:outline-none"
           >
             <option value="Order Status & Tracking">Order Status & Tracking</option>
             <option value="Size & Fit Consultation">Size & Fit Consultation</option>
             <option value="Return & Exchange Request">Return & Exchange Request</option>
             <option value="Flagship Storefront Inquiry">Flagship Storefront Inquiry</option>
             <option value="Collaboration & Press">Collaboration & Press</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
@@ -167,39 +177,32 @@ export function ContactForm() {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="contact-message"
-          className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+          className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
         >
           Message <span className="text-red-500">*</span>
         </label>
-        <textarea
+        <Textarea
           id="contact-message"
+          variant="brand"
           required
           rows={4}
           value={formData.message}
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           placeholder="How can our crew help you today? Please include order number if applicable."
-          className="rounded-lg border border-black/15 bg-[#F9F8F5] p-3 text-xs leading-relaxed text-[#101114] placeholder:text-[#101114]/40 focus:border-[#101114] focus:bg-white focus:outline-none"
         />
       </div>
 
       {/* Submit Button */}
-      <button
+      <Button
         type="submit"
+        size="lg"
         disabled={isSubmitting}
-        className="mt-2 inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#101114] px-6 text-xs font-extrabold tracking-wider text-white uppercase transition-all hover:bg-[#1C262E] hover:shadow-lg disabled:opacity-50"
+        loading={isSubmitting}
+        className="mt-2"
       >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="size-4 animate-spin text-[#00D9FF]" />
-            <span>TRANSMITTING...</span>
-          </>
-        ) : (
-          <>
-            <span>DISPATCH TRANSMISSION</span>
-            <Send className="size-3.5 text-[#00D9FF]" />
-          </>
-        )}
-      </button>
+        <span>{isSubmitting ? "TRANSMITTING..." : "DISPATCH TRANSMISSION"}</span>
+        {!isSubmitting && <Send className="size-3.5 text-vl-cyan" />}
+      </Button>
     </form>
   );
 }

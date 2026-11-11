@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { CategorySearchableSelect } from "./category-select";
 import { saveCategoryAction } from "@/lib/admin/catalog/catalog-actions";
 
@@ -163,9 +166,6 @@ export function CategoryForm({
     toast.info("Image marked for removal on save.");
   };
 
-  const fieldClass =
-    "mt-1.5 min-h-11 w-full rounded-sm border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/40 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
-
   return (
     <AdminSaveForm
       action={async (state, formData) => {
@@ -176,7 +176,7 @@ export function CategoryForm({
       secondaryAction={
         <Link
           href="/admin/categories"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex min-h-10 items-center justify-center border border-vl-dark-900/20 bg-white px-4 text-sm font-medium text-vl-dark-900 transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -202,9 +202,9 @@ export function CategoryForm({
       ) : null}
 
       {/* SECTION 1: BASIC INFORMATION */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Basic Information</h3>
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Basic Information</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Category name, instant auto-syncing URL handle, and description presets for storefront
             SEO.
@@ -214,29 +214,31 @@ export function CategoryForm({
         <div className="space-y-4">
           {/* Category Name */}
           <div>
-            <label htmlFor="category-name" className="block text-sm font-medium text-[#101114]">
+            <label htmlFor="category-name" className="block text-sm font-medium text-vl-dark-900">
               Category Name{" "}
               <span aria-hidden="true" className="text-red-700">
                 *
               </span>
             </label>
-            <input
-              id="category-name"
-              className={fieldClass}
-              name="name"
-              required
-              maxLength={120}
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Oversized Heavyweight Hoodies"
-              autoComplete="off"
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-name"
+                name="name"
+                required
+                maxLength={120}
+                value={name}
+                onChange={(e) => handleNameChange(e.target.value)}
+                placeholder="e.g. Oversized Heavyweight Hoodies"
+                autoComplete="off"
+                size="default"
+              />
+            </div>
           </div>
 
           {/* Category Slug with Auto-Sync & Manual Edit */}
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <label htmlFor="category-slug" className="block text-sm font-medium text-[#101114]">
+              <label htmlFor="category-slug" className="block text-sm font-medium text-vl-dark-900">
                 Category Slug{" "}
                 <span className="text-muted-foreground text-xs font-normal">
                   (unique storefront URL handle)
@@ -249,32 +251,37 @@ export function CategoryForm({
                     Auto-syncing
                   </span>
                 ) : null}
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={handleGenerateSlug}
-                  className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3.5 text-[#00D9FF]" />
+                  <Sparkles className="size-3.5 text-vl-cyan" />
                   Generate from name
-                </button>
+                </Button>
               </div>
             </div>
-            <input
-              id="category-slug"
-              className={`${fieldClass} font-mono text-xs`}
-              name="slug"
-              maxLength={160}
-              value={slug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-              placeholder="e.g. oversized-heavyweight-hoodies"
-              autoComplete="off"
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-slug"
+                name="slug"
+                maxLength={160}
+                value={slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                placeholder="e.g. oversized-heavyweight-hoodies"
+                autoComplete="off"
+                size="default"
+                className="font-mono text-xs"
+              />
+            </div>
             <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
-              <Globe className="size-3.5 text-[#101114]/40" />
+              <Globe className="size-3.5 text-vl-dark-900/40" />
               <span>Preview:</span>
-              <span className="font-mono text-[#101114]">
+              <span className="font-mono text-vl-dark-900">
                 vibelock.bd/category/
-                <strong className="font-semibold text-[#101114]">{slug || "category-slug"}</strong>
+                <strong className="font-semibold text-vl-dark-900">{slug || "category-slug"}</strong>
               </span>
             </div>
           </div>
@@ -284,7 +291,7 @@ export function CategoryForm({
             <div className="flex flex-wrap items-center justify-between gap-2">
               <label
                 htmlFor="category-description"
-                className="block text-sm font-medium text-[#101114]"
+                className="block text-sm font-medium text-vl-dark-900"
               >
                 Description{" "}
                 <span className="text-muted-foreground text-xs font-normal">
@@ -294,43 +301,47 @@ export function CategoryForm({
               <div className="flex flex-wrap items-center gap-1.5">
                 <span className="text-muted-foreground text-[11px]">Quick presets:</span>
                 {STREETWEAR_CATEGORY_PRESETS.map((tmpl) => (
-                  <button
+                  <Button
                     key={tmpl.label}
                     type="button"
+                    variant="outline"
+                    size="xs"
                     onClick={() => {
                       setDescription(tmpl.text);
                       setIsDirty(true);
                       toast.success(`Applied ${tmpl.label} description!`);
                     }}
-                    className="border border-[#101114]/15 bg-[#F9F8F6] px-2 py-0.5 text-[11px] font-medium text-[#101114] transition-colors hover:border-[#101114] hover:bg-[#F3F0E8]"
+                    className="h-6 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-300"
                   >
                     {tmpl.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
-            <textarea
-              id="category-description"
-              className={`${fieldClass} min-h-24 resize-y`}
-              name="description"
-              maxLength={1000}
-              value={description}
-              onChange={(e) => {
-                setDescription(e.target.value);
-                setIsDirty(true);
-              }}
-              placeholder="Enter a compelling description for catalog listing and search engine optimization..."
-            />
+            <div className="mt-1.5">
+              <Textarea
+                id="category-description"
+                name="description"
+                maxLength={1000}
+                value={description}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  setIsDirty(true);
+                }}
+                placeholder="Enter a compelling description for catalog listing and search engine optimization..."
+                size="default"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* SECTION 2: CATEGORY HERO / COVER IMAGE */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-base font-semibold text-[#101114]">
+              <h3 className="text-base font-semibold text-vl-dark-900">
                 Category Hero &amp; Cover Image
               </h3>
               <p className="text-muted-foreground mt-1 text-xs leading-5">
@@ -338,13 +349,15 @@ export function CategoryForm({
                 cards.
               </p>
             </div>
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="xs"
               onClick={() => {
                 setUseUrlInput((prev) => !prev);
                 setIsDirty(true);
               }}
-              className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+              className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
             >
               {useUrlInput ? (
                 <>
@@ -352,17 +365,17 @@ export function CategoryForm({
                 </>
               ) : (
                 <>
-                  <Globe className="size-3.5 text-[#00D9FF]" /> Or use external image URL
+                  <Globe className="size-3.5 text-vl-cyan" /> Or use external image URL
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Active Image Card */}
         {previewUrl && !isRemoved ? (
           <div className="space-y-3">
-            <div className="relative aspect-video max-w-md overflow-hidden rounded-sm border border-[#101114]/20 bg-black/5 shadow-xs">
+            <div className="relative aspect-video max-w-md overflow-hidden rounded-sm border border-vl-dark-900/20 bg-black/5 shadow-xs">
               <Image
                 src={previewUrl}
                 alt="Category image preview"
@@ -375,13 +388,15 @@ export function CategoryForm({
                 <span className="rounded bg-black/70 px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase backdrop-blur-xs">
                   Active Cover Image
                 </span>
-                <button
+                <Button
                   type="button"
+                  variant="danger"
+                  size="xs"
                   onClick={handleRemoveImage}
-                  className="inline-flex items-center gap-1 rounded bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-red-600"
+                  className="gap-1 shadow-xs"
                 >
                   <Trash2 className="size-3.5" /> Remove
-                </button>
+                </Button>
               </div>
             </div>
             <p className="text-muted-foreground text-xs">
@@ -403,14 +418,14 @@ export function CategoryForm({
               onDrop={handleDrop}
               className={`flex cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed p-6 text-center transition-colors ${
                 isDragging
-                  ? "border-[#00D9FF] bg-[#00D9FF]/5"
-                  : "border-[#101114]/20 bg-[#FBF9F5] hover:border-[#101114] hover:bg-[#F3F0E8]"
+                  ? "border-vl-cyan bg-vl-cyan-50"
+                  : "border-vl-dark-900/20 bg-vl-white-200 hover:border-vl-dark-900 hover:bg-vl-white-300"
               }`}
             >
               <div className="flex size-12 items-center justify-center rounded-full bg-white shadow-xs">
-                <ImagePlus className="size-6 text-[#101114]/70" />
+                <ImagePlus className="size-6 text-vl-dark-900/70" />
               </div>
-              <span className="mt-3 text-sm font-semibold text-[#101114]">
+              <span className="mt-3 text-sm font-semibold text-vl-dark-900">
                 {previewUrl && !isRemoved
                   ? "Choose a different image file"
                   : "Click or drag & drop to upload image"}
@@ -433,24 +448,26 @@ export function CategoryForm({
           <div>
             <label
               htmlFor="category-image-url"
-              className="block text-xs font-semibold text-[#101114]"
+              className="block text-xs font-semibold text-vl-dark-900"
             >
               Public Image URL (HTTPS or Cloudinary CDN)
             </label>
-            <input
-              id="category-image-url"
-              type="url"
-              name="imageUrl"
-              value={externalUrl}
-              onChange={(e) => {
-                setExternalUrl(e.target.value);
-                setPreviewUrl(e.target.value.trim() || null);
-                setIsRemoved(false);
-                setIsDirty(true);
-              }}
-              placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
-              className={fieldClass}
-            />
+            <div className="mt-1.5">
+              <Input
+                id="category-image-url"
+                type="url"
+                name="imageUrl"
+                value={externalUrl}
+                onChange={(e) => {
+                  setExternalUrl(e.target.value);
+                  setPreviewUrl(e.target.value.trim() || null);
+                  setIsRemoved(false);
+                  setIsDirty(true);
+                }}
+                placeholder="https://res.cloudinary.com/... or https://images.unsplash.com/..."
+                size="default"
+              />
+            </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Directly links an external CDN image without re-uploading.
             </p>
@@ -459,11 +476,11 @@ export function CategoryForm({
       </div>
 
       {/* SECTION 3: HIERARCHY & PLACEMENT */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex items-center gap-2">
-            <Layers className="size-4 text-[#101114]" />
-            <h3 className="text-base font-semibold text-[#101114]">Hierarchy &amp; Placement</h3>
+            <Layers className="size-4 text-vl-dark-900" />
+            <h3 className="text-base font-semibold text-vl-dark-900">Hierarchy &amp; Placement</h3>
           </div>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Organize categories into parent-child nesting for multi-level navigation and catalog
@@ -472,7 +489,7 @@ export function CategoryForm({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+          <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
             Parent Category <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
           <CategorySearchableSelect
@@ -501,28 +518,30 @@ export function CategoryForm({
         {/* Display Priority & Merchandising */}
         <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+            <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
               Display Priority (Sort Order)
             </label>
-            <input
-              type="number"
-              name="sortOrder"
-              value={sortOrder}
-              onChange={(e) => {
-                setSortOrder(Number(e.target.value));
-                setIsDirty(true);
-              }}
-              min="0"
-              className={fieldClass}
-              placeholder="0"
-            />
+            <div className="mt-1.5">
+              <Input
+                type="number"
+                name="sortOrder"
+                value={sortOrder}
+                onChange={(e) => {
+                  setSortOrder(Number(e.target.value));
+                  setIsDirty(true);
+                }}
+                min="0"
+                size="default"
+                placeholder="0"
+              />
+            </div>
             <p className="text-muted-foreground mt-1 text-xs">
               Lower numbers appear first in the navigation menu (0, 1, 2...).
             </p>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-[#101114]">
+            <label className="mb-1.5 block text-sm font-medium text-vl-dark-900">
               Storefront Visibility
             </label>
             <div className="flex h-11 items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50 px-3.5">
@@ -556,11 +575,11 @@ export function CategoryForm({
         </div>
       </div>
       {/* SECTION 4: SEARCH ENGINE OPTIMIZATION (SEO) */}
-      <div className="space-y-5 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
+      <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
           <div className="flex items-center gap-2">
-            <Search className="size-4 text-[#101114]" />
-            <h3 className="text-base font-semibold text-[#101114]">
+            <Search className="size-4 text-vl-dark-900" />
+            <h3 className="text-base font-semibold text-vl-dark-900">
               Search Engine Optimization (SEO)
             </h3>
           </div>
@@ -571,7 +590,7 @@ export function CategoryForm({
         </div>
 
         {/* Live Google Search Snippet Preview Box */}
-        <div className="rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4">
+        <div className="rounded-lg border border-neutral-200/90 bg-vl-white-200 p-4">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] font-bold tracking-wider text-neutral-500 uppercase">
               Google Search Result Preview
@@ -616,7 +635,7 @@ export function CategoryForm({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="category-meta-title"
-              className="block text-sm font-medium text-[#101114]"
+              className="block text-sm font-medium text-vl-dark-900"
             >
               Page Title (Meta Title)
             </label>
@@ -629,37 +648,41 @@ export function CategoryForm({
                 {metaTitle.length}/70 characters
               </span>
               {!metaTitle && name.trim() && (
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => {
                     setMetaTitle(`${name.trim()} | VibeLock`);
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  <Sparkles className="size-3 text-vl-cyan" />
                   Auto-fill
-                </button>
+                </Button>
               )}
             </div>
           </div>
-          <input
-            id="category-meta-title"
-            className={`${fieldClass} mt-1`}
-            name="metaTitle"
-            maxLength={100}
-            value={metaTitle}
-            onChange={(e) => {
-              setMetaTitle(e.target.value);
-              setIsDirty(true);
-            }}
-            placeholder={
-              name.trim()
-                ? `${name.trim()} | VibeLock`
-                : "e.g. Oversized Graphic Tees | VibeLock Dhaka"
-            }
-            autoComplete="off"
-          />
+          <div className="mt-1">
+            <Input
+              id="category-meta-title"
+              name="metaTitle"
+              maxLength={100}
+              value={metaTitle}
+              onChange={(e) => {
+                setMetaTitle(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder={
+                name.trim()
+                  ? `${name.trim()} | VibeLock`
+                  : "e.g. Oversized Graphic Tees | VibeLock Dhaka"
+              }
+              autoComplete="off"
+              size="default"
+            />
+          </div>
           <p className="text-muted-foreground mt-1 text-xs">
             Recommended length: 50–60 characters. Displayed as the primary clickable headline in
             search engines.
@@ -671,7 +694,7 @@ export function CategoryForm({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="category-meta-desc"
-              className="block text-sm font-medium text-[#101114]"
+              className="block text-sm font-medium text-vl-dark-900"
             >
               Meta Description
             </label>
@@ -686,32 +709,36 @@ export function CategoryForm({
                 {metaDescription.length}/160 characters
               </span>
               {!metaDescription && description.trim() && (
-                <button
+                <Button
                   type="button"
+                  variant="link"
+                  size="xs"
                   onClick={() => {
                     setMetaDescription(description.slice(0, 160).trim());
                     setIsDirty(true);
                   }}
-                  className="text-muted-foreground inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-4 transition-colors hover:text-[#101114]"
+                  className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
                 >
-                  <Sparkles className="size-3 text-[#00D9FF]" />
+                  <Sparkles className="size-3 text-vl-cyan" />
                   Copy from description
-                </button>
+                </Button>
               )}
             </div>
           </div>
-          <textarea
-            id="category-meta-desc"
-            className={`${fieldClass} mt-1 min-h-20 resize-y`}
-            name="metaDescription"
-            maxLength={300}
-            value={metaDescription}
-            onChange={(e) => {
-              setMetaDescription(e.target.value);
-              setIsDirty(true);
-            }}
-            placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
-          />
+          <div className="mt-1">
+            <Textarea
+              id="category-meta-desc"
+              name="metaDescription"
+              maxLength={300}
+              value={metaDescription}
+              onChange={(e) => {
+                setMetaDescription(e.target.value);
+                setIsDirty(true);
+              }}
+              placeholder="e.g. Shop the newest oversized streetwear drop in Bangladesh. Minimal styling, heavyweight cotton, and express delivery across Dhaka."
+              size="sm"
+            />
+          </div>
           <p className="text-muted-foreground mt-1 text-xs">
             Recommended length: 120–160 characters. A concise summary shown beneath the page title
             in search results.
@@ -720,15 +747,15 @@ export function CategoryForm({
       </div>
 
       {/* SECTION 5: PROMOTIONAL BANNERS NOTICE */}
-      <div className="flex items-start gap-3 rounded-lg border border-neutral-200/90 bg-[#FBF9F5] p-4 text-xs text-neutral-600">
-        <Megaphone className="mt-0.5 size-4 shrink-0 text-[#101114]" />
+      <div className="flex items-start gap-3 rounded-lg border border-neutral-200/90 bg-vl-white-200 p-4 text-xs text-neutral-600">
+        <Megaphone className="mt-0.5 size-4 shrink-0 text-vl-dark-900" />
         <div className="flex-1 space-y-1">
           <p className="font-semibold text-neutral-900">Campaign &amp; Promotional Banners</p>
           <p>
             Promotional banners for this category are managed centrally in{" "}
             <Link
               href="/admin/banners"
-              className="font-medium text-[#101114] underline underline-offset-2 hover:text-[#00D9FF]"
+              className="font-medium text-vl-dark-900 underline underline-offset-2 hover:text-vl-cyan"
             >
               Admin → Banners
             </Link>

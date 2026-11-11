@@ -12,7 +12,6 @@ import {
   X,
   AlertTriangle,
   ArrowRight,
-  Loader2,
   Package,
   FileText,
   CreditCard,
@@ -20,6 +19,8 @@ import {
   Clock,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { createReturnRequestAction, uploadReturnProofAction } from "@/lib/returns/actions";
 import { RETURN_REASONS } from "@/lib/returns/utils";
 import { OrderItemSummary } from "@/lib/orders/types";
@@ -186,13 +187,13 @@ export function ReturnForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 pb-32 sm:pb-0">
       {/* ── Unified Master Return Request Document ── */}
-      <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white shadow-2xs">
+      <div className="overflow-hidden rounded-2xl border border-vl-dark-900/8 bg-white shadow-2xs">
         {/* Document Header */}
-        <div className="border-b border-[#101114]/8 p-4 sm:p-6 md:p-7">
+        <div className="border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+                <span className="text-[10px] font-semibold tracking-[0.15em] text-vl-cyan uppercase sm:text-[11px] sm:tracking-[0.2em]">
                   Return & Exchange
                 </span>
                 {orderPlacedDate && (
@@ -204,7 +205,7 @@ export function ReturnForm({
                   </>
                 )}
               </div>
-              <h1 className="mt-0.5 text-lg font-bold tracking-tight text-[#101114] uppercase sm:text-2xl">
+              <h1 className="mt-0.5 text-lg font-bold tracking-tight text-vl-dark-900 uppercase sm:text-2xl">
                 Order #{orderNumber}
               </h1>
             </div>
@@ -223,11 +224,11 @@ export function ReturnForm({
         </div>
 
         {/* 1. Item Selection Section */}
-        <div className="border-b border-[#101114]/8 p-4 sm:p-6 md:p-7">
-          <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
+        <div className="border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
+          <div className="flex items-center justify-between border-b border-vl-dark-900/8 pb-3.5 sm:pb-4">
             <div className="flex items-center gap-2">
-              <Package className="size-4 text-[#101114]" />
-              <h2 className="text-xs font-bold tracking-wider text-[#101114] uppercase sm:text-sm">
+              <Package className="size-4 text-vl-dark-900" />
+              <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
                 1. Select Items to Return
               </h2>
             </div>
@@ -236,7 +237,7 @@ export function ReturnForm({
             </span>
           </div>
 
-          <ul className="mt-2 divide-y divide-[#101114]/6">
+          <ul className="mt-2 divide-y divide-vl-dark-900/6">
             {items.map((item) => {
               const isSelected = (selectedQuantities[item.id] || 0) > 0;
               const currentQty = selectedQuantities[item.id] || 0;
@@ -246,8 +247,8 @@ export function ReturnForm({
                   key={item.id}
                   className={`my-2 rounded-2xl border p-3.5 transition-all sm:p-4 ${
                     isSelected
-                      ? "border-[#101114] bg-[#FAF9F5] shadow-xs"
-                      : "border-[#101114]/8 bg-white hover:border-[#101114]/20"
+                      ? "border-vl-dark-900 bg-vl-white-100 shadow-xs"
+                      : "border-vl-dark-900/8 bg-white hover:border-vl-dark-900/20"
                   }`}
                 >
                   {/* Item Selection Trigger */}
@@ -267,15 +268,15 @@ export function ReturnForm({
                     <div
                       className={`mt-1 flex size-5 shrink-0 items-center justify-center rounded-md border transition-all ${
                         isSelected
-                          ? "border-[#101114] bg-[#101114] text-white"
-                          : "border-[#101114]/25 bg-white hover:border-[#101114]"
+                          ? "border-vl-dark-900 bg-vl-dark-900 text-white"
+                          : "border-vl-dark-900/25 bg-white hover:border-vl-dark-900"
                       }`}
                     >
                       {isSelected && <Check className="size-3.5 stroke-[3]" />}
                     </div>
 
                     {/* Thumbnail */}
-                    <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 sm:size-16">
+                    <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 sm:size-16">
                       <Image
                         src="/images/categories/cat-t-shirts.jpg"
                         alt={item.productName}
@@ -288,12 +289,12 @@ export function ReturnForm({
                     {/* Info */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="line-clamp-2 text-xs font-semibold text-[#101114] sm:text-sm">
+                        <h3 className="line-clamp-2 text-xs font-semibold text-vl-dark-900 sm:text-sm">
                           {item.productName}
                         </h3>
                         {/* Line Price */}
                         <div className="shrink-0 text-right">
-                          <p className="text-xs font-bold text-[#101114] sm:text-sm">
+                          <p className="text-xs font-bold text-vl-dark-900 sm:text-sm">
                             ৳ {(item.unitPrice * (currentQty || 1)).toLocaleString("en-BD")}
                           </p>
                           <p className="text-[10px] text-neutral-400 sm:text-[11px]">
@@ -327,38 +328,42 @@ export function ReturnForm({
 
                   {/* Quantity Stepper (When Selected) */}
                   {isSelected && (
-                    <div className="mt-3 flex items-center justify-between border-t border-[#101114]/8 pt-2.5 sm:mt-3 sm:justify-end sm:gap-3">
+                    <div className="mt-3 flex items-center justify-between border-t border-vl-dark-900/8 pt-2.5 sm:mt-3 sm:justify-end sm:gap-3">
                       <span className="text-[11px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-xs">
                         Return Quantity:
                       </span>
-                      <div className="flex items-center rounded-xl border border-[#101114]/15 bg-white shadow-2xs">
-                        <button
+                      <div className="flex items-center rounded-xl border border-vl-dark-900/15 bg-white shadow-2xs overflow-hidden">
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStepQuantity(item.id, -1, item.returnableQuantity);
                           }}
                           disabled={currentQty <= 1}
                           aria-label="Decrease quantity"
-                          className="flex size-8 items-center justify-center rounded-l-xl text-[#101114] transition hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Minus className="size-3.5" />
-                        </button>
-                        <span className="w-8 text-center text-xs font-semibold text-[#101114]">
+                        </Button>
+                        <span className="w-8 text-center text-xs font-semibold text-vl-dark-900">
                           {currentQty}
                         </span>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleStepQuantity(item.id, 1, item.returnableQuantity);
                           }}
                           disabled={currentQty >= item.returnableQuantity}
                           aria-label="Increase quantity"
-                          className="flex size-8 items-center justify-center rounded-r-xl text-[#101114] transition hover:bg-neutral-100 active:bg-neutral-200 disabled:opacity-30"
+                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Plus className="size-3.5" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -369,17 +374,17 @@ export function ReturnForm({
         </div>
 
         {/* 2. Return Reason & Verification Section */}
-        <div className="space-y-6 border-b border-[#101114]/8 p-4 sm:p-6 md:p-7">
-          <div className="flex items-center gap-2 border-b border-[#101114]/8 pb-4">
-            <FileText className="size-4 text-[#101114]" />
-            <h2 className="text-xs font-bold tracking-wider text-[#101114] uppercase sm:text-sm">
+        <div className="space-y-6 border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
+          <div className="flex items-center gap-2 border-b border-vl-dark-900/8 pb-4">
+            <FileText className="size-4 text-vl-dark-900" />
+            <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
               2. Reason & Details
             </h2>
           </div>
 
           {/* Reason Selection Grid */}
           <div>
-            <label className="mb-2 block text-xs font-semibold tracking-wider text-[#101114] uppercase">
+            <label className="mb-2 block text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
               Select Return Reason <span className="text-rose-600">*</span>
             </label>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -392,14 +397,14 @@ export function ReturnForm({
                     onClick={() => setReason(r.value)}
                     className={`flex min-h-[46px] touch-manipulation items-center justify-between rounded-xl border p-3.5 text-left text-xs transition-all active:scale-[0.99] ${
                       isChecked
-                        ? "border-[#101114] bg-[#101114] font-semibold text-white shadow-xs"
-                        : "border-[#101114]/15 bg-white font-medium text-[#101114] hover:border-[#101114]/40"
+                        ? "border-vl-dark-900 bg-vl-dark-900 font-semibold text-white shadow-xs"
+                        : "border-vl-dark-900/15 bg-white font-medium text-vl-dark-900 hover:border-vl-dark-900/40"
                     }`}
                   >
                     <span>{r.label}</span>
                     <div
                       className={`flex size-4.5 shrink-0 items-center justify-center rounded-full border ${
-                        isChecked ? "border-white bg-white text-[#101114]" : "border-[#101114]/30"
+                        isChecked ? "border-white bg-white text-vl-dark-900" : "border-vl-dark-900/30"
                       }`}
                     >
                       {isChecked && <Check className="size-3 stroke-[3]" />}
@@ -427,8 +432,8 @@ export function ReturnForm({
           {/* Photo Upload Strip */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase">
-                <Camera className="size-3.5 text-[#101114]" />
+              <label className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
+                <Camera className="size-3.5 text-vl-dark-900" />
                 <span>Photo Proof</span>
                 {requiresProof ? (
                   <span className="text-xs font-semibold text-rose-600">* Required</span>
@@ -444,7 +449,7 @@ export function ReturnForm({
                 {images.map((imgUrl, idx) => (
                   <div
                     key={idx}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 shadow-2xs"
+                    className="group relative aspect-square overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 shadow-2xs"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -476,27 +481,27 @@ export function ReturnForm({
                   id="return-photo-upload"
                   disabled={isUploadingImage}
                 />
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  fullWidth
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#101114]/20 bg-white p-4 text-xs font-normal tracking-wider text-[#101114] uppercase transition hover:border-[#101114]/50 hover:bg-neutral-50 disabled:opacity-50"
+                  loading={isUploadingImage}
+                  className="h-auto flex-wrap gap-2 border-dashed border-border/80 p-4 hover:bg-muted/40"
                 >
                   {isUploadingImage ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin text-[#101114]" />
-                      <span>Uploading to Cloudinary...</span>
-                    </>
+                    <span>Uploading to Cloudinary...</span>
                   ) : (
                     <>
-                      <Camera className="size-4 text-[#101114]" />
+                      <Camera className="size-4 text-vl-dark-900" />
                       <span>Upload Photo</span>
-                      <span className="text-[11px] font-normal text-neutral-400">
+                      <span className="text-[11px] font-normal text-muted-foreground">
                         (Max 5MB • JPG, PNG, WebP)
                       </span>
                     </>
                   )}
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -505,42 +510,43 @@ export function ReturnForm({
           <div className="space-y-1.5">
             <label
               htmlFor="customerNote"
-              className="text-xs font-semibold tracking-wider text-[#101114] uppercase"
+              className="text-xs font-semibold tracking-wider text-vl-dark-900 uppercase"
             >
               Additional Details / Comments (Optional)
             </label>
-            <textarea
+            <Textarea
               id="customerNote"
+              variant="brand"
               rows={3}
               value={customerNote}
               onChange={(e) => setCustomerNote(e.target.value)}
               placeholder="Tell us what went wrong (e.g. size runs small, stitching issue on collar, received incorrect color)..."
-              className="w-full rounded-xl border border-[#101114]/15 bg-white p-3.5 text-xs text-[#101114] transition outline-none placeholder:text-neutral-400 focus:border-[#101114] focus:ring-1 focus:ring-[#101114]"
+              className="p-3.5 text-xs"
             />
           </div>
         </div>
 
         {/* 3. Integrated Policy & Estimated Refund Panel (Bottom) */}
-        <div className="bg-[#FAF9F5] p-4 sm:p-6 md:p-7">
-          <div className="flex flex-col gap-6 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-x sm:divide-[#101114]/8">
+        <div className="bg-vl-white-100 p-4 sm:p-6 md:p-7">
+          <div className="flex flex-col gap-6 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-x sm:divide-vl-dark-900/8">
             {/* Refund Calculation & Submit (Stacked first on mobile) */}
             <div className="order-1 flex flex-col justify-between sm:order-2 sm:pl-6">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                  <CreditCard className="size-4 text-[#101114]" />
+                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+                  <CreditCard className="size-4 text-vl-dark-900" />
                   <span>Refund Summary</span>
                 </div>
 
                 <dl className="mt-3 space-y-2 text-xs sm:text-sm">
                   <div className="flex justify-between text-neutral-500">
                     <span>Selected Items</span>
-                    <span className="font-normal text-[#101114]">
+                    <span className="font-normal text-vl-dark-900">
                       {totalSelectedCount} item{totalSelectedCount === 1 ? "" : "s"}
                     </span>
                   </div>
                   <div className="flex justify-between text-neutral-500">
                     <span>Merchandise Value</span>
-                    <span className="font-normal text-[#101114]">
+                    <span className="font-normal text-vl-dark-900">
                       ৳ {totalEst.toLocaleString("en-BD")}
                     </span>
                   </div>
@@ -548,8 +554,8 @@ export function ReturnForm({
                     <span>Steadfast Pickup Fee</span>
                     <span className="font-normal text-emerald-700">FREE</span>
                   </div>
-                  <Separator className="my-2.5! bg-[#101114]/10" />
-                  <div className="flex items-baseline justify-between text-sm font-bold text-[#101114] sm:text-base">
+                  <Separator className="my-2.5! bg-vl-dark-900/10" />
+                  <div className="flex items-baseline justify-between text-sm font-bold text-vl-dark-900 sm:text-base">
                     <span className="tracking-wide uppercase">Est. Refund Total</span>
                     <span className="text-lg font-bold sm:text-xl">
                       ৳ {totalEst.toLocaleString("en-BD")}
@@ -560,46 +566,39 @@ export function ReturnForm({
 
               {/* Form Card Submit Button (Available on all viewports) */}
               <div className="mt-5 sm:mt-6">
-                <button
+                <Button
                   type="submit"
+                  size="lg"
+                  fullWidth
                   disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-                  className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#101114] px-6 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 disabled:opacity-50"
+                  loading={isSubmitting}
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="size-4 animate-spin" />
-                      <span>Submitting Request...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Return Request</span>
-                      <ArrowRight className="size-4" />
-                    </>
-                  )}
-                </button>
+                  <span>{isSubmitting ? "Submitting Request..." : "Submit Return Request"}</span>
+                  {!isSubmitting && <ArrowRight className="size-4" />}
+                </Button>
               </div>
             </div>
 
             {/* Policy & Courier Instructions (Stacked below refund on mobile) */}
-            <div className="order-2 border-t border-[#101114]/8 pt-5 sm:order-1 sm:border-t-0 sm:pt-0 sm:pr-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
+            <div className="order-2 border-t border-vl-dark-900/8 pt-5 sm:order-1 sm:border-t-0 sm:pt-0 sm:pr-6">
+              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
                 <ShieldCheck className="size-4 text-emerald-600" />
                 <span>Doorstep Return Policy</span>
               </div>
               <div className="mt-3 space-y-2.5 text-xs leading-relaxed text-neutral-600">
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-[#101114]">1.</span>
+                  <span className="font-semibold text-vl-dark-900">1.</span>
                   <p>Product must remain unwashed, unworn, with all original tags attached.</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-[#101114]">2.</span>
+                  <span className="font-semibold text-vl-dark-900">2.</span>
                   <p>
                     A Steadfast courier rider will arrive at your delivery address for doorstep
                     pickup (<strong className="text-emerald-700">Free of Charge</strong>).
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-[#101114]">3.</span>
+                  <span className="font-semibold text-vl-dark-900">3.</span>
                   <p>
                     Refund is disbursed to your original payment method or bKash within 3–5 working
                     days post QC approval.
@@ -612,14 +611,14 @@ export function ReturnForm({
       </div>
 
       {/* ── Mobile Sticky Bottom Action Bar ── */}
-      <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-[#101114]/10 bg-white/95 px-4 pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-xl backdrop-blur-md sm:hidden">
+      <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-vl-dark-900/10 bg-white/95 px-4 pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-xl backdrop-blur-md sm:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="block text-[10px] font-semibold tracking-wider text-neutral-500 uppercase">
               Est. Refund
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-[#101114]">
+              <span className="text-lg font-bold text-vl-dark-900">
                 ৳ {totalEst.toLocaleString("en-BD")}
               </span>
               <span className="text-[10px] font-semibold text-neutral-400">
@@ -628,20 +627,16 @@ export function ReturnForm({
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
+            size="lg"
             disabled={isSubmitting || totalSelectedCount === 0 || isUploadingImage}
-            className="inline-flex h-11 max-w-[200px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#101114] px-4 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition-colors hover:bg-neutral-800 disabled:opacity-50"
+            loading={isSubmitting}
+            className="max-w-[200px] flex-1"
           >
-            {isSubmitting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <>
-                <span>Submit Return</span>
-                <ArrowRight className="size-3.5" />
-              </>
-            )}
-          </button>
+            <span>{isSubmitting ? "Submitting..." : "Submit Return"}</span>
+            {!isSubmitting && <ArrowRight className="size-3.5" />}
+          </Button>
         </div>
       </div>
     </form>

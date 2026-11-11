@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, PackageOpen } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { Card } from "@/components/ui/card";
 
 interface OrderItemInfo {
   id: string;
@@ -34,11 +35,11 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
   };
 
   return (
-    <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
+    <Card variant="brand" className="mt-6 p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#101114]/8 pb-3.5 sm:pb-4">
+      <div className="border-vl-dark-900/8 flex items-center justify-between border-b pb-3.5 sm:pb-4">
         <div>
-          <h3 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+          <h3 className="text-vl-dark-900 text-sm font-bold tracking-tight uppercase sm:text-base">
             Recent Orders
           </h3>
           <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -47,10 +48,10 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
         </div>
         <Link
           href="/account/orders"
-          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+          className="group hover:text-vl-dark-900 inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors"
         >
           <span>View all</span>
-          <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+          <ArrowRight className="group-hover:text-vl-dark-900 size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
 
@@ -59,14 +60,14 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-400">
             <PackageOpen className="size-5" />
           </div>
-          <h4 className="mt-3 text-sm font-semibold text-[#101114]">No orders yet</h4>
+          <h4 className="text-vl-dark-900 mt-3 text-sm font-semibold">No orders yet</h4>
           <p className="mt-1 max-w-xs text-xs text-neutral-500">
             Your recent purchase history and delivery tracking will appear here once you place an
             order.
           </p>
           <Link
             href="/shop"
-            className="mt-4 inline-flex min-h-[40px] items-center gap-1.5 rounded-lg bg-[#101114] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
+            className="bg-vl-dark-900 mt-4 inline-flex min-h-10 items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             <span>Explore Collection</span>
             <ArrowRight className="size-3" />
@@ -78,7 +79,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#101114]/8 text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
+                <tr className="border-vl-black/8 border-b text-[11px] font-semibold tracking-wider text-neutral-400 uppercase">
                   <th className="py-3.5 pr-4">Order #</th>
                   <th className="px-4 py-3.5">Date</th>
                   <th className="px-4 py-3.5">Items</th>
@@ -87,14 +88,14 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                   <th className="py-3.5 pl-4 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#101114]/6 text-sm">
+              <tbody className="divide-vl-black/6 divide-y text-sm">
                 {orders.map((order) => (
                   <tr key={order.orderNumber} className="transition-colors hover:bg-neutral-50/70">
                     {/* Order Number */}
-                    <td className="py-4 pr-4 font-semibold text-[#101114]">
+                    <td className="text-vl-dark-900 py-4 pr-4 font-semibold">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="hover:underline focus-visible:ring-1 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                        className="focus-visible:ring-vl-cyan hover:underline focus-visible:ring-1 focus-visible:outline-none"
                       >
                         #{order.orderNumber}
                       </Link>
@@ -111,7 +112,7 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     </td>
 
                     {/* Total Price */}
-                    <td className="px-4 py-4 font-bold whitespace-nowrap text-[#101114]">
+                    <td className="text-vl-dark-900 px-4 py-4 font-bold whitespace-nowrap">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </td>
 
@@ -124,10 +125,10 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                     <td className="py-4 pl-4 text-right whitespace-nowrap">
                       <Link
                         href={`/account/orders/${order.orderNumber}`}
-                        className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114]"
+                        className="group hover:text-vl-dark-900 inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors"
                       >
                         <span>Details</span>
-                        <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                        <ArrowRight className="group-hover:text-vl-dark-900 size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
                       </Link>
                     </td>
                   </tr>
@@ -137,14 +138,14 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           </div>
 
           {/* Mobile High-End Scannable List (< md) - Clean 2-row layout, zero heavy button boxes */}
-          <div className="divide-y divide-[#101114]/6 md:hidden">
+          <div className="divide-vl-black/6 divide-y md:hidden">
             {orders.map((order) => (
               <div key={order.orderNumber} className="py-3.5 first:pt-3 last:pb-0">
                 {/* Row 1: Order Number + Status Badge */}
                 <div className="flex items-center justify-between gap-2">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="truncate text-xs font-bold tracking-tight text-[#101114] hover:underline sm:text-sm"
+                    className="text-vl-dark-900 truncate text-xs font-bold tracking-tight hover:underline sm:text-sm"
                   >
                     #{order.orderNumber}
                   </Link>
@@ -160,17 +161,17 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
                       {order.itemCount} {order.itemCount === 1 ? "item" : "items"}
                     </span>
                     <span>·</span>
-                    <span className="font-bold text-[#101114]">
+                    <span className="text-vl-dark-900 font-bold">
                       ৳ {order.total.toLocaleString("en-BD")}
                     </span>
                   </div>
 
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-normal text-neutral-600 transition-colors hover:text-[#101114] active:scale-95"
+                    className="group hover:text-vl-dark-900 inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-600 transition-colors active:scale-95"
                   >
                     <span>Details</span>
-                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-[#101114]" />
+                    <ArrowRight className="group-hover:text-vl-dark-900 size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
               </div>
@@ -178,6 +179,6 @@ export function AccountRecentOrders({ orders }: AccountRecentOrdersProps) {
           </div>
         </>
       )}
-    </div>
+    </Card>
   );
 }

@@ -47,7 +47,7 @@ export default async function AdminProductsPage({
       >
         <Link
           href="/admin/products/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#101114] px-4 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#101114]/85 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-vl-dark-900 px-4 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-vl-dark-900/85 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           <Plus className="size-4" aria-hidden="true" />
           <span>New product</span>

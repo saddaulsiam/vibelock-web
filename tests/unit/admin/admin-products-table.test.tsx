@@ -167,7 +167,7 @@ describe("AdminProductsTable Component", () => {
       <AdminProductsTable initialData={sampleData} currentFilters={defaultFilters} />
     );
 
-    expect(html).toContain('All <strong class="text-[#101114]">2</strong> products loaded');
+    expect(html).toContain('All <strong class="text-vl-dark-900">2</strong> products loaded');
     expect(html).not.toContain("Previous");
     expect(html).not.toContain("Next");
   });

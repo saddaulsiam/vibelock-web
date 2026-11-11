@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
 import { Check, Loader2, ShieldCheck, ShieldAlert, Camera, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -154,9 +156,9 @@ export function ProfileForm({
       />
 
       {/* ── 1. Modern Studio Avatar Uploader ── */}
-      <div className="flex flex-col gap-4 border-b border-[#101114]/8 pb-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="border-vl-dark-900/8 flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-[#101114]/15 bg-neutral-100 shadow-2xs sm:size-18">
+          <div className="border-vl-dark-900/15 bg-vl-white-200 relative size-16 shrink-0 overflow-hidden rounded-full border shadow-2xs sm:size-18">
             {imageUrl ? (
               <Image
                 src={imageUrl}
@@ -171,7 +173,7 @@ export function ProfileForm({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-[#101114] text-xl font-bold text-white">
+              <div className="bg-vl-dark-900 flex h-full w-full items-center justify-center text-xl font-bold text-white">
                 {(name || email || "V").slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -184,48 +186,44 @@ export function ProfileForm({
           </div>
 
           <div>
-            <span className="text-xs font-semibold tracking-wider text-[#101114] uppercase">
+            <span className="text-vl-dark-900 text-xs font-semibold tracking-wider uppercase">
               Profile Photo
             </span>
-            <p className="mt-0.5 text-xs text-neutral-500">
+            <p className="text-muted-foreground mt-0.5 text-xs">
               Upload a high-resolution JPG, PNG or WebP image (Max 5MB).
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             disabled={uploadingAvatar}
+            loading={uploadingAvatar}
             onClick={() => fileInputRef.current?.click()}
-            className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl border border-[#101114]/15 bg-white px-4 py-1.5 text-xs font-semibold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95 disabled:opacity-50"
           >
-            {uploadingAvatar ? (
-              <>
-                <Loader2 className="size-3.5 animate-spin text-neutral-500" />
-                <span>Uploading...</span>
-              </>
-            ) : (
-              <>
-                <Camera className="size-3.5 text-neutral-500" />
-                <span>{imageUrl ? "Change Photo" : "Upload Photo"}</span>
-              </>
-            )}
-          </button>
+            {!uploadingAvatar && <Camera className="text-muted-foreground size-3.5" />}
+            <span>
+              {uploadingAvatar ? "Uploading..." : imageUrl ? "Change Photo" : "Upload Photo"}
+            </span>
+          </Button>
 
           {imageUrl && !uploadingAvatar && (
-            <button
+            <Button
               type="button"
+              variant="destructive"
+              size="sm"
               onClick={() => {
                 setImageUrl("");
                 toast.info("Photo removed. Click 'Save Changes' to confirm.");
               }}
-              className="inline-flex min-h-[38px] items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50"
               title="Remove photo"
             >
               <Trash2 className="size-3.5" />
               <span>Remove</span>
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -234,18 +232,18 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-name"
-          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+          className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
         >
           Full Name
         </Label>
         <Input
           id="profile-name"
+          variant="brand"
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
           disabled={pending}
           placeholder="Your full name"
-          className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
         />
       </div>
 
@@ -253,19 +251,19 @@ export function ProfileForm({
       <div className="space-y-1.5">
         <Label
           htmlFor="profile-phone"
-          className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+          className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
         >
           Phone Number
         </Label>
         <Input
           id="profile-phone"
+          variant="brand"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
           disabled={pending}
           placeholder="No phone number on this account"
-          className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] placeholder:text-neutral-400 focus-visible:ring-1 focus-visible:ring-[#101114]"
         />
-        <p className="text-[11px] text-neutral-500">
+        <p className="text-muted-foreground text-[11px]">
           Used for delivery courier calls and instant order dispatch SMS updates.
         </p>
       </div>
@@ -275,7 +273,7 @@ export function ProfileForm({
         <div className="flex items-center justify-between">
           <Label
             htmlFor="profile-email"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Email
           </Label>
@@ -294,9 +292,10 @@ export function ProfileForm({
         <div className="relative">
           <Input
             id="profile-email"
+            variant="brand"
             value={email}
             disabled
-            className="min-h-11 cursor-not-allowed rounded-xl border-[#101114]/10 bg-neutral-50 pr-8 text-xs text-neutral-600"
+            className="bg-muted/50 text-muted-foreground cursor-not-allowed pr-8"
           />
           {emailVerified && (
             <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-emerald-600">
@@ -310,20 +309,17 @@ export function ProfileForm({
             <span className="text-[11px] text-amber-800">
               Verify your email to receive real-time order tracking and invoice receipts.
             </span>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handleResendVerification}
               disabled={resendingEmail}
-              className="min-h-7 shrink-0 rounded-lg bg-amber-700 px-3 py-1 text-[11px] font-semibold text-white transition-colors hover:bg-amber-800 disabled:opacity-50"
+              loading={resendingEmail}
+              className="h-7 border-amber-300 bg-amber-100 text-xs font-semibold text-amber-900 hover:bg-amber-200"
             >
-              {resendingEmail ? (
-                <span className="flex items-center gap-1">
-                  <Loader2 className="size-3 animate-spin" /> Sending...
-                </span>
-              ) : (
-                "Send Link"
-              )}
-            </button>
+              {resendingEmail ? "Sending..." : "Send Link"}
+            </Button>
           </div>
         )}
       </div>
@@ -333,7 +329,7 @@ export function ProfileForm({
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-dob"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Date of Birth
           </Label>
@@ -343,48 +339,42 @@ export function ProfileForm({
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             disabled={pending}
-            className="min-h-11 rounded-xl border-[#101114]/15 bg-white text-xs text-[#101114] focus-visible:ring-1 focus-visible:ring-[#101114]"
           />
         </div>
 
         <div className="space-y-1.5">
           <Label
             htmlFor="profile-gender"
-            className="text-[11px] font-semibold tracking-wider text-[#101114] uppercase"
+            className="text-vl-dark-900 text-[11px] font-semibold tracking-wider uppercase"
           >
             Gender
           </Label>
-          <select
+          <NativeSelect
             id="profile-gender"
+            variant="brand"
+            size="lg"
             value={gender}
             onChange={(e) => setGender(e.target.value)}
             disabled={pending}
-            className="flex min-h-11 w-full rounded-xl border border-[#101114]/15 bg-white px-3.5 py-2 text-xs text-[#101114] transition-colors focus:border-[#101114] focus:outline-none"
           >
             <option value="Prefer not to say">Prefer not to say</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 
       {/* ── 6. Save Changes Button ── */}
       <div className="pt-2">
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          loading={pending}
           disabled={pending || uploadingAvatar}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-7 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
         >
-          {pending ? (
-            <span className="flex items-center gap-1.5">
-              <Loader2 className="size-3.5 animate-spin" />
-              <span>Saving Changes...</span>
-            </span>
-          ) : (
-            "Save Changes"
-          )}
-        </button>
+          Save Changes
+        </Button>
       </div>
     </form>
   );

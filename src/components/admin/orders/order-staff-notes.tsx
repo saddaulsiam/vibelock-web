@@ -13,6 +13,8 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { addOrderNoteAction } from "@/lib/admin/orders/order-actions";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface OrderHistoryEntry {
   id: string;
@@ -122,25 +124,21 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
 
         {/* Tab Toggle */}
         <div className="flex items-center rounded-lg bg-neutral-100 p-0.5 text-xs font-semibold">
-          <button
+          <Button
             type="button"
+            variant={activeTab === "ALL" ? "secondary" : "ghost"}
+            size="xs"
             onClick={() => setActiveTab("ALL")}
-            className={`rounded-md px-2.5 py-1 transition ${
-              activeTab === "ALL"
-                ? "bg-white font-bold text-neutral-900 shadow-2xs"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
+            className={activeTab === "ALL" ? "bg-white font-bold text-neutral-900 shadow-2xs" : "text-neutral-500"}
           >
             All Activity ({history.length})
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={activeTab === "NOTES_ONLY" ? "secondary" : "ghost"}
+            size="xs"
             onClick={() => setActiveTab("NOTES_ONLY")}
-            className={`flex items-center gap-1 rounded-md px-2.5 py-1 transition ${
-              activeTab === "NOTES_ONLY"
-                ? "bg-white font-bold text-neutral-900 shadow-2xs"
-                : "text-neutral-500 hover:text-neutral-900"
-            }`}
+            className={`gap-1 ${activeTab === "NOTES_ONLY" ? "bg-white font-bold text-neutral-900 shadow-2xs" : "text-neutral-500"}`}
           >
             <span>Staff Notes</span>
             {staffNotesCount > 0 ? (
@@ -148,19 +146,19 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                 {staffNotesCount}
               </span>
             ) : null}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* ── Add Note Composer Box ── */}
       <div className="mt-4 rounded-xl border border-neutral-200 bg-neutral-50/60 p-3.5">
         <form onSubmit={handleSubmit} className="space-y-2.5">
-          <textarea
+          <Textarea
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             rows={2}
             placeholder="Write an internal note for the team (e.g., customer called, size change, evening delivery requested)..."
-            className="w-full resize-y rounded-lg border border-neutral-200 bg-white p-2.5 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+            className="text-xs"
             disabled={isSubmitting}
           />
 
@@ -171,14 +169,16 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
             </span>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {QUICK_TEMPLATES.map((tpl) => (
-                <button
+                <Button
                   key={tpl.label}
                   type="button"
+                  variant="outline"
+                  size="xs"
                   onClick={() => applyTemplate(tpl.text)}
-                  className="rounded-md border border-neutral-200 bg-white px-2 py-0.5 text-[11px] font-medium text-neutral-700 transition hover:border-neutral-400 hover:bg-neutral-50"
+                  className="h-6 px-2 text-[11px] font-medium"
                 >
                   {tpl.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -202,10 +202,11 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
               <span className="text-[11px] text-neutral-400">Visible only to team members</span>
             )}
 
-            <button
+            <Button
               type="submit"
+              variant="primary"
+              size="sm"
               disabled={isSubmitting || !noteText.trim()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800 disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
@@ -218,7 +219,7 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
                   <span>Post Note</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

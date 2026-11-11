@@ -31,7 +31,13 @@ export async function getAccountOverview() {
         where: { userId: user.id },
         orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         take: 5,
-        include: {
+        select: {
+          id: true,
+          orderNumber: true,
+          createdAt: true,
+          status: true,
+          paymentStatus: true,
+          total: true,
           items: {
             select: {
               id: true,

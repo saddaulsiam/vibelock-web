@@ -11,11 +11,11 @@ export default function UnauthorizedPage() {
         You do not have permission to access this page. If you believe this is an error, please
         contact support or check your account level.
       </p>
-      <Link href="/">
-        <Button variant="brand" className="font-heading font-bold tracking-wider uppercase">
+      <Button asChild size="lg">
+        <Link href="/">
           Return to Home
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     </div>
   );
 }

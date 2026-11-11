@@ -22,7 +22,7 @@ export default async function NewCouponPage() {
             <Tag className="size-4" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#101114]">Create New Coupon</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-vl-dark-900">Create New Coupon</h1>
             <p className="text-xs text-neutral-500">
               Configure code, discount percentage or fixed amount, category targeting, and
               redemption constraints.

@@ -5,8 +5,10 @@ import Image from "next/image";
 import { StarRating } from "./star-rating";
 import { deleteReviewAction } from "@/lib/reviews/actions";
 import type { ReviewItem } from "@/lib/reviews/types";
-import { CheckCircle2, Trash2, MessageSquare, Loader2 } from "lucide-react";
+import { CheckCircle2, Trash2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductReviewListProps {
   reviews: ReviewItem[];
@@ -39,12 +41,12 @@ export function ProductReviewList({
 
   if (reviews.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-[#101114]/15 bg-white p-10 text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#101114]/5 text-[#101114]/60">
+      <div className="rounded-2xl border border-dashed border-vl-dark-900/15 bg-white p-10 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-vl-dark-900/5 text-vl-dark-900/60">
           <MessageSquare className="size-6" />
         </div>
-        <h4 className="mt-3 text-sm font-bold text-[#101114]">No reviews yet</h4>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-[#101114]/65">
+        <h4 className="mt-3 text-sm font-bold text-vl-dark-900">No reviews yet</h4>
+        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-vl-dark-900/65">
           Be the first verified customer to share feedback on sizing, fit, and comfort for this
           product!
         </p>
@@ -67,9 +69,9 @@ export function ProductReviewList({
         return (
           <div
             key={review.id}
-            className="rounded-xl border border-[#101114]/10 bg-white p-5 shadow-2xs sm:p-6"
+            className="rounded-xl border border-vl-dark-900/10 bg-white p-5 shadow-2xs sm:p-6"
           >
-            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-[#101114]/5 pb-4">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b border-vl-dark-900/5 pb-4">
               <div className="flex items-center gap-3">
                 {review.user?.image ? (
                   <Image
@@ -80,51 +82,50 @@ export function ProductReviewList({
                     className="size-10 rounded-full object-cover"
                   />
                 ) : (
-                  <div className="flex size-10 items-center justify-center rounded-full bg-[#101114] text-xs font-bold text-white">
+                  <div className="flex size-10 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
                     {initial}
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-[#101114]">
+                    <span className="text-sm font-bold text-vl-dark-900">
                       {review.user?.name || "Verified Customer"}
                     </span>
                     {review.verified && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-[#00D9FF]/15 px-2 py-0.5 text-[10px] font-bold text-[#008ca6]">
+                      <Badge variant="cyan" size="sm">
                         <CheckCircle2 className="size-3" />
                         Verified Purchase
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <div className="mt-1 flex items-center gap-2">
                     <StarRating value={review.rating} size="sm" />
-                    <span className="text-[11px] text-[#101114]/50">{reviewDate}</span>
+                    <span className="text-[11px] text-vl-dark-900/50">{reviewDate}</span>
                   </div>
                 </div>
               </div>
 
               {canDelete && (
-                <button
+                <Button
                   type="button"
+                  variant="ghost"
+                  size="icon"
                   onClick={() => handleDelete(review.id)}
                   disabled={isPending && deletingId === review.id}
-                  className="inline-flex size-8 items-center justify-center rounded-md text-[#101114]/40 transition-colors hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-2 focus-visible:outline-[#00D9FF]"
+                  loading={isPending && deletingId === review.id}
+                  className="size-8 rounded-md text-vl-dark-900/40 hover:bg-rose-50 hover:text-rose-600"
                   title="Delete review"
                   aria-label="Delete review"
                 >
-                  {isPending && deletingId === review.id ? (
-                    <Loader2 className="size-4 animate-spin text-rose-600" />
-                  ) : (
-                    <Trash2 className="size-4" />
-                  )}
-                </button>
+                  <Trash2 className="size-4" />
+                </Button>
               )}
             </div>
 
             {review.comment ? (
-              <p className="mt-4 text-sm leading-relaxed text-[#101114]/85">{review.comment}</p>
+              <p className="mt-4 text-sm leading-relaxed text-vl-dark-900/85">{review.comment}</p>
             ) : (
-              <p className="mt-3 text-xs text-[#101114]/40 italic">
+              <p className="mt-3 text-xs text-vl-dark-900/40 italic">
                 Customer left a {review.rating}-star rating without a written comment.
               </p>
             )}

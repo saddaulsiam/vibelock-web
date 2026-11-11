@@ -34,6 +34,7 @@
 ## VibeLock-specific engineering guidance
 
 - Preserve the current Next.js App Router and TypeScript architecture.
+- Design system & colors: Follow `docs/COLOR_SYSTEM_GUIDE.md`. Use the 3 canonical 10-step palettes (`vl-cyan`, `vl-dark`, `vl-white`). Never write arbitrary hex utility classes (e.g. `text-[#00d9ff]`, `bg-[#101114]`, `border-[#303137]`). Always use design system primitives (`<Button>`, `<Input>`, `<Card>`, `<Dialog>`, `<Table>`, `<Select>`, `<Badge>`).
 - For database work, inspect Prisma models, existing query/service modules, authorization guards, and integration-test setup before designing a change.
 - Keep admin routes protected by the existing role/authorization patterns; never rely on hiding navigation links as authorization.
 - Keep financial metrics consistent with existing order-item snapshots, payment/refund states, return records, and inventory ledger semantics. State assumptions explicitly; do not invent missing courier/gateway/OPEX data.

@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { subscribeNewsletterAction } from "@/app/actions/newsletter";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function Newsletter() {
   const [email, setEmail] = useState("");
@@ -36,8 +37,8 @@ export function Newsletter() {
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 w-full">
-      <div className="flex h-9 w-11/12 overflow-hidden rounded-sm border border-white/10 sm:w-10/12">
-        <input
+      <div className="rounded-brand flex h-9 w-11/12 overflow-hidden border border-white/10 sm:w-10/12">
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -46,17 +47,22 @@ export function Newsletter() {
           suppressHydrationWarning
           autoComplete="email"
           aria-label="Email for newsletter"
-          className="min-w-0 flex-1 bg-white/5 px-3 text-xs text-white placeholder:text-[#F3F0E8]/35 focus:outline-none"
+          variant="dark"
+          size="sm"
+          className="placeholder:text-vl-white/35 h-full min-w-0 flex-1 rounded-none border-0 bg-white/5 text-white focus-visible:ring-0"
         />
-        <button
+        <Button
           type="submit"
+          variant="brand"
+          size="sm"
           disabled={loading}
-          className="shrink-0 cursor-pointer bg-[#00D9FF] px-4 text-[10px] font-extrabold tracking-wider text-[#0B0F14] uppercase transition-opacity hover:opacity-90 disabled:opacity-50"
+          loading={loading}
+          className="text-vl-dark-900 h-full rounded-none font-medium tracking-wider hover:opacity-90"
         >
-          {loading ? <Loader2 className="size-3 animate-spin" /> : "SUBSCRIBE"}
-        </button>
+          Subscribe
+        </Button>
       </div>
-      <p className="mt-1.5 text-[10px] text-[#F3F0E8]/35">No spam. Unsubscribe anytime.</p>
+      <p className="text-2xs text-vl-white/35 mt-1.5">No spam. Unsubscribe anytime.</p>
     </form>
   );
 }

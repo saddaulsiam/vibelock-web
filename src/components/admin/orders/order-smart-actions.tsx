@@ -15,7 +15,6 @@ import {
   ChevronDown,
   Settings2,
   Sparkles,
-  Loader2,
   X,
 } from "lucide-react";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
@@ -27,6 +26,7 @@ import {
 } from "@/components/admin/orders/order-action-forms";
 import { OrderThermalLabelModal } from "@/components/admin/orders/order-thermal-label-modal";
 import { OrderCancelModal } from "@/components/admin/orders/order-cancel-modal";
+import { Button } from "@/components/ui/button";
 
 interface SmartActionOrderProps {
   id: string;
@@ -62,31 +62,19 @@ function SmartActionButton({
 }) {
   const { pending } = useFormStatus();
 
-  const colorStyles =
-    variant === "danger"
-      ? "bg-rose-600 text-white hover:bg-rose-700 shadow-rose-200"
-      : variant === "secondary"
-        ? "border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-50 shadow-2xs"
-        : "bg-neutral-900 text-white hover:bg-neutral-800 shadow-neutral-300 ring-2 ring-neutral-900/10";
-
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className={`inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-4 text-xs font-bold transition-all disabled:opacity-50 ${colorStyles}`}
+      loading={pending}
+      variant={variant === "danger" ? "danger" : variant === "secondary" ? "secondary" : "primary"}
+      size="lg"
+      fullWidth
+      className="rounded-xl text-xs font-bold"
     >
-      {pending ? (
-        <>
-          <Loader2 className="size-4 animate-spin" />
-          <span>Processing Action...</span>
-        </>
-      ) : (
-        <>
-          <Icon className="size-4" />
-          <span>{label}</span>
-        </>
-      )}
-    </button>
+      {!pending && <Icon className="size-4" />}
+      <span>{pending ? "Processing Action..." : label}</span>
+    </Button>
   );
 }
 
@@ -317,28 +305,33 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
         {/* ── Secondary Quick Action Bar (Sticker & WhatsApp) ── */}
         <div className="mt-4 grid grid-cols-2 gap-2 border-t border-neutral-100 pt-3">
           {/* Thermal Label Trigger */}
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="outline"
             onClick={() => setShowThermalModal(true)}
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50"
+            className="h-9 gap-1.5 border-neutral-200 bg-white text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50"
             title="Print 4x6 courier polybag sticker"
           >
             <Tag className="size-3.5 text-neutral-600" />
             <span>Courier Sticker</span>
-          </button>
+          </Button>
 
           {/* Smart WhatsApp Menu Trigger */}
           <div className="relative">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="outline"
+              fullWidth
               onClick={() => setShowWhatsAppMenu(!showWhatsAppMenu)}
               disabled={!formattedPhone}
-              className="inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-50 px-2.5 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 disabled:opacity-50"
+              className="h-9 gap-1.5 border-emerald-300 bg-emerald-50 text-xs font-semibold text-emerald-800 shadow-2xs hover:bg-emerald-100 disabled:opacity-50"
             >
               <MessageSquare className="size-3.5 text-emerald-600" />
               <span>WhatsApp CRM</span>
               <ChevronDown className="size-3 text-emerald-700" />
-            </button>
+            </Button>
 
             {/* WhatsApp Templates Dropdown */}
             {showWhatsAppMenu && (
@@ -356,30 +349,34 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
                     <span className="text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
                       1-Click Bengali CRM Templates
                     </span>
-                    <button
+                    <Button
                       type="button"
+                      size="icon-xs"
+                      variant="ghost"
                       onClick={() => setShowWhatsAppMenu(false)}
-                      className="flex size-5 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
+                      className="size-5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
                       title="Close menu (Esc)"
                       aria-label="Close WhatsApp templates menu"
                     >
                       <X className="size-3.5" />
-                    </button>
+                    </Button>
                   </div>
 
                   <div className="max-h-72 space-y-1 overflow-y-auto">
                     {whatsappTemplates.map((tmpl, idx) => (
-                      <button
+                      <Button
                         key={idx}
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => openWhatsApp(tmpl.text)}
-                        className="w-full rounded-lg p-2 text-left transition hover:bg-emerald-50 focus-visible:ring-1 focus-visible:ring-emerald-500 focus-visible:outline-none"
+                        className="h-auto w-full flex-col items-start rounded-lg p-2 text-left hover:bg-emerald-50"
                       >
                         <p className="text-xs font-bold text-neutral-900">{tmpl.title}</p>
                         <p className="mt-0.5 line-clamp-2 text-[10px] text-neutral-500">
                           {tmpl.text}
                         </p>
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
@@ -391,22 +388,26 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
         {/* Structured Cancellation & Inventory Restock trigger */}
         {(order.status === "PENDING" || order.status === "CONFIRMED") && !order.shipment ? (
           <div className="mt-3 border-t border-neutral-100 pt-2.5 text-center">
-            <button
+            <Button
               type="button"
+              size="sm"
+              variant="ghost"
               onClick={() => setShowCancelModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 transition hover:text-rose-800 hover:underline"
+              className="gap-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 hover:text-rose-800"
             >
               <XCircle className="size-3.5" />
               <span>Cancel &amp; Restock Order</span>
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>
 
       {/* ── Manual Override & Payment Accordion ── */}
       <div className="rounded-xl border border-neutral-200/90 bg-white p-4 shadow-2xs">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => setShowManualOverride(!showManualOverride)}
           className="flex w-full items-center justify-between text-xs font-bold text-neutral-700 hover:text-neutral-900"
         >
@@ -419,7 +420,7 @@ export function OrderSmartActions({ order }: { order: SmartActionOrderProps }) {
               showManualOverride ? "rotate-180" : ""
             }`}
           />
-        </button>
+        </Button>
 
         {showManualOverride && (
           <div className="mt-4 space-y-4 border-t border-neutral-100 pt-4">

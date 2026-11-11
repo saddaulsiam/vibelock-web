@@ -4,6 +4,7 @@ import { cancelOrderAction } from "@/lib/orders/actions";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
   ArrowLeft,
@@ -138,7 +139,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link
             href="/shop"
-            className="group inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors hover:text-[#101114]"
+            className="group inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors hover:text-vl-dark-900"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
             <span>Continue Shopping</span>
@@ -148,13 +149,13 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         </div>
 
         {/* ── Main Unified Master Order Receipt Canvas ── */}
-        <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white shadow-2xs">
+        <div className="overflow-hidden rounded-2xl border border-vl-dark-900/8 bg-white shadow-2xs">
           {/* 1. Header Section: Identity, Thank You & Status */}
-          <div className="border-b border-[#101114]/8 p-5 sm:p-7 md:p-8">
+          <div className="border-b border-vl-dark-900/8 p-5 sm:p-7 md:p-8">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold tracking-[0.2em] text-[#00D9FF] uppercase sm:text-[11px]">
+                  <span className="text-[10px] font-bold tracking-[0.2em] text-vl-cyan uppercase sm:text-[11px]">
                     Order Confirmation
                   </span>
                   <span className="text-neutral-300">•</span>
@@ -162,7 +163,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     Placed {formatDate(order.createdAt)}
                   </span>
                 </div>
-                <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-[#101114] uppercase sm:text-3xl">
+                <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-vl-dark-900 uppercase sm:text-3xl">
                   {isCancelled
                     ? "Order Cancelled"
                     : isPaymentFailed
@@ -204,7 +205,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 </div>
               </div>
             ) : (
-              <div className="mt-6 border-t border-[#101114]/6 pt-6">
+              <div className="mt-6 border-t border-vl-dark-900/6 pt-6">
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
                   {steps.map((st, i) => (
                     <div key={st.id} className="relative flex flex-col items-start gap-1">
@@ -214,7 +215,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             st.isDone
                               ? "bg-emerald-600 text-white"
                               : st.isCurrent
-                                ? "bg-[#101114] text-white ring-2 ring-[#00D9FF]"
+                                ? "bg-vl-dark-900 text-white ring-2 ring-vl-cyan"
                                 : "bg-neutral-100 text-neutral-400"
                           }`}
                         >
@@ -228,7 +229,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                         </div>
                         <span
                           className={`text-xs font-semibold tracking-wider uppercase ${
-                            st.isDone || st.isCurrent ? "text-[#101114]" : "text-neutral-400"
+                            st.isDone || st.isCurrent ? "text-vl-dark-900" : "text-neutral-400"
                           }`}
                         >
                           {st.label}
@@ -244,10 +245,10 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
           {/* 2. Purchased Items Section & Financial Calculation */}
           <div className="p-5 sm:p-7 md:p-8">
-            <div className="flex items-center justify-between border-b border-[#101114]/8 pb-4">
+            <div className="flex items-center justify-between border-b border-vl-dark-900/8 pb-4">
               <div className="flex items-center gap-2">
-                <Package className="size-4 text-[#101114]" />
-                <h2 className="text-xs font-bold tracking-wider text-[#101114] uppercase sm:text-sm">
+                <Package className="size-4 text-vl-dark-900" />
+                <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
                   Purchased Items
                 </h2>
               </div>
@@ -257,14 +258,14 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
             </div>
 
             {/* Items List */}
-            <ul className="divide-y divide-[#101114]/6">
+            <ul className="divide-y divide-vl-dark-900/6">
               {order.items.map((item, index) => (
                 <li
                   key={`${item.productName}-${item.size ?? ""}-${item.color ?? ""}-${index}`}
                   className="flex items-center gap-4 py-4 first:pt-4 last:pb-2 sm:py-5"
                 >
                   {/* Thumbnail */}
-                  <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-[#101114]/10 bg-neutral-100 sm:size-16">
+                  <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 sm:size-16">
                     {item.imageUrl ? (
                       <Image
                         src={item.imageUrl}
@@ -283,7 +284,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
                   {/* Product Info */}
                   <div className="min-w-0 flex-1">
-                    <h3 className="line-clamp-2 text-xs font-semibold text-[#101114] sm:text-sm">
+                    <h3 className="line-clamp-2 text-xs font-semibold text-vl-dark-900 sm:text-sm">
                       {item.productName}
                     </h3>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500">
@@ -310,7 +311,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
                   {/* Line Total */}
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-bold text-[#101114] sm:text-base">
+                    <p className="text-sm font-bold text-vl-dark-900 sm:text-base">
                       ৳ {item.lineTotal.toLocaleString("en-BD")}
                     </p>
                   </div>
@@ -319,11 +320,11 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
             </ul>
 
             {/* Financial Breakdown (Seamless right-aligned receipt) */}
-            <div className="mt-4 border-t border-[#101114]/8 pt-5 sm:flex sm:justify-end">
+            <div className="mt-4 border-t border-vl-dark-900/8 pt-5 sm:flex sm:justify-end">
               <div className="w-full space-y-2 text-xs sm:w-72 sm:max-w-xs sm:text-sm">
                 <div className="flex justify-between text-neutral-500">
                   <span>Subtotal</span>
-                  <span className="font-medium text-[#101114]">
+                  <span className="font-medium text-vl-dark-900">
                     ৳ {order.subtotal.toLocaleString("en-BD")}
                   </span>
                 </div>
@@ -335,23 +336,23 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 )}
                 <div className="flex justify-between text-neutral-500">
                   <span>Shipping ({order.shippingMethodName || "Standard Delivery"})</span>
-                  <span className="font-medium text-[#101114]">
+                  <span className="font-medium text-vl-dark-900">
                     ৳ {order.shippingCost.toLocaleString("en-BD")}
                   </span>
                 </div>
                 {order.taxAmount > 0 && (
                   <div className="flex justify-between text-neutral-500">
                     <span>Estimated VAT / Tax</span>
-                    <span className="font-medium text-[#101114]">
+                    <span className="font-medium text-vl-dark-900">
                       ৳ {order.taxAmount.toLocaleString("en-BD")}
                     </span>
                   </div>
                 )}
-                <div className="my-2 flex items-baseline justify-between border-t border-[#101114]/8 pt-3">
-                  <span className="text-sm font-bold tracking-wide text-[#101114] uppercase">
+                <div className="my-2 flex items-baseline justify-between border-t border-vl-dark-900/8 pt-3">
+                  <span className="text-sm font-bold tracking-wide text-vl-dark-900 uppercase">
                     Total Amount
                   </span>
-                  <span className="text-lg font-extrabold text-[#101114] sm:text-xl">
+                  <span className="text-lg font-extrabold text-vl-dark-900 sm:text-xl">
                     ৳ {order.total.toLocaleString("en-BD")}
                   </span>
                 </div>
@@ -360,21 +361,21 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
           </div>
 
           {/* 3. Integrated Metadata Grid (Address, Payment & Delivery) */}
-          <div className="border-t border-[#101114]/8 bg-[#FAF9F5] p-5 sm:p-7 md:p-8">
-            <div className="grid grid-cols-1 gap-6 divide-y divide-[#101114]/8 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
+          <div className="border-t border-vl-dark-900/8 bg-vl-white-100 p-5 sm:p-7 md:p-8">
+            <div className="grid grid-cols-1 gap-6 divide-y divide-vl-dark-900/8 sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
               {/* Delivery Destination */}
               <div className="sm:pr-6">
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                  <MapPin className="size-3.5 text-[#101114]" />
+                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+                  <MapPin className="size-3.5 text-vl-dark-900" />
                   <span>Delivery Destination</span>
                 </div>
                 <div className="mt-3 space-y-1 text-xs leading-relaxed text-neutral-600">
-                  <p className="font-bold text-[#101114]">{order.customerName || "Customer"}</p>
+                  <p className="font-bold text-vl-dark-900">{order.customerName || "Customer"}</p>
                   {order.customerPhone && (
                     <p className="font-medium text-neutral-700">{order.customerPhone}</p>
                   )}
                   {order.customerEmail && <p className="text-neutral-500">{order.customerEmail}</p>}
-                  <div className="pt-2 text-[#101114]">
+                  <div className="pt-2 text-vl-dark-900">
                     <p>{order.shippingStreet || "Standard Street Address"}</p>
                     <p>
                       {[order.shippingCity, order.shippingState, order.shippingZip]
@@ -388,14 +389,14 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
               {/* Payment Details */}
               <div className="pt-5 sm:px-6 sm:pt-0">
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                  <CreditCard className="size-3.5 text-[#101114]" />
+                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+                  <CreditCard className="size-3.5 text-vl-dark-900" />
                   <span>Payment Details</span>
                 </div>
                 <div className="mt-3 space-y-2.5 text-xs text-neutral-600">
                   <div className="flex items-center justify-between sm:justify-start sm:gap-4">
                     <span className="text-neutral-500">Method</span>
-                    <span className="font-semibold text-[#101114]">{gatewayLabel}</span>
+                    <span className="font-semibold text-vl-dark-900">{gatewayLabel}</span>
                   </div>
                   <div className="flex items-center justify-between sm:justify-start sm:gap-4">
                     <span className="text-neutral-500">Status</span>
@@ -429,14 +430,14 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
               {/* Courier & Assurance */}
               <div className="pt-5 sm:col-span-2 sm:pt-6 lg:col-span-1 lg:pt-0 lg:pl-6">
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-[#101114] uppercase">
-                  <Truck className="size-3.5 text-[#101114]" />
+                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+                  <Truck className="size-3.5 text-vl-dark-900" />
                   <span>Courier &amp; Assurance</span>
                 </div>
                 <div className="mt-3 space-y-2 text-xs text-neutral-600">
-                  <p className="font-medium text-[#101114]">Steadfast Doorstep Delivery</p>
+                  <p className="font-medium text-vl-dark-900">Steadfast Doorstep Delivery</p>
                   <p className="text-neutral-500">Inside Dhaka 2–3 days, outside 3–5 days.</p>
-                  <div className="space-y-1.5 border-t border-[#101114]/6 pt-2">
+                  <div className="space-y-1.5 border-t border-vl-dark-900/6 pt-2">
                     <div className="flex items-center gap-1.5 text-[11px] text-neutral-700">
                       <ShieldCheck className="size-3.5 text-emerald-600" />
                       <span>100% Authentic Garment Guarantee</span>
@@ -458,21 +459,26 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
         {/* ── Bottom Navigation Action Controls ── */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
-          <Link
-            href="/shop"
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#101114]/15 bg-white px-6 text-xs font-bold tracking-wider text-[#101114] uppercase transition-colors hover:bg-neutral-50 active:scale-95"
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
           >
-            <ShoppingBag className="size-4 text-neutral-500" />
-            <span>Explore More Drops</span>
-          </Link>
+            <Link href="/shop">
+              <ShoppingBag className="size-4 text-neutral-500" />
+              <span>Explore More Drops</span>
+            </Link>
+          </Button>
 
-          <Link
-            href={`/account/orders/${order.orderNumber}`}
-            className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#101114] px-7 text-xs font-bold tracking-wider text-white uppercase shadow-xs transition-colors hover:bg-neutral-800 active:scale-95"
+          <Button
+            asChild
+            size="lg"
           >
-            <span>Track in Account Orders</span>
-            <ArrowRight className="size-4" />
-          </Link>
+            <Link href={`/account/orders/${order.orderNumber}`}>
+              <span>Track in Account Orders</span>
+              <ArrowRight className="size-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

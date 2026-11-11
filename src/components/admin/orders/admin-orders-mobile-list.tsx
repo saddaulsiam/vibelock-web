@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Package, RotateCcw } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
 import { AdminOrdersMobileCard } from "./admin-orders-mobile-card";
 
@@ -35,14 +36,16 @@ export function AdminOrdersMobileList({
             Try adjusting your search query or filter options.
           </p>
           {hasActiveFilters && (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={onResetAllFilters}
-              className="mt-3.5 inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition hover:bg-neutral-50"
+              className="mt-3.5 gap-1.5"
             >
-              <RotateCcw className="size-3.5 text-neutral-500" />
+              <RotateCcw className="size-3.5" />
               <span>Reset All Filters</span>
-            </button>
+            </Button>
           )}
         </div>
       ) : (

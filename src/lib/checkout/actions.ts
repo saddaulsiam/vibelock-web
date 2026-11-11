@@ -194,6 +194,7 @@ export async function createOrderAction(
     shippingState,
     shippingZip,
     shippingCountry,
+    deliveryNote,
     shippingMethodId,
     paymentMethod,
     couponCode,
@@ -485,6 +486,7 @@ export async function createOrderAction(
             shippingState,
             shippingZip,
             shippingCountry,
+            deliveryNote: deliveryNote?.trim() || null,
             shippingMethodName: shippingMethodName,
             shippingMethodId: resolvedShippingMethodId,
             subtotal: orderSubtotal,
@@ -687,7 +689,8 @@ export async function createOrderAction(
         (error as { name: string }).name === "InsufficientInventoryError") ||
       (error instanceof Error &&
         (error.message === "Insufficient stock" ||
-          error.message.toLowerCase().includes("insufficient stock")));
+          error.message.toLowerCase().includes("insufficient stock") ||
+          error.message.toLowerCase().includes("insufficient inventory")));
 
     const isShippingError =
       typeof error === "object" &&

@@ -30,10 +30,10 @@ export function AccountNavigation() {
             key={link.href}
             href={link.href}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex min-h-10 shrink-0 items-center border-b-2 px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none ${
+            className={`inline-flex min-h-10 shrink-0 items-center border-b-2 px-3 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
               active
-                ? "border-[#101114] text-[#101114]"
-                : "text-muted-foreground border-transparent hover:text-[#101114]"
+                ? "border-vl-dark-900 text-vl-dark-900"
+                : "text-muted-foreground border-transparent hover:text-vl-dark-900"
             }`}
           >
             {link.label}

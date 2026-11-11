@@ -51,11 +51,11 @@ export function ProductFormPreview({
   categoryName = "STREETWEAR",
 }: ProductFormPreviewProps) {
   return (
-    <div className="overflow-hidden rounded-md border border-[#101114]/15 bg-white shadow-xs">
-      <div className="flex items-center justify-between border-b border-[#101114]/10 bg-[#F9F8F6] px-4 py-2.5">
+    <div className="overflow-hidden rounded-md border border-vl-dark-900/15 bg-white shadow-xs">
+      <div className="flex items-center justify-between border-b border-vl-dark-900/10 bg-vl-white-100 px-4 py-2.5">
         <div className="flex items-center gap-2">
-          <Eye className="size-4 text-[#101114]" />
-          <span className="text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <Eye className="size-4 text-vl-dark-900" />
+          <span className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             Live Storefront Card Preview
           </span>
         </div>
@@ -64,12 +64,12 @@ export function ProductFormPreview({
         </span>
       </div>
 
-      <div className="flex justify-center bg-[#FAFAF9] p-4 sm:p-6">
+      <div className="flex justify-center bg-vl-white-100 p-4 sm:p-6">
         {/* ── Product Card Canvas matching product-card.tsx ── */}
-        <div className="group relative flex w-full max-w-67.5 flex-col overflow-hidden rounded-sm border border-[#101114]/15 bg-white p-3 shadow-xs transition-all hover:shadow-md">
+        <div className="group relative flex w-full max-w-67.5 flex-col overflow-hidden rounded-sm border border-vl-dark-900/15 bg-white p-3 shadow-xs transition-all hover:shadow-md">
           {/* ── Image Canvas with 2:3 Aspect Ratio ── */}
           <div
-            className="relative block w-full overflow-hidden bg-[#f2f2f2]"
+            className="relative block w-full overflow-hidden bg-vl-white-300"
             style={{ aspectRatio: "2 / 3" }}
           >
             {primaryImageUrl ? (
@@ -97,8 +97,8 @@ export function ProductFormPreview({
               </>
             ) : (
               <span className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <ImageOff className="size-8 text-[#101114]/20" aria-hidden="true" />
-                <span className="text-[11px] font-medium text-[#101114]/40">No image uploaded</span>
+                <ImageOff className="size-8 text-vl-dark-900/20" aria-hidden="true" />
+                <span className="text-[11px] font-medium text-vl-dark-900/40">No image uploaded</span>
               </span>
             )}
 
@@ -112,7 +112,7 @@ export function ProductFormPreview({
             </div>
 
             {/* ── Wishlist Button Replica (Top-Right) ── */}
-            <div className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/80 text-[#101114]/50 shadow-xs backdrop-blur-xs">
+            <div className="absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/80 text-vl-dark-900/50 shadow-xs backdrop-blur-xs">
               <Heart className="size-4" />
             </div>
           </div>
@@ -125,7 +125,7 @@ export function ProductFormPreview({
             </span>
 
             {/* Product Name */}
-            <h4 className="line-clamp-2 block text-[13px] leading-snug font-bold text-[#101114]">
+            <h4 className="line-clamp-2 block text-[13px] leading-snug font-bold text-vl-dark-900">
               {name || "Untitled Streetwear Product"}
             </h4>
 
@@ -133,13 +133,13 @@ export function ProductFormPreview({
             <div className="mt-1 flex items-baseline gap-2">
               {hasDiscount ? (
                 <>
-                  <span className="text-[13px] font-bold text-[#101114]">৳{previewDiscount}</span>
+                  <span className="text-[13px] font-bold text-vl-dark-900">৳{previewDiscount}</span>
                   <span className="text-muted-foreground text-xs line-through">
                     ৳{previewSelling}
                   </span>
                 </>
               ) : (
-                <span className="text-[13px] font-bold text-[#101114]">
+                <span className="text-[13px] font-bold text-vl-dark-900">
                   ৳{previewSelling || "0.00"}
                 </span>
               )}
@@ -160,7 +160,7 @@ export function ProductFormPreview({
                 {selectedSizes.map((s) => (
                   <span
                     key={s}
-                    className="rounded border border-[#101114]/15 bg-[#F9F8F6] px-1.5 py-0.5 text-[9px] font-semibold text-[#101114]"
+                    className="rounded border border-vl-dark-900/15 bg-vl-white-100 px-1.5 py-0.5 text-[9px] font-semibold text-vl-dark-900"
                   >
                     {s}
                   </span>

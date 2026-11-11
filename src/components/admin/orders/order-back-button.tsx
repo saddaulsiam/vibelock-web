@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
 
 export function OrderBackButton() {
   const router = useRouter();
@@ -17,14 +18,16 @@ export function OrderBackButton() {
   };
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="xs"
       onClick={handleBack}
-      className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
+      className="gap-1.5 font-semibold text-neutral-500 hover:text-neutral-900"
       title="Return to orders list (preserves active filters)"
     >
       <ArrowLeft className="size-3.5" />
       <span>Back to Orders</span>
-    </button>
+    </Button>
   );
 }

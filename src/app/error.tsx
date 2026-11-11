@@ -19,9 +19,9 @@ export default function Error({
   }, [error]);
 
   return (
-    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-[#F3F0E8] py-16">
+    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-vl-white-300 py-16">
       <Container>
-        <div className="mx-auto max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+        <div className="mx-auto max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
           <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
             VibeLock / Error
           </p>
@@ -35,16 +35,18 @@ export default function Error({
             <Button
               onClick={reset}
               size="lg"
-              className="bg-vl-black font-heading text-vl-white hover:bg-vl-black/85 focus-visible:ring-vl-cyan min-h-11 rounded-xs font-black tracking-widest uppercase"
             >
               Try again
             </Button>
-            <Link
-              href="/shop"
-              className="border-vl-black/20 font-heading text-vl-black hover:bg-vl-white focus-visible:ring-vl-cyan inline-flex min-h-11 items-center justify-center border px-5 text-sm font-black tracking-widest uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
             >
-              Browse products
-            </Link>
+              <Link href="/shop">
+                Browse products
+              </Link>
+            </Button>
           </div>
         </div>
       </Container>

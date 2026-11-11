@@ -49,7 +49,7 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
     });
   }
 
-  // Category
+  // Category (includes direct category, children, and grandchildren)
   if (params.category) {
     const slugs = params.category
       .split(",")
@@ -57,7 +57,15 @@ function buildDiscoveryWhere(params: DiscoverySearchParams): Prisma.ProductWhere
       .filter(Boolean);
     if (slugs.length > 0) {
       andConditions.push({
-        categories: { some: { slug: { in: slugs } } },
+        categories: {
+          some: {
+            OR: [
+              { slug: { in: slugs } },
+              { parent: { slug: { in: slugs } } },
+              { parent: { parent: { slug: { in: slugs } } } },
+            ],
+          },
+        },
       });
     }
   }
@@ -135,6 +143,8 @@ function buildDiscoveryOrderBy(
     case "name-desc":
       baseOrder = { name: "desc" };
       break;
+    case "price-asc":
+    case "price-desc":
     case "newest":
     default:
       baseOrder = { createdAt: "desc" };
@@ -186,8 +196,15 @@ export const getDiscoveredProducts = async (
         }),
       ]);
 
+      let mappedProducts = products.map(mapProductSummary);
+      if (params.sort === "price-asc") {
+        mappedProducts = [...mappedProducts].sort((a, b) => a.minPrice - b.minPrice);
+      } else if (params.sort === "price-desc") {
+        mappedProducts = [...mappedProducts].sort((a, b) => b.minPrice - a.minPrice);
+      }
+
       return {
-        products: products.map(mapProductSummary),
+        products: mappedProducts,
         totalCount,
         totalPages: Math.ceil(totalCount / PAGE_SIZE),
         currentPage: params.page,

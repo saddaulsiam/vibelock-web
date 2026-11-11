@@ -13,6 +13,9 @@ import {
 import { deleteAccountAction } from "@/app/actions/account-deletion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Lock, Laptop, AlertTriangle, Check } from "lucide-react";
 
 export function AccountSecurityCard() {
@@ -107,10 +110,10 @@ export function AccountSecurityCard() {
   return (
     <div className="flex flex-col gap-5 sm:gap-6">
       {/* 1. Change Password */}
-      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
-        <div className="mb-4 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-5 sm:pb-4">
-          <Lock className="size-4 text-[#101114]" />
-          <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+      <Card variant="brand" className="p-4 sm:p-6">
+        <div className="border-vl-dark-900/8 mb-4 flex items-center gap-2 border-b pb-3.5 sm:mb-5 sm:pb-4">
+          <Lock className="text-vl-dark-900 size-4" />
+          <h2 className="text-vl-dark-900 text-sm font-bold tracking-tight uppercase sm:text-base">
             Change Password
           </h2>
         </div>
@@ -135,41 +138,42 @@ export function AccountSecurityCard() {
           )}
 
           <div className="space-y-1.5">
-            <Label htmlFor="currentPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="currentPassword" className="text-vl-dark-900 text-xs font-semibold">
               Current Password
             </Label>
             <Input
               id="currentPassword"
+              variant="brand"
               type="password"
               required
               value={pwData.currentPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, currentPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="newPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="newPassword" className="text-vl-dark-900 text-xs font-semibold">
               New Password
             </Label>
             <Input
               id="newPassword"
+              variant="brand"
               type="password"
               required
               value={pwData.newPassword}
               onChange={(e) => setPwData((prev) => ({ ...prev, newPassword: e.target.value }))}
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmNewPassword" className="text-xs font-semibold text-[#101114]">
+            <Label htmlFor="confirmNewPassword" className="text-vl-dark-900 text-xs font-semibold">
               Confirm New Password
             </Label>
             <Input
               id="confirmNewPassword"
+              variant="brand"
               type="password"
               required
               value={pwData.confirmNewPassword}
@@ -177,109 +181,102 @@ export function AccountSecurityCard() {
                 setPwData((prev) => ({ ...prev, confirmNewPassword: e.target.value }))
               }
               disabled={pwLoading || !!pwSuccess}
-              className="min-h-[42px] rounded-lg border-[#101114]/15 bg-white text-xs"
             />
           </div>
 
           <div className="pt-2">
-            <button
+            <Button
               type="submit"
-              disabled={pwLoading || !!pwSuccess}
-              className="inline-flex min-h-[44px] w-full items-center justify-center rounded-lg bg-[#101114] px-5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50 sm:w-auto"
+              variant="primary"
+              size="default"
+              loading={pwLoading}
+              disabled={!!pwSuccess}
             >
-              {pwLoading ? "Updating Password..." : "Update Password"}
-            </button>
+              Update Password
+            </Button>
           </div>
         </form>
-      </div>
+      </Card>
 
       {/* 2. Active Sessions */}
-      <div className="rounded-xl border border-[#101114]/8 bg-white p-4 sm:p-6">
-        <div className="mb-3.5 flex items-center gap-2 border-b border-[#101114]/8 pb-3.5 sm:mb-4 sm:pb-4">
-          <Laptop className="size-4 text-[#101114]" />
-          <h2 className="text-sm font-bold tracking-tight text-[#101114] uppercase sm:text-base">
+      <Card variant="brand" className="p-4 sm:p-6">
+        <div className="border-vl-dark-900/8 mb-3.5 flex items-center gap-2 border-b pb-3.5 sm:mb-4 sm:pb-4">
+          <Laptop className="text-vl-dark-900 size-4" />
+          <h2 className="text-vl-dark-900 text-sm font-bold tracking-tight uppercase sm:text-base">
             Active Device Sessions
           </h2>
         </div>
 
         {sessionLoading ? (
-          <p className="py-4 text-xs text-neutral-500">Loading active sessions...</p>
+          <p className="text-muted-foreground py-4 text-xs">Loading active sessions...</p>
         ) : sessions.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-[#101114]/10 p-6 text-center text-xs text-neutral-500">
+          <p className="border-vl-dark-900/10 text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
             No other active sessions detected.
           </p>
         ) : (
           <div>
-            <div className="divide-y divide-[#101114]/6">
+            <div className="divide-vl-dark-900/6 divide-y">
               {sessions.map((s) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between py-3.5 first:pt-0 last:pb-2"
                 >
                   <div>
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[#101114]">
+                    <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-semibold">
                       <span>Device Session</span>
                       {s.isCurrent && (
-                        <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-700">
+                        <Badge variant="secondary" size="sm">
                           Current Device
-                        </span>
+                        </Badge>
                       )}
                     </div>
-                    <p className="mt-0.5 text-[11px] text-neutral-500">
+                    <p className="text-muted-foreground mt-0.5 text-[11px]">
                       Expires on {new Date(s.expires).toLocaleDateString()}
                     </p>
                   </div>
                   {!s.isCurrent && (
-                    <button
+                    <Button
+                      type="button"
+                      variant="destructive"
                       onClick={() => handleRevokeSession(s.id)}
-                      className="min-h-[36px] rounded-md px-2.5 py-1 text-xs font-normal text-rose-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
                     >
                       Revoke
-                    </button>
+                    </Button>
                   )}
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2.5 border-t border-[#101114]/8 pt-4">
-              <button
-                onClick={handleRevokeOther}
-                className="min-h-[38px] rounded-lg border border-[#101114]/15 px-3 py-1.5 text-xs font-semibold text-[#101114] transition-colors hover:bg-neutral-50"
-              >
+            <div className="border-vl-black/8 mt-4 flex flex-wrap gap-2.5 border-t pt-4">
+              <Button onClick={handleRevokeOther} variant="outline" size="sm">
                 Sign Out Other Devices
-              </button>
-              <button
-                onClick={handleRevokeAll}
-                className="min-h-[38px] rounded-lg border border-rose-200 px-3 py-1.5 text-xs font-semibold text-rose-600 transition-colors hover:bg-rose-50"
-              >
+              </Button>
+              <Button onClick={handleRevokeAll} variant="destructive" size="sm">
                 Sign Out All Devices
-              </button>
+              </Button>
             </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* 3. Delete Account */}
-      <div className="rounded-xl border border-rose-200 bg-white p-4 sm:p-6">
+      <Card variant="brand" className="border-rose-200 p-4 sm:p-6">
         <div className="mb-3.5 flex items-center gap-2 border-b border-rose-100 pb-3.5 sm:mb-4 sm:pb-4">
           <AlertTriangle className="size-4 text-rose-600" />
           <h2 className="text-sm font-bold tracking-tight text-rose-700 uppercase sm:text-base">
             Delete Account
           </h2>
         </div>
-        <p className="max-w-xl text-xs leading-relaxed text-neutral-600">
+        <p className="text-muted-foreground max-w-xl text-xs leading-relaxed">
           Permanently delete your VibeLock account, order history, saved addresses, and profile
           details. This action cannot be undone.
         </p>
 
         {!delConfirmMode ? (
           <div className="pt-4">
-            <button
-              onClick={() => setDelConfirmMode(true)}
-              className="min-h-[40px] rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-rose-700"
-            >
+            <Button onClick={() => setDelConfirmMode(true)} variant="danger" size="default">
               Delete My Account
-            </button>
+            </Button>
           </div>
         ) : (
           <form onSubmit={handleDeleteAccount} className="mt-4 max-w-md space-y-3">
@@ -304,27 +301,24 @@ export function AccountSecurityCard() {
               className="min-h-[42px] rounded-lg border-rose-300 text-xs"
             />
             <div className="flex gap-2.5 pt-1">
-              <button
-                type="submit"
-                disabled={delLoading}
-                className="min-h-[40px] rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-50"
-              >
-                {delLoading ? "Deleting..." : "Permanently Delete"}
-              </button>
-              <button
+              <Button type="submit" variant="danger" size="lg" loading={delLoading}>
+                Permanently Delete
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="lg"
                 onClick={() => {
                   setDelConfirmMode(false);
                   setDelError("");
                 }}
-                className="min-h-[40px] rounded-lg border border-neutral-300 px-4 py-2 text-xs font-normal text-neutral-700 hover:bg-neutral-50"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </form>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

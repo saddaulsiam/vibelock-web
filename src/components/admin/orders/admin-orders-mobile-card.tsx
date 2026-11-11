@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { CheckCircle2, Eye, MessageCircle, Package, Phone, Truck } from "lucide-react";
 import type { OrderStatus } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
 import { getOrderStatusBadge } from "@/components/admin/orders/admin-order-badges";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
@@ -38,13 +39,13 @@ export function AdminOrdersMobileCard({
             checked={isSelected}
             onChange={() => onToggleSelect(order.id)}
             aria-label={`Select order ${order.orderNumber}`}
-            className="size-4 rounded-xs border-neutral-300 accent-[#101114] focus:ring-1 focus:ring-[#00D9FF]"
+            className="size-4 rounded-xs border-neutral-300 accent-vl-dark-900 focus:ring-1 focus:ring-vl-cyan"
           />
           <div>
             <div className="flex items-center gap-1.5">
               <Link
                 href={`/admin/orders/${order.id}`}
-                className="font-mono text-xs font-bold text-[#101114] hover:text-[#00D9FF] hover:underline"
+                className="font-mono text-xs font-bold text-vl-dark-900 hover:text-vl-cyan hover:underline"
               >
                 #{order.orderNumber}
               </Link>
@@ -119,7 +120,7 @@ export function AdminOrdersMobileCard({
         </div>
 
         <div className="text-right">
-          <div className="font-bold text-[#101114]">{formatBdt(order.total)}</div>
+          <div className="font-bold text-vl-dark-900">{formatBdt(order.total)}</div>
           <div className="flex items-center justify-end gap-1.5 pt-1 text-[10px]">
             <PaymentGatewayBadge
               gateway={order.paymentGateway}
@@ -155,32 +156,35 @@ export function AdminOrdersMobileCard({
       {/* Actions Footer */}
       <div className="mt-3 flex items-center justify-end gap-2 border-t border-neutral-100 pt-2.5">
         {order.status === "PENDING" && (
-          <button
+          <Button
             type="button"
+            size="xs"
             disabled={updatingOrderId === order.id}
             onClick={() => onQuickStatus(order.id, "CONFIRMED")}
-            className="inline-flex h-8 items-center gap-1 rounded-lg bg-emerald-600 px-3 text-xs font-semibold text-white shadow-2xs hover:bg-emerald-700 disabled:opacity-50"
+            className="h-8 gap-1 bg-emerald-600 text-white hover:bg-emerald-700"
           >
             <CheckCircle2 className="size-3.5" />
             <span>{updatingOrderId === order.id ? "..." : "Confirm"}</span>
-          </button>
+          </Button>
         )}
 
         {order.status === "CONFIRMED" && (
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="xs"
             disabled={updatingOrderId === order.id}
             onClick={() => onQuickStatus(order.id, "PROCESSING")}
-            className="inline-flex h-8 items-center gap-1 rounded-lg border border-neutral-300 bg-white px-3 text-xs font-semibold text-neutral-800 shadow-2xs hover:bg-neutral-50 disabled:opacity-50"
+            className="h-8 gap-1"
           >
             <Package className="size-3.5 text-indigo-600" />
             <span>{updatingOrderId === order.id ? "..." : "Pack"}</span>
-          </button>
+          </Button>
         )}
 
         <Link
           href={`/admin/orders/${order.id}`}
-          className="inline-flex h-8 items-center gap-1 rounded-lg border border-[#101114]/20 bg-white px-3 text-xs font-semibold text-[#101114] shadow-2xs hover:bg-[#F3F0E8]"
+          className="inline-flex h-8 items-center gap-1 rounded-lg border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 shadow-2xs hover:bg-vl-white-300"
         >
           <Eye className="size-3.5" />
           <span>View Details</span>

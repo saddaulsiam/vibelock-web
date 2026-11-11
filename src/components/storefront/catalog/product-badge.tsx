@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   label: string;
@@ -12,19 +12,23 @@ export function ProductBadge({
   className,
   ...props
 }: ProductBadgeProps) {
+  const badgeVariant =
+    variant === "sale"
+      ? "sale"
+      : variant === "new"
+      ? "new"
+      : variant === "featured"
+      ? "featured"
+      : "brand";
+
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-xs px-2 py-0.5 text-[10px] leading-tight font-bold tracking-wider uppercase shadow-xs select-none",
-        variant === "default" && "bg-[#101114] text-white",
-        variant === "sale" && "bg-[#E50010] text-white",
-        variant === "new" && "bg-[#E50010] text-white",
-        variant === "featured" && "bg-amber-400 font-black text-[#101114]",
-        className
-      )}
+    <Badge
+      variant={badgeVariant}
+      size="sm"
+      className={className}
       {...props}
     >
       {label}
-    </span>
+    </Badge>
   );
 }

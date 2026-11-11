@@ -14,6 +14,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CustomerAbandonedCartCardProps {
   cart: AdminCustomerAbandonedCart;
@@ -131,13 +133,16 @@ export function CustomerAbandonedCartCard({
         {/* Quick WhatsApp Action Button */}
         <div>
           {formattedPhone ? (
-            <button
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
               onClick={handleOpenRecoveryModal}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs transition hover:bg-emerald-700"
+              className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
             >
               <MessageCircle className="size-3.5 fill-white/20" />
               <span>Send WhatsApp Recovery</span>
-            </button>
+            </Button>
           ) : (
             <span className="text-[11px] text-amber-700 italic">
               Phone number required for WhatsApp
@@ -275,23 +280,26 @@ export function CustomerAbandonedCartCard({
                   </p>
                 </div>
               </div>
-              <button
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setIsPreviewOpen(false)}
-                className="rounded-lg p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
+                className="size-7 text-neutral-400 hover:text-neutral-700"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             </div>
 
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-neutral-700">
                 Message Content (WhatsApp):
               </label>
-              <textarea
+              <Textarea
                 value={customMessage}
                 onChange={(e) => setCustomMessage(e.target.value)}
                 rows={9}
-                className="w-full rounded-xl border border-neutral-300 p-3 font-sans text-xs leading-relaxed text-neutral-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+                className="font-sans text-xs leading-relaxed"
               />
             </div>
 
@@ -301,21 +309,24 @@ export function CustomerAbandonedCartCard({
             </div>
 
             <div className="flex items-center justify-end gap-2 border-t border-neutral-100 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="default"
                 onClick={() => setIsPreviewOpen(false)}
-                className="rounded-lg border border-neutral-200 px-3.5 py-1.5 text-xs font-semibold text-neutral-700 hover:bg-neutral-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="primary"
+                size="default"
                 onClick={handleSendWhatsApp}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-emerald-700"
+                className="bg-emerald-600 hover:bg-emerald-700"
               >
                 <Send className="size-3.5" />
                 <span>Open in WhatsApp</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -20,6 +20,7 @@ export async function getCurrentUser() {
         id: true,
         name: true,
         email: true,
+        phone: true,
         image: true,
         role: true,
         emailVerified: true,
@@ -27,7 +28,10 @@ export async function getCurrentUser() {
     });
 
     if (!dbUser) {
-      return session.user;
+      return {
+        ...session.user,
+        phone: null,
+      };
     }
 
     return {
@@ -35,12 +39,16 @@ export async function getCurrentUser() {
       id: dbUser.id,
       name: dbUser.name ?? session.user.name,
       email: dbUser.email ?? session.user.email,
+      phone: dbUser.phone ?? null,
       image: dbUser.image ?? null,
       role: dbUser.role ?? session.user.role,
       emailVerified: dbUser.emailVerified ?? session.user.emailVerified,
     };
   } catch (error) {
     console.error("[getCurrentUser] Failed to fetch live user profile:", error);
-    return session.user;
+    return {
+      ...session.user,
+      phone: null,
+    };
   }
 }

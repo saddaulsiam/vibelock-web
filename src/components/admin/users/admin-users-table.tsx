@@ -15,7 +15,7 @@ import {
   AdminTableTabItem,
   AdminTableTabs,
 } from "@/components/admin/shared";
-import { AdminTableInfiniteScroll } from "@/components/admin/shared";
+import { InfiniteScroll } from "@/components/admin/shared";
 import {
   AdminTableColumnVisibility,
   useAdminTableColumns,
@@ -40,6 +40,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import {
   CheckCircle2,
   Download,
@@ -274,16 +277,18 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
           />
 
           {/* Export CSV Button */}
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportCsv}
             disabled={filteredUsers.length === 0}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export filtered staff/admins to CSV"
+            className="gap-1.5"
           >
             <Download className="size-3.5 text-neutral-500" />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
 
           {/* Create Admin Dialog */}
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -293,7 +298,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
             </DialogTrigger>
             <DialogContent className="bg-white sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-lg font-bold text-[#101114]">
+                <DialogTitle className="text-vl-dark-900 text-lg font-bold">
                   Register Staff or Administrator
                 </DialogTitle>
                 <DialogDescription className="text-xs text-neutral-600">
@@ -312,13 +317,13 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Full Name <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="text"
                     required
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Tanvir Ahmed"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
@@ -326,24 +331,24 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Email Address <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="email"
                     required
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="admin@vibelock.bd"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">Phone Number</label>
-                  <input
+                  <Input
                     type="tel"
                     value={newPhone}
                     onChange={(e) => setNewPhone(e.target.value)}
                     placeholder="017XXXXXXXX"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
@@ -351,48 +356,45 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   <label className="text-xs font-semibold text-neutral-700">
                     Role Permission <span className="text-red-500">*</span>
                   </label>
-                  <select
+                  <NativeSelect
                     value={newRole}
                     onChange={(e) => setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")}
-                    className="h-9 w-full rounded-md border border-neutral-200 bg-white px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   >
                     <option value="STAFF">STAFF — Fulfillment & Customer Support</option>
                     <option value="MANAGER">MANAGER — Catalog, Inventory & Orders</option>
                     <option value="ADMIN">ADMIN — Full System Access & Settings</option>
-                  </select>
+                  </NativeSelect>
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">
                     Initial Password <span className="text-red-500">*</span>
                   </label>
-                  <input
+                  <Input
                     type="password"
                     required
                     minLength={6}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 6 characters"
-                    className="h-9 w-full rounded-md border border-neutral-200 px-3 text-xs focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                    size="default"
                   />
                 </div>
 
                 <DialogFooter className="pt-2">
-                  <button
+                  <Button
                     type="button"
+                    variant="outline"
+                    size="default"
                     onClick={() => setIsDialogOpen(false)}
-                    className={ADMIN_TABLE_CLASSES.buttonSecondary}
                     disabled={isPending}
                   >
                     Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isPending}
-                    className={ADMIN_TABLE_CLASSES.buttonPrimary}
-                  >
-                    {isPending ? "Creating..." : "Create Account"}
-                  </button>
+                  </Button>
+                  <Button type="submit" variant="primary" size="default" loading={isPending}>
+                    Create Account
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -442,7 +444,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
                   {visibleColumns.member && (
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#101114] text-xs font-bold text-white">
+                        <div className="bg-vl-dark-900 flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                           {initials}
                         </div>
                         <div className="min-w-0">
@@ -493,17 +495,18 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
 
                   {/* Action Dropdown */}
                   <TableCell className="text-right">
-                    <select
+                    <NativeSelect
                       disabled={isPending}
                       value={user.role}
                       onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
-                      className="h-8 rounded-md border border-neutral-200 bg-white px-2 text-xs font-medium text-neutral-800 shadow-2xs transition-colors hover:border-neutral-300 focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+                      size="sm"
+                      className="inline-flex w-auto"
                     >
                       <option value="ADMIN">ADMIN</option>
                       <option value="MANAGER">MANAGER</option>
                       <option value="STAFF">STAFF</option>
                       <option value="CUSTOMER">Demote to CUSTOMER</option>
-                    </select>
+                    </NativeSelect>
                   </TableCell>
                 </TableRow>
               );
@@ -513,7 +516,7 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
       </Table>
 
       {/* ── Infinite Scroll Sentinel & Load More Controls ── */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

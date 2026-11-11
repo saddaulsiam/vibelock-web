@@ -17,6 +17,7 @@ import type {
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import { PosCartPanel } from "./pos-cart-panel";
 import { PosHeader } from "./pos-header";
 import { PosParkedModal } from "./pos-parked-modal";
@@ -356,7 +357,8 @@ export function PosView({
             }
           } else {
             if (paymentMethod === "CASH") cashAdd = saleAmt;
-            else if (paymentMethod === "BANGLA_QR" || paymentMethod === "BKASH") banglaQrAdd = saleAmt;
+            else if (paymentMethod === "BANGLA_QR" || paymentMethod === "BKASH")
+              banglaQrAdd = saleAmt;
             else if (paymentMethod === "CARD") cardAdd = saleAmt;
           }
 
@@ -472,7 +474,7 @@ export function PosView({
   ]);
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-[#f2f2f2] select-none">
+    <div className="bg-vl-white-300 flex h-screen w-screen flex-col overflow-hidden select-none">
       {/* Top Header with Live Drawer Badge & Returns Button */}
       <PosHeader
         cashierName={cashierName}
@@ -493,7 +495,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-b border-[#d6d2c4] bg-white p-2.5 shadow-2xs sm:p-3">
+          <div className="border-vl-white-500 border-b bg-white p-2.5 shadow-2xs sm:p-3">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -516,7 +518,7 @@ export function PosView({
         </section>
 
         {/* Desktop Section: Billing Cart Panel (35-40% width, permanently visible on lg+) */}
-        <aside className="z-10 hidden h-full w-96 border-l border-[#d6d2c4] shadow-md lg:block lg:w-[400px] xl:w-[460px]">
+        <aside className="border-vl-white-500 z-10 hidden h-full w-96 border-l shadow-md lg:block lg:w-[400px] xl:w-[460px]">
           <PosCartPanel
             cartItems={cartItems}
             customerPhone={customerPhone}
@@ -569,10 +571,11 @@ export function PosView({
 
         {/* Mobile & Tablet Floating Cart Bar (< lg) */}
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 bg-gradient-to-t from-black/85 via-black/45 to-transparent p-2.5 sm:p-3 lg:hidden">
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setIsMobileCartOpen(true)}
-            className="bg-vl-black text-vl-white border-vl-cyan/40 hover:border-vl-cyan pointer-events-auto flex w-full items-center justify-between rounded-2xl border p-3 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-[0.99] sm:p-3.5"
+            className="bg-vl-black text-vl-white border-vl-cyan-200 hover:border-vl-cyan pointer-events-auto flex h-auto w-full items-center justify-between rounded-2xl border p-3 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-md transition-all active:scale-[0.99] sm:p-3.5"
           >
             <div className="flex items-center space-x-2.5 sm:space-x-3">
               <div className="bg-vl-cyan text-vl-black relative flex h-9 w-9 items-center justify-center rounded-xl font-black sm:h-10 sm:w-10">
@@ -601,7 +604,7 @@ export function PosView({
                 View Ticket →
               </div>
             </div>
-          </button>
+          </Button>
         </div>
       </main>
 

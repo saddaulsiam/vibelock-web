@@ -38,7 +38,7 @@ const TONE_STYLES: Record<
     label: "text-neutral-500",
     iconBg: "bg-neutral-100",
     iconColor: "text-neutral-700",
-    value: "text-[#101114]",
+    value: "text-vl-dark-900",
     alertBorder: "border-neutral-300",
     alertBg: "bg-neutral-50/50",
   },
@@ -70,7 +70,7 @@ const TONE_STYLES: Record<
     label: "text-blue-700",
     iconBg: "bg-blue-50",
     iconColor: "text-blue-600",
-    value: "text-[#101114]",
+    value: "text-vl-dark-900",
     alertBorder: "border-blue-300",
     alertBg: "bg-blue-50/40",
   },
@@ -78,7 +78,7 @@ const TONE_STYLES: Record<
     label: "text-purple-700",
     iconBg: "bg-purple-50",
     iconColor: "text-purple-600",
-    value: "text-[#101114]",
+    value: "text-vl-dark-900",
     alertBorder: "border-purple-300",
     alertBg: "bg-purple-50/40",
   },
@@ -86,7 +86,7 @@ const TONE_STYLES: Record<
     label: "text-cyan-700",
     iconBg: "bg-cyan-50",
     iconColor: "text-cyan-600",
-    value: "text-[#101114]",
+    value: "text-vl-dark-900",
     alertBorder: "border-cyan-300",
     alertBg: "bg-cyan-50/40",
   },
@@ -140,7 +140,7 @@ export function AdminKpiCard({
         <div
           className={cn(
             "mt-2.5 text-2xl font-black tracking-tight",
-            alert ? styles.value : "text-[#101114]"
+            alert ? styles.value : "text-vl-dark-900"
           )}
         >
           {value}
@@ -157,7 +157,7 @@ export function AdminKpiCard({
     return (
       <Link
         href={href}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-[#101114] focus-visible:ring-offset-2"
+        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-dark-900 focus-visible:ring-offset-2"
       >
         {content}
       </Link>

@@ -8,6 +8,7 @@ export interface CategorySummary {
   imageUrl: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  parentId?: string | null;
 }
 
 export interface ProductImageSummary {

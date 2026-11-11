@@ -4,7 +4,9 @@ import { useState } from "react";
 import type { NotificationPreferences } from "@/lib/account/notification-types";
 import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
 import { toast } from "sonner";
-import { Bell, PackageCheck, Flame, RefreshCw, Tag, Loader2, Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Bell, PackageCheck, Flame, RefreshCw, Tag, Check } from "lucide-react";
 
 interface NotificationPreferencesCardProps {
   initialPreferences: NotificationPreferences;
@@ -67,15 +69,15 @@ export function NotificationPreferencesCard({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#101114]/8 bg-white p-4 shadow-2xs sm:p-6 md:p-8">
+    <Card variant="brand" className="p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="mb-5 border-b border-[#101114]/8 pb-5">
-        <span className="text-[10px] font-semibold tracking-[0.15em] text-[#00D9FF] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+      <div className="border-vl-dark-900/8 mb-5 border-b pb-5">
+        <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
           Alerts & Updates
         </span>
         <div className="mt-0.5 flex items-center gap-2">
-          <Bell className="size-4 text-[#101114]" />
-          <h2 className="text-base font-bold tracking-tight text-[#101114] uppercase sm:text-lg">
+          <Bell className="text-vl-dark-900 size-4" />
+          <h2 className="text-vl-dark-900 text-base font-bold tracking-tight uppercase sm:text-lg">
             Notification Settings
           </h2>
         </div>
@@ -95,7 +97,7 @@ export function NotificationPreferencesCard({
           </div>
         )}
 
-        <div className="divide-y divide-[#101114]/6">
+        <div className="divide-vl-dark-900/6 divide-y">
           {notificationOptions.map((opt) => {
             const isChecked = prefs[opt.key];
             const Icon = opt.icon;
@@ -107,17 +109,17 @@ export function NotificationPreferencesCard({
                 className="group flex cursor-pointer items-start justify-between gap-3.5 py-4 transition-colors first:pt-1 sm:gap-4"
               >
                 <div className="flex min-w-0 flex-1 items-start gap-3">
-                  <Icon className="mt-0.5 size-4 shrink-0 text-neutral-400 group-hover:text-[#101114]" />
+                  <Icon className="group-hover:text-vl-dark-900 mt-0.5 size-4 shrink-0 text-neutral-400" />
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs font-semibold text-[#101114]">{opt.title}</span>
+                      <span className="text-vl-dark-900 text-xs font-semibold">{opt.title}</span>
                       {opt.badge && (
                         <span className="rounded-md bg-neutral-100 px-2 py-0.5 text-[9px] font-semibold tracking-wider text-neutral-700 uppercase">
                           {opt.badge}
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-xs leading-relaxed text-neutral-500 break-words">
+                    <p className="mt-0.5 text-xs leading-relaxed break-words text-neutral-500">
                       {opt.desc}
                     </p>
                   </div>
@@ -133,7 +135,7 @@ export function NotificationPreferencesCard({
                     toggle(opt.key);
                   }}
                   className={`relative mt-0.5 inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 ${
-                    isChecked ? "bg-[#101114]" : "bg-neutral-200"
+                    isChecked ? "bg-vl-dark-900" : "bg-neutral-200"
                   }`}
                 >
                   <span
@@ -149,23 +151,12 @@ export function NotificationPreferencesCard({
         </div>
 
         {/* Action Button */}
-        <div className="flex items-center justify-end border-t border-[#101114]/8 pt-5">
-          <button
-            type="submit"
-            disabled={pending}
-            className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#101114] px-6 py-2.5 text-xs font-semibold tracking-wider text-white uppercase transition-colors hover:bg-neutral-800 active:scale-95 disabled:opacity-50"
-          >
-            {pending ? (
-              <span className="flex items-center gap-1.5">
-                <Loader2 className="size-3.5 animate-spin" />
-                <span>Saving...</span>
-              </span>
-            ) : (
-              "Save Settings"
-            )}
-          </button>
+        <div className="border-vl-dark-900/8 flex items-center justify-end border-t pt-5">
+          <Button type="submit" variant="primary" loading={pending}>
+            Save Settings
+          </Button>
         </div>
       </form>
-    </div>
+    </Card>
   );
 }

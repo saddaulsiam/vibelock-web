@@ -4,13 +4,14 @@ import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
-  AdminTableInfiniteScroll,
+  InfiniteScroll,
   AdminTableSearchInput,
   AdminTableTabs,
   useAdminTableColumns,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -378,13 +379,15 @@ export function AdminInventoryIntelligenceTable({
           {currentFilters.status !== "all" && (
             <span className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-800">
               Status: {currentFilters.status}
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => updateUrlParams({ status: null, page: 1 })}
-                className="text-zinc-500 hover:text-zinc-900"
+                className="size-4 text-zinc-500 hover:text-zinc-900"
               >
                 <X className="size-3" />
-              </button>
+              </Button>
             </span>
           )}
         </div>
@@ -434,13 +437,15 @@ export function AdminInventoryIntelligenceTable({
                   <p className="text-xs text-zinc-500">
                     Try adjusting your search terms or clearing active status filters.
                   </p>
-                  <button
+                  <Button
                     type="button"
+                    variant="primary"
+                    size="sm"
                     onClick={() => updateUrlParams({ q: null, status: null, page: 1 })}
-                    className="mt-2 inline-flex h-8 items-center rounded-lg bg-[#101114] px-3 font-semibold text-white shadow-2xs hover:bg-[#101114]/85"
+                    className="mt-2"
                   >
                     Clear all filters
-                  </button>
+                  </Button>
                 </div>
               </TableCell>
             </TableRow>
@@ -476,10 +481,12 @@ export function AdminInventoryIntelligenceTable({
                       <span className="max-w-[220px] truncate" title={item.sku}>
                         {item.sku}
                       </span>
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => handleCopySku(item.sku)}
-                        className="rounded p-0.5 text-zinc-400 transition hover:bg-zinc-100 hover:text-zinc-800"
+                        className="size-4 text-zinc-400 hover:text-zinc-800"
                         title="Copy SKU to clipboard"
                       >
                         {copiedSku === item.sku ? (
@@ -487,7 +494,7 @@ export function AdminInventoryIntelligenceTable({
                         ) : (
                           <Copy className="size-2.5" />
                         )}
-                      </button>
+                      </Button>
                     </div>
                   </TableCell>
 
@@ -597,7 +604,7 @@ export function AdminInventoryIntelligenceTable({
                         href={`/admin/inventory/${item.id}`}
                         className={`inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-semibold whitespace-nowrap shadow-2xs transition-colors ${
                           isUrgent
-                            ? "bg-[#101114] text-white hover:bg-[#101114]/85"
+                            ? "bg-vl-dark-900 hover:bg-vl-dark-900/85 text-white"
                             : "border border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-50 hover:text-zinc-950"
                         }`}
                         title="View inventory transactions, adjustments, and supplier purchase orders"
@@ -615,7 +622,7 @@ export function AdminInventoryIntelligenceTable({
       </Table>
 
       {/* Infinite Scroll Sentinel & Load More Controls matching Inventory Control Center */}
-      <AdminTableInfiniteScroll
+      <InfiniteScroll
         hasMore={hasMore}
         isLoadingMore={isLoadingMore}
         onLoadMore={handleLoadMore}

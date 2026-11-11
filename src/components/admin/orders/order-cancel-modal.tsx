@@ -13,6 +13,9 @@ import {
 import * as React from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface CancellationReasonOption {
   id: string;
@@ -92,10 +95,11 @@ function CancelSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button
+    <Button
       type="submit"
+      variant="danger"
+      size="default"
       disabled={pending}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-rose-600 px-5 text-xs font-bold text-white shadow-sm transition hover:bg-rose-700 active:scale-95 disabled:opacity-50"
     >
       {pending ? (
         <>
@@ -108,7 +112,7 @@ function CancelSubmitButton() {
           <span>Confirm Cancellation</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }
 
@@ -168,14 +172,16 @@ function OrderCancelModalContent({
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700"
+            className="size-8 text-neutral-400 hover:text-neutral-700"
             aria-label="Close modal"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* ── Auto-Restock Guarantee Banner ── */}
@@ -218,18 +224,15 @@ function OrderCancelModalContent({
               {CANCELLATION_REASONS.slice(0, 4).map((reason) => {
                 const isSelected = selectedReasonId === reason.id;
                 return (
-                  <button
+                  <Button
                     key={reason.id}
                     type="button"
+                    variant={isSelected ? "destructive" : "secondary"}
+                    size="xs"
                     onClick={() => setSelectedReasonId(reason.id)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
-                      isSelected
-                        ? "bg-rose-600 text-white shadow-2xs"
-                        : "border border-neutral-200 bg-neutral-50 text-neutral-700 hover:bg-neutral-100"
-                    }`}
                   >
                     {reason.shortLabel}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -243,18 +246,18 @@ function OrderCancelModalContent({
             >
               Cancellation Reason *
             </label>
-            <select
+            <NativeSelect
               id="cancel-reason-select"
               value={selectedReasonId}
               onChange={(e) => setSelectedReasonId(e.target.value)}
-              className="h-10 w-full rounded-xl border border-neutral-300 bg-white px-3 text-xs font-medium text-neutral-900 shadow-2xs focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+              size="lg"
             >
               {CANCELLATION_REASONS.map((reason) => (
                 <option key={reason.id} value={reason.id}>
                   {reason.label}
                 </option>
               ))}
-            </select>
+            </NativeSelect>
             <p className="text-[11px] text-neutral-500 italic">{currentReason.description}</p>
           </div>
 
@@ -266,13 +269,13 @@ function OrderCancelModalContent({
             >
               Additional Staff Notes (Optional)
             </label>
-            <textarea
+            <Textarea
               id="cancel-custom-note"
               rows={2}
               value={customNote}
               onChange={(e) => setCustomNote(e.target.value)}
               placeholder="e.g., Called customer 3 times with no response, customer requested size exchange..."
-              className="w-full rounded-xl border border-neutral-300 bg-white p-2.5 text-xs text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+              className="text-xs"
             />
           </div>
 
@@ -288,13 +291,14 @@ function OrderCancelModalContent({
 
           {/* ── Action Buttons ── */}
           <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
-              className="h-10 rounded-xl border border-neutral-200 bg-white px-4 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50"
             >
               Keep Order
-            </button>
+            </Button>
             <CancelSubmitButton />
           </div>
         </form>

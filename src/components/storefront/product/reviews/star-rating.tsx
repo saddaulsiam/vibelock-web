@@ -45,7 +45,7 @@ export function StarRating({
             <Star
               key={starNumber}
               className={`${sizeClasses[size]} ${
-                isFilled ? "fill-[#00D9FF] text-[#00D9FF]" : "fill-[#101114]/10 text-[#101114]/20"
+                isFilled ? "fill-vl-cyan text-vl-cyan" : "fill-vl-dark-900/10 text-vl-dark-900/20"
               } transition-colors`}
               aria-hidden="true"
             />
@@ -59,14 +59,14 @@ export function StarRating({
             role="radio"
             aria-checked={starNumber === value}
             aria-label={`${starNumber} star${starNumber > 1 ? "s" : ""}`}
-            className="cursor-pointer p-0.5 transition-transform hover:scale-115 focus-visible:outline-2 focus-visible:outline-[#00D9FF]"
+            className="cursor-pointer p-0.5 transition-transform hover:scale-115 focus-visible:outline-2 focus-visible:outline-vl-cyan"
             onClick={() => onChange?.(starNumber)}
             onMouseEnter={() => setHoverValue(starNumber)}
             onMouseLeave={() => setHoverValue(null)}
           >
             <Star
               className={`${sizeClasses[size]} ${
-                isFilled ? "fill-[#00D9FF] text-[#00D9FF]" : "fill-[#101114]/10 text-[#101114]/25"
+                isFilled ? "fill-vl-cyan text-vl-cyan" : "fill-vl-dark-900/10 text-vl-dark-900/25"
               } transition-colors`}
             />
           </button>

@@ -119,7 +119,7 @@ export function PosHeader({
             variant="ghost"
             size="sm"
             onClick={onToggleCartMobile}
-            className="bg-vl-cyan text-vl-black relative flex h-8 items-center space-x-1.5 rounded-xl px-2 shadow-xs hover:bg-[#2ae0ff] active:scale-95 sm:px-2.5 lg:hidden"
+            className="bg-vl-cyan text-vl-black relative flex h-8 items-center space-x-1.5 rounded-xl px-2 shadow-xs hover:bg-vl-cyan-400 active:scale-95 sm:px-2.5 lg:hidden"
             title="View Current Sale Ticket"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
@@ -134,7 +134,7 @@ export function PosHeader({
             variant="ghost"
             size="sm"
             onClick={onOpenParkedModal}
-            className="bg-vl-cyan/15 text-vl-cyan hover:bg-vl-cyan/25 border-vl-cyan/40 flex h-8 items-center space-x-1 rounded-xl border px-2 shadow-xs lg:hidden"
+            className="bg-vl-cyan-100 text-vl-cyan hover:bg-vl-cyan-100 border-vl-cyan-200 flex h-8 items-center space-x-1 rounded-xl border px-2 shadow-xs lg:hidden"
             title="View Parked Sales"
           >
             <PauseCircle className="text-vl-cyan h-3.5 w-3.5" />
@@ -155,7 +155,7 @@ export function PosHeader({
           </div>
         ) : (
           <div
-            className="text-vl-cyan hidden items-center space-x-1.5 rounded-xl border border-white/10 bg-[#16171c] px-2.5 py-1.5 font-mono text-xs shadow-2xs select-none lg:flex xl:space-x-2 xl:px-3"
+            className="text-vl-cyan hidden items-center space-x-1.5 rounded-xl border border-white/10 bg-vl-dark-900 px-2.5 py-1.5 font-mono text-xs shadow-2xs select-none lg:flex xl:space-x-2 xl:px-3"
             title="Counter is connected online."
           >
             <span className="relative flex h-2 w-2">
@@ -167,7 +167,7 @@ export function PosHeader({
         )}
 
         {/* Real-time Clock (Desktop xl+) */}
-        <div className="text-vl-white hidden items-center space-x-2 rounded-xl border border-white/10 bg-[#16171c] px-3 py-1.5 font-mono text-xs shadow-2xs xl:flex">
+        <div className="text-vl-white hidden items-center space-x-2 rounded-xl border border-white/10 bg-vl-dark-900 px-3 py-1.5 font-mono text-xs shadow-2xs xl:flex">
           <Clock className="text-vl-cyan h-3.5 w-3.5" />
           <span className="font-semibold tracking-wider">{time || "00:00:00"}</span>
         </div>
@@ -199,7 +199,7 @@ export function PosHeader({
             onClick={onOpenParkedModal}
             className={`hidden h-9 space-x-1.5 rounded-xl px-2.5 text-xs transition-all lg:inline-flex xl:px-3 ${
               (parkedCount || 0) > 0
-                ? "bg-vl-cyan/15 text-vl-cyan hover:bg-vl-cyan/25 border-vl-cyan/40 border shadow-xs hover:text-white"
+                ? "bg-vl-cyan-100 text-vl-cyan hover:bg-vl-cyan-100 border-vl-cyan-200 border shadow-xs hover:text-white"
                 : "text-vl-white/70 hover:text-vl-white hover:bg-white/10"
             }`}
             title="View Parked Sales"
@@ -236,10 +236,12 @@ export function PosHeader({
         {onOpenShiftModal && (
           <div>
             {shift && shift.isOpen ? (
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="outline"
                 onClick={onOpenShiftModal}
-                className="flex items-center space-x-1 rounded-xl border border-white/10 bg-[#16171c] px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs transition-all hover:border-emerald-500/50 hover:bg-[#20222a] sm:space-x-1.5 sm:px-3"
+                className="flex items-center space-x-1 rounded-xl border-white/10 bg-vl-dark-900 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 hover:bg-vl-dark-800 sm:space-x-1.5 sm:px-3"
                 title="Click to view Cash Drawer & Shift details"
               >
                 <Banknote className="h-3.5 w-3.5" />
@@ -247,18 +249,20 @@ export function PosHeader({
                   Drawer: ৳{shift.expectedCash.toFixed(0)}
                 </span>
                 <span className="font-bold sm:hidden">৳{shift.expectedCash.toFixed(0)}</span>
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="brand"
                 onClick={onOpenShiftModal}
-                className="bg-vl-cyan/15 hover:bg-vl-cyan/25 text-vl-cyan border-vl-cyan/40 font-heading flex animate-pulse items-center space-x-1 rounded-xl border px-2 py-1.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] transition-all sm:space-x-1.5 sm:px-3"
+                className="font-heading flex animate-pulse items-center space-x-1 rounded-xl px-2 py-1.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] sm:space-x-1.5 sm:px-3"
                 title="Register Shift is Closed. Click to Open Register."
               >
-                <Lock className="text-vl-cyan h-3.5 w-3.5" />
+                <Lock className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Open Register</span>
                 <span className="text-[11px] sm:hidden">Open</span>
-              </button>
+              </Button>
             )}
           </div>
         )}
@@ -266,10 +270,10 @@ export function PosHeader({
         {/* Cashier Badge (Desktop lg+) */}
         <Link href="/admin">
           <div
-            className="hidden items-center space-x-2 rounded-xl border border-white/10 bg-[#16171c] px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
+            className="hidden items-center space-x-2 rounded-xl border border-white/10 bg-vl-dark-900 px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
             title="Back To Dashboard"
           >
-            <div className="bg-vl-cyan/15 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
+            <div className="bg-vl-cyan-100 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
               <UserCheck className="h-3 w-3" />
             </div>
             <div className="text-left text-xs leading-none">
@@ -305,11 +309,11 @@ export function PosHeader({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-xl border border-white/20 bg-[#16171c] p-1.5 text-white shadow-2xl"
+            className="w-56 rounded-xl border border-white/20 bg-vl-dark-900 p-1.5 text-white shadow-2xl"
           >
             {/* Cashier Info Chip */}
             <div className="mb-1 flex items-center space-x-2.5 border-b border-white/10 px-2 py-2">
-              <div className="bg-vl-cyan/20 text-vl-cyan flex h-7 w-7 items-center justify-center rounded-full">
+              <div className="bg-vl-cyan-100 text-vl-cyan flex h-7 w-7 items-center justify-center rounded-full">
                 <UserCheck className="h-3.5 w-3.5" />
               </div>
               <div className="min-w-0 text-left text-xs leading-tight">

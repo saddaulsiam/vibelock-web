@@ -5,6 +5,8 @@ import type { AdminCustomerStaffNote } from "@/lib/admin/customers/customer-quer
 import { AlertCircle, CheckCircle2, Clock, FileText, Loader2, Send, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CustomerStaffNotesProps {
   customerId: string;
@@ -82,12 +84,12 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
       {/* Note Form */}
       <form onSubmit={handleSubmit} className="mt-4 space-y-2.5">
         <div className="relative">
-          <textarea
+          <Textarea
             rows={2}
             value={noteText}
             onChange={(e) => setNoteText(e.target.value)}
             placeholder="Add internal note (e.g. 'Customer prefers loose L fit, always calls before 5 PM')..."
-            className="w-full rounded-xl border border-neutral-200 bg-neutral-50/50 p-3 text-xs leading-relaxed text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:bg-white focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+            className="text-xs leading-relaxed"
           />
         </div>
 
@@ -106,10 +108,11 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
         )}
 
         <div className="flex justify-end">
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="sm"
             disabled={isSubmitting || !noteText.trim()}
-            className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3.5 py-1.5 text-xs font-semibold text-white shadow-2xs transition hover:bg-neutral-800 disabled:opacity-40"
           >
             {isSubmitting ? (
               <>
@@ -122,7 +125,7 @@ export function CustomerStaffNotes({ customerId, notes }: CustomerStaffNotesProp
                 <span>Post Note</span>
               </>
             )}
-          </button>
+          </Button>
         </div>
       </form>
 

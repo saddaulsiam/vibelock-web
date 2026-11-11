@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Download, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { DiscountType } from "@prisma/client";
 import {
   ADMIN_TABLE_CLASSES,
@@ -130,25 +131,29 @@ export function AdminCouponsToolbar({
             onReset={onColumnReset}
           />
 
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={onExportCsv}
             disabled={isExportDisabled}
-            className={ADMIN_TABLE_CLASSES.buttonSecondary}
             title="Export coupons to CSV"
+            className="gap-1.5"
           >
             <Download className="size-3.5 text-neutral-500" />
             <span className="hidden sm:inline">Export CSV</span>
-          </button>
+          </Button>
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="sm"
             onClick={onCreateCoupon}
-            className={ADMIN_TABLE_CLASSES.buttonPrimary}
+            className="gap-1.5"
           >
             <Plus className="size-4" />
             <span>Create Coupon</span>
-          </button>
+          </Button>
         </div>
       </div>
 

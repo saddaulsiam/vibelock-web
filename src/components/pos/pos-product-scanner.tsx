@@ -169,7 +169,7 @@ export function PosProductScanner({
           value={searchTerm}
           onChange={(e) => handleInputChange(e.target.value)}
           placeholder="Scan barcode or type SKU / product name to filter catalog [F2]..."
-          className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 h-11 rounded-xl border border-[#d6d2c4] bg-[#faf9f5] pr-20 pl-11 font-mono text-xs tracking-wide shadow-xs transition-all focus-visible:bg-white focus-visible:ring-4 sm:h-12 sm:pr-32 sm:pl-32 sm:text-sm"
+          className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-11 rounded-xl border pr-20 pl-11 font-mono text-xs tracking-wide shadow-xs transition-all focus-visible:bg-white focus-visible:ring sm:h-12 sm:pr-32 sm:pl-32 sm:text-sm"
           autoComplete="off"
           autoFocus
         />
@@ -184,7 +184,7 @@ export function PosProductScanner({
             className={`h-8 w-8 rounded-lg transition-colors ${
               isMuted
                 ? "text-vl-grey hover:text-vl-black hover:bg-black/5"
-                : "text-vl-cyan hover:bg-vl-cyan/10 hover:text-vl-cyan"
+                : "text-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-cyan"
             }`}
             title={
               isMuted

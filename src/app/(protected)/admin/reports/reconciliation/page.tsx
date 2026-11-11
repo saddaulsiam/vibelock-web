@@ -14,8 +14,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
 import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
 
 function money(value: number | null | undefined): string {
@@ -158,7 +160,7 @@ export default async function AdminReconciliationPage({
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 border-b border-[#101114]/15 pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-4 border-b border-vl-dark-900/15 pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Link
@@ -168,8 +170,8 @@ export default async function AdminReconciliationPage({
               <ArrowLeft className="size-3" /> Back to Profitability
             </Link>
           </div>
-          <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight text-[#101114]">
-            <CreditCard className="size-7 text-[#00a8c6]" /> Payment &amp; Cash Reconciliation
+          <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight text-vl-dark-900">
+            <CreditCard className="size-7 text-vl-cyan-600" /> Payment &amp; Cash Reconciliation
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm">
             Order-placement cohort lifecycle reconciliation tracking captured gateway payments,
@@ -193,51 +195,59 @@ export default async function AdminReconciliationPage({
       {/* Filter Form */}
       <Form
         action="/admin/reports/reconciliation"
-        className="grid gap-3 border border-[#101114]/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]"
+        className="grid gap-3 border border-vl-dark-900/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]"
       >
         <label className="text-sm font-medium">
           Cohort Period
-          <select
-            name="range"
-            defaultValue={range}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-40"
-          >
-            {ranges.map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="range"
+              defaultValue={range}
+              size="default"
+              className="w-full lg:w-40"
+            >
+              {ranges.map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         <label className="text-sm font-medium">
           From
-          <Input name="from" type="date" defaultValue={from} className="mt-2" />
+          <Input name="from" type="date" defaultValue={from} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           To
-          <Input name="to" type="date" defaultValue={to} className="mt-2" />
+          <Input name="to" type="date" defaultValue={to} className="mt-2" size="default" />
         </label>
         <label className="text-sm font-medium">
           Classification
-          <select
-            name="classification"
-            defaultValue={classification ?? "all"}
-            className="border-input bg-background mt-2 h-10 w-full border px-3 text-sm lg:w-56"
-          >
-            {classificationOptions.map(([k, label]) => (
-              <option key={k} value={k}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <div className="mt-2">
+            <NativeSelect
+              name="classification"
+              defaultValue={classification ?? "all"}
+              size="default"
+              className="w-full lg:w-56"
+            >
+              {classificationOptions.map(([k, label]) => (
+                <option key={k} value={k}>
+                  {label}
+                </option>
+              ))}
+            </NativeSelect>
+          </div>
         </label>
         {search ? <input type="hidden" name="q" value={search} /> : null}
-        <button
-          className="mt-auto inline-flex h-10 items-center justify-center bg-[#101114] px-5 text-sm font-semibold text-white hover:bg-[#101114]/85"
+        <Button
           type="submit"
+          variant="primary"
+          size="default"
+          className="mt-auto"
         >
           Apply
-        </button>
+        </Button>
         <p className="text-muted-foreground col-span-full text-xs">
           Date filters select orders placed within the window to reconcile their complete lifecycle
           (gateway captures, refunds, and courier deliveries).
@@ -247,7 +257,7 @@ export default async function AdminReconciliationPage({
       {/* Primary Settlement Status Cards */}
       <section className="space-y-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-[#101114]">
+          <h2 className="text-xl font-semibold text-vl-dark-900">
             Settlement &amp; Courier Receivables Status
           </h2>
           <p className="text-muted-foreground text-xs">
@@ -257,7 +267,7 @@ export default async function AdminReconciliationPage({
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Card 1: Online Captured */}
-          <Card className="border-[#101114]/10 bg-white shadow-none">
+          <Card className="border-vl-dark-900/10 bg-white shadow-none">
             <CardContent className="p-5">
               <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Online Gateway Captured
@@ -273,7 +283,7 @@ export default async function AdminReconciliationPage({
           </Card>
 
           {/* Card 2: Online Refunds */}
-          <Card className="border-[#101114]/10 bg-white shadow-none">
+          <Card className="border-vl-dark-900/10 bg-white shadow-none">
             <CardContent className="p-5">
               <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Online Refunds Deducted
@@ -289,7 +299,7 @@ export default async function AdminReconciliationPage({
           </Card>
 
           {/* Card 3: Delivered COD */}
-          <Card className="border-[#101114]/10 bg-white shadow-none">
+          <Card className="border-vl-dark-900/10 bg-white shadow-none">
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -313,7 +323,7 @@ export default async function AdminReconciliationPage({
           </Card>
 
           {/* Card 4: In-Flight COD */}
-          <Card className="border-[#101114]/10 bg-white shadow-none">
+          <Card className="border-vl-dark-900/10 bg-white shadow-none">
             <CardContent className="p-5">
               <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 In-Flight COD (Uncollected)
@@ -352,9 +362,9 @@ export default async function AdminReconciliationPage({
       ) : null}
 
       {/* Mutually Exclusive Order Classification Breakdown */}
-      <section className="border border-[#101114]/10 bg-white">
-        <div className="border-b border-[#101114]/10 px-4 py-4 sm:px-5">
-          <h2 className="text-xl font-semibold text-[#101114]">Order Classification Breakdown</h2>
+      <section className="border border-vl-dark-900/10 bg-white">
+        <div className="border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
+          <h2 className="text-xl font-semibold text-vl-dark-900">Order Classification Breakdown</h2>
           <p className="text-muted-foreground mt-1 text-xs">
             Mutually exclusive categorization. Every order in the selected time window is assigned
             to exactly one bucket. Total orders: {summary.totalOrders} (
@@ -415,10 +425,10 @@ export default async function AdminReconciliationPage({
       </section>
 
       {/* Order-Level Reconciliation Audit Table */}
-      <section className="border border-[#101114]/10 bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#101114]/10 px-4 py-4 sm:px-5">
+      <section className="border border-vl-dark-900/10 bg-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
           <div>
-            <h2 className="text-xl font-semibold text-[#101114]">Order Reconciliation Audit</h2>
+            <h2 className="text-xl font-semibold text-vl-dark-900">Order Reconciliation Audit</h2>
             <p className="text-muted-foreground mt-1 text-xs">
               Showing {orders.length} of {totalOrders} orders matching active filters.
             </p>
@@ -436,12 +446,9 @@ export default async function AdminReconciliationPage({
             {classification ? (
               <input type="hidden" name="classification" value={classification} />
             ) : null}
-            <button
-              className="border-input hover:bg-muted border px-3 text-sm font-medium"
-              type="submit"
-            >
+            <Button type="submit" variant="outline">
               Search
-            </button>
+            </Button>
           </Form>
         </div>
 
@@ -545,7 +552,7 @@ export default async function AdminReconciliationPage({
 
         {/* Pagination */}
         {totalPages > 1 ? (
-          <div className="flex justify-center gap-4 border-t border-[#101114]/10 p-4 text-sm">
+          <div className="flex justify-center gap-4 border-t border-vl-dark-900/10 p-4 text-sm">
             <Link
               className={page <= 1 ? "text-muted-foreground/50 pointer-events-none" : "font-medium"}
               href={buildHref({ page: page - 1 })}

@@ -112,12 +112,12 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-full flex max-h-[90vh] flex-col rounded-2xl border border-[#e2ded2] bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="max-full border-vl-white-400 flex max-h-[90vh] flex-col rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
         {/* Header */}
-        <DialogHeader className="flex-shrink-0 border-b border-[#f0ede6] pb-3">
+        <DialogHeader className="border-vl-white-200 flex-shrink-0 border-b pb-3">
           <div className="flex items-center justify-between">
             <div className="text-vl-black flex items-center space-x-2">
-              <div className="border-vl-cyan/40 bg-vl-black text-vl-cyan rounded-xl border p-2 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
+              <div className="border-vl-cyan-200 bg-vl-black text-vl-cyan rounded-xl border p-2 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
                 <Receipt className="h-5 w-5" />
               </div>
               <div>
@@ -137,7 +137,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               size="sm"
               onClick={() => fetchOrders(searchQuery)}
               disabled={isPending}
-              className="text-vl-black hover:border-vl-cyan flex h-9 items-center space-x-1.5 rounded-xl border-[#d6d2c4] text-xs font-bold hover:bg-[#faf9f5]"
+              className="text-vl-black hover:border-vl-cyan border-vl-white-500 hover:bg-vl-white-100 flex h-9 items-center space-x-1.5 rounded-xl text-xs font-bold"
             >
               <RefreshCw
                 className={`h-3.5 w-3.5 ${isPending ? "text-vl-cyan animate-spin" : ""}`}
@@ -149,7 +149,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
         {/* Stats Summary Bar */}
         <div className="my-3 grid flex-shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
             <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
               Total Orders
             </span>
@@ -165,7 +165,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               ৳{stats.totalRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
             <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
               Cash Tender
             </span>
@@ -173,7 +173,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               ৳{stats.cashTotal.toLocaleString()}
             </span>
           </div>
-          <div className="rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-2.5 shadow-2xs">
+          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
             <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
               Digital (Bangla QR/Card)
             </span>
@@ -191,7 +191,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Invoice # (e.g. VL-POS-...), customer phone or name..."
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan/15 h-9 rounded-xl border-[#d6d2c4] bg-[#faf9f5] pl-9 text-xs transition-all focus-visible:bg-white focus-visible:ring-4"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-9 rounded-xl pl-9 text-xs transition-all focus-visible:bg-white focus-visible:ring"
             />
           </div>
           <Button
@@ -207,7 +207,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               variant="outline"
               size="sm"
               onClick={handleResetSearch}
-              className="text-vl-black h-9 rounded-xl border-[#d6d2c4] px-3 text-xs font-semibold hover:bg-[#faf9f5]"
+              className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-9 rounded-xl px-3 text-xs font-semibold"
             >
               Clear
             </Button>
@@ -222,7 +222,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               <p className="text-xs">Loading sales history...</p>
             </div>
           ) : orders.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#d6d2c4] bg-[#faf9f5] p-8 text-center">
+            <div className="border-vl-white-500 bg-vl-white-100 rounded-xl border border-dashed p-8 text-center">
               <AlertCircle className="mx-auto mb-2 h-8 w-8 text-slate-400" />
               <p className="font-heading text-vl-black text-sm font-bold">No Orders Found</p>
               <p className="text-vl-grey mt-1 text-xs">
@@ -235,7 +235,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             orders.map((order) => (
               <div
                 key={order.id}
-                className="hover:border-vl-cyan flex flex-col justify-between gap-3 rounded-xl border border-[#e2ded2] bg-[#faf9f5] p-3 text-xs transition-all duration-150 hover:bg-white hover:shadow-2xs sm:flex-row sm:items-center"
+                className="hover:border-vl-cyan border-vl-white-400 bg-vl-white-100 flex flex-col justify-between gap-3 rounded-xl border p-3 text-xs transition-all duration-150 hover:bg-white hover:shadow-2xs sm:flex-row sm:items-center"
               >
                 {/* Order Details */}
                 <div className="space-y-1">
@@ -246,7 +246,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
                     {renderPaymentBadge(order.paymentMethod)}
                     <Badge
                       variant="outline"
-                      className="text-vl-grey border-[#d6d2c4] bg-white px-1.5 py-0 font-mono text-[10px]"
+                      className="text-vl-grey border-vl-white-500 bg-white px-1.5 py-0 font-mono text-[10px]"
                     >
                       {order.itemsCount} {order.itemsCount === 1 ? "item" : "items"}
                     </Badge>
@@ -276,7 +276,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
                 </div>
 
                 {/* Amount & Actions */}
-                <div className="flex items-center justify-between space-x-3 border-t border-[#e2ded2] pt-2 sm:justify-end sm:border-t-0 sm:pt-0">
+                <div className="border-vl-white-400 flex items-center justify-between space-x-3 border-t pt-2 sm:justify-end sm:border-t-0 sm:pt-0">
                   <div className="text-right">
                     <span className="text-vl-black block font-mono text-base font-black">
                       ৳{order.total.toLocaleString()}

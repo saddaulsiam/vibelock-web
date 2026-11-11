@@ -1,7 +1,23 @@
 "use client";
 
 import * as React from "react";
-import { Check, CheckCircle2, PackageCheck, ShoppingBag, Shirt, X } from "lucide-react";
+import { Check, CheckCircle2, PackageCheck, ShoppingBag, Shirt } from "lucide-react";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface OrderItemData {
   id: string;
@@ -128,13 +144,14 @@ export function OrderPickPackChecklist({
           </div>
 
           {!isAllPacked ? (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="xs"
               onClick={markAllPacked}
-              className="rounded-lg border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50"
             >
               Pack All
-            </button>
+            </Button>
           ) : (
             <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-bold text-emerald-800">
               <CheckCircle2 className="size-3 text-emerald-600" />
@@ -153,47 +170,48 @@ export function OrderPickPackChecklist({
       ) : null}
 
       {/* Items Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-neutral-100 bg-neutral-50/70 text-[11px] font-semibold tracking-wider text-neutral-600 uppercase">
-            <tr>
-              <th className="px-4 py-3 text-center print:hidden">Check</th>
-              <th className="px-5 py-3">Product Name &amp; Variant</th>
-              <th className="px-4 py-3">SKU</th>
-              <th className="px-4 py-3 text-center">Qty</th>
-              <th className="px-4 py-3 text-right">Unit Price</th>
-              <th className="px-5 py-3 text-right">Line Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100">
+      <Table hideContainer>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="px-4 py-3 text-center print:hidden">Check</TableHead>
+            <TableHead className="px-5 py-3">Product Name &amp; Variant</TableHead>
+            <TableHead className="px-4 py-3">SKU</TableHead>
+            <TableHead className="px-4 py-3 text-center">Qty</TableHead>
+            <TableHead className="px-4 py-3 text-right">Unit Price</TableHead>
+            <TableHead className="px-5 py-3 text-right">Line Total</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
             {items.map((item) => {
               const isPacked = isMounted && packedIds.includes(item.id);
 
               return (
-                <tr
+                <TableRow
                   key={item.id}
                   className={`transition-colors ${
                     isPacked ? "bg-emerald-50/30" : "hover:bg-neutral-50/50"
                   }`}
                 >
                   {/* Pick & Pack Toggle Button (Hidden in print) */}
-                  <td className="px-4 py-3.5 text-center print:hidden">
-                    <button
+                  <TableCell className="px-4 py-3.5 text-center print:hidden">
+                    <Button
                       type="button"
+                      variant={isPacked ? "primary" : "outline"}
+                      size="icon"
                       onClick={() => toggleItemPacked(item.id)}
-                      className={`inline-flex size-6 items-center justify-center rounded-md border transition-all ${
+                      className={`size-6 ${
                         isPacked
-                          ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs"
-                          : "border-neutral-300 bg-white text-transparent hover:border-neutral-500"
+                          ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs hover:bg-emerald-700"
+                          : "text-transparent"
                       }`}
                       title={isPacked ? "Mark unpacked" : "Mark packed"}
                     >
                       <Check className="size-3.5 stroke-[3]" />
-                    </button>
-                  </td>
+                    </Button>
+                  </TableCell>
 
                   {/* Product Details with Thumbnail & Warehouse Hover Zoom */}
-                  <td className="px-5 py-3.5">
+                  <TableCell className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       {item.imageUrl ? (
                         <button
@@ -248,40 +266,39 @@ export function OrderPickPackChecklist({
                         {item.size || item.color ? (
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             {item.size ? (
-                              <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+                              <Badge variant="secondary" size="sm">
                                 Size: {item.size}
-                              </span>
+                              </Badge>
                             ) : null}
                             {item.color ? (
-                              <span className="inline-flex items-center rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+                              <Badge variant="secondary" size="sm">
                                 Color: {item.color}
-                              </span>
+                              </Badge>
                             ) : null}
                           </div>
                         ) : null}
                       </div>
                     </div>
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">{item.sku}</td>
+                  <TableCell className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">{item.sku}</TableCell>
 
-                  <td className="px-4 py-3.5 text-center font-bold text-neutral-900">
+                  <TableCell className="px-4 py-3.5 text-center font-bold text-neutral-900">
                     {item.quantity}
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3.5 text-right font-medium text-neutral-700">
+                  <TableCell className="px-4 py-3.5 text-right font-medium text-neutral-700">
                     {formatBdt(item.unitPrice)}
-                  </td>
+                  </TableCell>
 
-                  <td className="px-5 py-3.5 text-right font-bold text-neutral-900">
+                  <TableCell className="px-5 py-3.5 text-right font-bold text-neutral-900">
                     {formatBdt(item.lineTotal)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
 
       {/* ── Fixed Floating Hover Preview (Immune to overflow-hidden / overflow-x-auto) ── */}
       {hoveredPreview && (
@@ -310,28 +327,13 @@ export function OrderPickPackChecklist({
 
       {/* ── Fullscreen Lightbox Modal on Click ── */}
       {activeModalImage && (
-        <div
-          className="animate-in fade-in fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs duration-150"
-          onClick={() => setActiveModalImage(null)}
-        >
-          <div
-            className="animate-in zoom-in-95 relative w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl duration-150"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-              <div>
-                <h4 className="text-sm font-bold text-neutral-900">{activeModalImage.name}</h4>
-                <p className="font-mono text-xs text-neutral-500">SKU: {activeModalImage.sku}</p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setActiveModalImage(null)}
-                className="flex size-7 items-center justify-center rounded-full bg-neutral-100 text-neutral-600 transition hover:bg-neutral-200"
-              >
-                <X className="size-4" />
-              </button>
-            </div>
-            <div className="mt-4 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50">
+        <Dialog open={!!activeModalImage} onOpenChange={(open) => !open && setActiveModalImage(null)}>
+          <DialogContent variant="brand" size="lg" className="z-[99999]">
+            <DialogHeader>
+              <DialogTitle>{activeModalImage.name}</DialogTitle>
+              <p className="font-mono text-xs text-neutral-500">SKU: {activeModalImage.sku}</p>
+            </DialogHeader>
+            <div className="mt-2 overflow-hidden rounded-xl border border-neutral-100 bg-neutral-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={activeModalImage.url}
@@ -339,8 +341,8 @@ export function OrderPickPackChecklist({
                 className="mx-auto max-h-[70vh] w-full object-contain"
               />
             </div>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

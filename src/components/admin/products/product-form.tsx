@@ -2,6 +2,8 @@
 
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
+import { NativeSelect } from "@/components/ui/select-native";
 import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -30,9 +32,6 @@ export type ProductFormValues = {
   variants: VariantFormValue[];
   images: { url: string; alt: string | null; isPrimary: boolean }[];
 };
-
-const fieldClass =
-  "min-h-11 w-full border border-[#101114]/20 bg-white px-3 py-2 text-sm text-[#101114] outline-none transition-colors placeholder:text-[#101114]/35 focus:border-[#101114] focus-visible:ring-2 focus-visible:ring-[#00D9FF]";
 
 export function ProductForm({
   product,
@@ -165,7 +164,7 @@ export function ProductForm({
       secondaryAction={
         <Link
           href="/admin/products"
-          className="inline-flex min-h-10 items-center justify-center border border-[#101114]/20 bg-white px-4 text-sm font-medium text-[#101114] transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="inline-flex min-h-10 items-center justify-center border border-vl-dark-900/20 bg-white px-4 text-sm font-medium text-vl-dark-900 transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           Cancel
         </Link>
@@ -174,9 +173,9 @@ export function ProductForm({
       {product ? <input type="hidden" name="id" value={product.id} /> : null}
 
       {/* TOP CONTROLS BAR: PREVIEW TOGGLE & STATUS BADGES */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-[#101114]/10 bg-[#F9F8F6] p-3 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-sm border border-vl-dark-900/10 bg-vl-white-100 p-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-[#101114]">Product Form</span>
+          <span className="font-semibold text-vl-dark-900">Product Form</span>
           {isDirty && (
             <span className="inline-flex items-center gap-1 rounded bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800">
               <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
@@ -184,10 +183,12 @@ export function ProductForm({
             </span>
           )}
         </div>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="xs"
           onClick={() => setShowLivePreview((prev) => !prev)}
-          className="inline-flex items-center gap-1.5 font-semibold text-[#101114] hover:underline"
+          className="inline-flex items-center gap-1.5 font-semibold text-vl-dark-900"
         >
           {showLivePreview ? (
             <>
@@ -198,7 +199,7 @@ export function ProductForm({
               <Eye className="size-3.5" /> Show live storefront preview
             </>
           )}
-        </button>
+        </Button>
       </div>
 
       {/* LIVE STOREFRONT CARD PREVIEW */}
@@ -234,9 +235,9 @@ export function ProductForm({
       />
 
       {/* SECTION 2: CATEGORIES */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Product Categories</h3>
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Product Categories</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Select one or more store categories to help shoppers discover this product.
           </p>
@@ -266,27 +267,30 @@ export function ProductForm({
       />
 
       {/* SECTION 5: PUBLICATION & VISIBILITY */}
-      <div className="space-y-4 border border-[#101114]/10 bg-white p-4 sm:p-6">
-        <div className="border-b border-[#101114]/10 pb-4">
-          <h3 className="text-base font-semibold text-[#101114]">Publishing Status</h3>
+      <div className="space-y-4 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
+        <div className="border-b border-vl-dark-900/10 pb-4">
+          <h3 className="text-base font-semibold text-vl-dark-900">Publishing Status</h3>
           <p className="text-muted-foreground mt-1 text-xs leading-5">
             Control whether this product is visible to customers on the online storefront.
           </p>
         </div>
         <div className="max-w-md">
-          <label htmlFor="product-status" className="block text-sm font-medium text-[#101114]">
+          <label htmlFor="product-status" className="block text-sm font-medium text-vl-dark-900">
             Storefront Visibility
           </label>
-          <select
-            id="product-status"
-            className={`${fieldClass} mt-1.5 cursor-pointer font-medium`}
-            name="status"
-            defaultValue={product?.status ?? "DRAFT"}
-          >
-            <option value="DRAFT">Draft — Hidden from store, save for later</option>
-            <option value="PUBLISHED">Published — Live and purchasable in store</option>
-            <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
-          </select>
+          <div className="mt-1.5">
+            <NativeSelect
+              id="product-status"
+              name="status"
+              defaultValue={product?.status ?? "DRAFT"}
+              size="default"
+              className="font-medium"
+            >
+              <option value="DRAFT">Draft — Hidden from store, save for later</option>
+              <option value="PUBLISHED">Published — Live and purchasable in store</option>
+              <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
+            </NativeSelect>
+          </div>
         </div>
       </div>
     </AdminSaveForm>

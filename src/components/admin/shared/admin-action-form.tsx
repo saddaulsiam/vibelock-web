@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
 import type { AdminActionState } from "@/lib/admin/catalog/catalog-actions";
 
 const initialState: AdminActionState = { error: null };
@@ -20,27 +21,16 @@ function SubmitButton({
   variant?: "solid" | "outline";
 }) {
   const { pending } = useFormStatus();
-  const sizeClasses =
-    size === "sm" ? "min-h-8 px-2.5 text-xs font-medium" : "min-h-10 px-4 text-sm font-semibold";
-
-  let colorClasses = "";
-  if (destructive) {
-    colorClasses = "border-red-300 text-red-700 hover:bg-red-50";
-  } else {
-    colorClasses =
-      variant === "outline"
-        ? "border-[#101114]/20 bg-white text-[#101114] hover:bg-[#F3F0E8]"
-        : "border-[#101114] bg-[#101114] text-white hover:bg-[#101114]/85";
-  }
 
   return (
-    <button
+    <Button
       type="submit"
       disabled={pending}
-      className={`inline-flex items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none disabled:cursor-wait disabled:opacity-60 ${sizeClasses} ${colorClasses}`}
+      variant={destructive ? "destructive" : variant === "outline" ? "outline" : "primary"}
+      size={size}
     >
       {pending ? (pendingLabel ?? "Saving…") : label}
-    </button>
+    </Button>
   );
 }
 
@@ -72,7 +62,7 @@ export function AdminSaveForm({
           {state.message}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#101114]/10 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 pt-4">
         {secondaryAction ?? <div />}
         <SubmitButton label={submitLabel} />
       </div>

@@ -27,7 +27,7 @@ export function DiscoveryPagination({ currentPage, totalPages }: PaginationProps
         <Link
           href={createPageUrl(currentPage - 1)}
           aria-label="Previous page"
-          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           <ChevronLeft className="size-4" aria-hidden="true" />
         </Link>
@@ -48,7 +48,7 @@ export function DiscoveryPagination({ currentPage, totalPages }: PaginationProps
         <Link
           href={createPageUrl(currentPage + 1)}
           aria-label="Next page"
-          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-[#F3F0E8] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none"
+          className="border-border inline-flex size-10 items-center justify-center rounded-sm border transition-colors hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
         >
           <ChevronRight className="size-4" aria-hidden="true" />
         </Link>

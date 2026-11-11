@@ -5,8 +5,11 @@ import Link from "next/link";
 import { StarRating } from "./star-rating";
 import { submitReviewAction } from "@/lib/reviews/actions";
 import type { UserReviewEligibility } from "@/lib/reviews/types";
-import { CheckCircle2, AlertCircle, Loader2, Sparkles, Lock } from "lucide-react";
+import { CheckCircle2, AlertCircle, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 
 interface ProductReviewFormProps {
   productId: string;
@@ -24,21 +27,21 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
   // 1. If not logged in
   if (!eligibility.isLoggedIn) {
     return (
-      <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-[#101114]/10 bg-white p-6 sm:flex-row sm:p-8">
+      <div className="flex flex-col items-center justify-between gap-4 rounded-xl border border-vl-dark-900/10 bg-white p-6 sm:flex-row sm:p-8">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-[#101114]/5 text-[#101114]">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-vl-dark-900/5 text-vl-dark-900">
             <Lock className="size-5" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-[#101114]">Have you bought this item?</h4>
-            <p className="text-xs text-[#101114]/65">
+            <h4 className="text-sm font-bold text-vl-dark-900">Have you bought this item?</h4>
+            <p className="text-xs text-vl-dark-900/65">
               Sign in to your account to review sizing, comfort, and fabric quality.
             </p>
           </div>
         </div>
         <Link
           href={`/login?callbackUrl=/product/${productSlug}`}
-          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-[#101114] px-6 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:outline-2 focus-visible:outline-[#00D9FF]"
+          className="inline-flex min-h-11 items-center justify-center rounded-sm bg-vl-dark-900 px-6 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-vl-dark-900/85 focus-visible:outline-2 focus-visible:outline-vl-cyan"
         >
           Sign in to Review
         </Link>
@@ -49,14 +52,14 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
   // 2. If logged in but not a verified delivered buyer
   if (!eligibility.canReview) {
     return (
-      <div className="rounded-xl border border-[#101114]/10 bg-[#F3F0E8]/50 p-6 sm:p-8">
+      <div className="rounded-xl border border-vl-dark-900/10 bg-vl-white-300/50 p-6 sm:p-8">
         <div className="flex items-start gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#00D9FF]/15 text-[#008ca6]">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-vl-cyan-100 text-vl-cyan-dark">
             <CheckCircle2 className="size-5" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-bold text-[#101114]">Verified Buyer Reviews Only</h4>
-            <p className="text-xs leading-relaxed text-[#101114]/70">
+            <h4 className="text-sm font-bold text-vl-dark-900">Verified Buyer Reviews Only</h4>
+            <p className="text-xs leading-relaxed text-vl-dark-900/70">
               To ensure 100% authentic ratings and prevent misleading feedback, reviews on VibeLock
               are exclusive to customers who have ordered and received delivery of this item. If you
               recently placed an order, your review form will automatically unlock upon delivery!
@@ -94,18 +97,18 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
   };
 
   return (
-    <div className="rounded-2xl border border-[#101114]/10 bg-white p-6 shadow-xs sm:p-8">
-      <div className="flex items-center justify-between border-b border-[#101114]/10 pb-4">
+    <div className="rounded-2xl border border-vl-dark-900/10 bg-white p-6 shadow-xs sm:p-8">
+      <div className="flex items-center justify-between border-b border-vl-dark-900/10 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-black tracking-tight text-[#101114] sm:text-lg">
+            <h3 className="text-base font-black tracking-tight text-vl-dark-900 sm:text-lg">
               {isEditing ? "Edit Your Review" : "Write a Verified Review"}
             </h3>
-            <span className="inline-flex items-center gap-1 rounded-full bg-[#00D9FF]/15 px-2 py-0.5 text-[10px] font-bold text-[#008ca6] uppercase">
+            <Badge variant="cyan" size="sm">
               <Sparkles className="size-3" /> Verified Buyer
-            </span>
+            </Badge>
           </div>
-          <p className="mt-1 text-xs text-[#101114]/65">
+          <p className="mt-1 text-xs text-vl-dark-900/65">
             Help other streetwear enthusiasts with honest feedback on sizing, fit, and fabric feel.
           </p>
         </div>
@@ -127,7 +130,7 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
         )}
 
         <div>
-          <label className="mb-2 block text-xs font-bold tracking-wider text-[#101114] uppercase">
+          <label className="mb-2 block text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
             Your Rating
           </label>
           <div className="flex items-center gap-3">
@@ -137,7 +140,7 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
               interactive
               onChange={(newRating) => setRating(newRating)}
             />
-            <span className="text-sm font-bold text-[#101114]">{rating} / 5 Stars</span>
+            <span className="text-sm font-bold text-vl-dark-900">{rating} / 5 Stars</span>
           </div>
         </div>
 
@@ -145,42 +148,36 @@ export function ProductReviewForm({ productId, productSlug, eligibility }: Produ
           <div className="mb-2 flex items-center justify-between">
             <label
               htmlFor="review-comment"
-              className="text-xs font-bold tracking-wider text-[#101114] uppercase"
+              className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
             >
               Your Review (Optional)
             </label>
-            <span className="text-[11px] text-[#101114]/50 tabular-nums">
+            <span className="text-[11px] text-vl-dark-900/50 tabular-nums">
               {comment.length} / 1000
             </span>
           </div>
-          <textarea
+          <Textarea
             id="review-comment"
+            variant="brand"
             rows={4}
             maxLength={1000}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Share details about the fabric GSM, true-to-size fit, collar durability, or style recommendations..."
-            className="w-full resize-y rounded-lg border border-[#101114]/15 bg-white p-3.5 text-sm text-[#101114] transition-colors placeholder:text-[#101114]/40 focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] focus:outline-none"
+            className="p-3.5 text-sm"
           />
         </div>
 
         <div className="flex items-center justify-end">
-          <button
+          <Button
             type="submit"
+            size="default"
             disabled={isPending}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-sm bg-[#101114] px-7 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-[#101114]/85 focus-visible:outline-2 focus-visible:outline-[#00D9FF] disabled:cursor-not-allowed disabled:opacity-60"
+            loading={isPending}
+            className="px-7"
           >
-            {isPending ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                <span>Submitting...</span>
-              </>
-            ) : isEditing ? (
-              <span>Update Review</span>
-            ) : (
-              <span>Post Review</span>
-            )}
-          </button>
+            {isPending ? "Submitting..." : isEditing ? "Update Review" : "Post Review"}
+          </Button>
         </div>
       </form>
     </div>

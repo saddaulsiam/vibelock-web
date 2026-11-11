@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Plus, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -77,7 +78,7 @@ export function AdminCouponsDesktopTable({
           {couponsList.length === 0 ? (
             <TableRow>
               <TableCell colSpan={visibleColumnCount} className="py-16 text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-purple-50 text-purple-600 ring-4 ring-purple-50">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-purple-50 text-purple-600 ring ring-purple-50">
                   <Tag className="size-6" />
                 </div>
                 <h4 className="mt-3 text-sm font-bold text-neutral-900">No coupons found</h4>
@@ -86,14 +87,16 @@ export function AdminCouponsDesktopTable({
                     ? "Try adjusting your search terms or filters."
                     : "Create your first promotional discount coupon to boost customer orders."}
                 </p>
-                <button
+                <Button
                   type="button"
+                  variant="primary"
+                  size="sm"
                   onClick={onCreateCoupon}
-                  className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#101114] px-4 text-xs font-bold text-white shadow-2xs hover:bg-neutral-800"
+                  className="mt-4 gap-1.5 shadow-2xs"
                 >
                   <Plus className="size-3.5" />
                   <span>Create Coupon</span>
-                </button>
+                </Button>
               </TableCell>
             </TableRow>
           ) : (

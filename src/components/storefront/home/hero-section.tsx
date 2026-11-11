@@ -1,10 +1,12 @@
 "use client";
 
-import * as React from "react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import * as React from "react";
 
 import type { CategorySummary } from "@/lib/catalog/types";
+import { Badge } from "@/components/ui/badge";
 
 export interface HeroCategory {
   id: string;
@@ -136,11 +138,9 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         }}
       >
         {items.map((cat, i) => (
-          <Link
+          <div
             key={`${cat.id}-${i}`}
-            href={`/category/${cat.slug}`}
             tabIndex={-1}
-            className="vl-card-link"
             style={{
               position: "relative",
               flexShrink: 0,
@@ -151,7 +151,8 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
             }}
           >
             {/* Inner wrapper — glued to bottom, height scales down from the top */}
-            <div
+            <Link
+              href={`/category/${cat.slug}`}
               className="vl-card-inner"
               style={{
                 position: "absolute",
@@ -181,59 +182,23 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
                     "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 30%, transparent 60%, rgba(0,0,0,0.6) 100%)",
                 }}
               />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "1.25rem",
-                  left: "1.25rem",
-                  zIndex: 10,
-                  maxWidth: "calc(100% - 2.5rem)",
-                  pointerEvents: "none",
-                }}
-              >
-                <p
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 800,
-                    letterSpacing: "0.22em",
-                    color: "#00D9FF",
-                    textTransform: "uppercase",
-                    margin: 0,
-                    whiteSpace: "nowrap",
-                  }}
-                >
+              <div className="pointer-events-none absolute top-5 left-5 z-10 max-w-[calc(100%-2.5rem)]">
+                <p className="text-vl-cyan text-[10px] font-extrabold tracking-[0.22em] uppercase">
                   {cat.label}
                 </p>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    fontWeight: 900,
-                    letterSpacing: "0.04em",
-                    color: "#ffffff",
-                    textTransform: "uppercase",
-                    margin: 0,
-                    marginTop: "2px",
-                    lineHeight: 1.2,
-                    whiteSpace: "nowrap",
-                  }}
-                >
+                <p className="mt-0.5 text-[15px] font-black tracking-wider text-white uppercase">
                   {cat.name}
                 </p>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
         ))}
       </div>
     </div>
   );
 }
 
-export function HeroSection({
-  categories = [],
-  words,
-  tagline = "VIBELOCK — PREMIUM STREETWEAR CATALOG,\nCURATING CULTURE FOR THE REAL ONES.",
-  subtagline = "EXCLUSIVE. LIMITED. HIGH-END.",
-}: HeroSectionProps) {
+export function HeroSection({ categories = [], words }: HeroSectionProps) {
   const formattedCategories: HeroCategory[] = React.useMemo(() => {
     return categories
       .filter((c) => Boolean(c && c.name))
@@ -263,64 +228,61 @@ export function HeroSection({
 
   return (
     <section
-      className="relative flex h-screen overflow-hidden bg-[#080A0C]"
+      className="bg-vl-dark-900 relative flex h-screen overflow-hidden"
       aria-label="VibeLock hero — shop by category"
     >
       {formattedCategories.length > 0 && <InfiniteTrack categories={formattedCategories} />}
 
-      {/* Left content panel positioned at the top left empty space */}
+      {/* Left content panel */}
       <div
-        className="relative z-20 flex flex-col justify-start px-7 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20"
+        className="relative z-20 flex flex-col justify-start px-6 pt-20 sm:px-10 sm:pt-24 lg:px-14 lg:pt-28 xl:px-20 xl:pt-32"
         style={{ pointerEvents: "none" }}
       >
-        <div className="relative max-w-85 sm:max-w-110 lg:max-w-full">
+        <div className="relative w-full">
           {/* Typewriter headline */}
           <h1
-            className="font-heading text-[clamp(2.5rem,8vw,6.5rem)] leading-[0.88] font-black tracking-tight text-[#00D9FF] uppercase select-none"
+            className="font-heading text-vl-cyan text-[clamp(3rem,10vw,8rem)] leading-[0.88] font-black tracking-[-0.02em] uppercase drop-shadow-[0_0_28px_rgba(0,217,255,0.22)] select-none"
             aria-label={`Shop ${activeWords.join(", ")}`}
           >
             {displayed}
             <span
               aria-hidden="true"
-              className="ml-0.5 inline-block bg-[#00D9FF] align-middle"
+              className="bg-vl-cyan ml-0.5 inline-block"
               style={{
-                width: "4px",
-                height: "0.8em",
+                width: "clamp(3px, 0.08em, 7px)",
+                height: "0.82em",
+                verticalAlign: "-0.05em",
                 animation: "vl-blink 1s step-end infinite",
               }}
             />
           </h1>
 
-          <p className="mt-3 text-[10px] leading-relaxed font-semibold tracking-wide whitespace-pre-line text-white/60 uppercase sm:mt-5 sm:text-xs lg:text-[13px]">
-            {tagline}
+          {/* Divider */}
+          <div className="bg-vl-cyan-900 mt-3 h-px w-20 sm:w-30 lg:w-40 xl:w-xs" />
+
+          {/* Tagline */}
+          <p className="mt-3 max-w-xl text-[10px] leading-[1.6] font-medium tracking-[0.08em] whitespace-pre-line text-white/55 uppercase sm:mt-3.5 sm:text-[11px] lg:text-[12px]">
+            VIBELOCK — PREMIUM STREETWEAR CATALOG,
+            <br />
+            CURATING CULTURE FOR THE REAL ONES.
           </p>
 
-          <p className="mt-1.5 text-[10px] font-black tracking-[0.22em] text-[#00D9FF] uppercase sm:mt-2 sm:text-[11px] sm:tracking-[0.25em]">
-            {subtagline}
+          {/* Subtagline */}
+          <p className="text-vl-cyan/80 mt-2 text-[10px] font-semibold tracking-widest capitalize sm:mt-2.5">
+            EXCLUSIVE. LIMITED. HIGH-END.
           </p>
 
-          <div className="mt-4 sm:mt-7" style={{ pointerEvents: "auto" }}>
+          {/* CTA */}
+          <div className="mt-5 sm:mt-6" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="inline-flex items-center gap-2.5 rounded-full border border-[#00D9FF]/40 bg-[#00D9FF]/10 px-5 py-2.5 text-[11px] font-black tracking-[0.16em] text-[#00D9FF] uppercase backdrop-blur-sm transition-all duration-300 hover:border-[#00D9FF] hover:bg-[#00D9FF] hover:text-[#080A0C] focus-visible:ring-2 focus-visible:ring-[#00D9FF] focus-visible:outline-none sm:gap-3 sm:px-7 sm:py-3 sm:text-xs sm:tracking-[0.18em]"
+              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-vl-cyan inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[9px] font-extrabold tracking-[0.2em] uppercase backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] sm:gap-2 sm:px-5 sm:py-2.5 sm:text-[10px] lg:gap-2.5 lg:px-6 lg:py-3 lg:text-[11px] xl:px-7 xl:text-xs"
             >
-              SHOP ALL DROPS
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 14 14"
-                fill="none"
+              <span>SHOP ALL DROPS</span>
+              <ArrowRight
+                className="size-2.5 transition-transform duration-300 group-hover:translate-x-0.5 sm:size-3 lg:size-3.5"
                 aria-hidden="true"
-                className="sm:size-3.5"
-              >
-                <path
-                  d="M1 7h12M8 2l5 5-5 5"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              />
             </Link>
           </div>
         </div>
@@ -334,11 +296,11 @@ export function HeroSection({
             window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
           }
         }}
-        className="group absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00D9FF]"
+        className="group focus-visible:ring-vl-cyan absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2"
         aria-label="Scroll down"
       >
-        <div className="flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/50 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors group-hover:border-[#00D9FF]">
-          <div className="animate-vl-scroll-wheel h-1.5 w-1 rounded-full bg-[#00D9FF] shadow-[0_0_6px_#00D9FF]" />
+        <div className="group-hover:border-vl-cyan flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/60 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors">
+          <div className="animate-vl-scroll-wheel bg-vl-cyan h-1.5 w-1 rounded-full shadow-[0_0_8px_rgba(0,217,255,0.9)]" />
         </div>
       </button>
     </section>

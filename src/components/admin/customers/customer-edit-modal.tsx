@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CustomerEditModalProps {
   customer: {
@@ -164,15 +167,17 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-lg p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-50"
+            className="size-8 text-neutral-400 hover:text-neutral-700"
             aria-label="Close modal"
           >
             <X className="size-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Feedback Messages */}
@@ -202,14 +207,15 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                 Customer Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                <input
+                <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                <Input
                   type="text"
                   required
                   placeholder="e.g. Tanvir Ahmed"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                  size="default"
+                  className="pl-9"
                 />
               </div>
             </div>
@@ -220,13 +226,14 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                   Phone Number
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                  <input
+                  <Phone className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Input
                     type="tel"
                     placeholder="017XXXXXXXX"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                    size="default"
+                    className="pl-9"
                   />
                 </div>
               </div>
@@ -236,14 +243,15 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                   Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400" />
-                  <input
+                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Input
                     type="email"
                     required
                     placeholder="customer@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-200 bg-white py-2 pr-3 pl-9 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                    size="default"
+                    className="pl-9"
                   />
                 </div>
               </div>
@@ -263,24 +271,24 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
               <label className="mb-1 block text-xs font-semibold text-neutral-700">
                 Street Address / Delivery Note
               </label>
-              <textarea
+              <Textarea
                 rows={2}
                 placeholder="House, Road, Area, Landmark"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 bg-white p-2.5 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                className="w-full text-xs"
               />
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div>
                 <label className="mb-1 block text-xs font-semibold text-neutral-700">City</label>
-                <input
+                <Input
                   type="text"
                   placeholder="Dhaka"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                  size="default"
                 />
               </div>
 
@@ -288,12 +296,12 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                 <label className="mb-1 block text-xs font-semibold text-neutral-700">
                   Division / State
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="Dhaka"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                  size="default"
                 />
               </div>
 
@@ -301,12 +309,12 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                 <label className="mb-1 block text-xs font-semibold text-neutral-700">
                   Postal Code
                 </label>
-                <input
+                <Input
                   type="text"
                   placeholder="1205"
                   value={zip}
                   onChange={(e) => setZip(e.target.value)}
-                  className="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+                  size="default"
                 />
               </div>
             </div>
@@ -314,18 +322,20 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
 
           {/* Modal Actions */}
           <div className="mt-6 flex items-center justify-end gap-2 border-t border-neutral-100 pt-4">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="default"
               onClick={onClose}
               disabled={isSubmitting}
-              className="rounded-lg border border-neutral-200 bg-white px-3.5 py-2 text-xs font-semibold text-neutral-700 shadow-2xs hover:bg-neutral-50 disabled:opacity-50"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
+              variant="primary"
+              size="default"
               disabled={isSubmitting}
-              className="flex items-center gap-1.5 rounded-lg bg-neutral-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-neutral-800 disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>
@@ -338,7 +348,7 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                   <span>Save Changes</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

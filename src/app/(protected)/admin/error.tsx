@@ -17,9 +17,9 @@ export default function AdminDashboardError({
 
   return (
     <section className="flex min-h-[50vh] items-center justify-center">
-      <div className="w-full max-w-lg border border-[#101114]/10 bg-white px-5 py-12 text-center sm:px-10">
-        <AlertCircle className="mx-auto mb-5 size-8 text-[#101114]" aria-hidden="true" />
-        <h2 className="text-2xl font-semibold tracking-tight text-[#101114]">
+      <div className="w-full max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10">
+        <AlertCircle className="mx-auto mb-5 size-8 text-vl-dark-900" aria-hidden="true" />
+        <h2 className="text-2xl font-semibold tracking-tight text-vl-dark-900">
           Dashboard unavailable
         </h2>
         <p className="text-muted-foreground mt-3 text-sm leading-6">
@@ -27,7 +27,8 @@ export default function AdminDashboardError({
         </p>
         <Button
           onClick={reset}
-          className="mt-7 min-h-11 bg-[#101114] text-white hover:bg-[#101114]/85 focus-visible:ring-[#00D9FF]"
+          size="lg"
+          className="mt-7"
         >
           Try again
         </Button>
