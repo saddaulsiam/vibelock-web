@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const initials = (user.name || user.email || "VL").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-vl-white-300 text-vl-dark-900">
+    <div className="fixed inset-0 flex overflow-hidden bg-vl-white-300 text-vl-dark-900">
       <AdminSidebar userRole={user.role} />
       <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
         {/* ── Top Dashboard Header ── */}
