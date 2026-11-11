@@ -3,9 +3,8 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ImageOff, LoaderCircle, Minus, Plus, Trash2 } from "lucide-react";
+import { ImageOff, Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import type { CartItemDTO } from "@/lib/cart/types";
 import { removeCartItemAction, updateCartItemAction } from "@/lib/cart/actions";
 
@@ -32,6 +31,9 @@ export function CartItemCard({ item }: CartItemCardProps) {
       const result = await updateCartItemAction(item.id, newQuantity);
       if (result.success) {
         toast.success("Cart quantity updated");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("vibelock:refresh-cart"));
+        }
       } else {
         toast.error(result.error || "Could not update this quantity.");
       }
@@ -45,6 +47,9 @@ export function CartItemCard({ item }: CartItemCardProps) {
       const result = await removeCartItemAction(item.id);
       if (result.success) {
         toast.success("Item removed from your cart");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("vibelock:refresh-cart"));
+        }
       } else {
         toast.error(result.error || "Could not remove this item.");
       }
@@ -55,100 +60,125 @@ export function CartItemCard({ item }: CartItemCardProps) {
   const isUnavailable = !item.variant.available;
 
   return (
-    <article className="border-border grid grid-cols-[5.5rem_minmax(0,1fr)] gap-4 border-b py-5 sm:grid-cols-[7rem_minmax(0,1fr)] sm:gap-5 sm:py-6">
+    <article className="border-border group relative flex gap-4 border-b py-6 last:border-b-0 sm:gap-6">
+      {/* Product Image Canvas */}
       <Link
         href={`/product/${item.productSlug}`}
         aria-label={`View ${item.productName}`}
-        className="relative aspect-3/4 overflow-hidden bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="border-border bg-vl-white-100 focus-visible:ring-vl-cyan relative aspect-3/4 w-16 shrink-0 overflow-hidden border transition-colors focus-visible:ring-2 focus-visible:outline-none sm:w-20"
       >
         {item.productImage && !imageFailed ? (
           <Image
             src={item.productImage}
             alt={item.productName}
             fill
-            sizes="(max-width: 640px) 88px, 112px"
-            className="object-cover"
+            sizes="(max-width: 640px) 64px, 80px"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-105"
             onError={() => setImageFailed(true)}
           />
         ) : (
-          <span className="text-muted-foreground absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <span className="text-vl-dark-400 absolute inset-0 flex flex-col items-center justify-center gap-1.5 p-2 text-center">
             <ImageOff className="size-5" aria-hidden="true" />
-            <span className="text-[10px]">Image unavailable</span>
+            <span className="text-[10px] font-medium uppercase">No image</span>
           </span>
         )}
       </Link>
 
-      <div className="flex min-w-0 flex-col justify-between gap-4">
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:justify-between sm:gap-5">
-          <div className="min-w-0">
-            <Link
-              href={`/product/${item.productSlug}`}
-              className="font-heading text-vl-black focus-visible:ring-vl-cyan text-base font-black tracking-tight wrap-break-word underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:outline-none"
-            >
-              {item.productName}
-            </Link>
-            <div className="text-muted-foreground mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
-              {item.variant.size && <span>Size: {item.variant.size}</span>}
-              {item.variant.color && <span>Color: {item.variant.color}</span>}
+      {/* Item Details */}
+      <div className="flex min-w-0 flex-1 flex-col justify-between">
+        <div>
+          {/* Title & Price Header */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 flex-1">
+              <Link
+                href={`/product/${item.productSlug}`}
+                className="font-heading text-vl-dark-900 hover:text-vl-cyan focus-visible:ring-vl-cyan line-clamp-1 text-sm font-bold tracking-tight uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-base"
+                title={item.productName}
+              >
+                {item.productName}
+              </Link>
+
+              {/* Variant Specs (Clean Streetwear Metadata) */}
+              <div className="text-vl-dark-500 mt-1 flex flex-wrap items-center gap-2 text-xs font-medium">
+                {item.variant.size && <span>Size: {item.variant.size}</span>}
+                {item.variant.size && item.variant.color && (
+                  <span className="text-vl-dark-300">/</span>
+                )}
+                {item.variant.color && <span>Color: {item.variant.color}</span>}
+                {!isUnavailable && !isInsufficient && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 sm:ml-1">
+                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                    In Stock
+                  </span>
+                )}
+              </div>
             </div>
-            {(isInsufficient || isUnavailable) && (
-              <p className="text-destructive mt-2 text-sm font-medium" role="status">
-                {isInsufficient
-                  ? item.availableQuantity > 0
-                    ? `Only ${item.availableQuantity} available. Reduce the quantity to continue.`
-                    : "This item is currently unavailable. Remove it to continue."
-                  : "This item is out of stock. Remove it to continue."}
-              </p>
-            )}
+
+            {/* Line Price & Unit Strikethrough */}
+            <div className="shrink-0 text-right">
+              <span
+                className="font-heading text-vl-dark-900 text-sm font-bold tracking-tight sm:text-base"
+                aria-label={`Line total ${formatPrice(item.lineTotal)}`}
+              >
+                {formatPrice(item.lineTotal)}
+              </span>
+              <div className="text-vl-dark-400 mt-0.5 flex items-baseline justify-end gap-1.5 text-xs font-medium">
+                {item.quantity > 1 && <span>{formatPrice(item.variant.effectivePrice)} each</span>}
+                {item.variant.discountPrice !== null && (
+                  <span className="text-[11px] line-through">
+                    {formatPrice(item.variant.sellingPrice * item.quantity)}
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex shrink-0 flex-row items-baseline justify-between gap-4 sm:flex-col sm:items-end sm:gap-1">
-            <span
-              className="text-base font-semibold text-vl-dark-900"
-              aria-label={`Line total ${formatPrice(item.lineTotal)}`}
+          {/* Stock Warning */}
+          {(isInsufficient || isUnavailable) && (
+            <div
+              className="mt-2.5 border-l-2 border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800"
+              role="status"
             >
-              {formatPrice(item.lineTotal)}
-            </span>
-            <div className="flex items-baseline gap-2 text-sm">
-              <span className="text-muted-foreground">
-                {formatPrice(item.variant.effectivePrice)} each
-              </span>
-              {item.variant.discountPrice !== null && (
-                <span className="text-muted-foreground text-xs line-through">
-                  {formatPrice(item.variant.sellingPrice)}
-                </span>
-              )}
+              {isInsufficient
+                ? item.availableQuantity > 0
+                  ? `Only ${item.availableQuantity} available in stock. Adjust quantity to proceed.`
+                  : "This item is currently sold out. Please remove to continue."
+                : "This item is out of stock. Please remove to continue."}
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
+        {/* Quantity Controls & Remove Action Row */}
+        <div className="mt-4 flex items-center justify-between gap-3 pt-1">
+          {/* Tactile Minimalist Quantity Stepper */}
           <div
-            className="flex h-10 items-center border border-vl-dark-900/20"
+            className="border-border flex h-8 items-center border bg-white"
             aria-label={`Quantity for ${item.productName}`}
           >
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               onClick={() => handleUpdateQuantity(item.quantity - 1)}
               disabled={item.quantity <= 1 || isPending}
               aria-label={`Decrease ${item.productName} quantity`}
-              className="size-10 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+              className="text-vl-dark-700 hover:text-vl-dark-900 hover:bg-vl-white-200 flex size-8 cursor-pointer items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <Minus className="size-4" aria-hidden="true" />
-            </Button>
-            <span className="min-w-10 text-center text-sm font-medium" aria-live="polite">
+              <Minus className="size-3" aria-hidden="true" />
+            </button>
+            <span
+              className="text-vl-dark-900 min-w-8 text-center font-mono text-xs font-bold"
+              aria-live="polite"
+            >
               {isPending ? (
-                <LoaderCircle className="mx-auto size-4 animate-spin" aria-label="Updating cart" />
+                <Loader2
+                  className="text-vl-dark-900 mx-auto size-3 animate-spin"
+                  aria-label="Updating cart"
+                />
               ) : (
                 item.quantity
               )}
             </span>
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="icon"
               onClick={() => handleUpdateQuantity(item.quantity + 1)}
               disabled={
                 isPending ||
@@ -157,25 +187,30 @@ export function CartItemCard({ item }: CartItemCardProps) {
                 isUnavailable
               }
               aria-label={`Increase ${item.productName} quantity`}
-              className="size-10 rounded-none hover:bg-vl-white-300 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+              className="text-vl-dark-700 hover:text-vl-dark-900 hover:bg-vl-white-200 flex size-8 cursor-pointer items-center justify-center transition-colors disabled:cursor-not-allowed disabled:opacity-30"
             >
-              <Plus className="size-4" aria-hidden="true" />
-            </Button>
+              <Plus className="size-3" aria-hidden="true" />
+            </button>
           </div>
 
-          <Button
+          {/* Remove Button */}
+          <button
             type="button"
-            variant="ghost"
-            size="sm"
             onClick={handleRemove}
             disabled={isPending}
-            loading={isPending}
-            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+            className="text-vl-dark-400 group/remove inline-flex cursor-pointer items-center gap-1.5 py-1 text-xs font-semibold tracking-wider uppercase transition-colors hover:text-rose-600 disabled:opacity-50"
             aria-label={`Remove ${item.productName} from cart`}
           >
-            {!isPending && <Trash2 className="size-4" aria-hidden="true" />}
-            Remove
-          </Button>
+            {isPending ? (
+              <Loader2 className="size-3.5 animate-spin" />
+            ) : (
+              <Trash2
+                className="size-3.5 transition-colors group-hover/remove:text-rose-600"
+                aria-hidden="true"
+              />
+            )}
+            <span>Remove</span>
+          </button>
         </div>
       </div>
     </article>

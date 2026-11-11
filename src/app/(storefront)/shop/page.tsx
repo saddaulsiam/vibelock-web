@@ -5,11 +5,12 @@ import { CatalogSort } from "@/components/storefront/catalog/catalog-sort";
 import { ProductFilters } from "@/components/storefront/catalog/product-filters";
 import { ProductInfiniteGrid } from "@/components/storefront/catalog/product-infinite-grid";
 import { PromoBanner } from "@/components/storefront/catalog/promo-banner";
-import { getSearchPromoBanner } from "@/lib/catalog/banners";
+import { getSearchPromoBanners } from "@/lib/catalog/banners";
 import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { getCatalogFilterOptions, getCategories } from "@/lib/catalog/queries";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
+import { cn } from "cn";
 import type { Metadata } from "next";
 
 function getClearSearchHref(params: ReturnType<typeof parseDiscoverySearchParams>) {
@@ -38,11 +39,11 @@ export default async function ShopPage({
   const params = await searchParams;
   const parsedParams = parseDiscoverySearchParams(params);
 
-  const [discoveryResult, categories, filterOptionsData, promoBanner] = await Promise.all([
+  const [discoveryResult, categories, filterOptionsData, promoBanners] = await Promise.all([
     getDiscoveredProducts(parsedParams),
     getCategories(),
     getCatalogFilterOptions(),
-    getSearchPromoBanner(parsedParams.category?.split(",").filter(Boolean) ?? []),
+    getSearchPromoBanners(parsedParams.category?.split(",").filter(Boolean) ?? []),
   ]);
   const hasSearch = Boolean(parsedParams.q?.trim());
   const searchTerm = parsedParams.q?.trim() ?? "";
@@ -65,15 +66,27 @@ export default async function ShopPage({
   };
 
   return (
-    <Section className="bg-background relative z-10 min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32">
-      {promoBanner ? <PromoBanner banner={promoBanner} className="mb-8 sm:mb-10" /> : null}
+    <Section
+      className={cn(
+        "relative z-10 min-h-screen bg-white pb-12 sm:pb-16",
+        promoBanners.length > 0 ? "pt-16 sm:pt-20 lg:pt-24" : "pt-20 sm:pt-24 lg:pt-28"
+      )}
+    >
       <Container>
+        {promoBanners.length > 0 ? (
+          <div className="mb-5 sm:mb-6">
+            <PromoBanner banners={promoBanners} />
+          </div>
+        ) : null}
+
         <header className="mb-4">
-          <div className="border-vl-dark-100 flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <nav aria-label="Breadcrumb" className="mb-1">
+            <p className="text-vl-dark-900/55 text-[11px] font-semibold tracking-[0.18em] uppercase">
+              VibeLock <span className="text-vl-cyan px-1">/</span> Shop
+            </p>
+          </nav>
+          <div className="border-border/50 mb-8 flex flex-col gap-4 border-b pb-5 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0">
-              <p className="text-vl-dark-900/55 text-xs font-bold">
-                VibeLock <span className="text-vl-cyan">/</span> Shop
-              </p>
               <h1 className="font-heading text-vl-black text-xl font-bold tracking-tight wrap-break-word uppercase sm:text-2xl lg:text-3xl">
                 {hasSearch
                   ? "Search Results"
@@ -82,11 +95,11 @@ export default async function ShopPage({
                     : "All Releases"}
               </h1>
               {hasSearch ? (
-                <p className="text-vl-dark-400 mt-1.5 max-w-2xl text-xs wrap-break-word sm:text-xs">
+                <p className="text-vl-dark-400 mt-1 max-w-2xl text-xs wrap-break-word sm:text-sm">
                   Results for <span className="text-vl-dark-900 font-bold">“{searchTerm}”</span>
                 </p>
               ) : (
-                <p className="text-vl-dark-400 mt-1.5 text-xs sm:text-xs">
+                <p className="text-vl-dark-400 mt-1 text-xs sm:text-sm">
                   Showing latest available releases
                 </p>
               )}
@@ -103,9 +116,7 @@ export default async function ShopPage({
             </div>
           </div>
         </header>
-      </Container>
 
-      <Container>
         <div className="flex flex-col gap-5 lg:flex-row">
           <ProductFilters options={filterOptions} totalCount={discoveryResult.totalCount} />
           <div className="min-w-0 flex-1">

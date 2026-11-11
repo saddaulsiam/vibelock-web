@@ -163,7 +163,7 @@ function CheckoutSummaryItem({ item }: { item: CartItemDTO }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <li className="border-vl-black/8 grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-3.5 last:border-b-0">
+    <li className="border-border grid grid-cols-[3.75rem_minmax(0,1fr)_auto] items-center gap-3 border-b py-3.5 last:border-b-0">
       <div className="bg-vl-white relative aspect-3/4 overflow-hidden rounded-xs">
         {item.productImage && !imageFailed ? (
           <Image
@@ -656,7 +656,7 @@ export function CheckoutForm({
               {shippingCity && (
                 <div className="mt-2 transition-all duration-200">
                   {isLoadingShipping ? (
-                    <div className="border-border text-muted-foreground flex items-center gap-2.5 rounded-xs border bg-vl-white-300/50 p-3 text-xs font-medium">
+                    <div className="border-border text-muted-foreground bg-vl-white-300/50 flex items-center gap-2.5 rounded-xs border p-3 text-xs font-medium">
                       <LoaderCircle className="text-vl-cyan size-4 animate-spin" />
                       <span>Calculating shipping to {shippingCity}...</span>
                     </div>
@@ -714,7 +714,7 @@ export function CheckoutForm({
                       </div>
                     </div>
                   ) : shippingMethods.length === 1 && selectedMethod ? (
-                    <div className="border-vl-black/15 flex items-center justify-between rounded-xs border bg-vl-white-300/70 px-4 py-3">
+                    <div className="border-border bg-vl-white-300/70 flex items-center justify-between rounded-xs border px-4 py-3">
                       <div className="flex items-center gap-2.5">
                         <div className="bg-vl-black flex size-6 items-center justify-center rounded-full text-white">
                           <Check className="size-3.5 stroke-[2.5]" />
@@ -793,7 +793,7 @@ export function CheckoutForm({
                       value={orderNote}
                       onChange={(e) => setOrderNote(e.target.value.slice(0, 200))}
                       placeholder="e.g. Call before delivery, building name, landmark, gate code"
-                      className="border-vl-black/20 rounded-xs bg-white text-xs leading-relaxed"
+                      className="border-border rounded-xs bg-white text-xs leading-relaxed"
                     />
                     <div className="flex justify-end">
                       <span className="text-muted-foreground text-3xs">{orderNote.length}/200</span>
@@ -912,17 +912,18 @@ export function CheckoutForm({
         aria-labelledby="checkout-summary-heading"
         className="lg:sticky lg:top-24 lg:self-start"
       >
-        <div className="border-border bg-background rounded-xs border p-5 shadow-xs sm:p-6">
-          <div className="border-vl-black/12 border-b pb-4">
+        <div className="border-border bg-background rounded-xs border p-5 sm:p-6">
+          {/* Summary Header */}
+          <div className="border-border flex items-center justify-between border-b pb-2.5">
             <h2
-              id="checkout-summary-heading"
-              className="font-heading text-vl-black text-lg font-black tracking-tight uppercase"
+              id="cart-summary-heading"
+              className="font-heading text-vl-black text-lg font-black tracking-wide uppercase"
             >
               Order Summary
             </h2>
-            <p className="text-muted-foreground mt-1 text-xs">
-              {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"} in your drop
-            </p>
+            <span className="text-vl-dark-500 font-mono text-[11px] font-bold">
+              {cart.totalQuantity} {cart.totalQuantity === 1 ? "item" : "items"}
+            </span>
           </div>
 
           {/* Items List */}
@@ -933,7 +934,7 @@ export function CheckoutForm({
           </ul>
 
           {/* Promo Code Box */}
-          <div className="border-vl-black/12 border-t py-3.5">
+          <div className="border-border border-t py-3.5">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-muted-foreground text-compact font-bold tracking-[0.14em] uppercase">
                 Promo Code
@@ -1008,7 +1009,7 @@ export function CheckoutForm({
           </div>
 
           {/* Pricing Breakdown */}
-          <dl className="border-vl-black/12 space-y-2.5 border-t py-3.5 text-xs">
+          <dl className="border-border space-y-2.5 border-t py-3.5 text-xs">
             <div className="flex items-center justify-between gap-3">
               <dt className="text-muted-foreground">Subtotal</dt>
               <dd className="text-vl-black font-semibold">{formatPrice(subtotalBeforeDiscount)}</dd>
@@ -1049,7 +1050,7 @@ export function CheckoutForm({
           </dl>
 
           {/* Total */}
-          <div className="border-vl-black/15 border-t pt-3.5">
+          <div className="border-border border-t pt-3.5">
             <div className="flex items-baseline justify-between gap-3">
               <span className="font-heading text-vl-black text-sm font-black uppercase">
                 Total to Pay
@@ -1065,23 +1066,19 @@ export function CheckoutForm({
                 )}
               </span>
             </div>
-            <p className="text-muted-foreground text-compact mt-1">
-              {selectedMethod
-                ? `Includes ${formatPrice(shippingCost)} delivery fee to ${shippingCity}.`
-                : "Select district on the left to confirm total delivery charge."}
-            </p>
           </div>
 
           {/* ── BIG PRIMARY ACTION BUTTON ── */}
           <Button
             type="submit"
             form="checkout-form"
-            variant="brand"
+            variant="primary"
             size="lg"
             fullWidth
             loading={isPending}
             disabled={isPending || paymentOptions.length === 0}
-            className="mt-5"
+            // className="mt-5"
+            className="mt-5 h-12 text-xs font-black tracking-widest"
           >
             {isPending
               ? "Confirming Order…"
@@ -1099,8 +1096,8 @@ export function CheckoutForm({
               Orders cannot be placed right now because no payment methods are currently active.
             </p>
           ) : (
-            <p className="text-muted-foreground text-2xs mt-2.5 text-center tracking-wider uppercase">
-              No advance payment needed for Cash on Delivery
+            <p className="text-muted-foreground text-compact mt-2.5 text-center">
+              BDT 300 advance payment needed for Cash on Delivery
             </p>
           )}
         </div>

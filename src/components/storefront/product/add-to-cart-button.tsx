@@ -23,6 +23,9 @@ export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartB
         const result = await addVariantToCartAction(variantId, quantity);
         if (result.success) {
           toast.success("Added to your cart");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new CustomEvent("vibelock:open-cart"));
+          }
         } else {
           toast.error(result.error || "Could not add this item to your cart.");
         }

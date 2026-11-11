@@ -53,6 +53,7 @@ function refreshBanners() {
   revalidatePath("/admin/banners");
   revalidatePath("/admin/banners/new");
   revalidatePath("/admin/banners/[id]/edit", "page");
+  revalidatePath("/shop");
   revalidatePath("/products");
   revalidatePath("/category/[slug]", "page");
 }

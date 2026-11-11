@@ -1,10 +1,11 @@
 "use client";
 
 import * as React from "react";
-import { useState, useActionState, useRef } from "react";
+import { useState, useActionState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ExternalLink, Globe, ImagePlus, Trash2, Upload, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowUpRight, ExternalLink, Globe, ImagePlus, Trash2, Upload, X } from "lucide-react";
 import { BannerPlacement } from "@prisma/client";
 import { toast } from "sonner";
 import { CategoryMultiSelect, type CategoryOption } from "@/components/admin/categories";
@@ -36,11 +37,11 @@ const TITLE_SUGGESTIONS = [
 ];
 
 const DESTINATION_PRESETS = [
-  { label: "All Products", url: "/products" },
+  { label: "All Products", url: "/shop" },
   { label: "T-Shirts", url: "/category/t-shirts" },
   { label: "Hoodies & Sweats", url: "/category/hoodies" },
   { label: "Cargo Pants", url: "/category/pants" },
-  { label: "Sale Items", url: "/products?sort=sale" },
+  { label: "Sale Items", url: "/shop?sort=sale" },
 ];
 
 export function BannerForm({
@@ -50,7 +51,18 @@ export function BannerForm({
   banner?: BannerFormValue;
   categories: CategoryOption[];
 }) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(saveBannerAction, initialState);
+
+  // Toast feedback & auto-redirect on successful banner creation
+  useEffect(() => {
+    if (state.message) {
+      toast.success(state.message);
+      if (!banner) {
+        router.push("/admin/banners");
+      }
+    }
+  }, [state.message, banner, router]);
 
   // Form Fields
   const [title, setTitle] = useState(banner?.title ?? "");
@@ -382,7 +394,7 @@ export function BannerForm({
                 />
               </div>
               <p className="text-muted-foreground mt-1 text-[11px]">
-                Lower numbers (e.g. 0, 1) take display priority over higher numbers.
+                Controls slide sequence in the carousel. Lower numbers (0, 1, 2) appear first.
               </p>
             </div>
           </div>
@@ -525,7 +537,7 @@ export function BannerForm({
         {desktopPreview && (
           <div className="mt-3 space-y-2">
             <div className="flex items-center justify-between text-xs font-semibold text-vl-dark-900">
-              <span>Desktop Preview (16:7)</span>
+              <span>Storefront Preview (Desktop 16:7)</span>
               <Button
                 type="button"
                 variant="link"
@@ -537,7 +549,7 @@ export function BannerForm({
                 <span>Remove</span>
               </Button>
             </div>
-            <div className="relative aspect-16/7 w-full overflow-hidden border border-vl-dark-900/15 bg-vl-white-100">
+            <div className="relative aspect-16/7 w-full overflow-hidden rounded-2xl bg-vl-white-100 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)]">
               <Image
                 src={desktopPreview}
                 alt="Desktop Banner"
@@ -545,15 +557,24 @@ export function BannerForm({
                 sizes="(max-width: 1024px) 100vw, 896px"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-4 text-white">
-                <span className="text-xs font-bold tracking-wider text-vl-cyan uppercase">
-                  {placement}
+              <div
+                className="from-vl-dark-900/30 pointer-events-none absolute inset-0 bg-linear-to-t via-transparent to-transparent"
+                aria-hidden="true"
+              />
+              <div className="pointer-events-none absolute top-3.5 left-4 z-10">
+                <span className="border-vl-dark-900/20 bg-vl-dark-900/85 text-vl-white-300 inline-flex items-center gap-1.5 border px-2.5 py-0.5 text-[9px] font-semibold tracking-[0.18em] uppercase backdrop-blur-xs">
+                  <span className="bg-vl-cyan size-1 rounded-full" aria-hidden="true" />
+                  <span>Featured Drop</span>
                 </span>
-                <h4 className="line-clamp-1 text-lg font-bold text-white">
-                  {title || "Campaign Preview"}
-                </h4>
               </div>
+              {linkUrl ? (
+                <div className="pointer-events-none absolute right-3.5 bottom-3.5 z-10">
+                  <span className="border-vl-dark-900/20 bg-vl-dark-900/90 text-vl-white-300 inline-flex items-center gap-1.5 border px-2.5 py-1 text-[10px] font-semibold tracking-[0.18em] uppercase backdrop-blur-xs">
+                    <span>Explore</span>
+                    <ArrowUpRight className="text-vl-cyan size-3" aria-hidden="true" />
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
         )}
@@ -663,7 +684,7 @@ export function BannerForm({
                 <span>Remove</span>
               </Button>
             </div>
-            <div className="relative aspect-3/2 w-full overflow-hidden border border-vl-dark-900/15 bg-vl-white-100">
+            <div className="relative aspect-3/2 w-full overflow-hidden rounded-2xl bg-vl-white-100 shadow-[0_4px_24px_-4px_rgba(0,0,0,0.06)]">
               <Image
                 src={mobilePreview}
                 alt="Mobile Banner"

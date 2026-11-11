@@ -27,11 +27,43 @@ export async function getCategoryPromoBanner(
   });
 }
 
+export async function getCategoryPromoBanners(
+  categorySlug: string
+): Promise<PublicPromoBanner[]> {
+  return prisma.banner.findMany({
+    where: {
+      isActive: true,
+      placement: { in: [BannerPlacement.CATEGORY, BannerPlacement.BOTH] },
+      OR: [{ categories: { none: {} } }, { categories: { some: { slug: categorySlug } } }],
+    },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    select: publicBannerSelect,
+  });
+}
+
 export async function getSearchPromoBanner(
   categorySlugs: string[] = []
 ): Promise<PublicPromoBanner | null> {
   const uniqueSlugs = Array.from(new Set(categorySlugs.map((slug) => slug.trim()).filter(Boolean)));
   return prisma.banner.findFirst({
+    where: {
+      isActive: true,
+      placement: { in: [BannerPlacement.SEARCH, BannerPlacement.BOTH] },
+      OR: [
+        { categories: { none: {} } },
+        ...(uniqueSlugs.length ? [{ categories: { some: { slug: { in: uniqueSlugs } } } }] : []),
+      ],
+    },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    select: publicBannerSelect,
+  });
+}
+
+export async function getSearchPromoBanners(
+  categorySlugs: string[] = []
+): Promise<PublicPromoBanner[]> {
+  const uniqueSlugs = Array.from(new Set(categorySlugs.map((slug) => slug.trim()).filter(Boolean)));
+  return prisma.banner.findMany({
     where: {
       isActive: true,
       placement: { in: [BannerPlacement.SEARCH, BannerPlacement.BOTH] },

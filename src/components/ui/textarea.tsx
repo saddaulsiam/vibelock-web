@@ -10,7 +10,7 @@ const textareaVariants = cva(
     "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
     "dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
     "w-full min-w-0 border bg-transparent px-3 py-2 text-sm transition-colors outline-none",
-    "focus-visible:ring-2 focus-visible:ring-vl-cyan",
+    "focus-visible:ring focus-visible:ring-vl-cyan focus-visible:border-none",
     "resize-y",
   ],
   {
@@ -39,8 +39,7 @@ const textareaVariants = cva(
 );
 
 export interface TextareaProps
-  extends React.ComponentProps<"textarea">,
-    VariantProps<typeof textareaVariants> {}
+  extends React.ComponentProps<"textarea">, VariantProps<typeof textareaVariants> {}
 
 function Textarea({ className, variant, size, ...props }: TextareaProps) {
   return (
@@ -53,4 +52,3 @@ function Textarea({ className, variant, size, ...props }: TextareaProps) {
 }
 
 export { Textarea, textareaVariants };
-

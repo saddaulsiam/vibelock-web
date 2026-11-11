@@ -17,7 +17,7 @@ export default async function CartPage() {
   const cart = await getCart();
 
   return (
-    <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
+    <Section className="relative z-10 min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32">
       <Container className="max-w-6xl">
         <CartPageContent cart={cart} />
       </Container>

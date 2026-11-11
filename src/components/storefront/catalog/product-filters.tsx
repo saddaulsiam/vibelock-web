@@ -320,7 +320,7 @@ function ColorSelectDropdown({
                 className={cn(
                   "size-3.5 shrink-0 rounded-full border",
                   ["white", "cream", "beige"].includes(selectedColors[0].toLowerCase())
-                    ? "border-vl-dark-300"
+                    ? "border-border/50"
                     : "border-black/15"
                 )}
                 style={{ backgroundColor: getSwatchColor(selectedColors[0]) }}
@@ -394,7 +394,7 @@ function ColorSelectDropdown({
             )}
           >
             {/* Search Input */}
-            <div className="border-vl-dark-100 bg-vl-white-50 flex items-center gap-2 border-b px-2.5 py-2">
+            <div className="border-border/50 bg-vl-white-50 flex items-center gap-2 border-b px-2.5 py-2">
               <Search className="text-vl-dark-400 size-3.5 shrink-0" aria-hidden="true" />
               <input
                 ref={searchInputRef}
@@ -438,7 +438,7 @@ function ColorSelectDropdown({
                       <span
                         className={cn(
                           "size-4 shrink-0 rounded-full border",
-                          isWhiteOrLight ? "border-vl-dark-300" : "border-black/15"
+                          isWhiteOrLight ? "border-border/50" : "border-black/15"
                         )}
                         style={{ backgroundColor: getSwatchColor(color) }}
                         aria-hidden="true"
@@ -715,7 +715,7 @@ export function ProductFilters({
                     "flex size-3.5 shrink-0 items-center justify-center rounded-full border transition-colors",
                     isSelected
                       ? "border-vl-cyan bg-white"
-                      : "border-vl-dark-300 group-hover:border-vl-dark-900 bg-white"
+                      : "border-border/50 group-hover:border-vl-dark-900 bg-white"
                   )}
                   aria-hidden="true"
                 >

@@ -25,7 +25,7 @@ export default async function AdminBannersPage() {
             Manage full-width category and search campaign banners.
           </p>
         </div>
-        <Button asChild variant="brand">
+        <Button asChild variant="primary">
           <Link href="/admin/banners/new">Create banner</Link>
         </Button>
       </div>
@@ -43,7 +43,7 @@ export default async function AdminBannersPage() {
               key={banner.id}
               className="grid gap-4 border bg-white p-4 md:grid-cols-[240px_1fr]"
             >
-              <div className="relative aspect-16/7 overflow-hidden bg-vl-white-300">
+              <div className="bg-vl-white-300 relative aspect-16/7 overflow-hidden">
                 <Image
                   src={banner.imageUrl}
                   alt={banner.title}
