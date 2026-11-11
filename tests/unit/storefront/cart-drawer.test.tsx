@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { CartSheet } from "@/components/storefront/cart/cart-sheet";
+import { CartDrawer } from "@/components/storefront/cart/cart-drawer";
 import { CartPageContent } from "@/components/storefront/cart/cart-page-content";
 import type { CartDTO } from "@/lib/cart/types";
 
@@ -34,7 +34,7 @@ const mockCart: CartDTO = {
 
 describe("Cart Sheet & Cart Page Unit Tests", () => {
   it("renders CartSheet trigger button with item count badge", () => {
-    const html = renderToStaticMarkup(<CartSheet initialCart={mockCart} />);
+    const html = renderToStaticMarkup(<CartDrawer initialCart={mockCart} />);
     expect(html).toContain('aria-label="Shopping bag, 2 items"');
     expect(html).toContain("2");
   });

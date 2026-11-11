@@ -34,7 +34,7 @@ function formatPrice(amount: number) {
   }).format(amount);
 }
 
-export function CartSheet({ initialCart, triggerClassName }: CartSheetProps) {
+export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
   const [open, setOpen] = React.useState(false);
   const [cart, setCart] = React.useState<CartDTO | null>(initialCart);
   const [isUpdatingId, setIsUpdatingId] = React.useState<string | null>(null);
@@ -147,7 +147,7 @@ export function CartSheet({ initialCart, triggerClassName }: CartSheetProps) {
       <SheetContent
         side="right"
         showCloseButton={false}
-        className="border-border flex h-full w-full flex-col gap-0 border-l bg-white p-0 shadow-2xl sm:max-w-[420px]"
+        className="border-border flex h-full w-full flex-col gap-0 border-l bg-white p-0 shadow-2xl"
       >
         {/* ── Top Header ── */}
         <div className="border-border flex items-center justify-between border-b px-5 py-4">
@@ -209,14 +209,14 @@ export function CartSheet({ initialCart, triggerClassName }: CartSheetProps) {
                   <Link
                     href={`/product/${item.productSlug}`}
                     onClick={() => setOpen(false)}
-                    className="border-border bg-vl-white-100 relative aspect-square size-20 shrink-0 overflow-hidden border"
+                    className="border-border bg-vl-white-100 relative aspect-3/4 w-16 shrink-0 overflow-hidden border sm:w-20"
                   >
                     {item.productImage ? (
                       <Image
                         src={item.productImage}
                         alt={item.productName}
                         fill
-                        sizes="80px"
+                        sizes="(max-width: 640px) 64px, 80px"
                         className="object-cover transition-transform duration-300 hover:scale-105"
                       />
                     ) : (
@@ -312,10 +312,10 @@ export function CartSheet({ initialCart, triggerClassName }: CartSheetProps) {
           <div className="border-border mt-auto border-t bg-white p-5 sm:p-6">
             {/* Subtotal */}
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-vl-dark-500 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-vl-dark-600 text-sm font-bold tracking-wider uppercase">
                 SUBTOTAL
               </span>
-              <span className="font-heading text-vl-dark-900 text-sm font-bold tracking-tight sm:text-base">
+              <span className="font-heading text-vl-dark-900 text-base font-black tracking-tight sm:text-xl">
                 {formatPrice(subtotal)}
               </span>
             </div>
@@ -326,33 +326,29 @@ export function CartSheet({ initialCart, triggerClassName }: CartSheetProps) {
             </p>
 
             {/* Cash on Delivery Badge Pill */}
-            <div className="mb-4 inline-flex items-center gap-1.5 rounded-sm border border-emerald-300 bg-emerald-50/70 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
+            <div className="mb-4 inline-flex w-full items-center gap-1.5 rounded-sm border border-emerald-300 bg-emerald-50/70 px-2.5 py-1 text-[11px] font-medium text-emerald-700">
               <Truck className="size-3 shrink-0 text-emerald-600" aria-hidden="true" />
-              <span>Cash on Delivery</span>
+              <span> Cash on Delivery Available Across Bangladesh</span>
             </div>
 
             {/* Primary Checkout CTA Button */}
-            <Button
-              asChild
-              variant="primary"
-              size="lg"
-              className="bg-vl-dark-900 text-vl-white-50 hover:bg-vl-dark-800 h-11 w-full rounded-none text-xs font-bold tracking-widest uppercase shadow-sm transition-all active:scale-[0.99]"
-            >
+            <Button asChild variant="primary" size="lg" fullWidth>
               <Link href="/checkout" onClick={() => setOpen(false)}>
                 PROCEED TO CHECKOUT
               </Link>
             </Button>
 
             {/* View Full Cart Link */}
-            <div className="mt-2.5 text-center">
-              <Link
-                href="/cart"
-                onClick={() => setOpen(false)}
-                className="text-vl-dark-500 hover:text-vl-dark-900 text-[11px] font-bold tracking-wider uppercase underline underline-offset-4 transition-colors"
-              >
+            <Button
+              variant="link"
+              fullWidth
+              // size="xl"
+              className="text-vl-dark-500 hover:text-vl-dark-900 mt-2.5 text-center text-[11px] font-bold tracking-wider uppercase underline underline-offset-4 transition-colors"
+            >
+              <Link href="/cart" onClick={() => setOpen(false)}>
                 View Full Shopping Bag
               </Link>
-            </div>
+            </Button>
           </div>
         )}
       </SheetContent>
