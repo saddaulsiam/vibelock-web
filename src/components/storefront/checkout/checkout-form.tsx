@@ -1,8 +1,19 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { SelectableCard } from "@/components/shared/selectable-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select-native";
+import { Textarea } from "@/components/ui/textarea";
+import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
+import {
+  createOrderAction,
+  getShippingMethodsAction,
+  validateCouponAction,
+} from "@/lib/checkout/actions";
+import { checkoutSchema } from "@/lib/checkout/validation";
 import {
   Check,
   CreditCard,
@@ -13,21 +24,10 @@ import {
   Tag,
   X,
 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
-import {
-  createOrderAction,
-  getShippingMethodsAction,
-  validateCouponAction,
-} from "@/lib/checkout/actions";
-import { checkoutSchema } from "@/lib/checkout/validation";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { NativeSelect } from "@/components/ui/select-native";
-import { SelectableCard } from "@/components/shared/selectable-card";
 
 // ── 64 Districts of Bangladesh ───────────────────────────────────────────────
 const BD_DISTRICTS = [
@@ -877,26 +877,110 @@ export function CheckoutForm({
                       value={method.value}
                       checked={isSelected}
                       size="default"
+                      className="items-center"
+                      inputClassName="mt-0"
                       onChange={() => setPaymentMethod(method.value)}
                     >
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-vl-black text-sm font-bold">{method.title}</span>
+                        <div className="flex items-center gap-2.5">
                           {method.value === "COD" && (
-                            <Badge variant="outline" size="sm">
-                              Popular in BD
-                            </Badge>
+                            <div className="flex h-6 w-8 shrink-0 items-center justify-center">
+                              <Image
+                                src="/icons/dollar.png"
+                                alt="cod"
+                                width={130}
+                                height={30}
+                                className="h-auto w-7 object-contain"
+                              />
+                            </div>
                           )}
                           {method.value === "ONLINE" && (
-                            <span className="text-compact flex items-center gap-1 font-semibold text-neutral-500">
-                              <CreditCard className="size-3.5" />
-                              Cards / Mobile Banking (SSLCOMMERZ)
-                            </span>
+                            <div className="flex h-6 shrink-0 items-center justify-center">
+                              <Image
+                                src="/icons/sslcommerz.png"
+                                alt="SSLCOMMERZ"
+                                width={130}
+                                height={30}
+                                className="h-auto w-20 object-contain"
+                              />
+                            </div>
                           )}
+                          {method.value === "BKASH" && (
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                              <span className="bg-gateway-bkash flex size-6 shrink-0 items-center justify-center rounded-xs text-white shadow-xs">
+                                <Image
+                                  src="/icons/bkash.svg"
+                                  alt="bKash"
+                                  width={16}
+                                  height={16}
+                                  className="size-4 object-contain"
+                                />
+                              </span>
+                            </div>
+                          )}
+                          {method.value === "NAGAD" && (
+                            <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                              <span className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-[#e31018] p-0.5 text-white shadow-xs">
+                                <Image
+                                  src="/icons/nagad.svg"
+                                  alt="Nagad"
+                                  width={20}
+                                  height={12}
+                                  className="h-3.5 w-auto object-contain"
+                                />
+                              </span>
+                            </div>
+                          )}
+                          {method.value !== "COD" &&
+                            method.value !== "ONLINE" &&
+                            method.value !== "BKASH" &&
+                            method.value !== "NAGAD" && (
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+                                <span className="bg-vl-dark-900/5 text-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-xs">
+                                  <CreditCard className="size-4" aria-hidden="true" />
+                                </span>
+                              </div>
+                            )}
+                          <span className="text-vl-black text-sm leading-none font-bold">
+                            {method.title}
+                          </span>
                         </div>
                         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                           {method.detail}
                         </p>
+                      </div>
+
+                      {/* Trailing badges / payment icons — vertically centered in the card */}
+                      <div className="flex shrink-0 items-center self-center">
+                        {method.value === "COD" && (
+                          <Badge variant="info" size="sm" className="font-semibold">
+                            Popular in BD
+                          </Badge>
+                        )}
+                        {method.value === "ONLINE" && (
+                          <div
+                            className="flex flex-wrap items-center gap-1.5"
+                            aria-label="Supported payment methods"
+                          >
+                            <span className="border-border inline-flex h-5 items-center justify-center rounded-xs border bg-white px-1.5 font-sans text-[9px] font-black tracking-wider text-[#1a1f71] italic shadow-xs">
+                              VISA
+                            </span>
+                            <span className="border-border inline-flex h-5 items-center justify-center gap-0.5 rounded-xs border bg-white px-1.5 shadow-xs">
+                              <span className="size-2.5 rounded-full bg-[#eb001b]" />
+                              <span className="-ml-1 size-2.5 rounded-full bg-[#f79e1b] opacity-90" />
+                            </span>
+                          </div>
+                        )}
+                        {method.value === "BKASH" && (
+                          <Badge variant="secondary" size="sm" className="font-semibold">
+                            Direct bKash
+                          </Badge>
+                        )}
+                        {method.value === "NAGAD" && (
+                          <span className="inline-flex h-5 items-center justify-center rounded-xs bg-[#e31018] px-1.5 text-[9px] font-bold text-white shadow-xs">
+                            Direct Wallet
+                          </span>
+                        )}
                       </div>
                     </SelectableCard>
                   );
@@ -1077,7 +1161,6 @@ export function CheckoutForm({
             fullWidth
             loading={isPending}
             disabled={isPending || paymentOptions.length === 0}
-            // className="mt-5"
             className="mt-5 h-12 text-xs font-black tracking-widest"
           >
             {isPending
@@ -1092,7 +1175,7 @@ export function CheckoutForm({
           </Button>
 
           {paymentOptions.length === 0 ? (
-            <p className="text-muted-foreground text-2xs mt-2.5 text-center tracking-wider text-amber-600 uppercase">
+            <p className="text-2xs mt-2.5 text-center tracking-wider text-amber-600 uppercase">
               Orders cannot be placed right now because no payment methods are currently active.
             </p>
           ) : (
