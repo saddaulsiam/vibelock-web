@@ -29,9 +29,7 @@ export async function generateMetadata(props: {
   };
 }
 
-export default async function ReturnDetailPage(props: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function ReturnDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const request = await getCustomerReturnById(params.id);
   if (!request) notFound();
@@ -91,7 +89,7 @@ export default async function ReturnDetailPage(props: {
       <div className="flex items-center justify-between gap-3">
         <Link
           href="/account/returns"
-          className="group inline-flex min-h-[36px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors hover:text-vl-dark-900"
+          className="group hover:text-vl-dark-900 inline-flex min-h-[36px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
         >
           <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
           <span>Back to Returns</span>
@@ -99,21 +97,21 @@ export default async function ReturnDetailPage(props: {
 
         <Link
           href={`/account/orders/${request.order.orderNumber}`}
-          className="group inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors hover:text-vl-dark-900"
+          className="group hover:text-vl-dark-900 inline-flex min-h-[36px] items-center gap-1 text-xs font-semibold text-neutral-600 transition-colors"
         >
           <span>Order #{request.order.orderNumber}</span>
-          <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
+          <ArrowRight className="group-hover:text-vl-dark-900 size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
 
       {/* ── Unified Master Return Document Canvas ── */}
-      <div className="overflow-hidden rounded-2xl border border-vl-dark-900/8 bg-white shadow-2xs">
+      <div className="border-vl-dark-900/8 overflow-hidden rounded-2xl border bg-white shadow-2xs">
         {/* 1. Header Section: Return Identity & Status */}
-        <div className="border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
+        <div className="border-vl-dark-900/8 border-b p-4 sm:p-6 md:p-7">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold tracking-[0.2em] text-vl-cyan uppercase">
+                <span className="tracking-streetwear text-vl-cyan text-[11px] font-semibold uppercase">
                   Return & Exchange
                 </span>
                 <span className="text-neutral-300">•</span>
@@ -122,7 +120,7 @@ export default async function ReturnDetailPage(props: {
                 </span>
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2.5 sm:gap-3">
-                <h1 className="text-lg font-bold tracking-tight text-vl-dark-900 uppercase sm:text-2xl">
+                <h1 className="text-vl-dark-900 text-lg font-bold tracking-tight uppercase sm:text-2xl">
                   Return #{request.id.slice(0, 8).toUpperCase()}
                 </h1>
                 <OrderStatusBadge status={request.status} />
@@ -132,7 +130,7 @@ export default async function ReturnDetailPage(props: {
                   Order:{" "}
                   <Link
                     href={`/account/orders/${request.order.orderNumber}`}
-                    className="font-semibold text-vl-dark-900 hover:underline"
+                    className="text-vl-dark-900 font-semibold hover:underline"
                   >
                     #{request.order.orderNumber}
                   </Link>
@@ -140,7 +138,7 @@ export default async function ReturnDetailPage(props: {
                 <span className="text-neutral-300">•</span>
                 <span>
                   Reason:{" "}
-                  <strong className="font-semibold text-vl-dark-900">
+                  <strong className="text-vl-dark-900 font-semibold">
                     {request.reason || "General Return"}
                   </strong>
                 </span>
@@ -158,12 +156,13 @@ export default async function ReturnDetailPage(props: {
                 </h4>
                 <p className="mt-1 text-xs leading-relaxed text-rose-700">
                   This return request was reviewed by our QC team and could not be approved under
-                  our return policy. If you believe this is in error, please reach out to customer support.
+                  our return policy. If you believe this is in error, please reach out to customer
+                  support.
                 </p>
               </div>
             </div>
           ) : (
-            <div className="mt-5 border-t border-vl-dark-900/6 pt-4 sm:mt-6 sm:pt-5">
+            <div className="border-vl-dark-900/6 mt-5 border-t pt-4 sm:mt-6 sm:pt-5">
               {/* Connected Segmented Progress Bars */}
               <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
                 {steps.map((st) => (
@@ -203,10 +202,10 @@ export default async function ReturnDetailPage(props: {
 
         {/* 2. Returned Items Section */}
         <div className="p-4 sm:p-6 md:p-7">
-          <div className="flex items-center justify-between border-b border-vl-dark-900/8 pb-4">
+          <div className="border-vl-dark-900/8 flex items-center justify-between border-b pb-4">
             <div className="flex items-center gap-2">
-              <Package className="size-4 text-vl-dark-900" />
-              <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
+              <Package className="text-vl-dark-900 size-4" />
+              <h2 className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase sm:text-sm">
                 Returned Items
               </h2>
             </div>
@@ -216,14 +215,14 @@ export default async function ReturnDetailPage(props: {
           </div>
 
           {/* Item List */}
-          <ul className="divide-y divide-vl-dark-900/6">
+          <ul className="divide-vl-dark-900/6 divide-y">
             {request.items.map((item) => (
               <li
                 key={item.id}
                 className="flex items-center gap-3.5 py-4 first:pt-4 last:pb-2 sm:gap-4 sm:py-5"
               >
                 {/* Product Thumbnail */}
-                <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 sm:size-16">
+                <div className="border-vl-dark-900/10 relative size-14 shrink-0 overflow-hidden rounded-xl border bg-neutral-100 sm:size-16">
                   <Image
                     src={item.orderItem.imageUrl || "/images/categories/cat-t-shirts.jpg"}
                     alt={item.orderItem.productName}
@@ -235,7 +234,7 @@ export default async function ReturnDetailPage(props: {
 
                 {/* Product Info */}
                 <div className="min-w-0 flex-1">
-                  <h3 className="line-clamp-2 text-xs font-semibold text-vl-dark-900 sm:text-sm">
+                  <h3 className="text-vl-dark-900 line-clamp-2 text-xs font-semibold sm:text-sm">
                     {item.orderItem.productName}
                   </h3>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500">
@@ -262,7 +261,7 @@ export default async function ReturnDetailPage(props: {
 
                 {/* Item Line Refund */}
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold text-vl-dark-900 sm:text-base">
+                  <p className="text-vl-dark-900 text-sm font-bold sm:text-base">
                     ৳ {(item.orderItem.unitPrice * item.quantity).toLocaleString("en-BD")}
                   </p>
                 </div>
@@ -272,11 +271,11 @@ export default async function ReturnDetailPage(props: {
 
           {/* Customer Note / Feedback if provided */}
           {request.parsedReason?.customerNote && (
-            <div className="mt-4 rounded-xl border border-vl-dark-900/8 bg-vl-white-100 p-3.5 text-xs">
+            <div className="border-vl-dark-900/8 bg-vl-white-100 mt-4 rounded-xl border p-3.5 text-xs">
               <span className="block text-[10px] font-semibold tracking-wider text-neutral-400 uppercase">
                 Customer Comments
               </span>
-              <p className="mt-1 leading-relaxed text-vl-dark-900">
+              <p className="text-vl-dark-900 mt-1 leading-relaxed">
                 &ldquo;{request.parsedReason.customerNote}&rdquo;
               </p>
             </div>
@@ -295,7 +294,7 @@ export default async function ReturnDetailPage(props: {
                     href={imgUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative size-16 overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 shadow-2xs transition-transform hover:scale-105"
+                    className="group border-vl-dark-900/10 relative size-16 overflow-hidden rounded-xl border bg-neutral-100 shadow-2xs transition-transform hover:scale-105"
                     title={`View proof photo ${idx + 1}`}
                   >
                     <Image
@@ -312,11 +311,11 @@ export default async function ReturnDetailPage(props: {
           )}
 
           {/* Seamless Financial Receipt Calculation (Matching Order Details!) */}
-          <div className="mt-4 border-t border-vl-dark-900/8 pt-5 sm:flex sm:justify-end">
+          <div className="border-vl-dark-900/8 mt-4 border-t pt-5 sm:flex sm:justify-end">
             <div className="w-full space-y-2 text-xs sm:w-72 sm:max-w-xs sm:text-sm">
               <div className="flex justify-between text-neutral-500">
                 <span>Merchandise Value</span>
-                <span className="font-normal text-vl-dark-900">
+                <span className="text-vl-dark-900 font-normal">
                   ৳ {request.requestedAmount.toLocaleString("en-BD")}
                 </span>
               </div>
@@ -324,12 +323,12 @@ export default async function ReturnDetailPage(props: {
                 <span>Steadfast Pickup Fee</span>
                 <span className="font-normal text-emerald-700">FREE</span>
               </div>
-              <Separator className="my-2! bg-vl-dark-900/8" />
+              <Separator className="bg-vl-dark-900/8 my-2!" />
               <div className="my-2 flex items-baseline justify-between pt-1">
-                <span className="text-sm font-bold tracking-wide text-vl-dark-900 uppercase">
+                <span className="text-vl-dark-900 text-sm font-bold tracking-wide uppercase">
                   Total Refund
                 </span>
-                <span className="text-lg font-bold text-vl-dark-900 sm:text-xl">
+                <span className="text-vl-dark-900 text-lg font-bold sm:text-xl">
                   ৳ {request.requestedAmount.toLocaleString("en-BD")}
                 </span>
               </div>
@@ -338,21 +337,23 @@ export default async function ReturnDetailPage(props: {
         </div>
 
         {/* 3. Integrated Metadata Grid (Address & Settlement) */}
-        <div className="border-t border-vl-dark-900/8 bg-vl-white-100 p-4 sm:p-6 md:p-7">
-          <div className="grid grid-cols-1 gap-6 divide-y divide-vl-dark-900/8 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+        <div className="border-vl-dark-900/8 bg-vl-white-100 border-t p-4 sm:p-6 md:p-7">
+          <div className="divide-vl-dark-900/8 grid grid-cols-1 gap-6 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0">
             {/* Doorstep Pickup Information */}
             <div className="sm:pr-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
-                <Truck className="size-3.5 text-vl-dark-900" />
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                <Truck className="text-vl-dark-900 size-3.5" />
                 <span>Steadfast Doorstep Pickup</span>
               </div>
               <div className="mt-3 space-y-1 text-xs leading-relaxed text-neutral-600">
-                <p className="font-semibold text-vl-dark-900">{request.order.customerName || "Customer"}</p>
+                <p className="text-vl-dark-900 font-semibold">
+                  {request.order.customerName || "Customer"}
+                </p>
                 {request.order.customerPhone && (
                   <p className="font-medium text-neutral-700">{request.order.customerPhone}</p>
                 )}
                 <p className="text-neutral-500">{request.order.customerEmail}</p>
-                <div className="pt-2 text-vl-dark-900">
+                <div className="text-vl-dark-900 pt-2">
                   <p>{request.order.shippingStreet}</p>
                   <p>
                     {request.order.shippingCity}
@@ -361,7 +362,7 @@ export default async function ReturnDetailPage(props: {
                   </p>
                   <p>{request.order.shippingCountry}</p>
                 </div>
-                <div className="pt-2 flex items-center gap-1.5 text-emerald-700 font-semibold text-[11px]">
+                <div className="flex items-center gap-1.5 pt-2 text-[11px] font-semibold text-emerald-700">
                   <ShieldCheck className="size-3.5" />
                   <span>Complimentary Doorstep Collection</span>
                 </div>
@@ -370,14 +371,14 @@ export default async function ReturnDetailPage(props: {
 
             {/* Refund Settlement Details */}
             <div className="pt-5 sm:pt-0 sm:pl-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
-                <CreditCard className="size-3.5 text-vl-dark-900" />
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                <CreditCard className="text-vl-dark-900 size-3.5" />
                 <span>Refund Settlement</span>
               </div>
               <div className="mt-3 space-y-2.5 text-xs text-neutral-600">
                 <div className="flex items-center justify-between sm:justify-start sm:gap-4">
                   <span className="text-neutral-400">Method</span>
-                  <span className="font-semibold text-vl-dark-900">
+                  <span className="text-vl-dark-900 font-semibold">
                     {request.order.paymentMethod || "COD"}
                   </span>
                 </div>
@@ -394,7 +395,7 @@ export default async function ReturnDetailPage(props: {
                     <div className="mt-1.5 space-y-1">
                       {request.refunds.map((ref) => (
                         <div key={ref.id} className="flex items-center justify-between">
-                          <span className="text-emerald-950 font-medium">
+                          <span className="font-medium text-emerald-950">
                             {formatDate(ref.createdAt)}
                           </span>
                           <span className="font-bold text-emerald-950">

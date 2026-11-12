@@ -165,7 +165,7 @@ function AdminNavLinks({
                 onClick={onNavigate}
                 title={collapsed ? label : undefined}
                 className={cn(
-                  "group relative flex min-h-10 items-center overflow-hidden rounded-xl text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none",
+                  "group focus-visible:ring-vl-cyan relative flex min-h-10 items-center overflow-hidden rounded-xl text-sm font-medium whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:outline-none",
                   collapsed ? "mx-auto size-10 justify-center px-0" : "w-full gap-3 px-3",
                   active
                     ? "bg-white/10 font-semibold text-white shadow-2xs"
@@ -210,14 +210,14 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
   return (
     <aside
       className={cn(
-        "hidden shrink-0 flex-col overflow-hidden overflow-x-hidden bg-vl-dark-900 text-white transition-[width] duration-300 ease-in-out [-ms-overflow-style:none] lg:flex lg:h-full [&::-webkit-scrollbar]:hidden",
+        "bg-vl-dark-900 hidden shrink-0 flex-col overflow-hidden overflow-x-hidden text-white transition-[width] duration-300 ease-in-out [-ms-overflow-style:none] lg:flex lg:h-full [&::-webkit-scrollbar]:hidden",
         isCollapsed ? "w-18" : "w-64"
       )}
     >
       {/* Header with Brand & Collapse Trigger */}
       <div
         className={cn(
-          "flex min-h-16 shrink-0 items-center overflow-hidden overflow-x-hidden border-b border-white/10 bg-vl-dark-900 whitespace-nowrap",
+          "bg-vl-dark-900 flex min-h-16 shrink-0 items-center overflow-hidden overflow-x-hidden border-b border-white/10 whitespace-nowrap",
           isCollapsed ? "justify-center px-2 py-3" : "justify-between px-5 py-3"
         )}
       >
@@ -226,7 +226,7 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
             <div className="min-w-0 overflow-hidden whitespace-nowrap">
               <Link
                 href="/admin"
-                className="font-heading rounded-sm text-lg font-black tracking-tight whitespace-nowrap text-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                className="font-heading focus-visible:ring-vl-cyan rounded-sm text-lg font-black tracking-tight whitespace-nowrap text-white focus-visible:ring-2 focus-visible:outline-none"
               >
                 VibeLock<span className="text-vl-cyan">.</span>
               </Link>
@@ -249,7 +249,7 @@ export function AdminSidebar({ userRole }: { userRole?: Role }) {
           <div className="flex flex-col items-center gap-1.5 overflow-hidden">
             <Link
               href="/admin"
-              className="font-heading rounded-sm text-lg font-black tracking-tight text-white focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+              className="font-heading focus-visible:ring-vl-cyan rounded-sm text-lg font-black tracking-tight text-white focus-visible:ring-2 focus-visible:outline-none"
               title="VibeLock Operations"
             >
               VL<span className="text-vl-cyan">.</span>
@@ -291,7 +291,7 @@ export function AdminMobileNavigation({ userRole }: { userRole?: Role }) {
           <Button
             variant="outline"
             size="sm"
-            className="size-9 rounded-xl border-vl-dark-900/15 bg-white text-vl-dark-900 shadow-2xs hover:bg-vl-white-300 sm:size-10 lg:hidden"
+            className="border-vl-dark-900/15 text-vl-dark-900 hover:bg-vl-white-300 size-9 rounded-xl bg-white shadow-2xs sm:size-10 lg:hidden"
             aria-label="Open admin navigation"
           />
         }
@@ -300,7 +300,7 @@ export function AdminMobileNavigation({ userRole }: { userRole?: Role }) {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-[min(86vw,20rem)] border-0 bg-vl-dark-900 p-0 text-white"
+        className="bg-vl-dark-900 w-[min(86vw,20rem)] border-0 p-0 text-white"
       >
         <SheetHeader className="border-b border-white/10 px-5 py-6">
           <SheetTitle className="text-left text-xl font-extrabold tracking-[-0.06em] text-white">

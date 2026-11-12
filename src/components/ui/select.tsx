@@ -56,16 +56,9 @@ const selectTriggerVariants = cva(
 );
 
 export interface SelectTriggerProps
-  extends SelectPrimitive.Trigger.Props,
-    VariantProps<typeof selectTriggerVariants> {}
+  extends SelectPrimitive.Trigger.Props, VariantProps<typeof selectTriggerVariants> {}
 
-function SelectTrigger({
-  className,
-  variant,
-  size,
-  children,
-  ...props
-}: SelectTriggerProps) {
+function SelectTrigger({ className, variant, size, children, ...props }: SelectTriggerProps) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
@@ -107,13 +100,13 @@ function SelectContent({
         align={align}
         alignOffset={alignOffset}
         alignItemWithTrigger={alignItemWithTrigger}
-        className="isolate z-50 select-none outline-hidden"
+        className="isolate z-50 outline-hidden select-none"
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
           data-align-trigger={alignItemWithTrigger}
           className={cn(
-            "bg-white text-vl-dark-900 border-vl-dark-200 dark:bg-vl-dark-800 dark:text-vl-white-300 dark:border-vl-dark-600 relative isolate z-50 max-h-(--available-height) min-w-[var(--anchor-width)] origin-(--transform-origin) overflow-x-hidden overflow-y-auto border rounded-none p-0 shadow-md duration-100 ease-out transition-[opacity,transform] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            "text-vl-dark-900 border-vl-dark-200 dark:bg-vl-dark-800 dark:text-vl-white-300 dark:border-vl-dark-600 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 relative isolate z-50 max-h-(--available-height) min-w-[var(--anchor-width)] origin-(--transform-origin) overflow-x-hidden overflow-y-auto rounded-none border bg-white p-0 shadow-md transition-[opacity,transform] duration-100 ease-out",
             className
           )}
           {...props}
@@ -131,7 +124,10 @@ function SelectLabel({ className, ...props }: SelectPrimitive.GroupLabel.Props) 
   return (
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
-      className={cn("text-vl-dark-400 dark:text-vl-dark-300 px-3 py-1.5 text-[10px] font-black tracking-[0.2em] uppercase", className)}
+      className={cn(
+        "text-vl-dark-400 dark:text-vl-dark-300 tracking-streetwear px-3 py-1.5 text-[10px] font-black uppercase",
+        className
+      )}
       {...props}
     />
   );
@@ -142,7 +138,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "data-highlighted:bg-[#1a73e8] data-highlighted:text-white focus:bg-[#1a73e8] focus:text-white dark:data-highlighted:bg-[#1a73e8] dark:data-highlighted:text-white relative flex w-full cursor-pointer items-center justify-between rounded-none py-1.5 px-3 text-xs font-medium text-vl-dark-900 transition-colors outline-hidden select-none data-disabled:pointer-events-none data-disabled:opacity-50 dark:text-vl-white-300 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "text-vl-dark-900 dark:text-vl-white-300 relative flex w-full cursor-pointer items-center justify-between rounded-none px-3 py-1.5 text-xs font-medium outline-hidden transition-colors select-none focus:bg-[#1a73e8] focus:text-white data-disabled:pointer-events-none data-disabled:opacity-50 data-highlighted:bg-[#1a73e8] data-highlighted:text-white dark:data-highlighted:bg-[#1a73e8] dark:data-highlighted:text-white [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className
       )}
       {...props}
@@ -150,7 +146,7 @@ function SelectItem({ className, children, ...props }: SelectPrimitive.Item.Prop
       <SelectPrimitive.ItemText className="flex flex-1 shrink-0 items-center gap-2 truncate">
         {children}
       </SelectPrimitive.ItemText>
-      <SelectPrimitive.ItemIndicator className="pointer-events-none absolute right-2.5 flex size-4 items-center justify-center data-highlighted:text-white text-[#1a73e8]">
+      <SelectPrimitive.ItemIndicator className="pointer-events-none absolute right-2.5 flex size-4 items-center justify-center text-[#1a73e8] data-highlighted:text-white">
         <CheckIcon className="size-3.5 stroke-[2.5]" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
@@ -161,7 +157,10 @@ function SelectSeparator({ className, ...props }: SelectPrimitive.Separator.Prop
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("bg-vl-dark-100 dark:bg-vl-dark-700 pointer-events-none -mx-1 my-1 h-px", className)}
+      className={cn(
+        "bg-vl-dark-100 dark:bg-vl-dark-700 pointer-events-none -mx-1 my-1 h-px",
+        className
+      )}
       {...props}
     />
   );

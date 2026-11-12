@@ -42,13 +42,13 @@ export function ContactForm() {
         <div className="flex size-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
           <CheckCircle2 className="size-8" />
         </div>
-        <h3 className="mt-4 text-xl font-black tracking-tight text-vl-dark-900 uppercase">
+        <h3 className="text-vl-dark-900 mt-4 text-xl font-black tracking-tight uppercase">
           Message Dispatched
         </h3>
-        <p className="mt-2 max-w-sm text-xs leading-relaxed text-vl-dark-900/70">
-          Thanks for reaching out, <span className="font-bold text-vl-dark-900">{formData.name}</span>
-          . Our support crew at VibeLock HQ will review your inquiry and reply via email within 2-4
-          business hours.
+        <p className="text-vl-dark-900/70 mt-2 max-w-sm text-xs leading-relaxed">
+          Thanks for reaching out,{" "}
+          <span className="text-vl-dark-900 font-bold">{formData.name}</span>. Our support crew at
+          VibeLock HQ will review your inquiry and reply via email within 2-4 business hours.
         </p>
         <Button
           type="button"
@@ -78,10 +78,10 @@ export function ContactForm() {
       className="flex flex-col gap-4 rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8"
     >
       <div>
-        <span className="text-2xs tracking-streetwear font-extrabold text-vl-cyan-700 uppercase">
+        <span className="text-2xs tracking-streetwear text-vl-cyan-700 font-extrabold uppercase">
           TRANSMISSION FORM
         </span>
-        <h3 className="mt-1 text-lg font-black tracking-tight text-vl-dark-900 uppercase">
+        <h3 className="text-vl-dark-900 mt-1 text-lg font-black tracking-tight uppercase">
           Send Us A Message
         </h3>
       </div>
@@ -91,7 +91,7 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-name"
-            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase"
           >
             Your Name <span className="text-red-500">*</span>
           </label>
@@ -111,7 +111,7 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-email"
-            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase"
           >
             Email Address <span className="text-red-500">*</span>
           </label>
@@ -133,10 +133,10 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-phone"
-            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase"
           >
             Phone Number{" "}
-            <span className="text-xs font-normal text-vl-dark-900/40 lowercase">(optional)</span>
+            <span className="text-vl-dark-900/40 text-xs font-normal lowercase">(optional)</span>
           </label>
           <Input
             id="contact-phone"
@@ -153,7 +153,7 @@ export function ContactForm() {
         <div className="flex flex-col gap-1.5">
           <label
             htmlFor="contact-subject"
-            className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
+            className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase"
           >
             Inquiry Type
           </label>
@@ -177,7 +177,7 @@ export function ContactForm() {
       <div className="flex flex-col gap-1.5">
         <label
           htmlFor="contact-message"
-          className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase"
+          className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase"
         >
           Message <span className="text-red-500">*</span>
         </label>
@@ -201,7 +201,7 @@ export function ContactForm() {
         className="mt-2"
       >
         <span>{isSubmitting ? "TRANSMITTING..." : "DISPATCH TRANSMISSION"}</span>
-        {!isSubmitting && <Send className="size-3.5 text-vl-cyan" />}
+        {!isSubmitting && <Send className="text-vl-cyan size-3.5" />}
       </Button>
     </form>
   );

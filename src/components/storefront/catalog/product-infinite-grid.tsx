@@ -155,7 +155,7 @@ export function ProductInfiniteGrid({
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={`loading-skeleton-${index}`} className="space-y-3">
               <Skeleton
-                className="w-full rounded-none bg-vl-white-300"
+                className="bg-vl-white-300 w-full rounded-none"
                 style={{ aspectRatio: "2 / 3" }}
               />
               <Skeleton className="bg-vl-dark-100 h-3.5 w-3/4 rounded-none" />

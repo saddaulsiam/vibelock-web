@@ -113,9 +113,7 @@ describe("Unified Global Button Component", () => {
     });
 
     it("supports render prop for custom Base UI element rendering", () => {
-      const html = renderToStaticMarkup(
-        <Button render={<a href="/about" />}>About Us</Button>
-      );
+      const html = renderToStaticMarkup(<Button render={<a href="/about" />}>About Us</Button>);
 
       expect(html).toContain('<a href="/about"');
       expect(html).toContain("About Us");

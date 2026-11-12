@@ -1161,17 +1161,21 @@ export function CheckoutForm({
             fullWidth
             loading={isPending}
             disabled={isPending || paymentOptions.length === 0}
-            className="mt-5 h-12 text-xs font-black tracking-widest"
+            className="mt-5"
           >
             {isPending
-              ? "Confirming Order…"
+              ? "Placing Order..."
               : paymentOptions.length === 0
-                ? "Payment unavailable"
+                ? "Payment Unavailable"
                 : !shippingCity
-                  ? "Select District to Order"
+                  ? "Select District"
                   : paymentMethod === "COD"
                     ? "Place Order (Cash on Delivery)"
-                    : "Pay via SSLCOMMERZ"}
+                    : paymentMethod === "ONLINE"
+                      ? "Pay with SSLCOMMERZ"
+                      : paymentMethod === "BKASH"
+                        ? "Pay with bKash"
+                        : "Pay Now"}
           </Button>
 
           {paymentOptions.length === 0 ? (

@@ -299,16 +299,16 @@ export function AdminInventoryPoModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-xs sm:p-4">
-      <div className="animate-in fade-in-0 zoom-in-95 relative flex max-h-[94vh] w-full max-w-5xl flex-col rounded-md border border-vl-dark-900/15 bg-white shadow-2xl">
+      <div className="animate-in fade-in-0 zoom-in-95 border-vl-dark-900/15 relative flex max-h-[94vh] w-full max-w-5xl flex-col rounded-md border bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 px-6 py-4">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-sm bg-vl-dark-900 text-white">
+            <div className="bg-vl-dark-900 flex size-9 items-center justify-center rounded-sm text-white">
               <Factory className="size-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-vl-dark-900">
+                <h2 className="text-vl-dark-900 text-base font-bold">
                   Supplier Purchase Order (PO) & Reorder Sheet
                 </h2>
                 <Input
@@ -328,7 +328,7 @@ export function AdminInventoryPoModal({
                     setCopiedPoNumber(true);
                     setTimeout(() => setCopiedPoNumber(false), 2000);
                   }}
-                  className="size-5 text-vl-dark-900/50 hover:text-vl-dark-900"
+                  className="text-vl-dark-900/50 hover:text-vl-dark-900 size-5"
                   title="Copy PO Number"
                 >
                   {copiedPoNumber ? (
@@ -338,7 +338,7 @@ export function AdminInventoryPoModal({
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-vl-dark-900/60">
+              <p className="text-vl-dark-900/60 text-xs">
                 Generate, review, and print apparel manufacturing work orders for factory
                 replenishment.
               </p>
@@ -351,7 +351,7 @@ export function AdminInventoryPoModal({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="size-8 text-vl-dark-900/40 hover:text-vl-dark-900"
+              className="text-vl-dark-900/40 hover:text-vl-dark-900 size-8"
             >
               <X className="size-5" />
             </Button>
@@ -361,10 +361,10 @@ export function AdminInventoryPoModal({
         {/* Modal Content Scroll Area */}
         <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
           {/* Supplier & Meta Parameters Form */}
-          <div className="grid gap-4 rounded-md border border-vl-dark-900/10 bg-vl-white-200 p-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
+          <div className="border-vl-dark-900/10 bg-vl-white-200 grid gap-4 rounded-md border p-4 text-xs sm:grid-cols-2 lg:grid-cols-4">
             {/* Supplier / Factory */}
             <div className="space-y-1">
-              <label className="font-semibold text-vl-dark-900">Supplier / Factory Name</label>
+              <label className="text-vl-dark-900 font-semibold">Supplier / Factory Name</label>
               <div>
                 <Input
                   type="text"
@@ -392,9 +392,9 @@ export function AdminInventoryPoModal({
 
             {/* Order Date */}
             <div className="space-y-1">
-              <label className="font-semibold text-vl-dark-900">Order Issue Date</label>
+              <label className="text-vl-dark-900 font-semibold">Order Issue Date</label>
               <div className="relative flex items-center">
-                <Calendar className="pointer-events-none absolute left-2.5 size-3.5 text-vl-dark-900/50 z-10" />
+                <Calendar className="text-vl-dark-900/50 pointer-events-none absolute left-2.5 z-10 size-3.5" />
                 <Input
                   type="date"
                   value={orderDate}
@@ -407,9 +407,9 @@ export function AdminInventoryPoModal({
 
             {/* Delivery Deadline */}
             <div className="space-y-1">
-              <label className="font-semibold text-vl-dark-900">Delivery Deadline</label>
+              <label className="text-vl-dark-900 font-semibold">Delivery Deadline</label>
               <div className="relative flex items-center">
-                <Calendar className="pointer-events-none absolute left-2.5 size-3.5 text-amber-600 z-10" />
+                <Calendar className="pointer-events-none absolute left-2.5 z-10 size-3.5 text-amber-600" />
                 <Input
                   type="date"
                   value={deliveryDeadline}
@@ -423,8 +423,8 @@ export function AdminInventoryPoModal({
             {/* Target Stock Buffer */}
             <div className="space-y-1">
               <div className="flex items-center justify-between">
-                <label className="font-semibold text-vl-dark-900">Target Par Stock Buffer</label>
-                <span className="font-mono text-[11px] font-bold text-vl-dark-900">
+                <label className="text-vl-dark-900 font-semibold">Target Par Stock Buffer</label>
+                <span className="text-vl-dark-900 font-mono text-[11px] font-bold">
                   {targetBuffer} pcs
                 </span>
               </div>
@@ -446,7 +446,7 @@ export function AdminInventoryPoModal({
 
             {/* Production Specifications */}
             <div className="space-y-1 sm:col-span-2 lg:col-span-4">
-              <label className="font-semibold text-vl-dark-900">
+              <label className="text-vl-dark-900 font-semibold">
                 Production & Quality Specifications
               </label>
               <Input
@@ -495,7 +495,7 @@ export function AdminInventoryPoModal({
                   size="sm"
                   variant="ghost"
                   onClick={() => setPoItems([])}
-                  className="h-9 gap-1 px-2.5 text-xs font-medium text-vl-dark-900/70 hover:text-red-700"
+                  className="text-vl-dark-900/70 h-9 gap-1 px-2.5 text-xs font-medium hover:text-red-700"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Clear All</span>
@@ -506,7 +506,7 @@ export function AdminInventoryPoModal({
             {/* Manual Variant Search & Add */}
             <div className="relative min-w-[260px]">
               <div className="relative flex items-center">
-                <Search className="pointer-events-none absolute left-2.5 size-3.5 text-vl-dark-900/40 z-10" />
+                <Search className="text-vl-dark-900/40 pointer-events-none absolute left-2.5 z-10 size-3.5" />
                 <Input
                   type="text"
                   value={searchQuery}
@@ -528,7 +528,7 @@ export function AdminInventoryPoModal({
                       setSearchQuery("");
                       setIsSearchOpen(false);
                     }}
-                    className="absolute right-2.5 z-10 size-5 text-vl-dark-900/40 hover:text-vl-dark-900"
+                    className="text-vl-dark-900/40 hover:text-vl-dark-900 absolute right-2.5 z-10 size-5"
                   >
                     <X className="size-3" />
                   </Button>
@@ -537,7 +537,7 @@ export function AdminInventoryPoModal({
 
               {/* Autocomplete Dropdown */}
               {isSearchOpen && filteredSearchVariants.length > 0 && (
-                <div className="absolute top-10 right-0 left-0 z-50 max-h-56 overflow-y-auto rounded-sm border border-vl-dark-900/15 bg-white p-1 shadow-lg">
+                <div className="border-vl-dark-900/15 absolute top-10 right-0 left-0 z-50 max-h-56 overflow-y-auto rounded-sm border bg-white p-1 shadow-lg">
                   {filteredSearchVariants.map((v) => (
                     <Button
                       key={v.id}
@@ -545,11 +545,11 @@ export function AdminInventoryPoModal({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleAddVariant(v)}
-                      className="h-auto w-full items-center justify-between gap-2 rounded-xs px-2.5 py-1.5 text-left text-xs font-normal hover:bg-vl-white-300"
+                      className="hover:bg-vl-white-300 h-auto w-full items-center justify-between gap-2 rounded-xs px-2.5 py-1.5 text-left text-xs font-normal"
                     >
                       <div className="min-w-0">
-                        <p className="truncate font-semibold text-vl-dark-900">{v.product.name}</p>
-                        <p className="font-mono text-[10px] text-vl-dark-900/60">
+                        <p className="text-vl-dark-900 truncate font-semibold">{v.product.name}</p>
+                        <p className="text-vl-dark-900/60 font-mono text-[10px]">
                           {v.sku} • {[v.size, v.color].filter(Boolean).join(" / ")}
                         </p>
                       </div>
@@ -571,12 +571,14 @@ export function AdminInventoryPoModal({
           )}
 
           {/* Items Breakdown Table */}
-          <div className="overflow-hidden rounded-md border border-vl-dark-900/10 bg-white shadow-2xs">
+          <div className="border-vl-dark-900/10 overflow-hidden rounded-md border bg-white shadow-2xs">
             {poItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center p-12 text-center">
-                <Factory className="size-9 text-vl-dark-900/25" />
-                <h3 className="mt-3 text-sm font-bold text-vl-dark-900">No Garment Variants in PO</h3>
-                <p className="mt-1 max-w-sm text-xs text-vl-dark-900/60">
+                <Factory className="text-vl-dark-900/25 size-9" />
+                <h3 className="text-vl-dark-900 mt-3 text-sm font-bold">
+                  No Garment Variants in PO
+                </h3>
+                <p className="text-vl-dark-900/60 mt-1 max-w-sm text-xs">
                   Click <strong>&quot;⚡ Auto-fill Low &amp; Out-of-Stock&quot;</strong> to
                   automatically pull variants needing restock, or search by SKU above.
                 </p>
@@ -584,7 +586,7 @@ export function AdminInventoryPoModal({
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-vl-dark-900/10 bg-vl-white-300/50 text-[11px] font-semibold text-vl-dark-900/70">
+                  <thead className="border-vl-dark-900/10 bg-vl-white-300/50 text-vl-dark-900/70 border-b text-[11px] font-semibold">
                     <tr>
                       <th className="py-3 pr-2 pl-4">Garment Style</th>
                       <th className="px-2 py-3">Attributes</th>
@@ -595,15 +597,15 @@ export function AdminInventoryPoModal({
                       <th className="py-3 pr-4 pl-2 text-center">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-vl-dark-900/5">
+                  <tbody className="divide-vl-dark-900/5 divide-y">
                     {poItems.map((item) => {
                       const lineTotal = (item.orderQuantity || 0) * (item.unitCost || 0);
                       return (
-                        <tr key={item.id} className="transition-colors hover:bg-vl-white-300/30">
+                        <tr key={item.id} className="hover:bg-vl-white-300/30 transition-colors">
                           {/* Garment Style */}
                           <td className="py-2.5 pr-2 pl-4">
                             <div className="flex items-center gap-2.5">
-                              <div className="relative size-10 shrink-0 overflow-hidden rounded-xs border border-vl-dark-900/10 bg-vl-white-300">
+                              <div className="border-vl-dark-900/10 bg-vl-white-300 relative size-10 shrink-0 overflow-hidden rounded-xs border">
                                 {item.primaryImage ? (
                                   <Image
                                     src={item.primaryImage}
@@ -613,16 +615,16 @@ export function AdminInventoryPoModal({
                                     sizes="40px"
                                   />
                                 ) : (
-                                  <div className="flex size-full items-center justify-center text-vl-dark-900/30">
+                                  <div className="text-vl-dark-900/30 flex size-full items-center justify-center">
                                     <Package className="size-4" />
                                   </div>
                                 )}
                               </div>
                               <div className="min-w-0">
-                                <p className="truncate font-semibold text-vl-dark-900">
+                                <p className="text-vl-dark-900 truncate font-semibold">
                                   {item.productName}
                                 </p>
-                                <p className="font-mono text-[10px] text-vl-dark-900/60">
+                                <p className="text-vl-dark-900/60 font-mono text-[10px]">
                                   {item.sku}
                                 </p>
                               </div>
@@ -631,7 +633,7 @@ export function AdminInventoryPoModal({
 
                           {/* Attributes */}
                           <td className="px-2 py-2.5">
-                            <span className="rounded-2xs inline-flex items-center border border-vl-dark-900/15 bg-vl-white-200 px-1.5 py-0.5 text-[10px] font-medium text-vl-dark-900">
+                            <span className="rounded-2xs border-vl-dark-900/15 bg-vl-white-200 text-vl-dark-900 inline-flex items-center border px-1.5 py-0.5 text-[10px] font-medium">
                               {[
                                 item.size ? `Size: ${item.size}` : null,
                                 item.color ? `Color: ${item.color}` : null,
@@ -658,7 +660,7 @@ export function AdminInventoryPoModal({
 
                           {/* Order Quantity Stepper */}
                           <td className="px-2 py-2.5 text-center">
-                            <div className="inline-flex items-center rounded-xs border border-vl-dark-900/20 bg-white">
+                            <div className="border-vl-dark-900/20 inline-flex items-center rounded-xs border bg-white">
                               <Button
                                 type="button"
                                 variant="secondary"
@@ -694,7 +696,7 @@ export function AdminInventoryPoModal({
                           {/* Unit Rate (BDT) */}
                           <td className="px-2 py-2.5 text-right">
                             <div className="inline-flex items-center gap-1">
-                              <span className="text-[10px] text-vl-dark-900/50">৳</span>
+                              <span className="text-vl-dark-900/50 text-[10px]">৳</span>
                               <Input
                                 type="number"
                                 min="0"
@@ -711,7 +713,7 @@ export function AdminInventoryPoModal({
 
                           {/* Line Total */}
                           <td className="px-2 py-2.5 text-right">
-                            <span className="font-mono text-xs font-bold text-vl-dark-900">
+                            <span className="text-vl-dark-900 font-mono text-xs font-bold">
                               {currency(lineTotal)}
                             </span>
                           </td>
@@ -723,7 +725,7 @@ export function AdminInventoryPoModal({
                               variant="ghost"
                               size="icon"
                               onClick={() => handleRemoveItem(item.id)}
-                              className="size-7 text-vl-dark-900/40 hover:bg-red-50 hover:text-red-700"
+                              className="text-vl-dark-900/40 size-7 hover:bg-red-50 hover:text-red-700"
                               title="Remove item"
                             >
                               <X className="size-3.5" />
@@ -740,31 +742,31 @@ export function AdminInventoryPoModal({
 
           {/* Real-time Order Financial Summary */}
           {poItems.length > 0 && (
-            <div className="grid gap-4 rounded-md border border-vl-dark-900/10 bg-vl-white-200 p-4 sm:grid-cols-4">
+            <div className="border-vl-dark-900/10 bg-vl-white-200 grid gap-4 rounded-md border p-4 sm:grid-cols-4">
               <div>
-                <span className="text-xs text-vl-dark-900/60">Total Styles / SKUs:</span>
-                <p className="mt-0.5 text-lg font-black text-vl-dark-900">{poItems.length} items</p>
+                <span className="text-vl-dark-900/60 text-xs">Total Styles / SKUs:</span>
+                <p className="text-vl-dark-900 mt-0.5 text-lg font-black">{poItems.length} items</p>
               </div>
               <div>
-                <span className="text-xs text-vl-dark-900/60">Total Garments to Produce:</span>
+                <span className="text-vl-dark-900/60 text-xs">Total Garments to Produce:</span>
                 <p className="mt-0.5 text-lg font-black text-emerald-800">{totalPieces} pcs</p>
               </div>
               <div>
-                <span className="text-xs text-vl-dark-900/60">Avg. Rate per Piece:</span>
-                <p className="mt-0.5 text-lg font-black text-vl-dark-900">
+                <span className="text-vl-dark-900/60 text-xs">Avg. Rate per Piece:</span>
+                <p className="text-vl-dark-900 mt-0.5 text-lg font-black">
                   {currency(avgCostPerPiece)}
                 </p>
               </div>
               <div>
-                <span className="text-xs text-vl-dark-900/60">Total Estimated PO Value:</span>
-                <p className="mt-0.5 text-xl font-black text-vl-dark-900">{currency(totalCost)}</p>
+                <span className="text-vl-dark-900/60 text-xs">Total Estimated PO Value:</span>
+                <p className="text-vl-dark-900 mt-0.5 text-xl font-black">{currency(totalCost)}</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 bg-white px-6 py-4">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t bg-white px-6 py-4">
           <div className="flex flex-wrap items-center gap-2">
             {/* Copy WhatsApp Memo */}
             <Button
@@ -830,19 +832,19 @@ export function AdminInventoryPoModal({
 
         {/* ── HIDDEN CORPORATE A4 PRINTABLE PO SHEET ── */}
         <div id="vibelock-po-printable-sheet" className="hidden">
-          <div className="mx-auto max-w-4xl bg-white p-8 font-sans text-vl-dark-900">
+          <div className="text-vl-dark-900 mx-auto max-w-4xl bg-white p-8 font-sans">
             {/* Header */}
-            <div className="flex items-start justify-between border-b-2 border-vl-dark-900 pb-5">
+            <div className="border-vl-dark-900 flex items-start justify-between border-b-2 pb-5">
               <div>
                 <h1 className="text-2xl font-black tracking-wider uppercase">VIBELOCK APPAREL</h1>
                 <p className="text-xs text-gray-600">Premium Streetwear & Contemporary Garments</p>
                 <p className="text-xs text-gray-500">Dhaka, Bangladesh • info@vibelock.com</p>
               </div>
               <div className="text-right">
-                <span className="inline-block rounded border border-vl-dark-900 bg-gray-50 px-3 py-1 text-sm font-black tracking-wider uppercase">
+                <span className="border-vl-dark-900 inline-block rounded border bg-gray-50 px-3 py-1 text-sm font-black tracking-wider uppercase">
                   PURCHASE ORDER
                 </span>
-                <p className="mt-1 font-mono text-sm font-bold text-vl-dark-900">{poNumber}</p>
+                <p className="text-vl-dark-900 mt-1 font-mono text-sm font-bold">{poNumber}</p>
                 <p className="text-xs text-gray-600">Date: {orderDate}</p>
               </div>
             </div>
@@ -853,7 +855,7 @@ export function AdminInventoryPoModal({
                 <h3 className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">
                   MANUFACTURER / SUPPLIER:
                 </h3>
-                <p className="mt-1 text-sm font-bold text-vl-dark-900">{supplierName}</p>
+                <p className="text-vl-dark-900 mt-1 text-sm font-bold">{supplierName}</p>
                 <p className="text-gray-600">Authorized Apparel Production Partner</p>
               </div>
               <div>
@@ -914,7 +916,7 @@ export function AdminInventoryPoModal({
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="border-t-2 border-vl-dark-900 bg-gray-50 font-bold">
+              <tfoot className="border-vl-dark-900 border-t-2 bg-gray-50 font-bold">
                 <tr>
                   <td colSpan={5} className="p-2 text-right text-[11px] tracking-wider uppercase">
                     Total Order Volume & Cost:
@@ -941,11 +943,11 @@ export function AdminInventoryPoModal({
             {/* Sign-off Blocks */}
             <div className="grid grid-cols-2 gap-12 pt-8 text-xs">
               <div className="border-t border-gray-400 pt-2 text-center">
-                <p className="font-bold text-vl-dark-900">Authorized Merchandiser</p>
+                <p className="text-vl-dark-900 font-bold">Authorized Merchandiser</p>
                 <p className="text-[10px] text-gray-500">VibeLock Head Office</p>
               </div>
               <div className="border-t border-gray-400 pt-2 text-center">
-                <p className="font-bold text-vl-dark-900">Factory Acceptance & Stamp</p>
+                <p className="text-vl-dark-900 font-bold">Factory Acceptance & Stamp</p>
                 <p className="text-[10px] text-gray-500">{supplierName}</p>
               </div>
             </div>

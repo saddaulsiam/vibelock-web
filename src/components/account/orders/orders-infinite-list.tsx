@@ -89,7 +89,7 @@ export function OrdersInfiniteList({
       <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-vl-black/8 text-[11px] font-semibold tracking-wider text-neutral-500 uppercase">
+            <tr className="border-vl-black/8 border-b text-[11px] font-semibold tracking-wider text-neutral-500 uppercase">
               <th className="py-3.5 pr-4">Order #</th>
               <th className="px-4 py-3.5">Date</th>
               <th className="px-4 py-3.5">Items</th>
@@ -98,14 +98,14 @@ export function OrdersInfiniteList({
               <th className="py-3.5 pl-4 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-vl-black/6 text-sm">
+          <tbody className="divide-vl-black/6 divide-y text-sm">
             {orders.map((order) => (
               <tr key={order.id} className="transition-colors hover:bg-neutral-50/70">
                 {/* Order Number */}
                 <td className="py-4 pr-4">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="font-semibold text-vl-dark-900 hover:underline focus-visible:ring-1 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                    className="text-vl-dark-900 focus-visible:ring-vl-cyan font-semibold hover:underline focus-visible:ring-1 focus-visible:outline-none"
                   >
                     #{order.orderNumber}
                   </Link>
@@ -128,7 +128,7 @@ export function OrdersInfiniteList({
                 </td>
 
                 {/* Total */}
-                <td className="px-4 py-4 font-bold whitespace-nowrap text-vl-dark-900">
+                <td className="text-vl-dark-900 px-4 py-4 font-bold whitespace-nowrap">
                   ৳ {order.total.toLocaleString("en-BD")}
                 </td>
 
@@ -141,10 +141,10 @@ export function OrdersInfiniteList({
                 <td className="py-4 pl-4 text-right whitespace-nowrap">
                   <Link
                     href={`/account/orders/${order.orderNumber}`}
-                    className="group inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors hover:text-vl-dark-900"
+                    className="group hover:text-vl-dark-900 inline-flex min-h-9 items-center gap-1 text-xs font-normal text-neutral-700 transition-colors"
                   >
                     <span>Details</span>
-                    <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-vl-dark-900" />
+                    <ArrowRight className="group-hover:text-vl-dark-900 size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </td>
               </tr>
@@ -154,13 +154,13 @@ export function OrdersInfiniteList({
       </div>
 
       {/* Mobile Intentional Stacked View (< md) - Zero horizontal scroll */}
-      <div className="flex flex-col divide-y divide-vl-black/8 md:hidden">
+      <div className="divide-vl-black/8 flex flex-col divide-y md:hidden">
         {orders.map((order) => (
           <div key={order.id} className="py-3.5 first:pt-2 last:pb-0">
             <div className="flex items-center justify-between gap-2">
               <Link
                 href={`/account/orders/${order.orderNumber}`}
-                className="truncate text-xs font-semibold text-vl-dark-900 hover:underline sm:text-sm"
+                className="text-vl-dark-900 truncate text-xs font-semibold hover:underline sm:text-sm"
               >
                 #{order.orderNumber}
               </Link>
@@ -188,12 +188,12 @@ export function OrdersInfiniteList({
             )}
 
             <div className="mt-2.5 flex items-center justify-between pt-1">
-              <span className="text-xs font-bold text-vl-dark-900 sm:text-sm">
+              <span className="text-vl-dark-900 text-xs font-bold sm:text-sm">
                 ৳ {order.total.toLocaleString("en-BD")}
               </span>
               <Link
                 href={`/account/orders/${order.orderNumber}`}
-                className="group inline-flex min-h-[38px] items-center gap-1 rounded-md border border-vl-black/10 bg-white px-3 py-1.5 text-xs font-normal text-neutral-800 transition-colors active:scale-95"
+                className="group border-vl-black/10 inline-flex min-h-[38px] items-center gap-1 rounded-md border bg-white px-3 py-1.5 text-xs font-normal text-neutral-800 transition-colors active:scale-95"
               >
                 <span>Details</span>
                 <ArrowRight className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
@@ -213,30 +213,27 @@ export function OrdersInfiniteList({
 
       {/* Infinite Scroll Indicator */}
       {isLoadingMore && (
-        <div className="flex items-center justify-center gap-2 border-t border-vl-dark-900/8 py-5 text-xs font-medium text-neutral-500">
-          <Loader2 className="size-4 animate-spin text-vl-dark-900" />
+        <div className="border-vl-dark-900/8 flex items-center justify-center gap-2 border-t py-5 text-xs font-medium text-neutral-500">
+          <Loader2 className="text-vl-dark-900 size-4 animate-spin" />
           <span>Loading more orders...</span>
         </div>
       )}
 
       {/* Fallback button if needed */}
       {hasMore && !isLoadingMore && (
-        <div className="flex justify-center border-t border-vl-dark-900/8 pt-4 pb-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={loadMore}
-          >
+        <div className="border-vl-dark-900/8 flex justify-center border-t pt-4 pb-2">
+          <Button type="button" variant="outline" size="sm" onClick={loadMore}>
             <span>Load more orders</span>
-            <span className="text-[11px] text-neutral-400">({orders.length} of {total})</span>
+            <span className="text-[11px] text-neutral-400">
+              ({orders.length} of {total})
+            </span>
           </Button>
         </div>
       )}
 
       {/* End of results message */}
       {!hasMore && orders.length >= pageSize && (
-        <div className="flex items-center justify-center border-t border-vl-dark-900/8 py-5 text-[11px] font-medium text-neutral-400 uppercase tracking-wider">
+        <div className="border-vl-dark-900/8 flex items-center justify-center border-t py-5 text-[11px] font-medium tracking-wider text-neutral-400 uppercase">
           <span>All {total} orders loaded</span>
         </div>
       )}

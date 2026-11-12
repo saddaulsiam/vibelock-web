@@ -40,23 +40,23 @@ export function AdminInventoryDetailKpi({
       {/* KPI Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* Physical Stock */}
-        <div className="rounded-md border border-vl-dark-900/10 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 rounded-md border bg-white p-4 shadow-2xs">
+          <div className="text-vl-dark-900/60 flex items-center justify-between text-xs">
             <span>Physical Stock</span>
-            <Package className="size-4 text-vl-dark-900/40" />
+            <Package className="text-vl-dark-900/40 size-4" />
           </div>
-          <div className="mt-2 text-2xl font-black text-vl-dark-900">{totalStock}</div>
-          <p className="mt-1 text-[11px] text-vl-dark-900/60">Total units on-hand in warehouse</p>
+          <div className="text-vl-dark-900 mt-2 text-2xl font-black">{totalStock}</div>
+          <p className="text-vl-dark-900/60 mt-1 text-[11px]">Total units on-hand in warehouse</p>
         </div>
 
         {/* Reserved Stock */}
-        <div className="rounded-md border border-vl-dark-900/10 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 rounded-md border bg-white p-4 shadow-2xs">
+          <div className="text-vl-dark-900/60 flex items-center justify-between text-xs">
             <span>Reserved Stock</span>
             <PackageCheck className="size-4 text-amber-600" />
           </div>
           <div className="mt-2 text-2xl font-black text-amber-700">{reservedStock}</div>
-          <p className="mt-1 text-[11px] text-vl-dark-900/60">Active unexpired cart reservations</p>
+          <p className="text-vl-dark-900/60 mt-1 text-[11px]">Active unexpired cart reservations</p>
         </div>
 
         {/* Available to Sell */}
@@ -69,7 +69,7 @@ export function AdminInventoryDetailKpi({
                 : "border-emerald-200 bg-emerald-50/50"
           }`}
         >
-          <div className="flex items-center justify-between text-xs text-vl-dark-900/60">
+          <div className="text-vl-dark-900/60 flex items-center justify-between text-xs">
             <span>Available to Sell</span>
             {isOutOfStock ? (
               <PackageX className="size-4 text-rose-600" />
@@ -86,50 +86,50 @@ export function AdminInventoryDetailKpi({
           >
             {availableStock}
           </div>
-          <p className="mt-1 text-[11px] text-vl-dark-900/60">Physical stock minus reserved</p>
+          <p className="text-vl-dark-900/60 mt-1 text-[11px]">Physical stock minus reserved</p>
         </div>
 
         {/* Cost Valuation */}
-        <div className="rounded-md border border-vl-dark-900/10 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 rounded-md border bg-white p-4 shadow-2xs">
+          <div className="text-vl-dark-900/60 flex items-center justify-between text-xs">
             <span>Cost Valuation</span>
-            <span className="font-mono text-[10px] text-vl-dark-900/40">৳ COST</span>
+            <span className="text-vl-dark-900/40 font-mono text-[10px]">৳ COST</span>
           </div>
-          <div className="mt-2 text-2xl font-black text-vl-dark-900">{currency(costValuation)}</div>
-          <p className="mt-1 text-[11px] text-vl-dark-900/60">Physical units × Cost price</p>
+          <div className="text-vl-dark-900 mt-2 text-2xl font-black">{currency(costValuation)}</div>
+          <p className="text-vl-dark-900/60 mt-1 text-[11px]">Physical units × Cost price</p>
         </div>
 
         {/* Retail Valuation */}
-        <div className="rounded-md border border-vl-dark-900/10 bg-white p-4 shadow-2xs">
-          <div className="flex items-center justify-between text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 rounded-md border bg-white p-4 shadow-2xs">
+          <div className="text-vl-dark-900/60 flex items-center justify-between text-xs">
             <span>Retail Valuation</span>
             <span className="font-mono text-[10px] text-emerald-600">৳ RETAIL</span>
           </div>
           <div className="mt-2 text-2xl font-black text-emerald-700">
             {currency(retailValuation)}
           </div>
-          <p className="mt-1 text-[11px] text-vl-dark-900/60">Physical units × Selling price</p>
+          <p className="text-vl-dark-900/60 mt-1 text-[11px]">Physical units × Selling price</p>
         </div>
       </div>
 
       {/* Lifetime Performance Strip */}
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
+      <div className="border-vl-dark-900/10 bg-vl-white-200 flex flex-wrap items-center justify-between gap-4 rounded-md border px-5 py-3 text-xs">
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-vl-dark-900/70">Lifetime Sold:</span>
-            <span className="font-bold text-vl-dark-900">{totalSold} units</span>
+            <span className="text-vl-dark-900/70 font-medium">Lifetime Sold:</span>
+            <span className="text-vl-dark-900 font-bold">{totalSold} units</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-vl-dark-900/70">Total Restocked:</span>
+            <span className="text-vl-dark-900/70 font-medium">Total Restocked:</span>
             <span className="font-bold text-emerald-700">+{totalRestocked} units</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-vl-dark-900/70">Damaged / Defect:</span>
+            <span className="text-vl-dark-900/70 font-medium">Damaged / Defect:</span>
             <span className="font-bold text-rose-700">{totalDamaged} units</span>
           </div>
         </div>
 
-        <div className="text-[11px] text-vl-dark-900/50">
+        <div className="text-vl-dark-900/50 text-[11px]">
           Total recorded ledger entries: <strong>{totalTransactions}</strong>
         </div>
       </div>

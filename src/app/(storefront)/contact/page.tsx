@@ -48,22 +48,22 @@ const FAQS = [
 
 export default function ContactPage() {
   return (
-    <div className="flex flex-col bg-vl-white-300 text-vl-dark-900">
+    <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── 1. Hero Header Banner ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-1/4 size-80 rounded-full bg-vl-cyan-50 blur-3xl"
+          className="bg-vl-cyan-50 pointer-events-none absolute top-0 right-1/4 size-80 rounded-full blur-3xl"
         />
 
         <Container className="relative z-10">
           <div className="max-w-2xl">
-            <div className="flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] text-vl-cyan uppercase">
-              <span className="size-1.5 rounded-full bg-vl-cyan" />
+            <div className="text-vl-cyan flex items-center gap-2 font-mono text-[11px] tracking-[0.25em] uppercase">
+              <span className="bg-vl-cyan size-1.5 rounded-full" />
               <span>DIRECT LINE // 24/7 ASSISTANCE</span>
             </div>
 
@@ -71,7 +71,7 @@ export default function ContactPage() {
               CONNECT WITH VIBELOCK
             </h1>
 
-            <p className="mt-4 text-xs leading-relaxed text-vl-white-300/70 sm:text-sm">
+            <p className="text-vl-white-300/70 mt-4 text-xs leading-relaxed sm:text-sm">
               Have questions about recent drops, parcel tracking, or fabric specifications? Reach
               out directly to our Dhaka HQ crew or visit our physical flagship outlet.
             </p>
@@ -87,31 +87,35 @@ export default function ContactPage() {
             <div className="flex flex-col gap-6 lg:col-span-5">
               {/* Card 1: Direct Hotline & Channels */}
               <div className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm">
-                <span className="text-[10px] font-extrabold tracking-[0.2em] text-vl-cyan-700 uppercase">
+                <span className="tracking-streetwear text-vl-cyan-700 text-[10px] font-extrabold uppercase">
                   CUSTOMER SUPPORT
                 </span>
-                <h3 className="mt-1 text-base font-black text-vl-dark-900 uppercase">DIRECT COMMS</h3>
+                <h3 className="text-vl-dark-900 mt-1 text-base font-black uppercase">
+                  DIRECT COMMS
+                </h3>
 
                 <div className="mt-5 flex flex-col gap-4 text-xs">
                   {/* Phone */}
                   <div className="flex items-start gap-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-vl-white-300 text-vl-dark-900">
-                      <Phone className="size-4 text-vl-cyan-700" />
+                    <div className="bg-vl-white-300 text-vl-dark-900 flex size-8 shrink-0 items-center justify-center rounded-lg">
+                      <Phone className="text-vl-cyan-700 size-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-vl-dark-900">01311-333277</p>
-                      <p className="text-[11px] text-vl-dark-900/60">Everyday: 10:00 AM – 10:00 PM</p>
+                      <p className="text-vl-dark-900 font-bold">01311-333277</p>
+                      <p className="text-vl-dark-900/60 text-[11px]">
+                        Everyday: 10:00 AM – 10:00 PM
+                      </p>
                     </div>
                   </div>
 
                   {/* Email */}
                   <div className="flex items-start gap-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-vl-white-300 text-vl-dark-900">
-                      <Mail className="size-4 text-vl-cyan-700" />
+                    <div className="bg-vl-white-300 text-vl-dark-900 flex size-8 shrink-0 items-center justify-center rounded-lg">
+                      <Mail className="text-vl-cyan-700 size-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-vl-dark-900">support@vibelock.com</p>
-                      <p className="text-[11px] text-vl-dark-900/60">
+                      <p className="text-vl-dark-900 font-bold">support@vibelock.com</p>
+                      <p className="text-vl-dark-900/60 text-[11px]">
                         Average response time: 2–4 hours
                       </p>
                     </div>
@@ -119,12 +123,12 @@ export default function ContactPage() {
 
                   {/* Hours */}
                   <div className="flex items-start gap-3">
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-vl-white-300 text-vl-dark-900">
-                      <Clock className="size-4 text-vl-cyan-700" />
+                    <div className="bg-vl-white-300 text-vl-dark-900 flex size-8 shrink-0 items-center justify-center rounded-lg">
+                      <Clock className="text-vl-cyan-700 size-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-vl-dark-900">Online Dispatch Operations</p>
-                      <p className="text-[11px] text-vl-dark-900/60">
+                      <p className="text-vl-dark-900 font-bold">Online Dispatch Operations</p>
+                      <p className="text-vl-dark-900/60 text-[11px]">
                         7 Days a week (excluding national holidays)
                       </p>
                     </div>
@@ -133,18 +137,18 @@ export default function ContactPage() {
               </div>
 
               {/* Card 2: Flagship Retail Outlet */}
-              <div className="rounded-2xl border border-black/10 bg-vl-dark-900 p-6 text-vl-white-300 shadow-md">
-                <div className="flex items-center gap-1.5 text-vl-cyan">
+              <div className="bg-vl-dark-900 text-vl-white-300 rounded-2xl border border-black/10 p-6 shadow-md">
+                <div className="text-vl-cyan flex items-center gap-1.5">
                   <MapPin className="size-3.5" />
                   <span className="text-[10px] font-black tracking-wider uppercase">
                     FLAGSHIP OUTLET
                   </span>
                 </div>
                 <h3 className="mt-2 text-base font-black text-white uppercase">CHATMOHAR STORE</h3>
-                <p className="mt-2 text-xs leading-relaxed text-vl-white-300/75">
+                <p className="text-vl-white-300/75 mt-2 text-xs leading-relaxed">
                   Khondokar Market, Star More, Chatmohar, Pabna, Bangladesh
                 </p>
-                <p className="mt-2 text-xs font-medium text-vl-cyan">
+                <p className="text-vl-cyan mt-2 text-xs font-medium">
                   Direct Store Contact: 01311-333277
                 </p>
 
@@ -152,7 +156,7 @@ export default function ContactPage() {
                   href="https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6"
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-5 inline-flex w-full items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-xs font-bold tracking-wider text-white uppercase transition-all hover:bg-vl-cyan hover:text-vl-dark-900"
+                  className="hover:bg-vl-cyan hover:text-vl-dark-900 mt-5 inline-flex w-full items-center justify-between rounded-lg border border-white/15 bg-white/5 px-4 py-2.5 text-xs font-bold tracking-wider text-white uppercase transition-all"
                 >
                   <span>GET DIRECTIONS</span>
                   <ExternalLink className="size-3.5" />
@@ -160,21 +164,21 @@ export default function ContactPage() {
               </div>
 
               {/* Card 3: Quick Self-Service Links */}
-              <div className="rounded-2xl border border-black/10 bg-vl-white-300 p-6">
-                <span className="text-[10px] font-extrabold tracking-[0.2em] text-vl-cyan-700 uppercase">
+              <div className="bg-vl-white-300 rounded-2xl border border-black/10 p-6">
+                <span className="tracking-streetwear text-vl-cyan-700 text-[10px] font-extrabold uppercase">
                   SELF-SERVICE
                 </span>
-                <h3 className="mt-1 text-sm font-black text-vl-dark-900 uppercase">
+                <h3 className="text-vl-dark-900 mt-1 text-sm font-black uppercase">
                   FAST TRACK ACTIONS
                 </h3>
 
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
                     href="/account/orders"
-                    className="flex items-center justify-between rounded-lg bg-white p-3 text-xs font-bold text-vl-dark-900 transition-colors hover:bg-black hover:text-white"
+                    className="text-vl-dark-900 flex items-center justify-between rounded-lg bg-white p-3 text-xs font-bold transition-colors hover:bg-black hover:text-white"
                   >
                     <div className="flex items-center gap-2.5">
-                      <PackageSearch className="size-4 text-vl-cyan-700" />
+                      <PackageSearch className="text-vl-cyan-700 size-4" />
                       <span>Track Order Status</span>
                     </div>
                     <span>→</span>
@@ -182,10 +186,10 @@ export default function ContactPage() {
 
                   <Link
                     href="/account/returns"
-                    className="flex items-center justify-between rounded-lg bg-white p-3 text-xs font-bold text-vl-dark-900 transition-colors hover:bg-black hover:text-white"
+                    className="text-vl-dark-900 flex items-center justify-between rounded-lg bg-white p-3 text-xs font-bold transition-colors hover:bg-black hover:text-white"
                   >
                     <div className="flex items-center gap-2.5">
-                      <RotateCcw className="size-4 text-vl-cyan-700" />
+                      <RotateCcw className="text-vl-cyan-700 size-4" />
                       <span>Start Return or Exchange</span>
                     </div>
                     <span>→</span>
@@ -203,13 +207,13 @@ export default function ContactPage() {
       </section>
 
       {/* ── 3. Frequently Asked Questions Section ── */}
-      <section className="border-t border-black/10 bg-vl-white-200 py-16 sm:py-20">
+      <section className="bg-vl-white-200 border-t border-black/10 py-16 sm:py-20">
         <Container>
           <div className="mx-auto max-w-2xl text-center">
-            <span className="text-[10px] font-extrabold tracking-[0.25em] text-vl-cyan-700 uppercase">
+            <span className="text-vl-cyan-700 text-[10px] font-extrabold tracking-[0.25em] uppercase">
               QUICK ANSWERS
             </span>
-            <h2 className="mt-2 text-2xl font-black tracking-tight text-vl-dark-900 uppercase sm:text-3xl">
+            <h2 className="text-vl-dark-900 mt-2 text-2xl font-black tracking-tight uppercase sm:text-3xl">
               FREQUENTLY ASKED QUESTIONS
             </h2>
           </div>
@@ -218,10 +222,10 @@ export default function ContactPage() {
             {FAQS.map((faq, i) => (
               <div key={i} className="rounded-xl border border-black/10 bg-white p-6 shadow-sm">
                 <div className="flex items-start gap-2.5">
-                  <HelpCircle className="mt-0.5 size-4 shrink-0 text-vl-cyan-700" />
-                  <h4 className="text-xs font-black text-vl-dark-900 uppercase">{faq.q}</h4>
+                  <HelpCircle className="text-vl-cyan-700 mt-0.5 size-4 shrink-0" />
+                  <h4 className="text-vl-dark-900 text-xs font-black uppercase">{faq.q}</h4>
                 </div>
-                <p className="mt-3 pl-6.5 text-xs leading-relaxed text-vl-dark-900/70">{faq.a}</p>
+                <p className="text-vl-dark-900/70 mt-3 pl-6.5 text-xs leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>

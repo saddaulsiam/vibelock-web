@@ -160,7 +160,7 @@ export default async function AdminReconciliationPage({
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 border-b border-vl-dark-900/15 pb-6 xl:flex-row xl:items-end xl:justify-between">
+      <header className="border-vl-dark-900/15 flex flex-col gap-4 border-b pb-6 xl:flex-row xl:items-end xl:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <Link
@@ -170,8 +170,8 @@ export default async function AdminReconciliationPage({
               <ArrowLeft className="size-3" /> Back to Profitability
             </Link>
           </div>
-          <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight text-vl-dark-900">
-            <CreditCard className="size-7 text-vl-cyan-600" /> Payment &amp; Cash Reconciliation
+          <h1 className="text-vl-dark-900 mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight">
+            <CreditCard className="text-vl-cyan-600 size-7" /> Payment &amp; Cash Reconciliation
           </h1>
           <p className="text-muted-foreground mt-2 max-w-3xl text-sm">
             Order-placement cohort lifecycle reconciliation tracking captured gateway payments,
@@ -195,7 +195,7 @@ export default async function AdminReconciliationPage({
       {/* Filter Form */}
       <Form
         action="/admin/reports/reconciliation"
-        className="grid gap-3 border border-vl-dark-900/10 bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]"
+        className="border-vl-dark-900/10 grid gap-3 border bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto_auto]"
       >
         <label className="text-sm font-medium">
           Cohort Period
@@ -240,12 +240,7 @@ export default async function AdminReconciliationPage({
           </div>
         </label>
         {search ? <input type="hidden" name="q" value={search} /> : null}
-        <Button
-          type="submit"
-          variant="primary"
-          size="default"
-          className="mt-auto"
-        >
+        <Button type="submit" variant="primary" size="default" className="mt-auto">
           Apply
         </Button>
         <p className="text-muted-foreground col-span-full text-xs">
@@ -257,7 +252,7 @@ export default async function AdminReconciliationPage({
       {/* Primary Settlement Status Cards */}
       <section className="space-y-3">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <h2 className="text-xl font-semibold text-vl-dark-900">
+          <h2 className="text-vl-dark-900 text-xl font-semibold">
             Settlement &amp; Courier Receivables Status
           </h2>
           <p className="text-muted-foreground text-xs">
@@ -362,9 +357,9 @@ export default async function AdminReconciliationPage({
       ) : null}
 
       {/* Mutually Exclusive Order Classification Breakdown */}
-      <section className="border border-vl-dark-900/10 bg-white">
-        <div className="border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
-          <h2 className="text-xl font-semibold text-vl-dark-900">Order Classification Breakdown</h2>
+      <section className="border-vl-dark-900/10 border bg-white">
+        <div className="border-vl-dark-900/10 border-b px-4 py-4 sm:px-5">
+          <h2 className="text-vl-dark-900 text-xl font-semibold">Order Classification Breakdown</h2>
           <p className="text-muted-foreground mt-1 text-xs">
             Mutually exclusive categorization. Every order in the selected time window is assigned
             to exactly one bucket. Total orders: {summary.totalOrders} (
@@ -425,10 +420,10 @@ export default async function AdminReconciliationPage({
       </section>
 
       {/* Order-Level Reconciliation Audit Table */}
-      <section className="border border-vl-dark-900/10 bg-white">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
+      <section className="border-vl-dark-900/10 border bg-white">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 sm:px-5">
           <div>
-            <h2 className="text-xl font-semibold text-vl-dark-900">Order Reconciliation Audit</h2>
+            <h2 className="text-vl-dark-900 text-xl font-semibold">Order Reconciliation Audit</h2>
             <p className="text-muted-foreground mt-1 text-xs">
               Showing {orders.length} of {totalOrders} orders matching active filters.
             </p>
@@ -552,7 +547,7 @@ export default async function AdminReconciliationPage({
 
         {/* Pagination */}
         {totalPages > 1 ? (
-          <div className="flex justify-center gap-4 border-t border-vl-dark-900/10 p-4 text-sm">
+          <div className="border-vl-dark-900/10 flex justify-center gap-4 border-t p-4 text-sm">
             <Link
               className={page <= 1 ? "text-muted-foreground/50 pointer-events-none" : "font-medium"}
               href={buildHref({ page: page - 1 })}

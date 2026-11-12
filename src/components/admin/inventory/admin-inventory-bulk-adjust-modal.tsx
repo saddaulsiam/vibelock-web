@@ -4,12 +4,7 @@ import { bulkAdjustInventoryAction } from "@/lib/admin/inventory/inventory-actio
 import type { InventoryTransactionType } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import * as React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { NativeSelect } from "@/components/ui/select-native";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -69,14 +64,12 @@ export function AdminInventoryBulkAdjustModal({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent variant="brand" size="default">
         <DialogHeader>
-          <DialogTitle>
-            Bulk Restock ({selectedIds.size} variants selected)
-          </DialogTitle>
+          <DialogTitle>Bulk Restock ({selectedIds.size} variants selected)</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2 text-xs">
           <div className="space-y-1.5">
-            <Label className="font-semibold text-vl-dark-900">Type</Label>
+            <Label className="text-vl-dark-900 font-semibold">Type</Label>
             <NativeSelect
               value={bulkAdjustType}
               onChange={(e) => setBulkAdjustType(e.target.value as InventoryTransactionType)}
@@ -89,7 +82,7 @@ export function AdminInventoryBulkAdjustModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="font-semibold text-vl-dark-900">
+            <Label className="text-vl-dark-900 font-semibold">
               Quantity to apply to each variant
             </Label>
             <Input
@@ -104,7 +97,7 @@ export function AdminInventoryBulkAdjustModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="font-semibold text-vl-dark-900">Reason</Label>
+            <Label className="text-vl-dark-900 font-semibold">Reason</Label>
             <Input
               type="text"
               value={bulkAdjustReason}
@@ -115,13 +108,8 @@ export function AdminInventoryBulkAdjustModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 bg-vl-white-200 -mx-5 -mb-5 sm:-mx-6 sm:-mb-6 px-5 py-3.5 rounded-b-2xl">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-          >
+        <div className="border-vl-dark-900/10 bg-vl-white-200 -mx-5 -mb-5 flex items-center justify-end gap-2 rounded-b-2xl border-t px-5 py-3.5 sm:-mx-6 sm:-mb-6">
+          <Button type="button" variant="outline" size="sm" onClick={onClose}>
             Cancel
           </Button>
           <Button
@@ -131,7 +119,7 @@ export function AdminInventoryBulkAdjustModal({
             disabled={isSubmittingBulkAdjust || !bulkAdjustQuantity}
             onClick={handleExecuteBulkAdjust}
           >
-            {isSubmittingBulkAdjust && <Loader2 className="size-3.5 animate-spin mr-1.5" />}
+            {isSubmittingBulkAdjust && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
             <span>Apply Bulk Adjustment</span>
           </Button>
         </div>

@@ -129,7 +129,11 @@ export function OrderStaffNotes({ orderId, history }: OrderStaffNotesProps) {
             variant={activeTab === "ALL" ? "secondary" : "ghost"}
             size="xs"
             onClick={() => setActiveTab("ALL")}
-            className={activeTab === "ALL" ? "bg-white font-bold text-neutral-900 shadow-2xs" : "text-neutral-500"}
+            className={
+              activeTab === "ALL"
+                ? "bg-white font-bold text-neutral-900 shadow-2xs"
+                : "text-neutral-500"
+            }
           >
             All Activity ({history.length})
           </Button>

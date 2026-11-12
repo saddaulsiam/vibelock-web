@@ -24,7 +24,7 @@ export default async function ReturnsPage() {
         {/* Header */}
         <div className="border-vl-dark-900/8 flex flex-wrap items-center justify-between gap-3 border-b p-5 sm:p-7">
           <div>
-            <p className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+            <p className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
               Customer Care
             </p>
             <h1 className="text-vl-dark-900 mt-0.5 text-base font-bold tracking-tight uppercase sm:text-xl">

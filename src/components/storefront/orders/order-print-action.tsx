@@ -50,19 +50,14 @@ export function OrderPrintAction({ orderNumber: propOrderNumber, order }: OrderP
             </>
           ) : (
             <>
-              <Copy className="size-3.5 text-neutral-400 group-hover:text-vl-dark-900" />
+              <Copy className="group-hover:text-vl-dark-900 size-3.5 text-neutral-400" />
               <span>Copy ID</span>
             </>
           )}
         </Button>
       )}
 
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        onClick={handlePrint}
-      >
+      <Button type="button" variant="outline" size="sm" onClick={handlePrint}>
         <Printer className="size-3.5 text-neutral-400" />
         <span>Print Receipt</span>
       </Button>

@@ -96,9 +96,7 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       },
     });
     imageBySku = new Map(
-      variants
-        .filter((v) => v.product.images[0]?.url)
-        .map((v) => [v.sku, v.product.images[0].url])
+      variants.filter((v) => v.product.images[0]?.url).map((v) => [v.sku, v.product.images[0].url])
     );
   }
 
@@ -187,9 +185,7 @@ export async function getCustomerOrderConfirmation(
       },
     });
     imageBySku = new Map(
-      variants
-        .filter((v) => v.product.images[0]?.url)
-        .map((v) => [v.sku, v.product.images[0].url])
+      variants.filter((v) => v.product.images[0]?.url).map((v) => [v.sku, v.product.images[0].url])
     );
   }
 

@@ -31,8 +31,8 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
-        <DialogHeader className="border-b border-vl-white-400 pb-3 print:hidden">
+      <DialogContent className="border-vl-white-400 max-w-xl rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
+        <DialogHeader className="border-vl-white-400 border-b pb-3 print:hidden">
           <div className="flex items-center space-x-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-600 shadow-2xs">
               <CheckCircle className="h-5 w-5" />
@@ -46,7 +46,7 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
         {/* 58mm / 80mm Thermal Printable Z-Report Container */}
         <div
           id="pos-shift-z-report-memo"
-          className="print-area space-y-2 rounded-xl border border-vl-white-500 bg-vl-white-100 p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text"
+          className="print-area border-vl-white-500 bg-vl-white-100 space-y-2 rounded-xl border p-4.5 font-mono text-xs text-slate-900 shadow-2xs select-text"
         >
           {/* Header */}
           <div className="space-y-0.5 border-b border-dashed border-slate-400 pb-2 text-center">
@@ -151,7 +151,9 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
             </p>
             <div className="flex items-center justify-between">
               <span className="shrink-0">Bangla QR:</span>
-              <span className="shrink-0 text-right font-mono">৳{(report.banglaQrSales ?? report.bkashSales).toFixed(0)}</span>
+              <span className="shrink-0 text-right font-mono">
+                ৳{(report.banglaQrSales ?? report.bkashSales).toFixed(0)}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="shrink-0">Card / POS Terminal:</span>
@@ -188,12 +190,12 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
         </div>
 
         {/* Actions */}
-        <div className="flex items-center space-x-2.5 border-t border-vl-white-400 pt-3 print:hidden">
+        <div className="border-vl-white-400 flex items-center space-x-2.5 border-t pt-3 print:hidden">
           <Button
             type="button"
             variant="outline"
             onClick={onClose}
-            className="font-heading h-11 w-1/2 rounded-xl border-vl-white-500 text-xs font-black text-slate-700 transition-all hover:bg-vl-white-100"
+            className="font-heading border-vl-white-500 hover:bg-vl-white-100 h-11 w-1/2 rounded-xl text-xs font-black text-slate-700 transition-all"
           >
             <RotateCcw className="text-vl-grey mr-1.5 h-4 w-4" />
             Done &amp; Exit
@@ -202,7 +204,7 @@ export function PosShiftZReport({ report, isOpen, onClose }: PosShiftZReportProp
           <Button
             type="button"
             onClick={handlePrint}
-            className="bg-vl-cyan text-vl-black font-heading flex h-11 w-1/2 items-center justify-center space-x-1.5 rounded-xl text-xs font-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-vl-cyan-400"
+            className="bg-vl-cyan text-vl-black font-heading hover:bg-vl-cyan-400 flex h-11 w-1/2 items-center justify-center space-x-1.5 rounded-xl text-xs font-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all"
           >
             <Printer className="h-4 w-4" />
             <span>Print Z-Report</span>

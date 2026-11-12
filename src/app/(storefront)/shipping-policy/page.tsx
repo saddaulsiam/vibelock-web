@@ -20,31 +20,31 @@ export default function ShippingPolicyPage() {
   const lastUpdated = "November 1, 2026";
 
   return (
-    <div className="flex flex-col bg-vl-white-300 text-vl-dark-900">
+    <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── Hero Header ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-1/4 size-80 rounded-full bg-vl-cyan-50 blur-3xl"
+          className="bg-vl-cyan-50 pointer-events-none absolute top-0 right-1/4 size-80 rounded-full blur-3xl"
         />
 
         <Container className="relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-vl-cyan uppercase">
+          <div className="tracking-streetwear text-vl-cyan flex items-center gap-2 text-xs font-semibold uppercase">
             <Truck className="size-4" />
             <span>Fulfillment Operations</span>
           </div>
           <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Shipping &amp; Delivery Policy
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-vl-white-300/70 sm:text-base">
+          <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
             From our Dhaka fulfillment center to your doorstep. Transparent rates, fast couriers,
             and safe parcel tracking across all 64 districts of Bangladesh.
           </p>
-          <div className="mt-6 flex items-center gap-4 text-xs text-vl-white-300/50">
+          <div className="text-vl-white-300/50 mt-6 flex items-center gap-4 text-xs">
             <span>Last Updated: {lastUpdated}</span>
             <span>•</span>
             <span>Nationwide Coverage</span>
@@ -60,51 +60,51 @@ export default function ShippingPolicyPage() {
             <div className="space-y-10 lg:col-span-8">
               {/* Delivery Rates Comparison */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div className="border border-vl-dark-900/15 bg-white p-6 sm:p-8">
+                <div className="border-vl-dark-900/15 border bg-white p-6 sm:p-8">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold tracking-wider text-vl-cyan uppercase">
+                    <span className="text-vl-cyan text-xs font-extrabold tracking-wider uppercase">
                       Inside Dhaka
                     </span>
-                    <span className="rounded-full bg-vl-dark-900/5 px-2.5 py-1 text-xs font-semibold text-vl-dark-900">
+                    <span className="bg-vl-dark-900/5 text-vl-dark-900 rounded-full px-2.5 py-1 text-xs font-semibold">
                       Fast Delivery
                     </span>
                   </div>
-                  <h3 className="font-heading mt-4 text-2xl font-bold text-vl-dark-900">
+                  <h3 className="font-heading text-vl-dark-900 mt-4 text-2xl font-bold">
                     24 – 48 Hours
                   </h3>
-                  <p className="mt-1 text-xs text-vl-dark-900/70">Standard Home Delivery</p>
-                  <div className="mt-6 border-t border-vl-dark-900/10 pt-4">
-                    <p className="text-2xl font-black text-vl-dark-900">৳ 60.00</p>
-                    <p className="mt-1 text-xs text-vl-dark-900/60">Flat delivery fee</p>
+                  <p className="text-vl-dark-900/70 mt-1 text-xs">Standard Home Delivery</p>
+                  <div className="border-vl-dark-900/10 mt-6 border-t pt-4">
+                    <p className="text-vl-dark-900 text-2xl font-black">৳ 60.00</p>
+                    <p className="text-vl-dark-900/60 mt-1 text-xs">Flat delivery fee</p>
                   </div>
                 </div>
 
-                <div className="border border-vl-dark-900/15 bg-white p-6 sm:p-8">
+                <div className="border-vl-dark-900/15 border bg-white p-6 sm:p-8">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold tracking-wider text-vl-cyan uppercase">
+                    <span className="text-vl-cyan text-xs font-extrabold tracking-wider uppercase">
                       Outside Dhaka
                     </span>
-                    <span className="rounded-full bg-vl-dark-900/5 px-2.5 py-1 text-xs font-semibold text-vl-dark-900">
+                    <span className="bg-vl-dark-900/5 text-vl-dark-900 rounded-full px-2.5 py-1 text-xs font-semibold">
                       All 64 Districts
                     </span>
                   </div>
-                  <h3 className="font-heading mt-4 text-2xl font-bold text-vl-dark-900">
+                  <h3 className="font-heading text-vl-dark-900 mt-4 text-2xl font-bold">
                     2 – 4 Days
                   </h3>
-                  <p className="mt-1 text-xs text-vl-dark-900/70">Doorstep &amp; Thana Hubs</p>
-                  <div className="mt-6 border-t border-vl-dark-900/10 pt-4">
-                    <p className="text-2xl font-black text-vl-dark-900">৳ 120.00</p>
-                    <p className="mt-1 text-xs text-vl-dark-900/60">Flat nationwide fee</p>
+                  <p className="text-vl-dark-900/70 mt-1 text-xs">Doorstep &amp; Thana Hubs</p>
+                  <div className="border-vl-dark-900/10 mt-6 border-t pt-4">
+                    <p className="text-vl-dark-900 text-2xl font-black">৳ 120.00</p>
+                    <p className="text-vl-dark-900/60 mt-1 text-xs">Flat nationwide fee</p>
                   </div>
                 </div>
               </div>
 
               {/* Section 1: Courier Partner */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   1. Official Courier Partner: Steadfast Courier
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     All domestic VibeLock parcels are dispatched through{" "}
                     <strong>Steadfast Courier</strong>, one of Bangladesh&apos;s leading logistics
@@ -119,11 +119,11 @@ export default function ShippingPolicyPage() {
               </div>
 
               {/* Section 2: Order Cutoff & Fulfillment */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   2. Order Processing &amp; Daily Cut-off
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <ul className="list-disc space-y-2 pl-5">
                     <li>
                       <strong>Same-Day Dispatch:</strong> Orders placed before{" "}
@@ -145,11 +145,11 @@ export default function ShippingPolicyPage() {
               </div>
 
               {/* Section 3: Package Inspection */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   3. Parcel Handover &amp; Inspection Rules
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     For safe transit, every VibeLock garment is packaged in our custom protective
                     poly mailer with tamper-evident security sealing.
@@ -176,11 +176,11 @@ export default function ShippingPolicyPage() {
               </div>
 
               {/* Section 4: Delays */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   4. Unforeseen Delays &amp; Remote Upazilas
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     During periods of extreme weather (monsoon floods, cyclones), political strikes
                     (Hartal/Blockade), or peak Eid festive rushes, delivery times may be extended by
@@ -193,62 +193,62 @@ export default function ShippingPolicyPage() {
 
             {/* Quick Links Sidebar */}
             <div className="space-y-6 lg:col-span-4">
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Track Your Parcel
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-vl-dark-900/70">
+                <p className="text-vl-dark-900/70 mt-2 text-xs leading-relaxed">
                   Already placed an order? View live fulfillment updates and courier notes:
                 </p>
                 <div className="mt-4">
                   <Link
                     href="/account/orders"
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-vl-dark-900 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-vl-dark-900/85"
+                    className="bg-vl-dark-900 hover:bg-vl-dark-900/85 inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors"
                   >
                     <span>Track in My Account</span>
                   </Link>
                 </div>
               </div>
 
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Related Policies
                 </h3>
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
                     <Link
                       href="/return-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Return &amp; Exchange Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/terms"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Terms of Service</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/privacy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Privacy Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/faq"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Frequently Asked Questions</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                 </ul>

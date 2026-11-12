@@ -6,7 +6,7 @@ import Link from "next/link";
 import * as React from "react";
 
 import type { CategorySummary } from "@/lib/catalog/types";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export interface HeroCategory {
   id: string;
@@ -71,15 +71,13 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
   const wrapperRef = React.useRef<HTMLDivElement>(null);
   const trackRef = React.useRef<HTMLDivElement>(null);
   const rafRef = React.useRef<number>(0);
+  const [isReady, setIsReady] = React.useState(false);
 
   React.useEffect(() => {
-    function tick() {
+    function applySlope() {
       const wrapper = wrapperRef.current;
       const track = trackRef.current;
-      if (!wrapper || !track) {
-        rafRef.current = requestAnimationFrame(tick);
-        return;
-      }
+      if (!wrapper || !track) return;
       const containerW = wrapper.offsetWidth;
       const innerCards = track.querySelectorAll<HTMLElement>(".vl-card-inner");
       innerCards.forEach((card) => {
@@ -91,19 +89,26 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
         // Controls how much the top of the card sinks down as it slides right → left:
         // - ratio 1 (right edge): full card height (top 0%, bottom 0%)
         // - ratio 0 (left edge): top sinks down by maxInset%
-        // Values:
-        //   * Mobile (<640px): 35 (increase e.g. 50-60 for steeper slope; decrease e.g. 20-25 for straighter cards)
-        //   * Desktop: 60 (sinks down 60% on left to clear space for typewriter text)
         // =========================================================================
         const maxInset = containerW < 640 ? 35 : 60;
         const insetTop = (1 - ratio) * maxInset;
         card.style.top = `${insetTop.toFixed(2)}%`;
         card.style.bottom = "0px";
       });
+    }
+
+    function tick() {
+      applySlope();
       rafRef.current = requestAnimationFrame(tick);
     }
 
-    rafRef.current = requestAnimationFrame(tick);
+    // Schedule initial layout calculation and smooth reveal on first animation frame
+    rafRef.current = requestAnimationFrame(() => {
+      applySlope();
+      setIsReady(true);
+      rafRef.current = requestAnimationFrame(tick);
+    });
+
     return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
@@ -125,7 +130,10 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
     >
       <div
         ref={trackRef}
-        className="vl-track"
+        className={cn(
+          "vl-track transition-opacity duration-500 ease-out",
+          isReady ? "opacity-100" : "opacity-0"
+        )}
         style={{
           display: "flex",
           alignItems: "flex-end",
@@ -137,62 +145,68 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
           ["--vl-scroll-dist" as string]: scrollDistance,
         }}
       >
-        {items.map((cat, i) => (
-          <div
-            key={`${cat.id}-${i}`}
-            tabIndex={-1}
-            style={{
-              position: "relative",
-              flexShrink: 0,
-              width: "var(--vl-card-width, 480px)",
-              height: "100%",
-              display: "block",
-              overflow: "visible",
-            }}
-          >
-            {/* Inner wrapper — glued to bottom, height scales down from the top */}
-            <Link
-              href={`/category/${cat.slug}`}
-              className="vl-card-inner"
+        {items.map((cat, i) => {
+          // Initial estimated slope for the first cards so the server-rendered HTML
+          // already starts in a sloped posture, eliminating any full-height flash on reload.
+          const initialTop = i === 0 ? "58%" : i === 1 ? "38%" : i === 2 ? "18%" : "0%";
+
+          return (
+            <div
+              key={`${cat.id}-${i}`}
+              tabIndex={-1}
               style={{
-                position: "absolute",
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-                overflow: "hidden",
-                willChange: "top",
+                position: "relative",
+                flexShrink: 0,
+                width: "var(--vl-card-width, 480px)",
+                height: "100%",
+                display: "block",
+                overflow: "visible",
               }}
             >
-              <Image
-                src={cat.imageUrl}
-                alt={cat.name}
-                fill
-                sizes="(max-width: 640px) 290px, (max-width: 1024px) 380px, 480px"
-                className="object-cover"
-                priority={i < 4}
-                style={{ objectPosition: "center bottom" }}
-              />
-              {/* Dual scrim: top shadow for legible text, bottom shadow for depth */}
-              <div
+              {/* Inner wrapper — glued to bottom, height scales down from the top */}
+              <Link
+                href={`/category/${cat.slug}`}
+                className="vl-card-inner"
                 style={{
                   position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 30%, transparent 60%, rgba(0,0,0,0.6) 100%)",
+                  left: 0,
+                  right: 0,
+                  top: initialTop,
+                  bottom: 0,
+                  overflow: "hidden",
+                  willChange: "top",
                 }}
-              />
-              <div className="pointer-events-none absolute top-5 left-5 z-10 max-w-[calc(100%-2.5rem)]">
-                <p className="text-vl-cyan text-[10px] font-extrabold tracking-[0.22em] uppercase">
-                  {cat.label}
-                </p>
-                <p className="mt-0.5 text-[15px] font-black tracking-wider text-white uppercase">
-                  {cat.name}
-                </p>
-              </div>
-            </Link>
-          </div>
-        ))}
+              >
+                <Image
+                  src={cat.imageUrl}
+                  alt={cat.name}
+                  fill
+                  sizes="(max-width: 640px) 290px, (max-width: 1024px) 380px, 480px"
+                  className="object-cover"
+                  priority={i < 4}
+                  style={{ objectPosition: "center bottom" }}
+                />
+                {/* Dual scrim: top shadow for legible text, bottom shadow for depth */}
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(to bottom, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 30%, transparent 60%, rgba(0,0,0,0.6) 100%)",
+                  }}
+                />
+                <div className="pointer-events-none absolute top-5 left-5 z-10 max-w-[calc(100%-2.5rem)]">
+                  <p className="text-vl-cyan text-[10px] font-extrabold tracking-[0.22em] uppercase">
+                    {cat.label}
+                  </p>
+                  <p className="mt-0.5 text-[15px] font-black tracking-wider text-white uppercase">
+                    {cat.name}
+                  </p>
+                </div>
+              </Link>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -276,7 +290,7 @@ export function HeroSection({ categories = [], words }: HeroSectionProps) {
           <div className="mt-5 sm:mt-6" style={{ pointerEvents: "auto" }}>
             <Link
               href="/shop"
-              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-vl-cyan inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[9px] font-extrabold tracking-[0.2em] uppercase backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] sm:gap-2 sm:px-5 sm:py-2.5 sm:text-[10px] lg:gap-2.5 lg:px-6 lg:py-3 lg:text-[11px] xl:px-7 xl:text-xs"
+              className="group border-vl-cyan/50 bg-vl-cyan/10 text-vl-cyan hover:border-vl-cyan hover:bg-vl-cyan hover:text-vl-dark-900 focus-visible:ring-vl-cyan tracking-streetwear inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[9px] font-extrabold uppercase backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none active:scale-[0.97] sm:gap-2 sm:px-5 sm:py-2.5 sm:text-[10px] lg:gap-2.5 lg:px-6 lg:py-3 lg:text-[11px] xl:px-7 xl:text-xs"
             >
               <span>SHOP ALL DROPS</span>
               <ArrowRight

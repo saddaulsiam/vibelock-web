@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Key,
-  ExternalLink,
-  Laptop,
-  CheckCircle2,
-} from "lucide-react";
+import { ShieldCheck, ShieldAlert, Key, ExternalLink, Laptop, CheckCircle2 } from "lucide-react";
 
 interface AccountMembershipCardProps {
   email: string;
@@ -36,9 +29,9 @@ export function AccountMembershipCard({
   return (
     <Card variant="brand" className="p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/8 pb-4 sm:mb-6 sm:pb-5">
+      <div className="border-vl-dark-900/8 mb-5 flex flex-wrap items-center justify-between gap-3 border-b pb-4 sm:mb-6 sm:pb-5">
         <div>
-          <h2 className="text-sm font-black tracking-tight text-vl-dark-900 uppercase sm:text-base">
+          <h2 className="text-vl-dark-900 text-sm font-black tracking-tight uppercase sm:text-base">
             Membership & Security
           </h2>
           <p className="mt-0.5 text-[11px] text-neutral-500 sm:text-xs">
@@ -53,13 +46,13 @@ export function AccountMembershipCard({
 
       <div className="space-y-6">
         {/* 1. Membership Info Grid - Clean borderless */}
-        <div className="grid grid-cols-1 gap-4 border-b border-vl-dark-900/8 pb-6 sm:grid-cols-3">
+        <div className="border-vl-dark-900/8 grid grid-cols-1 gap-4 border-b pb-6 sm:grid-cols-3">
           {/* Member Since */}
           <div>
             <p className="text-[11px] font-bold tracking-wider text-neutral-400 uppercase">
               Member Since
             </p>
-            <p className="mt-1 text-sm font-black text-vl-dark-900">{formattedDate}</p>
+            <p className="text-vl-dark-900 mt-1 text-sm font-black">{formattedDate}</p>
             <p className="mt-0.5 text-xs text-neutral-500">VibeLock Customer</p>
           </div>
 
@@ -70,7 +63,7 @@ export function AccountMembershipCard({
             </p>
             <div className="mt-1 flex items-center gap-1.5">
               <CheckCircle2 className="size-4 text-emerald-600" />
-              <span className="text-sm font-black text-vl-dark-900">Active</span>
+              <span className="text-vl-dark-900 text-sm font-black">Active</span>
             </div>
             <p className="mt-0.5 text-xs text-neutral-500">Standard Access</p>
           </div>
@@ -105,16 +98,16 @@ export function AccountMembershipCard({
             Authentication Providers
           </h3>
 
-          <div className="divide-y divide-vl-dark-900/6">
+          <div className="divide-vl-dark-900/6 divide-y">
             {/* Google OAuth Row */}
-            <div className="flex flex-col items-start justify-between gap-3 py-3.5 sm:flex-row sm:items-center first:pt-0">
+            <div className="flex flex-col items-start justify-between gap-3 py-3.5 first:pt-0 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-neutral-50 text-xs font-bold">
+                <div className="border-vl-dark-900/10 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-neutral-50 text-xs font-bold">
                   <span className="text-[#4285F4]">G</span>
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-vl-dark-900">Google Account</span>
+                    <span className="text-vl-dark-900 text-xs font-bold">Google Account</span>
                     {isGoogle ? (
                       <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
                         Primary
@@ -142,12 +135,12 @@ export function AccountMembershipCard({
             {/* Email & Password Row */}
             <div className="flex flex-col items-start justify-between gap-3 py-3.5 sm:flex-row sm:items-center">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-dark-900 text-white">
+                <div className="border-vl-dark-900/10 bg-vl-dark-900 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-white">
                   <Key className="size-3.5" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-vl-dark-900">Email & Password</span>
+                    <span className="text-vl-dark-900 text-xs font-bold">Email & Password</span>
                     <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-600">
                       Encrypted
                     </span>
@@ -160,7 +153,7 @@ export function AccountMembershipCard({
 
               <Link
                 href="/account/security"
-                className="group inline-flex items-center gap-1 text-xs font-semibold text-neutral-700 hover:text-vl-dark-900"
+                className="group hover:text-vl-dark-900 inline-flex items-center gap-1 text-xs font-semibold text-neutral-700"
               >
                 <span>Change password</span>
                 <ExternalLink className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />
@@ -170,11 +163,11 @@ export function AccountMembershipCard({
         </div>
 
         {/* 3. Session & Security Shortcut */}
-        <div className="flex flex-col items-start justify-between gap-4 border-t border-vl-dark-900/8 pt-5 sm:flex-row sm:items-center">
+        <div className="border-vl-dark-900/8 flex flex-col items-start justify-between gap-4 border-t pt-5 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
             <Laptop className="size-4 shrink-0 text-neutral-400" />
             <div>
-              <p className="text-xs font-bold text-vl-dark-900">Active Sessions</p>
+              <p className="text-vl-dark-900 text-xs font-bold">Active Sessions</p>
               <p className="text-[11px] text-neutral-500">
                 Review devices currently logged into your account
               </p>
@@ -183,7 +176,7 @@ export function AccountMembershipCard({
 
           <Link
             href="/account/security"
-            className="group inline-flex items-center gap-1 text-xs font-semibold text-neutral-700 hover:text-vl-dark-900"
+            className="group hover:text-vl-dark-900 inline-flex items-center gap-1 text-xs font-semibold text-neutral-700"
           >
             <span>Manage sessions</span>
             <ExternalLink className="size-3 text-neutral-400 transition-transform group-hover:translate-x-0.5" />

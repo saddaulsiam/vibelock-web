@@ -20,31 +20,31 @@ export default function TermsPage() {
   const lastUpdated = "November 1, 2026";
 
   return (
-    <div className="flex flex-col bg-vl-white-300 text-vl-dark-900">
+    <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── Hero Header ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-1/4 size-80 rounded-full bg-vl-cyan-50 blur-3xl"
+          className="bg-vl-cyan-50 pointer-events-none absolute top-0 right-1/4 size-80 rounded-full blur-3xl"
         />
 
         <Container className="relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-vl-cyan uppercase">
+          <div className="tracking-streetwear text-vl-cyan flex items-center gap-2 text-xs font-semibold uppercase">
             <Scale className="size-4" />
             <span>Legal Framework</span>
           </div>
           <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Terms of Service
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-vl-white-300/70 sm:text-base">
+          <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
             Please read these terms and conditions carefully before using VibeLock services or
             placing orders on our platform.
           </p>
-          <div className="mt-6 flex items-center gap-4 text-xs text-vl-white-300/50">
+          <div className="text-vl-white-300/50 mt-6 flex items-center gap-4 text-xs">
             <span>Last Updated: {lastUpdated}</span>
             <span>•</span>
             <span>Applicable across Bangladesh</span>
@@ -59,11 +59,11 @@ export default function TermsPage() {
             {/* Main Legal Content */}
             <div className="space-y-10 lg:col-span-8">
               {/* Section 1 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   1. Acceptance of Terms
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     By accessing or using the VibeLock website (vibelock.bd), mobile web interfaces,
                     or purchasing products through any of our channels, you agree to be bound by
@@ -78,11 +78,11 @@ export default function TermsPage() {
               </div>
 
               {/* Section 2 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   2. Products, Sizing &amp; Pricing
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     All products displayed on VibeLock are subject to real-time inventory
                     availability. While we make every effort to display accurate sizing charts,
@@ -98,11 +98,11 @@ export default function TermsPage() {
               </div>
 
               {/* Section 3 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   3. Orders, Checkout &amp; Cancellation
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     Upon placing an order on our platform, you will receive an automated order
                     confirmation. Receipt of an order number does not signify our final acceptance
@@ -119,11 +119,11 @@ export default function TermsPage() {
               </div>
 
               {/* Section 4 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   4. Payments &amp; Security
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     We offer Cash on Delivery (COD) across Bangladesh, as well as secure online
                     payments via bKash, Nagad, Visa, Mastercard, and SSLCOMMERZ. Online transactions
@@ -138,11 +138,11 @@ export default function TermsPage() {
               </div>
 
               {/* Section 5 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   5. Intellectual Property
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     All content on this website, including but not limited to brand logos, graphic
                     artworks, product photos, campaign videos, typography, and website designs, is
@@ -156,11 +156,11 @@ export default function TermsPage() {
               </div>
 
               {/* Section 6 */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   6. Governing Law &amp; Dispute Resolution
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     These Terms of Service and any separate agreements whereby we provide you
                     services shall be governed by and construed in accordance with the laws of the
@@ -176,52 +176,52 @@ export default function TermsPage() {
 
             {/* Quick Links Sidebar */}
             <div className="space-y-6 lg:col-span-4">
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Related Policies
                 </h3>
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
                     <Link
                       href="/privacy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Privacy Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/return-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Return &amp; Exchange Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/shipping-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Shipping &amp; Delivery</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/faq"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Frequently Asked Questions</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                 </ul>
               </div>
 
-              <div className="border border-vl-dark-900/10 bg-vl-dark-900 p-6 text-white">
-                <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-vl-cyan uppercase">
+              <div className="border-vl-dark-900/10 bg-vl-dark-900 border p-6 text-white">
+                <div className="text-vl-cyan flex items-center gap-2 text-xs font-semibold tracking-wider uppercase">
                   <ShieldCheck className="size-4" />
                   <span>Support Desk</span>
                 </div>

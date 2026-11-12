@@ -1,6 +1,6 @@
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-vl-dark-900 text-vl-white-300 antialiased selection:bg-vl-cyan selection:text-vl-dark-900">
+    <div className="bg-vl-dark-900 text-vl-white-300 selection:bg-vl-cyan selection:text-vl-dark-900 min-h-screen antialiased">
       {children}
     </div>
   );

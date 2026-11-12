@@ -138,7 +138,7 @@ export default async function AdminCustomerDetailsPage({
         <div>
           <CustomerBackButton />
           <div className="mt-2.5 flex flex-wrap items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight text-vl-dark-900 sm:text-3xl">
+            <h1 className="text-vl-dark-900 text-2xl font-bold tracking-tight sm:text-3xl">
               {customer.name || "Unnamed Customer"}
             </h1>
             {isVip && (
@@ -484,7 +484,7 @@ export default async function AdminCustomerDetailsPage({
                     </span>
                     <Link
                       href={`/admin/orders/${order.id}`}
-                      className="inline-flex items-center gap-1 rounded bg-vl-dark-900 px-2.5 py-1 text-xs font-semibold text-white"
+                      className="bg-vl-dark-900 inline-flex items-center gap-1 rounded px-2.5 py-1 text-xs font-semibold text-white"
                     >
                       <span>View Order</span>
                       <ChevronRight className="size-3" />

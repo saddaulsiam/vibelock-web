@@ -72,7 +72,7 @@ export function NotificationPreferencesCard({
     <Card variant="brand" className="p-4 sm:p-6 md:p-8">
       {/* Header */}
       <div className="border-vl-dark-900/8 mb-5 border-b pb-5">
-        <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+        <span className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
           Alerts & Updates
         </span>
         <div className="mt-0.5 flex items-center gap-2">

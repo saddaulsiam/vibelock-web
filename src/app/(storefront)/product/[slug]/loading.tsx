@@ -7,7 +7,7 @@ export default function ProductDetailLoading() {
     <Section
       role="status"
       aria-label="Loading product details"
-      className="min-h-screen bg-vl-white-300 pt-20 pb-12 sm:pt-24 sm:pb-16"
+      className="bg-vl-white-300 min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16"
     >
       <Container className="max-w-6xl">
         {/* Breadcrumbs Skeleton */}
@@ -32,12 +32,12 @@ export default function ProductDetailLoading() {
 
           {/* Right Column: Details Skeleton */}
           <div className="w-full min-w-0 pt-2 lg:pt-6">
-            <Skeleton className="mb-4 h-4 w-24 bg-vl-dark-900/10" />
-            <Skeleton className="mb-8 h-10 w-3/4 bg-vl-dark-900/10" />
+            <Skeleton className="bg-vl-dark-900/10 mb-4 h-4 w-24" />
+            <Skeleton className="bg-vl-dark-900/10 mb-8 h-10 w-3/4" />
 
             <div className="mb-8 space-y-4">
-              <Skeleton className="h-8 w-32 bg-vl-dark-900/10" />
-              <Skeleton className="h-6 w-24 bg-vl-dark-900/10" />
+              <Skeleton className="bg-vl-dark-900/10 h-8 w-32" />
+              <Skeleton className="bg-vl-dark-900/10 h-6 w-24" />
             </div>
 
             <div className="space-y-6">

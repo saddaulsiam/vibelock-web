@@ -463,12 +463,7 @@ function CouponCreateDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="default"
-              disabled={isPending}
-            >
+            <Button type="submit" variant="primary" size="default" disabled={isPending}>
               {isPending ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" />

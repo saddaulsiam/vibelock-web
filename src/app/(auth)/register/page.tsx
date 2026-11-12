@@ -227,7 +227,7 @@ function RegisterForm() {
           Front-view model wearing black oversized VibeLock T-shirt,
           sunglasses, and silver accessories.
       ══════════════════════════════════════════════════════ */}
-      <div className="relative hidden h-full w-full overflow-hidden bg-vl-dark-900 lg:block">
+      <div className="bg-vl-dark-900 relative hidden h-full w-full overflow-hidden lg:block">
         <Image
           src="/images/auth/login-front-model.png"
           alt="VibeLock Register Page Image"
@@ -238,18 +238,18 @@ function RegisterForm() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-vl-dark-900" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-vl-dark-900 via-transparent to-black/30" />
+        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent" />
+        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
         <div className="absolute bottom-10 left-10 z-10 max-w-xs">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1 backdrop-blur-md">
-            <span className="size-1.5 rounded-full bg-vl-cyan" />
-            <span className="font-heading text-[10px] font-bold tracking-[0.2em] text-vl-white-300 uppercase">
+            <span className="bg-vl-cyan size-1.5 rounded-full" />
+            <span className="font-heading tracking-streetwear text-vl-white-300 text-[10px] font-bold uppercase">
               NEW MEMBER ACCESS // VIBELOCK
             </span>
           </div>
-          <p className="font-heading mt-3 text-2xl font-black tracking-tight text-vl-white-300 uppercase">
+          <p className="font-heading text-vl-white-300 mt-3 text-2xl font-black tracking-tight uppercase">
             JOIN THE MOVEMENT
           </p>
         </div>
@@ -258,7 +258,7 @@ function RegisterForm() {
       {/* ══════════════════════════════════════════════════════
           MOBILE COMPACT HERO BANNER (< lg screens)
       ══════════════════════════════════════════════════════ */}
-      <div className="relative h-44 w-full overflow-hidden bg-vl-dark-900 sm:h-56 lg:hidden">
+      <div className="bg-vl-dark-900 relative h-44 w-full overflow-hidden sm:h-56 lg:hidden">
         <Image
           src="/images/auth/login-front-model.png"
           alt="VibeLock Register Page Image"
@@ -267,13 +267,13 @@ function RegisterForm() {
           sizes="100vw"
           className="object-cover object-[center_25%]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-vl-dark-900 via-vl-dark-900/40 to-black/50" />
+        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-gradient-to-t to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-vl-white-300/80 transition-colors hover:text-vl-cyan"
+            className="text-vl-white-300/80 hover:text-vl-cyan inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
             aria-label="Back to Home"
           >
             <ChevronLeft className="size-4" />
@@ -281,7 +281,7 @@ function RegisterForm() {
           </Link>
           <Link
             href="/"
-            className="font-heading text-lg font-black tracking-wider text-vl-white-300 uppercase"
+            className="font-heading text-vl-white-300 text-lg font-black tracking-wider uppercase"
           >
             VIBELOCK
           </Link>
@@ -296,7 +296,7 @@ function RegisterForm() {
         <header className="hidden items-center justify-between lg:flex">
           <Link
             href="/"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-vl-dark-400 transition-colors hover:text-vl-white-300"
+            className="group text-vl-dark-400 hover:text-vl-white-300 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
             <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Home</span>
@@ -304,7 +304,7 @@ function RegisterForm() {
 
           <Link
             href="/"
-            className="font-heading text-xl font-black tracking-wider text-vl-white-300 uppercase transition-colors hover:text-vl-cyan"
+            className="font-heading text-vl-white-300 hover:text-vl-cyan text-xl font-black tracking-wider uppercase transition-colors"
           >
             VIBELOCK
           </Link>
@@ -315,14 +315,14 @@ function RegisterForm() {
           {/* SUCCESS STATE */}
           {isSuccess ? (
             <div className="space-y-6 text-center">
-              <div className="mx-auto flex size-14 items-center justify-center rounded-full border border-vl-cyan-200 bg-vl-cyan-50 text-vl-cyan">
+              <div className="border-vl-cyan-200 bg-vl-cyan-50 text-vl-cyan mx-auto flex size-14 items-center justify-center rounded-full border">
                 <CheckCircle2 className="size-8" />
               </div>
               <div className="space-y-2">
-                <h2 className="font-heading text-3xl font-black tracking-tight text-vl-white-300 uppercase">
+                <h2 className="font-heading text-vl-white-300 text-3xl font-black tracking-tight uppercase">
                   Check Your Inbox
                 </h2>
-                <p className="text-sm leading-relaxed text-vl-dark-400">
+                <p className="text-vl-dark-400 text-sm leading-relaxed">
                   We sent a confirmation link to{" "}
                   <strong className="text-vl-white-300">{formData.email}</strong>. Please click the
                   link in your email to verify your account and activate your exclusive member
@@ -332,7 +332,7 @@ function RegisterForm() {
 
               <div className="pt-2">
                 <Link href="/login">
-                  <Button className="font-heading h-11 w-full gap-2 rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase hover:bg-vl-cyan-400">
+                  <Button className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase">
                     <span>Proceed to Log In</span>
                     <ArrowRight className="size-4" />
                   </Button>
@@ -343,19 +343,19 @@ function RegisterForm() {
             <>
               {/* Brand Tagline & Headings */}
               <div className="space-y-1 text-left">
-                <span className="font-heading inline-block text-[10px] font-bold tracking-[0.25em] text-vl-cyan uppercase">
+                <span className="font-heading text-vl-cyan inline-block text-[10px] font-bold tracking-[0.25em] uppercase">
                   STREETWEAR FOR DHAKA YOUTH
                 </span>
-                <h1 className="font-heading text-2xl font-black tracking-tight text-vl-white-300 sm:text-3xl">
+                <h1 className="font-heading text-vl-white-300 text-2xl font-black tracking-tight sm:text-3xl">
                   Create Your Account
                 </h1>
-                <p className="text-xs font-normal text-vl-dark-400">
+                <p className="text-vl-dark-400 text-xs font-normal">
                   Join VibeLock and be part of the movement
                 </p>
               </div>
 
               {/* Method Switcher */}
-              <div className="mt-4 flex rounded-lg border border-vl-dark-600/60 bg-vl-dark-800 p-1">
+              <div className="border-vl-dark-600/60 bg-vl-dark-800 mt-4 flex rounded-lg border p-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -364,7 +364,7 @@ function RegisterForm() {
                   }}
                   className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold tracking-wider uppercase transition-all ${
                     authMethod === "email"
-                      ? "bg-vl-dark-900 text-vl-white-300 shadow-sm ring-1 ring-vl-cyan-300"
+                      ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
                       : "text-vl-dark-400 hover:text-vl-white-300"
                   }`}
                 >
@@ -378,7 +378,7 @@ function RegisterForm() {
                   }}
                   className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold tracking-wider uppercase transition-all ${
                     authMethod === "phone"
-                      ? "bg-vl-dark-900 text-vl-white-300 shadow-sm ring-1 ring-vl-cyan-300"
+                      ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
                       : "text-vl-dark-400 hover:text-vl-white-300"
                   }`}
                 >
@@ -402,11 +402,11 @@ function RegisterForm() {
                 <form onSubmit={handleEmailSubmit} className="mt-4 space-y-3">
                   {/* Full Name */}
                   <div className="space-y-1">
-                    <Label htmlFor="name" className="text-xs font-medium text-vl-white-300">
+                    <Label htmlFor="name" className="text-vl-white-300 text-xs font-medium">
                       Full Name
                     </Label>
                     <div className="relative">
-                      <User className="pointer-events-none absolute top-3 left-3.5 size-4 text-vl-dark-400" />
+                      <User className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
                       <Input
                         id="name"
                         name="name"
@@ -417,18 +417,18 @@ function RegisterForm() {
                         onChange={handleChange}
                         disabled={isLoading}
                         autoComplete="name"
-                        className="h-10 rounded-lg border-vl-dark-600 bg-vl-dark-800 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
                       />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div className="space-y-1">
-                    <Label htmlFor="email" className="text-xs font-medium text-vl-white-300">
+                    <Label htmlFor="email" className="text-vl-white-300 text-xs font-medium">
                       Email
                     </Label>
                     <div className="relative">
-                      <Mail className="pointer-events-none absolute top-3 left-3.5 size-4 text-vl-dark-400" />
+                      <Mail className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
                       <Input
                         id="email"
                         name="email"
@@ -439,7 +439,7 @@ function RegisterForm() {
                         onChange={handleChange}
                         disabled={isLoading}
                         autoComplete="email"
-                        className="h-10 rounded-lg border-vl-dark-600 bg-vl-dark-800 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
                       />
                     </div>
                   </div>
@@ -447,13 +447,13 @@ function RegisterForm() {
                   {/* Phone Number (Optional) */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="phone" className="text-xs font-medium text-vl-white-300">
+                      <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
                         Phone Number
                       </Label>
-                      <span className="text-[10px] text-vl-dark-400">Optional</span>
+                      <span className="text-vl-dark-400 text-[10px]">Optional</span>
                     </div>
                     <div className="relative">
-                      <Phone className="pointer-events-none absolute top-3 left-3.5 size-4 text-vl-dark-400" />
+                      <Phone className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
                       <Input
                         id="phone"
                         name="phone"
@@ -463,18 +463,18 @@ function RegisterForm() {
                         onChange={handleChange}
                         disabled={isLoading}
                         autoComplete="tel"
-                        className="h-10 rounded-lg border-vl-dark-600 bg-vl-dark-800 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
                       />
                     </div>
                   </div>
 
                   {/* Password */}
                   <div className="space-y-1">
-                    <Label htmlFor="password" className="text-xs font-medium text-vl-white-300">
+                    <Label htmlFor="password" className="text-vl-white-300 text-xs font-medium">
                       Password
                     </Label>
                     <div className="relative">
-                      <Lock className="pointer-events-none absolute top-3 left-3.5 size-4 text-vl-dark-400" />
+                      <Lock className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
                       <Input
                         id="password"
                         name="password"
@@ -485,13 +485,13 @@ function RegisterForm() {
                         onChange={handleChange}
                         disabled={isLoading}
                         autoComplete="new-password"
-                        className="h-10 rounded-lg border-vl-dark-600 bg-vl-dark-800 pr-10 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         tabIndex={-1}
-                        className="absolute top-3 right-3 text-vl-dark-400 transition-colors hover:text-vl-white-300"
+                        className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3 right-3 transition-colors"
                         aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -516,12 +516,9 @@ function RegisterForm() {
                   </div>
 
                   {/* Terms & Privacy statement */}
-                  <p className="text-[10px] leading-relaxed text-vl-dark-400">
+                  <p className="text-vl-dark-400 text-[10px] leading-relaxed">
                     By creating an account, you agree to VibeLock&apos;s{" "}
-                    <Link
-                      href="/terms"
-                      className="text-vl-cyan underline-offset-2 hover:underline"
-                    >
+                    <Link href="/terms" className="text-vl-cyan underline-offset-2 hover:underline">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
@@ -538,7 +535,7 @@ function RegisterForm() {
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="font-heading mt-1 h-10.5 w-full gap-2 rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase transition-all hover:bg-vl-cyan-400 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+                    className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-1 h-10.5 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
                   >
                     {isLoading ? (
                       <>
@@ -562,11 +559,14 @@ function RegisterForm() {
                     <form onSubmit={handleSendPhoneOtp} className="space-y-4">
                       {/* Name */}
                       <div className="space-y-1.5">
-                        <Label htmlFor="phoneName" className="text-xs font-medium text-vl-white-300">
+                        <Label
+                          htmlFor="phoneName"
+                          className="text-vl-white-300 text-xs font-medium"
+                        >
                           Full Name
                         </Label>
                         <div className="relative">
-                          <User className="pointer-events-none absolute top-3.5 left-3.5 size-4 text-vl-dark-400" />
+                          <User className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
                           <Input
                             id="phoneName"
                             type="text"
@@ -575,18 +575,18 @@ function RegisterForm() {
                             value={phoneName}
                             onChange={(e) => setPhoneName(e.target.value)}
                             disabled={isLoading}
-                            className="h-11 rounded-lg border-vl-dark-600 bg-vl-dark-800 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+                            className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pl-10 text-sm focus-visible:ring-1"
                           />
                         </div>
                       </div>
 
                       {/* Phone */}
                       <div className="space-y-1.5">
-                        <Label htmlFor="phone" className="text-xs font-medium text-vl-white-300">
+                        <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
                           Mobile Number
                         </Label>
-                        <div className="relative flex rounded-lg border border-vl-dark-600 bg-vl-dark-800 focus-within:border-vl-cyan focus-within:ring-1 focus-within:ring-vl-cyan-400">
-                          <div className="flex items-center gap-1.5 border-r border-vl-dark-600 bg-vl-dark-900 px-3 text-xs font-bold text-vl-white-300 select-none">
+                        <div className="border-vl-dark-600 bg-vl-dark-800 focus-within:border-vl-cyan focus-within:ring-vl-cyan-400 relative flex rounded-lg border focus-within:ring-1">
+                          <div className="border-vl-dark-600 bg-vl-dark-900 text-vl-white-300 flex items-center gap-1.5 border-r px-3 text-xs font-bold select-none">
                             <span>🇧🇩</span>
                             <span>+880</span>
                           </div>
@@ -598,10 +598,10 @@ function RegisterForm() {
                             value={phone}
                             onChange={(e) => setPhone(e.target.value)}
                             disabled={isLoading}
-                            className="h-11 border-0 bg-transparent py-2.5 text-sm text-vl-white-300 shadow-none placeholder:text-vl-dark-500 focus-visible:ring-0"
+                            className="text-vl-white-300 placeholder:text-vl-dark-500 h-11 border-0 bg-transparent py-2.5 text-sm shadow-none focus-visible:ring-0"
                           />
                         </div>
-                        <p className="text-[11px] text-vl-dark-400">
+                        <p className="text-vl-dark-400 text-[11px]">
                           We will verify this number with a one-time 6-digit passcode.
                         </p>
                       </div>
@@ -609,7 +609,7 @@ function RegisterForm() {
                       <Button
                         type="submit"
                         disabled={isLoading || !phone || !phoneName}
-                        className="font-heading h-11 w-full gap-2 rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase transition-all hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan"
+                        className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
                       >
                         {isLoading ? (
                           <>
@@ -626,10 +626,10 @@ function RegisterForm() {
                     </form>
                   ) : (
                     <div className="space-y-4">
-                      <div className="rounded-lg border border-vl-cyan-200 bg-vl-cyan-50 p-3 text-center">
-                        <p className="text-xs text-vl-white-300">
+                      <div className="border-vl-cyan-200 bg-vl-cyan-50 rounded-lg border p-3 text-center">
+                        <p className="text-vl-white-300 text-xs">
                           Enter the 6-digit code sent to{" "}
-                          <span className="font-bold text-vl-cyan">{phone}</span>
+                          <span className="text-vl-cyan font-bold">{phone}</span>
                         </p>
                         <button
                           type="button"
@@ -639,7 +639,7 @@ function RegisterForm() {
                             setDevOtp(null);
                             setError("");
                           }}
-                          className="mt-1 text-xs font-medium text-vl-cyan underline-offset-4 hover:underline"
+                          className="text-vl-cyan mt-1 text-xs font-medium underline-offset-4 hover:underline"
                         >
                           Change number
                         </button>
@@ -676,7 +676,7 @@ function RegisterForm() {
                             value={digit}
                             onChange={(e) => handleOtpChange(index, e.target.value)}
                             onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                            className="h-12 w-11 rounded-lg border border-vl-dark-600 bg-vl-dark-800 text-center font-mono text-xl font-black text-vl-white-300 transition-all focus:border-vl-cyan focus:ring-1 focus:ring-vl-cyan-400 focus:outline-none sm:w-12"
+                            className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 focus:border-vl-cyan focus:ring-vl-cyan-400 h-12 w-11 rounded-lg border text-center font-mono text-xl font-black transition-all focus:ring-1 focus:outline-none sm:w-12"
                           />
                         ))}
                       </div>
@@ -685,7 +685,7 @@ function RegisterForm() {
                         type="button"
                         onClick={() => triggerVerifyPhoneOtp()}
                         disabled={isLoading || otpDigits.some((d) => !d)}
-                        className="font-heading h-11 w-full gap-2 rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase transition-all hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan"
+                        className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
                       >
                         {isLoading ? (
                           <>
@@ -694,7 +694,7 @@ function RegisterForm() {
                           </>
                         ) : (
                           <>
-                            <ShieldCheck className="size-4 text-vl-dark-900" />
+                            <ShieldCheck className="text-vl-dark-900 size-4" />
                             <span>COMPLETE REGISTRATION</span>
                           </>
                         )}
@@ -703,14 +703,15 @@ function RegisterForm() {
                       <div className="text-center text-xs">
                         {countdown > 0 ? (
                           <span className="text-vl-dark-400">
-                            Resend code in <strong className="text-vl-white-300">{countdown}s</strong>
+                            Resend code in{" "}
+                            <strong className="text-vl-white-300">{countdown}s</strong>
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSendPhoneOtp()}
                             disabled={isLoading}
-                            className="font-bold text-vl-cyan underline-offset-4 hover:underline"
+                            className="text-vl-cyan font-bold underline-offset-4 hover:underline"
                           >
                             Resend OTP Code
                           </button>
@@ -724,10 +725,10 @@ function RegisterForm() {
               {/* Social Login Divider */}
               <div className="relative my-3 sm:my-4">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-vl-dark-600" />
+                  <span className="border-vl-dark-600 w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-[10px] tracking-widest uppercase">
-                  <span className="bg-vl-dark-900 px-3 font-semibold text-vl-dark-400">OR</span>
+                  <span className="bg-vl-dark-900 text-vl-dark-400 px-3 font-semibold">OR</span>
                 </div>
               </div>
 
@@ -735,7 +736,7 @@ function RegisterForm() {
               <form action={googleSignInAction} className="w-full">
                 <SubmitButton
                   variant="outline"
-                  className="h-10 w-full gap-2.5 rounded-lg border-vl-dark-600 bg-vl-dark-800 text-xs font-bold text-vl-white-300 transition-all hover:border-vl-dark-400/60 hover:bg-vl-dark-700 hover:text-white"
+                  className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 hover:border-vl-dark-400/60 hover:bg-vl-dark-700 h-10 w-full gap-2.5 rounded-lg text-xs font-bold transition-all hover:text-white"
                   pendingText="Connecting to Google..."
                 >
                   <svg className="size-4 shrink-0" viewBox="0 0 24 24">
@@ -761,11 +762,11 @@ function RegisterForm() {
               </form>
 
               {/* Login Link Footer */}
-              <div className="mt-4 text-center text-xs text-vl-dark-400 sm:mt-5">
+              <div className="text-vl-dark-400 mt-4 text-center text-xs sm:mt-5">
                 Already have an account?{" "}
                 <Link
                   href="/login"
-                  className="font-bold text-vl-cyan underline-offset-4 transition-colors hover:underline"
+                  className="text-vl-cyan font-bold underline-offset-4 transition-colors hover:underline"
                 >
                   Log in
                 </Link>
@@ -775,7 +776,7 @@ function RegisterForm() {
         </main>
 
         {/* Bottom subtle copyright / tagline */}
-        <footer className="text-center text-[11px] text-vl-dark-500 lg:text-left">
+        <footer className="text-vl-dark-500 text-center text-[11px] lg:text-left">
           © {new Date().getFullYear()} VibeLock. All rights reserved.
         </footer>
       </div>
@@ -787,8 +788,8 @@ export default function RegisterPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-vl-dark-900 text-vl-white-300">
-          <RefreshCw className="size-6 animate-spin text-vl-cyan" />
+        <div className="bg-vl-dark-900 text-vl-white-300 flex min-h-screen items-center justify-center">
+          <RefreshCw className="text-vl-cyan size-6 animate-spin" />
         </div>
       }
     >

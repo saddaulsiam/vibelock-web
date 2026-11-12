@@ -102,7 +102,7 @@ export function AdminProductBulkBar({
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-sm border border-white/15 bg-vl-dark-900 px-4 py-2.5 text-xs text-white shadow-2xl backdrop-blur-md duration-200 sm:gap-4">
+    <div className="animate-in fade-in slide-in-from-bottom-4 bg-vl-dark-900 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2.5 rounded-sm border border-white/15 px-4 py-2.5 text-xs text-white shadow-2xl backdrop-blur-md duration-200 sm:gap-4">
       <div className="flex items-center gap-2 font-medium">
         <span className="flex size-5 items-center justify-center rounded-full bg-white/20 text-[11px] font-bold">
           {selectedIds.size}
@@ -155,7 +155,7 @@ export function AdminProductBulkBar({
         </Button>
 
         {showBulkCategoryMenu && (
-          <div className="animate-in fade-in zoom-in-95 absolute bottom-full left-0 mb-2 w-64 rounded-sm border border-white/20 bg-vl-dark-900 p-3 text-white shadow-2xl">
+          <div className="animate-in fade-in zoom-in-95 bg-vl-dark-900 absolute bottom-full left-0 mb-2 w-64 rounded-sm border border-white/20 p-3 text-white shadow-2xl">
             <p className="text-[11px] font-semibold text-white/90">Bulk Assign Category</p>
             <div className="mt-1.5">
               <NativeSelect

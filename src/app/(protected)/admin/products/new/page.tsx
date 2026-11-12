@@ -33,11 +33,11 @@ export default async function NewAdminProductPage({
       <header className="space-y-1.5">
         <Link
           href="/admin/products"
-          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-colors hover:text-vl-dark-900"
+          className="text-muted-foreground hover:text-vl-dark-900 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-colors"
         >
           <ArrowLeft className="size-3.5" /> Back to products
         </Link>
-        <h2 className="text-2xl font-semibold tracking-tight text-vl-dark-900 sm:text-3xl">
+        <h2 className="text-vl-dark-900 text-2xl font-semibold tracking-tight sm:text-3xl">
           {initialProduct ? "Duplicate product" : "Create product"}
         </h2>
         {initialProduct && (
@@ -47,9 +47,9 @@ export default async function NewAdminProductPage({
           </p>
         )}
       </header>
-      <Card className="overflow-visible rounded-sm border-vl-dark-900/10 bg-white shadow-none">
-        <CardHeader className="border-b border-vl-dark-900/10 px-4 py-4 sm:px-6">
-          <CardTitle className="text-base text-vl-dark-900">
+      <Card className="border-vl-dark-900/10 overflow-visible rounded-sm bg-white shadow-none">
+        <CardHeader className="border-vl-dark-900/10 border-b px-4 py-4 sm:px-6">
+          <CardTitle className="text-vl-dark-900 text-base">
             {initialProduct ? "Cloned product details" : "Product details"}
           </CardTitle>
         </CardHeader>

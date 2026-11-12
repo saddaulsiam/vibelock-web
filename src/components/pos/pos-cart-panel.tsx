@@ -129,7 +129,7 @@ export function PosCartPanel({
   };
 
   return (
-    <div className="flex h-full flex-col border-l border-vl-white-500 bg-white">
+    <div className="border-vl-white-500 flex h-full flex-col border-l bg-white">
       {/* Cart Header */}
       <div className="bg-vl-black text-vl-white border-vl-border flex items-center justify-between border-b p-3">
         <div className="flex items-center space-x-2">
@@ -187,7 +187,7 @@ export function PosCartPanel({
       </div>
 
       {/* Customer Quick Capture (Phone & Name) */}
-      <div className="space-y-2 border-b border-vl-white-400 bg-vl-white-100 p-3 text-xs">
+      <div className="border-vl-white-400 bg-vl-white-100 space-y-2 border-b p-3 text-xs">
         <div className="grid grid-cols-2 gap-2">
           <div>
             <Label className="text-vl-grey mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider uppercase">
@@ -201,7 +201,7 @@ export function PosCartPanel({
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="017XXXXXXXX"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-8 border-vl-white-500 bg-white font-mono text-xs"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 h-8 bg-white font-mono text-xs"
             />
           </div>
           <div>
@@ -213,7 +213,7 @@ export function PosCartPanel({
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Walk-in Customer"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-8 border-vl-white-500 bg-white text-xs"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 h-8 bg-white text-xs"
             />
           </div>
         </div>
@@ -297,7 +297,7 @@ export function PosCartPanel({
       <div className="flex-1 divide-y divide-slate-100 overflow-y-auto p-2">
         {cartItems.length === 0 ? (
           <div className="flex h-56 flex-col items-center justify-center px-4 text-center text-slate-400">
-            <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-vl-white-400 bg-vl-white-100 text-slate-300">
+            <div className="border-vl-white-400 bg-vl-white-100 mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border text-slate-300">
               <ShoppingCart className="h-7 w-7 stroke-1 text-slate-400" />
             </div>
             <p className="font-heading text-vl-black text-xs font-bold">Counter Cart is Empty</p>
@@ -315,10 +315,10 @@ export function PosCartPanel({
               return (
                 <div
                   key={item.variantId}
-                  className="group flex items-center justify-between rounded-xl border border-transparent p-2 transition-all hover:border-vl-white-400 hover:bg-vl-white-100"
+                  className="group hover:border-vl-white-400 hover:bg-vl-white-100 flex items-center justify-between rounded-xl border border-transparent p-2 transition-all"
                 >
                   {/* Item Thumbnail */}
-                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border border-vl-white-400 bg-vl-white-300">
+                  <div className="border-vl-white-400 bg-vl-white-300 relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-lg border">
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -364,7 +364,7 @@ export function PosCartPanel({
                       size="icon-xs"
                       variant="outline"
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
-                      className="text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
+                      className="text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       title="Decrease quantity"
                     >
                       <Minus className="h-3 w-3" />
@@ -383,7 +383,7 @@ export function PosCartPanel({
                       className={
                         isAtMaxStock
                           ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
-                          : "text-vl-black border-vl-white-500 bg-white hover:bg-vl-white-200"
+                          : "text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       }
                       title={
                         isAtMaxStock
@@ -419,7 +419,7 @@ export function PosCartPanel({
       </div>
 
       {/* Bill Calculation & Summary */}
-      <div className="space-y-3 border-t border-vl-white-400 bg-vl-white-100 p-3.5">
+      <div className="border-vl-white-400 bg-vl-white-100 space-y-3 border-t p-3.5">
         {/* Discount Row & Quick Presets */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-xs">
@@ -432,7 +432,7 @@ export function PosCartPanel({
                 size="xs"
                 variant="outline"
                 onClick={() => applyPercentDiscount(5)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 border-vl-white-500 h-6 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 5%
               </Button>
@@ -441,7 +441,7 @@ export function PosCartPanel({
                 size="xs"
                 variant="outline"
                 onClick={() => applyPercentDiscount(10)}
-                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 h-6 border-vl-white-500 bg-white px-2 font-mono text-[10px] font-bold"
+                className="text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 border-vl-white-500 h-6 bg-white px-2 font-mono text-[10px] font-bold"
               >
                 10%
               </Button>
@@ -456,7 +456,7 @@ export function PosCartPanel({
                   value={discount === 0 ? "" : discount}
                   onChange={(e) => setDiscount(Math.max(0, Number(e.target.value) || 0))}
                   placeholder="0"
-                  className="focus-visible:border-vl-cyan h-7 w-20 rounded-md border-vl-white-500 bg-white pr-1 pl-4 text-right font-mono text-xs font-bold"
+                  className="focus-visible:border-vl-cyan border-vl-white-500 h-7 w-20 rounded-md bg-white pr-1 pl-4 text-right font-mono text-xs font-bold"
                 />
               </div>
             </div>
@@ -464,7 +464,7 @@ export function PosCartPanel({
         </div>
 
         {/* Totals Breakdown */}
-        <div className="space-y-2 border-t border-vl-white-400 pt-2 text-xs">
+        <div className="border-vl-white-400 space-y-2 border-t pt-2 text-xs">
           <div className="text-vl-grey flex justify-between font-medium">
             <span>Subtotal ({totalItemsCount} items):</span>
             <span className="text-vl-black font-mono font-semibold">৳{subtotal.toFixed(0)}</span>
@@ -500,8 +500,8 @@ export function PosCartPanel({
           onClick={onOpenPaymentModal}
           className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline
-              ? "border-vl-border text-vl-grey cursor-not-allowed border bg-vl-dark-700"
-              : "bg-vl-cyan text-vl-black shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:bg-vl-cyan-400 hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
+              ? "border-vl-border text-vl-grey bg-vl-dark-700 cursor-not-allowed border"
+              : "bg-vl-cyan text-vl-black hover:bg-vl-cyan-400 shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
           }`}
         >
           <span>

@@ -33,10 +33,10 @@ export function MobileSearch() {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? "Close search" : "Open search"}
-        className="text-vl-white/75 hover:text-vl-white hover:bg-vl-white/10 flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none sm:size-9"
+        className="text-vl-white/75 hover:text-vl-white hover:bg-vl-white/10 focus-visible:ring-vl-cyan flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9"
       >
         {isOpen ? (
-          <X className="size-4 text-vl-cyan-dark sm:size-4.5" />
+          <X className="text-vl-cyan-dark size-4 sm:size-4.5" />
         ) : (
           <Search className="size-4 sm:size-4.5" />
         )}
@@ -53,7 +53,7 @@ export function MobileSearch() {
           />
 
           {/* Search Bar Container - Perfectly Aligned Edge-to-Edge */}
-          <div className="fixed inset-x-0 top-16 z-50 border-b border-white/10 bg-vl-dark-900 px-4 py-3 shadow-2xl sm:top-18">
+          <div className="bg-vl-dark-900 fixed inset-x-0 top-16 z-50 border-b border-white/10 px-4 py-3 shadow-2xl sm:top-18">
             <div className="mx-auto max-w-lg">
               <form
                 action="/shop"
@@ -62,7 +62,7 @@ export function MobileSearch() {
                 className="relative flex items-center"
               >
                 <Search
-                  className="pointer-events-none absolute left-3.5 size-4 text-vl-cyan"
+                  className="text-vl-cyan pointer-events-none absolute left-3.5 size-4"
                   aria-hidden="true"
                 />
 
@@ -72,7 +72,7 @@ export function MobileSearch() {
                   name="q"
                   placeholder="Search for products, categories..."
                   aria-label="Search products"
-                  className="h-10 w-full rounded-full border border-white/15 bg-vl-dark-900 pr-10 pl-10 text-xs text-vl-white placeholder:text-vl-white/40 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan"
+                  className="bg-vl-dark-900 text-vl-white placeholder:text-vl-white/40 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan h-10 w-full rounded-full border border-white/15 pr-10 pl-10 text-xs focus-visible:ring-1"
                 />
 
                 <button

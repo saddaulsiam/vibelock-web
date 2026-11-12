@@ -57,7 +57,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
       {/* ── Card 1: Personal Details ── */}
       <Card variant="brand" className="p-4 sm:p-6 md:p-8">
         <div className="border-border/60 mb-5 border-b pb-4">
-          <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+          <span className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
             Profile Settings
           </span>
           <h2 className="text-vl-dark-900 mt-0.5 text-base font-bold tracking-tight uppercase sm:text-lg">
@@ -82,7 +82,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
       {/* ── Card 2: How You Sign In ── */}
       <Card variant="brand" className="p-4 sm:p-6 md:p-8">
         <div className="mb-4">
-          <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+          <span className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
             Access & Security
           </span>
           <h2 className="text-vl-dark-900 mt-0.5 text-base font-bold tracking-tight uppercase sm:text-lg">
@@ -155,7 +155,7 @@ export function ProfileHub({ user, addresses, notificationPreferences }: Profile
         {/* Card Header */}
         <div className="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-5">
           <div className="min-w-0 flex-1">
-            <span className="text-vl-cyan text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px] sm:tracking-[0.2em]">
+            <span className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
               Shipping & Checkout
             </span>
             <div className="flex items-center gap-1.5">

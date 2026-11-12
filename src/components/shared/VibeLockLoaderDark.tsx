@@ -60,7 +60,7 @@ export default function VibeLockLoaderDark({
             VIBELOCK
           </span>
           {subLabel && (
-            <span className="text-vl-cyan text-[10px] font-bold tracking-[0.2em] uppercase sm:text-[11px]">
+            <span className="text-vl-cyan tracking-streetwear text-[10px] font-bold uppercase sm:text-[11px]">
               {subLabel}
             </span>
           )}

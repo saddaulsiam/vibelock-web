@@ -143,7 +143,10 @@ export async function updateProfileAction(input: unknown) {
         select: { id: true },
       });
       if (existingUser) {
-        return { success: false, error: "This phone number is already registered to another account." };
+        return {
+          success: false,
+          error: "This phone number is already registered to another account.",
+        };
       }
     }
 

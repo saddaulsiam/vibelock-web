@@ -10,12 +10,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -144,12 +139,7 @@ export function OrderPickPackChecklist({
           </div>
 
           {!isAllPacked ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="xs"
-              onClick={markAllPacked}
-            >
+            <Button type="button" variant="outline" size="xs" onClick={markAllPacked}>
               Pack All
             </Button>
           ) : (
@@ -182,123 +172,125 @@ export function OrderPickPackChecklist({
           </TableRow>
         </TableHeader>
         <TableBody>
-            {items.map((item) => {
-              const isPacked = isMounted && packedIds.includes(item.id);
+          {items.map((item) => {
+            const isPacked = isMounted && packedIds.includes(item.id);
 
-              return (
-                <TableRow
-                  key={item.id}
-                  className={`transition-colors ${
-                    isPacked ? "bg-emerald-50/30" : "hover:bg-neutral-50/50"
-                  }`}
-                >
-                  {/* Pick & Pack Toggle Button (Hidden in print) */}
-                  <TableCell className="px-4 py-3.5 text-center print:hidden">
-                    <Button
-                      type="button"
-                      variant={isPacked ? "primary" : "outline"}
-                      size="icon"
-                      onClick={() => toggleItemPacked(item.id)}
-                      className={`size-6 ${
-                        isPacked
-                          ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs hover:bg-emerald-700"
-                          : "text-transparent"
-                      }`}
-                      title={isPacked ? "Mark unpacked" : "Mark packed"}
-                    >
-                      <Check className="size-3.5 stroke-[3]" />
-                    </Button>
-                  </TableCell>
+            return (
+              <TableRow
+                key={item.id}
+                className={`transition-colors ${
+                  isPacked ? "bg-emerald-50/30" : "hover:bg-neutral-50/50"
+                }`}
+              >
+                {/* Pick & Pack Toggle Button (Hidden in print) */}
+                <TableCell className="px-4 py-3.5 text-center print:hidden">
+                  <Button
+                    type="button"
+                    variant={isPacked ? "primary" : "outline"}
+                    size="icon"
+                    onClick={() => toggleItemPacked(item.id)}
+                    className={`size-6 ${
+                      isPacked
+                        ? "border-emerald-600 bg-emerald-600 text-white shadow-2xs hover:bg-emerald-700"
+                        : "text-transparent"
+                    }`}
+                    title={isPacked ? "Mark unpacked" : "Mark packed"}
+                  >
+                    <Check className="size-3.5 stroke-[3]" />
+                  </Button>
+                </TableCell>
 
-                  {/* Product Details with Thumbnail & Warehouse Hover Zoom */}
-                  <TableCell className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      {item.imageUrl ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setActiveModalImage({
-                              url: item.imageUrl!,
-                              name: item.productName,
-                              sku: item.sku,
-                            })
+                {/* Product Details with Thumbnail & Warehouse Hover Zoom */}
+                <TableCell className="px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    {item.imageUrl ? (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setActiveModalImage({
+                            url: item.imageUrl!,
+                            name: item.productName,
+                            sku: item.sku,
+                          })
+                        }
+                        onMouseEnter={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const previewHeight = 270;
+                          const padding = 16;
+                          let top = rect.top - 20;
+                          if (top + previewHeight > window.innerHeight - padding) {
+                            top = window.innerHeight - previewHeight - padding;
                           }
-                          onMouseEnter={(e) => {
-                            const rect = e.currentTarget.getBoundingClientRect();
-                            const previewHeight = 270;
-                            const padding = 16;
-                            let top = rect.top - 20;
-                            if (top + previewHeight > window.innerHeight - padding) {
-                              top = window.innerHeight - previewHeight - padding;
-                            }
-                            if (top < padding) {
-                              top = padding;
-                            }
-                            setHoveredPreview({
-                              url: item.imageUrl!,
-                              name: item.productName,
-                              sku: item.sku,
-                              top,
-                              left: rect.right + 12,
-                            });
-                          }}
-                          onMouseLeave={() => setHoveredPreview(null)}
-                          className="relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-neutral-200/90 transition hover:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:outline-none"
-                          title="Hover for quick preview &middot; Click to enlarge"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={item.imageUrl}
-                            alt={item.productName}
-                            className="size-full object-cover"
-                          />
-                        </button>
-                      ) : (
-                        <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-neutral-400">
-                          <Shirt className="size-5 text-neutral-300" />
-                        </div>
-                      )}
-
-                      <div className="min-w-0 flex-1">
-                        <div className="leading-snug font-semibold text-neutral-900">
-                          {item.productName}
-                        </div>
-                        {item.size || item.color ? (
-                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                            {item.size ? (
-                              <Badge variant="secondary" size="sm">
-                                Size: {item.size}
-                              </Badge>
-                            ) : null}
-                            {item.color ? (
-                              <Badge variant="secondary" size="sm">
-                                Color: {item.color}
-                              </Badge>
-                            ) : null}
-                          </div>
-                        ) : null}
+                          if (top < padding) {
+                            top = padding;
+                          }
+                          setHoveredPreview({
+                            url: item.imageUrl!,
+                            name: item.productName,
+                            sku: item.sku,
+                            top,
+                            left: rect.right + 12,
+                          });
+                        }}
+                        onMouseLeave={() => setHoveredPreview(null)}
+                        className="relative size-12 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-neutral-200/90 transition hover:border-neutral-900 focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:outline-none"
+                        title="Hover for quick preview &middot; Click to enlarge"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.imageUrl}
+                          alt={item.productName}
+                          className="size-full object-cover"
+                        />
+                      </button>
+                    ) : (
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-neutral-400">
+                        <Shirt className="size-5 text-neutral-300" />
                       </div>
+                    )}
+
+                    <div className="min-w-0 flex-1">
+                      <div className="leading-snug font-semibold text-neutral-900">
+                        {item.productName}
+                      </div>
+                      {item.size || item.color ? (
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {item.size ? (
+                            <Badge variant="secondary" size="sm">
+                              Size: {item.size}
+                            </Badge>
+                          ) : null}
+                          {item.color ? (
+                            <Badge variant="secondary" size="sm">
+                              Color: {item.color}
+                            </Badge>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
-                  </TableCell>
+                  </div>
+                </TableCell>
 
-                  <TableCell className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">{item.sku}</TableCell>
+                <TableCell className="px-4 py-3.5 font-mono text-[11px] text-neutral-600">
+                  {item.sku}
+                </TableCell>
 
-                  <TableCell className="px-4 py-3.5 text-center font-bold text-neutral-900">
-                    {item.quantity}
-                  </TableCell>
+                <TableCell className="px-4 py-3.5 text-center font-bold text-neutral-900">
+                  {item.quantity}
+                </TableCell>
 
-                  <TableCell className="px-4 py-3.5 text-right font-medium text-neutral-700">
-                    {formatBdt(item.unitPrice)}
-                  </TableCell>
+                <TableCell className="px-4 py-3.5 text-right font-medium text-neutral-700">
+                  {formatBdt(item.unitPrice)}
+                </TableCell>
 
-                  <TableCell className="px-5 py-3.5 text-right font-bold text-neutral-900">
-                    {formatBdt(item.lineTotal)}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+                <TableCell className="px-5 py-3.5 text-right font-bold text-neutral-900">
+                  {formatBdt(item.lineTotal)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
 
       {/* ── Fixed Floating Hover Preview (Immune to overflow-hidden / overflow-x-auto) ── */}
       {hoveredPreview && (
@@ -327,7 +319,10 @@ export function OrderPickPackChecklist({
 
       {/* ── Fullscreen Lightbox Modal on Click ── */}
       {activeModalImage && (
-        <Dialog open={!!activeModalImage} onOpenChange={(open) => !open && setActiveModalImage(null)}>
+        <Dialog
+          open={!!activeModalImage}
+          onOpenChange={(open) => !open && setActiveModalImage(null)}
+        >
           <DialogContent variant="brand" size="lg" className="z-[99999]">
             <DialogHeader>
               <DialogTitle>{activeModalImage.name}</DialogTitle>

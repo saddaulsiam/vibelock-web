@@ -131,7 +131,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan relative block overflow-hidden bg-vl-white-300 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
         style={{ aspectRatio: "2 / 3" }}
       >
         {hasImage ? (
@@ -159,8 +159,8 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           </>
         ) : (
           <span className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-            <ImageOff className="size-8 text-vl-dark-900/20" aria-hidden="true" />
-            <span className="text-[11px] font-medium text-vl-dark-900/40">No image</span>
+            <ImageOff className="text-vl-dark-900/20 size-8" aria-hidden="true" />
+            <span className="text-vl-dark-900/40 text-[11px] font-medium">No image</span>
           </span>
         )}
 
@@ -209,7 +209,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         <Link
           href={`/product/${item.slug}`}
           title={item.name}
-          className="mt-0.5 line-clamp-2 block text-[13px] leading-snug font-bold text-vl-dark-900 transition-colors hover:text-vl-dark-900/70"
+          className="text-vl-dark-900 hover:text-vl-dark-900/70 mt-0.5 line-clamp-2 block text-[13px] leading-snug font-bold transition-colors"
         >
           {item.name}
         </Link>
@@ -219,10 +219,10 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           <Price
             amount={item.price}
             originalAmount={item.originalPrice}
-            className="text-[13px] font-bold text-vl-dark-900"
+            className="text-vl-dark-900 text-[13px] font-bold"
           />
           {item.rating && item.rating > 0 ? (
-            <span className="ml-auto flex items-center gap-0.5 text-[11px] text-vl-dark-900/50">
+            <span className="text-vl-dark-900/50 ml-auto flex items-center gap-0.5 text-[11px]">
               <Star className="size-3 fill-amber-400 text-amber-400" aria-hidden="true" />
               {item.rating.toFixed(1)}
             </span>

@@ -37,7 +37,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       >
         <span>SHOP</span>
         {isShopActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
+          <span className="bg-vl-cyan absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full" />
         )}
       </Link>
 
@@ -50,7 +50,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       >
         <span>T-SHIRTS</span>
         {isTshirtsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
+          <span className="bg-vl-cyan absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full" />
         )}
       </Link>
 
@@ -62,7 +62,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       >
         <span>SHIRTS</span>
         {isShirtsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
+          <span className="bg-vl-cyan absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full" />
         )}
       </Link>
 
@@ -74,7 +74,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       >
         <span>PANTS</span>
         {isPantsActive && (
-          <span className="absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full bg-vl-cyan" />
+          <span className="bg-vl-cyan absolute bottom-0 left-1/2 h-0.5 w-5 -translate-x-1/2 rounded-full" />
         )}
       </Link>
     </nav>

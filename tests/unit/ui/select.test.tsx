@@ -8,7 +8,10 @@ describe("Unified Global Select Component", () => {
     const variants = [
       { name: "default", expectedClass: "rounded-brand" },
       { name: "brand", expectedClass: "rounded-brand border-neutral-200" },
-      { name: "dark", expectedClass: "bg-surface-dark border-[var(--color-border-dark-input)] text-white" },
+      {
+        name: "dark",
+        expectedClass: "bg-surface-dark border-[var(--color-border-dark-input)] text-white",
+      },
     ] as const;
 
     for (const { name, expectedClass } of variants) {
@@ -48,7 +51,7 @@ describe("Unified Global Select Component", () => {
         </NativeSelect>
       );
 
-      expect(html).toContain("data-slot=\"native-select\"");
+      expect(html).toContain('data-slot="native-select"');
       expect(html).toContain("rounded-brand");
       expect(html).toContain("h-10");
       expect(html).toContain("Dhaka");
@@ -56,4 +59,3 @@ describe("Unified Global Select Component", () => {
     });
   });
 });
-

@@ -30,7 +30,7 @@ export default async function NewShippingMethodPage() {
             <p className="mt-1">Please create a shipping zone before adding a delivery rate.</p>
             <Link
               href="/admin/shipping/zones/new"
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs"
+              className="bg-vl-dark-900 mt-3 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white shadow-2xs"
             >
               <Plus className="size-3.5" />
               Create Zone First

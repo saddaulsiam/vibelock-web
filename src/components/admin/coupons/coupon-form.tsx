@@ -206,7 +206,7 @@ export function CouponForm({
               type="checkbox"
               value="on"
               defaultChecked={coupon?.isActive ?? true}
-              className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-dark-900"
+              className="text-vl-dark-900 focus:ring-vl-dark-900 size-4 rounded border-neutral-300"
             />
             <span className="text-xs font-medium text-neutral-800">
               Active and usable on checkout
@@ -305,11 +305,7 @@ export function CouponForm({
       ) : null}
 
       <div className="flex items-center justify-end gap-3 border-t border-neutral-100 pt-3">
-        <Button
-          type="submit"
-          variant="primary"
-          size="default"
-        >
+        <Button type="submit" variant="primary" size="default">
           <Tag className="size-3.5" />
           <span>{coupon ? "Update Coupon" : "Save Coupon"}</span>
         </Button>

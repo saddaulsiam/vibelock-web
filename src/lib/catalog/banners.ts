@@ -27,9 +27,7 @@ export async function getCategoryPromoBanner(
   });
 }
 
-export async function getCategoryPromoBanners(
-  categorySlug: string
-): Promise<PublicPromoBanner[]> {
+export async function getCategoryPromoBanners(categorySlug: string): Promise<PublicPromoBanner[]> {
   return prisma.banner.findMany({
     where: {
       isActive: true,

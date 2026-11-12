@@ -157,7 +157,7 @@ export default async function AdminInventoryPage({
       >
         <Link
           href="/admin/inventory-intelligence"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+          className="focus-visible:ring-vl-cyan inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:outline-none"
         >
           <Sparkles className="size-3.5 text-amber-500" />
           <span>Inventory Intelligence →</span>

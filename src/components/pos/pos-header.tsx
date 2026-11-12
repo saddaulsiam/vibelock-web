@@ -119,7 +119,7 @@ export function PosHeader({
             variant="ghost"
             size="sm"
             onClick={onToggleCartMobile}
-            className="bg-vl-cyan text-vl-black relative flex h-8 items-center space-x-1.5 rounded-xl px-2 shadow-xs hover:bg-vl-cyan-400 active:scale-95 sm:px-2.5 lg:hidden"
+            className="bg-vl-cyan text-vl-black hover:bg-vl-cyan-400 relative flex h-8 items-center space-x-1.5 rounded-xl px-2 shadow-xs active:scale-95 sm:px-2.5 lg:hidden"
             title="View Current Sale Ticket"
           >
             <ShoppingCart className="h-3.5 w-3.5" />
@@ -155,7 +155,7 @@ export function PosHeader({
           </div>
         ) : (
           <div
-            className="text-vl-cyan hidden items-center space-x-1.5 rounded-xl border border-white/10 bg-vl-dark-900 px-2.5 py-1.5 font-mono text-xs shadow-2xs select-none lg:flex xl:space-x-2 xl:px-3"
+            className="text-vl-cyan bg-vl-dark-900 hidden items-center space-x-1.5 rounded-xl border border-white/10 px-2.5 py-1.5 font-mono text-xs shadow-2xs select-none lg:flex xl:space-x-2 xl:px-3"
             title="Counter is connected online."
           >
             <span className="relative flex h-2 w-2">
@@ -167,7 +167,7 @@ export function PosHeader({
         )}
 
         {/* Real-time Clock (Desktop xl+) */}
-        <div className="text-vl-white hidden items-center space-x-2 rounded-xl border border-white/10 bg-vl-dark-900 px-3 py-1.5 font-mono text-xs shadow-2xs xl:flex">
+        <div className="text-vl-white bg-vl-dark-900 hidden items-center space-x-2 rounded-xl border border-white/10 px-3 py-1.5 font-mono text-xs shadow-2xs xl:flex">
           <Clock className="text-vl-cyan h-3.5 w-3.5" />
           <span className="font-semibold tracking-wider">{time || "00:00:00"}</span>
         </div>
@@ -241,7 +241,7 @@ export function PosHeader({
                 size="sm"
                 variant="outline"
                 onClick={onOpenShiftModal}
-                className="flex items-center space-x-1 rounded-xl border-white/10 bg-vl-dark-900 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 hover:bg-vl-dark-800 sm:space-x-1.5 sm:px-3"
+                className="bg-vl-dark-900 hover:bg-vl-dark-800 flex items-center space-x-1 rounded-xl border-white/10 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 sm:space-x-1.5 sm:px-3"
                 title="Click to view Cash Drawer & Shift details"
               >
                 <Banknote className="h-3.5 w-3.5" />
@@ -270,7 +270,7 @@ export function PosHeader({
         {/* Cashier Badge (Desktop lg+) */}
         <Link href="/admin">
           <div
-            className="hidden items-center space-x-2 rounded-xl border border-white/10 bg-vl-dark-900 px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
+            className="bg-vl-dark-900 hidden items-center space-x-2 rounded-xl border border-white/10 px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
             title="Back To Dashboard"
           >
             <div className="bg-vl-cyan-100 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
@@ -309,7 +309,7 @@ export function PosHeader({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="w-56 rounded-xl border border-white/20 bg-vl-dark-900 p-1.5 text-white shadow-2xl"
+            className="bg-vl-dark-900 w-56 rounded-xl border border-white/20 p-1.5 text-white shadow-2xl"
           >
             {/* Cashier Info Chip */}
             <div className="mb-1 flex items-center space-x-2.5 border-b border-white/10 px-2 py-2">

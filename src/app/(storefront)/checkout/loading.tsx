@@ -14,7 +14,7 @@ export default function CheckoutLoading() {
         <div className="border-vl-dark-100 mb-6 flex items-baseline justify-between border-b pb-4 sm:mb-8">
           <div className="flex items-baseline gap-2.5">
             <Skeleton className="bg-vl-dark-900/10 h-6 w-28 sm:h-7 sm:w-36" />
-            <Skeleton className="bg-vl-dark-900/8 font-mono h-4 w-8" />
+            <Skeleton className="bg-vl-dark-900/8 h-4 w-8 font-mono" />
           </div>
           <Skeleton className="bg-vl-dark-900/8 h-4 w-28" />
         </div>
@@ -96,7 +96,7 @@ export default function CheckoutLoading() {
               {/* Summary Header */}
               <div className="border-border flex items-center justify-between border-b pb-2.5">
                 <Skeleton className="bg-vl-dark-900/10 h-5 w-32" />
-                <Skeleton className="bg-vl-dark-900/8 font-mono h-3.5 w-14" />
+                <Skeleton className="bg-vl-dark-900/8 h-3.5 w-14 font-mono" />
               </div>
 
               {/* Items List (matching CheckoutSummaryItem) */}

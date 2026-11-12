@@ -260,7 +260,7 @@ export function AdminCategoriesTable({
                   ) : (
                     <Link
                       href="/admin/categories/new"
-                      className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-vl-dark-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
+                      className="bg-vl-dark-900 hover:bg-vl-dark-900/85 mt-2 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-white shadow-2xs"
                     >
                       Create Category
                     </Link>

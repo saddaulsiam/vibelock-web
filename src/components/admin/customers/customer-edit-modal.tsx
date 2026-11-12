@@ -207,7 +207,7 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                 Customer Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                <UserIcon className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                 <Input
                   type="text"
                   required
@@ -226,7 +226,7 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                   Phone Number
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Phone className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                   <Input
                     type="tel"
                     placeholder="017XXXXXXXX"
@@ -243,7 +243,7 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
                   Email Address <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Mail className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                   <Input
                     type="email"
                     required
@@ -331,12 +331,7 @@ export function CustomerEditModal({ customer, isOpen, onClose }: CustomerEditMod
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="default"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" variant="primary" size="default" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" />

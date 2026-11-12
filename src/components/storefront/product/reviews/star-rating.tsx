@@ -59,7 +59,7 @@ export function StarRating({
             role="radio"
             aria-checked={starNumber === value}
             aria-label={`${starNumber} star${starNumber > 1 ? "s" : ""}`}
-            className="cursor-pointer p-0.5 transition-transform hover:scale-115 focus-visible:outline-2 focus-visible:outline-vl-cyan"
+            className="focus-visible:outline-vl-cyan cursor-pointer p-0.5 transition-transform hover:scale-115 focus-visible:outline-2"
             onClick={() => onChange?.(starNumber)}
             onMouseEnter={() => setHoverValue(starNumber)}
             onMouseLeave={() => setHoverValue(null)}

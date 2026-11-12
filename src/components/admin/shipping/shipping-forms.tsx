@@ -18,12 +18,7 @@ const initialState: ShippingActionState = { error: null };
 function Submit({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <Button
-      type="submit"
-      variant="primary"
-      size="default"
-      loading={pending}
-    >
+    <Button type="submit" variant="primary" size="default" loading={pending}>
       <span>{label}</span>
     </Button>
   );
@@ -146,7 +141,13 @@ export function ShippingMethodForm({
         <label className="block text-xs font-semibold text-neutral-800">
           Assigned Zone <span className="text-rose-500">*</span>
         </label>
-        <NativeSelect name="zoneId" required defaultValue={method?.zoneId} size="lg" className="mt-1.5">
+        <NativeSelect
+          name="zoneId"
+          required
+          defaultValue={method?.zoneId}
+          size="lg"
+          className="mt-1.5"
+        >
           {zones.map((zone) => (
             <option key={zone.id} value={zone.id}>
               {zone.name}
@@ -186,7 +187,7 @@ export function ShippingMethodForm({
             type="checkbox"
             value="on"
             defaultChecked={method?.isActive ?? true}
-            className="size-4 rounded border-neutral-300 text-vl-dark-900 focus:ring-vl-cyan"
+            className="text-vl-dark-900 focus:ring-vl-cyan size-4 rounded border-neutral-300"
           />
           <span>Active for customer checkout</span>
         </label>

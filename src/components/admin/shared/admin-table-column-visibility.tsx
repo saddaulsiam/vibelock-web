@@ -63,10 +63,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
         variant="outline"
         size="sm"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={cn(
-          "gap-1.5 px-3 font-semibold",
-          buttonClassName
-        )}
+        className={cn("gap-1.5 px-3 font-semibold", buttonClassName)}
         title="Customize visible columns"
         aria-expanded={isOpen}
       >
@@ -110,7 +107,7 @@ export function AdminTableColumnVisibility<T extends string = string>({
                     type="checkbox"
                     checked={isChecked}
                     onChange={(e) => onChange(col.key, e.target.checked)}
-                    className="size-3.5 cursor-pointer rounded-xs accent-vl-dark-900"
+                    className="accent-vl-dark-900 size-3.5 cursor-pointer rounded-xs"
                   />
                 </label>
               );

@@ -44,7 +44,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
         {/* Header */}
         <DialogHeader>
           <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-vl-cyan-100 text-vl-cyan-dark">
+            <div className="bg-vl-cyan-100 text-vl-cyan-dark flex size-9 items-center justify-center rounded-xl">
               <Ticket className="size-5" />
             </div>
             <div>
@@ -59,7 +59,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
           {coupons.length === 0 ? (
             <div className="text-muted-foreground py-8 text-center text-xs">
               <Sparkles className="text-muted-foreground/50 mx-auto mb-2 size-7" />
-              <p className="font-semibold text-vl-dark-900">No active coupons right now</p>
+              <p className="text-vl-dark-900 font-semibold">No active coupons right now</p>
               <p className="mt-1">Check back during special seasonal drops and events!</p>
             </div>
           ) : (
@@ -73,11 +73,11 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
               return (
                 <div
                   key={coupon.id}
-                  className="flex items-center justify-between rounded-xl border border-dashed border-vl-dark-900/20 bg-vl-white-300/50 p-3.5 transition-colors hover:border-vl-cyan"
+                  className="border-vl-dark-900/20 bg-vl-white-300/50 hover:border-vl-cyan flex items-center justify-between rounded-xl border border-dashed p-3.5 transition-colors"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-sm font-extrabold tracking-wider text-vl-dark-900 uppercase">
+                      <span className="text-vl-dark-900 font-mono text-sm font-extrabold tracking-wider uppercase">
                         {coupon.code}
                       </span>
                       <Badge variant="cyan" size="sm">
@@ -120,7 +120,7 @@ export function AccountCouponsModal({ isOpen, onClose, coupons }: AccountCoupons
         </div>
 
         {/* Footer */}
-        <div className="mt-3 flex justify-end border-t border-vl-dark-900/10 pt-3">
+        <div className="border-vl-dark-900/10 mt-3 flex justify-end border-t pt-3">
           <Button variant="primary" size="sm" onClick={onClose}>
             Close
           </Button>

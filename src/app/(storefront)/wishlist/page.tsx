@@ -20,13 +20,13 @@ export default async function WishlistPage() {
     <Section className="bg-background min-h-screen pt-20 pb-12 sm:pt-24 sm:pb-16">
       <Container>
         {/* Wishlist Header */}
-        <header className="mb-8 border-b border-vl-dark-900/10 pb-6 sm:mb-10">
-          <p className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.2em] uppercase">
-            VibeLock <span className="px-1 text-vl-cyan-600">/</span> Wishlist
+        <header className="border-vl-dark-900/10 mb-8 border-b pb-6 sm:mb-10">
+          <p className="text-muted-foreground tracking-streetwear mb-2 text-[11px] font-semibold uppercase">
+            VibeLock <span className="text-vl-cyan-600 px-1">/</span> Wishlist
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="font-heading text-3xl font-black tracking-tight text-vl-dark-900 uppercase sm:text-4xl">
+              <h1 className="font-heading text-vl-dark-900 text-3xl font-black tracking-tight uppercase sm:text-4xl">
                 My Wishlist
               </h1>
               <p className="text-muted-foreground mt-1 text-xs sm:text-sm">

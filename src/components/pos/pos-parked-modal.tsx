@@ -40,8 +40,8 @@ export function PosParkedModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-h-[85vh] w-full overflow-y-auto rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-xl">
-        <DialogHeader className="border-b border-vl-white-200 pb-3">
+      <DialogContent className="border-vl-white-400 max-h-[85vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
+        <DialogHeader className="border-vl-white-200 border-b pb-3">
           <div className="text-vl-black flex items-center space-x-2">
             <div className="border-vl-cyan-200 bg-vl-black text-vl-cyan rounded-xl border p-2 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
               <PauseCircle className="h-5 w-5" />
@@ -72,7 +72,7 @@ export function PosParkedModal({
         <div className="space-y-3 pt-1">
           {parkedCarts.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-center text-slate-400">
-              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-vl-white-400 bg-vl-white-100">
+              <div className="border-vl-white-400 bg-vl-white-100 mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border">
                 <PauseCircle className="h-7 w-7 stroke-1 text-slate-400" />
               </div>
               <p className="font-heading text-vl-black text-xs font-bold">No Carts on Hold</p>
@@ -93,7 +93,7 @@ export function PosParkedModal({
               return (
                 <div
                   key={cart.id}
-                  className="hover:border-vl-cyan space-y-2.5 rounded-xl border border-vl-white-400 bg-vl-white-100 p-3.5 text-xs transition-all duration-150 hover:bg-white hover:shadow-2xs"
+                  className="hover:border-vl-cyan border-vl-white-400 bg-vl-white-100 space-y-2.5 rounded-xl border p-3.5 text-xs transition-all duration-150 hover:bg-white hover:shadow-2xs"
                 >
                   {/* Card Header */}
                   <div className="flex items-start justify-between">
@@ -102,7 +102,7 @@ export function PosParkedModal({
                         <span className="font-heading text-vl-black text-sm font-bold">
                           {customerDisplay}
                         </span>
-                        <Badge className="text-vl-grey border border-vl-white-500 bg-white px-1.5 py-0 font-mono text-[10px]">
+                        <Badge className="text-vl-grey border-vl-white-500 border bg-white px-1.5 py-0 font-mono text-[10px]">
                           {cart.itemsCount} {cart.itemsCount === 1 ? "item" : "items"}
                         </Badge>
                       </div>
@@ -138,13 +138,13 @@ export function PosParkedModal({
                   </div>
 
                   {/* Items Chips Preview */}
-                  <div className="flex flex-wrap gap-1 border-t border-vl-white-400 pt-2">
+                  <div className="border-vl-white-400 flex flex-wrap gap-1 border-t pt-2">
                     {cart.items.map((item) => {
                       const variantDesc = [item.size, item.color].filter(Boolean).join("/");
                       return (
                         <span
                           key={item.variantId}
-                          className="text-vl-black rounded-md border border-vl-white-500 bg-white px-2 py-0.5 text-[10px]"
+                          className="text-vl-black border-vl-white-500 rounded-md border bg-white px-2 py-0.5 text-[10px]"
                         >
                           {item.quantity}x {item.productName}{" "}
                           {variantDesc ? `(${variantDesc})` : ""}
@@ -154,7 +154,7 @@ export function PosParkedModal({
                   </div>
 
                   {/* Action Controls */}
-                  <div className="flex items-center justify-end space-x-2 border-t border-vl-white-400 pt-2">
+                  <div className="border-vl-white-400 flex items-center justify-end space-x-2 border-t pt-2">
                     <Button
                       type="button"
                       variant="ghost"
@@ -170,7 +170,7 @@ export function PosParkedModal({
                       type="button"
                       size="sm"
                       onClick={() => onResumeCart(cart)}
-                      className="bg-vl-cyan font-heading text-vl-black h-8.5 space-x-1 rounded-lg px-3.5 text-xs font-black shadow-xs transition-all hover:bg-vl-cyan-400 active:scale-95"
+                      className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan-400 h-8.5 space-x-1 rounded-lg px-3.5 text-xs font-black shadow-xs transition-all active:scale-95"
                     >
                       <Play className="fill-vl-black mr-1 h-3 w-3" />
                       <span>Resume Sale</span>

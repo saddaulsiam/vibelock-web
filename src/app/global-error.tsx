@@ -16,28 +16,28 @@ export default function GlobalError({
 
   return (
     <html lang="en">
-      <body className="flex min-h-screen items-center justify-center bg-vl-white-300 p-4 font-sans text-vl-dark-900">
-        <div className="mx-auto max-w-lg border border-vl-dark-900/15 bg-white p-8 text-center shadow-sm sm:p-12">
-          <p className="mb-2 text-xs font-semibold tracking-[0.2em] text-vl-dark-900/60 uppercase">
+      <body className="bg-vl-white-300 text-vl-dark-900 flex min-h-screen items-center justify-center p-4 font-sans">
+        <div className="border-vl-dark-900/15 mx-auto max-w-lg border bg-white p-8 text-center shadow-sm sm:p-12">
+          <p className="tracking-streetwear text-vl-dark-900/60 mb-2 text-xs font-semibold uppercase">
             VibeLock / System Error
           </p>
-          <h1 className="text-2xl font-black tracking-tight text-vl-dark-900 sm:text-3xl">
+          <h1 className="text-vl-dark-900 text-2xl font-black tracking-tight sm:text-3xl">
             Critical Application Error
           </h1>
-          <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-vl-dark-900/70">
+          <p className="text-vl-dark-900/70 mx-auto mt-3 max-w-sm text-sm leading-relaxed">
             A critical system error occurred. We apologize for the inconvenience. Please try again.
           </p>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               onClick={() => reset()}
               type="button"
-              className="inline-flex min-h-11 items-center justify-center bg-vl-dark-900 px-6 text-sm font-bold tracking-wider text-white uppercase transition-colors hover:bg-vl-dark-900/85 focus-visible:outline-2 focus-visible:outline-vl-cyan"
+              className="bg-vl-dark-900 hover:bg-vl-dark-900/85 focus-visible:outline-vl-cyan inline-flex min-h-11 items-center justify-center px-6 text-sm font-bold tracking-wider text-white uppercase transition-colors focus-visible:outline-2"
             >
               Try Again
             </button>
             <Link
               href="/"
-              className="inline-flex min-h-11 items-center justify-center border border-vl-dark-900/20 bg-white px-6 text-sm font-bold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-vl-white-300 focus-visible:outline-2 focus-visible:outline-vl-cyan"
+              className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 focus-visible:outline-vl-cyan inline-flex min-h-11 items-center justify-center border bg-white px-6 text-sm font-bold tracking-wider uppercase transition-colors focus-visible:outline-2"
             >
               Return Home
             </Link>

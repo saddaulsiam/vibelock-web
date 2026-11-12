@@ -15,7 +15,9 @@ const mockProducts: ProductSummary[] = [
     minPrice: 1200,
     maxPrice: 1200,
     hasDiscount: false,
-    categories: [{ id: "cat-1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null }],
+    categories: [
+      { id: "cat-1", name: "T-Shirts", slug: "t-shirts", description: null, imageUrl: null },
+    ],
     available: true,
   },
   {
@@ -97,4 +99,3 @@ describe("ProductInfiniteGrid Component", () => {
     expect(html).toContain("2 of 50");
   });
 });
-

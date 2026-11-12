@@ -40,15 +40,15 @@ function ResetPasswordForm() {
           <AlertCircle className="size-6" />
         </div>
         <div className="space-y-1.5">
-          <h2 className="font-heading text-2xl font-black tracking-tight text-vl-white-300">
+          <h2 className="font-heading text-vl-white-300 text-2xl font-black tracking-tight">
             Invalid Reset Link
           </h2>
-          <p className="text-xs text-vl-dark-400">
+          <p className="text-vl-dark-400 text-xs">
             This password reset link is invalid or has expired. Please request a new link.
           </p>
         </div>
         <Link href="/forgot-password">
-          <Button className="font-heading mt-2 h-11 w-full rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase hover:bg-vl-cyan-400">
+          <Button className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 mt-2 h-11 w-full rounded-lg text-xs font-black tracking-widest uppercase">
             Request New Link
           </Button>
         </Link>
@@ -97,13 +97,13 @@ function ResetPasswordForm() {
     <div>
       {/* Brand Tagline & Headings */}
       <div className="space-y-1.5 text-left">
-        <span className="font-heading inline-block text-[11px] font-bold tracking-[0.25em] text-vl-cyan uppercase">
+        <span className="font-heading text-vl-cyan inline-block text-[11px] font-bold tracking-[0.25em] uppercase">
           SECURITY // ACCOUNT ACCESS
         </span>
-        <h1 className="font-heading text-3xl font-black tracking-tight text-vl-white-300 sm:text-4xl">
+        <h1 className="font-heading text-vl-white-300 text-3xl font-black tracking-tight sm:text-4xl">
           Set New Password
         </h1>
-        <p className="text-sm font-normal text-vl-dark-400">
+        <p className="text-vl-dark-400 text-sm font-normal">
           Enter your new password below to secure your VibeLock account.
         </p>
       </div>
@@ -123,9 +123,9 @@ function ResetPasswordForm() {
       {success && (
         <div
           role="status"
-          className="mt-5 flex items-start gap-2.5 rounded-lg border border-vl-cyan-200 bg-vl-cyan-50 p-3.5 text-xs font-medium text-vl-white-300"
+          className="border-vl-cyan-200 bg-vl-cyan-50 text-vl-white-300 mt-5 flex items-start gap-2.5 rounded-lg border p-3.5 text-xs font-medium"
         >
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-vl-cyan" />
+          <CheckCircle2 className="text-vl-cyan mt-0.5 size-4 shrink-0" />
           <span>{success}</span>
         </div>
       )}
@@ -133,11 +133,11 @@ function ResetPasswordForm() {
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         {/* New Password */}
         <div className="space-y-1.5">
-          <Label htmlFor="newPassword" className="text-xs font-medium text-vl-white-300">
+          <Label htmlFor="newPassword" className="text-vl-white-300 text-xs font-medium">
             New Password
           </Label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute top-3.5 left-3.5 size-4 text-vl-dark-400" />
+            <Lock className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
             <Input
               id="newPassword"
               type={showPassword ? "text" : "password"}
@@ -147,13 +147,13 @@ function ResetPasswordForm() {
               onChange={handleChange}
               disabled={isLoading || !!success}
               autoComplete="new-password"
-              className="h-11 rounded-lg border-vl-dark-600 bg-vl-dark-800 pr-10 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+              className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               tabIndex={-1}
-              className="absolute top-3.5 right-3 text-vl-dark-400 transition-colors hover:text-vl-white-300"
+              className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3.5 right-3 transition-colors"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -163,11 +163,11 @@ function ResetPasswordForm() {
 
         {/* Confirm Password */}
         <div className="space-y-1.5">
-          <Label htmlFor="confirmNewPassword" className="text-xs font-medium text-vl-white-300">
+          <Label htmlFor="confirmNewPassword" className="text-vl-white-300 text-xs font-medium">
             Confirm New Password
           </Label>
           <div className="relative">
-            <Lock className="pointer-events-none absolute top-3.5 left-3.5 size-4 text-vl-dark-400" />
+            <Lock className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
             <Input
               id="confirmNewPassword"
               type={showPassword ? "text" : "password"}
@@ -177,7 +177,7 @@ function ResetPasswordForm() {
               onChange={handleChange}
               disabled={isLoading || !!success}
               autoComplete="new-password"
-              className="h-11 rounded-lg border-vl-dark-600 bg-vl-dark-800 pl-10 text-sm text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-1 focus-visible:ring-vl-cyan-400"
+              className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pl-10 text-sm focus-visible:ring-1"
             />
           </div>
         </div>
@@ -185,7 +185,7 @@ function ResetPasswordForm() {
         <Button
           type="submit"
           disabled={isLoading || !!success}
-          className="font-heading mt-2 h-11 w-full gap-2 rounded-lg bg-vl-cyan text-xs font-black tracking-widest text-vl-dark-900 uppercase transition-all hover:bg-vl-cyan-400 focus-visible:ring-2 focus-visible:ring-vl-cyan"
+          className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-2 h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
         >
           {isLoading ? (
             <>
@@ -208,7 +208,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="flex min-h-screen w-full flex-col lg:grid lg:grid-cols-2">
       {/* Hero Photography Panel (Left Column) */}
-      <div className="relative hidden h-full w-full overflow-hidden bg-vl-dark-900 lg:block">
+      <div className="bg-vl-dark-900 relative hidden h-full w-full overflow-hidden lg:block">
         <Image
           src="/images/auth/login-back-model.png"
           alt="VibeLock Reset Password Image"
@@ -218,24 +218,24 @@ export default function ResetPasswordPage() {
           className="object-cover object-center transition-transform duration-700 hover:scale-105"
         />
 
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-vl-dark-900" />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-vl-dark-900 via-transparent to-black/30" />
+        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent" />
+        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/30" />
 
         <div className="absolute bottom-10 left-10 z-10 max-w-xs">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1 backdrop-blur-md">
-            <span className="size-1.5 rounded-full bg-vl-cyan" />
-            <span className="font-heading text-[10px] font-bold tracking-[0.2em] text-vl-white-300 uppercase">
+            <span className="bg-vl-cyan size-1.5 rounded-full" />
+            <span className="font-heading tracking-streetwear text-vl-white-300 text-[10px] font-bold uppercase">
               SECURITY // ACCESS
             </span>
           </div>
-          <p className="font-heading mt-3 text-2xl font-black tracking-tight text-vl-white-300 uppercase">
+          <p className="font-heading text-vl-white-300 mt-3 text-2xl font-black tracking-tight uppercase">
             REGAIN YOUR VIBELOCK ACCESS
           </p>
         </div>
       </div>
 
       {/* Mobile Compact Hero Banner */}
-      <div className="relative h-44 w-full overflow-hidden bg-vl-dark-900 sm:h-56 lg:hidden">
+      <div className="bg-vl-dark-900 relative h-44 w-full overflow-hidden sm:h-56 lg:hidden">
         <Image
           src="/images/auth/login-back-model.png"
           alt="VibeLock Reset Password Image"
@@ -244,12 +244,12 @@ export default function ResetPasswordPage() {
           sizes="100vw"
           className="object-cover object-[center_25%]"
         />
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-vl-dark-900 via-vl-dark-900/40 to-black/50" />
+        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-gradient-to-t to-black/50" />
 
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
           <Link
             href="/login"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-vl-white-300/80 transition-colors hover:text-vl-cyan"
+            className="text-vl-white-300/80 hover:text-vl-cyan inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
             aria-label="Back to Login"
           >
             <ChevronLeft className="size-4" />
@@ -257,7 +257,7 @@ export default function ResetPasswordPage() {
           </Link>
           <Link
             href="/"
-            className="font-heading text-lg font-black tracking-wider text-vl-white-300 uppercase"
+            className="font-heading text-vl-white-300 text-lg font-black tracking-wider uppercase"
           >
             VIBELOCK
           </Link>
@@ -269,7 +269,7 @@ export default function ResetPasswordPage() {
         <header className="hidden items-center justify-between lg:flex">
           <Link
             href="/login"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-vl-dark-400 transition-colors hover:text-vl-white-300"
+            className="group text-vl-dark-400 hover:text-vl-white-300 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
           >
             <ChevronLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
             <span>Back to Login</span>
@@ -277,7 +277,7 @@ export default function ResetPasswordPage() {
 
           <Link
             href="/"
-            className="font-heading text-xl font-black tracking-wider text-vl-white-300 uppercase transition-colors hover:text-vl-cyan"
+            className="font-heading text-vl-white-300 hover:text-vl-cyan text-xl font-black tracking-wider uppercase transition-colors"
           >
             VIBELOCK
           </Link>
@@ -287,7 +287,7 @@ export default function ResetPasswordPage() {
           <Suspense
             fallback={
               <div className="flex items-center justify-center py-10">
-                <RefreshCw className="size-6 animate-spin text-vl-cyan" />
+                <RefreshCw className="text-vl-cyan size-6 animate-spin" />
               </div>
             }
           >
@@ -295,7 +295,7 @@ export default function ResetPasswordPage() {
           </Suspense>
         </main>
 
-        <footer className="text-center text-[11px] text-vl-dark-500 lg:text-left">
+        <footer className="text-vl-dark-500 text-center text-[11px] lg:text-left">
           © {new Date().getFullYear()} VibeLock. All rights reserved.
         </footer>
       </div>

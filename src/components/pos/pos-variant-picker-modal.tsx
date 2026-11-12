@@ -29,10 +29,10 @@ export function PosVariantPickerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-xl gap-0 overflow-hidden rounded-2xl border border-vl-white-500 bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="border-vl-white-500 max-w-xl gap-0 overflow-hidden rounded-2xl border bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
         {/* Header Preview */}
-        <div className="flex items-center gap-3.5 border-b border-vl-white-400 bg-vl-white-100 p-4 sm:p-5">
-          <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-vl-white-400 bg-white shadow-2xs sm:h-20 sm:w-20">
+        <div className="border-vl-white-400 bg-vl-white-100 flex items-center gap-3.5 border-b p-4 sm:p-5">
+          <div className="border-vl-white-400 relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border bg-white shadow-2xs sm:h-20 sm:w-20">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}

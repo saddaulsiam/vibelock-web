@@ -133,13 +133,7 @@ function CouponDeleteDialog({
 
         {/* Actions Footer */}
         <div className="flex items-center justify-end gap-2.5 pt-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onClose}
-            disabled={isPending}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
 
@@ -160,12 +154,7 @@ function CouponDeleteDialog({
                 <span>Deactivate Coupon</span>
               </Button>
             ) : (
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                onClick={onClose}
-              >
+              <Button type="button" variant="primary" size="sm" onClick={onClose}>
                 Already Paused (Keep)
               </Button>
             )

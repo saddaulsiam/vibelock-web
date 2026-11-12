@@ -32,9 +32,9 @@ describe("Unified Global Table Component", () => {
         </Table>
       );
 
-      expect(html).toContain("data-slot=\"table-container\"");
-      expect(html).toContain("data-slot=\"table\"");
-      expect(html).toContain("data-density=\"default\"");
+      expect(html).toContain('data-slot="table-container"');
+      expect(html).toContain('data-slot="table"');
+      expect(html).toContain('data-density="default"');
       expect(html).toContain("VL-TEE-01");
       expect(html).toContain("৳1,200");
     });
@@ -54,7 +54,7 @@ describe("Unified Global Table Component", () => {
         </Table>
       );
 
-      expect(html).toContain("data-density=\"compact\"");
+      expect(html).toContain('data-density="compact"');
     });
 
     it("renders striped variant for alternating row readability", () => {
@@ -71,7 +71,7 @@ describe("Unified Global Table Component", () => {
         </Table>
       );
 
-      expect(html).toContain("data-variant=\"striped\"");
+      expect(html).toContain('data-variant="striped"');
     });
 
     it("supports hideContainer when embedded inside custom cards", () => {
@@ -85,8 +85,8 @@ describe("Unified Global Table Component", () => {
         </Table>
       );
 
-      expect(html).not.toContain("data-slot=\"table-container\"");
-      expect(html).toContain("data-slot=\"table\"");
+      expect(html).not.toContain('data-slot="table-container"');
+      expect(html).toContain('data-slot="table"');
     });
   });
 
@@ -104,8 +104,8 @@ describe("Unified Global Table Component", () => {
       );
 
       expect(html).toContain("Invoice summary table");
-      expect(html).toContain("data-slot=\"table-caption\"");
-      expect(html).toContain("data-slot=\"table-footer\"");
+      expect(html).toContain('data-slot="table-caption"');
+      expect(html).toContain('data-slot="table-footer"');
     });
   });
 });

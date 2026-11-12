@@ -88,7 +88,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
     <thead
       data-slot="table-header"
       className={cn(
-        "text-compact border-b border-neutral-200 bg-surface-cream font-semibold tracking-wider text-neutral-600 uppercase select-none",
+        "text-compact bg-surface-cream border-b border-neutral-200 font-semibold tracking-wider text-neutral-600 uppercase select-none",
         className
       )}
       {...props}
