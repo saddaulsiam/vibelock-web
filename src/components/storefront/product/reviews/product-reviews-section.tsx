@@ -38,14 +38,14 @@ export function ProductReviewsSection({
     <section
       id="reviews"
       aria-labelledby="product-reviews-heading"
-      className="border-t border-vl-dark-900/10 pt-10 sm:pt-12"
+      className="border-border/50 mt-7 border-t pt-5 sm:mt-10 sm:pt-7"
     >
       {/* ── Section Header ── */}
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 sm:mb-6">
         <div className="flex items-center gap-2.5">
           <h2
             id="product-reviews-heading"
-            className="font-heading text-xl font-black tracking-tight text-vl-dark-900 sm:text-2xl"
+            className="font-heading text-vl-dark-900 text-xl font-black tracking-tight sm:text-2xl"
           >
             Ratings & Reviews
           </h2>
@@ -56,7 +56,7 @@ export function ProductReviewsSection({
 
         {hasReviews && (
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-vl-dark-900/60">
+            <span className="text-vl-dark-900/60 text-xs font-semibold">
               {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
             </span>
             {eligibility.canReview && (
@@ -67,7 +67,7 @@ export function ProductReviewsSection({
                 onClick={() => setIsModalOpen(true)}
                 className="h-8 gap-1.5 px-3 text-xs font-bold text-white shadow-2xs"
               >
-                <PenLine className="size-3 text-vl-cyan" />
+                <PenLine className="text-vl-cyan size-3" />
                 <span>{eligibility.existingReview ? "Edit Review" : "Write Review"}</span>
               </Button>
             )}
@@ -77,37 +77,35 @@ export function ProductReviewsSection({
 
       {/* ── Compact Card when NO Reviews ── */}
       {!hasReviews ? (
-        <div className="rounded-xl border border-vl-dark-900/10 bg-white p-6 text-center shadow-2xs sm:p-7">
-          <Star className="mx-auto size-7 fill-vl-cyan text-vl-cyan" />
-          <h3 className="mt-2 font-heading text-base font-bold text-vl-dark-900">
-            No reviews yet
-          </h3>
-          <p className="mt-1 text-xs text-vl-dark-900/60">
+        <div className="border-border/50 rounded-xs border bg-white p-5 text-center sm:p-6">
+          <Star className="fill-vl-cyan text-vl-cyan mx-auto size-6" />
+          <h3 className="font-heading text-vl-dark-900 mt-2 text-base font-bold">No reviews yet</h3>
+          <p className="text-vl-dark-900/60 mt-1 text-xs">
             Be the first to share your thoughts on this product.
           </p>
 
-          <div className="mt-4 flex justify-center">
+          <div className="mt-3.5 flex justify-center">
             {eligibility.canReview ? (
               <Button
                 type="button"
                 variant="primary"
                 size="sm"
                 onClick={() => setIsModalOpen(true)}
-                className="h-8 gap-1.5 px-3.5 text-xs font-bold text-white shadow-2xs"
+                className="h-8 gap-1.5 rounded-xs px-3.5 text-xs font-bold text-white shadow-2xs"
               >
-                <PenLine className="size-3 text-vl-cyan" />
+                <PenLine className="text-vl-cyan size-3" />
                 <span>Write a Review</span>
               </Button>
             ) : !eligibility.isLoggedIn ? (
               <Link
                 href={`/login?callbackUrl=/product/${productSlug}#reviews`}
-                className="inline-flex h-8 items-center gap-1.5 rounded-brand bg-vl-dark-900 px-3.5 text-xs font-bold text-white hover:bg-vl-dark-900/90 shadow-2xs"
+                className="bg-vl-dark-900 hover:bg-vl-dark-900/90 inline-flex h-8 items-center gap-1.5 rounded-xs px-3.5 text-xs font-bold text-white shadow-2xs"
               >
-                <Lock className="size-3 text-vl-cyan" />
+                <Lock className="text-vl-cyan size-3" />
                 <span>Sign in to Review</span>
               </Link>
             ) : (
-              <p className="text-xs text-vl-dark-900/50">
+              <p className="text-vl-dark-900/50 text-xs">
                 Verified buyers can review once their order is delivered.
               </p>
             )}
@@ -123,7 +121,7 @@ export function ProductReviewsSection({
           />
 
           <div className="space-y-3 pt-1">
-            <h3 className="font-heading text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+            <h3 className="font-heading text-vl-dark-900 text-xs font-bold tracking-wider uppercase">
               Customer Reviews ({reviews.length})
             </h3>
             <ProductReviewList

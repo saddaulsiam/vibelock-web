@@ -7,8 +7,9 @@ import { Section } from "@/components/shared/section";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
 import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
+import { YouMayAlsoLike } from "@/components/storefront/product/you-may-also-like";
 import { StarRating } from "@/components/storefront/product/reviews/star-rating";
-import { getProductBySlug } from "@/lib/catalog/queries";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/queries";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
 import { SITE_URL } from "@/lib/seo/site";
@@ -47,9 +48,14 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const currentUser = await getCurrentUser();
-  const [{ reviews, summary }, eligibility] = await Promise.all([
+  const [{ reviews, summary }, eligibility, relatedProducts] = await Promise.all([
     getProductReviews(product.id),
     getUserReviewEligibility(currentUser?.id, product.id),
+    getRelatedProducts({
+      productId: product.id,
+      categorySlug: product.categories[0]?.slug,
+      take: 4,
+    }),
   ]);
 
   const nonce = (await headers()).get("x-nonce") ?? undefined;
@@ -106,75 +112,76 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       <Container className="max-w-6xl">
         <nav
           aria-label="Breadcrumb"
-          className="text-muted-foreground mb-6 flex flex-wrap items-center gap-2 text-sm sm:mb-8"
+          className="text-muted-foreground mb-2.5 flex flex-wrap items-center gap-1.5 text-xs sm:mb-6 sm:gap-2 sm:text-sm"
         >
           <Link
             href="/"
-            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             Home
           </Link>
-          <ChevronRight className="size-4" aria-hidden="true" />
+          <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
           <Link
             href="/shop"
-            className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
             Products
           </Link>
           {mainCategory && (
             <>
-              <ChevronRight className="size-4" aria-hidden="true" />
+              <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
               <Link
                 href={`/category/${mainCategory.slug}`}
-                className="hover:text-foreground rounded-sm transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+                className="hover:text-foreground focus-visible:ring-vl-cyan max-w-[120px] truncate rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:max-w-none"
               >
                 {mainCategory.name}
               </Link>
             </>
           )}
-          <ChevronRight className="size-4" aria-hidden="true" />
+          <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
           <span
-            className="text-foreground max-w-full font-medium wrap-break-word"
+            className="text-foreground max-w-[140px] truncate font-medium sm:max-w-[280px] md:max-w-none"
             aria-current="page"
+            title={product.name}
           >
             {product.name}
           </span>
         </nav>
 
-        <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] lg:gap-12 xl:gap-16">
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] sm:gap-8 lg:gap-12 xl:gap-16">
           <div className="min-w-0">
             <ImageGallery images={product.images} productName={product.name} />
           </div>
 
           <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-            <div className="border-b border-vl-dark-900/10 mb-6 pb-5 sm:mb-7">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div className="border-border/50 mb-3 border-b pb-2 sm:mb-5 sm:pb-3.5">
+              <div className="mb-1 flex flex-wrap items-center justify-between gap-2 pt-1 md:pt-0">
                 {mainCategory && (
                   <Link
                     href={`/category/${mainCategory.slug}`}
-                    className="text-xs font-bold tracking-[0.2em] uppercase text-vl-dark-900/60 hover:text-vl-cyan-600 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none transition-colors"
+                    className="text-vl-dark-900/60 hover:text-vl-cyan-600 focus-visible:ring-vl-cyan text-[10px] font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-[11px]"
                   >
                     {mainCategory.name}
                   </Link>
                 )}
                 {product.variants[0]?.sku && (
-                  <span className="font-mono text-[11px] font-semibold text-vl-dark-900/40 tracking-wider">
+                  <span className="text-vl-dark-900/40 font-mono text-[9px] font-semibold tracking-wider sm:text-[10px]">
                     SKU: {product.variants[0].sku}
                   </span>
                 )}
               </div>
 
-              <h1 className="font-heading text-vl-dark-900 text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-[2.6rem]">
+              <h1 className="font-heading text-vl-dark-900 text-xl leading-tight font-black tracking-tight wrap-break-word sm:text-2xl md:text-3xl lg:text-4xl">
                 {product.name}
               </h1>
 
               {summary.totalReviews > 0 ? (
                 <a
                   href="#reviews"
-                  className="mt-2.5 inline-flex items-center gap-2 text-xs font-semibold text-vl-dark-900/75 transition-colors hover:text-vl-cyan-600"
+                  className="text-vl-dark-900/75 hover:text-vl-cyan-600 mt-1.5 inline-flex items-center gap-2 text-xs font-semibold transition-colors"
                 >
                   <StarRating value={Math.round(summary.averageRating)} size="sm" />
-                  <span className="font-mono font-bold text-vl-dark-900">
+                  <span className="text-vl-dark-900 font-mono font-bold">
                     {summary.averageRating.toFixed(1)}
                   </span>
                   <span className="text-vl-dark-900/50">
@@ -184,7 +191,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               ) : (
                 <a
                   href="#reviews"
-                  className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-vl-dark-900/55 transition-colors hover:text-vl-cyan-600"
+                  className="text-vl-dark-900/55 hover:text-vl-cyan-600 mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold transition-colors"
                 >
                   <StarRating value={0} size="sm" />
                   <span>Be the first to review</span>
@@ -201,31 +208,34 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             />
 
             {mainCategory && (
-              <div className="mt-6 pt-4 border-t border-vl-dark-900/5">
-                <Link
-                  href={`/category/${mainCategory.slug}`}
-                  className="text-xs font-bold text-vl-dark-900 hover:text-vl-cyan-600 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none inline-flex items-center gap-1.5 tracking-wider uppercase transition-colors"
-                >
-                  <span>Explore More {mainCategory.name}</span>
-                  <ChevronRight className="size-3.5" aria-hidden="true" />
-                </Link>
-              </div>
+              <Link
+                href={`/category/${mainCategory.slug}`}
+                className="text-vl-dark-900 hover:text-vl-cyan-600 focus-visible:ring-vl-cyan mt-5 inline-flex items-center gap-1.5 text-xs font-bold tracking-wider uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              >
+                <span>Explore More {mainCategory.name}</span>
+                <ChevronRight className="size-3.5" aria-hidden="true" />
+              </Link>
             )}
           </div>
         </div>
 
         {/* Customer Ratings & Reviews Section */}
-        <div className="mt-14 sm:mt-20">
-          <ProductReviewsSection
-            productId={product.id}
-            productSlug={product.slug}
-            reviews={reviews}
-            summary={summary}
-            eligibility={eligibility}
-            currentUserId={currentUser?.id}
-            isAdmin={currentUser?.role === "ADMIN"}
-          />
-        </div>
+        <ProductReviewsSection
+          productId={product.id}
+          productSlug={product.slug}
+          reviews={reviews}
+          summary={summary}
+          eligibility={eligibility}
+          currentUserId={currentUser?.id}
+          isAdmin={currentUser?.role === "ADMIN"}
+        />
+
+        {/* You May Also Like (Suggested Products) Section */}
+        <YouMayAlsoLike
+          products={relatedProducts}
+          categorySlug={mainCategory?.slug}
+          categoryName={mainCategory?.name}
+        />
       </Container>
     </Section>
   );

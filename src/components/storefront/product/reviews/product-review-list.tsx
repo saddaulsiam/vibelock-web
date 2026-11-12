@@ -97,13 +97,13 @@ export function ProductReviewList({
   return (
     <div className="space-y-4">
       {/* Filter and Sort Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-vl-dark-900/10 bg-white p-3 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xs border border-vl-dark-900/10 bg-white p-2.5 shadow-2xs">
         {/* Rating Pills */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
             type="button"
             onClick={() => onSelectRating?.(null)}
-            className={`rounded-lg px-2.5 py-1 font-bold transition-all ${
+            className={`rounded-xs px-2.5 py-1 font-bold transition-all ${
               selectedRating === null || selectedRating === undefined
                 ? "bg-vl-dark-900 text-white"
                 : "bg-vl-dark-900/5 text-vl-dark-900/70 hover:bg-vl-dark-900/10"
@@ -119,7 +119,7 @@ export function ProductReviewList({
                 key={stars}
                 type="button"
                 onClick={() => onSelectRating?.(selectedRating === stars ? null : stars)}
-                className={`rounded-lg px-2.5 py-1 font-bold transition-all ${
+                className={`rounded-xs px-2.5 py-1 font-bold transition-all ${
                   selectedRating === stars
                     ? "bg-vl-cyan-500 text-vl-dark-900 font-extrabold shadow-2xs"
                     : "bg-vl-dark-900/5 text-vl-dark-900/70 hover:bg-vl-dark-900/10"
@@ -133,11 +133,11 @@ export function ProductReviewList({
 
         {/* Sort Select */}
         <div className="flex items-center gap-1.5 text-xs font-semibold text-vl-dark-900/70">
-          <ArrowUpDown className="size-3.5 text-vl-dark-900/50" />
+          <ArrowUpDown className="size-3 text-vl-dark-900/50" />
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="rounded-lg border border-vl-dark-900/15 bg-white px-2.5 py-1 text-xs font-bold text-vl-dark-900 focus-visible:outline-2 focus-visible:outline-vl-cyan"
+            className="rounded-xs border border-vl-dark-900/15 bg-white px-2 py-1 text-xs font-bold text-vl-dark-900 focus-visible:outline-2 focus-visible:outline-vl-cyan"
             aria-label="Sort reviews by"
           >
             <option value="newest">Newest First</option>
@@ -180,7 +180,7 @@ export function ProductReviewList({
           return (
             <div
               key={review.id}
-              className="rounded-2xl border border-vl-dark-900/10 bg-white p-5 shadow-2xs sm:p-6 transition-all hover:border-vl-dark-900/20"
+              className="rounded-xs border border-vl-dark-900/10 bg-white p-4 shadow-2xs sm:p-5 transition-all hover:border-vl-dark-900/20"
             >
               <div className="flex flex-wrap items-start justify-between gap-3 border-b border-vl-dark-900/5 pb-4">
                 <div className="flex items-center gap-3">

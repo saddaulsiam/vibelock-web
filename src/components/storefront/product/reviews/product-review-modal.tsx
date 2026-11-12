@@ -83,7 +83,7 @@ export function ProductReviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent variant="brand" className="max-w-md p-5 sm:p-6">
+      <DialogContent variant="brand" className="max-h-[90vh] overflow-y-auto max-w-md p-4 sm:p-6">
         <DialogHeader className="text-left space-y-1 pb-1">
           <div className="flex items-center gap-2">
             <Badge variant="cyan" size="sm" className="h-4.5 px-1.5 text-[9px] font-bold">
@@ -101,7 +101,7 @@ export function ProductReviewModal({
 
         <form onSubmit={handleSubmit} className="mt-2 space-y-4">
           {/* Rating Selection */}
-          <div className="space-y-1.5 rounded-xl bg-vl-white-300/50 p-3">
+          <div className="space-y-1.5 rounded-xs bg-vl-white-300/50 p-2.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-vl-dark-900/60 block">
               Your Rating
             </span>
@@ -126,7 +126,7 @@ export function ProductReviewModal({
                     key={tag}
                     type="button"
                     onClick={() => handleAddTag(tag)}
-                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer ${
+                    className={`rounded-xs px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer ${
                       active
                         ? "bg-vl-cyan-100 text-vl-cyan-dark ring-1 ring-vl-cyan-300"
                         : "bg-vl-dark-900/5 text-vl-dark-900/70 hover:bg-vl-dark-900/10"
@@ -154,12 +154,12 @@ export function ProductReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="How does the fabric feel? Is the fit boxy or true to size?"
-              className="rounded-lg border-vl-dark-900/15 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan text-xs"
+              className="rounded-xs border-vl-dark-900/15 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan text-xs"
             />
           </div>
 
           {formError && (
-            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-2.5 text-xs font-semibold text-destructive">
+            <div className="flex items-center gap-2 rounded-xs bg-destructive/10 p-2.5 text-xs font-semibold text-destructive">
               <AlertCircle className="size-3.5 shrink-0" />
               <span>{formError}</span>
             </div>
@@ -173,7 +173,7 @@ export function ProductReviewModal({
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={isPending}
-              className="h-8 text-xs font-semibold"
+              className="h-8 rounded-xs text-xs font-semibold"
             >
               Cancel
             </Button>
@@ -183,7 +183,7 @@ export function ProductReviewModal({
               size="sm"
               loading={isPending}
               disabled={isPending}
-              className="h-8 min-w-28 bg-vl-dark-900 text-xs font-bold text-white hover:bg-vl-dark-900/90 shadow-2xs"
+              className="h-8 min-w-28 rounded-xs bg-vl-dark-900 text-xs font-bold text-white hover:bg-vl-dark-900/90 shadow-2xs"
             >
               {isPending ? "Posting..." : isEditing ? "Save Changes" : "Post Review"}
             </Button>

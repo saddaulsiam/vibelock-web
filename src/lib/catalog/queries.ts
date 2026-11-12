@@ -10,7 +10,9 @@ class EmptyCategoriesError extends Error {}
 
 // Reusable standard includes
 const PUBLIC_PRODUCT_INCLUDES = {
-  images: true,
+  images: {
+    orderBy: [{ isPrimary: "desc" as const }, { createdAt: "asc" as const }],
+  },
   categories: true,
   variants: {
     include: {
@@ -245,6 +247,64 @@ export const getBestSellingProducts = async (options?: {
     },
     ["best-selling-products-v1", take.toString()],
     { tags: ["products"], revalidate: 300 }
+  );
+
+  return queryFn();
+};
+
+/**
+ * Get related products for "You May Also Like"
+ * Prioritizes published products in the same category, excluding the current product.
+ * If fewer than `take` exist, supplements with other published products.
+ */
+export const getRelatedProducts = async (options: {
+  productId: string;
+  categorySlug?: string;
+  take?: number;
+}): Promise<ProductSummary[]> => {
+  const take = options.take ?? 4;
+  const cacheKey = [
+    "related-products-v1",
+    options.productId,
+    options.categorySlug || "all",
+    take.toString(),
+  ];
+
+  const queryFn = unstable_cache(
+    async () => {
+      // 1. Try finding products in the same category
+      let products = await prisma.product.findMany({
+        where: {
+          status: ProductStatus.PUBLISHED,
+          id: { not: options.productId },
+          ...(options.categorySlug
+            ? { categories: { some: { slug: options.categorySlug } } }
+            : {}),
+        },
+        include: PUBLIC_PRODUCT_INCLUDES,
+        orderBy: { createdAt: "desc" },
+        take,
+      });
+
+      // 2. If fewer than `take` in same category, supplement with latest published products
+      if (products.length < take) {
+        const existingIds = [options.productId, ...products.map((p) => p.id)];
+        const additional = await prisma.product.findMany({
+          where: {
+            status: ProductStatus.PUBLISHED,
+            id: { notIn: existingIds },
+          },
+          include: PUBLIC_PRODUCT_INCLUDES,
+          orderBy: { createdAt: "desc" },
+          take: take - products.length,
+        });
+        products = [...products, ...additional];
+      }
+
+      return products.map(mapProductSummary);
+    },
+    cacheKey,
+    { tags: ["products"], revalidate: 120 }
   );
 
   return queryFn();

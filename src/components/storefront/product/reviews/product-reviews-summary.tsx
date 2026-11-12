@@ -25,8 +25,8 @@ export function ProductReviewsSummary({
   const recommendPercent = Math.round((positiveReviews / totalReviews) * 100);
 
   return (
-    <div className="rounded-xl border border-vl-dark-900/10 bg-white p-5 shadow-2xs sm:p-6">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:items-center sm:gap-6">
+    <div className="rounded-xs border border-vl-dark-900/10 bg-white p-4 shadow-2xs sm:p-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:items-center sm:gap-5">
         {/* Left Side: Score & Rating */}
         <div className="flex flex-col items-center justify-center border-b border-vl-dark-900/10 pb-4 text-center sm:border-r sm:border-b-0 sm:pr-6 sm:pb-0">
           <div className="font-heading text-4xl font-black tracking-tight text-vl-dark-900 sm:text-5xl">

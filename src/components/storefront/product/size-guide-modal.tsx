@@ -85,7 +85,7 @@ export function SizeGuideModal() {
         render={
           <button
             type="button"
-            className="group inline-flex items-center gap-1.5 text-xs font-semibold text-vl-dark-900/70 underline underline-offset-4 transition-colors hover:text-vl-cyan-600 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+            className="group text-vl-dark-900/70 hover:text-vl-cyan-600 focus-visible:ring-vl-cyan inline-flex items-center gap-1.5 text-xs font-semibold underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
           />
         }
       >
@@ -93,32 +93,36 @@ export function SizeGuideModal() {
         <span>Size Guide</span>
       </DialogTrigger>
 
-      <DialogContent variant="brand" className="max-w-2xl p-6 sm:p-8">
+      <DialogContent
+        variant="brand"
+        className="max-h-[90vh] max-w-2xl overflow-y-auto p-4 sm:p-6 sm:p-8"
+      >
         <DialogHeader className="space-y-1.5 pb-2 text-left">
           <div className="flex items-center gap-2">
             <Badge variant="cyan" size="sm">
               <Sparkles className="size-3" />
               Fit Guide
             </Badge>
-            <span className="text-xs text-vl-dark-900/50 uppercase tracking-widest font-mono">
+            <span className="text-vl-dark-900/50 font-mono text-xs tracking-widest uppercase">
               Streetwear Cut
             </span>
           </div>
-          <DialogTitle className="font-heading text-xl sm:text-2xl font-black tracking-tight text-vl-dark-900">
+          <DialogTitle className="font-heading text-vl-dark-900 text-xl font-black tracking-tight sm:text-2xl">
             VibeLock Measurements
           </DialogTitle>
-          <p className="text-xs sm:text-sm text-vl-dark-900/70">
-            Our drops feature a modern oversized boxy fit. If you prefer a regular tailored fit, consider sizing down.
+          <p className="text-vl-dark-900/70 text-xs sm:text-sm">
+            Our drops feature a modern oversized boxy fit. If you prefer a regular tailored fit,
+            consider sizing down.
           </p>
         </DialogHeader>
 
         {/* Tab & Unit Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-y border-vl-dark-900/10 py-3">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-y py-3">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setActiveTab("tops")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-xs px-3 py-1.5 text-xs font-bold transition-all ${
                 activeTab === "tops"
                   ? "bg-vl-dark-900 text-white shadow-2xs"
                   : "text-vl-dark-900/70 hover:bg-vl-dark-900/5"
@@ -129,7 +133,7 @@ export function SizeGuideModal() {
             <button
               type="button"
               onClick={() => setActiveTab("panjabi")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-xs px-3 py-1.5 text-xs font-bold transition-all ${
                 activeTab === "panjabi"
                   ? "bg-vl-dark-900 text-white shadow-2xs"
                   : "text-vl-dark-900/70 hover:bg-vl-dark-900/5"
@@ -140,7 +144,7 @@ export function SizeGuideModal() {
             <button
               type="button"
               onClick={() => setActiveTab("bottoms")}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-xs px-3 py-1.5 text-xs font-bold transition-all ${
                 activeTab === "bottoms"
                   ? "bg-vl-dark-900 text-white shadow-2xs"
                   : "text-vl-dark-900/70 hover:bg-vl-dark-900/5"
@@ -151,12 +155,14 @@ export function SizeGuideModal() {
           </div>
 
           {/* Unit Toggle */}
-          <div className="flex items-center rounded-lg border border-vl-dark-900/15 p-0.5 text-xs font-bold">
+          <div className="border-vl-dark-900/15 flex items-center rounded-xs border p-0.5 text-xs font-bold">
             <button
               type="button"
               onClick={() => setUnit("in")}
-              className={`rounded-md px-2.5 py-1 transition-all ${
-                unit === "in" ? "bg-vl-dark-900 text-white" : "text-vl-dark-900/60 hover:text-vl-dark-900"
+              className={`rounded-xs px-2.5 py-1 transition-all ${
+                unit === "in"
+                  ? "bg-vl-dark-900 text-white"
+                  : "text-vl-dark-900/60 hover:text-vl-dark-900"
               }`}
             >
               Inches
@@ -164,8 +170,10 @@ export function SizeGuideModal() {
             <button
               type="button"
               onClick={() => setUnit("cm")}
-              className={`rounded-md px-2.5 py-1 transition-all ${
-                unit === "cm" ? "bg-vl-dark-900 text-white" : "text-vl-dark-900/60 hover:text-vl-dark-900"
+              className={`rounded-xs px-2.5 py-1 transition-all ${
+                unit === "cm"
+                  ? "bg-vl-dark-900 text-white"
+                  : "text-vl-dark-900/60 hover:text-vl-dark-900"
               }`}
             >
               CM
@@ -174,10 +182,10 @@ export function SizeGuideModal() {
         </div>
 
         {/* Measurement Table */}
-        <div className="overflow-x-auto rounded-xl border border-vl-dark-900/10">
+        <div className="border-vl-dark-900/10 overflow-x-auto rounded-xs border">
           <table className="w-full text-left text-xs sm:text-sm">
             <thead>
-              <tr className="border-b border-vl-dark-900/10 bg-vl-white-300/60 font-heading font-black text-vl-dark-900 uppercase tracking-wider">
+              <tr className="border-vl-dark-900/10 bg-vl-white-300/60 font-heading text-vl-dark-900 border-b font-black tracking-wider uppercase">
                 <th className="px-4 py-3">Size</th>
                 {activeTab !== "bottoms" && <th className="px-4 py-3">Chest</th>}
                 {activeTab === "bottoms" && <th className="px-4 py-3">Waist</th>}
@@ -186,15 +194,15 @@ export function SizeGuideModal() {
                 {activeTab !== "bottoms" && <th className="px-4 py-3">Sleeve</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-vl-dark-900/5">
+            <tbody className="divide-vl-dark-900/5 divide-y">
               {rows.map((row) => (
                 <tr key={row.size} className="hover:bg-vl-cyan-50/50 transition-colors">
-                  <td className="px-4 py-3 font-bold text-vl-dark-900">{row.size}</td>
-                  {row.chest && <td className="px-4 py-3 text-vl-dark-900/80">{row.chest}</td>}
-                  {row.waist && <td className="px-4 py-3 text-vl-dark-900/80">{row.waist}</td>}
-                  {row.hip && <td className="px-4 py-3 text-vl-dark-900/80">{row.hip}</td>}
-                  <td className="px-4 py-3 text-vl-dark-900/80">{row.length}</td>
-                  {row.sleeve && <td className="px-4 py-3 text-vl-dark-900/80">{row.sleeve}</td>}
+                  <td className="text-vl-dark-900 px-4 py-3 font-bold">{row.size}</td>
+                  {row.chest && <td className="text-vl-dark-900/80 px-4 py-3">{row.chest}</td>}
+                  {row.waist && <td className="text-vl-dark-900/80 px-4 py-3">{row.waist}</td>}
+                  {row.hip && <td className="text-vl-dark-900/80 px-4 py-3">{row.hip}</td>}
+                  <td className="text-vl-dark-900/80 px-4 py-3">{row.length}</td>
+                  {row.sleeve && <td className="text-vl-dark-900/80 px-4 py-3">{row.sleeve}</td>}
                 </tr>
               ))}
             </tbody>
@@ -202,15 +210,24 @@ export function SizeGuideModal() {
         </div>
 
         {/* Streetwear Fit Pro-Tip */}
-        <div className="rounded-xl bg-vl-dark-900/5 p-4 text-xs text-vl-dark-900/80 space-y-1.5">
-          <div className="flex items-center gap-1.5 font-bold text-vl-dark-900">
-            <Check className="size-3.5 text-vl-cyan-600" />
+        <div className="bg-vl-dark-900/5 text-vl-dark-900/80 space-y-1.5 rounded-xs p-3.5 text-xs">
+          <div className="text-vl-dark-900 flex items-center gap-1.5 font-bold">
+            <Check className="text-vl-cyan-600 size-3.5" />
             <span>How to measure for perfect fit:</span>
           </div>
-          <ul className="list-disc pl-5 space-y-1 text-vl-dark-900/70">
-            <li><strong>Chest:</strong> Measure across the fullest part of your chest under your armpits.</li>
-            <li><strong>Length:</strong> Measure from the highest point of the shoulder down to the bottom hem.</li>
-            <li><strong>Exchange Guarantee:</strong> If size doesn&apos;t fit, our 7-day hassle-free exchange has you covered!</li>
+          <ul className="text-vl-dark-900/70 list-disc space-y-1 pl-5">
+            <li>
+              <strong>Chest:</strong> Measure across the fullest part of your chest under your
+              armpits.
+            </li>
+            <li>
+              <strong>Length:</strong> Measure from the highest point of the shoulder down to the
+              bottom hem.
+            </li>
+            <li>
+              <strong>Exchange Guarantee:</strong> If size doesn&apos;t fit, our 7-day hassle-free
+              exchange has you covered!
+            </li>
           </ul>
         </div>
       </DialogContent>

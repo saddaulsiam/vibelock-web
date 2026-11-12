@@ -44,6 +44,7 @@ export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartB
       onClick={handleAddToCart}
       disabled={!variantId || !isAvailable || isPending}
       loading={isPending}
+      className="h-11 sm:h-12 px-3 sm:px-6 rounded-xs text-[11px] sm:text-xs font-black tracking-wider"
     >
       {!isPending && <ShoppingBag className="size-4" aria-hidden="true" />}
       {isPending ? "Adding to cart" : !isAvailable ? "Unavailable" : "Add to cart"}

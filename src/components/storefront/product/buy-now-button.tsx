@@ -43,11 +43,10 @@ export function BuyNowButton({ variantId, quantity, isAvailable }: BuyNowButtonP
       onClick={handleBuyNow}
       disabled={!variantId || !isAvailable || isPending}
       loading={isPending}
-      className="h-12 border-vl-dark-900 bg-vl-dark-900 font-bold text-white hover:bg-vl-dark-900/90 active:scale-[0.99] shadow-xs"
+      className="h-11 sm:h-12 px-3 sm:px-6 rounded-xs text-[11px] sm:text-xs font-black tracking-wider"
     >
-      {!isPending && <Zap className="size-4 text-vl-cyan fill-vl-cyan" aria-hidden="true" />}
+      {!isPending && <Zap className="text-vl-cyan fill-vl-cyan size-3.5" aria-hidden="true" />}
       {isPending ? "Directing to Checkout..." : "Instant Buy Now"}
     </Button>
   );
 }
-
