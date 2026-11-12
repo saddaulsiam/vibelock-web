@@ -3,6 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowRight,
   ImageOff,
@@ -137,11 +138,23 @@ export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
         )}
       >
         <ShoppingBag className="size-4 sm:size-4.5" aria-hidden="true" />
-        {itemCount > 0 && (
-          <span className="bg-vl-cyan text-vl-black absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-black sm:top-1 sm:right-1 sm:size-4 sm:text-[9px]">
-            {itemCount}
-          </span>
-        )}
+        <AnimatePresence>
+          {itemCount > 0 && (
+            <motion.span
+              key={itemCount}
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{
+                scale: [1, 1.4, 0.9, 1.05, 1],
+                opacity: 1,
+              }}
+              exit={{ scale: 0, opacity: 0 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+              className="bg-vl-cyan text-vl-black shadow-[0_0_10px_rgba(0,217,255,0.7)] absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-black sm:top-1 sm:right-1 sm:size-4 sm:text-[9px]"
+            >
+              {itemCount}
+            </motion.span>
+          )}
+        </AnimatePresence>
       </SheetTrigger>
 
       <SheetContent

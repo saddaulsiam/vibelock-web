@@ -15,7 +15,7 @@ export function CollectionBanner() {
       {/* Background texture overlay */}
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-50 mix-blend-screen sm:opacity-70"
-        style={{ backgroundImage: "url('/images/hero/account-hero3.png')" }}
+        style={{ backgroundImage: "url('/images/hero/account-hero1.png')" }}
         aria-hidden="true"
       />
 
