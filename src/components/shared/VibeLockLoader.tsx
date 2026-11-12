@@ -118,24 +118,29 @@ export default function VibeLockLoader({
             className="vl-glow border-vl-cyan-200 bg-vl-cyan-50 absolute -inset-2.5 rounded-full border shadow-[0_0_25px_rgba(0,217,255,0.2)]"
           />
 
-          {/* Precision Badge Container (Dark background so white logo pops cleanly) */}
-          <div className="border-vl-dark-900 bg-vl-dark-900 relative flex size-16 items-center justify-center rounded-full border-2 shadow-[0_10px_30px_rgba(16,17,20,0.2)]">
+          {/* Precision Badge Container (Dark background with cyan border so white logo pops cleanly) */}
+          <div className="border-vl-cyan bg-vl-black relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_24px_rgba(0,217,255,0.3)]">
             <Image
-              src="/images/vibelock-logo.png"
+              src="/logo/icon/vl_icon_white_transparent.svg"
               alt="VibeLock"
-              width={60}
-              height={60}
+              width={36}
+              height={36}
               priority
-              className="vl-breathe h-auto w-auto object-contain"
+              className="vl-breathe size-9 object-contain"
             />
           </div>
         </div>
 
         {/* Brand Name Typography */}
         <div className="mt-5 flex flex-col items-center text-center">
-          <h2 className="text-vl-dark-900 text-2xl font-black tracking-[0.22em] uppercase sm:text-[26px]">
-            VIBELOCK
-          </h2>
+          <Image
+            src="/logo/workmark/vibelock_wordmark_black_transparent.svg"
+            alt="VibeLock"
+            width={160}
+            height={64}
+            priority
+            className="h-11 w-auto object-contain sm:h-12"
+          />
           <div className="mt-1.5 flex items-center gap-2">
             <span className="bg-vl-dark-900/30 h-px w-3" />
             <span className="text-vl-cyan-700 text-[10px] font-extrabold tracking-[0.28em] uppercase">

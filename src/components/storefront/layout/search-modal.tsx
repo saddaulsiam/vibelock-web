@@ -208,22 +208,28 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             <Link
               href="/"
               onClick={onClose}
-              className="hidden shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90 lg:flex"
+              className="hidden shrink-0 items-center gap-0 transition-opacity hover:opacity-90 lg:flex"
               aria-label="VibeLock Home"
             >
-              <div className="border-vl-cyan bg-vl-black flex size-8 items-center justify-center rounded-full border-2 shadow-xs">
+              <div className="border-vl-cyan bg-vl-black relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
                 <Image
-                  src="/images/vibelock-logo.png"
+                  src="/logo/icon/vl_icon_white_transparent.svg"
                   alt="VibeLock"
-                  width={20}
-                  height={20}
+                  width={22}
+                  height={22}
                   priority
-                  className="h-auto w-auto object-contain"
+                  className="size-5.5 object-contain"
                 />
               </div>
-              <span className="text-vl-black text-sm font-black tracking-wider uppercase">
-                VIBELOCK
-              </span>
+              {/* VibeLock Wordmark */}
+              <Image
+                src="/logo/workmark/vibelock_wordmark_black_transparent.svg"
+                alt="VibeLock"
+                width={150}
+                height={60}
+                priority
+                className="-ml-1 h-11 w-auto shrink-0 object-contain sm:h-12"
+              />
             </Link>
 
             {/* Pill Search Input Container */}

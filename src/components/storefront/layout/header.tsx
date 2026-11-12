@@ -23,23 +23,29 @@ export async function Header() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link
             href="/"
-            className="flex items-center gap-1.5 transition-opacity hover:opacity-90 focus-visible:outline-none"
+            className="flex items-center gap-0 transition-opacity hover:opacity-90 focus-visible:outline-none"
             aria-label="VibeLock Home"
           >
             {/* Circular Black Badge with White Logo Emblem */}
-            <div className="border-vl-cyan bg-vl-black flex size-8.5 items-center justify-center rounded-full border-2 shadow-sm">
+            <div className="border-vl-cyan bg-vl-black relative flex size-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
               <Image
-                src="/images/vibelock-logo.png"
+                src="/logo/icon/vl_icon_white_transparent.svg"
                 alt="VibeLock"
-                width={22}
-                height={22}
+                width={20}
+                height={20}
                 priority
-                className="h-auto w-auto object-contain"
+                className="size-5 object-contain"
               />
             </div>
-            <span className="text-vl-white shrink-0 text-sm font-black tracking-wider whitespace-nowrap uppercase sm:text-base">
-              VIBELOCK
-            </span>
+            {/* VibeLock Wordmark */}
+            <Image
+              src="/logo/workmark/vibelock_wordmark_white_transparent.svg"
+              alt="VibeLock"
+              width={160}
+              height={64}
+              priority
+              className="-ml-1 h-11 w-auto shrink-0 object-contain sm:h-12"
+            />
           </Link>
         </div>
 
@@ -55,7 +61,7 @@ export async function Header() {
           <Link
             href="/wishlist"
             aria-label="Wishlist"
-            className="text-vl-white/75 hover:text-vl-cyan hover:bg-vl-white/10 inline-flex size-8 items-center justify-center rounded-full transition-colors sm:size-9"
+            className="hover:text-vl-cyan hover:bg-vl-white/10 text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9"
           >
             <Heart className="size-4 sm:size-4.5" aria-hidden="true" />
           </Link>
@@ -63,7 +69,7 @@ export async function Header() {
           {/* Shopping Cart Drawer */}
           <CartDrawer initialCart={cart} />
 
-          {/* Account Popover Menu (Matching screenshot!) */}
+          {/* Account Popover Menu */}
           <AccountPopover user={user} />
 
           {/* Mobile Menu Button */}

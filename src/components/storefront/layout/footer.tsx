@@ -67,22 +67,26 @@ export function Footer() {
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Left Column: Brand & About (Col-span 4) */}
           <div className="flex flex-col items-start lg:col-span-4">
-            {/* Circular Logo Badge + Brand Name */}
-            <div className="relative flex items-center gap-3">
-              <div className="border-vl-border bg-vl-dark-800 relative flex size-10 items-center justify-center rounded-full border shadow-[0_0_16px_rgba(0,217,255,0.2)]">
+            {/* Circular Logo Badge + Brand Wordmark */}
+            <div className="relative flex items-center gap-0">
+              <div className="border-vl-cyan bg-vl-black relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_16px_rgba(0,217,255,0.25)]">
                 <Image
-                  src="/images/vibelock-logo.png"
+                  src="/logo/icon/vl_icon_white_transparent.svg"
                   alt="VibeLock Emblem"
-                  width={28}
-                  height={28}
-                  className="h-auto w-auto object-contain"
+                  width={24}
+                  height={24}
+                  className="size-6 object-contain"
                 />
               </div>
 
-              {/* Brand Name in Space Grotesk */}
-              <span className="font-heading text-vl-white text-xl font-black tracking-wider uppercase">
-                VIBELOCK
-              </span>
+              {/* Brand Wordmark SVG */}
+              <Image
+                src="/logo/workmark/vibelock_wordmark_white_transparent.svg"
+                alt="VibeLock"
+                width={150}
+                height={60}
+                className="-ml-1 h-11 w-auto shrink-0 object-contain sm:h-12"
+              />
             </div>
 
             {/* Slogan */}

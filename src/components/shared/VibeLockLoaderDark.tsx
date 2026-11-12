@@ -37,28 +37,33 @@ export default function VibeLockLoaderDark({
       />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Logo Emblem reveal */}
-        <div className="border-vl-border bg-vl-dark-800 relative flex size-14 items-center justify-center rounded-2xl border shadow-[0_0_24px_rgba(0,217,255,0.2)] transition-all sm:size-16">
+        {/* Circular Logo Emblem reveal */}
+        <div className="border-vl-cyan bg-vl-black relative flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_24px_rgba(0,217,255,0.3)] transition-all sm:size-16">
           <Image
-            src="/images/vibelock-logo.png"
+            src="/logo/icon/vl_icon_white_transparent.svg"
             alt="VibeLock"
             width={34}
             height={34}
             priority
-            className="h-auto w-auto object-contain transition-transform duration-500 hover:scale-105"
+            className="size-8 object-contain transition-transform duration-500 hover:scale-105 sm:size-9"
           />
           {/* Subtle cyan accent pulse on the rim */}
           <span
             aria-hidden="true"
-            className="border-vl-cyan-200 pointer-events-none absolute inset-0 animate-pulse rounded-2xl border motion-reduce:animate-none"
+            className="border-vl-cyan-200 pointer-events-none absolute inset-0 animate-pulse rounded-full border-2 motion-reduce:animate-none"
           />
         </div>
 
-        {/* Wordmark in Space Grotesk */}
+        {/* Wordmark */}
         <div className="mt-4 flex flex-col items-center gap-1 text-center">
-          <span className="font-heading text-vl-white text-sm font-black tracking-[0.25em] uppercase sm:text-base">
-            VIBELOCK
-          </span>
+          <Image
+            src="/logo/workmark/vibelock_wordmark_white_transparent.svg"
+            alt="VibeLock"
+            width={160}
+            height={64}
+            priority
+            className="h-10 w-auto object-contain sm:h-11"
+          />
           {subLabel && (
             <span className="text-vl-cyan tracking-streetwear text-[10px] font-bold uppercase sm:text-[11px]">
               {subLabel}
