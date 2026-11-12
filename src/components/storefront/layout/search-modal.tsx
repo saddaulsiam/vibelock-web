@@ -211,14 +211,14 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
               className="hidden shrink-0 items-center gap-2.5 transition-opacity hover:opacity-90 lg:flex"
               aria-label="VibeLock Home"
             >
-              <div className="border-vl-cyan bg-vl-black flex size-8 items-center justify-center rounded-full border-2 shadow-xs">
+              <div className="border-vl-cyan bg-vl-black relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-xs">
                 <Image
-                  src="/images/vibelock-logo.png"
+                  src="/logo/icon/vl_icon_white_transparent.svg"
                   alt="VibeLock"
-                  width={20}
-                  height={20}
+                  width={18}
+                  height={18}
                   priority
-                  className="h-auto w-auto object-contain"
+                  className="size-4.5 object-contain"
                 />
               </div>
               <span className="text-vl-black text-sm font-black tracking-wider uppercase">

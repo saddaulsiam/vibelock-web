@@ -69,13 +69,13 @@ export function Footer() {
           <div className="flex flex-col items-start lg:col-span-4">
             {/* Circular Logo Badge + Brand Name */}
             <div className="relative flex items-center gap-3">
-              <div className="border-vl-border bg-vl-dark-800 relative flex size-10 items-center justify-center rounded-full border shadow-[0_0_16px_rgba(0,217,255,0.2)]">
+              <div className="border-vl-cyan bg-vl-black relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_16px_rgba(0,217,255,0.25)]">
                 <Image
-                  src="/images/vibelock-logo.png"
+                  src="/logo/icon/vl_icon_white_transparent.svg"
                   alt="VibeLock Emblem"
-                  width={28}
-                  height={28}
-                  className="h-auto w-auto object-contain"
+                  width={24}
+                  height={24}
+                  className="size-6 object-contain"
                 />
               </div>
 

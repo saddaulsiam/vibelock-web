@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User, ChevronDown, CircleUserRound, Heart, Box, Sparkles, LogOut } from "lucide-react";
+import { User, CircleUserRound, Heart, Box, Sparkles, LogOut } from "lucide-react";
 import { logoutAction } from "@/app/actions/auth";
 import { toast } from "sonner";
 
@@ -74,22 +74,19 @@ export function AccountPopover({ user }: AccountPopoverProps) {
   return (
     <div
       ref={containerRef}
-      className="relative"
+      className="relative flex items-center"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* ── Trigger Button: Cyan User Icon with Subtle Chevron ── */}
+      {/* ── Trigger Button: User Icon (Unified circular button matching header action stack) ── */}
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="hover:text-vl-cyan text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 sm:size-9 sm:w-auto sm:px-2"
+        className="hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 sm:size-9"
       >
-        <User className="size-4 stroke-[2.2] sm:size-4.5" />
-        <ChevronDown
-          className={`size-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
-        />
+        <User className="size-4 stroke-[2] sm:size-4.5" />
       </button>
 
       {/* ── Floating Account Card Popover (Matches Screenshot 1:1) ── */}

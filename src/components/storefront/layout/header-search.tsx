@@ -45,7 +45,7 @@ export function HeaderSearch({ categories = [] }: HeaderSearchProps) {
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Open search"
-        className="text-vl-white/75 hover:bg-vl-white/10 hover:text-vl-white flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors sm:size-9 lg:hidden"
+        className="hover:text-vl-cyan hover:bg-vl-white/10 text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9 lg:hidden"
       >
         <Search className="size-4 sm:size-4.5" />
       </button>

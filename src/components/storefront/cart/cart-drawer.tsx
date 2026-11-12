@@ -132,7 +132,7 @@ export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
       <SheetTrigger
         aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
         className={cn(
-          "hover:text-vl-cyan text-vl-white/75 focus-visible:ring-vl-cyan relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:outline-none sm:size-9",
+          "hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9",
           triggerClassName
         )}
       >
