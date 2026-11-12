@@ -73,11 +73,11 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
              No separate thumbnail row eating up vertical screen height!
           ─────────────────────────────────────────────────────────── */}
       <div className="lg:hidden">
-        <div className="relative mx-auto w-full max-w-[280px] xs:max-w-[300px] sm:max-w-90">
+        <div className="xs:max-w-[300px] relative mx-auto w-full max-w-90 sm:max-w-110">
           <div
             ref={mobileCarouselRef}
             onScroll={handleMobileScroll}
-            className="flex w-full overflow-x-auto snap-x snap-mandatory rounded-xs [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="flex w-full snap-x snap-mandatory scrollbar-none overflow-x-auto rounded-xs [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             aria-label="Product image carousel"
           >
             {sortedImages.map((image, index) => {
@@ -86,7 +86,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
               return (
                 <div
                   key={`${image.url}-${index}`}
-                  className="relative aspect-3/4 w-full shrink-0 snap-center overflow-hidden bg-vl-white-300"
+                  className="bg-vl-white-300 relative aspect-3/4 w-full shrink-0 snap-center overflow-hidden"
                 >
                   {!imageFailed ? (
                     <Image
@@ -113,7 +113,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
           {sortedImages.length > 1 && (
             <>
               {/* Pagination Dots */}
-              <div className="pointer-events-none absolute bottom-2.5 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-vl-dark-900/40 px-2 py-1 backdrop-blur-xs">
+              <div className="bg-vl-dark-900/40 pointer-events-none absolute bottom-2.5 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full px-2 py-1 backdrop-blur-xs">
                 {sortedImages.map((_, idx) => (
                   <button
                     key={idx}
@@ -121,9 +121,9 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
                     onClick={() => scrollToSlide(idx)}
                     aria-label={`Go to slide ${idx + 1}`}
                     className={cn(
-                      "pointer-events-auto rounded-full transition-all duration-200 cursor-pointer",
+                      "pointer-events-auto cursor-pointer rounded-full transition-all duration-200",
                       activeIndex === idx
-                        ? "h-1.5 w-4 bg-vl-cyan"
+                        ? "bg-vl-cyan h-1.5 w-4"
                         : "size-1.5 bg-white/60 hover:bg-white"
                     )}
                   />
@@ -131,7 +131,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
               </div>
 
               {/* Slide Counter (e.g. 1 / 2) */}
-              <span className="pointer-events-none absolute right-2.5 bottom-2.5 rounded-full bg-vl-dark-900/75 px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow-2xs backdrop-blur-xs">
+              <span className="bg-vl-dark-900/75 pointer-events-none absolute right-2.5 bottom-2.5 rounded-full px-2 py-0.5 font-mono text-[10px] font-bold text-white shadow-2xs backdrop-blur-xs">
                 {activeIndex + 1} / {sortedImages.length}
               </span>
             </>
@@ -189,7 +189,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
         )}
 
         {/* Right Large Main Viewer */}
-        <div className="bg-vl-white-300 relative aspect-3/4 w-full max-w-110 max-h-165 overflow-hidden">
+        <div className="bg-vl-white-300 relative aspect-3/4 max-h-165 w-full max-w-110 overflow-hidden">
           {!selectedImageFailed ? (
             <Image
               src={selectedImage.url}
