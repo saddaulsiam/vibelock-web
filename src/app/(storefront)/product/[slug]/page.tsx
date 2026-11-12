@@ -147,66 +147,69 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
 
           <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
-            <div className="border-border mb-6 border-b pb-5 sm:mb-7">
-              {mainCategory && (
-                <Link
-                  href={`/category/${mainCategory.slug}`}
-                  className="text-muted-foreground hover:text-vl-black focus-visible:ring-vl-cyan mb-3 inline-flex min-h-8 items-center text-xs font-semibold tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  {mainCategory.name}
-                </Link>
-              )}
-              <h1 className="font-heading text-vl-black text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">
+            <div className="border-b border-vl-dark-900/10 mb-6 pb-5 sm:mb-7">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+                {mainCategory && (
+                  <Link
+                    href={`/category/${mainCategory.slug}`}
+                    className="text-xs font-bold tracking-[0.2em] uppercase text-vl-dark-900/60 hover:text-vl-cyan-600 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none transition-colors"
+                  >
+                    {mainCategory.name}
+                  </Link>
+                )}
+                {product.variants[0]?.sku && (
+                  <span className="font-mono text-[11px] font-semibold text-vl-dark-900/40 tracking-wider">
+                    SKU: {product.variants[0].sku}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="font-heading text-vl-dark-900 text-3xl leading-tight font-black tracking-tight sm:text-4xl lg:text-[2.6rem]">
                 {product.name}
               </h1>
 
-              {summary.totalReviews > 0 && (
+              {summary.totalReviews > 0 ? (
                 <a
                   href="#reviews"
                   className="mt-2.5 inline-flex items-center gap-2 text-xs font-semibold text-vl-dark-900/75 transition-colors hover:text-vl-cyan-600"
                 >
                   <StarRating value={Math.round(summary.averageRating)} size="sm" />
-                  <span className="font-bold text-vl-dark-900">
+                  <span className="font-mono font-bold text-vl-dark-900">
                     {summary.averageRating.toFixed(1)}
                   </span>
                   <span className="text-vl-dark-900/50">
                     ({summary.totalReviews} {summary.totalReviews === 1 ? "review" : "reviews"})
                   </span>
                 </a>
+              ) : (
+                <a
+                  href="#reviews"
+                  className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-vl-dark-900/55 transition-colors hover:text-vl-cyan-600"
+                >
+                  <StarRating value={0} size="sm" />
+                  <span>Be the first to review</span>
+                </a>
               )}
             </div>
 
-            <VariantSelector variants={product.variants} productAvailable={product.available} />
-
-            {product.description && (
-              <section
-                className="border-border mt-8 border-t pt-6 sm:mt-10"
-                aria-labelledby="product-details-heading"
-              >
-                <h2
-                  id="product-details-heading"
-                  className="font-heading text-vl-black text-sm font-bold tracking-wider uppercase"
-                >
-                  Product details
-                </h2>
-                <div className="text-muted-foreground mt-3 space-y-3 text-sm leading-6">
-                  {product.description
-                    .split("\n")
-                    .filter(Boolean)
-                    .map((line, index) => (
-                      <p key={`${index}-${line}`}>{line}</p>
-                    ))}
-                </div>
-              </section>
-            )}
+            <VariantSelector
+              variants={product.variants}
+              productAvailable={product.available}
+              productSlug={product.slug}
+              productName={product.name}
+              description={product.description}
+            />
 
             {mainCategory && (
-              <Link
-                href={`/category/${mainCategory.slug}`}
-                className="text-vl-black hover:text-vl-cyan focus-visible:ring-vl-cyan mt-6 inline-flex min-h-10 items-center gap-2 text-sm font-semibold underline underline-offset-4 transition-colors focus-visible:ring-2 focus-visible:outline-none"
-              >
-                Explore {mainCategory.name} <ChevronRight className="size-4" aria-hidden="true" />
-              </Link>
+              <div className="mt-6 pt-4 border-t border-vl-dark-900/5">
+                <Link
+                  href={`/category/${mainCategory.slug}`}
+                  className="text-xs font-bold text-vl-dark-900 hover:text-vl-cyan-600 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none inline-flex items-center gap-1.5 tracking-wider uppercase transition-colors"
+                >
+                  <span>Explore More {mainCategory.name}</span>
+                  <ChevronRight className="size-3.5" aria-hidden="true" />
+                </Link>
+              </div>
             )}
           </div>
         </div>
