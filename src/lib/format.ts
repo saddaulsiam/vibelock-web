@@ -44,4 +44,3 @@ export function calculateDeliveryEstimate(createdAt: Date | string, city?: strin
 
   return `${formatter.format(minDate)} – ${formatter.format(maxDate)}`;
 }
-

@@ -57,16 +57,16 @@ function FinancialKpiCard({
   return (
     <Link
       href={href}
-      className="group block rounded-sm focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+      className="group focus-visible:ring-vl-cyan block rounded-sm focus-visible:ring-2 focus-visible:outline-none"
     >
-      <Card className="rounded-sm border-vl-dark-900/10 bg-white shadow-none transition-colors group-hover:border-vl-dark-900/30">
+      <Card className="border-vl-dark-900/10 group-hover:border-vl-dark-900/30 rounded-sm bg-white shadow-none transition-colors">
         <CardContent className="flex min-h-32 items-start justify-between gap-4 p-4 sm:p-5">
           <div>
             <p className="text-muted-foreground text-sm font-medium">{label}</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-vl-dark-900">{value}</p>
+            <p className="text-vl-dark-900 mt-2 text-3xl font-semibold tracking-tight">{value}</p>
             <p className="text-muted-foreground mt-1 text-xs leading-5">{detail}</p>
           </div>
-          <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900 transition-colors group-hover:bg-vl-dark-900 group-hover:text-white">
+          <span className="bg-vl-white-300 text-vl-dark-900 group-hover:bg-vl-dark-900 flex size-10 shrink-0 items-center justify-center transition-colors group-hover:text-white">
             <Icon className="size-5" aria-hidden="true" />
           </span>
         </CardContent>
@@ -87,16 +87,16 @@ function MetricCard({
   icon: typeof Boxes;
 }) {
   return (
-    <Card className="rounded-sm border-vl-dark-900/10 bg-white shadow-none">
+    <Card className="border-vl-dark-900/10 rounded-sm bg-white shadow-none">
       <CardContent className="flex min-h-32 items-start justify-between gap-4 p-4 sm:p-5">
         <div>
           <p className="text-muted-foreground text-sm font-medium">{label}</p>
-          <p className="mt-2 text-3xl font-semibold tracking-tight text-vl-dark-900">
+          <p className="text-vl-dark-900 mt-2 text-3xl font-semibold tracking-tight">
             {value.toLocaleString("en-BD")}
           </p>
           <p className="text-muted-foreground mt-1 text-xs leading-5">{detail}</p>
         </div>
-        <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900">
+        <span className="bg-vl-white-300 text-vl-dark-900 flex size-10 shrink-0 items-center justify-center">
           <Icon className="size-5" aria-hidden="true" />
         </span>
       </CardContent>
@@ -114,9 +114,9 @@ function StatusSummary({
   const sortedStatuses = [...statuses].sort((left, right) => right.count - left.count);
 
   return (
-    <Card className="rounded-sm border-vl-dark-900/10 bg-white shadow-none">
-      <CardHeader className="border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
-        <CardTitle className="text-base font-semibold text-vl-dark-900">{title}</CardTitle>
+    <Card className="border-vl-dark-900/10 rounded-sm bg-white shadow-none">
+      <CardHeader className="border-vl-dark-900/10 border-b px-4 py-4 sm:px-5">
+        <CardTitle className="text-vl-dark-900 text-base font-semibold">{title}</CardTitle>
       </CardHeader>
       <CardContent className="p-4 sm:p-5">
         {sortedStatuses.length === 0 ? (
@@ -126,7 +126,7 @@ function StatusSummary({
             {sortedStatuses.map(({ status, count }) => (
               <li key={status} className="flex items-center justify-between gap-3">
                 <OrderStatusBadge status={status} />
-                <span className="text-sm font-semibold text-vl-dark-900 tabular-nums">
+                <span className="text-vl-dark-900 text-sm font-semibold tabular-nums">
                   {count.toLocaleString("en-BD")}
                 </span>
               </li>
@@ -157,11 +157,11 @@ export default async function AdminPage({
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-7 sm:space-y-9">
-      <header className="border-b border-vl-dark-900/10 pb-5">
+      <header className="border-vl-dark-900/10 border-b pb-5">
         <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-[0.18em] uppercase">
           Operations / Overview
         </p>
-        <h2 className="text-2xl font-semibold tracking-tight text-vl-dark-900 sm:text-3xl">
+        <h2 className="text-vl-dark-900 text-2xl font-semibold tracking-tight sm:text-3xl">
           {isManagerOrAdmin ? "Admin dashboard" : "Operations dashboard"}
         </h2>
         <p className="text-muted-foreground mt-2 max-w-2xl text-sm leading-6">
@@ -177,7 +177,7 @@ export default async function AdminPage({
             <div>
               <h3
                 id="financial-kpis-heading"
-                className="text-lg font-semibold tracking-tight text-vl-dark-900"
+                className="text-vl-dark-900 text-lg font-semibold tracking-tight"
               >
                 Executive performance
               </h3>
@@ -199,10 +199,10 @@ export default async function AdminPage({
                       key={preset.key}
                       href={href}
                       aria-current={isActive ? "page" : undefined}
-                      className={`inline-flex items-center justify-center rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none ${
+                      className={`focus-visible:ring-vl-cyan inline-flex items-center justify-center rounded-sm border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
                         isActive
                           ? "border-vl-dark-900 bg-vl-dark-900 text-white shadow-none"
-                          : "text-muted-foreground hover:bg-muted border-vl-dark-900/15 bg-white hover:text-vl-dark-900"
+                          : "text-muted-foreground hover:bg-muted border-vl-dark-900/15 hover:text-vl-dark-900 bg-white"
                       }`}
                     >
                       {preset.label}
@@ -212,7 +212,7 @@ export default async function AdminPage({
               </nav>
               <Link
                 href={reportHref}
-                className="text-muted-foreground text-xs font-medium underline-offset-4 hover:text-vl-dark-900 hover:underline"
+                className="text-muted-foreground hover:text-vl-dark-900 text-xs font-medium underline-offset-4 hover:underline"
               >
                 View full report →
               </Link>
@@ -273,8 +273,8 @@ export default async function AdminPage({
         </section>
       ) : (
         <section aria-label="Staff Quick Actions" className="space-y-3">
-          <div className="border-b border-vl-dark-900/10 pb-2">
-            <h3 className="text-lg font-semibold tracking-tight text-vl-dark-900">
+          <div className="border-vl-dark-900/10 border-b pb-2">
+            <h3 className="text-vl-dark-900 text-lg font-semibold tracking-tight">
               Staff Operations Center
             </h3>
             <p className="text-muted-foreground mt-0.5 text-xs">
@@ -284,49 +284,49 @@ export default async function AdminPage({
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Link
               href="/pos"
-              className="group flex items-center gap-3 border border-vl-dark-900/10 bg-white p-4 transition-colors hover:border-vl-dark-900/30"
+              className="group border-vl-dark-900/10 hover:border-vl-dark-900/30 flex items-center gap-3 border bg-white p-4 transition-colors"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900 transition-colors group-hover:bg-vl-dark-900 group-hover:text-white">
+              <span className="bg-vl-white-300 text-vl-dark-900 group-hover:bg-vl-dark-900 flex size-10 shrink-0 items-center justify-center transition-colors group-hover:text-white">
                 <Calculator className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-vl-dark-900">POS Counter</p>
+                <p className="text-vl-dark-900 text-sm font-semibold">POS Counter</p>
                 <p className="text-muted-foreground text-xs">Scan & checkout sales</p>
               </div>
             </Link>
             <Link
               href="/admin/orders"
-              className="group flex items-center gap-3 border border-vl-dark-900/10 bg-white p-4 transition-colors hover:border-vl-dark-900/30"
+              className="group border-vl-dark-900/10 hover:border-vl-dark-900/30 flex items-center gap-3 border bg-white p-4 transition-colors"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900 transition-colors group-hover:bg-vl-dark-900 group-hover:text-white">
+              <span className="bg-vl-white-300 text-vl-dark-900 group-hover:bg-vl-dark-900 flex size-10 shrink-0 items-center justify-center transition-colors group-hover:text-white">
                 <ClipboardList className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-vl-dark-900">Fulfill Orders</p>
+                <p className="text-vl-dark-900 text-sm font-semibold">Fulfill Orders</p>
                 <p className="text-muted-foreground text-xs">Pick, pack & track shipments</p>
               </div>
             </Link>
             <Link
               href="/admin/inventory"
-              className="group flex items-center gap-3 border border-vl-dark-900/10 bg-white p-4 transition-colors hover:border-vl-dark-900/30"
+              className="group border-vl-dark-900/10 hover:border-vl-dark-900/30 flex items-center gap-3 border bg-white p-4 transition-colors"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900 transition-colors group-hover:bg-vl-dark-900 group-hover:text-white">
+              <span className="bg-vl-white-300 text-vl-dark-900 group-hover:bg-vl-dark-900 flex size-10 shrink-0 items-center justify-center transition-colors group-hover:text-white">
                 <Warehouse className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-vl-dark-900">Inventory Counts</p>
+                <p className="text-vl-dark-900 text-sm font-semibold">Inventory Counts</p>
                 <p className="text-muted-foreground text-xs">Stock on hand & alerts</p>
               </div>
             </Link>
             <Link
               href="/admin/shipping"
-              className="group flex items-center gap-3 border border-vl-dark-900/10 bg-white p-4 transition-colors hover:border-vl-dark-900/30"
+              className="group border-vl-dark-900/10 hover:border-vl-dark-900/30 flex items-center gap-3 border bg-white p-4 transition-colors"
             >
-              <span className="flex size-10 shrink-0 items-center justify-center bg-vl-white-300 text-vl-dark-900 transition-colors group-hover:bg-vl-dark-900 group-hover:text-white">
+              <span className="bg-vl-white-300 text-vl-dark-900 group-hover:bg-vl-dark-900 flex size-10 shrink-0 items-center justify-center transition-colors group-hover:text-white">
                 <Truck className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-semibold text-vl-dark-900">Shipping Status</p>
+                <p className="text-vl-dark-900 text-sm font-semibold">Shipping Status</p>
                 <p className="text-muted-foreground text-xs">Courier & consignment logs</p>
               </div>
             </Link>
@@ -369,7 +369,7 @@ export default async function AdminPage({
           <div>
             <h3
               id="inventory-heading"
-              className="text-lg font-semibold tracking-tight text-vl-dark-900"
+              className="text-vl-dark-900 text-lg font-semibold tracking-tight"
             >
               Inventory attention
             </h3>
@@ -400,12 +400,12 @@ export default async function AdminPage({
       </section>
 
       <section aria-labelledby="recent-orders-heading">
-        <Card className="rounded-sm border-vl-dark-900/10 bg-white shadow-none">
-          <CardHeader className="border-b border-vl-dark-900/10 px-4 py-4 sm:px-5">
+        <Card className="border-vl-dark-900/10 rounded-sm bg-white shadow-none">
+          <CardHeader className="border-vl-dark-900/10 border-b px-4 py-4 sm:px-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <CardTitle
                 id="recent-orders-heading"
-                className="text-base font-semibold text-vl-dark-900"
+                className="text-vl-dark-900 text-base font-semibold"
               >
                 Recent orders
               </CardTitle>
@@ -418,20 +418,20 @@ export default async function AdminPage({
                 className="text-muted-foreground mx-auto mb-3 size-7"
                 aria-hidden="true"
               />
-              <h4 className="text-sm font-semibold text-vl-dark-900">No orders yet</h4>
+              <h4 className="text-vl-dark-900 text-sm font-semibold">No orders yet</h4>
               <p className="text-muted-foreground mt-1 text-sm">
                 New orders will appear here when they are recorded.
               </p>
             </CardContent>
           ) : (
-            <ul className="divide-y divide-vl-dark-900/10">
+            <ul className="divide-vl-dark-900/10 divide-y">
               {dashboard.recentOrders.map((order) => (
                 <li
                   key={order.orderNumber}
                   className="grid gap-3 px-4 py-4 sm:grid-cols-[minmax(0,1.2fr)_minmax(8rem,0.8fr)_minmax(8rem,0.8fr)_auto] sm:items-center sm:px-5"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold break-all text-vl-dark-900">
+                    <p className="text-vl-dark-900 text-sm font-semibold break-all">
                       {order.orderNumber}
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
@@ -449,7 +449,7 @@ export default async function AdminPage({
                     <span className="text-muted-foreground text-xs sm:hidden">
                       {order._count.items} items
                     </span>
-                    <span className="text-sm font-semibold text-vl-dark-900 tabular-nums">
+                    <span className="text-vl-dark-900 text-sm font-semibold tabular-nums">
                       {formatBdt(order.total)}
                     </span>
                     <p className="text-muted-foreground mt-1 hidden text-xs sm:block">

@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import {
-  DialogHeader,
-  DialogFooter,
-  dialogContentVariants,
-} from "@/components/ui/dialog";
+import { DialogHeader, DialogFooter, dialogContentVariants } from "@/components/ui/dialog";
 
 describe("Unified Global Dialog / Modal Component", () => {
   describe("Content Variants", () => {
@@ -59,8 +55,8 @@ describe("Unified Global Dialog / Modal Component", () => {
       expect(html).toContain("Modal Heading");
       expect(html).toContain("Modal description for user context");
       expect(html).toContain("Confirm");
-      expect(html).toContain("data-slot=\"dialog-header\"");
-      expect(html).toContain("data-slot=\"dialog-footer\"");
+      expect(html).toContain('data-slot="dialog-header"');
+      expect(html).toContain('data-slot="dialog-footer"');
     });
   });
 });

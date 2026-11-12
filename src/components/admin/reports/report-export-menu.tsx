@@ -6,12 +6,7 @@ import { Button } from "@/components/ui/button";
 export function ReportExportMenu({ query }: { query: string }) {
   return (
     <div className="group relative">
-      <Button
-        type="button"
-        variant="primary"
-        className="gap-2"
-        aria-label="Export reports"
-      >
+      <Button type="button" variant="primary" className="gap-2" aria-label="Export reports">
         <Download className="size-4" /> Export
       </Button>
       <div className="invisible absolute right-0 z-20 mt-2 w-52 rounded-xl border bg-white p-1 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">

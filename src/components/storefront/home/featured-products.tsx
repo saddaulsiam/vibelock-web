@@ -120,8 +120,8 @@ export function FeaturedProducts({
             ))}
           </div>
         ) : (
-          <div className="mt-8 rounded-xs border border-dashed border-vl-dark-900/20 bg-vl-dark-900/2 px-4 py-16 text-center sm:mt-12">
-            <p className="text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+          <div className="border-vl-dark-900/20 bg-vl-dark-900/2 mt-8 rounded-xs border border-dashed px-4 py-16 text-center sm:mt-12">
+            <p className="text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
               No products found in {activeTabLabel} yet
             </p>
             <p className="text-muted-foreground mt-1 text-xs">

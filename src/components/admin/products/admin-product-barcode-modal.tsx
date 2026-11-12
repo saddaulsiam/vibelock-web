@@ -71,12 +71,12 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-vl-dark-900/20 bg-white shadow-2xl">
+      <div className="border-vl-dark-900/20 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-3.5">
+        <div className="border-vl-dark-900/10 flex items-center justify-between border-b px-5 py-3.5">
           <div className="flex items-center gap-2">
-            <Tag className="size-4 text-vl-dark-900" />
-            <h3 className="text-sm font-semibold text-vl-dark-900">
+            <Tag className="text-vl-dark-900 size-4" />
+            <h3 className="text-vl-dark-900 text-sm font-semibold">
               Print Price Tags & Barcodes ({products.length}{" "}
               {products.length === 1 ? "product" : "products"})
             </h3>
@@ -86,18 +86,18 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
+            className="text-vl-dark-900/60 hover:text-vl-dark-900 size-7"
           >
             <X className="size-4" />
           </Button>
         </div>
 
         {/* Modal Settings Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
+        <div className="border-vl-dark-900/10 bg-vl-white-200 flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-xs">
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             {/* Format selection */}
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-vl-dark-900/70">Format:</span>
+              <span className="text-vl-dark-900/70 font-semibold">Format:</span>
               <NativeSelect
                 value={barcodeLabelSize}
                 onChange={(e) =>
@@ -114,7 +114,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
 
             {/* Quantity mode */}
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-vl-dark-900/70">Quantity:</span>
+              <span className="text-vl-dark-900/70 font-semibold">Quantity:</span>
               <NativeSelect
                 value={barcodeQuantityMode}
                 onChange={(e) => {
@@ -134,8 +134,8 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
 
             {/* Custom Quantity Stepper & Presets */}
             {barcodeQuantityMode === "custom" && (
-              <div className="flex flex-wrap items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-2 py-1 shadow-2xs">
-                <span className="text-[11px] font-semibold text-vl-dark-900/70">Copies:</span>
+              <div className="border-vl-dark-900/20 flex flex-wrap items-center gap-1.5 rounded-sm border bg-white px-2 py-1 shadow-2xs">
+                <span className="text-vl-dark-900/70 text-[11px] font-semibold">Copies:</span>
                 <div className="flex items-center">
                   <Button
                     type="button"
@@ -173,7 +173,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-1 border-l border-vl-dark-900/10 pl-1">
+                <div className="border-vl-dark-900/10 flex items-center gap-1 border-l pl-1">
                   {[1, 2, 5, 10, 25, 50].map((preset) => (
                     <Button
                       key={preset}
@@ -193,9 +193,9 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
 
           {/* Total & Print Button */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-sm bg-vl-dark-900/5 px-2.5 py-1 text-xs">
+            <div className="bg-vl-dark-900/5 flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs">
               <span className="text-vl-dark-900/60">Total:</span>
-              <span className="font-bold text-vl-dark-900">
+              <span className="text-vl-dark-900 font-bold">
                 {products.reduce((acc, product) => {
                   const variants =
                     product.variants && product.variants.length > 0
@@ -220,12 +220,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
               <span className="text-vl-dark-900/60">Labels</span>
             </div>
 
-            <Button
-              type="button"
-              variant="primary"
-              size="default"
-              onClick={() => window.print()}
-            >
+            <Button type="button" variant="primary" size="default" onClick={() => window.print()}>
               <Printer className="size-3.5" />
               <span>Print Labels Now</span>
             </Button>
@@ -234,14 +229,14 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
 
         {/* Individual Variant Fine-Tuning Drawer */}
         {products.some((p) => (p.variants && p.variants.length > 1) || products.length > 1) && (
-          <div className="border-b border-vl-dark-900/10 bg-white px-5 py-2">
+          <div className="border-vl-dark-900/10 border-b bg-white px-5 py-2">
             <div className="flex items-center justify-between text-xs">
               <Button
                 type="button"
                 variant="ghost"
                 size="xs"
                 onClick={() => setShowVariantTuning(!showVariantTuning)}
-                className="gap-1.5 font-semibold text-vl-dark-900"
+                className="text-vl-dark-900 gap-1.5 font-semibold"
               >
                 <span>{showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant</span>
               </Button>
@@ -259,7 +254,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
             </div>
 
             {showVariantTuning && (
-              <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2">
+              <div className="border-vl-dark-900/10 bg-vl-white-200 mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border p-2">
                 {products.flatMap((product) => {
                   const variants =
                     product.variants && product.variants.length > 0
@@ -287,14 +282,14 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                     return (
                       <div
                         key={v.id}
-                        className="flex items-center justify-between gap-2 rounded-xs border border-vl-dark-900/5 bg-white px-2.5 py-1 text-xs"
+                        className="border-vl-dark-900/5 flex items-center justify-between gap-2 rounded-xs border bg-white px-2.5 py-1 text-xs"
                       >
                         <div className="min-w-0 flex-1 truncate">
-                          <span className="font-semibold text-vl-dark-900">{product.name}</span>
-                          <span className="ml-2 font-mono text-[10px] text-vl-dark-900/60">
+                          <span className="text-vl-dark-900 font-semibold">{product.name}</span>
+                          <span className="text-vl-dark-900/60 ml-2 font-mono text-[10px]">
                             {v.sku}
                           </span>
-                          <span className="ml-2 text-[10px] text-vl-dark-900/50">
+                          <span className="text-vl-dark-900/50 ml-2 text-[10px]">
                             {[
                               v.size ? `Size: ${v.size}` : null,
                               v.color ? `Color: ${v.color}` : null,
@@ -393,7 +388,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                 return Array.from({ length: count }, (_, idx) => (
                   <div
                     key={`${v.id}-${idx}`}
-                    className={`vibelock-label-card relative flex flex-col justify-between rounded-sm border border-dashed border-vl-dark-900/30 bg-white p-2 text-center text-vl-dark-900 shadow-xs ${
+                    className={`vibelock-label-card border-vl-dark-900/30 text-vl-dark-900 relative flex flex-col justify-between rounded-sm border border-dashed bg-white p-2 text-center shadow-xs ${
                       barcodeLabelSize === "compact"
                         ? "h-[25mm] w-[40mm]"
                         : barcodeLabelSize === "sheet"
@@ -402,11 +397,11 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                     }`}
                   >
                     {count > 1 && (
-                      <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-vl-dark-900/40">
+                      <span className="no-print text-vl-dark-900/40 absolute top-1 right-1 font-mono text-[8px]">
                         #{idx + 1}
                       </span>
                     )}
-                    <div className="border-b border-vl-dark-900/15 pb-0.5">
+                    <div className="border-vl-dark-900/15 border-b pb-0.5">
                       <span className="text-[9px] font-extrabold tracking-widest uppercase">
                         VIBELOCK
                       </span>
@@ -422,7 +417,7 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
                     </div>
                     <div className="px-1 py-0.5">
                       <BarcodeSvg value={v.sku} height={20} />
-                      <p className="font-mono text-[8px] tracking-wider text-vl-dark-900/80">
+                      <p className="text-vl-dark-900/80 font-mono text-[8px] tracking-wider">
                         {v.sku}
                       </p>
                     </div>
@@ -434,14 +429,14 @@ export function AdminProductBarcodeModal({ products, onClose }: AdminProductBarc
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-between border-t border-vl-dark-900/10 bg-white px-5 py-2.5 text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 text-vl-dark-900/60 flex items-center justify-between border-t bg-white px-5 py-2.5 text-xs">
           <span>Previewing labels before printing. Press Print Now to send to printer.</span>
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="font-semibold text-vl-dark-900"
+            className="text-vl-dark-900 font-semibold"
           >
             Close
           </Button>

@@ -107,19 +107,21 @@ export function AdminInventoryAdjustModal({
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
-      <div className="w-full max-w-lg rounded-sm border border-vl-dark-900/20 bg-white shadow-2xl">
+      <div className="border-vl-dark-900/20 w-full max-w-lg rounded-sm border bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-3.5">
+        <div className="border-vl-dark-900/10 flex items-center justify-between border-b px-5 py-3.5">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="size-4 text-vl-dark-900" />
-            <h3 className="text-sm font-semibold text-vl-dark-900">Quick Stock Adjust: {item.sku}</h3>
+            <SlidersHorizontal className="text-vl-dark-900 size-4" />
+            <h3 className="text-vl-dark-900 text-sm font-semibold">
+              Quick Stock Adjust: {item.sku}
+            </h3>
           </div>
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
+            className="text-vl-dark-900/60 hover:text-vl-dark-900 size-7"
           >
             <X className="size-4" />
           </Button>
@@ -128,9 +130,9 @@ export function AdminInventoryAdjustModal({
         {/* Modal Body */}
         <div className="space-y-4 p-5">
           {/* Product Info Snapshot */}
-          <div className="flex items-center gap-3 rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-3">
+          <div className="border-vl-dark-900/10 bg-vl-white-200 flex items-center gap-3 rounded-sm border p-3">
             {item.primaryImage ? (
-              <div className="relative size-12 shrink-0 overflow-hidden rounded-xs border border-vl-dark-900/15 bg-white">
+              <div className="border-vl-dark-900/15 relative size-12 shrink-0 overflow-hidden rounded-xs border bg-white">
                 <Image
                   src={item.primaryImage}
                   alt={item.product.name}
@@ -141,8 +143,8 @@ export function AdminInventoryAdjustModal({
               </div>
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-vl-dark-900">{item.product.name}</p>
-              <p className="mt-0.5 font-mono text-[10px] text-vl-dark-900/60">
+              <p className="text-vl-dark-900 truncate text-xs font-semibold">{item.product.name}</p>
+              <p className="text-vl-dark-900/60 mt-0.5 font-mono text-[10px]">
                 {item.sku} •{" "}
                 {[
                   item.size ? `Size: ${item.size}` : null,
@@ -156,16 +158,16 @@ export function AdminInventoryAdjustModal({
 
           {/* Stock Snapshot Cards */}
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
-            <div className="rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2">
-              <p className="text-[10px] font-semibold text-vl-dark-900/60 uppercase">Physical</p>
-              <p className="text-base font-bold text-vl-dark-900">{item.totalStock}</p>
+            <div className="border-vl-dark-900/10 bg-vl-white-200 rounded-sm border p-2">
+              <p className="text-vl-dark-900/60 text-[10px] font-semibold uppercase">Physical</p>
+              <p className="text-vl-dark-900 text-base font-bold">{item.totalStock}</p>
             </div>
-            <div className="rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2">
-              <p className="text-[10px] font-semibold text-vl-dark-900/60 uppercase">Reserved</p>
+            <div className="border-vl-dark-900/10 bg-vl-white-200 rounded-sm border p-2">
+              <p className="text-vl-dark-900/60 text-[10px] font-semibold uppercase">Reserved</p>
               <p className="text-base font-bold text-amber-800">{item.reserved}</p>
             </div>
-            <div className="rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2">
-              <p className="text-[10px] font-semibold text-vl-dark-900/60 uppercase">Available</p>
+            <div className="border-vl-dark-900/10 bg-vl-white-200 rounded-sm border p-2">
+              <p className="text-vl-dark-900/60 text-[10px] font-semibold uppercase">Available</p>
               <p className="text-base font-bold text-emerald-800">{item.available}</p>
             </div>
           </div>
@@ -178,7 +180,7 @@ export function AdminInventoryAdjustModal({
 
           {/* Transaction Type Selector */}
           <div>
-            <label className="block text-xs font-semibold text-vl-dark-900">Adjustment Type</label>
+            <label className="text-vl-dark-900 block text-xs font-semibold">Adjustment Type</label>
             <div className="mt-1.5 grid grid-cols-4 gap-1.5 text-xs">
               {(["RESTOCK", "ADJUSTMENT", "DAMAGE", "RETURN"] as const).map((t) => (
                 <Button
@@ -212,10 +214,10 @@ export function AdminInventoryAdjustModal({
           {/* Quantity Input & Preset Pills */}
           <div>
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-vl-dark-900">
+              <label className="text-vl-dark-900 block text-xs font-semibold">
                 Quantity Adjustment <span className="text-red-500">*</span>
               </label>
-              <span className="text-[10px] text-vl-dark-900/50">Use (+) to add, (-) to deduct</span>
+              <span className="text-vl-dark-900/50 text-[10px]">Use (+) to add, (-) to deduct</span>
             </div>
             <div className="mt-1">
               <Input
@@ -231,7 +233,7 @@ export function AdminInventoryAdjustModal({
 
             {/* Quick Preset Buttons */}
             <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
-              <span className="text-[10px] font-semibold text-vl-dark-900/50">Quick:</span>
+              <span className="text-vl-dark-900/50 text-[10px] font-semibold">Quick:</span>
               {(adjustType === "DAMAGE"
                 ? ["-1", "-2", "-5", "-10"]
                 : ["+5", "+10", "+25", "+50", "+100"]
@@ -281,7 +283,7 @@ export function AdminInventoryAdjustModal({
 
           {/* Reason Input with suggestions */}
           <div>
-            <label className="block text-xs font-semibold text-vl-dark-900">
+            <label className="text-vl-dark-900 block text-xs font-semibold">
               Adjustment Reason <span className="text-red-500">*</span>
             </label>
             <div className="mt-1">
@@ -302,7 +304,7 @@ export function AdminInventoryAdjustModal({
                   variant="secondary"
                   size="xs"
                   onClick={() => setAdjustReason(reasonText)}
-                  className="h-5 px-1.5 text-[10px] text-vl-dark-900/70"
+                  className="text-vl-dark-900/70 h-5 px-1.5 text-[10px]"
                 >
                   {reasonText}
                 </Button>
@@ -312,7 +314,7 @@ export function AdminInventoryAdjustModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
+        <div className="border-vl-dark-900/10 bg-vl-white-200 flex items-center justify-end gap-2 border-t px-5 py-3 text-xs">
           <Button type="button" variant="outline" size="default" onClick={onClose}>
             Cancel
           </Button>

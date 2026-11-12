@@ -66,7 +66,9 @@ export function AdminPageHeader({
           </p>
         )}
         <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-2xl font-bold tracking-tight text-vl-dark-900 sm:text-3xl">{title}</h1>
+          <h1 className="text-vl-dark-900 text-2xl font-bold tracking-tight sm:text-3xl">
+            {title}
+          </h1>
           {badgeLabel && (
             <span
               className={cn(

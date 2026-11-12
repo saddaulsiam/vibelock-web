@@ -4,4 +4,3 @@ export default async function AdminPaymentsLayout({ children }: { children: Reac
   await requireRole("MANAGER");
   return <>{children}</>;
 }
-

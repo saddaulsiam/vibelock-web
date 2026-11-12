@@ -339,18 +339,8 @@ export function RefundForm({ returnId, action }: { returnId: string; action: Act
         placeholder="Amount (৳)"
         size="default"
       />
-      <Input
-        name="reason"
-        maxLength={500}
-        placeholder="Refund reason"
-        size="default"
-      />
-      <Button
-        type="submit"
-        variant="primary"
-        size="default"
-        disabled={pending}
-      >
+      <Input name="reason" maxLength={500} placeholder="Refund reason" size="default" />
+      <Button type="submit" variant="primary" size="default" disabled={pending}>
         {pending ? "Creating..." : "Create pending refund"}
       </Button>
       <p className="text-muted-foreground text-xs">
@@ -539,7 +529,7 @@ export function ReturnSteadfastPickupCard({
               href={reverseLogistics.trackingUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg bg-vl-dark-900 px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
+              className="bg-vl-dark-900 inline-flex h-8.5 flex-1 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-bold text-white shadow-2xs transition hover:bg-neutral-800"
               title="Open Steadfast live tracking portal"
             >
               <Truck className="size-3.5" />

@@ -64,19 +64,19 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
     return (
       <div className="space-y-12" role="status" aria-label="Loading wishlist">
         <div>
-          <div className="mb-6 flex items-center justify-between border-b border-vl-black/10 pb-4">
-            <Skeleton className="h-4 w-24 bg-vl-dark-900/10" />
-            <Skeleton className="h-4 w-16 bg-vl-dark-900/10" />
+          <div className="border-vl-black/10 mb-6 flex items-center justify-between border-b pb-4">
+            <Skeleton className="bg-vl-dark-900/10 h-4 w-24" />
+            <Skeleton className="bg-vl-dark-900/10 h-4 w-16" />
           </div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => (
               <div key={i} className="flex flex-col space-y-3">
-                <Skeleton className="aspect-3/4 w-full rounded-2xl bg-vl-dark-900/10" />
+                <Skeleton className="bg-vl-dark-900/10 aspect-3/4 w-full rounded-2xl" />
                 <div className="space-y-1.5 pt-1">
-                  <Skeleton className="h-3.5 w-3/4 bg-vl-dark-900/10" />
-                  <Skeleton className="h-4 w-1/3 bg-vl-dark-900/10" />
+                  <Skeleton className="bg-vl-dark-900/10 h-3.5 w-3/4" />
+                  <Skeleton className="bg-vl-dark-900/10 h-4 w-1/3" />
                 </div>
-                <Skeleton className="h-8 w-full rounded-xl bg-vl-dark-900/10" />
+                <Skeleton className="bg-vl-dark-900/10 h-8 w-full rounded-xl" />
               </div>
             ))}
           </div>
@@ -90,8 +90,8 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       {savedProducts.length > 0 ? (
         <div>
           {/* Action Bar */}
-          <div className="mb-6 flex items-center justify-between border-b border-vl-black/10 pb-4">
-            <span className="text-xs font-bold text-vl-dark-900">
+          <div className="border-vl-black/10 mb-6 flex items-center justify-between border-b pb-4">
+            <span className="text-vl-dark-900 text-xs font-bold">
               {savedProducts.length} {savedProducts.length === 1 ? "Saved Item" : "Saved Items"}
             </span>
             <Button
@@ -115,7 +115,7 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => handleRemove(product.slug)}
-                  className="text-muted-foreground mt-2.5 w-full rounded-xl border-vl-black/15 bg-white text-xs font-semibold hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                  className="text-muted-foreground border-vl-black/15 mt-2.5 w-full rounded-xl bg-white text-xs font-semibold hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
                 >
                   <Trash2 className="size-3.5" />
                   <span>Remove</span>
@@ -126,22 +126,18 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
         </div>
       ) : (
         /* Empty State */
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-vl-black/15 bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-vl-white text-vl-dark-900">
+        <div className="border-vl-black/15 flex flex-col items-center justify-center rounded-2xl border border-dashed bg-white p-8 py-16 text-center shadow-xs sm:p-12 sm:py-20">
+          <div className="bg-vl-white text-vl-dark-900 flex h-16 w-16 items-center justify-center rounded-2xl">
             <Heart className="text-vl-cyan-dark size-8" />
           </div>
-          <h2 className="mt-4 text-xl font-black tracking-tight text-vl-dark-900 uppercase sm:text-2xl">
+          <h2 className="text-vl-dark-900 mt-4 text-xl font-black tracking-tight uppercase sm:text-2xl">
             Your wishlist is empty
           </h2>
           <p className="text-muted-foreground mt-2 max-w-md text-xs leading-relaxed sm:text-sm">
             Hit the heart icon on any streetwear drop, graphic tee, or oversized hoodie to save your
             favorite fits for later.
           </p>
-          <Button
-            asChild
-            size="lg"
-            className="mt-6"
-          >
+          <Button asChild size="lg" className="mt-6">
             <Link href="/shop">
               <span>Explore Drops</span>
               <ArrowRight className="size-4" />
@@ -151,19 +147,19 @@ export function WishlistContent({ initialProducts }: WishlistContentProps) {
       )}
 
       {/* Featured / Trending Streetwear Drops */}
-      <div className="border-t border-vl-black/10 pt-10">
+      <div className="border-vl-black/10 border-t pt-10">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <span className="text-vl-cyan-dark text-[11px] font-bold tracking-widest uppercase">
               Trending Drops
             </span>
-            <h3 className="mt-1 text-lg font-black tracking-tight text-vl-dark-900 uppercase sm:text-xl">
+            <h3 className="text-vl-dark-900 mt-1 text-lg font-black tracking-tight uppercase sm:text-xl">
               You Might Also Like
             </h3>
           </div>
           <Link
             href="/shop"
-            className="hover:text-vl-cyan-dark group inline-flex items-center gap-1 text-xs font-bold text-vl-dark-900 transition-colors"
+            className="hover:text-vl-cyan-dark group text-vl-dark-900 inline-flex items-center gap-1 text-xs font-bold transition-colors"
           >
             <span>View All</span>
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />

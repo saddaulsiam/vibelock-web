@@ -4,4 +4,3 @@ export default async function AdminCouponsLayout({ children }: { children: React
   await requireRole("MANAGER");
   return <>{children}</>;
 }
-

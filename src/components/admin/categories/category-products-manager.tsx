@@ -306,7 +306,7 @@ export function CategoryProductsManager({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2.5">
           <div className="relative w-full sm:max-w-md">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
             <Input
               type="text"
               value={search}
@@ -621,7 +621,7 @@ export function CategoryProductsManager({
             <div className="border-b border-neutral-100 bg-neutral-50/60 p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Search className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                   <Input
                     type="text"
                     value={modalSearch}

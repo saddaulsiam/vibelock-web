@@ -37,18 +37,18 @@ export default async function NewBannerPage() {
       <header className="space-y-1.5">
         <Link
           href="/admin/banners"
-          className="text-muted-foreground inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-colors hover:text-vl-dark-900"
+          className="text-muted-foreground hover:text-vl-dark-900 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-colors"
         >
           <ArrowLeft className="size-3.5" /> Back to banners
         </Link>
-        <h2 className="text-2xl font-semibold tracking-tight text-vl-dark-900 sm:text-3xl">
+        <h2 className="text-vl-dark-900 text-2xl font-semibold tracking-tight sm:text-3xl">
           Create banner
         </h2>
         <p className="text-muted-foreground text-xs">
           Configure where the campaign appears and which categories it targets.
         </p>
       </header>
-      <Card className="overflow-visible rounded-sm border-vl-dark-900/10 bg-white shadow-none">
+      <Card className="border-vl-dark-900/10 overflow-visible rounded-sm bg-white shadow-none">
         <CardContent className="p-4 sm:p-6">
           <BannerForm categories={categories} />
         </CardContent>

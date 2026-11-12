@@ -65,14 +65,16 @@ export function formatPaymentGatewayLabel(
     case "CASH":
       return {
         label: "Cash Counter",
-        colorClass: "border-emerald-300 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-50",
+        colorClass:
+          "border-emerald-300 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-50",
         icon: "CASH",
       };
     case "COD":
       return {
         label: "COD",
         sublabel: "Cash on Delivery",
-        colorClass: "border-emerald-300 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-50",
+        colorClass:
+          "border-emerald-300 bg-emerald-50 text-emerald-800 font-bold hover:bg-emerald-50",
         icon: "CASH",
       };
     default:
@@ -105,11 +107,21 @@ export function PaymentGatewayBadge({
     >
       {showIcon && (
         <>
-          {info.icon === "CASH" && <Banknote className="size-3 shrink-0 text-emerald-700" aria-hidden="true" />}
-          {info.icon === "CARD" && <CreditCard className="size-3 shrink-0 text-blue-700" aria-hidden="true" />}
-          {info.icon === "PHONE" && <Smartphone className="size-3 shrink-0 text-pink-700" aria-hidden="true" />}
-          {info.icon === "QR" && <QrCode className="size-3 shrink-0 text-teal-700" aria-hidden="true" />}
-          {info.icon === "SPLIT" && <Layers className="size-3 shrink-0 text-cyan-700" aria-hidden="true" />}
+          {info.icon === "CASH" && (
+            <Banknote className="size-3 shrink-0 text-emerald-700" aria-hidden="true" />
+          )}
+          {info.icon === "CARD" && (
+            <CreditCard className="size-3 shrink-0 text-blue-700" aria-hidden="true" />
+          )}
+          {info.icon === "PHONE" && (
+            <Smartphone className="size-3 shrink-0 text-pink-700" aria-hidden="true" />
+          )}
+          {info.icon === "QR" && (
+            <QrCode className="size-3 shrink-0 text-teal-700" aria-hidden="true" />
+          )}
+          {info.icon === "SPLIT" && (
+            <Layers className="size-3 shrink-0 text-cyan-700" aria-hidden="true" />
+          )}
         </>
       )}
       <span>{info.label}</span>

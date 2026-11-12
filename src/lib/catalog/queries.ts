@@ -277,9 +277,7 @@ export const getRelatedProducts = async (options: {
         where: {
           status: ProductStatus.PUBLISHED,
           id: { not: options.productId },
-          ...(options.categorySlug
-            ? { categories: { some: { slug: options.categorySlug } } }
-            : {}),
+          ...(options.categorySlug ? { categories: { some: { slug: options.categorySlug } } } : {}),
         },
         include: PUBLIC_PRODUCT_INCLUDES,
         orderBy: { createdAt: "desc" },

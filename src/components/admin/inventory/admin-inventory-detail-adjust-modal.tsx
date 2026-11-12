@@ -104,11 +104,11 @@ export function AdminInventoryDetailAdjustModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-      <div className="animate-in fade-in-0 zoom-in-95 relative w-full max-w-lg rounded-md border border-vl-dark-900/15 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-4">
+      <div className="animate-in fade-in-0 zoom-in-95 border-vl-dark-900/15 relative w-full max-w-lg rounded-md border bg-white shadow-xl">
+        <div className="border-vl-dark-900/10 flex items-center justify-between border-b px-5 py-4">
           <div>
-            <h3 className="font-bold text-vl-dark-900">Record Stock Movement / Adjustment</h3>
-            <p className="text-xs text-vl-dark-900/60">
+            <h3 className="text-vl-dark-900 font-bold">Record Stock Movement / Adjustment</h3>
+            <p className="text-vl-dark-900/60 text-xs">
               {variant.product.name} ({variant.sku})
             </p>
           </div>
@@ -117,7 +117,7 @@ export function AdminInventoryDetailAdjustModal({
             variant="ghost"
             size="icon"
             onClick={onClose}
-            className="size-7 text-vl-dark-900/60 hover:text-vl-dark-900"
+            className="text-vl-dark-900/60 hover:text-vl-dark-900 size-7"
           >
             <X className="size-4" />
           </Button>
@@ -126,7 +126,7 @@ export function AdminInventoryDetailAdjustModal({
         <form onSubmit={handleQuickAdjustSubmit} className="space-y-4 p-5">
           {/* Type Selection */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-vl-dark-900">
+            <label className="text-vl-dark-900 mb-1 block text-xs font-semibold">
               Adjustment Type
             </label>
             <div className="grid grid-cols-4 gap-2">
@@ -146,14 +146,16 @@ export function AdminInventoryDetailAdjustModal({
           </div>
 
           {/* Mode Toggle */}
-          <div className="flex items-center justify-between rounded-xs border border-vl-dark-900/10 bg-vl-white-200 p-1.5 text-xs">
+          <div className="border-vl-dark-900/10 bg-vl-white-200 flex items-center justify-between rounded-xs border p-1.5 text-xs">
             <Button
               type="button"
               variant={adjustMode === "delta" ? "secondary" : "ghost"}
               size="xs"
               onClick={() => setAdjustMode("delta")}
               className={`flex-1 font-semibold ${
-                adjustMode === "delta" ? "bg-white text-vl-dark-900 shadow-2xs" : "text-vl-dark-900/60"
+                adjustMode === "delta"
+                  ? "text-vl-dark-900 bg-white shadow-2xs"
+                  : "text-vl-dark-900/60"
               }`}
             >
               Add / Remove Delta
@@ -167,7 +169,9 @@ export function AdminInventoryDetailAdjustModal({
                 setTargetQuantity(totalStock);
               }}
               className={`flex-1 font-semibold ${
-                adjustMode === "target" ? "bg-white text-vl-dark-900 shadow-2xs" : "text-vl-dark-900/60"
+                adjustMode === "target"
+                  ? "text-vl-dark-900 bg-white shadow-2xs"
+                  : "text-vl-dark-900/60"
               }`}
             >
               Set Total Target Stock
@@ -178,8 +182,8 @@ export function AdminInventoryDetailAdjustModal({
           {adjustMode === "delta" ? (
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-vl-dark-900">Quantity to Adjust</label>
-                <span className="text-[11px] text-vl-dark-900/60">
+                <label className="text-vl-dark-900 text-xs font-semibold">Quantity to Adjust</label>
+                <span className="text-vl-dark-900/60 text-[11px]">
                   {adjustType === "DAMAGE"
                     ? "Negative delta will reduce stock"
                     : "Positive delta will increase stock"}
@@ -233,7 +237,7 @@ export function AdminInventoryDetailAdjustModal({
             </div>
           ) : (
             <div>
-              <label className="text-xs font-semibold text-vl-dark-900">
+              <label className="text-vl-dark-900 text-xs font-semibold">
                 Target Physical Stock (Currently: {totalStock})
               </label>
               <div className="mt-1.5">
@@ -247,7 +251,7 @@ export function AdminInventoryDetailAdjustModal({
                   className="font-mono text-base font-bold"
                 />
               </div>
-              <p className="mt-1 text-[11px] text-vl-dark-900/60">
+              <p className="text-vl-dark-900/60 mt-1 text-[11px]">
                 Delta to record:{" "}
                 <strong>{computedDelta > 0 ? `+${computedDelta}` : computedDelta}</strong>
               </p>
@@ -271,7 +275,7 @@ export function AdminInventoryDetailAdjustModal({
                 New Physical: <strong>{previewStock}</strong>
               </span>
             </div>
-            <div className="mt-1 flex items-center justify-between text-[11px] text-vl-dark-900/70">
+            <div className="text-vl-dark-900/70 mt-1 flex items-center justify-between text-[11px]">
               <span>Reserved: {reservedStock}</span>
               <span>
                 New Available to Sell: <strong>{previewAvailable}</strong>
@@ -281,7 +285,7 @@ export function AdminInventoryDetailAdjustModal({
 
           {/* Reason / Notes */}
           <div>
-            <label className="mb-1 block text-xs font-semibold text-vl-dark-900">
+            <label className="text-vl-dark-900 mb-1 block text-xs font-semibold">
               Reason / Audit Note
             </label>
             <Input
@@ -323,7 +327,7 @@ export function AdminInventoryDetailAdjustModal({
           )}
 
           {/* Submit Buttons */}
-          <div className="flex items-center justify-end gap-2 border-t border-vl-dark-900/10 pt-2">
+          <div className="border-vl-dark-900/10 flex items-center justify-end gap-2 border-t pt-2">
             <Button
               type="button"
               variant="outline"
@@ -333,12 +337,7 @@ export function AdminInventoryDetailAdjustModal({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="default"
-              disabled={isSubmittingAdjust}
-            >
+            <Button type="submit" variant="primary" size="default" disabled={isSubmittingAdjust}>
               {isSubmittingAdjust ? "Saving Ledger Entry..." : "Confirm & Save"}
             </Button>
           </div>

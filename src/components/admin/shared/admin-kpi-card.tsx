@@ -157,7 +157,7 @@ export function AdminKpiCard({
     return (
       <Link
         href={href}
-        className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-dark-900 focus-visible:ring-offset-2"
+        className="focus-visible:ring-vl-dark-900 block focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         {content}
       </Link>

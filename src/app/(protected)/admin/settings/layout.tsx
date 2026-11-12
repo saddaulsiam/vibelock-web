@@ -8,23 +8,23 @@ export default async function AdminSettingsLayout({ children }: { children: Reac
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-vl-dark-900/10 pb-5">
+      <div className="border-vl-dark-900/10 border-b pb-5">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-muted-foreground text-xs font-semibold tracking-[0.16em] uppercase">
               VibeLock / Admin / Settings
             </p>
-            <h1 className="text-2xl font-bold tracking-tight text-vl-dark-900 sm:text-3xl">
+            <h1 className="text-vl-dark-900 text-2xl font-bold tracking-tight sm:text-3xl">
               Store Settings
             </h1>
           </div>
         </div>
 
         {/* Settings Navigation Tabs */}
-        <div className="mt-6 flex flex-wrap gap-2 border-b border-vl-dark-900/10 pb-px">
+        <div className="border-vl-dark-900/10 mt-6 flex flex-wrap gap-2 border-b pb-px">
           <Link
             href="/admin/settings/payments"
-            className="inline-flex min-h-10 items-center gap-2 border-b-2 border-vl-dark-900 px-4 text-sm font-semibold text-vl-dark-900 transition-colors"
+            className="border-vl-dark-900 text-vl-dark-900 inline-flex min-h-10 items-center gap-2 border-b-2 px-4 text-sm font-semibold transition-colors"
           >
             <CreditCard className="size-4" aria-hidden="true" />
             Payment Methods

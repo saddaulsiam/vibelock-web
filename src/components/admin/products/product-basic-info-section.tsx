@@ -61,9 +61,9 @@ export function ProductBasicInfoSection({
   };
 
   return (
-    <div className="space-y-5 border border-vl-dark-900/10 bg-white p-4 sm:p-6">
-      <div className="border-b border-vl-dark-900/10 pb-4">
-        <h3 className="text-base font-semibold text-vl-dark-900">Basic Information</h3>
+    <div className="border-vl-dark-900/10 space-y-5 border bg-white p-4 sm:p-6">
+      <div className="border-vl-dark-900/10 border-b pb-4">
+        <h3 className="text-vl-dark-900 text-base font-semibold">Basic Information</h3>
         <p className="text-muted-foreground mt-1 text-xs leading-5">
           Title, live auto-generating URL handle, and rich catalog description.
         </p>
@@ -71,7 +71,7 @@ export function ProductBasicInfoSection({
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="product-name" className="block text-sm font-medium text-vl-dark-900">
+          <label htmlFor="product-name" className="text-vl-dark-900 block text-sm font-medium">
             Product Title / Name{" "}
             <span aria-hidden="true" className="text-red-700">
               *
@@ -94,7 +94,7 @@ export function ProductBasicInfoSection({
 
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="product-slug" className="block text-sm font-medium text-vl-dark-900">
+            <label htmlFor="product-slug" className="text-vl-dark-900 block text-sm font-medium">
               Product Slug{" "}
               <span className="text-muted-foreground text-xs font-normal">
                 (unique storefront URL handle)
@@ -112,9 +112,9 @@ export function ProductBasicInfoSection({
                 variant="link"
                 size="xs"
                 onClick={onGenerateSlug}
-                className="h-auto p-0 font-semibold text-muted-foreground underline underline-offset-4 hover:text-vl-dark-900"
+                className="text-muted-foreground hover:text-vl-dark-900 h-auto p-0 font-semibold underline underline-offset-4"
               >
-                <Sparkles className="size-3.5 text-vl-cyan" />
+                <Sparkles className="text-vl-cyan size-3.5" />
                 Generate from name
               </Button>
             </div>
@@ -133,11 +133,11 @@ export function ProductBasicInfoSection({
             />
           </div>
           <div className="text-muted-foreground mt-1.5 flex items-center gap-1.5 text-xs">
-            <Globe className="size-3.5 text-vl-dark-900/40" />
+            <Globe className="text-vl-dark-900/40 size-3.5" />
             <span>Preview:</span>
-            <span className="font-mono text-vl-dark-900">
+            <span className="text-vl-dark-900 font-mono">
               vibelock.bd/products/
-              <strong className="font-semibold text-vl-dark-900">{slug || "product-slug"}</strong>
+              <strong className="text-vl-dark-900 font-semibold">{slug || "product-slug"}</strong>
             </span>
           </div>
         </div>
@@ -147,7 +147,7 @@ export function ProductBasicInfoSection({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <label
               htmlFor="product-description"
-              className="block text-sm font-medium text-vl-dark-900"
+              className="text-vl-dark-900 block text-sm font-medium"
             >
               Description &amp; Specifications
             </label>
@@ -160,7 +160,7 @@ export function ProductBasicInfoSection({
                   variant="outline"
                   size="xs"
                   onClick={() => insertTemplateSnippet(tmpl.snippet)}
-                  className="h-6 gap-1 rounded border-vl-dark-900/15 bg-vl-white-100 px-2 py-0.5 text-[11px] font-medium text-vl-dark-900 hover:bg-vl-dark-900 hover:text-white"
+                  className="border-vl-dark-900/15 bg-vl-white-100 text-vl-dark-900 hover:bg-vl-dark-900 h-6 gap-1 rounded px-2 py-0.5 text-[11px] font-medium hover:text-white"
                 >
                   + {tmpl.label}
                 </Button>

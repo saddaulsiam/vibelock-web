@@ -86,7 +86,8 @@ const selectableCardVariants = cva(
 );
 
 export interface SelectableCardProps
-  extends Omit<React.ComponentProps<"label">, "onChange" | "title">,
+  extends
+    Omit<React.ComponentProps<"label">, "onChange" | "title">,
     VariantProps<typeof selectableCardVariants> {
   /** Radio group name attribute */
   name: string;
@@ -149,7 +150,7 @@ const SelectableCard = React.forwardRef<HTMLLabelElement, SelectableCardProps>(
         checked={checked}
         disabled={Boolean(disabled)}
         onChange={onChange}
-        className={cn("mt-0.5 size-4 accent-vl-black shrink-0", inputClassName)}
+        className={cn("accent-vl-black mt-0.5 size-4 shrink-0", inputClassName)}
       />
     );
 
@@ -179,7 +180,7 @@ const SelectableCard = React.forwardRef<HTMLLabelElement, SelectableCardProps>(
           </>
         ) : (
           <>
-            <div className="flex items-start gap-2.5 min-w-0">
+            <div className="flex min-w-0 items-start gap-2.5">
               {radioInput}
               <div className="min-w-0">
                 {title}

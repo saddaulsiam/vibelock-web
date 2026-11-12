@@ -30,9 +30,7 @@ describe("Unified Global Badge Component", () => {
 
     for (const { name, expectedClass } of variants) {
       it(`renders variant="${name}" with design token classes`, () => {
-        const html = renderToStaticMarkup(
-          <Badge variant={name}>{name} status</Badge>
-        );
+        const html = renderToStaticMarkup(<Badge variant={name}>{name} status</Badge>);
         for (const cls of expectedClass.split(" ")) {
           expect(html).toContain(cls);
         }
@@ -50,9 +48,7 @@ describe("Unified Global Badge Component", () => {
 
     for (const { name, expectedClass } of sizes) {
       it(`renders size="${name}" with standard dimensions`, () => {
-        const html = renderToStaticMarkup(
-          <Badge size={name}>Label</Badge>
-        );
+        const html = renderToStaticMarkup(<Badge size={name}>Label</Badge>);
         for (const cls of expectedClass.split(" ")) {
           expect(html).toContain(cls);
         }
@@ -79,13 +75,21 @@ describe("Unified Global Badge Component", () => {
 
   describe("Status Dots & Radar Ping", () => {
     it("renders solid dot indicator when dot=true", () => {
-      const html = renderToStaticMarkup(<Badge variant="success" dot>In Stock</Badge>);
+      const html = renderToStaticMarkup(
+        <Badge variant="success" dot>
+          In Stock
+        </Badge>
+      );
       expect(html).toContain("size-1.5");
       expect(html).toContain("bg-emerald-500");
     });
 
     it("renders radar pulse animation when dot='pulse'", () => {
-      const html = renderToStaticMarkup(<Badge variant="cyan" dot="pulse">Live Drop</Badge>);
+      const html = renderToStaticMarkup(
+        <Badge variant="cyan" dot="pulse">
+          Live Drop
+        </Badge>
+      );
       expect(html).toContain("animate-ping");
       expect(html).toContain("bg-vl-cyan");
     });
@@ -96,14 +100,16 @@ describe("Unified Global Badge Component", () => {
       const html = renderToStaticMarkup(
         <Badge icon={<span data-testid="prefix-icon" />}>Verified</Badge>
       );
-      expect(html).toContain("data-testid=\"prefix-icon\"");
+      expect(html).toContain('data-testid="prefix-icon"');
     });
 
     it("renders accessible remove button when removable=true", () => {
       const html = renderToStaticMarkup(
-        <Badge removable removeLabel="Remove size filter">Size: L</Badge>
+        <Badge removable removeLabel="Remove size filter">
+          Size: L
+        </Badge>
       );
-      expect(html).toContain("aria-label=\"Remove size filter\"");
+      expect(html).toContain('aria-label="Remove size filter"');
       expect(html).toContain("<button");
     });
   });
@@ -111,7 +117,9 @@ describe("Unified Global Badge Component", () => {
   describe("Custom overrides and attributes", () => {
     it("merges custom className without dropping variant classes", () => {
       const html = renderToStaticMarkup(
-        <Badge variant="cyan" className="custom-extra-class">Verified</Badge>
+        <Badge variant="cyan" className="custom-extra-class">
+          Verified
+        </Badge>
       );
       expect(html).toContain("custom-extra-class");
       expect(html).toContain("bg-vl-cyan-100");

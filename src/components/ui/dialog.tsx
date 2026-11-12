@@ -29,7 +29,7 @@ function DialogOverlay({ className, ...props }: DialogPrimitive.Backdrop.Props) 
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/60 duration-150 backdrop-blur-xs",
+        "data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 fixed inset-0 isolate z-50 bg-black/60 backdrop-blur-xs duration-150",
         className
       )}
       {...props}
@@ -67,8 +67,7 @@ const dialogContentVariants = cva(
 );
 
 export interface DialogContentProps
-  extends DialogPrimitive.Popup.Props,
-    VariantProps<typeof dialogContentVariants> {
+  extends DialogPrimitive.Popup.Props, VariantProps<typeof dialogContentVariants> {
   showCloseButton?: boolean;
 }
 
@@ -95,7 +94,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground absolute top-3 right-3"
                 size="icon-sm"
               />
             }
@@ -127,14 +126,16 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2.5 pt-2",
+        "flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end sm:gap-2.5",
         className
       )}
       {...props}
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" size="sm" />}>Close</DialogPrimitive.Close>
+        <DialogPrimitive.Close render={<Button variant="outline" size="sm" />}>
+          Close
+        </DialogPrimitive.Close>
       )}
     </div>
   );
@@ -144,7 +145,10 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("font-heading text-base sm:text-lg leading-tight font-semibold text-foreground", className)}
+      className={cn(
+        "font-heading text-foreground text-base leading-tight font-semibold sm:text-lg",
+        className
+      )}
       {...props}
     />
   );

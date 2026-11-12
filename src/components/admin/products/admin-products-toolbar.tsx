@@ -126,7 +126,11 @@ export function AdminProductsToolbar({
         <Button
           type="button"
           size="sm"
-          variant={currentFilters.status === "all" && currentFilters.stock === "all" ? "primary" : "outline"}
+          variant={
+            currentFilters.status === "all" && currentFilters.stock === "all"
+              ? "primary"
+              : "outline"
+          }
           onClick={() => onUpdateQuery({ status: "all", stock: "all" })}
           className="gap-1.5 rounded-lg text-xs font-semibold"
         >
@@ -146,7 +150,11 @@ export function AdminProductsToolbar({
         <Button
           type="button"
           size="sm"
-          variant={currentFilters.status === "PUBLISHED" && currentFilters.stock === "all" ? "primary" : "outline"}
+          variant={
+            currentFilters.status === "PUBLISHED" && currentFilters.stock === "all"
+              ? "primary"
+              : "outline"
+          }
           onClick={() => onUpdateQuery({ status: "PUBLISHED", stock: "all" })}
           className="gap-1.5 rounded-lg text-xs font-semibold"
         >
@@ -166,7 +174,11 @@ export function AdminProductsToolbar({
         <Button
           type="button"
           size="sm"
-          variant={currentFilters.status === "DRAFT" && currentFilters.stock === "all" ? "primary" : "outline"}
+          variant={
+            currentFilters.status === "DRAFT" && currentFilters.stock === "all"
+              ? "primary"
+              : "outline"
+          }
           onClick={() => onUpdateQuery({ status: "DRAFT", stock: "all" })}
           className="gap-1.5 rounded-lg text-xs font-semibold"
         >

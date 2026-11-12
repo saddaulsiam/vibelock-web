@@ -53,7 +53,10 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
   };
 }
 
-export function mapOrderDetail(order: PrismaOrderWithItems, imageBySku?: Map<string, string>): OrderDetail {
+export function mapOrderDetail(
+  order: PrismaOrderWithItems,
+  imageBySku?: Map<string, string>
+): OrderDetail {
   const primaryGateway = order.payments?.[0]?.gateway;
   return {
     id: order.id,
@@ -91,13 +94,14 @@ export function mapOrderDetail(order: PrismaOrderWithItems, imageBySku?: Map<str
       })) || [],
 
     refunds:
-      order.payments?.flatMap((p) =>
-        p.refunds?.map((r) => ({
-          id: r.id,
-          status: r.status,
-          amount: Number(r.amount),
-          createdAt: r.createdAt,
-        })) || []
+      order.payments?.flatMap(
+        (p) =>
+          p.refunds?.map((r) => ({
+            id: r.id,
+            status: r.status,
+            amount: Number(r.amount),
+            createdAt: r.createdAt,
+          })) || []
       ) || [],
 
     // 3-Day Return Policy:

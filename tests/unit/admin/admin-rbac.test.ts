@@ -57,13 +57,7 @@ describe("Unified RBAC Hierarchy & Permissions", () => {
 
       // Staff should only see 5 items in sidebar (POS Counter is promoted to top header)
       expect(totalItems).toHaveLength(5);
-      expect(labels).toEqual([
-        "Dashboard",
-        "Orders",
-        "Shipping",
-        "Returns",
-        "Inventory",
-      ]);
+      expect(labels).toEqual(["Dashboard", "Orders", "Shipping", "Returns", "Inventory"]);
 
       // Groups with no items (Marketing & CRM, Analytics & Settings) must not be rendered
       const groupNames = filtered.map((g) => g.group).filter(Boolean);
@@ -106,4 +100,3 @@ describe("Unified RBAC Hierarchy & Permissions", () => {
     });
   });
 });
-

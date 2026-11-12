@@ -44,4 +44,3 @@ export const accountNavItems: NavItem[] = [
       p.startsWith("/account/security"),
   },
 ];
-

@@ -195,33 +195,33 @@ export async function getAdminOrders({
       paymentMethod: order.paymentMethod,
       paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
       salesChannel: order.salesChannel,
-    total: Number(order.total),
-    subtotal: Number(order.subtotal),
-    shippingCost: Number(order.shippingCost),
-    discount: Number(order.discount),
-    customerEmail: order.customerEmail,
-    customerName: order.customerName,
-    customerPhone: order.customerPhone,
-    shippingCity: order.shippingCity,
-    itemCount: order._count.items,
-    itemsSummary: order.items
-      .map(
-        (i) =>
-          `${i.productName}${i.size ? ` (${i.size})` : ""}${
-            i.quantity > 1 ? ` ×${i.quantity}` : ""
-          }`
-      )
-      .join(", "),
-    createdAt: order.createdAt.toISOString(),
-    shipment: order.shipment
-      ? {
-          provider: order.shipment.provider,
-          trackingNumber: order.shipment.trackingNumber,
-          status: order.shipment.status,
-        }
-      : null,
-  };
-});
+      total: Number(order.total),
+      subtotal: Number(order.subtotal),
+      shippingCost: Number(order.shippingCost),
+      discount: Number(order.discount),
+      customerEmail: order.customerEmail,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      shippingCity: order.shippingCity,
+      itemCount: order._count.items,
+      itemsSummary: order.items
+        .map(
+          (i) =>
+            `${i.productName}${i.size ? ` (${i.size})` : ""}${
+              i.quantity > 1 ? ` ×${i.quantity}` : ""
+            }`
+        )
+        .join(", "),
+      createdAt: order.createdAt.toISOString(),
+      shipment: order.shipment
+        ? {
+            provider: order.shipment.provider,
+            trackingNumber: order.shipment.trackingNumber,
+            status: order.shipment.status,
+          }
+        : null,
+    };
+  });
 
   return {
     orders: mappedOrders,

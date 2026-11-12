@@ -79,12 +79,12 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
 
   return (
     <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs duration-150">
-      <div className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border border-vl-dark-900/20 bg-white shadow-2xl">
+      <div className="border-vl-dark-900/20 flex max-h-[90vh] w-full max-w-4xl flex-col rounded-sm border bg-white shadow-2xl">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-vl-dark-900/10 px-5 py-3.5">
+        <div className="border-vl-dark-900/10 flex items-center justify-between border-b px-5 py-3.5">
           <div className="flex items-center gap-2">
-            <Tag className="size-4 text-vl-dark-900" />
-            <h3 className="text-sm font-semibold text-vl-dark-900">
+            <Tag className="text-vl-dark-900 size-4" />
+            <h3 className="text-vl-dark-900 text-sm font-semibold">
               Print Barcodes & Price Tags ({items.length}{" "}
               {items.length === 1 ? "variant" : "variants"})
             </h3>
@@ -101,10 +101,10 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
         </div>
 
         {/* Modal Settings Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-vl-dark-900/10 bg-vl-white-200 px-5 py-3 text-xs">
+        <div className="border-vl-dark-900/10 bg-vl-white-200 flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3 text-xs">
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-vl-dark-900/70">Format:</span>
+              <span className="text-vl-dark-900/70 font-semibold">Format:</span>
               <NativeSelect
                 value={barcodeLabelSize}
                 onChange={(e) =>
@@ -120,7 +120,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
             </div>
 
             <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-vl-dark-900/70">Quantity:</span>
+              <span className="text-vl-dark-900/70 font-semibold">Quantity:</span>
               <NativeSelect
                 value={barcodeQuantityMode}
                 onChange={(e) => {
@@ -140,15 +140,15 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
 
             {/* Custom Quantity Stepper & Presets */}
             {barcodeQuantityMode === "custom" && (
-              <div className="flex flex-wrap items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-2 py-1 shadow-2xs">
-                <span className="text-[11px] font-semibold text-vl-dark-900/70">Copies:</span>
+              <div className="border-vl-dark-900/20 flex flex-wrap items-center gap-1.5 rounded-sm border bg-white px-2 py-1 shadow-2xs">
+                <span className="text-vl-dark-900/70 text-[11px] font-semibold">Copies:</span>
                 <div className="flex items-center">
                   <Button
                     type="button"
                     variant="secondary"
                     size="icon-xs"
                     onClick={() => setBarcodeCustomQuantity((prev) => Math.max(1, prev - 1))}
-                    className="size-6 rounded-xs p-0 text-vl-dark-900"
+                    className="text-vl-dark-900 size-6 rounded-xs p-0"
                     title="Decrease"
                   >
                     <Minus className="size-3" />
@@ -172,14 +172,14 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                     variant="secondary"
                     size="icon-xs"
                     onClick={() => setBarcodeCustomQuantity((prev) => Math.min(500, prev + 1))}
-                    className="size-6 rounded-xs p-0 text-vl-dark-900"
+                    className="text-vl-dark-900 size-6 rounded-xs p-0"
                     title="Increase"
                   >
                     <Plus className="size-3" />
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-1 border-l border-vl-dark-900/10 pl-1">
+                <div className="border-vl-dark-900/10 flex items-center gap-1 border-l pl-1">
                   {[1, 2, 5, 10, 25, 50].map((preset) => (
                     <Button
                       key={preset}
@@ -199,9 +199,9 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
 
           {/* Total & Print Button */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-sm bg-vl-dark-900/5 px-2.5 py-1 text-xs">
+            <div className="bg-vl-dark-900/5 flex items-center gap-1.5 rounded-sm px-2.5 py-1 text-xs">
               <span className="text-vl-dark-900/60">Total:</span>
-              <span className="font-bold text-vl-dark-900">
+              <span className="text-vl-dark-900 font-bold">
                 {items.reduce((acc, item) => {
                   if (barcodeItemOverrides[item.id] !== undefined) {
                     return acc + Math.max(1, barcodeItemOverrides[item.id]);
@@ -233,14 +233,14 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
 
         {/* Individual Variant Fine-Tuning Drawer */}
         {items.length > 1 && (
-          <div className="border-b border-vl-dark-900/10 bg-white px-5 py-2">
+          <div className="border-vl-dark-900/10 border-b bg-white px-5 py-2">
             <div className="flex items-center justify-between text-xs">
               <Button
                 type="button"
                 variant="link"
                 size="xs"
                 onClick={() => setShowVariantTuning(!showVariantTuning)}
-                className="h-auto p-0 font-semibold text-vl-dark-900 hover:underline"
+                className="text-vl-dark-900 h-auto p-0 font-semibold hover:underline"
               >
                 <span>
                   {showVariantTuning ? "▲ Hide" : "▼ Fine-tune"} quantities by variant (
@@ -261,7 +261,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
             </div>
 
             {showVariantTuning && (
-              <div className="mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-2">
+              <div className="border-vl-dark-900/10 bg-vl-white-200 mt-2 max-h-36 space-y-1.5 overflow-y-auto rounded-sm border p-2">
                 {items.map((item) => {
                   const count =
                     barcodeItemOverrides[item.id] !== undefined
@@ -275,14 +275,14 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                   return (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between gap-2 rounded-xs border border-vl-dark-900/5 bg-white px-2.5 py-1 text-xs"
+                      className="border-vl-dark-900/5 flex items-center justify-between gap-2 rounded-xs border bg-white px-2.5 py-1 text-xs"
                     >
                       <div className="min-w-0 flex-1 truncate">
-                        <span className="font-semibold text-vl-dark-900">{item.product.name}</span>
-                        <span className="ml-2 font-mono text-[10px] text-vl-dark-900/60">
+                        <span className="text-vl-dark-900 font-semibold">{item.product.name}</span>
+                        <span className="text-vl-dark-900/60 ml-2 font-mono text-[10px]">
                           {item.sku}
                         </span>
-                        <span className="ml-2 text-[10px] text-vl-dark-900/50">
+                        <span className="text-vl-dark-900/50 ml-2 text-[10px]">
                           {[
                             item.size ? `Size: ${item.size}` : null,
                             item.color ? `Color: ${item.color}` : null,
@@ -306,7 +306,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                               [item.id]: Math.max(1, count - 1),
                             }))
                           }
-                          className="size-5 rounded-xs p-0 text-vl-dark-900"
+                          className="text-vl-dark-900 size-5 rounded-xs p-0"
                         >
                           <Minus className="size-2.5" />
                         </Button>
@@ -337,7 +337,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                               [item.id]: Math.min(500, count + 1),
                             }))
                           }
-                          className="size-5 rounded-xs p-0 text-vl-dark-900"
+                          className="text-vl-dark-900 size-5 rounded-xs p-0"
                         >
                           <Plus className="size-2.5" />
                         </Button>
@@ -369,7 +369,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
               return Array.from({ length: count }, (_, idx) => (
                 <div
                   key={`${item.id}-${idx}`}
-                  className={`vibelock-inventory-label-card relative flex flex-col justify-between rounded-sm border border-dashed border-vl-dark-900/30 bg-white p-2 text-center text-vl-dark-900 shadow-xs ${
+                  className={`vibelock-inventory-label-card border-vl-dark-900/30 text-vl-dark-900 relative flex flex-col justify-between rounded-sm border border-dashed bg-white p-2 text-center shadow-xs ${
                     barcodeLabelSize === "compact"
                       ? "h-[25mm] w-[40mm]"
                       : barcodeLabelSize === "sheet"
@@ -378,11 +378,11 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                   }`}
                 >
                   {count > 1 && (
-                    <span className="no-print absolute top-1 right-1 font-mono text-[8px] text-vl-dark-900/40">
+                    <span className="no-print text-vl-dark-900/40 absolute top-1 right-1 font-mono text-[8px]">
                       #{idx + 1}
                     </span>
                   )}
-                  <div className="border-b border-vl-dark-900/15 pb-0.5">
+                  <div className="border-vl-dark-900/15 border-b pb-0.5">
                     <span className="text-[9px] font-extrabold tracking-widest uppercase">
                       VIBELOCK
                     </span>
@@ -398,7 +398,7 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
                   </div>
                   <div className="px-1 py-0.5">
                     <BarcodeSvg value={item.sku} height={20} />
-                    <p className="font-mono text-[8px] tracking-wider text-vl-dark-900/80">
+                    <p className="text-vl-dark-900/80 font-mono text-[8px] tracking-wider">
                       {item.sku}
                     </p>
                   </div>
@@ -408,14 +408,14 @@ export function AdminInventoryBarcodeModal({ items, onClose }: AdminInventoryBar
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-vl-dark-900/10 bg-white px-5 py-2.5 text-xs text-vl-dark-900/60">
+        <div className="border-vl-dark-900/10 text-vl-dark-900/60 flex items-center justify-between border-t bg-white px-5 py-2.5 text-xs">
           <span>Previewing labels before printing. Press Print Labels Now to send to printer.</span>
           <Button
             type="button"
             variant="link"
             size="xs"
             onClick={onClose}
-            className="h-auto p-0 font-semibold text-vl-dark-900 hover:underline"
+            className="text-vl-dark-900 h-auto p-0 font-semibold hover:underline"
           >
             Close
           </Button>

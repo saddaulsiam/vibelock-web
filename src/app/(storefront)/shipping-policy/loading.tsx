@@ -6,14 +6,14 @@ export default function ShippingPolicyLoading() {
     <div
       role="status"
       aria-label="Loading shipping policy"
-      className="flex flex-col bg-vl-white-300 text-vl-dark-900"
+      className="bg-vl-white-300 text-vl-dark-900 flex flex-col"
     >
       {/* ── 1. Hero Header Skeleton ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <Container className="relative z-10">
           <div className="max-w-2xl space-y-4">
             <div className="flex items-center gap-2">
-              <Skeleton className="size-4 rounded-full bg-vl-cyan/60" />
+              <Skeleton className="bg-vl-cyan/60 size-4 rounded-full" />
               <Skeleton className="h-3.5 w-44 bg-white/10" />
             </div>
             <Skeleton className="h-10 w-4/5 bg-white/15 sm:h-12" />
@@ -36,16 +36,16 @@ export default function ShippingPolicyLoading() {
           <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
             {/* Left Sticky Rates & Courier Summary Skeleton (Col 4) */}
             <aside className="hidden lg:col-span-4 lg:block">
-              <div className="rounded-xl border border-black/10 bg-white p-5 shadow-sm space-y-4">
-                <Skeleton className="h-3 w-28 bg-vl-dark-900/10" />
+              <div className="space-y-4 rounded-xl border border-black/10 bg-white p-5 shadow-sm">
+                <Skeleton className="bg-vl-dark-900/10 h-3 w-28" />
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between">
-                    <Skeleton className="h-4 w-24 bg-vl-dark-900/10" />
-                    <Skeleton className="h-4 w-12 bg-vl-dark-900/10" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-24" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-12" />
                   </div>
                   <div className="flex justify-between">
-                    <Skeleton className="h-4 w-28 bg-vl-dark-900/10" />
-                    <Skeleton className="h-4 w-12 bg-vl-dark-900/10" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-28" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-12" />
                   </div>
                 </div>
               </div>
@@ -56,13 +56,13 @@ export default function ShippingPolicyLoading() {
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8 space-y-4"
+                  className="space-y-4 rounded-2xl border border-black/10 bg-white p-6 shadow-sm sm:p-8"
                 >
-                  <Skeleton className="h-6 w-1/2 bg-vl-dark-900/10" />
+                  <Skeleton className="bg-vl-dark-900/10 h-6 w-1/2" />
                   <div className="space-y-2 pt-1">
-                    <Skeleton className="h-4 w-full bg-vl-dark-900/10" />
-                    <Skeleton className="h-4 w-full bg-vl-dark-900/10" />
-                    <Skeleton className="h-4 w-4/5 bg-vl-dark-900/10" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-full" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-full" />
+                    <Skeleton className="bg-vl-dark-900/10 h-4 w-4/5" />
                   </div>
                 </div>
               ))}
@@ -73,4 +73,3 @@ export default function ShippingPolicyLoading() {
     </div>
   );
 }
-

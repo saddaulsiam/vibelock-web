@@ -84,7 +84,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
         onClick={() => setIsOpen((prev) => !prev)}
         aria-expanded={isOpen}
         aria-label="Account options"
-        className="hover:text-vl-cyan text-vl-white/75 inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan sm:size-9 sm:w-auto sm:px-2"
+        className="hover:text-vl-cyan text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center gap-0.5 rounded-full p-0 transition-opacity hover:bg-white/10 hover:opacity-85 focus:outline-none focus-visible:ring-2 sm:size-9 sm:w-auto sm:px-2"
       >
         <User className="size-4 stroke-[2.2] sm:size-4.5" />
         <ChevronDown
@@ -113,7 +113,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                     />
                   </div>
                 ) : (
-                  <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-white shadow-2xs">
+                  <div className="bg-vl-dark-900 flex size-11 shrink-0 items-center justify-center rounded-full text-white shadow-2xs">
                     <CircleUserRound className="size-7 stroke-[1.8] text-white" />
                   </div>
                 )}
@@ -122,7 +122,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                     HELLO,
                   </span>
                   <h3
-                    className="mt-1 truncate text-sm leading-snug font-bold tracking-tight text-vl-dark-900"
+                    className="text-vl-dark-900 mt-1 truncate text-sm leading-snug font-bold tracking-tight"
                     title={user.name || "Customer"}
                   >
                     {user.name || "Customer"}
@@ -172,7 +172,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/register"
                   onClick={() => setIsOpen(false)}
-                  className="font-bold text-vl-cyan hover:underline"
+                  className="text-vl-cyan font-bold hover:underline"
                 >
                   Start here
                 </Link>
@@ -194,9 +194,9 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/wishlist"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
+                  className="group hover:text-vl-dark-900 flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors"
                 >
-                  <Heart className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
+                  <Heart className="group-hover:text-vl-dark-900 size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors" />
                   <span>Wishlist</span>
                 </Link>
               </div>
@@ -211,25 +211,25 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 <Link
                   href="/account/orders"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
+                  className="group hover:text-vl-dark-900 flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors"
                 >
-                  <Box className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
+                  <Box className="group-hover:text-vl-dark-900 size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors" />
                   <span>Orders</span>
                 </Link>
                 <Link
                   href="/account/coupons"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
+                  className="group hover:text-vl-dark-900 flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors"
                 >
-                  <Sparkles className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
+                  <Sparkles className="group-hover:text-vl-dark-900 size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors" />
                   <span>Offers</span>
                 </Link>
                 <Link
                   href="/account/profile"
                   onClick={() => setIsOpen(false)}
-                  className="group flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors hover:text-vl-dark-900"
+                  className="group hover:text-vl-dark-900 flex items-center gap-2.5 py-0.5 text-xs font-medium text-neutral-600 transition-colors"
                 >
-                  <User className="size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors group-hover:text-vl-dark-900" />
+                  <User className="group-hover:text-vl-dark-900 size-4 shrink-0 stroke-[1.6] text-neutral-400 transition-colors" />
                   <span>Profile</span>
                 </Link>
               </div>

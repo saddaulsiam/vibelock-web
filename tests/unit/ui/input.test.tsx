@@ -8,7 +8,7 @@ describe("Centralized Input and Textarea Primitives", () => {
     it("renders default variant with rounded-brand", () => {
       const html = renderToStaticMarkup(<Input placeholder="Default" />);
       expect(html).toContain("rounded-brand");
-      expect(html).toContain("data-slot=\"input\"");
+      expect(html).toContain('data-slot="input"');
     });
 
     it("renders brand variant with streetwear rounded-brand and cyan focus ring", () => {
@@ -51,7 +51,7 @@ describe("Centralized Input and Textarea Primitives", () => {
       expect(html).toContain("bg-white");
       expect(html).toContain("border-vl-black/15");
       expect(html).toContain("focus-visible:ring-vl-cyan");
-      expect(html).toContain("data-slot=\"textarea\"");
+      expect(html).toContain('data-slot="textarea"');
     });
 
     it("renders textarea default size with min-h-24", () => {
@@ -81,4 +81,3 @@ describe("Centralized Input and Textarea Primitives", () => {
     });
   });
 });
-

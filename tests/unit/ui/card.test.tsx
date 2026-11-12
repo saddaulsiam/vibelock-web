@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import type { ComponentProps } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 
 type CardVariant = NonNullable<ComponentProps<typeof Card>["variant"]>;
 
@@ -17,9 +24,7 @@ describe("Unified Global Card Component", () => {
 
     for (const { name, expectedClass } of variants) {
       it(`renders variant="${name}" with design token classes`, () => {
-        const html = renderToStaticMarkup(
-          <Card variant={name}>Content</Card>
-        );
+        const html = renderToStaticMarkup(<Card variant={name}>Content</Card>);
         for (const cls of expectedClass.split(" ")) {
           expect(html).toContain(cls);
         }
@@ -52,4 +57,3 @@ describe("Unified Global Card Component", () => {
     });
   });
 });
-

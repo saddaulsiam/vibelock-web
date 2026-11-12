@@ -62,7 +62,7 @@ export function AdminSaveForm({
           {state.message}
         </p>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 pt-4">
+      <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
         {secondaryAction ?? <div />}
         <SubmitButton label={submitLabel} />
       </div>

@@ -41,7 +41,7 @@ export function ProductShareButton({ productName }: ProductShareButtonProps) {
       variant="outline"
       size="lg"
       onClick={handleShare}
-      className="size-11 sm:size-12 shrink-0 rounded-xs p-0 border-vl-dark-900/15 hover:border-vl-dark-900 hover:bg-vl-white-300/60 text-vl-dark-900 transition-colors"
+      className="border-vl-dark-900/15 hover:border-vl-dark-900 hover:bg-vl-white-300/60 text-vl-dark-900 size-11 shrink-0 rounded-xs p-0 transition-colors sm:size-12"
       title="Share this product"
       aria-label="Share this product"
     >

@@ -16,18 +16,13 @@ export function ProductBadge({
     variant === "sale"
       ? "sale"
       : variant === "new"
-      ? "new"
-      : variant === "featured"
-      ? "featured"
-      : "brand";
+        ? "new"
+        : variant === "featured"
+          ? "featured"
+          : "brand";
 
   return (
-    <Badge
-      variant={badgeVariant}
-      size="sm"
-      className={className}
-      {...props}
-    >
+    <Badge variant={badgeVariant} size="sm" className={className} {...props}>
       {label}
     </Badge>
   );

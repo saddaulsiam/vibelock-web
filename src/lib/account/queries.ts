@@ -257,9 +257,7 @@ export async function getCustomerReturnById(id: string) {
       },
     });
     imageBySku = new Map(
-      variants
-        .filter((v) => v.product.images[0]?.url)
-        .map((v) => [v.sku, v.product.images[0].url])
+      variants.filter((v) => v.product.images[0]?.url).map((v) => [v.sku, v.product.images[0].url])
     );
   }
 

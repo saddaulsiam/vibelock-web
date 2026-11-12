@@ -74,9 +74,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
       },
       _sum: { quantity: true },
     }),
-    isManagerOrAdmin
-      ? getAdminReport({ range, summaryOnly: true })
-      : Promise.resolve(null),
+    isManagerOrAdmin ? getAdminReport({ range, summaryOnly: true }) : Promise.resolve(null),
   ]);
 
   const transactionQuantityByVariant = new Map(

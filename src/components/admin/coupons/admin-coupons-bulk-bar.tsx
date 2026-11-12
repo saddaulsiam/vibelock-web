@@ -56,7 +56,7 @@ export function AdminCouponsBulkBar({
           size="sm"
           disabled={isBulkOperating}
           onClick={onBulkPause}
-          className="gap-1.5 bg-vl-dark-900 font-semibold text-white shadow-2xs hover:bg-vl-dark-900/85"
+          className="bg-vl-dark-900 hover:bg-vl-dark-900/85 gap-1.5 font-semibold text-white shadow-2xs"
         >
           {isBulkOperating ? (
             <Loader2 className="size-3.5 animate-spin" />

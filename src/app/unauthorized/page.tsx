@@ -12,9 +12,7 @@ export default function UnauthorizedPage() {
         contact support or check your account level.
       </p>
       <Button asChild size="lg">
-        <Link href="/">
-          Return to Home
-        </Link>
+        <Link href="/">Return to Home</Link>
       </Button>
     </div>
   );

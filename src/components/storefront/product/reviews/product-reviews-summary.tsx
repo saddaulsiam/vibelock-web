@@ -25,30 +25,31 @@ export function ProductReviewsSummary({
   const recommendPercent = Math.round((positiveReviews / totalReviews) * 100);
 
   return (
-    <div className="rounded-xs border border-vl-dark-900/10 bg-white p-4 shadow-2xs sm:p-5">
+    <div className="border-vl-dark-900/10 rounded-xs border bg-white p-4 shadow-2xs sm:p-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] sm:items-center sm:gap-5">
         {/* Left Side: Score & Rating */}
-        <div className="flex flex-col items-center justify-center border-b border-vl-dark-900/10 pb-4 text-center sm:border-r sm:border-b-0 sm:pr-6 sm:pb-0">
-          <div className="font-heading text-4xl font-black tracking-tight text-vl-dark-900 sm:text-5xl">
+        <div className="border-vl-dark-900/10 flex flex-col items-center justify-center border-b pb-4 text-center sm:border-r sm:border-b-0 sm:pr-6 sm:pb-0">
+          <div className="font-heading text-vl-dark-900 text-4xl font-black tracking-tight sm:text-5xl">
             {averageRating.toFixed(1)}
           </div>
           <div className="mt-1.5">
             <StarRating value={Math.round(averageRating)} size="md" />
           </div>
-          <p className="mt-1.5 text-xs font-semibold text-vl-dark-900/60">
-            {totalReviews} {totalReviews === 1 ? "review" : "reviews"} • {recommendPercent}% recommended
+          <p className="text-vl-dark-900/60 mt-1.5 text-xs font-semibold">
+            {totalReviews} {totalReviews === 1 ? "review" : "reviews"} • {recommendPercent}%
+            recommended
           </p>
         </div>
 
         {/* Right Side: Rating Distribution Bars */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-bold text-vl-dark-900/60 pb-0.5">
-            <span className="text-[11px] uppercase tracking-wider">Breakdown</span>
+          <div className="text-vl-dark-900/60 flex items-center justify-between pb-0.5 text-xs font-bold">
+            <span className="text-[11px] tracking-wider uppercase">Breakdown</span>
             {selectedRating && (
               <button
                 type="button"
                 onClick={() => onSelectRating?.(null)}
-                className="flex items-center gap-1 text-[11px] text-vl-cyan-dark hover:underline font-bold cursor-pointer"
+                className="text-vl-cyan-dark flex cursor-pointer items-center gap-1 text-[11px] font-bold hover:underline"
               >
                 <Filter className="size-3" />
                 Clear ({selectedRating}★)
@@ -66,17 +67,15 @@ export function ProductReviewsSummary({
                 key={stars}
                 type="button"
                 onClick={() => onSelectRating?.(isSelected ? null : stars)}
-                className={`group flex w-full items-center gap-2.5 rounded-lg px-2 py-0.5 text-xs transition-colors cursor-pointer text-left ${
+                className={`group flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2 py-0.5 text-left text-xs transition-colors ${
                   isSelected
-                    ? "bg-vl-cyan-50 ring-1 ring-vl-cyan-300 font-bold"
+                    ? "bg-vl-cyan-50 ring-vl-cyan-300 font-bold ring-1"
                     : "hover:bg-vl-dark-900/5"
                 }`}
                 title={`Filter by ${stars} star reviews`}
               >
-                <span className="w-7 shrink-0 font-bold text-vl-dark-900 text-xs">
-                  {stars} ★
-                </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-vl-dark-900/10">
+                <span className="text-vl-dark-900 w-7 shrink-0 text-xs font-bold">{stars} ★</span>
+                <div className="bg-vl-dark-900/10 h-2 flex-1 overflow-hidden rounded-full">
                   <div
                     className={`h-full rounded-full transition-all duration-500 ease-out ${
                       isSelected ? "bg-vl-dark-900" : "bg-vl-cyan"
@@ -88,7 +87,7 @@ export function ProductReviewsSummary({
                     aria-valuemax={100}
                   />
                 </div>
-                <div className="w-12 shrink-0 text-right text-vl-dark-900/60 tabular-nums font-mono text-[11px]">
+                <div className="text-vl-dark-900/60 w-12 shrink-0 text-right font-mono text-[11px] tabular-nums">
                   {count}
                 </div>
               </button>

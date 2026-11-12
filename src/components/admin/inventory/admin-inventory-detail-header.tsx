@@ -56,26 +56,26 @@ export function AdminInventoryDetailHeader({
   return (
     <div className="space-y-6">
       {/* Top Breadcrumb & Navigation */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-vl-dark-900/10 pb-4">
-        <div className="flex items-center gap-2 text-sm text-vl-dark-900/60">
+      <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-4 border-b pb-4">
+        <div className="text-vl-dark-900/60 flex items-center gap-2 text-sm">
           <Link
             href="/admin/inventory"
-            className="inline-flex items-center gap-1.5 font-medium text-vl-dark-900 hover:underline"
+            className="text-vl-dark-900 inline-flex items-center gap-1.5 font-medium hover:underline"
           >
             <ArrowLeft className="size-4" />
             <span>Inventory Control Center</span>
           </Link>
           <span>/</span>
-          <span className="max-w-[200px] truncate text-vl-dark-900/70">{variant.product.name}</span>
+          <span className="text-vl-dark-900/70 max-w-[200px] truncate">{variant.product.name}</span>
           <span>/</span>
-          <span className="font-mono text-xs font-semibold text-vl-dark-900">{variant.sku}</span>
+          <span className="text-vl-dark-900 font-mono text-xs font-semibold">{variant.sku}</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href={`/products/${variant.product.slug}`}
             target="_blank"
-            className="inline-flex h-9 items-center gap-1.5 rounded-sm border border-vl-dark-900/20 bg-white px-3 text-xs font-semibold text-vl-dark-900 transition-colors hover:bg-vl-white-300"
+            className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex h-9 items-center gap-1.5 rounded-sm border bg-white px-3 text-xs font-semibold transition-colors"
           >
             <ExternalLink className="size-3.5" />
             <span>Storefront View</span>
@@ -118,11 +118,11 @@ export function AdminInventoryDetailHeader({
       </div>
 
       {/* Hero Variant Profile Card */}
-      <div className="relative overflow-hidden rounded-md border border-vl-dark-900/10 bg-white p-6 shadow-xs">
+      <div className="border-vl-dark-900/10 relative overflow-hidden rounded-md border bg-white p-6 shadow-xs">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
           <div className="flex items-start gap-4">
             {/* Product Thumbnail */}
-            <div className="relative size-20 shrink-0 overflow-hidden rounded-md border border-vl-dark-900/10 bg-vl-white-300">
+            <div className="border-vl-dark-900/10 bg-vl-white-300 relative size-20 shrink-0 overflow-hidden rounded-md border">
               {variant.primaryImage ? (
                 <Image
                   src={variant.primaryImage}
@@ -132,7 +132,7 @@ export function AdminInventoryDetailHeader({
                   sizes="80px"
                 />
               ) : (
-                <div className="flex size-full items-center justify-center text-vl-dark-900/40">
+                <div className="text-vl-dark-900/40 flex size-full items-center justify-center">
                   <Package className="size-8" />
                 </div>
               )}
@@ -141,7 +141,7 @@ export function AdminInventoryDetailHeader({
             {/* Title & Attributes */}
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-bold tracking-tight text-vl-dark-900">
+                <h1 className="text-vl-dark-900 text-xl font-bold tracking-tight">
                   {variant.product.name}
                 </h1>
                 <span
@@ -158,15 +158,15 @@ export function AdminInventoryDetailHeader({
               </div>
 
               {/* SKU & Copy */}
-              <div className="flex flex-wrap items-center gap-3 text-xs text-vl-dark-900/70">
-                <div className="flex items-center gap-1.5 rounded-xs bg-vl-white-300 px-2 py-0.5 font-mono text-xs font-bold text-vl-dark-900">
+              <div className="text-vl-dark-900/70 flex flex-wrap items-center gap-3 text-xs">
+                <div className="bg-vl-white-300 text-vl-dark-900 flex items-center gap-1.5 rounded-xs px-2 py-0.5 font-mono text-xs font-bold">
                   <span>{variant.sku}</span>
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={handleCopySku}
-                    className="size-4 text-vl-dark-900/60 hover:text-vl-dark-900"
+                    className="text-vl-dark-900/60 hover:text-vl-dark-900 size-4"
                     title="Copy SKU"
                   >
                     {copiedSku ? (
@@ -198,14 +198,14 @@ export function AdminInventoryDetailHeader({
               {/* Price Tags */}
               <div className="flex flex-wrap items-center gap-4 pt-1 text-sm">
                 <div>
-                  <span className="text-xs text-vl-dark-900/60">Cost Price: </span>
-                  <span className="font-semibold text-vl-dark-900">
+                  <span className="text-vl-dark-900/60 text-xs">Cost Price: </span>
+                  <span className="text-vl-dark-900 font-semibold">
                     {currency(variant.costPrice)}
                   </span>
                 </div>
                 <div>
-                  <span className="text-xs text-vl-dark-900/60">Selling Price: </span>
-                  <span className="font-bold text-vl-dark-900">
+                  <span className="text-vl-dark-900/60 text-xs">Selling Price: </span>
+                  <span className="text-vl-dark-900 font-bold">
                     {currency(variant.discountPrice ?? variant.sellingPrice)}
                   </span>
                   {variant.discountPrice ? (
@@ -222,14 +222,14 @@ export function AdminInventoryDetailHeader({
           </div>
 
           {/* Quick Barcode Preview */}
-          <div className="hidden shrink-0 flex-col items-center rounded-sm border border-vl-dark-900/15 bg-vl-white-200 p-3 text-center sm:flex">
-            <span className="text-[10px] font-extrabold tracking-widest text-vl-dark-900/60 uppercase">
+          <div className="border-vl-dark-900/15 bg-vl-white-200 hidden shrink-0 flex-col items-center rounded-sm border p-3 text-center sm:flex">
+            <span className="text-vl-dark-900/60 text-[10px] font-extrabold tracking-widest uppercase">
               GARMENT TAG
             </span>
             <div className="my-1">
               <BarcodeSvg value={variant.sku} height={22} />
             </div>
-            <span className="font-mono text-[9px] text-vl-dark-900/80">{variant.sku}</span>
+            <span className="text-vl-dark-900/80 font-mono text-[9px]">{variant.sku}</span>
           </div>
         </div>
       </div>

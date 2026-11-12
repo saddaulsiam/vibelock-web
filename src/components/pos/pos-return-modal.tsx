@@ -214,8 +214,8 @@ export function PosReturnModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="max-h-[90vh] w-full overflow-y-auto rounded-2xl border border-vl-white-400 bg-white p-6 shadow-2xl sm:max-w-xl">
-        <DialogHeader className="border-b border-vl-white-400 pb-3">
+      <DialogContent className="border-vl-white-400 max-h-[90vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
+        <DialogHeader className="border-vl-white-400 border-b pb-3">
           <div className="flex items-center space-x-2.5">
             <div className="bg-vl-black text-vl-cyan flex h-8 w-8 items-center justify-center rounded-xl shadow-2xs">
               <RotateCcw className="h-4 w-4" />
@@ -239,7 +239,7 @@ export function PosReturnModal({
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
               placeholder="Scan or enter invoice / order # (e.g. VL-POS-... or VL-ORD-...)"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-xl border-vl-white-500 bg-vl-white-100 pl-9 font-mono text-xs uppercase"
+              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-11 rounded-xl pl-9 font-mono text-xs uppercase"
               autoFocus
             />
           </div>
@@ -256,13 +256,13 @@ export function PosReturnModal({
         {orderData && (
           <div className="space-y-4 pt-2">
             {/* Order Header Summary */}
-            <div className="flex items-center justify-between rounded-xl border border-vl-white-400 bg-vl-white-100 p-3.5 text-xs">
+            <div className="border-vl-white-400 bg-vl-white-100 flex items-center justify-between rounded-xl border p-3.5 text-xs">
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-heading font-black text-slate-900">
                     {orderData.orderNumber}
                   </span>
-                  <Badge className="rounded-md bg-vl-white-400 px-2 py-0.5 font-mono text-[10px] text-slate-800 hover:bg-vl-white-500">
+                  <Badge className="bg-vl-white-400 hover:bg-vl-white-500 rounded-md px-2 py-0.5 font-mono text-[10px] text-slate-800">
                     {orderData.salesChannel}
                   </Badge>
                   {orderData.isReturnablePeriodValid ? (
@@ -295,7 +295,7 @@ export function PosReturnModal({
                 Select Items to Return / Exchange:
               </Label>
 
-              <div className="divide-y divide-vl-white-400 overflow-hidden rounded-xl border border-vl-white-400">
+              <div className="divide-vl-white-400 border-vl-white-400 divide-y overflow-hidden rounded-xl border">
                 {orderData.items.map((item) => {
                   const isSelected = selectedItems.some((i) => i.orderItemId === item.orderItemId);
                   const selectedConfig = selectedItems.find(
@@ -318,7 +318,7 @@ export function PosReturnModal({
                             disabled={!isReturnable}
                             checked={isSelected}
                             onChange={() => handleToggleItemSelection(item.orderItemId)}
-                            className="text-vl-black accent-vl-black focus:ring-vl-cyan mt-0.5 h-4 w-4 rounded border-vl-white-500"
+                            className="text-vl-black accent-vl-black focus:ring-vl-cyan border-vl-white-500 mt-0.5 h-4 w-4 rounded"
                           />
                           <div>
                             <p className="leading-snug font-semibold text-slate-900">
@@ -360,7 +360,7 @@ export function PosReturnModal({
                                   item.returnableQuantity
                                 )
                               }
-                              className="mt-1 h-8.5 rounded-lg border-vl-white-500 bg-white font-mono text-xs font-bold"
+                              className="border-vl-white-500 mt-1 h-8.5 rounded-lg bg-white font-mono text-xs font-bold"
                             />
                           </div>
 
@@ -451,7 +451,7 @@ export function PosReturnModal({
 
                 {/* Exchange Replacement Selection */}
                 {resolution === "EXCHANGE" && (
-                  <div className="space-y-2.5 rounded-xl border border-vl-white-400 bg-vl-white-100 p-3.5">
+                  <div className="border-vl-white-400 bg-vl-white-100 space-y-2.5 rounded-xl border p-3.5">
                     <Label className="font-heading block text-xs font-black tracking-wider text-slate-800 uppercase">
                       Add Replacement Item(s) from Store:
                     </Label>
@@ -462,12 +462,12 @@ export function PosReturnModal({
                       value={exchangeSearch}
                       onChange={(e) => setExchangeSearch(e.target.value)}
                       placeholder="Search store catalog for replacement size/item..."
-                      className="focus-visible:border-vl-cyan h-9 rounded-xl border-vl-white-500 bg-white text-xs"
+                      className="focus-visible:border-vl-cyan border-vl-white-500 h-9 rounded-xl bg-white text-xs"
                     />
 
                     {/* Catalog Mini Suggestions */}
                     {exchangeSearch.trim() && (
-                      <div className="max-h-36 divide-y divide-vl-white-400 overflow-y-auto rounded-xl border border-vl-white-400 bg-white">
+                      <div className="divide-vl-white-400 border-vl-white-400 max-h-36 divide-y overflow-y-auto rounded-xl border bg-white">
                         {catalogProducts
                           .filter(
                             (p) =>
@@ -489,7 +489,7 @@ export function PosReturnModal({
                                     variant="outline"
                                     disabled={v.availableStock <= 0}
                                     onClick={() => handleAddReplacement(prod, v.id)}
-                                    className="hover:bg-vl-cyan-100 hover:border-vl-cyan h-6 rounded-lg border-vl-white-500 bg-vl-white-100 px-2 font-mono text-[10px] disabled:opacity-40"
+                                    className="hover:bg-vl-cyan-100 hover:border-vl-cyan border-vl-white-500 bg-vl-white-100 h-6 rounded-lg px-2 font-mono text-[10px] disabled:opacity-40"
                                   >
                                     {[v.size, v.color].filter(Boolean).join("/") || v.sku} (৳
                                     {v.effectivePrice})
@@ -510,7 +510,7 @@ export function PosReturnModal({
                         {exchangeItems.map((rep) => (
                           <div
                             key={rep.variantId}
-                            className="flex items-center justify-between rounded-xl border border-vl-white-400 bg-white p-2.5 text-xs"
+                            className="border-vl-white-400 flex items-center justify-between rounded-xl border bg-white p-2.5 text-xs"
                           >
                             <div>
                               <span className="font-semibold text-slate-900">
@@ -587,18 +587,18 @@ export function PosReturnModal({
                     value={returnNotes}
                     onChange={(e) => setReturnNotes(e.target.value)}
                     placeholder="e.g. Customer brought tags intact, exchanged for size L"
-                    className="focus-visible:border-vl-cyan mt-1 h-10 rounded-xl border-vl-white-500 bg-vl-white-100 text-xs"
+                    className="focus-visible:border-vl-cyan border-vl-white-500 bg-vl-white-100 mt-1 h-10 rounded-xl text-xs"
                   />
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center space-x-2 border-t border-vl-white-400 pt-2">
+                <div className="border-vl-white-400 flex items-center space-x-2 border-t pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
                     onClick={onClose}
-                    className="font-heading h-11 w-1/3 rounded-xl border-vl-white-500 text-xs font-black text-slate-700 hover:bg-vl-white-100"
+                    className="font-heading border-vl-white-500 hover:bg-vl-white-100 h-11 w-1/3 rounded-xl text-xs font-black text-slate-700"
                   >
                     Cancel
                   </Button>
@@ -606,7 +606,7 @@ export function PosReturnModal({
                     type="button"
                     disabled={isSubmitting || selectedItems.length === 0}
                     onClick={handleSubmitReturn}
-                    className="bg-vl-cyan text-vl-black font-heading flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:bg-vl-cyan-400"
+                    className="bg-vl-cyan text-vl-black font-heading hover:bg-vl-cyan-400 flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all"
                   >
                     {isSubmitting ? (
                       <>

@@ -4,4 +4,3 @@ export default async function AdminAdminsLayout({ children }: { children: React.
   await requireRole("ADMIN");
   return <>{children}</>;
 }
-

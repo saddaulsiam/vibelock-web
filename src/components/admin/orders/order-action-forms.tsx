@@ -57,12 +57,7 @@ export function OrderStatusForm({
           Order Status
         </Label>
 
-        <NativeSelect
-          id="status"
-          name="status"
-          defaultValue={currentStatus}
-          size="default"
-        >
+        <NativeSelect id="status" name="status" defaultValue={currentStatus} size="default">
           {statuses.map((status) => (
             <option key={status} value={status}>
               {status}

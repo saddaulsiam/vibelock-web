@@ -95,12 +95,7 @@ function CancelSubmitButton() {
   const { pending } = useFormStatus();
 
   return (
-    <Button
-      type="submit"
-      variant="danger"
-      size="default"
-      disabled={pending}
-    >
+    <Button type="submit" variant="danger" size="default" disabled={pending}>
       {pending ? (
         <>
           <Loader2 className="size-4 animate-spin" />
@@ -291,12 +286,7 @@ function OrderCancelModalContent({
 
           {/* ── Action Buttons ── */}
           <div className="flex items-center justify-end gap-2.5 border-t border-neutral-100 pt-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="default"
-              onClick={onClose}
-            >
+            <Button type="button" variant="outline" size="default" onClick={onClose}>
               Keep Order
             </Button>
             <CancelSubmitButton />

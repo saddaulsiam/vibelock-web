@@ -84,16 +84,16 @@ export function ProductProfitabilityDrilldown({
 
   return (
     <section
-      className="border border-vl-dark-900/10 bg-white"
+      className="border-vl-dark-900/10 border bg-white"
       aria-labelledby="product-profitability-heading"
     >
-      <div className="border-b border-vl-dark-900/10 p-4 sm:p-5">
+      <div className="border-vl-dark-900/10 border-b p-4 sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-2">
               <h2
                 id="product-profitability-heading"
-                className="text-xl font-semibold tracking-tight text-vl-dark-900"
+                className="text-vl-dark-900 text-xl font-semibold tracking-tight"
               >
                 Product &amp; SKU profitability
               </h2>
@@ -150,11 +150,7 @@ export function ProductProfitabilityDrilldown({
             {to ? <input type="hidden" name="to" value={to} /> : null}
             {currentSort ? <input type="hidden" name="sort" value={currentSort} /> : null}
             {page ? <input type="hidden" name="page" value={page} /> : null}
-            <Button
-              type="submit"
-              size="sm"
-              className="px-3.5"
-            >
+            <Button type="submit" size="sm" className="px-3.5">
               Search
             </Button>
           </form>
@@ -190,7 +186,7 @@ export function ProductProfitabilityDrilldown({
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-210 text-left text-sm">
-          <thead className="bg-muted/40 text-muted-foreground border-b border-vl-dark-900/10 text-xs font-semibold tracking-wider uppercase">
+          <thead className="bg-muted/40 text-muted-foreground border-vl-dark-900/10 border-b text-xs font-semibold tracking-wider uppercase">
             <tr>
               <th scope="col" className="p-3.5">
                 Product / Variant SKU
@@ -224,7 +220,7 @@ export function ProductProfitabilityDrilldown({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-vl-dark-900/10">
+          <tbody className="divide-vl-dark-900/10 divide-y">
             {data.products.length === 0 ? (
               <tr>
                 <td colSpan={10} className="text-muted-foreground p-10 text-center">
@@ -261,10 +257,10 @@ export function ProductProfitabilityDrilldown({
       </div>
 
       {data.totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-vl-dark-900/10 p-4 text-xs">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t p-4 text-xs">
           <p className="text-muted-foreground">
-            Showing page <span className="font-semibold text-vl-dark-900">{data.page}</span> of{" "}
-            <span className="font-semibold text-vl-dark-900">{data.totalPages}</span> (
+            Showing page <span className="text-vl-dark-900 font-semibold">{data.page}</span> of{" "}
+            <span className="text-vl-dark-900 font-semibold">{data.totalPages}</span> (
             {data.total.toLocaleString("en-BD")} products)
           </p>
           <div className="flex items-center gap-2">
@@ -273,7 +269,7 @@ export function ProductProfitabilityDrilldown({
               className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
                 data.page <= 1
                   ? "pointer-events-none opacity-40"
-                  : "hover:bg-muted border-vl-dark-900/15 bg-white text-vl-dark-900"
+                  : "hover:bg-muted border-vl-dark-900/15 text-vl-dark-900 bg-white"
               }`}
               aria-disabled={data.page <= 1}
             >
@@ -287,7 +283,7 @@ export function ProductProfitabilityDrilldown({
               className={`inline-flex h-8 items-center justify-center rounded-sm border px-3 font-medium transition-colors ${
                 data.page >= data.totalPages
                   ? "pointer-events-none opacity-40"
-                  : "hover:bg-muted border-vl-dark-900/15 bg-white text-vl-dark-900"
+                  : "hover:bg-muted border-vl-dark-900/15 text-vl-dark-900 bg-white"
               }`}
               aria-disabled={data.page >= data.totalPages}
             >
@@ -331,7 +327,7 @@ function ProductRowGroup({
             </Button>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="font-semibold text-vl-dark-900">{product.productName}</span>
+                <span className="text-vl-dark-900 font-semibold">{product.productName}</span>
                 <Badge variant="outline" className="text-muted-foreground h-4.5 px-1.5 text-[10px]">
                   {product.variantCount} {product.variantCount === 1 ? "variant" : "variants"}
                 </Badge>
@@ -351,7 +347,7 @@ function ProductRowGroup({
         <td className="p-3.5 text-right font-medium text-amber-700 tabular-nums">
           {product.returnedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
           {product.retainedUnits.toLocaleString("en-BD")}
         </td>
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
@@ -360,7 +356,7 @@ function ProductRowGroup({
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
           {formatBdt(product.grossSales)}
         </td>
-        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
           {formatBdt(product.netSales)}
         </td>
         <td className="text-muted-foreground p-3.5 text-right tabular-nums">
@@ -369,7 +365,7 @@ function ProductRowGroup({
         <td className="p-3.5 text-right font-semibold text-emerald-700 tabular-nums">
           {formatBdt(product.profit)}
         </td>
-        <td className="p-3.5 text-right font-semibold text-vl-dark-900 tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
           {product.margin !== null ? `${product.margin.toFixed(1)}%` : "—"}
         </td>
       </tr>
@@ -397,10 +393,10 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
     .join(" · ");
 
   return (
-    <tr className="border-b border-vl-dark-900/5 bg-vl-white-100/80 text-xs transition-colors hover:bg-vl-white-100">
+    <tr className="border-vl-dark-900/5 bg-vl-white-100/80 hover:bg-vl-white-100 border-b text-xs transition-colors">
       <td className="py-2.5 pr-3 pl-11">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-[11px] font-medium text-vl-dark-900">{variant.sku}</span>
+          <span className="text-vl-dark-900 font-mono text-[11px] font-medium">{variant.sku}</span>
           {attributes ? (
             <span className="text-muted-foreground text-[11px]">({attributes})</span>
           ) : (
@@ -419,7 +415,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="py-2.5 pr-3.5 text-right text-amber-700 tabular-nums">
         {variant.returnedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
         {variant.retainedUnits.toLocaleString("en-BD")}
       </td>
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
@@ -428,7 +424,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
         {formatBdt(variant.grossSales)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
         {formatBdt(variant.netSales)}
       </td>
       <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
@@ -437,7 +433,7 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
       <td className="py-2.5 pr-3.5 text-right font-medium text-emerald-700 tabular-nums">
         {formatBdt(variant.profit)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-vl-dark-900 tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
         {variant.margin !== null ? `${variant.margin.toFixed(1)}%` : "—"}
       </td>
     </tr>

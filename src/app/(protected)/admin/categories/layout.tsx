@@ -4,4 +4,3 @@ export default async function AdminCategoriesLayout({ children }: { children: Re
   await requireRole("MANAGER");
   return <>{children}</>;
 }
-

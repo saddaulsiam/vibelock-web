@@ -8,4 +8,3 @@ export default async function AdminInventoryIntelligenceLayout({
   await requireRole("MANAGER");
   return <>{children}</>;
 }
-

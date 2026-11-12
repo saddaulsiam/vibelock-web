@@ -12,7 +12,8 @@ export function OrderConfirmationTracker({
   paymentStatus,
   paymentMethod,
 }: OrderConfirmationTrackerProps) {
-  const isCancelled = status === "CANCELLED" || paymentStatus === "CANCELLED" || paymentStatus === "FAILED";
+  const isCancelled =
+    status === "CANCELLED" || paymentStatus === "CANCELLED" || paymentStatus === "FAILED";
 
   if (isCancelled) {
     return (
@@ -67,15 +68,15 @@ export function OrderConfirmationTracker({
   ];
 
   return (
-    <div className="rounded-xl border border-vl-dark-900/10 bg-vl-white-100 p-4 sm:p-5">
-      <div className="mb-4 flex items-center justify-between border-b border-vl-dark-900/10 pb-3">
+    <div className="border-vl-dark-900/10 bg-vl-white-100 rounded-xl border p-4 sm:p-5">
+      <div className="border-vl-dark-900/10 mb-4 flex items-center justify-between border-b pb-3">
         <div className="flex items-center gap-2">
-          <span className="flex size-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-wider text-vl-dark-900">
+          <span className="flex size-2 animate-pulse rounded-full bg-emerald-500" />
+          <span className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase">
             Live Order Status
           </span>
         </div>
-        <span className="text-xs font-semibold text-muted-foreground">
+        <span className="text-muted-foreground text-xs font-semibold">
           Estimated Delivery: 2–4 Business Days
         </span>
       </div>
@@ -87,10 +88,10 @@ export function OrderConfirmationTracker({
               key={step.id}
               className={`relative flex items-center gap-3 rounded-lg border p-3 transition-colors sm:flex-col sm:items-start sm:p-3.5 ${
                 step.isComplete
-                  ? "border-emerald-200 bg-emerald-50/50 text-vl-dark-900"
+                  ? "text-vl-dark-900 border-emerald-200 bg-emerald-50/50"
                   : step.isCurrent
-                    ? "border-vl-dark-900 bg-white text-vl-dark-900 shadow-xs"
-                    : "border-transparent bg-transparent text-muted-foreground"
+                    ? "border-vl-dark-900 text-vl-dark-900 bg-white shadow-xs"
+                    : "text-muted-foreground border-transparent bg-transparent"
               }`}
             >
               <div className="flex items-center gap-2">
@@ -106,16 +107,16 @@ export function OrderConfirmationTracker({
                   {step.isComplete ? (
                     <Check className="size-3.5 stroke-[3]" />
                   ) : step.isCurrent ? (
-                    <span className="size-2 rounded-full bg-vl-cyan animate-ping" />
+                    <span className="bg-vl-cyan size-2 animate-ping rounded-full" />
                   ) : (
                     <span>{idx + 1}</span>
                   )}
                 </div>
-                <span className="text-xs font-bold tracking-tight text-vl-dark-900">
+                <span className="text-vl-dark-900 text-xs font-bold tracking-tight">
                   {step.title}
                 </span>
               </div>
-              <p className="text-[11px] text-muted-foreground leading-tight sm:mt-1">
+              <p className="text-muted-foreground text-[11px] leading-tight sm:mt-1">
                 {step.detail}
               </p>
             </div>

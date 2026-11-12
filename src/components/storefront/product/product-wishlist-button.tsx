@@ -49,7 +49,7 @@ export function ProductWishlistButton({ productSlug, productName }: ProductWishl
       size="lg"
       onClick={handleToggle}
       className={cn(
-        "size-11 sm:size-12 shrink-0 rounded-xs p-0 border-vl-dark-900/15 transition-colors",
+        "border-vl-dark-900/15 size-11 shrink-0 rounded-xs p-0 transition-colors sm:size-12",
         isFavorited
           ? "border-rose-500 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-950/30"
           : "hover:border-vl-dark-900 hover:bg-vl-white-300/60 text-vl-dark-900"

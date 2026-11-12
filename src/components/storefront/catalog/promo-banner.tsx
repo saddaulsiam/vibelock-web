@@ -161,7 +161,10 @@ export function PromoBannerCarousel({
       onMouseLeave={() => setIsPaused(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className={cn("group/carousel focus-visible:ring-vl-cyan relative focus-visible:ring-2 focus-visible:outline-none", containerClasses)}
+      className={cn(
+        "group/carousel focus-visible:ring-vl-cyan relative focus-visible:ring-2 focus-visible:outline-none",
+        containerClasses
+      )}
     >
       {/* ── Slide Track ── */}
       <div
@@ -203,7 +206,7 @@ export function PromoBannerCarousel({
           goToPrev();
         }}
         aria-label="Previous banner"
-        className="text-vl-dark-900 focus-visible:ring-vl-cyan absolute top-1/2 left-2 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/85 shadow-md backdrop-blur-xs transition-all hover:scale-105 hover:bg-white active:scale-95 focus-visible:ring-2 focus-visible:outline-none sm:left-4 sm:size-9"
+        className="text-vl-dark-900 focus-visible:ring-vl-cyan absolute top-1/2 left-2 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/85 shadow-md backdrop-blur-xs transition-all hover:scale-105 hover:bg-white focus-visible:ring-2 focus-visible:outline-none active:scale-95 sm:left-4 sm:size-9"
       >
         <ChevronLeft className="size-4.5 sm:size-5" aria-hidden="true" />
       </button>
@@ -216,7 +219,7 @@ export function PromoBannerCarousel({
           goToNext();
         }}
         aria-label="Next banner"
-        className="text-vl-dark-900 focus-visible:ring-vl-cyan absolute top-1/2 right-2 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/85 shadow-md backdrop-blur-xs transition-all hover:scale-105 hover:bg-white active:scale-95 focus-visible:ring-2 focus-visible:outline-none sm:right-4 sm:size-9"
+        className="text-vl-dark-900 focus-visible:ring-vl-cyan absolute top-1/2 right-2 z-20 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/85 shadow-md backdrop-blur-xs transition-all hover:scale-105 hover:bg-white focus-visible:ring-2 focus-visible:outline-none active:scale-95 sm:right-4 sm:size-9"
       >
         <ChevronRight className="size-4.5 sm:size-5" aria-hidden="true" />
       </button>

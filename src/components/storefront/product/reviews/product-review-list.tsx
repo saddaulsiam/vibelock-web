@@ -82,13 +82,14 @@ export function ProductReviewList({
   // Overall 0 reviews
   if (reviews.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-vl-dark-900/15 bg-white p-10 text-center shadow-xs">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-vl-dark-900/5 text-vl-dark-900/60">
+      <div className="border-vl-dark-900/15 rounded-2xl border border-dashed bg-white p-10 text-center shadow-xs">
+        <div className="bg-vl-dark-900/5 text-vl-dark-900/60 mx-auto flex size-12 items-center justify-center rounded-2xl">
           <MessageSquare className="size-6" />
         </div>
-        <h4 className="mt-3 font-heading text-sm font-bold text-vl-dark-900">No reviews yet</h4>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-vl-dark-900/65">
-          Be the first verified customer to share feedback on sizing, fit, and comfort for this product!
+        <h4 className="font-heading text-vl-dark-900 mt-3 text-sm font-bold">No reviews yet</h4>
+        <p className="text-vl-dark-900/65 mx-auto mt-1 max-w-sm text-xs leading-relaxed">
+          Be the first verified customer to share feedback on sizing, fit, and comfort for this
+          product!
         </p>
       </div>
     );
@@ -97,7 +98,7 @@ export function ProductReviewList({
   return (
     <div className="space-y-4">
       {/* Filter and Sort Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xs border border-vl-dark-900/10 bg-white p-2.5 shadow-2xs">
+      <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 rounded-xs border bg-white p-2.5 shadow-2xs">
         {/* Rating Pills */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <button
@@ -132,12 +133,12 @@ export function ProductReviewList({
         </div>
 
         {/* Sort Select */}
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-vl-dark-900/70">
-          <ArrowUpDown className="size-3 text-vl-dark-900/50" />
+        <div className="text-vl-dark-900/70 flex items-center gap-1.5 text-xs font-semibold">
+          <ArrowUpDown className="text-vl-dark-900/50 size-3" />
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="rounded-xs border border-vl-dark-900/15 bg-white px-2 py-1 text-xs font-bold text-vl-dark-900 focus-visible:outline-2 focus-visible:outline-vl-cyan"
+            className="border-vl-dark-900/15 text-vl-dark-900 focus-visible:outline-vl-cyan rounded-xs border bg-white px-2 py-1 text-xs font-bold focus-visible:outline-2"
             aria-label="Sort reviews by"
           >
             <option value="newest">Newest First</option>
@@ -149,15 +150,15 @@ export function ProductReviewList({
 
       {/* Filtered Empty State */}
       {filteredReviews.length === 0 && selectedRating !== null && (
-        <div className="rounded-2xl border border-dashed border-vl-dark-900/15 bg-white p-8 text-center">
-          <Filter className="mx-auto size-6 text-vl-dark-900/40" />
-          <p className="mt-2 text-sm font-bold text-vl-dark-900">
+        <div className="border-vl-dark-900/15 rounded-2xl border border-dashed bg-white p-8 text-center">
+          <Filter className="text-vl-dark-900/40 mx-auto size-6" />
+          <p className="text-vl-dark-900 mt-2 text-sm font-bold">
             No {selectedRating}-star reviews found
           </p>
           <button
             type="button"
             onClick={() => onSelectRating?.(null)}
-            className="mt-3 text-xs font-bold text-vl-cyan-dark underline underline-offset-4"
+            className="text-vl-cyan-dark mt-3 text-xs font-bold underline underline-offset-4"
           >
             Show all reviews
           </button>
@@ -175,14 +176,14 @@ export function ProductReviewList({
           });
 
           const initial = review.user?.name ? review.user.name.charAt(0).toUpperCase() : "V";
-          const helpfulCount = (helpfulVotes[review.id] || 0);
+          const helpfulCount = helpfulVotes[review.id] || 0;
 
           return (
             <div
               key={review.id}
-              className="rounded-xs border border-vl-dark-900/10 bg-white p-4 shadow-2xs sm:p-5 transition-all hover:border-vl-dark-900/20"
+              className="border-vl-dark-900/10 hover:border-vl-dark-900/20 rounded-xs border bg-white p-4 shadow-2xs transition-all sm:p-5"
             >
-              <div className="flex flex-wrap items-start justify-between gap-3 border-b border-vl-dark-900/5 pb-4">
+              <div className="border-vl-dark-900/5 flex flex-wrap items-start justify-between gap-3 border-b pb-4">
                 <div className="flex items-center gap-3">
                   {review.user?.image ? (
                     <Image
@@ -190,16 +191,16 @@ export function ProductReviewList({
                       alt={review.user.name || "Customer"}
                       width={40}
                       height={40}
-                      className="size-10 rounded-full object-cover ring-2 ring-vl-cyan/30"
+                      className="ring-vl-cyan/30 size-10 rounded-full object-cover ring-2"
                     />
                   ) : (
-                    <div className="flex size-10 items-center justify-center rounded-full bg-vl-dark-900 font-mono text-xs font-bold text-vl-cyan shadow-2xs ring-1 ring-black/5">
+                    <div className="bg-vl-dark-900 text-vl-cyan flex size-10 items-center justify-center rounded-full font-mono text-xs font-bold shadow-2xs ring-1 ring-black/5">
                       {initial}
                     </div>
                   )}
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-vl-dark-900">
+                      <span className="text-vl-dark-900 text-sm font-bold">
                         {review.user?.name || "Verified Customer"}
                       </span>
                       {review.verified && (
@@ -209,13 +210,13 @@ export function ProductReviewList({
                         </Badge>
                       )}
                     </div>
-                    <p className="text-[11px] font-medium text-vl-dark-900/50">{reviewDate}</p>
+                    <p className="text-vl-dark-900/50 text-[11px] font-medium">{reviewDate}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <StarRating value={review.rating} size="sm" />
-                  <span className="font-mono text-xs font-bold text-vl-dark-900">
+                  <span className="text-vl-dark-900 font-mono text-xs font-bold">
                     {review.rating}.0
                   </span>
                 </div>
@@ -223,17 +224,17 @@ export function ProductReviewList({
 
               {/* Review Comment Text */}
               {review.comment && (
-                <p className="mt-3.5 text-xs sm:text-sm leading-relaxed text-vl-dark-900/80">
+                <p className="text-vl-dark-900/80 mt-3.5 text-xs leading-relaxed sm:text-sm">
                   {review.comment}
                 </p>
               )}
 
               {/* Footer: Helpful Button & Delete Action */}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-vl-dark-900/5">
+              <div className="border-vl-dark-900/5 mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-2">
                 <button
                   type="button"
                   onClick={() => handleVoteHelpful(review.id)}
-                  className={`inline-flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer rounded-md px-2 py-1 ${
+                  className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold transition-colors ${
                     userVoted[review.id]
                       ? "text-vl-cyan-dark bg-vl-cyan-50 font-bold"
                       : "text-vl-dark-900/60 hover:text-vl-dark-900 hover:bg-vl-dark-900/5"
@@ -242,7 +243,9 @@ export function ProductReviewList({
                 >
                   <ThumbsUp className="size-3.5" />
                   <span>Helpful</span>
-                  {helpfulCount > 0 && <span className="font-mono text-[11px]">({helpfulCount})</span>}
+                  {helpfulCount > 0 && (
+                    <span className="font-mono text-[11px]">({helpfulCount})</span>
+                  )}
                 </button>
 
                 {canDelete && (
@@ -252,9 +255,9 @@ export function ProductReviewList({
                     size="sm"
                     onClick={() => handleDelete(review.id)}
                     disabled={isPending && deletingId === review.id}
-                    className="h-7 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 px-2"
+                    className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                   >
-                    <Trash2 className="size-3 mr-1" />
+                    <Trash2 className="mr-1 size-3" />
                     <span>Delete</span>
                   </Button>
                 )}

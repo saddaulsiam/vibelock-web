@@ -83,31 +83,31 @@ export function ProductReviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent variant="brand" className="max-h-[90vh] overflow-y-auto max-w-md p-4 sm:p-6">
-        <DialogHeader className="text-left space-y-1 pb-1">
+      <DialogContent variant="brand" className="max-h-[90vh] max-w-md overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-1 pb-1 text-left">
           <div className="flex items-center gap-2">
             <Badge variant="cyan" size="sm" className="h-4.5 px-1.5 text-[9px] font-bold">
               <CheckCircle2 className="size-3" />
               Verified Buyer
             </Badge>
           </div>
-          <DialogTitle className="font-heading text-lg sm:text-xl font-black tracking-tight text-vl-dark-900">
+          <DialogTitle className="font-heading text-vl-dark-900 text-lg font-black tracking-tight sm:text-xl">
             {isEditing ? "Edit Your Review" : "Write a Review"}
           </DialogTitle>
-          <DialogDescription className="text-xs text-vl-dark-900/60">
+          <DialogDescription className="text-vl-dark-900/60 text-xs">
             Share your feedback on fabric, sizing, and streetwear styling.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="mt-2 space-y-4">
           {/* Rating Selection */}
-          <div className="space-y-1.5 rounded-xs bg-vl-white-300/50 p-2.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-vl-dark-900/60 block">
+          <div className="bg-vl-white-300/50 space-y-1.5 rounded-xs p-2.5">
+            <span className="text-vl-dark-900/60 block text-[10px] font-bold tracking-wider uppercase">
               Your Rating
             </span>
             <div className="flex items-center gap-3">
               <StarRating value={rating} size="md" interactive onChange={setRating} />
-              <span className="text-xs font-bold text-vl-dark-900">
+              <span className="text-vl-dark-900 text-xs font-bold">
                 {RATING_DESCRIPTIONS[rating] || `${rating} Stars`}
               </span>
             </div>
@@ -115,7 +115,7 @@ export function ProductReviewModal({
 
           {/* Quick Fit Tags */}
           <div className="space-y-1.5">
-            <span className="text-[11px] font-semibold text-vl-dark-900/60 block">
+            <span className="text-vl-dark-900/60 block text-[11px] font-semibold">
               Quick Highlights:
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -126,9 +126,9 @@ export function ProductReviewModal({
                     key={tag}
                     type="button"
                     onClick={() => handleAddTag(tag)}
-                    className={`rounded-xs px-2 py-0.5 text-[11px] font-semibold transition-all cursor-pointer ${
+                    className={`cursor-pointer rounded-xs px-2 py-0.5 text-[11px] font-semibold transition-all ${
                       active
-                        ? "bg-vl-cyan-100 text-vl-cyan-dark ring-1 ring-vl-cyan-300"
+                        ? "bg-vl-cyan-100 text-vl-cyan-dark ring-vl-cyan-300 ring-1"
                         : "bg-vl-dark-900/5 text-vl-dark-900/70 hover:bg-vl-dark-900/10"
                     }`}
                   >
@@ -142,10 +142,10 @@ export function ProductReviewModal({
           {/* Comment Textarea */}
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[11px]">
-              <label htmlFor="modal-review-comment" className="font-bold text-vl-dark-900/70">
+              <label htmlFor="modal-review-comment" className="text-vl-dark-900/70 font-bold">
                 Feedback (Optional)
               </label>
-              <span className="font-mono text-vl-dark-900/40">{comment.length}/2000</span>
+              <span className="text-vl-dark-900/40 font-mono">{comment.length}/2000</span>
             </div>
             <Textarea
               id="modal-review-comment"
@@ -154,19 +154,19 @@ export function ProductReviewModal({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="How does the fabric feel? Is the fit boxy or true to size?"
-              className="rounded-xs border-vl-dark-900/15 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan text-xs"
+              className="border-vl-dark-900/15 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan rounded-xs text-xs"
             />
           </div>
 
           {formError && (
-            <div className="flex items-center gap-2 rounded-xs bg-destructive/10 p-2.5 text-xs font-semibold text-destructive">
+            <div className="bg-destructive/10 text-destructive flex items-center gap-2 rounded-xs p-2.5 text-xs font-semibold">
               <AlertCircle className="size-3.5 shrink-0" />
               <span>{formError}</span>
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-vl-dark-900/10">
+          <div className="border-vl-dark-900/10 flex items-center justify-end gap-2 border-t pt-2">
             <Button
               type="button"
               variant="outline"
@@ -183,7 +183,7 @@ export function ProductReviewModal({
               size="sm"
               loading={isPending}
               disabled={isPending}
-              className="h-8 min-w-28 rounded-xs bg-vl-dark-900 text-xs font-bold text-white hover:bg-vl-dark-900/90 shadow-2xs"
+              className="bg-vl-dark-900 hover:bg-vl-dark-900/90 h-8 min-w-28 rounded-xs text-xs font-bold text-white shadow-2xs"
             >
               {isPending ? "Posting..." : isEditing ? "Save Changes" : "Post Review"}
             </Button>

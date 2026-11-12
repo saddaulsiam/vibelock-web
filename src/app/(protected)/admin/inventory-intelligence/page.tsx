@@ -188,7 +188,7 @@ export default async function AdminInventoryIntelligencePage({
       >
         <Link
           href="/admin/inventory"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:ring-vl-cyan focus-visible:outline-none"
+          className="focus-visible:ring-vl-cyan inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:text-neutral-950 focus-visible:ring-2 focus-visible:outline-none"
         >
           <span>&larr; Standard Inventory</span>
         </Link>
@@ -212,7 +212,7 @@ export default async function AdminInventoryIntelligencePage({
       {/* Concise Operational Methodology Footnote */}
       <div className="rounded-xl border border-zinc-200/90 bg-zinc-50/60 p-4 text-xs text-zinc-600 shadow-sm">
         <div className="flex items-center gap-2 font-semibold text-zinc-900">
-          <Info className="size-4 text-vl-cyan" />
+          <Info className="text-vl-cyan size-4" />
           <span>Inventory Intelligence Rules &amp; Explanations</span>
         </div>
         <ul className="mt-2 grid gap-1.5 text-zinc-600 sm:grid-cols-2">

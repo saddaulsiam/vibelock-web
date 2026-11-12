@@ -178,7 +178,7 @@ export function CustomerCreateModal({ isOpen, onClose, onSuccess }: CustomerCrea
                 Customer Name <span className="text-rose-500">*</span>
               </label>
               <div className="relative">
-                <UserIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                <UserIcon className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                 <Input
                   type="text"
                   required
@@ -197,7 +197,7 @@ export function CustomerCreateModal({ isOpen, onClose, onSuccess }: CustomerCrea
                   Phone Number <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <Phone className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Phone className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                   <Input
                     type="tel"
                     required
@@ -216,7 +216,7 @@ export function CustomerCreateModal({ isOpen, onClose, onSuccess }: CustomerCrea
                   <span className="text-xs font-normal text-neutral-400">(Optional)</span>
                 </label>
                 <div className="relative">
-                  <Mail className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-neutral-400 z-10" />
+                  <Mail className="pointer-events-none absolute top-1/2 left-3 z-10 size-4 -translate-y-1/2 text-neutral-400" />
                   <Input
                     type="email"
                     placeholder="customer@email.com"
@@ -306,12 +306,7 @@ export function CustomerCreateModal({ isOpen, onClose, onSuccess }: CustomerCrea
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="default"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" variant="primary" size="default" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="size-3.5 animate-spin" />

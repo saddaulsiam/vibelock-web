@@ -41,7 +41,7 @@ export function AdminTableTabs<T extends string = string>({
             size="sm"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "h-8 gap-1.5 px-3 text-xs font-semibold normal-case tracking-normal",
+              "h-8 gap-1.5 px-3 text-xs font-semibold tracking-normal normal-case",
               isActive
                 ? "bg-vl-dark-900 text-white shadow-2xs"
                 : "border-neutral-200 bg-white text-neutral-800 hover:bg-neutral-50"
@@ -110,7 +110,7 @@ export function AdminTableSearchInput({
         </Button>
       ) : (
         <kbd
-          className="pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-neutral-200 bg-vl-white-300 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 sm:inline-flex"
+          className="bg-vl-white-300 pointer-events-none absolute top-1/2 right-2.5 hidden -translate-y-1/2 items-center rounded border border-neutral-200 px-1.5 py-0.5 text-[10px] font-semibold text-neutral-600 sm:inline-flex"
           title="Press / to search"
         >
           /
@@ -212,7 +212,7 @@ export function AdminTableFilterSelect<T extends string = string>({
   return (
     <div
       className={cn(
-        "inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors focus-within:ring-2 focus-within:ring-vl-cyan hover:border-neutral-300",
+        "focus-within:ring-vl-cyan inline-flex h-10 items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 shadow-2xs transition-colors focus-within:ring-2 hover:border-neutral-300",
         disabled && "pointer-events-none opacity-50",
         className
       )}

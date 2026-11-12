@@ -7,10 +7,10 @@ export default function AdminDashboardLoading() {
       aria-label="Loading admin dashboard"
       className="mx-auto w-full max-w-[100rem] space-y-7 sm:space-y-9"
     >
-      <div className="space-y-3 border-b border-vl-dark-900/10 pb-5">
-        <Skeleton className="h-3 w-32 bg-vl-dark-900/10" />
-        <Skeleton className="h-9 w-64 bg-vl-dark-900/10" />
-        <Skeleton className="h-5 w-full max-w-xl bg-vl-dark-900/10" />
+      <div className="border-vl-dark-900/10 space-y-3 border-b pb-5">
+        <Skeleton className="bg-vl-dark-900/10 h-3 w-32" />
+        <Skeleton className="bg-vl-dark-900/10 h-9 w-64" />
+        <Skeleton className="bg-vl-dark-900/10 h-5 w-full max-w-xl" />
       </div>
       <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4">
         {Array.from({ length: 4 }, (_, index) => (
