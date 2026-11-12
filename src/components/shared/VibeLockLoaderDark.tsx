@@ -54,11 +54,16 @@ export default function VibeLockLoaderDark({
           />
         </div>
 
-        {/* Wordmark in Space Grotesk */}
+        {/* Wordmark */}
         <div className="mt-4 flex flex-col items-center gap-1 text-center">
-          <span className="font-heading text-vl-white text-sm font-black tracking-[0.25em] uppercase sm:text-base">
-            VIBELOCK
-          </span>
+          <Image
+            src="/logo/workmark/vibelock_wordmark_white_transparent.svg"
+            alt="VibeLock"
+            width={160}
+            height={64}
+            priority
+            className="h-10 w-auto object-contain sm:h-11"
+          />
           {subLabel && (
             <span className="text-vl-cyan tracking-streetwear text-[10px] font-bold uppercase sm:text-[11px]">
               {subLabel}

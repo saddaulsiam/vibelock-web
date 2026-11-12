@@ -133,9 +133,14 @@ export default function VibeLockLoader({
 
         {/* Brand Name Typography */}
         <div className="mt-5 flex flex-col items-center text-center">
-          <h2 className="text-vl-dark-900 text-2xl font-black tracking-[0.22em] uppercase sm:text-[26px]">
-            VIBELOCK
-          </h2>
+          <Image
+            src="/logo/workmark/vibelock_wordmark_black_transparent.svg"
+            alt="VibeLock"
+            width={160}
+            height={64}
+            priority
+            className="h-11 w-auto object-contain sm:h-12"
+          />
           <div className="mt-1.5 flex items-center gap-2">
             <span className="bg-vl-dark-900/30 h-px w-3" />
             <span className="text-vl-cyan-700 text-[10px] font-extrabold tracking-[0.28em] uppercase">

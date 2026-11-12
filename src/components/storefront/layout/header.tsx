@@ -23,7 +23,7 @@ export async function Header() {
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link
             href="/"
-            className="flex items-center gap-1.5 transition-opacity hover:opacity-90 focus-visible:outline-none"
+            className="flex items-center gap-0 transition-opacity hover:opacity-90 focus-visible:outline-none"
             aria-label="VibeLock Home"
           >
             {/* Circular Black Badge with White Logo Emblem */}
@@ -37,9 +37,15 @@ export async function Header() {
                 className="size-5 object-contain"
               />
             </div>
-            <span className="text-vl-white shrink-0 text-sm font-black tracking-wider whitespace-nowrap uppercase sm:text-base">
-              VIBELOCK
-            </span>
+            {/* VibeLock Wordmark */}
+            <Image
+              src="/logo/workmark/vibelock_wordmark_white_transparent.svg"
+              alt="VibeLock"
+              width={160}
+              height={64}
+              priority
+              className="-ml-1 h-11 w-auto shrink-0 object-contain sm:h-12"
+            />
           </Link>
         </div>
 
@@ -47,7 +53,7 @@ export async function Header() {
         <DesktopNav categories={categories} isAuthenticated={Boolean(user)} />
 
         {/* ── Right: Search Pill + Wishlist + Cart + Account Popover ── */}
-        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
           {/* Search Trigger (Desktop pill + Mobile icon) & Instant Search Modal */}
           <HeaderSearch categories={categories} />
 
