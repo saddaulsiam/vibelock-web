@@ -124,7 +124,7 @@ export function VariantSelector({
       <div aria-live="polite" className="space-y-1">
         {matchingVariant ? (
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 sm:gap-x-3">
-            <span className="font-heading text-vl-dark-900 text-xl font-black tracking-tight sm:text-2xl md:text-3xl lg:text-4xl">
+            <span className="font-heading text-vl-dark-900 text-2xl font-black tracking-tight md:text-3xl lg:text-4xl">
               {formatPrice(matchingVariant.effectivePrice)}
             </span>
             {discount && (

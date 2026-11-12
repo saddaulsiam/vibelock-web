@@ -10,11 +10,6 @@ export default function ShopLoading() {
       className="relative z-10 min-h-screen bg-white pt-16 pb-12 sm:pt-20 sm:pb-16 lg:pt-24"
     >
       <Container>
-        {/* ── 1. Promo Banner Carousel Skeleton ── */}
-        <div className="mb-5 sm:mb-6">
-          <Skeleton className="bg-vl-dark-900/10 aspect-16/7 w-full rounded-2xl sm:aspect-21/9 md:aspect-24/7" />
-        </div>
-
         {/* ── 2. Header, Breadcrumbs & Sort ── */}
         <header className="mb-4">
           <nav aria-label="Breadcrumb" className="mb-1">

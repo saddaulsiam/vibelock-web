@@ -171,7 +171,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 )}
               </div>
 
-              <h1 className="font-heading text-vl-dark-900 text-xl leading-tight font-black tracking-tight wrap-break-word sm:text-2xl md:text-3xl lg:text-4xl">
+              <h1 className="font-heading text-vl-dark-900 text-2xl leading-tight font-black tracking-tight wrap-break-word md:text-3xl lg:text-4xl">
                 {product.name}
               </h1>
 
