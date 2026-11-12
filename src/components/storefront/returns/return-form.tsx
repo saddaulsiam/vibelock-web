@@ -187,13 +187,13 @@ export function ReturnForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6 pb-32 sm:pb-0">
       {/* ── Unified Master Return Request Document ── */}
-      <div className="overflow-hidden rounded-2xl border border-vl-dark-900/8 bg-white shadow-2xs">
+      <div className="border-vl-dark-900/8 overflow-hidden rounded-2xl border bg-white shadow-2xs">
         {/* Document Header */}
-        <div className="border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
+        <div className="border-vl-dark-900/8 border-b p-4 sm:p-6 md:p-7">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-semibold tracking-[0.15em] text-vl-cyan uppercase sm:text-[11px] sm:tracking-[0.2em]">
+                <span className="text-vl-cyan sm:tracking-streetwear text-[10px] font-semibold tracking-[0.15em] uppercase sm:text-[11px]">
                   Return & Exchange
                 </span>
                 {orderPlacedDate && (
@@ -205,7 +205,7 @@ export function ReturnForm({
                   </>
                 )}
               </div>
-              <h1 className="mt-0.5 text-lg font-bold tracking-tight text-vl-dark-900 uppercase sm:text-2xl">
+              <h1 className="text-vl-dark-900 mt-0.5 text-lg font-bold tracking-tight uppercase sm:text-2xl">
                 Order #{orderNumber}
               </h1>
             </div>
@@ -224,11 +224,11 @@ export function ReturnForm({
         </div>
 
         {/* 1. Item Selection Section */}
-        <div className="border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
-          <div className="flex items-center justify-between border-b border-vl-dark-900/8 pb-3.5 sm:pb-4">
+        <div className="border-vl-dark-900/8 border-b p-4 sm:p-6 md:p-7">
+          <div className="border-vl-dark-900/8 flex items-center justify-between border-b pb-3.5 sm:pb-4">
             <div className="flex items-center gap-2">
-              <Package className="size-4 text-vl-dark-900" />
-              <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
+              <Package className="text-vl-dark-900 size-4" />
+              <h2 className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase sm:text-sm">
                 1. Select Items to Return
               </h2>
             </div>
@@ -237,7 +237,7 @@ export function ReturnForm({
             </span>
           </div>
 
-          <ul className="mt-2 divide-y divide-vl-dark-900/6">
+          <ul className="divide-vl-dark-900/6 mt-2 divide-y">
             {items.map((item) => {
               const isSelected = (selectedQuantities[item.id] || 0) > 0;
               const currentQty = selectedQuantities[item.id] || 0;
@@ -248,7 +248,7 @@ export function ReturnForm({
                   className={`my-2 rounded-2xl border p-3.5 transition-all sm:p-4 ${
                     isSelected
                       ? "border-vl-dark-900 bg-vl-white-100 shadow-xs"
-                      : "border-vl-dark-900/8 bg-white hover:border-vl-dark-900/20"
+                      : "border-vl-dark-900/8 hover:border-vl-dark-900/20 bg-white"
                   }`}
                 >
                   {/* Item Selection Trigger */}
@@ -269,14 +269,14 @@ export function ReturnForm({
                       className={`mt-1 flex size-5 shrink-0 items-center justify-center rounded-md border transition-all ${
                         isSelected
                           ? "border-vl-dark-900 bg-vl-dark-900 text-white"
-                          : "border-vl-dark-900/25 bg-white hover:border-vl-dark-900"
+                          : "border-vl-dark-900/25 hover:border-vl-dark-900 bg-white"
                       }`}
                     >
                       {isSelected && <Check className="size-3.5 stroke-[3]" />}
                     </div>
 
                     {/* Thumbnail */}
-                    <div className="relative size-14 shrink-0 overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 sm:size-16">
+                    <div className="border-vl-dark-900/10 relative size-14 shrink-0 overflow-hidden rounded-xl border bg-neutral-100 sm:size-16">
                       <Image
                         src="/images/categories/cat-t-shirts.jpg"
                         alt={item.productName}
@@ -289,12 +289,12 @@ export function ReturnForm({
                     {/* Info */}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-2">
-                        <h3 className="line-clamp-2 text-xs font-semibold text-vl-dark-900 sm:text-sm">
+                        <h3 className="text-vl-dark-900 line-clamp-2 text-xs font-semibold sm:text-sm">
                           {item.productName}
                         </h3>
                         {/* Line Price */}
                         <div className="shrink-0 text-right">
-                          <p className="text-xs font-bold text-vl-dark-900 sm:text-sm">
+                          <p className="text-vl-dark-900 text-xs font-bold sm:text-sm">
                             ৳ {(item.unitPrice * (currentQty || 1)).toLocaleString("en-BD")}
                           </p>
                           <p className="text-[10px] text-neutral-400 sm:text-[11px]">
@@ -328,11 +328,11 @@ export function ReturnForm({
 
                   {/* Quantity Stepper (When Selected) */}
                   {isSelected && (
-                    <div className="mt-3 flex items-center justify-between border-t border-vl-dark-900/8 pt-2.5 sm:mt-3 sm:justify-end sm:gap-3">
+                    <div className="border-vl-dark-900/8 mt-3 flex items-center justify-between border-t pt-2.5 sm:mt-3 sm:justify-end sm:gap-3">
                       <span className="text-[11px] font-semibold tracking-wider text-neutral-500 uppercase sm:text-xs">
                         Return Quantity:
                       </span>
-                      <div className="flex items-center rounded-xl border border-vl-dark-900/15 bg-white shadow-2xs overflow-hidden">
+                      <div className="border-vl-dark-900/15 flex items-center overflow-hidden rounded-xl border bg-white shadow-2xs">
                         <Button
                           type="button"
                           variant="ghost"
@@ -343,11 +343,11 @@ export function ReturnForm({
                           }}
                           disabled={currentQty <= 1}
                           aria-label="Decrease quantity"
-                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
+                          className="text-vl-dark-900 size-8 rounded-none hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Minus className="size-3.5" />
                         </Button>
-                        <span className="w-8 text-center text-xs font-semibold text-vl-dark-900">
+                        <span className="text-vl-dark-900 w-8 text-center text-xs font-semibold">
                           {currentQty}
                         </span>
                         <Button
@@ -360,7 +360,7 @@ export function ReturnForm({
                           }}
                           disabled={currentQty >= item.returnableQuantity}
                           aria-label="Increase quantity"
-                          className="size-8 rounded-none text-vl-dark-900 hover:bg-neutral-100 disabled:opacity-30"
+                          className="text-vl-dark-900 size-8 rounded-none hover:bg-neutral-100 disabled:opacity-30"
                         >
                           <Plus className="size-3.5" />
                         </Button>
@@ -374,17 +374,17 @@ export function ReturnForm({
         </div>
 
         {/* 2. Return Reason & Verification Section */}
-        <div className="space-y-6 border-b border-vl-dark-900/8 p-4 sm:p-6 md:p-7">
-          <div className="flex items-center gap-2 border-b border-vl-dark-900/8 pb-4">
-            <FileText className="size-4 text-vl-dark-900" />
-            <h2 className="text-xs font-bold tracking-wider text-vl-dark-900 uppercase sm:text-sm">
+        <div className="border-vl-dark-900/8 space-y-6 border-b p-4 sm:p-6 md:p-7">
+          <div className="border-vl-dark-900/8 flex items-center gap-2 border-b pb-4">
+            <FileText className="text-vl-dark-900 size-4" />
+            <h2 className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase sm:text-sm">
               2. Reason & Details
             </h2>
           </div>
 
           {/* Reason Selection Grid */}
           <div>
-            <label className="mb-2 block text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
+            <label className="text-vl-dark-900 mb-2 block text-xs font-semibold tracking-wider uppercase">
               Select Return Reason <span className="text-rose-600">*</span>
             </label>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -398,13 +398,15 @@ export function ReturnForm({
                     className={`flex min-h-[46px] touch-manipulation items-center justify-between rounded-xl border p-3.5 text-left text-xs transition-all active:scale-[0.99] ${
                       isChecked
                         ? "border-vl-dark-900 bg-vl-dark-900 font-semibold text-white shadow-xs"
-                        : "border-vl-dark-900/15 bg-white font-medium text-vl-dark-900 hover:border-vl-dark-900/40"
+                        : "border-vl-dark-900/15 text-vl-dark-900 hover:border-vl-dark-900/40 bg-white font-medium"
                     }`}
                   >
                     <span>{r.label}</span>
                     <div
                       className={`flex size-4.5 shrink-0 items-center justify-center rounded-full border ${
-                        isChecked ? "border-white bg-white text-vl-dark-900" : "border-vl-dark-900/30"
+                        isChecked
+                          ? "text-vl-dark-900 border-white bg-white"
+                          : "border-vl-dark-900/30"
                       }`}
                     >
                       {isChecked && <Check className="size-3 stroke-[3]" />}
@@ -432,8 +434,8 @@ export function ReturnForm({
           {/* Photo Upload Strip */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-vl-dark-900 uppercase">
-                <Camera className="size-3.5 text-vl-dark-900" />
+              <label className="text-vl-dark-900 flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
+                <Camera className="text-vl-dark-900 size-3.5" />
                 <span>Photo Proof</span>
                 {requiresProof ? (
                   <span className="text-xs font-semibold text-rose-600">* Required</span>
@@ -449,7 +451,7 @@ export function ReturnForm({
                 {images.map((imgUrl, idx) => (
                   <div
                     key={idx}
-                    className="group relative aspect-square overflow-hidden rounded-xl border border-vl-dark-900/10 bg-neutral-100 shadow-2xs"
+                    className="group border-vl-dark-900/10 relative aspect-square overflow-hidden rounded-xl border bg-neutral-100 shadow-2xs"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -488,15 +490,15 @@ export function ReturnForm({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploadingImage}
                   loading={isUploadingImage}
-                  className="h-auto flex-wrap gap-2 border-dashed border-border/80 p-4 hover:bg-muted/40"
+                  className="border-border/80 hover:bg-muted/40 h-auto flex-wrap gap-2 border-dashed p-4"
                 >
                   {isUploadingImage ? (
                     <span>Uploading to Cloudinary...</span>
                   ) : (
                     <>
-                      <Camera className="size-4 text-vl-dark-900" />
+                      <Camera className="text-vl-dark-900 size-4" />
                       <span>Upload Photo</span>
-                      <span className="text-[11px] font-normal text-muted-foreground">
+                      <span className="text-muted-foreground text-[11px] font-normal">
                         (Max 5MB • JPG, PNG, WebP)
                       </span>
                     </>
@@ -510,7 +512,7 @@ export function ReturnForm({
           <div className="space-y-1.5">
             <label
               htmlFor="customerNote"
-              className="text-xs font-semibold tracking-wider text-vl-dark-900 uppercase"
+              className="text-vl-dark-900 text-xs font-semibold tracking-wider uppercase"
             >
               Additional Details / Comments (Optional)
             </label>
@@ -528,25 +530,25 @@ export function ReturnForm({
 
         {/* 3. Integrated Policy & Estimated Refund Panel (Bottom) */}
         <div className="bg-vl-white-100 p-4 sm:p-6 md:p-7">
-          <div className="flex flex-col gap-6 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-x sm:divide-vl-dark-900/8">
+          <div className="sm:divide-vl-dark-900/8 flex flex-col gap-6 sm:grid sm:grid-cols-2 sm:gap-6 sm:divide-x">
             {/* Refund Calculation & Submit (Stacked first on mobile) */}
             <div className="order-1 flex flex-col justify-between sm:order-2 sm:pl-6">
               <div>
-                <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
-                  <CreditCard className="size-4 text-vl-dark-900" />
+                <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
+                  <CreditCard className="text-vl-dark-900 size-4" />
                   <span>Refund Summary</span>
                 </div>
 
                 <dl className="mt-3 space-y-2 text-xs sm:text-sm">
                   <div className="flex justify-between text-neutral-500">
                     <span>Selected Items</span>
-                    <span className="font-normal text-vl-dark-900">
+                    <span className="text-vl-dark-900 font-normal">
                       {totalSelectedCount} item{totalSelectedCount === 1 ? "" : "s"}
                     </span>
                   </div>
                   <div className="flex justify-between text-neutral-500">
                     <span>Merchandise Value</span>
-                    <span className="font-normal text-vl-dark-900">
+                    <span className="text-vl-dark-900 font-normal">
                       ৳ {totalEst.toLocaleString("en-BD")}
                     </span>
                   </div>
@@ -554,8 +556,8 @@ export function ReturnForm({
                     <span>Steadfast Pickup Fee</span>
                     <span className="font-normal text-emerald-700">FREE</span>
                   </div>
-                  <Separator className="my-2.5! bg-vl-dark-900/10" />
-                  <div className="flex items-baseline justify-between text-sm font-bold text-vl-dark-900 sm:text-base">
+                  <Separator className="bg-vl-dark-900/10 my-2.5!" />
+                  <div className="text-vl-dark-900 flex items-baseline justify-between text-sm font-bold sm:text-base">
                     <span className="tracking-wide uppercase">Est. Refund Total</span>
                     <span className="text-lg font-bold sm:text-xl">
                       ৳ {totalEst.toLocaleString("en-BD")}
@@ -580,25 +582,25 @@ export function ReturnForm({
             </div>
 
             {/* Policy & Courier Instructions (Stacked below refund on mobile) */}
-            <div className="order-2 border-t border-vl-dark-900/8 pt-5 sm:order-1 sm:border-t-0 sm:pt-0 sm:pr-6">
-              <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-vl-dark-900 uppercase">
+            <div className="border-vl-dark-900/8 order-2 border-t pt-5 sm:order-1 sm:border-t-0 sm:pt-0 sm:pr-6">
+              <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                 <ShieldCheck className="size-4 text-emerald-600" />
                 <span>Doorstep Return Policy</span>
               </div>
               <div className="mt-3 space-y-2.5 text-xs leading-relaxed text-neutral-600">
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">1.</span>
+                  <span className="text-vl-dark-900 font-semibold">1.</span>
                   <p>Product must remain unwashed, unworn, with all original tags attached.</p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">2.</span>
+                  <span className="text-vl-dark-900 font-semibold">2.</span>
                   <p>
                     A Steadfast courier rider will arrive at your delivery address for doorstep
                     pickup (<strong className="text-emerald-700">Free of Charge</strong>).
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="font-semibold text-vl-dark-900">3.</span>
+                  <span className="text-vl-dark-900 font-semibold">3.</span>
                   <p>
                     Refund is disbursed to your original payment method or bKash within 3–5 working
                     days post QC approval.
@@ -611,14 +613,14 @@ export function ReturnForm({
       </div>
 
       {/* ── Mobile Sticky Bottom Action Bar ── */}
-      <div className="fixed right-0 bottom-0 left-0 z-50 border-t border-vl-dark-900/10 bg-white/95 px-4 pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-xl backdrop-blur-md sm:hidden">
+      <div className="border-vl-dark-900/10 fixed right-0 bottom-0 left-0 z-50 border-t bg-white/95 px-4 pt-3 pb-[max(0.875rem,env(safe-area-inset-bottom))] shadow-xl backdrop-blur-md sm:hidden">
         <div className="flex items-center justify-between gap-3">
           <div>
             <span className="block text-[10px] font-semibold tracking-wider text-neutral-500 uppercase">
               Est. Refund
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-bold text-vl-dark-900">
+              <span className="text-vl-dark-900 text-lg font-bold">
                 ৳ {totalEst.toLocaleString("en-BD")}
               </span>
               <span className="text-[10px] font-semibold text-neutral-400">

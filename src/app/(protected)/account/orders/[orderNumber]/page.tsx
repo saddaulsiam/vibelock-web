@@ -123,7 +123,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-vl-cyan text-[11px] font-semibold tracking-[0.2em] uppercase">
+                <span className="text-vl-cyan tracking-streetwear text-[11px] font-semibold uppercase">
                   Order Details
                 </span>
                 <span className="text-neutral-300">•</span>

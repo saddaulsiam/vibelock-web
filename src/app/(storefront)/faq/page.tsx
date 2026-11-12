@@ -98,27 +98,27 @@ const FAQ_CATEGORIES = [
 
 export default function FAQPage() {
   return (
-    <div className="flex flex-col bg-vl-white-300 text-vl-dark-900">
+    <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── Hero Header ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-1/4 size-80 rounded-full bg-vl-cyan-50 blur-3xl"
+          className="bg-vl-cyan-50 pointer-events-none absolute top-0 right-1/4 size-80 rounded-full blur-3xl"
         />
 
         <Container className="relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-vl-cyan uppercase">
+          <div className="tracking-streetwear text-vl-cyan flex items-center gap-2 text-xs font-semibold uppercase">
             <HelpCircle className="size-4" />
             <span>Help Desk</span>
           </div>
           <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Frequently Asked Questions
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-vl-white-300/70 sm:text-base">
+          <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
             Everything you need to know about VibeLock drops, oversized cuts, shipping across
             Bangladesh, and hassle-free exchanges.
           </p>
@@ -133,22 +133,22 @@ export default function FAQPage() {
             <div className="space-y-12 lg:col-span-8">
               {FAQ_CATEGORIES.map((cat) => (
                 <div key={cat.category} className="space-y-4">
-                  <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+                  <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                     {cat.category}
                   </h2>
                   <div className="space-y-3">
                     {cat.items.map((item) => (
                       <details
                         key={item.q}
-                        className="group border border-vl-dark-900/15 bg-white transition-all [&_summary::-webkit-details-marker]:hidden"
+                        className="group border-vl-dark-900/15 border bg-white transition-all [&_summary::-webkit-details-marker]:hidden"
                       >
-                        <summary className="flex cursor-pointer items-center justify-between p-5 text-sm font-bold text-vl-dark-900 select-none hover:text-vl-cyan">
+                        <summary className="text-vl-dark-900 hover:text-vl-cyan flex cursor-pointer items-center justify-between p-5 text-sm font-bold select-none">
                           <span>{item.q}</span>
                           <span className="ml-4 shrink-0 transition-transform duration-200 group-open:rotate-180">
-                            <ChevronDown className="size-4 text-vl-dark-900/60" />
+                            <ChevronDown className="text-vl-dark-900/60 size-4" />
                           </span>
                         </summary>
-                        <div className="border-t border-vl-dark-900/10 p-5 pt-3 text-xs leading-relaxed text-vl-dark-900/75 sm:text-sm">
+                        <div className="border-vl-dark-900/10 text-vl-dark-900/75 border-t p-5 pt-3 text-xs leading-relaxed sm:text-sm">
                           <p>{item.a}</p>
                         </div>
                       </details>
@@ -160,18 +160,18 @@ export default function FAQPage() {
 
             {/* Support Sidebar */}
             <div className="space-y-6 lg:col-span-4">
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Still have questions?
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-vl-dark-900/70">
+                <p className="text-vl-dark-900/70 mt-2 text-xs leading-relaxed">
                   Can&apos;t find the answer you&apos;re looking for? Reach out to our customer crew
                   directly:
                 </p>
                 <div className="mt-4 space-y-3">
                   <Link
                     href="/contact"
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-vl-dark-900 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-vl-dark-900/85"
+                    className="bg-vl-dark-900 hover:bg-vl-dark-900/85 inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors"
                   >
                     <MessageSquare className="size-4" />
                     <span>Send a Message</span>
@@ -181,7 +181,7 @@ export default function FAQPage() {
                     href="https://wa.me/+8801311333277"
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 border border-vl-dark-900/20 bg-white px-4 text-xs font-bold tracking-wider text-vl-dark-900 uppercase transition-colors hover:bg-vl-white-300"
+                    className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex min-h-11 w-full items-center justify-center gap-2 border bg-white px-4 text-xs font-bold tracking-wider uppercase transition-colors"
                   >
                     <span>WhatsApp Support</span>
                     <ArrowRight className="size-3.5" />
@@ -189,45 +189,45 @@ export default function FAQPage() {
                 </div>
               </div>
 
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Policies &amp; Legal
                 </h3>
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
                     <Link
                       href="/shipping-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Shipping Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/return-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Return &amp; Exchange</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/terms"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Terms of Service</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/privacy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Privacy Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                 </ul>

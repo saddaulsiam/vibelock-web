@@ -19,10 +19,10 @@ export default function Error({
   }, [error]);
 
   return (
-    <Section className="flex min-h-[70vh] flex-1 items-center justify-center bg-vl-white-300 py-16">
+    <Section className="bg-vl-white-300 flex min-h-[70vh] flex-1 items-center justify-center py-16">
       <Container>
-        <div className="mx-auto max-w-lg border border-vl-dark-900/10 bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
-          <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-[0.2em] uppercase">
+        <div className="border-vl-dark-900/10 mx-auto max-w-lg border bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
+          <p className="text-muted-foreground tracking-streetwear mb-3 text-xs font-semibold uppercase">
             VibeLock / Error
           </p>
           <h1 className="font-heading text-vl-black text-2xl font-black tracking-tight sm:text-3xl">
@@ -32,20 +32,11 @@ export default function Error({
             We couldn&apos;t load this page. Please try again.
           </p>
           <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button
-              onClick={reset}
-              size="lg"
-            >
+            <Button onClick={reset} size="lg">
               Try again
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-            >
-              <Link href="/shop">
-                Browse products
-              </Link>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/shop">Browse products</Link>
             </Button>
           </div>
         </div>

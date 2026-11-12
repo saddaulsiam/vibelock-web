@@ -93,10 +93,7 @@ export function SizeGuideModal() {
         <span>Size Guide</span>
       </DialogTrigger>
 
-      <DialogContent
-        variant="brand"
-        className="max-h-[90vh] max-w-2xl overflow-y-auto p-4 sm:p-6 sm:p-8"
-      >
+      <DialogContent variant="brand" className="max-h-[90vh] max-w-2xl overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="space-y-1.5 pb-2 text-left">
           <div className="flex items-center gap-2">
             <Badge variant="cyan" size="sm">

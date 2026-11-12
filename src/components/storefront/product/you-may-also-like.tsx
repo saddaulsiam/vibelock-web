@@ -20,7 +20,7 @@ export function YouMayAlsoLike({ products, categorySlug, categoryName }: YouMayA
     >
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3 sm:mb-8">
         <div>
-          <span className="text-vl-dark-900/50 block text-[10px] font-bold tracking-[0.2em] uppercase sm:text-[11px]">
+          <span className="text-vl-dark-900/50 tracking-streetwear block text-[10px] font-bold uppercase sm:text-[11px]">
             Curated For You
           </span>
           <h2

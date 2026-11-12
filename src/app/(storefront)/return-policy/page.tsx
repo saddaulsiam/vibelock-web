@@ -20,31 +20,31 @@ export default function ReturnPolicyPage() {
   const lastUpdated = "November 1, 2026";
 
   return (
-    <div className="flex flex-col bg-vl-white-300 text-vl-dark-900">
+    <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── Hero Header ── */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-vl-dark-900 pt-24 pb-16 text-vl-white-300 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute top-0 right-1/4 size-80 rounded-full bg-vl-cyan-50 blur-3xl"
+          className="bg-vl-cyan-50 pointer-events-none absolute top-0 right-1/4 size-80 rounded-full blur-3xl"
         />
 
         <Container className="relative z-10">
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.2em] text-vl-cyan uppercase">
+          <div className="tracking-streetwear text-vl-cyan flex items-center gap-2 text-xs font-semibold uppercase">
             <RotateCcw className="size-4" />
             <span>Customer First</span>
           </div>
           <h1 className="font-heading mt-3 text-3xl font-black tracking-tight text-white sm:text-5xl">
             Return &amp; Exchange Policy
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-vl-white-300/70 sm:text-base">
+          <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
             Streetwear should fit right. If the fit isn&apos;t what you envisioned, our 7-day
             exchange policy has you covered nationwide.
           </p>
-          <div className="mt-6 flex items-center gap-4 text-xs text-vl-white-300/50">
+          <div className="text-vl-white-300/50 mt-6 flex items-center gap-4 text-xs">
             <span>Last Updated: {lastUpdated}</span>
             <span>•</span>
             <span>7-Day Hassle-Free Window</span>
@@ -76,11 +76,11 @@ export default function ReturnPolicyPage() {
               </div>
 
               {/* Section 1: Conditions */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   1. Return &amp; Exchange Eligibility
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     To qualify for an exchange or refund, the garment must satisfy these standards:
                   </p>
@@ -104,23 +104,23 @@ export default function ReturnPolicyPage() {
               </div>
 
               {/* Section 2: How to Initiate */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   2. How to Initiate a Return or Size Swap
                 </h2>
-                <div className="mt-4 space-y-4 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-4 text-sm leading-relaxed">
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
+                      <span className="bg-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                         1
                       </span>
                       <div>
-                        <p className="font-semibold text-vl-dark-900">Submit Request Online</p>
-                        <p className="text-xs text-vl-dark-900/70">
+                        <p className="text-vl-dark-900 font-semibold">Submit Request Online</p>
+                        <p className="text-vl-dark-900/70 text-xs">
                           Visit your{" "}
                           <Link
                             href="/account/orders"
-                            className="font-medium text-vl-cyan underline"
+                            className="text-vl-cyan font-medium underline"
                           >
                             Account Orders page
                           </Link>{" "}
@@ -131,14 +131,14 @@ export default function ReturnPolicyPage() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
+                      <span className="bg-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                         2
                       </span>
                       <div>
-                        <p className="font-semibold text-vl-dark-900">
+                        <p className="text-vl-dark-900 font-semibold">
                           Inspection &amp; Courier Handover
                         </p>
-                        <p className="text-xs text-vl-dark-900/70">
+                        <p className="text-vl-dark-900/70 text-xs">
                           Pack the garment safely. In Dhaka, our courier will pick it up or swap it
                           at your doorstep. Outside Dhaka, you can drop it off via Steadfast /
                           Sundarban to our central hub.
@@ -147,12 +147,14 @@ export default function ReturnPolicyPage() {
                     </div>
 
                     <div className="flex items-start gap-3">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-vl-dark-900 text-xs font-bold text-white">
+                      <span className="bg-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white">
                         3
                       </span>
                       <div>
-                        <p className="font-semibold text-vl-dark-900">Resolution (Swap or Refund)</p>
-                        <p className="text-xs text-vl-dark-900/70">
+                        <p className="text-vl-dark-900 font-semibold">
+                          Resolution (Swap or Refund)
+                        </p>
+                        <p className="text-vl-dark-900/70 text-xs">
                           Once inspected (typically within 24 hours of arrival), your replacement
                           size is dispatched immediately or your refund is issued.
                         </p>
@@ -163,11 +165,11 @@ export default function ReturnPolicyPage() {
               </div>
 
               {/* Section 3: Shipping Costs */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   3. Exchange Shipping Charges
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     <strong>If VibeLock made an error:</strong> (e.g. wrong size sent, defective
                     stitching, damaged parcel) — we cover 100% of the return and redelivery shipping
@@ -181,11 +183,11 @@ export default function ReturnPolicyPage() {
               </div>
 
               {/* Section 4: Refund Timelines */}
-              <div className="border border-vl-dark-900/10 bg-white p-6 sm:p-8">
-                <h2 className="font-heading text-lg font-bold tracking-tight text-vl-dark-900 sm:text-xl">
+              <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
+                <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
                   4. Refund Methods &amp; Timelines
                 </h2>
-                <div className="mt-4 space-y-3 text-sm leading-relaxed text-vl-dark-900/80">
+                <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>When a refund is approved, you may choose:</p>
                   <ul className="list-disc space-y-2 pl-5">
                     <li>
@@ -207,17 +209,17 @@ export default function ReturnPolicyPage() {
 
             {/* Quick Links Sidebar */}
             <div className="space-y-6 lg:col-span-4">
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Self-Service Returns
                 </h3>
-                <p className="mt-2 text-xs leading-relaxed text-vl-dark-900/70">
+                <p className="text-vl-dark-900/70 mt-2 text-xs leading-relaxed">
                   Have an existing order? Start your return or exchange online in under 2 minutes:
                 </p>
                 <div className="mt-4">
                   <Link
                     href="/account/orders"
-                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 bg-vl-dark-900 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors hover:bg-vl-dark-900/85"
+                    className="bg-vl-dark-900 hover:bg-vl-dark-900/85 inline-flex min-h-11 w-full items-center justify-center gap-2 px-4 text-xs font-bold tracking-wider text-white uppercase transition-colors"
                   >
                     <span>Go to My Orders</span>
                     <ArrowRight className="size-4" />
@@ -225,45 +227,45 @@ export default function ReturnPolicyPage() {
                 </div>
               </div>
 
-              <div className="border border-vl-dark-900/15 bg-white p-6">
-                <h3 className="font-heading text-sm font-bold tracking-wider text-vl-dark-900 uppercase">
+              <div className="border-vl-dark-900/15 border bg-white p-6">
+                <h3 className="font-heading text-vl-dark-900 text-sm font-bold tracking-wider uppercase">
                   Related Policies
                 </h3>
                 <ul className="mt-4 space-y-3 text-sm">
                   <li>
                     <Link
                       href="/shipping-policy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Shipping Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/terms"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Terms of Service</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/privacy"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Privacy Policy</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                   <li>
                     <Link
                       href="/faq"
-                      className="flex items-center justify-between font-medium text-vl-dark-900/70 transition-colors hover:text-vl-cyan"
+                      className="text-vl-dark-900/70 hover:text-vl-cyan flex items-center justify-between font-medium transition-colors"
                     >
                       <span>Frequently Asked Questions</span>
-                      <span className="text-xs text-vl-dark-900/40">→</span>
+                      <span className="text-vl-dark-900/40 text-xs">→</span>
                     </Link>
                   </li>
                 </ul>

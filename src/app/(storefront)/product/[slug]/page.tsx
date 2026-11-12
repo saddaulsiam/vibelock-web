@@ -132,7 +132,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
               <Link
                 href={`/category/${mainCategory.slug}`}
-                className="hover:text-foreground focus-visible:ring-vl-cyan max-w-[120px] truncate rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:max-w-none"
+                className="hover:text-foreground focus-visible:ring-vl-cyan max-w-30 truncate rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:max-w-none"
               >
                 {mainCategory.name}
               </Link>
@@ -140,7 +140,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           )}
           <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
           <span
-            className="text-foreground max-w-[140px] truncate font-medium sm:max-w-[280px] md:max-w-none"
+            className="text-foreground max-w-35 truncate font-medium sm:max-w-70 md:max-w-none"
             aria-current="page"
             title={product.name}
           >
@@ -159,7 +159,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 {mainCategory && (
                   <Link
                     href={`/category/${mainCategory.slug}`}
-                    className="text-vl-dark-900/60 hover:text-vl-cyan-600 focus-visible:ring-vl-cyan text-[10px] font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-[11px]"
+                    className="text-vl-dark-900/60 hover:text-vl-cyan-600 focus-visible:ring-vl-cyan tracking-streetwear text-[10px] font-bold uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:text-[11px]"
                   >
                     {mainCategory.name}
                   </Link>

@@ -32,20 +32,20 @@ export default async function AdminReviewsPage({ searchParams }: AdminReviewsPag
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-vl-dark-900/10 pb-5">
+      <div className="border-vl-dark-900/10 flex flex-wrap items-baseline justify-between gap-4 border-b pb-5">
         <div>
-          <p className="text-xs font-bold tracking-[0.2em] text-vl-dark-900/60 uppercase">
+          <p className="tracking-streetwear text-vl-dark-900/60 text-xs font-bold uppercase">
             Marketing & Social Proof
           </p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-vl-dark-900 sm:text-3xl">
+          <h1 className="text-vl-dark-900 mt-1 text-2xl font-black tracking-tight sm:text-3xl">
             Product Reviews & Ratings
           </h1>
-          <p className="mt-1 text-xs text-vl-dark-900/65">
+          <p className="text-vl-dark-900/65 mt-1 text-xs">
             Monitor customer feedback, verified purchases, and moderate store reviews.
           </p>
         </div>
         <div className="text-right">
-          <span className="text-xs font-semibold text-vl-dark-900/70">
+          <span className="text-vl-dark-900/70 text-xs font-semibold">
             Total Results: <strong className="text-vl-dark-900">{totalCount}</strong>
           </span>
         </div>

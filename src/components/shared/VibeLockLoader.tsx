@@ -68,7 +68,7 @@ export default function VibeLockLoader({
         "bg-vl-white-300 text-vl-dark-900", // Matches website warm off-white theme
         fullScreen
           ? "fixed inset-0 z-9999 min-h-dvh w-full"
-          : "min-h-90 w-full rounded-2xl border border-vl-dark-900/10",
+          : "border-vl-dark-900/10 min-h-90 w-full rounded-2xl border",
       ].join(" ")}
     >
       {/* ── 1. Cyberpunk Subtle Grid & Ambient Glows ── */}
@@ -78,7 +78,7 @@ export default function VibeLockLoader({
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full bg-vl-cyan-50 blur-3xl"
+        className="bg-vl-cyan-50 pointer-events-none absolute top-1/2 left-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
       />
       <div
         aria-hidden="true"
@@ -88,20 +88,20 @@ export default function VibeLockLoader({
       {/* ── 2. Streetwear Corner HUD Telemetry (Light Theme) ── */}
       {fullScreen && (
         <>
-          <div className="pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-vl-dark-900/40 sm:flex">
-            <span className="size-1.5 animate-ping rounded-full bg-vl-cyan-600" />
+          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono text-[10px] sm:flex">
+            <span className="bg-vl-cyan-600 size-1.5 animate-ping rounded-full" />
             <span>VL-SYS // LIVE_FEED</span>
           </div>
 
-          <div className="pointer-events-none absolute top-6 right-6 hidden font-mono text-[10px] tracking-[0.2em] text-vl-dark-900/40 sm:block">
+          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute top-6 right-6 hidden font-mono text-[10px] sm:block">
             DHAKA [23.8103° N] • {latency}MS
           </div>
 
-          <div className="pointer-events-none absolute bottom-6 left-6 hidden font-mono text-[10px] tracking-[0.2em] text-vl-dark-900/40 sm:block">
+          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute bottom-6 left-6 hidden font-mono text-[10px] sm:block">
             HEAVYWEIGHT STREETWEAR
           </div>
 
-          <div className="pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono text-[10px] tracking-[0.2em] text-vl-dark-900/40 sm:flex">
+          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono text-[10px] sm:flex">
             <span className="size-1.5 animate-pulse rounded-full bg-emerald-600" />
             <span>STATUS: OPTIMAL</span>
           </div>
@@ -115,11 +115,11 @@ export default function VibeLockLoader({
           {/* Animated Glow Halo */}
           <div
             aria-hidden="true"
-            className="vl-glow absolute -inset-2.5 rounded-full border border-vl-cyan-200 bg-vl-cyan-50 shadow-[0_0_25px_rgba(0,217,255,0.2)]"
+            className="vl-glow border-vl-cyan-200 bg-vl-cyan-50 absolute -inset-2.5 rounded-full border shadow-[0_0_25px_rgba(0,217,255,0.2)]"
           />
 
           {/* Precision Badge Container (Dark background so white logo pops cleanly) */}
-          <div className="relative flex size-16 items-center justify-center rounded-full border-2 border-vl-dark-900 bg-vl-dark-900 shadow-[0_10px_30px_rgba(16,17,20,0.2)]">
+          <div className="border-vl-dark-900 bg-vl-dark-900 relative flex size-16 items-center justify-center rounded-full border-2 shadow-[0_10px_30px_rgba(16,17,20,0.2)]">
             <Image
               src="/images/vibelock-logo.png"
               alt="VibeLock"
@@ -133,15 +133,15 @@ export default function VibeLockLoader({
 
         {/* Brand Name Typography */}
         <div className="mt-5 flex flex-col items-center text-center">
-          <h2 className="text-2xl font-black tracking-[0.22em] text-vl-dark-900 uppercase sm:text-[26px]">
+          <h2 className="text-vl-dark-900 text-2xl font-black tracking-[0.22em] uppercase sm:text-[26px]">
             VIBELOCK
           </h2>
           <div className="mt-1.5 flex items-center gap-2">
-            <span className="h-px w-3 bg-vl-dark-900/30" />
-            <span className="text-[10px] font-extrabold tracking-[0.28em] text-vl-cyan-700 uppercase">
+            <span className="bg-vl-dark-900/30 h-px w-3" />
+            <span className="text-vl-cyan-700 text-[10px] font-extrabold tracking-[0.28em] uppercase">
               {subLabel}
             </span>
-            <span className="h-px w-3 bg-vl-dark-900/30" />
+            <span className="bg-vl-dark-900/30 h-px w-3" />
           </div>
         </div>
 
@@ -151,26 +151,26 @@ export default function VibeLockLoader({
           <div className="mb-2.5 flex w-full items-end justify-between font-mono text-[10px] tracking-wider">
             {/* Left: Active Stage Name */}
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-vl-cyan-700">[STAGE {activeStage.id}]</span>
-              <span className="font-bold text-vl-dark-900">{activeStage.name}</span>
+              <span className="text-vl-cyan-700 font-bold">[STAGE {activeStage.id}]</span>
+              <span className="text-vl-dark-900 font-bold">{activeStage.name}</span>
             </div>
 
             {/* Right: Live Percentage Counter */}
             <div className="flex items-baseline gap-1">
-              <span className="text-xs font-black text-vl-dark-900">{progress}</span>
-              <span className="text-[9px] font-bold text-vl-cyan-700">%</span>
+              <span className="text-vl-dark-900 text-xs font-black">{progress}</span>
+              <span className="text-vl-cyan-700 text-[9px] font-bold">%</span>
             </div>
           </div>
 
           {/* ── Main Dynamic Progress Bar ── */}
-          <div className="relative h-1 w-full overflow-hidden rounded-full bg-vl-dark-900/12 shadow-inner">
+          <div className="bg-vl-dark-900/12 relative h-1 w-full overflow-hidden rounded-full shadow-inner">
             {/* Smooth Dynamic Fill */}
             <div
-              className="relative h-full rounded-full bg-linear-to-r from-vl-dark-900 via-vl-dark-900 to-vl-cyan-600 shadow-[0_0_12px_rgba(0,163,196,0.6)] transition-all duration-100 ease-linear"
+              className="from-vl-dark-900 via-vl-dark-900 to-vl-cyan-600 relative h-full rounded-full bg-linear-to-r shadow-[0_0_12px_rgba(0,163,196,0.6)] transition-all duration-100 ease-linear"
               style={{ width: `${progress}%` }}
             >
               {/* Leading Sparkle Head */}
-              <div className="absolute top-1/2 right-0 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full bg-vl-cyan shadow-[0_0_8px_#00D9FF] ring-2 ring-white" />
+              <div className="bg-vl-cyan absolute top-1/2 right-0 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full shadow-[0_0_8px_#00D9FF] ring-2 ring-white" />
             </div>
 
             {/* Continuous Sweeping Laser Beam */}
@@ -178,13 +178,13 @@ export default function VibeLockLoader({
           </div>
 
           {/* Live Data Waveform + Sub-Description */}
-          <div className="mt-3.5 flex w-full items-center justify-between font-mono text-[9px] tracking-wider text-vl-dark-900/60">
+          <div className="text-vl-dark-900/60 mt-3.5 flex w-full items-center justify-between font-mono text-[9px] tracking-wider">
             {/* Live Frequency Equalizer Bars */}
             <div className="flex items-center gap-0.75">
               {[8, 14, 6, 12, 16, 9, 13, 7].map((h, i) => (
                 <span
                   key={i}
-                  className="vl-equalizer w-0.5 rounded-full bg-vl-dark-900"
+                  className="vl-equalizer bg-vl-dark-900 w-0.5 rounded-full"
                   style={{
                     height: `${h}px`,
                     animationDelay: `${i * 0.12}s`,
@@ -196,7 +196,7 @@ export default function VibeLockLoader({
             {/* Sub-label Description */}
             <div className="flex items-center gap-1.5 text-right uppercase">
               <span className="size-1 animate-pulse rounded-full bg-emerald-600" />
-              <span className="font-semibold text-vl-dark-900/80">{label || activeStage.desc}</span>
+              <span className="text-vl-dark-900/80 font-semibold">{label || activeStage.desc}</span>
             </div>
           </div>
         </div>
