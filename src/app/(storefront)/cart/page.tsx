@@ -5,7 +5,7 @@ import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 
 export const metadata: Metadata = {
-  title: "Shopping Cart | VibeLock",
+  title: "Shopping Cart",
   description: "View and manage items in your VibeLock shopping cart.",
   robots: {
     index: false,

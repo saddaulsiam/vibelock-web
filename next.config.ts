@@ -41,6 +41,30 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/*": ["./node_modules/.prisma/client/**/*"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/privacy-policy",
+        destination: "/privacy",
+        permanent: true,
+      },
+      {
+        source: "/products",
+        destination: "/shop",
+        permanent: true,
+      },
+      {
+        source: "/products/:slug",
+        destination: "/product/:slug",
+        permanent: true,
+      },
+      {
+        source: "/search",
+        destination: "/shop",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

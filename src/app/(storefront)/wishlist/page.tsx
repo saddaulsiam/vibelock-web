@@ -5,7 +5,7 @@ import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { WishlistContent } from "@/components/storefront/wishlist/wishlist-content";
 
 export const metadata: Metadata = {
-  title: "Saved Wishlist | VibeLock",
+  title: "Saved Wishlist",
   description: "View and manage your curated VibeLock streetwear wishlist and saved drops.",
   robots: { index: false, follow: false },
 };

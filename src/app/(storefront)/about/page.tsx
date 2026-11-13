@@ -6,7 +6,7 @@ import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
 
 export const metadata: Metadata = {
-  title: "About Us | The VibeLock Manifesto",
+  title: "About Us — The Modern Streetwear Manifesto",
   description:
     "Discover the story behind VibeLock — Bangladesh's premier heavyweight streetwear label. Designed in Dhaka, engineered for authentic urban movement.",
   alternates: { canonical: `${SITE_URL}/about` },
