@@ -57,21 +57,25 @@ export default function VibeLockLoader({
 }: VibeLockLoaderProps) {
   const isControlled = typeof externalProgress === "number" || typeof value === "number";
   const controlledValue = externalProgress ?? value;
+  const normalizedControlledProgress =
+    isControlled && typeof controlledValue === "number"
+      ? Math.min(100, Math.max(0, Math.round(controlledValue)))
+      : null;
 
-  const [internalProgress, setInternalProgress] = React.useState(
-    isControlled ? Math.min(100, Math.max(0, Math.round(controlledValue!))) : 12
+  const [autonomousProgress, setAutonomousProgress] = React.useState(
+    normalizedControlledProgress ?? 12
   );
-  const [internalStageIdx, setInternalStageIdx] = React.useState(0);
+  const [autonomousStageIdx, setAutonomousStageIdx] = React.useState(0);
   const [latency, setLatency] = React.useState(22);
-  const [isOnline, setIsOnline] = React.useState(true);
-  const [isCompleted, setIsCompleted] = React.useState(false);
+  const [isOnline, setIsOnline] = React.useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
   const onCompleteCalled = React.useRef(false);
 
   // ── 1. Measure Actual Real Telemetry (RTT & Online State) ──
   React.useEffect(() => {
     if (typeof window === "undefined") return;
 
-    setIsOnline(navigator.onLine);
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
@@ -103,29 +107,18 @@ export default function VibeLockLoader({
     };
   }, []);
 
-  // ── 2. Controlled Mode: Update directly when progress/value prop changes ──
+  // ── 2. Controlled Mode: Trigger completion callback from prop-driven progress ──
   React.useEffect(() => {
-    if (isControlled && typeof controlledValue === "number") {
-      const clamped = Math.min(100, Math.max(0, Math.round(controlledValue)));
-      setInternalProgress(clamped);
-
-      if (typeof currentStage === "number") {
-        setInternalStageIdx(Math.min(stages.length - 1, Math.max(0, currentStage)));
-      } else {
-        const calculatedIdx = Math.min(
-          stages.length - 1,
-          Math.floor((clamped / 100) * stages.length)
-        );
-        setInternalStageIdx(calculatedIdx);
-      }
-
-      if (clamped >= 100 && !onCompleteCalled.current) {
-        onCompleteCalled.current = true;
-        setIsCompleted(true);
-        onComplete?.();
-      }
+    if (
+      isControlled &&
+      normalizedControlledProgress !== null &&
+      normalizedControlledProgress >= 100 &&
+      !onCompleteCalled.current
+    ) {
+      onCompleteCalled.current = true;
+      onComplete?.();
     }
-  }, [isControlled, controlledValue, currentStage, stages.length, onComplete]);
+  }, [isControlled, normalizedControlledProgress, onComplete]);
 
   // ── 3. Autonomous Mode: Realistic asymptotic trickle curve (never loops back) ──
   React.useEffect(() => {
@@ -141,12 +134,12 @@ export default function VibeLockLoader({
       current = Math.min(95, current + delta);
       const rounded = Math.floor(current);
 
-      setInternalProgress(rounded);
+      setAutonomousProgress(rounded);
 
       if (typeof currentStage === "number") {
-        setInternalStageIdx(Math.min(stages.length - 1, Math.max(0, currentStage)));
+        setAutonomousStageIdx(Math.min(stages.length - 1, Math.max(0, currentStage)));
       } else {
-        setInternalStageIdx(
+        setAutonomousStageIdx(
           Math.min(stages.length - 1, Math.floor((rounded / 100) * stages.length))
         );
       }
@@ -159,9 +152,8 @@ export default function VibeLockLoader({
     timer = setTimeout(step, 50);
 
     const handleWindowLoad = () => {
-      setInternalProgress(100);
-      setInternalStageIdx(stages.length - 1);
-      setIsCompleted(true);
+      setAutonomousProgress(100);
+      setAutonomousStageIdx(stages.length - 1);
       if (!onCompleteCalled.current) {
         onCompleteCalled.current = true;
         onComplete?.();
@@ -187,6 +179,18 @@ export default function VibeLockLoader({
       }
     };
   }, [isControlled, trackDocumentLoad, currentStage, stages.length, onComplete]);
+
+  const internalProgress = normalizedControlledProgress ?? autonomousProgress;
+  const internalStageIdx =
+    isControlled && normalizedControlledProgress !== null
+      ? typeof currentStage === "number"
+        ? Math.min(stages.length - 1, Math.max(0, currentStage))
+        : Math.min(
+            stages.length - 1,
+            Math.floor((normalizedControlledProgress / 100) * stages.length)
+          )
+      : autonomousStageIdx;
+  const isCompleted = internalProgress >= 100;
 
   const activeStage = stages[internalStageIdx] || stages[0];
   const stageTitle =
