@@ -10,6 +10,7 @@ import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { getCatalogFilterOptions, getCategories, getCategoryBySlug } from "@/lib/catalog/queries";
 import { parseDiscoverySearchParams } from "@/lib/catalog/validation";
 import { SITE_URL } from "@/lib/seo/site";
+import { getCategoryBreadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { cn } from "cn";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -102,6 +103,11 @@ export default async function CategoryPage({
     category: parsedParams.category,
   };
 
+  const breadcrumbJsonLd = getCategoryBreadcrumbJsonLd({
+    name: category.name,
+    slug: category.slug,
+  });
+
   return (
     <Section
       className={cn(
@@ -109,6 +115,10 @@ export default async function CategoryPage({
         promoBanners.length > 0 ? "pt-16 sm:pt-20 lg:pt-24" : "pt-20 sm:pt-24 lg:pt-28"
       )}
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
+      />
       <Container>
         {promoBanners.length > 0 ? (
           <div className="mb-5 sm:mb-6">

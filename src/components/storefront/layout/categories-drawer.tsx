@@ -157,6 +157,32 @@ export function CategoriesDrawer({
               <span>MY ACCOUNT</span>
             </Link>
           </Button>
+
+          <div className="text-2xs flex items-center justify-center gap-3 pt-1 font-semibold tracking-wider text-black/60 uppercase">
+            <Link
+              href="/about"
+              onClick={closeDrawer}
+              className="transition-colors hover:text-black"
+            >
+              About
+            </Link>
+            <span className="text-black/30" aria-hidden="true">
+              •
+            </span>
+            <Link
+              href="/contact"
+              onClick={closeDrawer}
+              className="transition-colors hover:text-black"
+            >
+              Contact
+            </Link>
+            <span className="text-black/30" aria-hidden="true">
+              •
+            </span>
+            <Link href="/faq" onClick={closeDrawer} className="transition-colors hover:text-black">
+              FAQ
+            </Link>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

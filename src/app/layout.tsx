@@ -1,4 +1,5 @@
 import { SITE_URL } from "@/lib/seo/site";
+import { getOrganizationJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
@@ -26,7 +27,6 @@ export const metadata: Metadata = {
   description:
     "Bangladesh men's streetwear brand for modern Dhaka youth. Minimal, confident, and premium.",
   metadataBase: new URL(SITE_URL),
-  alternates: { canonical: SITE_URL },
   verification: {
     google: "j6L5aNvuXV1cerw6IV7KSS1e7rOzqZh0sR4e9w5zeIs",
   },
@@ -52,6 +52,12 @@ export default async function RootLayout({
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} bg-background text-foreground flex min-h-screen flex-col font-sans antialiased`}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd(getOrganizationJsonLd()),
+          }}
+        />
         {children}
         <Toaster
           position="top-center"

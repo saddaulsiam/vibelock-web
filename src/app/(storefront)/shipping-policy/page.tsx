@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/seo/site";
 import { Truck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Shipping & Delivery Policy | VibeLock",
+  title: "Shipping & Delivery Policy",
   description:
     "Learn about VibeLock delivery timelines, courier coverage, shipping rates across Dhaka and all 64 districts of Bangladesh via Steadfast Courier.",
   alternates: { canonical: `${SITE_URL}/shipping-policy` },

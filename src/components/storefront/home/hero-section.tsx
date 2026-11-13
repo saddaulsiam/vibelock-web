@@ -24,7 +24,7 @@ interface HeroSectionProps {
 }
 
 function useTypewriter(words: string[], typingSpeed = 80, deletingSpeed = 45, pauseMs = 1600) {
-  const [displayed, setDisplayed] = React.useState("");
+  const [displayed, setDisplayed] = React.useState(words[0] || "");
   const [wordIdx, setWordIdx] = React.useState(0);
   const [phase, setPhase] = React.useState<"typing" | "pausing" | "deleting">("typing");
 

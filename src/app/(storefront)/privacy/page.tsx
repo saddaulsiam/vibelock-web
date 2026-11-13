@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/seo/site";
 import { Lock, CheckCircle2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | VibeLock",
+  title: "Privacy Policy",
   description:
     "Learn how VibeLock collects, uses, safeguards, and handles your personal information across our storefront and fulfillment operations in Bangladesh.",
   alternates: { canonical: `${SITE_URL}/privacy` },

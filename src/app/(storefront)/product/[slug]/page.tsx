@@ -13,6 +13,11 @@ import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/queries";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
 import { SITE_URL } from "@/lib/seo/site";
+import {
+  getProductJsonLd,
+  getProductBreadcrumbJsonLd,
+  serializeJsonLd,
+} from "@/lib/seo/json-ld";
 import { notFound } from "next/navigation";
 
 interface ProductPageProps {
@@ -31,11 +36,11 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   return {
     title: product.name,
     description,
-    alternates: { canonical: `${SITE_URL}/shop/${product.slug}` },
+    alternates: { canonical: `${SITE_URL}/product/${product.slug}` },
     openGraph: {
       title: `${product.name} | VibeLock`,
       description,
-      url: `${SITE_URL}/shop/${product.slug}`,
+      url: `${SITE_URL}/product/${product.slug}`,
       images: primaryImage ? [{ url: primaryImage.url }] : [],
     },
   };
@@ -61,53 +66,24 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const mainCategory = product.categories[0];
 
-  const offers =
-    product.minPrice === product.maxPrice
-      ? {
-          "@type": "Offer",
-          priceCurrency: "BDT",
-          price: product.minPrice,
-          availability: product.available
-            ? "https://schema.org/InStock"
-            : "https://schema.org/OutOfStock",
-        }
-      : {
-          "@type": "AggregateOffer",
-          priceCurrency: "BDT",
-          lowPrice: product.minPrice,
-          highPrice: product.maxPrice,
-          offerCount: product.variants.length || 1,
-          availability: product.available
-            ? "https://schema.org/InStock"
-            : "https://schema.org/OutOfStock",
-        };
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
+  const productJsonLd = getProductJsonLd(product, summary);
+  const breadcrumbJsonLd = getProductBreadcrumbJsonLd({
     name: product.name,
-    description: product.description || undefined,
-    image: product.images.map((image) => image.url),
-    offers,
-    ...(summary.totalReviews > 0
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: summary.averageRating,
-            reviewCount: summary.totalReviews,
-            bestRating: 5,
-            worstRating: 1,
-          },
-        }
-      : {}),
-  };
+    slug: product.slug,
+    category: mainCategory ? { name: mainCategory.name, slug: mainCategory.slug } : null,
+  });
 
   return (
     <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
       <script
         nonce={nonce}
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
+      />
+      <script
+        nonce={nonce}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <Container className="max-w-6xl">
         <nav
@@ -125,7 +101,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             href="/shop"
             className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
           >
-            Products
+            Shop
           </Link>
           {mainCategory && (
             <>

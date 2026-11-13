@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/seo/site";
 import { HelpCircle, ChevronDown, MessageSquare, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions (FAQ) | VibeLock",
+  title: "Frequently Asked Questions & Support",
   description:
     "Find answers to common questions about VibeLock streetwear sizing, orders, shipping timelines, COD, exchanges, and fabric care in Bangladesh.",
   alternates: { canonical: `${SITE_URL}/faq` },

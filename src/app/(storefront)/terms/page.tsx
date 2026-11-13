@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/seo/site";
 import { ShieldCheck, Scale } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | VibeLock",
+  title: "Terms of Service",
   description:
     "Review the terms, conditions, and legal policies governing purchases, services, and operations at VibeLock Bangladesh.",
   alternates: { canonical: `${SITE_URL}/terms` },
