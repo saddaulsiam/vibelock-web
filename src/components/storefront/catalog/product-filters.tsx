@@ -563,14 +563,18 @@ export function ProductFilters({
         }));
       }
       const params = new URLSearchParams(searchParams.toString());
+      params.delete("category");
+      params.delete("page");
+      const query = params.toString();
+
       if (slug) {
-        params.set("category", slug);
+        router.push(query ? `/category/${slug}?${query}` : `/category/${slug}`);
       } else {
-        params.delete("category");
+        router.push(query ? `/shop?${query}` : `/shop`);
       }
-      navigateWithParams(params);
+      if (isMobile) setOpen(false);
     },
-    [navigateWithParams, searchParams]
+    [isMobile, router, searchParams]
   );
 
   const handleSelectPriceRange = (range: (typeof PRICE_RANGES)[number]) => {
