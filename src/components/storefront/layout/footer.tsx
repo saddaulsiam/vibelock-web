@@ -22,18 +22,16 @@ const RETAIL_LOCATION: RetailLocation = {
 };
 
 const shopLinks = [
+  { label: "Shirts", href: "/category/shirts" },
+  { label: "T-Shirts", href: "/category/t-shirts" },
+  { label: "Pants & Denims", href: "/category/pants" },
+  { label: "Shorts", href: "/category/shorts" },
   { label: "All Products", href: "/shop" },
-  { label: "Oversized T-Shirts", href: "/category/t-shirts" },
-  { label: "Streetwear Shirts", href: "/category/shirts" },
-  { label: "Cargo Pants & Denims", href: "/category/pants" },
-  { label: "Everyday Shorts", href: "/category/shorts" },
 ] as const;
 
 const customerLinks = [
   { label: "About Us", href: "/about" },
   { label: "Contact Us", href: "/contact" },
-  { label: "My Account", href: "/account" },
-  { label: "Track My Orders", href: "/account/orders" },
   { label: "Return & Exchange", href: "/return-policy" },
   { label: "Shipping Policy", href: "/shipping-policy" },
   { label: "FAQs & Support", href: "/faq" },
@@ -133,8 +131,11 @@ export function Footer() {
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
                         <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
-                          {link.label}
+                        <span className="relative inline-flex items-center py-0.5">
+                          <span className="group-hover:text-vl-cyan transition-colors duration-200">
+                            {link.label}
+                          </span>
+                          <span className="bg-vl-cyan absolute bottom-0 left-0 h-px w-0 transition-all duration-200 group-hover:w-full" />
                         </span>
                       </Link>
                     </li>
@@ -160,8 +161,11 @@ export function Footer() {
                         className="group text-vl-white/75 hover:text-vl-white inline-flex items-center gap-2 text-xs font-medium transition-all duration-200"
                       >
                         <ChevronRight className="text-vl-cyan-300 group-hover:text-vl-cyan size-3.5 shrink-0 transition-transform duration-200 group-hover:translate-x-1" />
-                        <span className="group-hover:text-vl-cyan group-hover:decoration-vl-cyan-300 transition-colors duration-200 group-hover:underline group-hover:underline-offset-4">
-                          {link.label}
+                        <span className="relative inline-flex items-center py-0.5">
+                          <span className="group-hover:text-vl-cyan transition-colors duration-200">
+                            {link.label}
+                          </span>
+                          <span className="bg-vl-cyan absolute bottom-0 left-0 h-px w-0 transition-all duration-200 group-hover:w-full" />
                         </span>
                       </Link>
                     </li>
