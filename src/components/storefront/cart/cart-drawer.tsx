@@ -149,7 +149,7 @@ export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
               }}
               exit={{ scale: 0, opacity: 0 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
-              className="bg-vl-cyan text-vl-black shadow-[0_0_10px_rgba(0,217,255,0.7)] absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-black sm:top-1 sm:right-1 sm:size-4 sm:text-[9px]"
+              className="bg-vl-cyan text-vl-black absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-black shadow-[0_0_10px_rgba(0,217,255,0.7)] sm:top-1 sm:right-1 sm:size-4 sm:text-[9px]"
             >
               {itemCount}
             </motion.span>

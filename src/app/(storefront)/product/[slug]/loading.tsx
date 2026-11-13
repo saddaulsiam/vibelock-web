@@ -28,7 +28,7 @@ export default function ProductDetailLoading() {
           <div className="min-w-0">
             {/* Mobile Carousel Skeleton (< lg) */}
             <div className="lg:hidden">
-              <div className="relative mx-auto w-full max-w-90 xs:max-w-[300px] sm:max-w-110">
+              <div className="xs:max-w-[300px] relative mx-auto w-full max-w-90 sm:max-w-110">
                 <Skeleton className="aspect-3/4 w-full rounded-xs" />
                 {/* Floating Indicators Skeleton */}
                 <div className="absolute inset-x-0 bottom-2.5 flex items-center justify-between px-3">

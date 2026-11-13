@@ -140,7 +140,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)]"
+        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
         style={{ aspectRatio: "2 / 3" }}
       >
         {hasImage ? (
@@ -191,7 +191,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute top-2 right-2 z-10 rounded-full transition-transform duration-150 active:scale-75 hover:bg-white/80",
+            "absolute top-2 right-2 z-10 rounded-full transition-transform duration-150 hover:bg-white/80 active:scale-75",
             isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
           )}
         >

@@ -54,13 +54,10 @@ export function HeaderShell({ children }: HeaderShellProps) {
       className={cn(
         "pointer-events-none fixed right-0 left-0 z-50 w-full px-2.5 transition-all duration-300 ease-out sm:px-6 lg:px-8",
         isScrolled ? "top-1.5 sm:top-2" : "top-2 sm:top-3",
-        isVisible
-          ? "translate-y-0 opacity-100"
-          : "-translate-y-16 opacity-0 sm:-translate-y-20"
+        isVisible ? "translate-y-0 opacity-100" : "-translate-y-16 opacity-0 sm:-translate-y-20"
       )}
     >
       {children}
     </header>
   );
 }
-

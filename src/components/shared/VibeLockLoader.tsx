@@ -42,6 +42,32 @@ const DEFAULT_STAGES: readonly LoaderStage[] = [
   { id: "04", name: "FINALIZING DROP", desc: "VERIFYING INVENTORY LEDGER" },
 ] as const;
 
+function getInitialLatency(): number {
+  if (typeof navigator === "undefined") return 22;
+
+  const nav = navigator as Navigator & {
+    connection?: { rtt?: number };
+  };
+
+  if (nav.connection?.rtt && nav.connection.rtt > 0) {
+    return nav.connection.rtt;
+  }
+
+  if (typeof performance !== "undefined") {
+    const navEntry = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
+
+    if (navEntry && navEntry.responseStart > 0 && navEntry.requestStart > 0) {
+      const measured = Math.round(navEntry.responseStart - navEntry.requestStart);
+      if (measured > 0 && measured < 400) {
+        return measured;
+      }
+    }
+  }
+
+  return 22;
+}
+
 export default function VibeLockLoader({
   label,
   subLabel = "BUILT FOR THE STREETS",
@@ -66,7 +92,7 @@ export default function VibeLockLoader({
     normalizedControlledProgress ?? 12
   );
   const [autonomousStageIdx, setAutonomousStageIdx] = React.useState(0);
-  const [latency, setLatency] = React.useState(22);
+  const [latency] = React.useState(() => getInitialLatency());
   const [isOnline, setIsOnline] = React.useState(() =>
     typeof navigator === "undefined" ? true : navigator.onLine
   );
@@ -81,25 +107,6 @@ export default function VibeLockLoader({
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
-    // Measure real network RTT if available
-    const nav = navigator as Navigator & {
-      connection?: { rtt?: number };
-    };
-
-    if (nav.connection?.rtt && nav.connection.rtt > 0) {
-      setLatency(nav.connection.rtt);
-    } else {
-      const navEntry = performance.getEntriesByType("navigation")[0] as
-        | PerformanceNavigationTiming
-        | undefined;
-      if (navEntry && navEntry.responseStart > 0 && navEntry.requestStart > 0) {
-        const measured = Math.round(navEntry.responseStart - navEntry.requestStart);
-        if (measured > 0 && measured < 400) {
-          setLatency(measured);
-        }
-      }
-    }
 
     return () => {
       window.removeEventListener("online", handleOnline);
@@ -193,8 +200,7 @@ export default function VibeLockLoader({
   const isCompleted = internalProgress >= 100;
 
   const activeStage = stages[internalStageIdx] || stages[0];
-  const stageTitle =
-    typeof currentStage === "string" ? currentStage : activeStage.name;
+  const stageTitle = typeof currentStage === "string" ? currentStage : activeStage.name;
   const stageDesc =
     isCompleted || internalProgress >= 100
       ? "SYSTEM READY // DROP LOADED"
@@ -233,20 +239,20 @@ export default function VibeLockLoader({
       {/* ── 2. Streetwear Corner HUD Telemetry (Real Telemetry) ── */}
       {fullScreen && (
         <>
-          <div className="tracking-streetwear text-vl-dark-500 pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono text-2xs sm:flex">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono sm:flex">
             <span className="bg-vl-cyan-600 size-1.5 animate-ping rounded-full motion-reduce:animate-none" />
             <span>VL-SYS // {isControlled ? "SYNC_STREAM" : "LIVE_FEED"}</span>
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-500 pointer-events-none absolute top-6 right-6 hidden font-mono text-2xs sm:block">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute top-6 right-6 hidden font-mono sm:block">
             DHAKA [23.8103° N] • {latency}MS
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-500 pointer-events-none absolute bottom-6 left-6 hidden font-mono text-2xs sm:block">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute bottom-6 left-6 hidden font-mono sm:block">
             HEAVYWEIGHT STREETWEAR
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-500 pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono text-2xs sm:flex">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono sm:flex">
             <span
               className={cn(
                 "size-1.5 rounded-full motion-reduce:animate-none",
@@ -303,22 +309,18 @@ export default function VibeLockLoader({
         {/* ── 4. Dynamic Live Functional Progress Unit ── */}
         <div className="mt-8 flex w-full max-w-80 flex-col items-center">
           {/* Stage Info & Dynamic Counter Bar */}
-          <div className="mb-2.5 flex w-full items-end justify-between font-mono text-2xs tracking-wider">
+          <div className="text-2xs mb-2.5 flex w-full items-end justify-between font-mono tracking-wider">
             {/* Left: Active Stage Name */}
             <div className="flex items-center gap-1.5">
               <span className="text-vl-cyan-700 font-bold">
                 [STAGE {activeStage.id}/{String(stages.length).padStart(2, "0")}]
               </span>
-              <span className="text-vl-dark-900 max-w-44 truncate font-bold">
-                {stageTitle}
-              </span>
+              <span className="text-vl-dark-900 max-w-44 truncate font-bold">{stageTitle}</span>
             </div>
 
             {/* Right: Live Percentage Counter */}
             <div className="flex items-baseline gap-0.5">
-              <span className="text-vl-dark-900 text-xs font-black">
-                {internalProgress}
-              </span>
+              <span className="text-vl-dark-900 text-xs font-black">{internalProgress}</span>
               <span className="text-vl-cyan-700 text-3xs font-bold">%</span>
             </div>
           </div>
@@ -338,7 +340,7 @@ export default function VibeLockLoader({
                 "relative h-full rounded-full bg-linear-to-r shadow-[0_0_12px_rgba(0,184,219,0.5)]",
                 "transition-[width] duration-300 ease-out will-change-[width]",
                 internalProgress >= 100
-                  ? "from-emerald-600 via-emerald-500 to-vl-cyan-500 shadow-[0_0_14px_rgba(16,185,129,0.6)]"
+                  ? "to-vl-cyan-500 from-emerald-600 via-emerald-500 shadow-[0_0_14px_rgba(16,185,129,0.6)]"
                   : "from-vl-dark-900 via-vl-dark-800 to-vl-cyan-600"
               )}
               style={{ width: `${internalProgress}%` }}
@@ -361,7 +363,7 @@ export default function VibeLockLoader({
           </div>
 
           {/* Live Data Waveform + Sub-Description */}
-          <div className="text-vl-dark-500 mt-3.5 flex w-full items-center justify-between font-mono text-2xs tracking-wider">
+          <div className="text-vl-dark-500 text-2xs mt-3.5 flex w-full items-center justify-between font-mono tracking-wider">
             {/* Live Frequency Equalizer Bars */}
             <div className="flex items-center gap-0.75" aria-hidden="true">
               {[8, 14, 6, 12, 16, 9, 13, 7].map((h, i) => (
@@ -369,9 +371,7 @@ export default function VibeLockLoader({
                   key={i}
                   className={cn(
                     "w-0.5 rounded-full transition-colors duration-300",
-                    internalProgress >= 100
-                      ? "bg-emerald-600"
-                      : "vl-equalizer bg-vl-dark-900"
+                    internalProgress >= 100 ? "bg-emerald-600" : "vl-equalizer bg-vl-dark-900"
                   )}
                   style={{
                     height: `${h}px`,
@@ -386,23 +386,17 @@ export default function VibeLockLoader({
               <span
                 className={cn(
                   "size-1 rounded-full motion-reduce:animate-none",
-                  internalProgress >= 100
-                    ? "bg-emerald-500"
-                    : "animate-pulse bg-emerald-500"
+                  internalProgress >= 100 ? "bg-emerald-500" : "animate-pulse bg-emerald-500"
                 )}
               />
-              <span className="text-vl-dark-600 max-w-48 truncate font-semibold">
-                {stageDesc}
-              </span>
+              <span className="text-vl-dark-600 max-w-48 truncate font-semibold">{stageDesc}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Screen-reader live announcement */}
-      <span className="sr-only">
-        {`Loading VibeLock: ${stageTitle} (${internalProgress}%)`}
-      </span>
+      <span className="sr-only">{`Loading VibeLock: ${stageTitle} (${internalProgress}%)`}</span>
 
       {/* ── 5. Scoped Animations with Reduced-Motion Support ── */}
       <style>{`
