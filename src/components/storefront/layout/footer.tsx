@@ -3,6 +3,7 @@ import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Newsletter } from "../home/newsletter";
+import { FooterWatermark } from "./footer-watermark";
 
 interface RetailLocation {
   city: string;
@@ -55,7 +56,7 @@ export function Footer() {
       {/* Atmospheric Cyan/Teal Ambient Glow */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -bottom-36 left-1/4 h-[420px] w-[650px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,217,255,0.08),transparent_70%)] blur-3xl"
+        className="pointer-events-none absolute -bottom-36 left-1/4 h-105 w-162.5 -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,217,255,0.08),transparent_70%)] blur-3xl"
       />
       <div
         aria-hidden="true"
@@ -276,26 +277,7 @@ export function Footer() {
         </div>
 
         {/* ── 3 + 4. Brutalist Watermark with Bottom-Cut Effect */}
-        {/* The copyright bar overlaps the bottom half of the huge text, creating the slice/cut effect */}
-        <div className="pointer-events-none relative mt-3 overflow-hidden select-none">
-          {/* Giant watermark text — full-width, anchored to bottom */}
-          <div
-            className="flex w-full items-end justify-center"
-            style={{ height: "clamp(60px, 12vw, 160px)" }}
-          >
-            <span
-              className="text-vl-dark-500/30 block leading-none font-black tracking-tight whitespace-nowrap uppercase"
-              style={{
-                fontSize: "clamp(72px, 14vw, 200px)",
-                lineHeight: 1,
-                /* push the text down so only the top ~55% is visible */
-                transform: "translateY(20%)",
-              }}
-            >
-              VIBELOCK
-            </span>
-          </div>
-        </div>
+        <FooterWatermark />
 
         {/* ── Bottom Footer Bar — sits on top of the watermark ── */}
         <div className="border-vl-border text-vl-white/50 pointer-events-auto relative flex flex-col items-center gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">

@@ -1,109 +1,265 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import * as React from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
-interface VibeLockLoaderProps {
-  label?: string;
-  subLabel?: string;
-  fullScreen?: boolean;
+export interface LoaderStage {
+  id: string;
+  name: string;
+  desc: string;
 }
 
-const STAGES = [
+export interface VibeLockLoaderProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Optional custom title / status label. Overrides active stage description */
+  label?: string;
+  /** Subtitle pill text (default: "BUILT FOR THE STREETS") */
+  subLabel?: string;
+  /** Fullscreen fixed overlay mode (default: true) or inline card mode */
+  fullScreen?: boolean;
+  /**
+   * Functional real progress value (0 to 100).
+   * When provided, the loader is fully controlled by the caller.
+   * When omitted (undefined), uses intelligent autonomous trickle.
+   */
+  progress?: number;
+  /** Alias for progress (0 to 100) */
+  value?: number;
+  /** Optional stage override: 0-based index or custom stage title */
+  currentStage?: number | string;
+  /** Custom list of loading milestones / stages */
+  stages?: readonly LoaderStage[];
+  /** Callback fired once when progress reaches 100% */
+  onComplete?: () => void;
+  /** If true, completes progress to 100% automatically when window/document finishes loading */
+  trackDocumentLoad?: boolean;
+}
+
+const DEFAULT_STAGES: readonly LoaderStage[] = [
   { id: "01", name: "INITIALIZING CORE", desc: "CONNECTING TO DHAKA CDN" },
   { id: "02", name: "SYNCING CATALOG", desc: "DECRYPTING STREETWEAR MANIFEST" },
   { id: "03", name: "LOADING ASSETS", desc: "STREAMING HIGH-RES DROP MEDIA" },
   { id: "04", name: "FINALIZING DROP", desc: "VERIFYING INVENTORY LEDGER" },
-];
+] as const;
+
+function getInitialLatency(): number {
+  if (typeof navigator === "undefined") return 22;
+
+  const nav = navigator as Navigator & {
+    connection?: { rtt?: number };
+  };
+
+  if (nav.connection?.rtt && nav.connection.rtt > 0) {
+    return nav.connection.rtt;
+  }
+
+  if (typeof performance !== "undefined") {
+    const navEntry = performance.getEntriesByType("navigation")[0] as
+      PerformanceNavigationTiming | undefined;
+
+    if (navEntry && navEntry.responseStart > 0 && navEntry.requestStart > 0) {
+      const measured = Math.round(navEntry.responseStart - navEntry.requestStart);
+      if (measured > 0 && measured < 400) {
+        return measured;
+      }
+    }
+  }
+
+  return 22;
+}
 
 export default function VibeLockLoader({
   label,
   subLabel = "BUILT FOR THE STREETS",
   fullScreen = true,
+  progress: externalProgress,
+  value,
+  currentStage,
+  stages = DEFAULT_STAGES,
+  onComplete,
+  trackDocumentLoad = true,
+  className,
+  ...props
 }: VibeLockLoaderProps) {
-  const [progress, setProgress] = useState(8);
-  const [stageIdx, setStageIdx] = useState(0);
-  const [latency, setLatency] = useState(19);
+  const isControlled = typeof externalProgress === "number" || typeof value === "number";
+  const controlledValue = externalProgress ?? value;
+  const normalizedControlledProgress =
+    isControlled && typeof controlledValue === "number"
+      ? Math.min(100, Math.max(0, Math.round(controlledValue)))
+      : null;
 
-  // Smooth continuous dynamic progress
-  useEffect(() => {
-    let current = 8;
-    const interval = setInterval(() => {
-      // Accelerate initially, decelerate near 99%
-      const step = current < 40 ? 3 : current < 75 ? 2 : current < 95 ? 1 : 0.4;
-      current = Math.min(99, current + step);
-      setProgress(Math.floor(current));
+  const [autonomousProgress, setAutonomousProgress] = React.useState(
+    normalizedControlledProgress ?? 12
+  );
+  const [autonomousStageIdx, setAutonomousStageIdx] = React.useState(0);
+  const [latency] = React.useState(() => getInitialLatency());
+  const [isOnline, setIsOnline] = React.useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine
+  );
+  const onCompleteCalled = React.useRef(false);
 
-      // Calculate stage based on percentage
-      const nextStage = Math.min(STAGES.length - 1, Math.floor((current / 100) * STAGES.length));
-      setStageIdx(nextStage);
+  // ── 1. Measure Actual Real Telemetry (RTT & Online State) ──
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
 
-      // Fluctuate latency slightly for live telemetry realism
-      if (Math.random() > 0.6) {
-        setLatency(16 + Math.floor(Math.random() * 8));
-      }
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-      // If page takes long, loop smoothly back after a pause
-      if (current >= 99) {
-        setTimeout(() => {
-          current = 15;
-          setProgress(15);
-        }, 1200);
-      }
-    }, 60);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
-    return () => clearInterval(interval);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
-  const activeStage = STAGES[stageIdx];
+  // ── 2. Controlled Mode: Trigger completion callback from prop-driven progress ──
+  React.useEffect(() => {
+    if (
+      isControlled &&
+      normalizedControlledProgress !== null &&
+      normalizedControlledProgress >= 100 &&
+      !onCompleteCalled.current
+    ) {
+      onCompleteCalled.current = true;
+      onComplete?.();
+    }
+  }, [isControlled, normalizedControlledProgress, onComplete]);
+
+  // ── 3. Autonomous Mode: Realistic asymptotic trickle curve (never loops back) ──
+  React.useEffect(() => {
+    if (isControlled) return;
+
+    let current = 12;
+    let timer: NodeJS.Timeout | null = null;
+
+    const step = () => {
+      // Fast responsive start (0-35%), steady middle, holds smoothly at 94%
+      const delta =
+        current < 35 ? 3.4 : current < 65 ? 1.8 : current < 85 ? 0.9 : current < 94 ? 0.25 : 0.05;
+      current = Math.min(95, current + delta);
+      const rounded = Math.floor(current);
+
+      setAutonomousProgress(rounded);
+
+      if (typeof currentStage === "number") {
+        setAutonomousStageIdx(Math.min(stages.length - 1, Math.max(0, currentStage)));
+      } else {
+        setAutonomousStageIdx(
+          Math.min(stages.length - 1, Math.floor((rounded / 100) * stages.length))
+        );
+      }
+
+      if (current < 95) {
+        timer = setTimeout(step, current < 40 ? 45 : 85);
+      }
+    };
+
+    timer = setTimeout(step, 50);
+
+    const handleWindowLoad = () => {
+      setAutonomousProgress(100);
+      setAutonomousStageIdx(stages.length - 1);
+      if (!onCompleteCalled.current) {
+        onCompleteCalled.current = true;
+        onComplete?.();
+      }
+    };
+
+    if (trackDocumentLoad && typeof document !== "undefined") {
+      if (document.readyState === "complete") {
+        const t = setTimeout(handleWindowLoad, 350);
+        return () => {
+          clearTimeout(t);
+          if (timer) clearTimeout(timer);
+        };
+      } else {
+        window.addEventListener("load", handleWindowLoad, { once: true });
+      }
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (trackDocumentLoad && typeof window !== "undefined") {
+        window.removeEventListener("load", handleWindowLoad);
+      }
+    };
+  }, [isControlled, trackDocumentLoad, currentStage, stages.length, onComplete]);
+
+  const internalProgress = normalizedControlledProgress ?? autonomousProgress;
+  const internalStageIdx =
+    isControlled && normalizedControlledProgress !== null
+      ? typeof currentStage === "number"
+        ? Math.min(stages.length - 1, Math.max(0, currentStage))
+        : Math.min(
+            stages.length - 1,
+            Math.floor((normalizedControlledProgress / 100) * stages.length)
+          )
+      : autonomousStageIdx;
+  const isCompleted = internalProgress >= 100;
+
+  const activeStage = stages[internalStageIdx] || stages[0];
+  const stageTitle = typeof currentStage === "string" ? currentStage : activeStage.name;
+  const stageDesc =
+    isCompleted || internalProgress >= 100
+      ? "SYSTEM READY // DROP LOADED"
+      : label || activeStage.desc;
 
   return (
     <div
       role="status"
-      aria-label={label || activeStage.name}
-      aria-busy="true"
+      aria-label={label || stageTitle}
+      aria-busy={!isCompleted && internalProgress < 100}
       aria-live="polite"
-      className={[
+      className={cn(
         "relative isolate flex flex-col items-center justify-center overflow-hidden select-none",
-        "bg-vl-white-300 text-vl-dark-900", // Matches website warm off-white theme
+        "bg-vl-white-300 text-vl-dark-900", // Warm off-white canvas
         fullScreen
           ? "fixed inset-0 z-9999 min-h-dvh w-full"
           : "border-vl-dark-900/10 min-h-90 w-full rounded-2xl border",
-      ].join(" ")}
+        className
+      )}
+      {...props}
     >
-      {/* ── 1. Cyberpunk Subtle Grid & Ambient Glows ── */}
+      {/* ── 1. Background Grid & Ambient Glows (Light Canvas) ── */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(16,17,20,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(16,17,20,0.04)_1px,transparent_1px)] bg-size-[32px_32px]"
       />
       <div
         aria-hidden="true"
-        className="bg-vl-cyan-50 pointer-events-none absolute top-1/2 left-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+        className="bg-vl-cyan-100/60 pointer-events-none absolute top-1/2 left-1/2 size-80 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl motion-reduce:hidden"
       />
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute top-1/2 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-amber-500/5 blur-3xl"
+        className="bg-vl-white-50/80 pointer-events-none absolute top-1/2 left-1/2 size-96 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl motion-reduce:hidden"
       />
 
-      {/* ── 2. Streetwear Corner HUD Telemetry (Light Theme) ── */}
+      {/* ── 2. Streetwear Corner HUD Telemetry (Real Telemetry) ── */}
       {fullScreen && (
         <>
-          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono text-[10px] sm:flex">
-            <span className="bg-vl-cyan-600 size-1.5 animate-ping rounded-full" />
-            <span>VL-SYS // LIVE_FEED</span>
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute top-6 left-6 hidden items-center gap-2 font-mono sm:flex">
+            <span className="bg-vl-cyan-600 size-1.5 animate-ping rounded-full motion-reduce:animate-none" />
+            <span>VL-SYS // {isControlled ? "SYNC_STREAM" : "LIVE_FEED"}</span>
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute top-6 right-6 hidden font-mono text-[10px] sm:block">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute top-6 right-6 hidden font-mono sm:block">
             DHAKA [23.8103° N] • {latency}MS
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute bottom-6 left-6 hidden font-mono text-[10px] sm:block">
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute bottom-6 left-6 hidden font-mono sm:block">
             HEAVYWEIGHT STREETWEAR
           </div>
 
-          <div className="tracking-streetwear text-vl-dark-900/40 pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono text-[10px] sm:flex">
-            <span className="size-1.5 animate-pulse rounded-full bg-emerald-600" />
-            <span>STATUS: OPTIMAL</span>
+          <div className="tracking-streetwear text-vl-dark-500 text-2xs pointer-events-none absolute right-6 bottom-6 hidden items-center gap-2 font-mono sm:flex">
+            <span
+              className={cn(
+                "size-1.5 rounded-full motion-reduce:animate-none",
+                isOnline ? "animate-pulse bg-emerald-500" : "bg-red-500"
+              )}
+            />
+            <span>{isOnline ? "STATUS: OPTIMAL" : "STATUS: OFFLINE"}</span>
           </div>
         </>
       )}
@@ -115,11 +271,11 @@ export default function VibeLockLoader({
           {/* Animated Glow Halo */}
           <div
             aria-hidden="true"
-            className="vl-glow border-vl-cyan-200 bg-vl-cyan-50 absolute -inset-2.5 rounded-full border shadow-[0_0_25px_rgba(0,217,255,0.2)]"
+            className="vl-glow border-vl-cyan-200/80 bg-vl-cyan-50 absolute -inset-2.5 rounded-full border shadow-[0_0_24px_rgba(0,217,255,0.25)]"
           />
 
-          {/* Precision Badge Container (Dark background with cyan border so white logo pops cleanly) */}
-          <div className="border-vl-cyan bg-vl-black relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_24px_rgba(0,217,255,0.3)]">
+          {/* Precision Badge Container */}
+          <div className="border-vl-cyan-500 bg-vl-dark-900 relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_24px_rgba(0,217,255,0.35)]">
             <Image
               src="/logo/icon/vl_icon_white_transparent.svg"
               alt="VibeLock"
@@ -142,54 +298,81 @@ export default function VibeLockLoader({
             className="h-11 w-auto object-contain sm:h-12"
           />
           <div className="mt-1.5 flex items-center gap-2">
-            <span className="bg-vl-dark-900/30 h-px w-3" />
-            <span className="text-vl-cyan-700 text-[10px] font-extrabold tracking-[0.28em] uppercase">
+            <span className="bg-vl-dark-900/20 h-px w-3" />
+            <span className="text-vl-cyan-700 tracking-streetwear text-2xs font-extrabold uppercase">
               {subLabel}
             </span>
-            <span className="bg-vl-dark-900/30 h-px w-3" />
+            <span className="bg-vl-dark-900/20 h-px w-3" />
           </div>
         </div>
 
-        {/* ── 4. Dynamic Live Progress Unit ── */}
-        <div className="mt-8 flex w-full max-w-[320px] flex-col items-center">
+        {/* ── 4. Dynamic Live Functional Progress Unit ── */}
+        <div className="mt-8 flex w-full max-w-80 flex-col items-center">
           {/* Stage Info & Dynamic Counter Bar */}
-          <div className="mb-2.5 flex w-full items-end justify-between font-mono text-[10px] tracking-wider">
+          <div className="text-2xs mb-2.5 flex w-full items-end justify-between font-mono tracking-wider">
             {/* Left: Active Stage Name */}
             <div className="flex items-center gap-1.5">
-              <span className="text-vl-cyan-700 font-bold">[STAGE {activeStage.id}]</span>
-              <span className="text-vl-dark-900 font-bold">{activeStage.name}</span>
+              <span className="text-vl-cyan-700 font-bold">
+                [STAGE {activeStage.id}/{String(stages.length).padStart(2, "0")}]
+              </span>
+              <span className="text-vl-dark-900 max-w-44 truncate font-bold">{stageTitle}</span>
             </div>
 
             {/* Right: Live Percentage Counter */}
-            <div className="flex items-baseline gap-1">
-              <span className="text-vl-dark-900 text-xs font-black">{progress}</span>
-              <span className="text-vl-cyan-700 text-[9px] font-bold">%</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-vl-dark-900 text-xs font-black">{internalProgress}</span>
+              <span className="text-vl-cyan-700 text-3xs font-bold">%</span>
             </div>
           </div>
 
-          {/* ── Main Dynamic Progress Bar ── */}
-          <div className="bg-vl-dark-900/12 relative h-1 w-full overflow-hidden rounded-full shadow-inner">
-            {/* Smooth Dynamic Fill */}
+          {/* ── Main Functional Progress Bar (Accessible & Smooth) ── */}
+          <div
+            role="progressbar"
+            aria-valuenow={internalProgress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`Loading: ${stageTitle} (${internalProgress}%)`}
+            className="bg-vl-dark-900/10 relative h-1 w-full overflow-hidden rounded-full shadow-inner"
+          >
+            {/* Smooth Dynamic Fill with Hardware Accelerated Easing */}
             <div
-              className="from-vl-dark-900 via-vl-dark-900 to-vl-cyan-600 relative h-full rounded-full bg-linear-to-r shadow-[0_0_12px_rgba(0,163,196,0.6)] transition-all duration-100 ease-linear"
-              style={{ width: `${progress}%` }}
+              className={cn(
+                "relative h-full rounded-full bg-linear-to-r shadow-[0_0_12px_rgba(0,184,219,0.5)]",
+                "transition-[width] duration-300 ease-out will-change-[width]",
+                internalProgress >= 100
+                  ? "to-vl-cyan-500 from-emerald-600 via-emerald-500 shadow-[0_0_14px_rgba(16,185,129,0.6)]"
+                  : "from-vl-dark-900 via-vl-dark-800 to-vl-cyan-600"
+              )}
+              style={{ width: `${internalProgress}%` }}
             >
               {/* Leading Sparkle Head */}
-              <div className="bg-vl-cyan absolute top-1/2 right-0 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full shadow-[0_0_8px_#00D9FF] ring-2 ring-white" />
+              <div
+                className={cn(
+                  "absolute top-1/2 right-0 size-2.5 translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-white transition-colors duration-300",
+                  internalProgress >= 100
+                    ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+                    : "bg-vl-cyan-500 shadow-[0_0_8px_rgba(0,217,255,0.8)]"
+                )}
+              />
             </div>
 
-            {/* Continuous Sweeping Laser Beam */}
-            <div className="vl-laser-beam absolute inset-y-0 w-1/4 rounded-full bg-linear-to-r from-transparent via-white/80 to-transparent" />
+            {/* Continuous Sweeping Laser Beam (hides when complete) */}
+            {internalProgress < 100 && (
+              <div className="vl-laser-beam absolute inset-y-0 w-1/4 rounded-full bg-linear-to-r from-transparent via-white/80 to-transparent" />
+            )}
           </div>
 
           {/* Live Data Waveform + Sub-Description */}
-          <div className="text-vl-dark-900/60 mt-3.5 flex w-full items-center justify-between font-mono text-[9px] tracking-wider">
+          <div className="text-vl-dark-500 text-2xs mt-3.5 flex w-full items-center justify-between font-mono tracking-wider">
             {/* Live Frequency Equalizer Bars */}
-            <div className="flex items-center gap-0.75">
+            <div className="flex items-center gap-0.75" aria-hidden="true">
               {[8, 14, 6, 12, 16, 9, 13, 7].map((h, i) => (
                 <span
                   key={i}
-                  className="vl-equalizer bg-vl-dark-900 w-0.5 rounded-full"
+                  className={cn(
+                    "w-0.5 rounded-full transition-colors duration-300",
+                    internalProgress >= 100 ? "bg-emerald-600" : "vl-equalizer bg-vl-dark-900"
+                  )}
                   style={{
                     height: `${h}px`,
                     animationDelay: `${i * 0.12}s`,
@@ -200,14 +383,22 @@ export default function VibeLockLoader({
 
             {/* Sub-label Description */}
             <div className="flex items-center gap-1.5 text-right uppercase">
-              <span className="size-1 animate-pulse rounded-full bg-emerald-600" />
-              <span className="text-vl-dark-900/80 font-semibold">{label || activeStage.desc}</span>
+              <span
+                className={cn(
+                  "size-1 rounded-full motion-reduce:animate-none",
+                  internalProgress >= 100 ? "bg-emerald-500" : "animate-pulse bg-emerald-500"
+                )}
+              />
+              <span className="text-vl-dark-600 max-w-48 truncate font-semibold">{stageDesc}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── 5. Standard Universal CSS ── */}
+      {/* Screen-reader live announcement */}
+      <span className="sr-only">{`Loading VibeLock: ${stageTitle} (${internalProgress}%)`}</span>
+
+      {/* ── 5. Scoped Animations with Reduced-Motion Support ── */}
       <style>{`
         @keyframes vl-laser {
           0% {

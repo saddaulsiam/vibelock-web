@@ -12,6 +12,7 @@ import { Heart, ImageOff, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Price } from "./price";
@@ -36,7 +37,7 @@ export interface CustomProductCardItem {
 
 export type ProductCardItem = ProductSummary | CustomProductCardItem;
 
-export interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface ProductCardProps extends HTMLMotionProps<"div"> {
   product: ProductCardItem;
   badge?: {
     label: string;
@@ -126,12 +127,20 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
   };
 
   return (
-    <div className={cn("group relative flex flex-col", className)} {...props}>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      className={cn("group relative flex flex-col", className)}
+      {...props}
+    >
       {/* ── Image Canvas ── */}
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
         style={{ aspectRatio: "2 / 3" }}
       >
         {hasImage ? (
@@ -142,7 +151,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
               fill
               sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               className={cn(
-                "object-cover object-center transition-all duration-500 ease-out group-hover:scale-105",
+                "object-cover object-center transition-all duration-700 ease-out group-hover:scale-108",
                 hasSecondaryImage && "group-hover:opacity-0"
               )}
               onError={() => setFailedImage(item.image)}
@@ -153,7 +162,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
                 alt={`${item.name} alternate view`}
                 fill
                 sizes="(min-width: 1280px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
-                className="object-cover object-center opacity-0 transition-all duration-500 ease-out group-hover:scale-105 group-hover:opacity-100"
+                className="object-cover object-center opacity-0 transition-all duration-700 ease-out group-hover:scale-108 group-hover:opacity-100"
               />
             )}
           </>
@@ -182,7 +191,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute top-2 right-2 z-10 rounded-full hover:bg-white/80",
+            "absolute top-2 right-2 z-10 rounded-full transition-transform duration-150 hover:bg-white/80 active:scale-75",
             isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
           )}
         >
@@ -229,6 +238,6 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           ) : null}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
