@@ -80,9 +80,9 @@ describe("Phase 3 SEO: LocalBusiness JSON-LD", () => {
     expect(business.openingHoursSpecification[0].closes).toBe("22:00");
 
     // Confirm no fabricated postal code or geo coordinates
-    expect((business.address as any).postalCode).toBeUndefined();
-    expect((business as any).geo).toBeUndefined();
-    expect((business as any).aggregateRating).toBeUndefined();
+    expect("postalCode" in business.address).toBe(false);
+    expect("geo" in business).toBe(false);
+    expect("aggregateRating" in business).toBe(false);
   });
 });
 
@@ -190,7 +190,20 @@ describe("Phase 3 SEO: Product + Offer + AggregateRating JSON-LD", () => {
     expect(jsonLd.sku).toBe("VL-TEE-BLK-M");
     expect(jsonLd.image).toEqual(["https://vibelock.bd/uploads/tee.jpg"]);
 
-    const offers = jsonLd.offers as any;
+    interface TestOffer {
+      "@type": string;
+      price?: number;
+      lowPrice?: number;
+      highPrice?: number;
+      priceCurrency?: string;
+      offerCount?: number;
+      availability?: string;
+      url?: string;
+      itemCondition?: string;
+      seller?: { "@type": string; name: string };
+    }
+
+    const offers = jsonLd.offers as TestOffer;
     expect(offers["@type"]).toBe("Offer");
     expect(offers.price).toBe(1650);
     expect(offers.priceCurrency).toBe("BDT");
@@ -230,7 +243,14 @@ describe("Phase 3 SEO: Product + Offer + AggregateRating JSON-LD", () => {
     };
 
     const jsonLd = getProductJsonLd(multiPriceProduct);
-    const offers = jsonLd.offers as any;
+    const offers = jsonLd.offers as {
+      "@type": string;
+      lowPrice: number;
+      highPrice: number;
+      priceCurrency: string;
+      offerCount: number;
+      availability: string;
+    };
 
     expect(offers["@type"]).toBe("AggregateOffer");
     expect(offers.lowPrice).toBe(1650);
@@ -247,7 +267,7 @@ describe("Phase 3 SEO: Product + Offer + AggregateRating JSON-LD", () => {
     };
 
     const jsonLd = getProductJsonLd(outOfStockProduct);
-    const offers = jsonLd.offers as any;
+    const offers = jsonLd.offers as { availability: string };
 
     expect(offers.availability).toBe("https://schema.org/OutOfStock");
   });

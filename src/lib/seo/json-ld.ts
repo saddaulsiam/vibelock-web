@@ -1,5 +1,5 @@
 import { SITE_URL } from "./site";
-import type { ProductDetail, CategorySummary } from "@/lib/catalog/types";
+import type { ProductDetail } from "@/lib/catalog/types";
 
 /**
  * Safely serializes JSON-LD object to string, escaping '<' to prevent script injection.

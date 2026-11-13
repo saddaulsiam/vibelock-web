@@ -25,8 +25,9 @@ vi.mock("@/lib/prisma/client", () => {
         ]),
       },
       category: {
-        findMany: vi.fn(async (query: any) => {
-          // If query checks for published products, return only categories with products
+        findMany: vi.fn(
+          async (query?: { where?: { products?: { some?: { status?: string } } } }) => {
+            // If query checks for published products, return only categories with products
           if (query?.where?.products?.some?.status === "PUBLISHED") {
             return [
               { slug: "oversized-t-shirts", updatedAt: new Date("2026-11-01") },
@@ -222,9 +223,14 @@ describe("Phase 2 SEO: Page Title Deduplication", () => {
 describe("Phase 2 SEO: Legacy Redirects Configuration", () => {
   it("defines permanent 308 redirects for confirmed obsolete routes", async () => {
     expect(nextConfig.redirects).toBeDefined();
-    const redirects = await (nextConfig.redirects as () => Promise<any[]>)();
+    interface RedirectRule {
+      source: string;
+      destination: string;
+      permanent: boolean;
+    }
+    const redirects = await (nextConfig.redirects as () => Promise<RedirectRule[]>)();
 
-    const redirectMap = new Map(redirects.map((r: any) => [r.source, r]));
+    const redirectMap = new Map(redirects.map((r: RedirectRule) => [r.source, r]));
 
     // /privacy-policy -> /privacy
     expect(redirectMap.has("/privacy-policy")).toBe(true);
