@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -21,5 +21,5 @@ export default async function ProductsReroudisrectPage({ searchParams }: SearchP
   }
 
   const query = searchParamsObj.toString();
-  redirect(query ? `/shop?${query}` : "/shop");
+  permanentRedirect(query ? `/shop?${query}` : "/shop");
 }

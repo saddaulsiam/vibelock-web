@@ -11,6 +11,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const categories = await prisma.category.findMany({
+    where: {
+      isActive: true,
+      products: {
+        some: {
+          status: "PUBLISHED",
+        },
+      },
+    },
     select: { slug: true, updatedAt: true },
   });
 

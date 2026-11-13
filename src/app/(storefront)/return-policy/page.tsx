@@ -5,7 +5,7 @@ import { SITE_URL } from "@/lib/seo/site";
 import { RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Return & Exchange Policy | VibeLock",
+  title: "Return & Exchange Policy",
   description:
     "Review VibeLock's 7-day hassle-free return and exchange policy. Sizing swaps, return eligibility, inspection standards, and refund timelines across Bangladesh.",
   alternates: { canonical: `${SITE_URL}/return-policy` },

@@ -13,9 +13,10 @@ import {
 import { Container } from "@/components/shared/container";
 import { ContactForm } from "@/components/storefront/contact/contact-form";
 import { SITE_URL } from "@/lib/seo/site";
+import { getLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 
 export const metadata: Metadata = {
-  title: "Contact Us | VibeLock HQ & Flagship",
+  title: "Contact Us — Flagship Outlet & Support",
   description:
     "Get in touch with the VibeLock crew. Order inquiries, size guidance, store visits, and customer support across Bangladesh.",
   alternates: { canonical: `${SITE_URL}/contact` },
@@ -47,8 +48,14 @@ const FAQS = [
 ];
 
 export default function ContactPage() {
+  const localBusinessJsonLd = getLocalBusinessJsonLd();
+
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(localBusinessJsonLd) }}
+      />
       {/* ── 1. Hero Header Banner ── */}
       <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
         <div
@@ -114,7 +121,7 @@ export default function ContactPage() {
                       <Mail className="text-vl-cyan-700 size-4" />
                     </div>
                     <div>
-                      <p className="text-vl-dark-900 font-bold">support@vibelock.com</p>
+                      <p className="text-vl-dark-900 font-bold">support@vibelock.bd</p>
                       <p className="text-vl-dark-900/60 text-[11px]">
                         Average response time: 2–4 hours
                       </p>

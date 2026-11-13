@@ -26,7 +26,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 export const metadata: Metadata = {
-  title: "Order Confirmation | VibeLock",
+  title: "Order Confirmation",
   description: "Your VibeLock order has been confirmed. View receipt and delivery tracking.",
   robots: { index: false, follow: false },
 };
