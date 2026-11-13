@@ -310,7 +310,7 @@ export function HeroSection({ categories = [], words }: HeroSectionProps) {
             window.scrollBy({ top: window.innerHeight * 0.85, behavior: "smooth" });
           }
         }}
-        className="group focus-visible:ring-vl-cyan absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2"
+        className="group focus-visible:ring-vl-cyan absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 animate-bounce cursor-pointer flex-col items-center gap-1.5 transition-transform duration-300 select-none hover:scale-110 focus:outline-none focus-visible:ring-2"
         aria-label="Scroll down"
       >
         <div className="group-hover:border-vl-cyan flex h-8 w-5 justify-center rounded-full border-2 border-white/40 bg-black/60 pt-1.5 shadow-[0_0_15px_rgba(0,0,0,0.6)] backdrop-blur-sm transition-colors">
