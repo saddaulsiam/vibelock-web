@@ -143,6 +143,12 @@ export async function resetPasswordAction(data: ResetPasswordInput) {
 
     const resetToken = await prisma.passwordResetToken.findUnique({
       where: { tokenHash },
+      select: {
+        id: true,
+        userId: true,
+        usedAt: true,
+        expiresAt: true,
+      },
     });
 
     if (!resetToken) {
@@ -159,33 +165,67 @@ export async function resetPasswordAction(data: ResetPasswordInput) {
 
     const newPasswordHash = await hash(parsed.newPassword, 12);
 
-    // Consume token atomically to prevent race condition reuse
-    const tokenConsumption = await prisma.passwordResetToken.updateMany({
-      where: {
-        id: resetToken.id,
-        usedAt: null,
-      },
-      data: { usedAt: new Date() },
-    });
+    // Atomically redeem token, lock user row, update password, and revoke sessions in one transaction
+    await prisma.$transaction(async (tx) => {
+      // 1. Lock the target user row to serialize with concurrent role changes
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${resetToken.userId}
+        FOR UPDATE
+      `;
 
-    if (tokenConsumption.count === 0) {
-      return { error: "Token has already been used or is invalid." };
-    }
+      if (lockedUsers.length === 0) {
+        throw new Error("Invalid or expired token.");
+      }
 
-    // Now update password and invalidate sessions safely
-    await prisma.$transaction([
-      prisma.user.update({
+      // 2. Re-read and atomically consume the reset token within the locked transaction
+      const tokenConsumption = await tx.passwordResetToken.updateMany({
+        where: {
+          id: resetToken.id,
+          userId: resetToken.userId,
+          tokenHash,
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { usedAt: new Date() },
+      });
+
+      if (tokenConsumption.count === 0) {
+        throw new Error("Token has already been used or is invalid.");
+      }
+
+      // 3. Update password for the locked user
+      await tx.user.update({
         where: { id: resetToken.userId },
         data: { passwordHash: newPasswordHash },
-      }),
-      // Invalidate all active sessions for the user to force re-login
-      prisma.session.deleteMany({
+      });
+
+      // 4. Invalidate all active sessions for the user to force re-login
+      await tx.session.deleteMany({
         where: { userId: resetToken.userId },
-      }),
-    ]);
+      });
+
+      // 5. Invalidate any remaining outstanding password reset tokens for this user
+      await tx.passwordResetToken.deleteMany({
+        where: {
+          userId: resetToken.userId,
+          id: { not: resetToken.id },
+        },
+      });
+    });
 
     return { success: true };
   } catch (error) {
+    const msg = error instanceof Error ? error.message : "";
+    if (
+      msg === "Token has already been used." ||
+      msg === "Token has expired." ||
+      msg === "Invalid or expired token." ||
+      msg === "Token has already been used or is invalid."
+    ) {
+      return { error: msg };
+    }
     console.error("Reset password error:", error);
     return { error: "An unexpected error occurred." };
   }

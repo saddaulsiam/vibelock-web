@@ -530,12 +530,15 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
         usedAt: null,
       } as any);
       vi.spyOn(prisma.passwordResetToken, "updateMany").mockResolvedValue({ count: 1 });
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "user-reset-1", role: "CUSTOMER" }]);
 
       const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
+        if (typeof fns === "function") return fns(prisma);
         return Promise.all(fns);
       });
       const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 2 });
       vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
+      vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 0 });
 
       const result = await resetPasswordAction({
         token: "valid-raw-reset-token",
@@ -548,6 +551,78 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
       expect(deleteSessionsSpy).toHaveBeenCalledWith({
         where: { userId: "user-reset-1" },
       });
+    });
+
+    test("resetPasswordAction rejects already consumed token", async () => {
+      vi.spyOn(prisma.passwordResetToken, "findUnique").mockResolvedValue({
+        id: "token-already-used",
+        userId: "user-reset-2",
+        expiresAt: new Date(Date.now() + 3600000),
+        usedAt: new Date(Date.now() - 60000),
+      } as any);
+
+      const result = await resetPasswordAction({
+        token: "used-raw-token",
+        newPassword: "NewSecurePassword123!",
+        confirmNewPassword: "NewSecurePassword123!",
+      });
+
+      expect(result).toEqual({ error: "Token has already been used." });
+    });
+
+    test("resetPasswordAction rejects expired token", async () => {
+      vi.spyOn(prisma.passwordResetToken, "findUnique").mockResolvedValue({
+        id: "token-expired",
+        userId: "user-reset-3",
+        expiresAt: new Date(Date.now() - 3600000),
+        usedAt: null,
+      } as any);
+
+      const result = await resetPasswordAction({
+        token: "expired-raw-token",
+        newPassword: "NewSecurePassword123!",
+        confirmNewPassword: "NewSecurePassword123!",
+      });
+
+      expect(result).toEqual({ error: "Token has expired." });
+    });
+
+    test("resetPasswordAction fails closed when concurrent redemption claims token first (updateMany count === 0)", async () => {
+      mockHash.mockResolvedValue("reset-hash-race");
+
+      vi.spyOn(prisma.passwordResetToken, "findUnique").mockResolvedValue({
+        id: "token-race",
+        userId: "user-reset-4",
+        expiresAt: new Date(Date.now() + 3600000),
+        usedAt: null,
+      } as any);
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "user-reset-4", role: "CUSTOMER" }]);
+      vi.spyOn(prisma.passwordResetToken, "updateMany").mockResolvedValue({ count: 0 });
+
+      vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
+        if (typeof fns === "function") return fns(prisma);
+        return Promise.all(fns);
+      });
+
+      const result = await resetPasswordAction({
+        token: "valid-raw-token-concurrent-race",
+        newPassword: "NewSecurePassword123!",
+        confirmNewPassword: "NewSecurePassword123!",
+      });
+
+      expect(result).toEqual({ error: "Token has already been used or is invalid." });
+    });
+
+    test("resetPasswordAction fails when token was deleted by role change", async () => {
+      vi.spyOn(prisma.passwordResetToken, "findUnique").mockResolvedValue(null);
+
+      const result = await resetPasswordAction({
+        token: "deleted-by-role-change-token",
+        newPassword: "NewSecurePassword123!",
+        confirmNewPassword: "NewSecurePassword123!",
+      });
+
+      expect(result).toEqual({ error: "Invalid or expired token." });
     });
 
     test("logoutAction deletes current session in database", async () => {
@@ -602,13 +677,17 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
       });
     });
 
-    test("updateAdminUserRoleAction deletes all sessions when user role is modified", async () => {
+    test("updateAdminUserRoleAction deletes all sessions and reset tokens when user role is modified", async () => {
       mockRequireRole.mockResolvedValue({ id: "admin-root", role: "ADMIN" });
 
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" }]);
+
       const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
+        if (typeof fns === "function") return fns(prisma);
         return Promise.all(fns);
       });
       const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 2 });
+      const deleteResetTokensSpy = vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 1 });
       vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
 
       const result = await updateAdminUserRoleAction({
@@ -621,6 +700,34 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
       expect(deleteSessionsSpy).toHaveBeenCalledWith({
         where: { userId: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" },
       });
+      expect(deleteResetTokensSpy).toHaveBeenCalledWith({
+        where: { userId: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d" },
+      });
+    });
+
+    test("updateAdminUserRoleAction does not delete sessions or reset tokens if role is unchanged", async () => {
+      mockRequireRole.mockResolvedValue({ id: "admin-root", role: "ADMIN" });
+
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" }]);
+
+      const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
+        if (typeof fns === "function") return fns(prisma);
+        return Promise.all(fns);
+      });
+      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 0 });
+      const deleteResetTokensSpy = vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 0 });
+      const updateUserSpy = vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
+
+      const result = await updateAdminUserRoleAction({
+        userId: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+        newRole: "STAFF",
+      });
+
+      expect(result).toEqual({ success: true });
+      expect(txSpy).toHaveBeenCalled();
+      expect(updateUserSpy).not.toHaveBeenCalled();
+      expect(deleteSessionsSpy).not.toHaveBeenCalled();
+      expect(deleteResetTokensSpy).not.toHaveBeenCalled();
     });
   });
 });

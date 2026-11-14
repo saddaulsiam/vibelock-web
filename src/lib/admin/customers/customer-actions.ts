@@ -120,7 +120,7 @@ export async function updateAdminCustomerAction(
 ): Promise<{ success: boolean; error?: string }> {
   await requireRole("MANAGER");
 
-  const { id } = input;
+  const id = input.id?.trim();
   const name = input.name?.trim();
   const email = input.email?.trim().toLowerCase();
   const phone = input.phone?.trim() || null;
@@ -138,7 +138,17 @@ export async function updateAdminCustomerAction(
   }
 
   try {
-    // Check for conflicting email or phone in other users
+    // 1. Verify target exists and is strictly a CUSTOMER
+    const existingCustomer = await prisma.user.findFirst({
+      where: { id, role: "CUSTOMER" },
+      select: { id: true },
+    });
+
+    if (!existingCustomer) {
+      return { success: false, error: "Customer profile not found." };
+    }
+
+    // 2. Check for conflicting email or phone in other users
     const conflict = await prisma.user.findFirst({
       where: {
         id: { not: id },
@@ -156,53 +166,73 @@ export async function updateAdminCustomerAction(
       }
     }
 
-    await prisma.user.update({
-      where: { id },
-      data: {
-        name,
-        email,
-        phone,
-      },
-    });
+    // 3. Atomically update only if role remains CUSTOMER
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${id} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
 
-    // If address fields provided, update default address or create one
-    if (input.street || input.city) {
-      const defaultAddress = await prisma.address.findFirst({
-        where: { userId: id, isDefault: true },
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      const updateResult = await tx.user.updateMany({
+        where: { id, role: "CUSTOMER" },
+        data: {
+          name,
+          email,
+          phone,
+        },
       });
 
-      if (defaultAddress) {
-        await prisma.address.update({
-          where: { id: defaultAddress.id },
-          data: {
-            street: input.street?.trim() || defaultAddress.street,
-            city: input.city?.trim() || defaultAddress.city,
-            state: input.state !== undefined ? input.state?.trim() || null : defaultAddress.state,
-            zip: input.zip !== undefined ? input.zip?.trim() || null : defaultAddress.zip,
-          },
-        });
-      } else {
-        await prisma.address.create({
-          data: {
-            userId: id,
-            label: "Primary Delivery Address",
-            street: input.street?.trim() || "Address on file",
-            city: input.city?.trim() || "Dhaka",
-            state: input.state?.trim() || null,
-            zip: input.zip?.trim() || null,
-            country: "Bangladesh",
-            isDefault: true,
-          },
-        });
+      if (updateResult.count === 0) {
+        throw new Error("Customer profile not found.");
       }
-    }
+
+      // If address fields provided, update default address or create one
+      if (input.street || input.city) {
+        const defaultAddress = await tx.address.findFirst({
+          where: { userId: id, isDefault: true },
+        });
+
+        if (defaultAddress) {
+          await tx.address.update({
+            where: { id: defaultAddress.id },
+            data: {
+              street: input.street?.trim() || defaultAddress.street,
+              city: input.city?.trim() || defaultAddress.city,
+              state: input.state !== undefined ? input.state?.trim() || null : defaultAddress.state,
+              zip: input.zip !== undefined ? input.zip?.trim() || null : defaultAddress.zip,
+            },
+          });
+        } else {
+          await tx.address.create({
+            data: {
+              userId: id,
+              label: "Primary Delivery Address",
+              street: input.street?.trim() || "Address on file",
+              city: input.city?.trim() || "Dhaka",
+              state: input.state?.trim() || null,
+              zip: input.zip?.trim() || null,
+              country: "Bangladesh",
+              isDefault: true,
+            },
+          });
+        }
+      }
+    });
 
     revalidatePath("/admin/customers");
     revalidatePath(`/admin/customers/${id}`);
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to update customer profile.";
-    console.error("[CustomerActions] updateAdminCustomerAction error:", err);
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] updateAdminCustomerAction error:", err);
+    }
     return { success: false, error: msg };
   }
 }
@@ -213,30 +243,47 @@ export async function addCustomerStaffNoteAction(
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireRole("MANAGER");
 
+  const cleanId = customerId?.trim();
   const cleanNote = note?.trim();
-  if (!customerId) return { success: false, error: "Customer ID is required." };
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
   if (!cleanNote) return { success: false, error: "Note content cannot be empty." };
 
   try {
-    await prisma.auditLog.create({
-      data: {
-        actorId: admin.id,
-        action: "CUSTOMER_STAFF_NOTE",
-        entityType: "Customer",
-        entityId: customerId,
-        metadata: {
-          note: cleanNote,
-          authorName: admin.name || "Admin Staff",
-          authorEmail: admin.email,
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "CUSTOMER_STAFF_NOTE",
+          entityType: "Customer",
+          entityId: cleanId,
+          metadata: {
+            note: cleanNote,
+            authorName: admin.name || "Admin Staff",
+            authorEmail: admin.email,
+          },
         },
-      },
+      });
     });
 
-    revalidatePath(`/admin/customers/${customerId}`);
+    revalidatePath(`/admin/customers/${cleanId}`);
     return { success: true };
   } catch (err: unknown) {
-    console.error("[CustomerActions] addCustomerStaffNoteAction error:", err);
-    return { success: false, error: "Failed to save staff note." };
+    const msg = err instanceof Error ? err.message : "Failed to save staff note.";
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] addCustomerStaffNoteAction error:", err);
+    }
+    return { success: false, error: msg };
   }
 }
 
@@ -247,32 +294,49 @@ export async function toggleCustomerCodBlockAction(
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireRole("MANAGER");
 
-  if (!customerId) return { success: false, error: "Customer ID is required." };
+  const cleanId = customerId?.trim();
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
 
   try {
-    await prisma.auditLog.create({
-      data: {
-        actorId: admin.id,
-        action: blocked ? "CUSTOMER_COD_RESTRICTED" : "CUSTOMER_COD_ALLOWED",
-        entityType: "Customer",
-        entityId: customerId,
-        metadata: {
-          blocked,
-          reason:
-            reason?.trim() ||
-            (blocked
-              ? "Restricted by store admin due to high cancellation/return risk"
-              : "COD privileges restored by store admin"),
-          authorName: admin.name || "Admin Staff",
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: blocked ? "CUSTOMER_COD_RESTRICTED" : "CUSTOMER_COD_ALLOWED",
+          entityType: "Customer",
+          entityId: cleanId,
+          metadata: {
+            blocked,
+            reason:
+              reason?.trim() ||
+              (blocked
+                ? "Restricted by store admin due to high cancellation/return risk"
+                : "COD privileges restored by store admin"),
+            authorName: admin.name || "Admin Staff",
+          },
         },
-      },
+      });
     });
 
-    revalidatePath(`/admin/customers/${customerId}`);
+    revalidatePath(`/admin/customers/${cleanId}`);
     return { success: true };
   } catch (err: unknown) {
-    console.error("[CustomerActions] toggleCustomerCodBlockAction error:", err);
-    return { success: false, error: "Failed to update COD privileges." };
+    const msg = err instanceof Error ? err.message : "Failed to update COD privileges.";
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] toggleCustomerCodBlockAction error:", err);
+    }
+    return { success: false, error: msg };
   }
 }
 
@@ -281,13 +345,14 @@ export async function deleteAdminCustomerAction(
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireRole("MANAGER");
 
-  if (!customerId) return { success: false, error: "Customer ID is required." };
-  if (admin.id === customerId) {
+  const cleanId = customerId?.trim();
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
+  if (admin.id === cleanId) {
     return { success: false, error: "You cannot delete your own admin account." };
   }
 
-  const customer = await prisma.user.findUnique({
-    where: { id: customerId },
+  const customer = await prisma.user.findFirst({
+    where: { id: cleanId, role: "CUSTOMER" },
     select: {
       id: true,
       email: true,
@@ -308,20 +373,39 @@ export async function deleteAdminCustomerAction(
   }
 
   try {
-    await prisma.$transaction([
-      prisma.session.deleteMany({ where: { userId: customerId } }),
-      prisma.address.deleteMany({ where: { userId: customerId } }),
-      prisma.cart.deleteMany({ where: { userId: customerId } }),
-      prisma.review.deleteMany({ where: { userId: customerId } }),
-      prisma.account.deleteMany({ where: { userId: customerId } }),
-      prisma.passwordResetToken.deleteMany({ where: { userId: customerId } }),
-      prisma.user.delete({ where: { id: customerId } }),
-      prisma.auditLog.create({
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      const deletedUser = await tx.user.deleteMany({
+        where: { id: cleanId, role: "CUSTOMER" },
+      });
+
+      if (deletedUser.count === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      await tx.session.deleteMany({ where: { userId: cleanId } });
+      await tx.address.deleteMany({ where: { userId: cleanId } });
+      await tx.cart.deleteMany({ where: { userId: cleanId } });
+      await tx.review.deleteMany({ where: { userId: cleanId } });
+      await tx.account.deleteMany({ where: { userId: cleanId } });
+      await tx.passwordResetToken.deleteMany({ where: { userId: cleanId } });
+
+      await tx.auditLog.create({
         data: {
           actorId: admin.id,
           action: "CUSTOMER_PERMANENTLY_DELETED",
           entityType: "Customer",
-          entityId: customerId,
+          entityId: cleanId,
           metadata: {
             deletedCustomerEmail: customer.email,
             deletedCustomerName: customer.name,
@@ -330,14 +414,16 @@ export async function deleteAdminCustomerAction(
             reason: "Lead/zero-orders customer removed by admin",
           },
         },
-      }),
-    ]);
+      });
+    });
 
     revalidatePath("/admin/customers");
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to delete customer.";
-    console.error("[CustomerActions] deleteAdminCustomerAction error:", err);
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] deleteAdminCustomerAction error:", err);
+    }
     return { success: false, error: msg };
   }
 }
@@ -349,19 +435,31 @@ export async function toggleCustomerAccountSuspensionAction(
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireRole("MANAGER");
 
-  if (!customerId) return { success: false, error: "Customer ID is required." };
-  if (admin.id === customerId) {
+  const cleanId = customerId?.trim();
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
+  if (admin.id === cleanId) {
     return { success: false, error: "You cannot suspend your own admin account." };
   }
 
   try {
-    await prisma.$transaction([
-      prisma.auditLog.create({
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      await tx.auditLog.create({
         data: {
           actorId: admin.id,
           action: suspended ? "CUSTOMER_ACCOUNT_SUSPENDED" : "CUSTOMER_ACCOUNT_ACTIVATED",
           entityType: "Customer",
-          entityId: customerId,
+          entityId: cleanId,
           metadata: {
             suspended,
             reason:
@@ -372,17 +470,22 @@ export async function toggleCustomerAccountSuspensionAction(
             authorName: admin.name || "Admin Staff",
           },
         },
-      }),
-      // Immediately terminate all active customer sessions when suspended
-      ...(suspended ? [prisma.session.deleteMany({ where: { userId: customerId } })] : []),
-    ]);
+      });
 
-    revalidatePath(`/admin/customers/${customerId}`);
+      if (suspended) {
+        await tx.session.deleteMany({ where: { userId: cleanId } });
+      }
+    });
+
+    revalidatePath(`/admin/customers/${cleanId}`);
     revalidatePath("/admin/customers");
     return { success: true };
   } catch (err: unknown) {
-    console.error("[CustomerActions] toggleCustomerAccountSuspensionAction error:", err);
-    return { success: false, error: "Failed to update account suspension status." };
+    const msg = err instanceof Error ? err.message : "Failed to update account suspension status.";
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] toggleCustomerAccountSuspensionAction error:", err);
+    }
+    return { success: false, error: msg };
   }
 }
 
@@ -391,30 +494,47 @@ export async function adminSendCustomerPasswordResetEmailAction(
 ): Promise<{ success: boolean; error?: string }> {
   await requireRole("MANAGER");
 
-  const customer = await prisma.user.findUnique({
-    where: { id: customerId },
-    select: { id: true, email: true, name: true, passwordHash: true },
-  });
-
-  if (!customer) return { success: false, error: "Customer profile not found." };
-  if (!customer.email || customer.email.includes("@pos.vibelock.com")) {
-    return { success: false, error: "Customer does not have a valid email address on file." };
-  }
+  const cleanId = customerId?.trim();
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
 
   try {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours validity
 
-    await prisma.passwordResetToken.create({
-      data: {
-        userId: customer.id,
-        tokenHash,
-        expiresAt,
-      },
+    let recipientEmail: string;
+
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string; email: string; name: string | null }>>`
+        SELECT "id", "email", "name"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      const verifiedCustomer = lockedUsers[0];
+
+      if (!verifiedCustomer.email || verifiedCustomer.email.includes("@pos.vibelock.com")) {
+        throw new Error("Customer does not have a valid email address on file.");
+      }
+
+      recipientEmail = verifiedCustomer.email;
+
+      await tx.passwordResetToken.create({
+        data: {
+          userId: verifiedCustomer.id,
+          tokenHash,
+          expiresAt,
+        },
+      });
     });
 
-    const sent = await sendPasswordResetEmail(customer.email, rawToken);
+    // Send email outside the transaction so database lock is not held during external request
+    const sent = await sendPasswordResetEmail(recipientEmail!, rawToken);
     if (!sent) {
       await prisma.passwordResetToken.deleteMany({ where: { tokenHash } });
       return {
@@ -426,7 +546,12 @@ export async function adminSendCustomerPasswordResetEmailAction(
     return { success: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to initiate password reset email.";
-    console.error("[CustomerActions] adminSendCustomerPasswordResetEmailAction error:", err);
+    if (
+      msg !== "Customer profile not found." &&
+      msg !== "Customer does not have a valid email address on file."
+    ) {
+      console.error("[CustomerActions] adminSendCustomerPasswordResetEmailAction error:", err);
+    }
     return { success: false, error: msg };
   }
 }
@@ -436,24 +561,35 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
 ): Promise<{ success: boolean; resetLink?: string; error?: string }> {
   await requireRole("MANAGER");
 
-  const customer = await prisma.user.findUnique({
-    where: { id: customerId },
-    select: { id: true, email: true, name: true },
-  });
-
-  if (!customer) return { success: false, error: "Customer profile not found." };
+  const cleanId = customerId?.trim();
+  if (!cleanId) return { success: false, error: "Customer ID is required." };
 
   try {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours validity
 
-    await prisma.passwordResetToken.create({
-      data: {
-        userId: customer.id,
-        tokenHash,
-        expiresAt,
-      },
+    await prisma.$transaction(async (tx) => {
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string; email: string; name: string | null }>>`
+        SELECT "id", "email", "name"
+        FROM "User"
+        WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("Customer profile not found.");
+      }
+
+      const verifiedCustomer = lockedUsers[0];
+
+      await tx.passwordResetToken.create({
+        data: {
+          userId: verifiedCustomer.id,
+          tokenHash,
+          expiresAt,
+        },
+      });
     });
 
     const resetUrl = new URL("/reset-password", appConfig.url);
@@ -462,7 +598,9 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
     return { success: true, resetLink: resetUrl.toString() };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Failed to generate password reset link.";
-    console.error("[CustomerActions] adminGenerateCustomerPasswordResetLinkAction error:", err);
+    if (msg !== "Customer profile not found.") {
+      console.error("[CustomerActions] adminGenerateCustomerPasswordResetLinkAction error:", err);
+    }
     return { success: false, error: msg };
   }
 }
