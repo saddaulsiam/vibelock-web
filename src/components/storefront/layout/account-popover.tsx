@@ -86,12 +86,12 @@ export function AccountPopover({ user }: AccountPopoverProps) {
         aria-label="Account options"
         className="hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 sm:size-9"
       >
-        <User className="size-4 stroke-[2] sm:size-4.5" />
+        <User className="size-4 stroke-2 sm:size-4.5" />
       </button>
 
       {/* ── Floating Account Card Popover (Matches Screenshot 1:1) ── */}
       {isOpen && (
-        <div className="absolute top-full right-0 z-50 mt-3 w-72 rounded-2xl border border-neutral-100/90 bg-white p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] before:absolute before:inset-x-0 before:-top-3 before:h-3 sm:w-[290px]">
+        <div className="absolute top-full right-0 z-50 mt-3 w-72 rounded-2xl border border-neutral-100/90 bg-white p-5 shadow-[0_20px_45px_-10px_rgba(0,0,0,0.12),0_10px_20px_-5px_rgba(0,0,0,0.04)] before:absolute before:inset-x-0 before:-top-3 before:h-3 sm:w-72.5">
           {user ? (
             /* ── LOGGED IN STATE ── */
             <>
@@ -158,7 +158,7 @@ export function AccountPopover({ user }: AccountPopoverProps) {
                 variant="primary"
                 size="default"
                 fullWidth
-                className="text-compact mt-3.5 rounded-full font-bold tracking-[0.12em] uppercase shadow-2xs"
+                className="mt-3.5 rounded-full"
               >
                 <Link href="/login" onClick={() => setIsOpen(false)}>
                   SIGN IN
