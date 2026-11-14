@@ -95,22 +95,28 @@ export async function registerAction(data: RegisterInput) {
   }
 }
 
+function isRateLimitError(error: unknown): boolean {
+  if (typeof error === "object" && error !== null) {
+    const err = error as {
+      code?: unknown;
+      cause?: { err?: { code?: unknown } };
+      message?: unknown;
+    };
+    if (
+      err.code === "rate_limit_exceeded" ||
+      err.cause?.err?.code === "rate_limit_exceeded" ||
+      (typeof err.message === "string" && err.message.includes("rate_limit_exceeded"))
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function loginAction(data: LoginInput) {
   try {
     const parsed = loginSchema.parse(data);
-    const email = parsed.email.toLowerCase();
-
-    try {
-      await checkRateLimit("login", email);
-    } catch (e) {
-      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
-        return { error: "Too many attempts. Please try again later." };
-      }
-      console.error("Rate limit check error in loginAction:", e);
-      return {
-        error: "Authentication service is temporarily unavailable. Please try again shortly.",
-      };
-    }
+    const email = parsed.email.trim().toLowerCase();
 
     await signIn("credentials", {
       email,
@@ -120,6 +126,9 @@ export async function loginAction(data: LoginInput) {
 
     return { success: true };
   } catch (error) {
+    if (isRateLimitError(error)) {
+      return { error: "Too many attempts. Please try again later." };
+    }
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -127,6 +136,9 @@ export async function loginAction(data: LoginInput) {
         default:
           return { error: "Authentication failed." };
       }
+    }
+    if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
+      return { error: "Too many attempts. Please try again later." };
     }
     // Rethrow all other errors so Next.js can handle NEXT_REDIRECT properly,
     // or bubble up actual crashes. NextAuth's supported pattern relies on this.
