@@ -43,6 +43,15 @@ describe("Auth.js Configuration & JWT Strategy", () => {
     const jwtCallback = authConfig.callbacks?.jwt;
     expect(jwtCallback).toBeDefined();
 
+    vi.spyOn(prisma.session, "create").mockResolvedValue({
+      id: "session-uuid-1",
+      sessionToken: "session-token-1",
+      userId: "user-uuid-123",
+      expires: new Date(Date.now() + 30 * 86400000),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any);
+
     const mockUser = {
       id: "user-uuid-123",
       role: "ADMIN" as const,
@@ -59,16 +68,32 @@ describe("Auth.js Configuration & JWT Strategy", () => {
     expect(token.id).toBe("user-uuid-123");
     expect(token.role).toBe("ADMIN");
     expect(token.emailVerified).toEqual(new Date("2026-01-01T00:00:00Z"));
+    expect(token.sessionToken).toBeDefined();
+    expect(token.currentSessionId).toBeDefined();
   });
 
-  test("jwt callback preserves existing token fields when user is not present", async () => {
+  test("jwt callback preserves existing token fields when session is active in database", async () => {
     const jwtCallback = authConfig.callbacks?.jwt;
     const initialToken = {
       sub: "user-uuid-123",
       id: "user-uuid-123",
       role: "CUSTOMER" as const,
       emailVerified: null,
+      sessionToken: "valid-session-token",
+      currentSessionId: "session-uuid-1",
     };
+
+    vi.spyOn(prisma.session, "findUnique").mockResolvedValue({
+      id: "session-uuid-1",
+      userId: "user-uuid-123",
+      expires: new Date(Date.now() + 3600000),
+      user: {
+        id: "user-uuid-123",
+        role: "CUSTOMER",
+        emailVerified: null,
+      },
+    } as any);
+    vi.spyOn(prisma.auditLog, "findFirst").mockResolvedValue(null);
 
     const token = await jwtCallback!({
       token: initialToken,
@@ -77,6 +102,24 @@ describe("Auth.js Configuration & JWT Strategy", () => {
     });
 
     expect(token).toEqual(initialToken);
+  });
+
+  test("jwt callback returns null when legacy token lacks sessionToken", async () => {
+    const jwtCallback = authConfig.callbacks?.jwt;
+    const legacyToken = {
+      sub: "user-uuid-123",
+      id: "user-uuid-123",
+      role: "CUSTOMER" as const,
+      emailVerified: null,
+    };
+
+    const token = await jwtCallback!({
+      token: legacyToken,
+      user: undefined as any,
+      account: null,
+    });
+
+    expect(token).toBeNull();
   });
 
   test("session callback attaches id, role, and emailVerified from token to session.user", async () => {

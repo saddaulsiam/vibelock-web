@@ -36,10 +36,16 @@ export async function updateAdminUserRoleAction(input: {
   }
 
   try {
-    await prisma.user.update({
-      where: { id: userId },
-      data: { role: newRole as Role },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { role: newRole as Role },
+      }),
+      // Terminate all active sessions for the modified user to prevent privilege retention
+      prisma.session.deleteMany({
+        where: { userId },
+      }),
+    ]);
 
     revalidatePath("/admin/admins");
     return { success: true };
