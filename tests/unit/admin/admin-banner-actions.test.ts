@@ -95,6 +95,70 @@ describe("Admin Banner Actions", () => {
         }),
       });
     });
+
+    describe("categoryIds validation & bounds", () => {
+      function createBannerFormData(categoryIds: string[] = []) {
+        const formData = new FormData();
+        formData.append("title", "Category Banners Drop");
+        formData.append("imageUrl", "https://res.cloudinary.com/vibelock/image/upload/desktop.webp");
+        formData.append("linkUrl", "/shop");
+        formData.append("placement", "BOTH");
+        formData.append("sortOrder", "1");
+        formData.append("isActive", "on");
+        categoryIds.forEach((id) => formData.append("categoryIds", id));
+        return formData;
+      }
+
+      test("accepts empty categoryIds (defaults to empty array)", async () => {
+        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-banner-id" });
+        const formData = createBannerFormData([]);
+        const result = await saveBannerAction({ error: null }, formData);
+        expect(result.error).toBeNull();
+        expect(prisma.banner.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              categories: { connect: [] },
+            }),
+          })
+        );
+      });
+
+      test("accepts valid category UUIDs within the limit", async () => {
+        (prisma.banner.create as ReturnType<typeof vi.fn>).mockResolvedValue({ id: "new-banner-id" });
+        const validIds = [
+          "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+          "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+        ];
+        const formData = createBannerFormData(validIds);
+        const result = await saveBannerAction({ error: null }, formData);
+        expect(result.error).toBeNull();
+        expect(prisma.banner.create).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              categories: {
+                connect: validIds.map((id) => ({ id })),
+              },
+            }),
+          })
+        );
+      });
+
+      test("rejects 51 category IDs (exceeding maximum limit of 50)", async () => {
+        const validUuid = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
+        const categoryIds = Array(51).fill(validUuid);
+        const formData = createBannerFormData(categoryIds);
+        const result = await saveBannerAction({ error: null }, formData);
+        expect(result.error).toMatch(/cannot assign more than 50 categories/i);
+        expect(prisma.banner.create).not.toHaveBeenCalled();
+      });
+
+      test("rejects invalid UUID category ID", async () => {
+        const formData = createBannerFormData(["not-a-valid-uuid"]);
+        const result = await saveBannerAction({ error: null }, formData);
+        expect(result.error).toMatch(/invalid/i);
+        expect(prisma.banner.create).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe("toggleBannerAction", () => {
