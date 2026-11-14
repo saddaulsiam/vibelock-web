@@ -4,11 +4,19 @@ import { ShipmentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
 import { ShippingService } from "@/lib/shipping/service";
 import { MockCourierProvider } from "@/lib/shipping/providers/mock/client";
+import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
 
 const shipmentStatuses = new Set<string>(Object.values(ShipmentStatus));
+const MAX_COURIER_WEBHOOK_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
+  const bounded = await readBoundedBodyText(req, MAX_COURIER_WEBHOOK_BYTES);
+  if (bounded.tooLarge) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
+  const rawBody = bounded.text;
+
   const secret = env.COURIER_WEBHOOK_SECRET;
   const signature = req.headers.get("x-courier-signature");
 

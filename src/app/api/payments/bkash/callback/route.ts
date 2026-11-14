@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PaymentService } from "@/lib/payment/service";
 import { publicEnv } from "@/lib/config/public-env";
+import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
+
+const MAX_CALLBACK_PAYLOAD_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
 
 async function handleCallback(req: NextRequest) {
   try {
@@ -15,17 +18,26 @@ async function handleCallback(req: NextRequest) {
 
     let bodyPayload: Record<string, unknown> = {};
     if (req.method !== "GET") {
+      const bounded = await readBoundedBodyText(req, MAX_CALLBACK_PAYLOAD_BYTES);
+      if (bounded.tooLarge) {
+        const isJsonClient = req.headers.get("accept")?.includes("application/json");
+        if (isJsonClient) {
+          return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+        }
+        return new NextResponse("Payload too large", { status: 413 });
+      }
+
+      const text = bounded.text;
       if (isUrlEncoded) {
-        const text = await req.text();
         const params = new URLSearchParams(text);
         for (const [key, value] of params.entries()) {
           bodyPayload[key] = value;
         }
-      } else {
+      } else if (text.trim()) {
         try {
-          bodyPayload = await req.json();
+          bodyPayload = JSON.parse(text);
         } catch {
-          // Non-JSON or empty body
+          // Non-JSON or malformed body
         }
       }
     }
