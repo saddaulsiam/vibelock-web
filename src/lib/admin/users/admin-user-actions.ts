@@ -36,22 +36,49 @@ export async function updateAdminUserRoleAction(input: {
   }
 
   try {
-    await prisma.$transaction([
-      prisma.user.update({
+    await prisma.$transaction(async (tx) => {
+      // 1. Lock the user row to serialize role changes with concurrent password reset operations
+      const lockedUsers = await tx.$queryRaw<Array<{ id: string; role: Role }>>`
+        SELECT "id", "role"
+        FROM "User"
+        WHERE "id" = ${userId}
+        FOR UPDATE
+      `;
+
+      if (lockedUsers.length === 0) {
+        throw new Error("User not found.");
+      }
+
+      const currentUser = lockedUsers[0];
+
+      // If the role is unchanged, do not invalidate sessions or tokens unnecessarily
+      if (currentUser.role === newRole) {
+        return;
+      }
+
+      // 2. Update the user role
+      await tx.user.update({
         where: { id: userId },
         data: { role: newRole as Role },
-      }),
-      // Terminate all active sessions for the modified user to prevent privilege retention
-      prisma.session.deleteMany({
+      });
+
+      // 3. Terminate all active sessions for the modified user to prevent privilege retention
+      await tx.session.deleteMany({
         where: { userId },
-      }),
-    ]);
+      });
+
+      // 4. Invalidate all outstanding password reset tokens on role change
+      await tx.passwordResetToken.deleteMany({
+        where: { userId },
+      });
+    });
 
     revalidatePath("/admin/admins");
     return { success: true };
   } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to update user role.";
     console.error("[AdminUserActions] updateRole error:", err);
-    return { success: false, error: "Failed to update user role." };
+    return { success: false, error: msg };
   }
 }
 
