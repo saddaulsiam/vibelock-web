@@ -1,5 +1,5 @@
 import "server-only";
-import NextAuth, { type DefaultSession, type NextAuthConfig } from "next-auth";
+import NextAuth, { CredentialsSignin, type DefaultSession, type NextAuthConfig } from "next-auth";
 import "next-auth/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma/client";
@@ -12,6 +12,14 @@ import Google from "next-auth/providers/google";
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { verifyOtp } from "@/lib/sms/client";
 import { isCustomerSuspended } from "@/lib/auth/suspension";
+import { checkLoginRateLimit, clearLoginRateLimit } from "@/lib/security/rate-limit";
+
+export class RateLimitError extends CredentialsSignin {
+  code = "rate_limit_exceeded";
+}
+
+// Cost-12 bcrypt dummy hash for constant-time comparison when user does not exist or has no password (V-06)
+const DUMMY_BCRYPT_HASH = "$2b$12$6JBswt1UKeuozUJfRsQmPulGsk5iQwI2YjR7Gm.3zzs.quF7x0axK";
 
 // Augment the default session, user, and token types
 declare module "next-auth" {
@@ -185,19 +193,37 @@ export const authConfig: NextAuthConfig = {
         }
 
         // Email + Password Flow
-        if (!credentials?.email || !credentials?.password) {
+        if (
+          !credentials?.email ||
+          !credentials?.password ||
+          typeof credentials.email !== "string" ||
+          typeof credentials.password !== "string"
+        ) {
           return null;
         }
 
-        const email = (credentials.email as string).toLowerCase();
-        const password = credentials.password as string;
+        const email = credentials.email.trim().toLowerCase();
+        const password = credentials.password;
+
+        // V-03 & V-05: Enforce rate limits before expensive DB & bcrypt operations
+        try {
+          await checkLoginRateLimit(email);
+        } catch (error) {
+          if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
+            throw new RateLimitError();
+          }
+          console.error("Rate limit check error in authorize:", error);
+          throw new RateLimitError();
+        }
 
         const user = await prisma.user.findUnique({
           where: { email },
         });
 
         if (!user || !user.passwordHash) {
-          return null; // Do not leak that user doesn't exist
+          // V-06: Mitigate account-enumeration and timing side-channel via constant-time dummy comparison
+          await compare(password, DUMMY_BCRYPT_HASH);
+          return null;
         }
 
         // Compare password safely
@@ -210,6 +236,13 @@ export const authConfig: NextAuthConfig = {
         // Check if customer account is suspended
         if (await isCustomerSuspended(user.id)) {
           return null;
+        }
+
+        // SEC-4B-01: Reset compound rate-limit counter on successful login for this IP + account
+        try {
+          await clearLoginRateLimit(email);
+        } catch (err) {
+          console.warn("Failed to clear compound login rate limit on successful authentication:", err);
         }
 
         return {

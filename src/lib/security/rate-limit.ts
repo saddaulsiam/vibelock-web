@@ -16,6 +16,8 @@ if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
 // Define rate limit configurations
 export type RateLimitEndpoint =
   | "login"
+  | "loginCompound"
+  | "loginIp"
   | "register"
   | "forgotPassword"
   | "resetPassword"
@@ -32,6 +34,8 @@ interface LimitConfig {
 
 const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   login: { max: 5, windowMs: 5 * 60 * 1000 },
+  loginCompound: { max: 5, windowMs: 5 * 60 * 1000 },
+  loginIp: { max: 30, windowMs: 5 * 60 * 1000 },
   register: { max: 5, windowMs: 10 * 60 * 1000 },
   forgotPassword: { max: 3, windowMs: 60 * 60 * 1000 },
   resetPassword: { max: 5, windowMs: 60 * 60 * 1000 },
@@ -78,6 +82,12 @@ function checkMemoryRateLimit(identifier: string, endpoint: RateLimitEndpoint): 
 const loginLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
   : null;
+const loginCompoundLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
+  : null;
+const loginIpLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "5 m"), analytics: true })
+  : null;
 const registerLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
   : null;
@@ -103,27 +113,40 @@ const accountDeletionLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
   : null;
 
-// Helper to get client IP
-async function getIp() {
-  const headersList = await headers();
-  // On Vercel, x-forwarded-for is populated reliably by their proxy.
-  // We take the first IP which is the client IP.
-  const forwardedFor = headersList.get("x-forwarded-for");
-  const realIp = headersList.get("x-real-ip");
+/**
+ * Resolves the client IP address from trusted reverse-proxy headers.
+ *
+ * Hosting & Proxy Assumptions:
+ * - VibeLock is hosted on Vercel. Vercel edge infrastructure reliably overwrites
+ *   `x-real-ip` with the connecting client socket IP. Client-supplied values are stripped/overwritten.
+ * - As a proxy fallback, the last entry in `x-forwarded-for` is appended by the closest trusted proxy.
+ * - Direct client-supplied headers (e.g. `cf-connecting-ip`) are NOT trusted because Cloudflare
+ *   is not in the deployment path and arbitrary client-supplied headers can be forged.
+ * - If trusted headers are absent, returns null instead of falling back to a shared localhost bucket,
+ *   preventing denial-of-service collisions among clients with missing IP headers.
+ */
+export async function getIp(): Promise<string | null> {
+  try {
+    const headersList = await headers();
+    const realIp = headersList.get("x-real-ip");
+    const forwardedFor = headersList.get("x-forwarded-for");
 
-  let ip = "unknown";
-  if (forwardedFor) {
-    ip = forwardedFor.split(",")[0].trim();
-  } else if (realIp) {
-    ip = realIp.trim();
+    if (realIp && realIp.trim()) {
+      return realIp.trim();
+    }
+
+    if (forwardedFor && forwardedFor.trim()) {
+      const parts = forwardedFor.split(",").map((p) => p.trim()).filter(Boolean);
+      if (parts.length > 0) {
+        return parts[parts.length - 1];
+      }
+    }
+
+    return null;
+  } catch {
+    // Safe fallback when invoked outside request scope
+    return null;
   }
-
-  // Fallback safely if running locally in production or proxy strips IP headers
-  if (ip === "unknown") {
-    ip = "127.0.0.1";
-  }
-
-  return ip;
 }
 
 // Check if rate limited (Throws generic safe error if limit exceeded)
@@ -132,7 +155,8 @@ export async function checkRateLimit(
   identityModifier?: string,
   options?: { skipIp?: boolean }
 ) {
-  const ip = options?.skipIp ? "" : await getIp();
+  const resolvedIp = options?.skipIp ? "" : await getIp();
+  const ip = resolvedIp ?? "";
   const identifier =
     options?.skipIp && identityModifier
       ? `${endpoint}:${identityModifier}`
@@ -154,6 +178,12 @@ export async function checkRateLimit(
     switch (endpoint) {
       case "login":
         limiter = loginLimiter;
+        break;
+      case "loginCompound":
+        limiter = loginCompoundLimiter;
+        break;
+      case "loginIp":
+        limiter = loginIpLimiter;
         break;
       case "register":
         limiter = registerLimiter;
@@ -198,11 +228,103 @@ export async function checkRateLimit(
     if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
       throw error;
     }
-    // If Redis encounters a network error, gracefully fall back to in-memory rate limiting
-    console.warn("Upstash Redis error during rate limiting, falling back to memory store:", error);
+    // SEC-4B-02: Structured server-side warning log (strictly sanitized, no PII, no credentials)
+    console.warn(
+      JSON.stringify({
+        event: "RATE_LIMIT_REDIS_FALLBACK",
+        level: "warn",
+        endpoint,
+        message: "Upstash Redis unavailable during rate limiting. Activating local in-memory fallback.",
+        error: error instanceof Error ? error.message : "Unknown Redis error",
+        timestamp: new Date().toISOString(),
+      })
+    );
     const allowed = checkMemoryRateLimit(identifier, endpoint);
     if (!allowed) {
       throw new Error("RATE_LIMIT_EXCEEDED");
     }
   }
+}
+
+/**
+ * SEC-4B-01 & SEC-4B-03: Layered login rate limiter.
+ *
+ * 1. Global per-IP throttling: 30 attempts / 5 minutes per client IP.
+ *    Only evaluated when a trusted client IP is resolved.
+ *    If IP is missing, avoids grouping all users into a shared localhost/unknown bucket.
+ * 2. Compound IP + normalized account throttling: 5 attempts / 5 minutes.
+ *    Key: `loginCompound:${clientIp}:${normalizedEmail}`
+ *    Ensures failed attempts from attacker IP A cannot exhaust quota for legitimate user on IP B.
+ */
+export async function checkLoginRateLimit(
+  email: string,
+  explicitIp?: string
+): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
+
+  // 1. Global per-IP throttling (defense against single IP credential spraying across accounts)
+  if (resolvedIp && resolvedIp !== "unknown") {
+    await checkRateLimit("loginIp", resolvedIp, { skipIp: true });
+  } else {
+    // Log safe structured server warning without PII
+    console.warn(
+      JSON.stringify({
+        event: "RATE_LIMIT_MISSING_CLIENT_IP",
+        level: "warn",
+        message: "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket to prevent shared-bucket DoS.",
+        timestamp: new Date().toISOString(),
+      })
+    );
+  }
+
+  // 2. Compound IP + normalized account throttling (5 attempts / 5 min per IP per account)
+  const ipKey = resolvedIp && resolvedIp !== "unknown" ? resolvedIp : "no_ip";
+  const compoundKey = `${ipKey}:${normalizedEmail}`;
+  await checkRateLimit("loginCompound", compoundKey, { skipIp: true });
+}
+
+/**
+ * SEC-4B-01: Resets the compound rate-limit counter for the specific (IP, normalized email) pair
+ * upon successful authentication.
+ *
+ * Guarantees that only the successful caller's compound counter is cleared,
+ * never clearing another IP's rate-limiting state.
+ */
+export async function clearLoginRateLimit(
+  email: string,
+  explicitIp?: string
+): Promise<void> {
+  const normalizedEmail = email.trim().toLowerCase();
+  const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
+  const ipKey = resolvedIp && resolvedIp !== "unknown" ? resolvedIp : "no_ip";
+  const compoundKey = `${ipKey}:${normalizedEmail}`;
+  const compoundIdentifier = `loginCompound:${compoundKey}`;
+
+  // Clear from process-local memory store
+  memoryStore.delete(compoundIdentifier);
+
+  // Clear from Redis if configured using official Upstash Ratelimit resetUsedTokens
+  if (loginCompoundLimiter) {
+    try {
+      await loginCompoundLimiter.resetUsedTokens(compoundIdentifier);
+    } catch (err) {
+      console.warn(
+        JSON.stringify({
+          event: "RATE_LIMIT_REDIS_RESET_ERROR",
+          level: "warn",
+          message: "Failed to reset Redis compound counter on login success.",
+          error: err instanceof Error ? err.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
+  }
+}
+
+/**
+ * Helper to reset in-memory sliding window store (useful for clean unit and integration testing)
+ */
+export function resetRateLimitMemoryStore(): void {
+  memoryStore.clear();
 }
