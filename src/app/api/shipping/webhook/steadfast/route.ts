@@ -6,6 +6,7 @@ import { env } from "@/lib/config/env";
 import prisma from "@/lib/prisma/client";
 import { ShippingService } from "@/lib/shipping/service";
 import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
+import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
 
 const statusMap: Record<string, ShipmentStatus> = {
   pending: "CREATED",
@@ -59,8 +60,16 @@ function verifyAuth(req: NextRequest, rawBody: string, secret?: string): boolean
   return false;
 }
 
+const MAX_STEADFAST_WEBHOOK_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
+
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
+  const bounded = await readBoundedBodyText(req, MAX_STEADFAST_WEBHOOK_BYTES);
+  if (bounded.tooLarge) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
+  const rawBody = bounded.text;
+
   const secret = env.COURIER_WEBHOOK_SECRET || process.env.COURIER_WEBHOOK_SECRET;
 
   if (!verifyAuth(req, rawBody, secret)) {

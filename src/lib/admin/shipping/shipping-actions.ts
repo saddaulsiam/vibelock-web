@@ -42,12 +42,30 @@ export async function saveShippingZoneAction(
   formData: FormData
 ): Promise<ShippingActionState> {
   await requireRole("MANAGER");
+
+  // Pre-validation guards: reject oversized input before splitting and Zod parsing
+  const rawCountriesStr = String(formData.get("countries") ?? "");
+  if (rawCountriesStr.length > 2000) {
+    return { error: "Countries input exceeds maximum allowed length." };
+  }
+  const countries = parseCountries(formData.get("countries"));
+  if (countries.length > 250) {
+    return { error: "Cannot assign more than 250 countries to a shipping zone." };
+  }
+
   const parsed = z
-    .object({ id: id.optional(), name, countries: z.array(z.string().min(2).max(3)).min(1) })
+    .object({
+      id: id.optional(),
+      name,
+      countries: z
+        .array(z.string().min(2).max(3))
+        .min(1, "Specify at least one country code.")
+        .max(250, "Cannot assign more than 250 countries to a shipping zone."),
+    })
     .safeParse({
       id: String(formData.get("id") ?? "") || undefined,
       name: formData.get("name"),
-      countries: parseCountries(formData.get("countries")),
+      countries,
     });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {

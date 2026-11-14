@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
+import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
 
 const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000; // 5 minutes
+const MAX_WEBHOOK_PAYLOAD_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB limit for inventory webhook events
 
 // Schema validation for incoming inventory event payload
 export const inventoryWebhookPayloadSchema = z.object({
@@ -28,15 +30,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
   }
 
-  // 2. Read raw request text before parsing JSON
-  let rawBody: string;
+  // 2. Read bounded request body enforcing 64 KB limit during stream ingestion
+  let bounded;
   try {
-    rawBody = await req.text();
+    bounded = await readBoundedBodyText(req, MAX_WEBHOOK_PAYLOAD_BYTES);
   } catch {
     return NextResponse.json({ error: "Failed to read request body" }, { status: 400 });
   }
 
-  // 3. Signature header extraction & format validation
+  if (bounded.tooLarge) {
+    return NextResponse.json({ error: "Payload too large" }, { status: 413 });
+  }
+
+  const rawBody = bounded.text;
+
+  // 5. Signature header extraction & format validation
   const signatureHeader = req.headers.get("x-vibelock-signature");
   if (!signatureHeader) {
     return NextResponse.json({ error: "Missing signature header" }, { status: 400 });

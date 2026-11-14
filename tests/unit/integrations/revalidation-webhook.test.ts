@@ -308,6 +308,49 @@ describe("Core-to-Website Inventory Webhook Route Handler", () => {
     expect(revalidateTag).not.toHaveBeenCalled();
   });
 
+  it("rejects request with Content-Length exceeding 64KB with 413", async () => {
+    const headers = new Headers();
+    headers.set("Content-Type", "application/json");
+    headers.set("content-length", String(65 * 1024));
+    headers.set("x-vibelock-signature", `t=${Date.now()},v1=${"a".repeat(64)}`);
+
+    const req = new NextRequest("http://localhost:3000/api/webhooks/core-inventory", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ id: "1", event: "inventory.updated", timestamp: Date.now() }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+    const json = await res.json();
+    expect(json.error).toMatch(/payload too large/i);
+    expect(revalidateTag).not.toHaveBeenCalled();
+  });
+
+  it("rejects request with actual raw body exceeding 64KB with 413", async () => {
+    const oversizedBody = "x".repeat(65 * 1024);
+    const digest = crypto
+      .createHmac("sha256", TEST_SECRET)
+      .update(`${Date.now()}.${oversizedBody}`)
+      .digest("hex");
+
+    const headers = new Headers();
+    headers.set("Content-Type", "application/json");
+    headers.set("x-vibelock-signature", `t=${Date.now()},v1=${digest}`);
+
+    const req = new NextRequest("http://localhost:3000/api/webhooks/core-inventory", {
+      method: "POST",
+      headers,
+      body: oversizedBody,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(413);
+    const json = await res.json();
+    expect(json.error).toMatch(/payload too large/i);
+    expect(revalidateTag).not.toHaveBeenCalled();
+  });
+
   it("fails closed with 500 when server secret is missing", async () => {
     delete process.env.REVALIDATION_WEBHOOK_SECRET;
 

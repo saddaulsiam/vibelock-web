@@ -66,20 +66,31 @@ export type ProductValues = {
 
 async function parseProduct(formData: FormData) {
   const rawName = String(formData.get("name") ?? "");
+  const rawCategoryIds = formData.getAll("categoryIds").map(String);
+  if (rawCategoryIds.length > 30) {
+    return { error: "A product can have at most 30 categories." } as const;
+  }
   const parsed = productSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
     name: rawName,
     description: String(formData.get("description") ?? "") || undefined,
-    categoryIds: formData.getAll("categoryIds").map(String),
+    categoryIds: rawCategoryIds,
     status: String(formData.get("status") ?? ""),
   });
   const slug = slugFromForm(formData, rawName);
 
   let rawVariants: unknown;
   try {
-    rawVariants = JSON.parse(String(formData.get("variantsJson") ?? "[]"));
+    const rawVariantsStr = String(formData.get("variantsJson") ?? "[]");
+    if (rawVariantsStr.length > 50000) {
+      return { error: "Variant data exceeds maximum allowed size." } as const;
+    }
+    rawVariants = JSON.parse(rawVariantsStr);
   } catch {
     return { error: "Variant data is invalid. Refresh the form and try again." } as const;
+  }
+  if (Array.isArray(rawVariants) && rawVariants.length > 100) {
+    return { error: "A product can have at most 100 variants." } as const;
   }
   const variantsParsed = z
     .array(variantInputSchema)
@@ -93,6 +104,9 @@ async function parseProduct(formData: FormData) {
     .flatMap((val) => String(val).split(/\r?\n/))
     .map((url) => url.trim())
     .filter(Boolean);
+  if (rawImageUrls.length > 20) {
+    return { error: "A product can have at most 20 image URLs." } as const;
+  }
 
   const imageUrls: string[] = [];
   for (const rawUrl of rawImageUrls) {
