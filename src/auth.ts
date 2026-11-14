@@ -1,4 +1,5 @@
 import "server-only";
+import crypto from "node:crypto";
 import NextAuth, { CredentialsSignin, type DefaultSession, type NextAuthConfig } from "next-auth";
 import "next-auth/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
@@ -29,6 +30,7 @@ declare module "next-auth" {
       role: Role;
       emailVerified: Date | null;
     } & DefaultSession["user"];
+    currentSessionId?: string;
   }
 
   interface User {
@@ -42,6 +44,8 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: Role;
     emailVerified?: Date | null;
+    sessionToken?: string;
+    currentSessionId?: string;
   }
 }
 
@@ -51,6 +55,19 @@ export const authConfig: NextAuthConfig = {
   trustHost: true,
   session: {
     strategy: "jwt",
+  },
+  events: {
+    async signOut(message) {
+      if ("token" in message && message.token?.sessionToken) {
+        try {
+          await prisma.session.deleteMany({
+            where: { sessionToken: message.token.sessionToken as string },
+          });
+        } catch (err) {
+          console.error("[auth:events] Failed to delete session on signOut event:", err);
+        }
+      }
+    },
   },
   callbacks: {
     async signIn({ user, account }) {
@@ -82,12 +99,98 @@ export const authConfig: NextAuthConfig = {
       return true;
     },
     async jwt({ token, user }) {
+      // 1. Initial sign-in (Credentials or OAuth)
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.emailVerified = user.emailVerified;
+
+        // Create exactly one corresponding Prisma Session record for newly authenticated session
+        if (!token.sessionToken) {
+          const userId = user.id || (token.sub as string);
+          if (userId) {
+            try {
+              const sessionId = crypto.randomUUID();
+              const sessionToken = crypto.randomBytes(32).toString("hex");
+              const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+
+              await prisma.session.create({
+                data: {
+                  id: sessionId,
+                  sessionToken,
+                  userId,
+                  expires,
+                },
+              });
+
+              token.sessionToken = sessionToken;
+              token.currentSessionId = sessionId;
+            } catch (createError) {
+              console.error("[auth:jwt] Failed to create database session on sign-in (failing closed):", createError);
+              return null;
+            }
+          } else {
+            return null;
+          }
+        }
+
+        return token;
       }
-      return token;
+
+      // 2. Subsequent requests / token validation
+      // If sessionToken is missing, this is a legacy JWT or unbacked token -> reject safely (fail closed)
+      if (!token.sessionToken) {
+        return null;
+      }
+
+      try {
+        const dbSession = await prisma.session.findUnique({
+          where: { sessionToken: token.sessionToken as string },
+          select: {
+            id: true,
+            userId: true,
+            expires: true,
+            user: {
+              select: {
+                id: true,
+                role: true,
+                emailVerified: true,
+              },
+            },
+          },
+        });
+
+        // 3. Reject if session record was deleted/revoked
+        if (!dbSession) {
+          return null;
+        }
+
+        // 4. Reject if session belongs to a different user
+        const tokenUserId = (token.id as string) || (token.sub as string);
+        if (dbSession.userId !== tokenUserId) {
+          return null;
+        }
+
+        // 5. Reject if session has expired
+        if (dbSession.expires < new Date()) {
+          return null;
+        }
+
+        // 6. Enforce customer suspension
+        if (dbSession.user.role === "CUSTOMER" && (await isCustomerSuspended(dbSession.userId))) {
+          return null;
+        }
+
+        // Keep live role and emailVerified in sync with database
+        token.role = dbSession.user.role;
+        token.emailVerified = dbSession.user.emailVerified;
+
+        return token;
+      } catch (err) {
+        // Fail closed on database lookup failure
+        console.error("[auth:jwt] Session verification error (failing closed):", err);
+        return null;
+      }
     },
     async session({ session, token, user }) {
       if (session.user) {
@@ -95,6 +198,7 @@ export const authConfig: NextAuthConfig = {
           session.user.id = (token.id as string) || (token.sub as string);
           session.user.role = (token.role as Role) || "CUSTOMER";
           session.user.emailVerified = (token.emailVerified as Date | null) ?? null;
+          session.currentSessionId = token.currentSessionId as string;
         } else if (user) {
           session.user.id = user.id;
           session.user.role = user.role;

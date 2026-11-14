@@ -11,7 +11,7 @@ import {
   type PhoneOtpRequestInput,
   type PhoneOtpVerifyInput,
 } from "@/lib/validations/auth";
-import { signIn, signOut } from "@/auth";
+import { signIn, signOut, auth } from "@/auth";
 import { AuthError } from "next-auth";
 import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
@@ -149,6 +149,18 @@ export async function loginAction(data: LoginInput) {
 export async function logoutAction(
   options?: string | FormData | { redirectTo?: string; redirect?: boolean }
 ) {
+  // Revoke active session in database before clearing cookie
+  try {
+    const session = await auth();
+    if (session?.currentSessionId) {
+      await prisma.session.deleteMany({
+        where: { id: session.currentSessionId },
+      });
+    }
+  } catch (err) {
+    console.warn("Failed to delete session record during logoutAction:", err);
+  }
+
   let redirectTo = "/login";
   let redirectUser = true;
 

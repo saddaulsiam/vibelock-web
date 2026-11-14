@@ -3,53 +3,36 @@
 import prisma from "@/lib/prisma/client";
 import { requireUser } from "@/lib/auth/authorization";
 import { checkRateLimit } from "@/lib/security/rate-limit";
+import { auth } from "@/auth";
 
 // Type returned to the client
 export interface SessionInfo {
   id: string;
   isCurrent: boolean;
   expires: Date;
-  // If we had User-Agent metadata we could parse device info here, but for now we only have basic info.
 }
 
 export async function getActiveSessionsAction(): Promise<SessionInfo[]> {
   try {
     const user = await requireUser();
-
-    // Since Auth.js does not expose the current session ID cleanly to the client session object without schema/token modifications,
-    // and we are using Database sessions, the easiest way to identify the "current" session safely in a Server Action
-    // would be to look at the session cookie.
-    const { cookies } = await import("next/headers");
-    const cookieStore = await cookies();
-    // In Auth.js with DB strategy, the session token is usually in a secure cookie
-    // "authjs.session-token" or "__Secure-authjs.session-token".
-    const sessionTokenCookie =
-      cookieStore.get("__Secure-authjs.session-token")?.value ||
-      cookieStore.get("authjs.session-token")?.value;
+    const session = await auth();
+    const currentSessionId = session?.currentSessionId;
 
     const sessions = await prisma.session.findMany({
-      where: { userId: user.id },
+      where: {
+        userId: user.id,
+        expires: { gt: new Date() },
+      },
       select: {
         id: true,
         expires: true,
-        sessionToken: true,
       },
       orderBy: { expires: "desc" },
     });
 
-    if (sessions.length === 0) {
-      return [
-        {
-          id: "current-session",
-          isCurrent: true,
-          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        },
-      ];
-    }
-
     return sessions.map((s) => ({
       id: s.id,
-      isCurrent: s.sessionToken === sessionTokenCookie,
+      isCurrent: s.id === currentSessionId,
       expires: s.expires,
     }));
   } catch (error) {
@@ -90,6 +73,11 @@ export async function revokeSessionAction(sessionId: string) {
 export async function revokeAllOtherSessionsAction() {
   try {
     const user = await requireUser();
+    const session = await auth();
+
+    if (!session?.currentSessionId) {
+      return { error: "Could not identify current session." };
+    }
 
     try {
       await checkRateLimit("sessionManagement", user.id);
@@ -97,22 +85,12 @@ export async function revokeAllOtherSessionsAction() {
       return { error: "Too many attempts. Please try again later." };
     }
 
-    const { cookies } = await import("next/headers");
-    const cookieStore = await cookies();
-    const sessionTokenCookie =
-      cookieStore.get("__Secure-authjs.session-token")?.value ||
-      cookieStore.get("authjs.session-token")?.value;
-
-    if (!sessionTokenCookie) {
-      return { error: "Could not identify current session." };
-    }
-
-    // Delete all sessions for this user EXCEPT the one matching the current session token
+    // Delete all sessions for this user EXCEPT the one matching the current session id
     await prisma.session.deleteMany({
       where: {
         userId: user.id,
-        sessionToken: {
-          not: sessionTokenCookie,
+        id: {
+          not: session.currentSessionId,
         },
       },
     });
