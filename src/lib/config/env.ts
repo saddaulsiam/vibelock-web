@@ -105,7 +105,12 @@ const envSchema = z.object({
   EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.bd>"),
 
   // Upstash Redis (Rate Limiting)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_URL: z.preprocess((val) => {
+    if (typeof val !== "string") return val;
+    const trimmed = val.trim();
+    if (!trimmed || trimmed === "[SENSITIVE]") return undefined;
+    return trimmed;
+  }, z.string().url().optional()),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
   // Inventory

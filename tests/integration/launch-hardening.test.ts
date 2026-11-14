@@ -161,6 +161,22 @@ describe("Phase 3L - Launch Hardening", () => {
     }
   });
 
+  test("server environment validation treats Vercel sensitive placeholder URL as optional", async () => {
+    try {
+      vi.stubEnv("NODE_ENV", "production");
+      vi.stubEnv("DATABASE_URL", "https://database.invalid");
+      vi.stubEnv("AUTH_SECRET", "this-production-secret-is-at-least-32-chars");
+      vi.stubEnv("UPSTASH_REDIS_REST_URL", "[SENSITIVE]");
+      vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "[SENSITIVE]");
+      vi.resetModules();
+      const { env } = await import("../../src/lib/config/env");
+      expect(env.UPSTASH_REDIS_REST_URL).toBeUndefined();
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
+  });
+
   test("production auth rate limiting falls back to in-memory rate limiter when Redis is not configured", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("DATABASE_URL", "https://database.invalid");
