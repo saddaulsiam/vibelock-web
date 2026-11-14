@@ -11,6 +11,7 @@ import Google from "next-auth/providers/google";
 
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { verifyOtp } from "@/lib/sms/client";
+import { isCustomerSuspended } from "@/lib/auth/suspension";
 
 // Augment the default session, user, and token types
 declare module "next-auth" {
@@ -44,10 +45,32 @@ export const authConfig: NextAuthConfig = {
     strategy: "jwt",
   },
   callbacks: {
-    async signIn() {
+    async signIn({ user, account }) {
       // The default behavior (allowDangerousEmailAccountLinking = false) prevents
       // Google logins from automatically hijacking an existing Credentials account.
       // If a user has a credentials account with the same email, they will be rejected with OAuthAccountNotLinked.
+      if (account?.provider && account.provider !== "credentials") {
+        const email = user?.email?.toLowerCase();
+        let checkedUserId: string | null = null;
+
+        if (email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email },
+            select: { id: true },
+          });
+          if (dbUser) {
+            checkedUserId = dbUser.id;
+            if (await isCustomerSuspended(dbUser.id)) {
+              return false;
+            }
+          }
+        }
+
+        if (user?.id && user.id !== checkedUserId && (await isCustomerSuspended(user.id))) {
+          return false;
+        }
+      }
+
       return true;
     },
     async jwt({ token, user }) {
@@ -137,11 +160,18 @@ export const authConfig: NextAuthConfig = {
                 phoneVerified: new Date(),
               },
             });
-          } else if (!user.phoneVerified) {
-            user = await prisma.user.update({
-              where: { id: user.id },
-              data: { phoneVerified: new Date() },
-            });
+          } else {
+            // Check if customer account is suspended
+            if (await isCustomerSuspended(user.id)) {
+              return null;
+            }
+
+            if (!user.phoneVerified) {
+              user = await prisma.user.update({
+                where: { id: user.id },
+                data: { phoneVerified: new Date() },
+              });
+            }
           }
 
           return {
@@ -178,17 +208,7 @@ export const authConfig: NextAuthConfig = {
         }
 
         // Check if customer account is suspended
-        const suspension = await prisma.auditLog.findFirst({
-          where: {
-            entityType: "Customer",
-            entityId: user.id,
-            action: { in: ["CUSTOMER_ACCOUNT_SUSPENDED", "CUSTOMER_ACCOUNT_ACTIVATED"] },
-          },
-          orderBy: { createdAt: "desc" },
-          select: { action: true },
-        });
-
-        if (suspension?.action === "CUSTOMER_ACCOUNT_SUSPENDED") {
+        if (await isCustomerSuspended(user.id)) {
           return null;
         }
 
