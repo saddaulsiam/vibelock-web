@@ -45,7 +45,10 @@ const bannerSchema = z.object({
     .regex(/^-?\d{1,5}$/)
     .transform(Number),
   isActive: z.enum(["on", "true", "false"]).optional(),
-  categoryIds: z.array(z.string().uuid()).default([]),
+  categoryIds: z
+    .array(z.string().uuid())
+    .max(50, "Cannot assign more than 50 categories")
+    .default([]),
 });
 
 function refreshBanners() {
@@ -165,6 +168,9 @@ export async function saveBannerAction(
     .getAll("categoryIds")
     .map((value) => String(value))
     .filter(Boolean);
+  if (rawCategoryIds.length > 50) {
+    return { error: "Cannot assign more than 50 categories." };
+  }
   const parsed = bannerSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
     title: formData.get("title"),

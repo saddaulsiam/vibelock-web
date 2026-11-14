@@ -21,6 +21,7 @@ const ReturnRequestSchema = z.object({
       })
     )
     .min(1, "Must select at least one item to return")
+    .max(20, "Cannot return more than 20 items per request")
     .superRefine((items, context) => {
       const itemIds = new Set<string>();
       items.forEach((item, index) => {
@@ -81,12 +82,25 @@ export async function uploadReturnProofAction(
   }
 }
 
-export async function createReturnRequestAction(data: z.input<typeof ReturnRequestSchema>) {
+export async function createReturnRequestAction(
+  data: z.input<typeof ReturnRequestSchema>
+): Promise<
+  | { success: true; returnRequestId: string; message: string }
+  | { success: false; error: string }
+> {
   const session = await auth();
   if (!session?.user?.id) {
     return { success: false, error: "Unauthorized" };
   }
   const userId = session.user.id;
+
+  // Defensive pre-validation check: reject oversized arrays before expensive parsing
+  if (Array.isArray(data?.items) && data.items.length > 20) {
+    return {
+      success: false,
+      error: "Cannot return more than 20 items per request",
+    };
+  }
 
   const result = ReturnRequestSchema.safeParse(data);
   if (!result.success) {

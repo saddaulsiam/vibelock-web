@@ -6,14 +6,14 @@ import { z } from "zod";
 const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000; // 5 minutes
 
 // Schema validation for incoming inventory event payload
-const inventoryWebhookPayloadSchema = z.object({
+export const inventoryWebhookPayloadSchema = z.object({
   id: z.string().min(1),
   event: z.literal("inventory.updated"),
   timestamp: z.number(),
   data: z
     .object({
       reason: z.string().optional(),
-      tags: z.array(z.string()).optional(),
+      tags: z.array(z.string().max(100)).max(50).optional(),
     })
     .optional(),
 });
@@ -95,6 +95,13 @@ export async function POST(req: NextRequest) {
     payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Malformed JSON payload" }, { status: 400 });
+  }
+
+  // Defensive check: reject oversized tag collections before expensive validation
+  const rawData = payload && typeof payload === "object" ? (payload as Record<string, unknown>).data : undefined;
+  const rawTags = rawData && typeof rawData === "object" ? (rawData as Record<string, unknown>).tags : undefined;
+  if (Array.isArray(rawTags) && rawTags.length > 50) {
+    return NextResponse.json({ error: "Invalid payload schema" }, { status: 400 });
   }
 
   const parsed = inventoryWebhookPayloadSchema.safeParse(payload);

@@ -254,6 +254,60 @@ describe("Core-to-Website Inventory Webhook Route Handler", () => {
     expect(revalidateTag).not.toHaveBeenCalledWith("users", expect.anything());
   });
 
+  it("accepts valid bounded tags within limit (up to 50 tags)", async () => {
+    const validTags = Array.from({ length: 50 }, (_, i) => `tag-${i}`);
+    const req = buildSignedRequest({
+      body: JSON.stringify({
+        id: "evt_tags_valid",
+        event: "inventory.updated",
+        timestamp: Date.now(),
+        data: { tags: validTags },
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(revalidateTag).toHaveBeenCalledWith("products", { expire: 0 });
+  });
+
+  it("rejects payload with more than 50 tags with 400", async () => {
+    const oversizedTags = Array.from({ length: 51 }, (_, i) => `tag-${i}`);
+    const req = buildSignedRequest({
+      body: JSON.stringify({
+        id: "evt_tags_too_many",
+        event: "inventory.updated",
+        timestamp: Date.now(),
+        data: { tags: oversizedTags },
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.error).toMatch(/payload schema/i);
+    expect(revalidateTag).not.toHaveBeenCalled();
+  });
+
+  it("rejects invalid signature before evaluating payload or tags schema", async () => {
+    const wrongDigest = "0".repeat(64);
+    const oversizedTags = Array.from({ length: 1000 }, (_, i) => `tag-${i}`);
+    const req = buildSignedRequest({
+      body: JSON.stringify({
+        id: "evt_oversized_unauthenticated",
+        event: "inventory.updated",
+        timestamp: Date.now(),
+        data: { tags: oversizedTags },
+      }),
+      customHeader: `t=${Date.now()},v1=${wrongDigest}`,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(401);
+    const json = await res.json();
+    expect(json.error).toBe("Invalid signature");
+    expect(revalidateTag).not.toHaveBeenCalled();
+  });
+
   it("fails closed with 500 when server secret is missing", async () => {
     delete process.env.REVALIDATION_WEBHOOK_SECRET;
 
