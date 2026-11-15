@@ -37,6 +37,9 @@ export async function getAdminCustomerById(
       phone: true,
       createdAt: true,
       updatedAt: true,
+      codBlocked: true,
+      codBlockedAt: true,
+      codBlockedById: true,
       addresses: {
         orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
         select: {
@@ -223,7 +226,10 @@ export async function getAdminCustomerById(
   const codStatusLog = allAuditLogs.find(
     (l) => l.action === "CUSTOMER_COD_RESTRICTED" || l.action === "CUSTOMER_COD_ALLOWED"
   );
-  const isCodBlocked = codStatusLog?.action === "CUSTOMER_COD_RESTRICTED";
+  const isCodBlocked =
+    typeof customer.codBlocked === "boolean"
+      ? customer.codBlocked
+      : codStatusLog?.action === "CUSTOMER_COD_RESTRICTED";
   const codBlockReason = isCodBlocked
     ? (codStatusLog?.metadata as { reason?: string })?.reason || "Restricted by store manager"
     : null;

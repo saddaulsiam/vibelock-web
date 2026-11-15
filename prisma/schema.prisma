@@ -117,6 +117,10 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  codBlocked     Boolean   @default(false)
+  codBlockedAt   DateTime?
+  codBlockedById String?
+
   accounts Account[]
 
   addresses Address[]
@@ -128,6 +132,8 @@ model User {
 
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
+
+  @@index([codBlocked])
 }
 
 model Address {

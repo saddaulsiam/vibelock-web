@@ -28,6 +28,17 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock("@/lib/prisma/client", () => ({
+  default: {
+    order: {
+      findUnique: vi.fn(async () => null),
+    },
+    user: {
+      findUnique: vi.fn(async () => ({ codBlocked: false, role: "CUSTOMER" })),
+    },
+  },
+}));
+
 import { createOrderAction } from "@/lib/checkout/actions";
 
 describe("VibeLock Stage 5 — Server-Side createOrderAction Payment Enforcement Tests", () => {
@@ -65,6 +76,20 @@ describe("VibeLock Stage 5 — Server-Side createOrderAction Payment Enforcement
     expect(result.error).toBe(
       "Cash on delivery is currently unavailable. Please choose another payment method."
     );
+    expect(mockIsPaymentMethodEnabled).toHaveBeenCalledWith("COD");
+  });
+
+  test("allows unrestricted customer to proceed with COD when store-wide COD is enabled", async () => {
+    mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => code === "COD");
+
+    const result = await createOrderAction(
+      { ...validPayload, paymentMethod: "COD" },
+      "idempotency-key-cod-unrestricted"
+    );
+
+    // Bypasses COD restriction check and proceeds to cart verification
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("Your cart is empty");
     expect(mockIsPaymentMethodEnabled).toHaveBeenCalledWith("COD");
   });
 

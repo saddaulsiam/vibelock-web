@@ -310,6 +310,17 @@ export async function toggleCustomerCodBlockAction(
         throw new Error("Customer profile not found.");
       }
 
+      const now = new Date();
+
+      await tx.user.update({
+        where: { id: cleanId },
+        data: {
+          codBlocked: blocked,
+          codBlockedAt: blocked ? now : null,
+          codBlockedById: blocked ? admin.id : null,
+        },
+      });
+
       await tx.auditLog.create({
         data: {
           actorId: admin.id,
