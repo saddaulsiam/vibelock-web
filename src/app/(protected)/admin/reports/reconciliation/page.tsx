@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
+import { requireRole } from "@/lib/auth/authorization";
 import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
 
 function money(value: number | null | undefined): string {
@@ -113,6 +114,8 @@ export default async function AdminReconciliationPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  await requireRole("ADMIN");
+
   const params = await searchParams;
   const value = (key: string) => {
     const val = params[key];

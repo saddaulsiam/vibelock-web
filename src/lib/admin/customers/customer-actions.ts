@@ -354,7 +354,7 @@ export async function toggleCustomerCodBlockAction(
 export async function deleteAdminCustomerAction(
   customerId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const admin = await requireRole("MANAGER");
+  const admin = await requireRole("ADMIN");
 
   const cleanId = customerId?.trim();
   if (!cleanId) return { success: false, error: "Customer ID is required." };
@@ -570,7 +570,7 @@ export async function adminSendCustomerPasswordResetEmailAction(
 export async function adminGenerateCustomerPasswordResetLinkAction(
   customerId: string
 ): Promise<{ success: boolean; resetLink?: string; error?: string }> {
-  await requireRole("MANAGER");
+  await requireRole("ADMIN");
 
   const cleanId = customerId?.trim();
   if (!cleanId) return { success: false, error: "Customer ID is required." };
