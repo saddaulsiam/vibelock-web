@@ -85,7 +85,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     expect(data.message).toContain("ping acknowledged");
   });
 
-  test("processes delivery status update by consignment_id and updates shipment and COD order", async () => {
+  test("processes delivery status update: delivered status alone leaves COD payment pending until explicit collection confirmation", async () => {
     // 1. Create a test order and shipment
     const orderNumber = `TEST-STED-${Date.now()}`;
     const testCid = `CID-${Date.now()}`;
@@ -122,7 +122,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
       },
     });
 
-    // 2. Deliver event via HMAC signature
+    // 2. Deliver event via HMAC signature with status "delivered" ALONE (no explicit cod_status)
     const event = {
       notification_type: "delivery_status",
       consignment_id: testCid,
@@ -137,14 +137,87 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     expect(data.success).toBe(true);
     expect(data.newStatus).toBe("DELIVERED");
 
-    // 3. Verify database state
+    // 3. Verify database state: order is DELIVERED, but paymentStatus remains PENDING (Requirement 5)
     const updatedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id } });
     expect(updatedShipment.status).toBe("DELIVERED");
     expect(updatedShipment.deliveredAt).not.toBeNull();
 
-    const updatedOrder = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
-    expect(updatedOrder.status).toBe("DELIVERED");
-    expect(updatedOrder.paymentStatus).toBe("SUCCESS"); // COD reconciled to SUCCESS on delivery
+    const orderAfterDelivery = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(orderAfterDelivery.status).toBe("DELIVERED");
+    expect(orderAfterDelivery.paymentStatus).toBe("PENDING"); // Remittance unverified; stays pending
+
+    // 4. Send explicit COD collection confirmation event
+    const collectionEvent = {
+      notification_type: "delivery_status",
+      consignment_id: testCid,
+      invoice: orderNumber,
+      status: "delivered",
+      cod_status: "collected",
+    };
+
+    const collectionReq = createSignedRequest(collectionEvent);
+    const collectionRes = await steadfastWebhook(collectionReq);
+    expect(collectionRes.status).toBe(200);
+
+    const orderAfterCollection = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(orderAfterCollection.paymentStatus).toBe("SUCCESS"); // Reconciled on explicit confirmation
+
+    // Cleanup
+    await prisma.shipment.delete({ where: { id: shipment.id } });
+    await prisma.order.delete({ where: { id: order.id } });
+  });
+
+  test("never marks COD payment SUCCESS on a CANCELLED order even if collection is received", async () => {
+    const orderNumber = `TEST-CANCEL-${Date.now()}`;
+    const testCid = `CID-CAN-${Date.now()}`;
+
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        status: "CANCELLED",
+        paymentStatus: "CANCELLED",
+        paymentMethod: "COD",
+        customerEmail: "cancelled-cod@example.com",
+        customerPhone: "01712345678",
+        shippingStreet: "Banani Rd 11",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingCost: 60,
+        subtotal: 500,
+        taxAmount: 0,
+        taxRate: 0,
+        discount: 0,
+        total: 560,
+        shippingMethodName: "Standard",
+      },
+    });
+
+    const shipment = await prisma.shipment.create({
+      data: {
+        orderId: order.id,
+        provider: "steadfast",
+        providerShipmentId: testCid,
+        trackingNumber: `TRK-${testCid}`,
+        status: "IN_TRANSIT",
+        shippingAmount: 60,
+      },
+    });
+
+    const event = {
+      notification_type: "delivery_status",
+      consignment_id: testCid,
+      invoice: orderNumber,
+      status: "delivered",
+      cod_status: "collected",
+    };
+
+    const req = createSignedRequest(event);
+    const res = await steadfastWebhook(req);
+    expect(res.status).toBe(200);
+
+    const orderAfterWebhook = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(orderAfterWebhook.status).toBe("CANCELLED");
+    expect(orderAfterWebhook.paymentStatus).toBe("CANCELLED"); // Preserved! Never marked SUCCESS!
 
     // Cleanup
     await prisma.shipment.delete({ where: { id: shipment.id } });

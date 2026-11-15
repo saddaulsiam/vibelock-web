@@ -144,6 +144,20 @@ export class RefundService {
     }
 
     // 2. Determine provider and call external API
+    // Gateways without automated refund APIs (e.g. bKash, Nagad, COD) must NOT be marked FAILED.
+    // They require manual processing and must remain PENDING so admins can record the manual refund.
+    if (!isSSLCommerzGateway(refund.payment.gateway)) {
+      await prisma.refund.updateMany({
+        where: { id: refundId, status: "PROCESSING" },
+        data: { status: "PENDING" },
+      });
+      return {
+        success: false,
+        requiresManualProcessing: true,
+        error: `Automated refund is unsupported for gateway '${refund.payment.gateway}'. Please issue the refund manually via the provider portal and record manual refund completion with the transaction reference.`,
+      };
+    }
+
     let providerRes: {
       success: boolean;
       gatewayRefundRef?: string;
@@ -154,23 +168,21 @@ export class RefundService {
       error: "Unsupported gateway",
     };
 
-    if (isSSLCommerzGateway(refund.payment.gateway)) {
-      // Import dynamically or inject provider to avoid circular dependencies
-      const { SSLCommerzProvider } = await import("@/lib/payment/providers/sslcommerz/client");
-      const provider = new SSLCommerzProvider();
+    // Import dynamically or inject provider to avoid circular dependencies
+    const { SSLCommerzProvider } = await import("@/lib/payment/providers/sslcommerz/client");
+    const provider = new SSLCommerzProvider();
 
-      if (!refund.payment.gatewayTransactionId) {
-        throw new Error("Missing gatewayTransactionId to refund");
-      }
-
-      providerRes = await provider.refundPayment({
-        refundId: refund.id,
-        paymentId: refund.paymentId,
-        gatewayTransactionId: refund.payment.gatewayTransactionId,
-        amount: Number(refund.amount),
-        reason: refund.reason || "Return/Refund",
-      });
+    if (!refund.payment.gatewayTransactionId) {
+      throw new Error("Missing gatewayTransactionId to refund");
     }
+
+    providerRes = await provider.refundPayment({
+      refundId: refund.id,
+      paymentId: refund.paymentId,
+      gatewayTransactionId: refund.payment.gatewayTransactionId,
+      amount: Number(refund.amount),
+      reason: refund.reason || "Return/Refund",
+    });
 
     // 3. Atomically finalize SUCCESS/FAILED based on provider result
     if (providerRes.success) {
@@ -183,5 +195,143 @@ export class RefundService {
       await this.markRefundFailed(refund.id);
       return { success: false, error: "Refund provider rejected the request" };
     }
+  }
+
+  /**
+   * Authoritatively records manual completion of a refund (e.g. bKash, Nagad, or offline).
+   * Enforces authorized admin actor, validated transaction reference, strict amount checks,
+   * terminal status preservation, and writes immutable AuditLog and OrderHistory records.
+   */
+  async recordManualRefundSuccess(params: {
+    refundId: string;
+    adminId: string;
+    transactionReference: string;
+    notes?: string;
+    tx?: Prisma.TransactionClient;
+  }): Promise<Refund> {
+    const cleanAdminId = params.adminId ? params.adminId.trim() : "";
+    if (!cleanAdminId) {
+      throw new Error("Authorized admin access is required to record a manual refund.");
+    }
+
+    const cleanRef = params.transactionReference ? params.transactionReference.trim() : "";
+    if (!cleanRef || cleanRef.length < 3) {
+      throw new Error("A valid provider transaction reference is required (minimum 3 characters).");
+    }
+
+    const execute = async (db: Prisma.TransactionClient) => {
+      const existingRefund = await db.refund.findUnique({
+        where: { id: params.refundId },
+        include: { payment: true },
+      });
+      if (!existingRefund) throw new Error("Refund not found.");
+
+      // Row-lock Payment and Refund to serialize concurrent refunds
+      await db.$queryRaw`SELECT id FROM "Payment" WHERE id = ${existingRefund.paymentId} FOR UPDATE`;
+      await db.$queryRaw`SELECT id FROM "Refund" WHERE id = ${params.refundId} FOR UPDATE`;
+
+      const refund = await db.refund.findUniqueOrThrow({
+        where: { id: params.refundId },
+        include: { payment: true },
+      });
+
+      if (refund.status === "SUCCESS") {
+        return refund; // Idempotent
+      }
+
+      if (refund.status === "FAILED") {
+        throw new Error(
+          "Cannot mark a failed refund as successful. Please initiate a new refund request."
+        );
+      }
+
+      if (refund.status !== "PENDING" && refund.status !== "PROCESSING") {
+        throw new Error(`Refund cannot be completed from status '${refund.status}'.`);
+      }
+
+      if (refund.amount.lte(0)) {
+        throw new Error("Refund amount must be greater than zero.");
+      }
+
+      // Re-validate against parent payment and existing successful refunds under row lock
+      const payment = await db.payment.findUniqueOrThrow({
+        where: { id: refund.paymentId },
+        include: { refunds: true },
+      });
+
+      if (payment.status !== "SUCCESS" && payment.status !== "PARTIALLY_REFUNDED") {
+        throw new Error(`Cannot refund payment in non-captured status '${payment.status}'.`);
+      }
+
+      const otherSuccessfulRefunds = payment.refunds
+        .filter((r) => r.id !== refund.id && r.status === "SUCCESS")
+        .reduce((sum, r) => sum.add(r.amount), new Prisma.Decimal(0));
+
+      const totalAfterThis = otherSuccessfulRefunds.add(refund.amount);
+      if (totalAfterThis.gt(payment.amount)) {
+        throw new Error("Refund amount exceeds remaining refundable amount for this payment.");
+      }
+
+      // Update Refund to SUCCESS with verified transaction reference
+      const updatedRefund = await db.refund.update({
+        where: { id: refund.id },
+        data: {
+          status: "SUCCESS",
+          gatewayRefId: cleanRef,
+          reason: params.notes?.trim()
+            ? `${refund.reason ?? ""}; Manual: ${params.notes.trim()}`.trim()
+            : refund.reason,
+        },
+      });
+
+      // Update parent Payment and Order statuses
+      const isFullRefund = totalAfterThis.gte(payment.amount);
+      const newPaymentStatus = isFullRefund ? "REFUNDED" : "PARTIALLY_REFUNDED";
+
+      await db.payment.update({
+        where: { id: payment.id },
+        data: { status: newPaymentStatus },
+      });
+
+      const updatedOrder = await db.order.update({
+        where: { id: payment.orderId },
+        data: { paymentStatus: newPaymentStatus },
+      });
+
+      // Write immutable AuditLog
+      await db.auditLog.create({
+        data: {
+          actorId: cleanAdminId,
+          action: "MANUAL_REFUND_COMPLETED",
+          entityType: "Refund",
+          entityId: refund.id,
+          metadata: {
+            paymentId: payment.id,
+            orderId: payment.orderId,
+            refundAmount: Number(refund.amount),
+            transactionReference: cleanRef,
+            gateway: payment.gateway,
+            isFullRefund,
+            notes: params.notes?.trim() || null,
+          },
+        },
+      });
+
+      // Write OrderHistory
+      await db.orderHistory.create({
+        data: {
+          orderId: payment.orderId,
+          status: updatedOrder.status,
+          notes: `Manual refund of ৳${Number(refund.amount).toFixed(2)} recorded by admin (Gateway: ${payment.gateway}, Ref: ${cleanRef}).`,
+        },
+      });
+
+      return updatedRefund;
+    };
+
+    if (params.tx) {
+      return execute(params.tx);
+    }
+    return prisma.$transaction(execute);
   }
 }

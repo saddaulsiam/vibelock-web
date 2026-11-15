@@ -38,6 +38,16 @@ const processRefundSchema = z.object({
   refundId: z.string().uuid(),
 });
 
+const recordManualRefundSchema = z.object({
+  returnId: z.string().uuid("Invalid return ID"),
+  refundId: z.string().uuid("Invalid refund ID"),
+  transactionReference: z
+    .string()
+    .trim()
+    .min(3, "Provider transaction reference must be at least 3 characters"),
+  notes: z.string().trim().max(500).optional(),
+});
+
 const transitions: Record<ReturnRequestStatus, ReturnRequestStatus[]> = {
   PENDING: ["APPROVED", "REJECTED"],
   APPROVED: ["RECEIVED", "REJECTED"],
@@ -345,6 +355,64 @@ export async function processReturnRefundAction(
 
   refreshReturns();
   return { error: null, message: "Refund provider processing completed." };
+}
+
+export async function recordManualReturnRefundAction(
+  _previous: AdminReturnActionState,
+  formData: FormData
+): Promise<AdminReturnActionState> {
+  const admin = await requireRole("MANAGER", { throw: true });
+  const parsed = recordManualRefundSchema.safeParse({
+    returnId: String(formData.get("returnId") ?? ""),
+    refundId: String(formData.get("refundId") ?? ""),
+    transactionReference: String(formData.get("transactionReference") ?? ""),
+    notes: formData.get("notes") ? String(formData.get("notes")) : undefined,
+  });
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+
+  try {
+    const refund = await prisma.refund.findUnique({
+      where: { id: parsed.data.refundId },
+      include: { payment: { select: { orderId: true, gateway: true } } },
+    });
+    const request = await prisma.returnRequest.findUnique({
+      where: { id: parsed.data.returnId },
+      select: { id: true, orderId: true },
+    });
+    if (!refund || !request) throw new Error("Return request not found.");
+    if (refund.payment.orderId !== request.orderId)
+      throw new Error("That refund does not belong to this return.");
+
+    await new RefundService().recordManualRefundSuccess({
+      refundId: refund.id,
+      adminId: admin.id,
+      transactionReference: parsed.data.transactionReference,
+      notes: parsed.data.notes,
+    });
+
+    // Notify customer of manual cash refund
+    const fullOrder = await prisma.order.findUnique({
+      where: { id: request.orderId },
+      select: { customerEmail: true, customerName: true, customerPhone: true, orderNumber: true },
+    });
+    if (fullOrder) {
+      await notifyCashRefundProcessed({
+        customerEmail: fullOrder.customerEmail,
+        customerName: fullOrder.customerName,
+        customerPhone: fullOrder.customerPhone,
+        orderNumber: fullOrder.orderNumber,
+        amount: Number(refund.amount),
+        gateway: refund.payment.gateway || "Manual Refund",
+      });
+    }
+  } catch (error) {
+    return {
+      error: knownError(error) ?? "The manual refund could not be recorded. Please try again.",
+    };
+  }
+
+  refreshReturns();
+  return { error: null, message: "Manual refund recorded successfully." };
 }
 
 export async function loadMoreAdminReturnsAction(options: {
