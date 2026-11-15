@@ -549,6 +549,14 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       const result = await toggleCustomerCodBlockAction("cust-cod-1", true, "High return history");
 
       expect(result.success).toBe(true);
+      expect(mockPrismaTx.user.update).toHaveBeenCalledWith({
+        where: { id: "cust-cod-1" },
+        data: expect.objectContaining({
+          codBlocked: true,
+          codBlockedAt: expect.any(Date),
+          codBlockedById: mockManagerUser.id,
+        }),
+      });
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
       const auditArg = vi.mocked(prisma.auditLog.create).mock.calls[0][0].data;
       expect(auditArg.action).toBe("CUSTOMER_COD_RESTRICTED");
@@ -561,6 +569,14 @@ describe("Phase 5A RBAC Isolation: Customer Management Action Role Scoping", () 
       const result = await toggleCustomerCodBlockAction("cust-cod-2", false, "Whitelist restored");
 
       expect(result.success).toBe(true);
+      expect(mockPrismaTx.user.update).toHaveBeenCalledWith({
+        where: { id: "cust-cod-2" },
+        data: {
+          codBlocked: false,
+          codBlockedAt: null,
+          codBlockedById: null,
+        },
+      });
       expect(prisma.auditLog.create).toHaveBeenCalledTimes(1);
       const auditArg = vi.mocked(prisma.auditLog.create).mock.calls[0][0].data;
       expect(auditArg.action).toBe("CUSTOMER_COD_ALLOWED");

@@ -30,3 +30,4 @@ export {
   type AdminCustomerDetailResult,
 } from "./customer-queries";
 export { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./customer-risk";
+export { backfillCustomerCodRestrictions, type CodMigrationResult } from "./cod-migration";

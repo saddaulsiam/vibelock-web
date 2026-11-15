@@ -14,7 +14,7 @@ import {
   getEligibleSubtotal,
   type CartItemCategoryInfo,
 } from "./coupons";
-import type { DiscountType } from "@prisma/client";
+import type { DiscountType, Prisma } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
 import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
@@ -157,6 +157,37 @@ export async function getShippingMethodsAction(address: {
   }
 }
 
+export async function isCustomerCodRestricted(
+  userId: string,
+  tx?: Prisma.TransactionClient
+): Promise<boolean> {
+  if (tx) {
+    const lockedUsers = await tx.$queryRaw<Array<{ id: string; codBlocked: boolean }>>`
+      SELECT "id", "codBlocked"
+      FROM "User"
+      WHERE "id" = ${userId} AND "role" = 'CUSTOMER'::"Role"
+      FOR UPDATE
+    `;
+
+    if (lockedUsers.length === 0) {
+      throw new Error("CUSTOMER_NOT_FOUND");
+    }
+
+    return Boolean(lockedUsers[0].codBlocked);
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { codBlocked: true, role: true },
+  });
+
+  if (!user || user.role !== "CUSTOMER") {
+    throw new Error("CUSTOMER_NOT_FOUND");
+  }
+
+  return Boolean(user.codBlocked);
+}
+
 export async function createOrderAction(
   data: z.infer<typeof checkoutSchema>,
   idempotencyKey: string
@@ -206,6 +237,22 @@ export async function createOrderAction(
       return {
         success: false,
         error: "Cash on delivery is currently unavailable. Please choose another payment method.",
+      };
+    }
+
+    try {
+      const isRestricted = await isCustomerCodRestricted(session.user.id);
+      if (isRestricted) {
+        return {
+          success: false,
+          error: "Cash on delivery is not available for your account. Please choose another payment method.",
+        };
+      }
+    } catch (error) {
+      console.error("[createOrderAction] Failed to verify customer COD eligibility:", error);
+      return {
+        success: false,
+        error: "Unable to verify payment method eligibility. Please try again or choose an online payment method.",
       };
     }
   } else if (paymentMethod === "ONLINE") {
@@ -303,6 +350,13 @@ export async function createOrderAction(
 
         if (!dbCart || dbCart.items.length === 0) {
           throw new Error("Empty cart");
+        }
+
+        if (paymentMethod === "COD") {
+          const isRestrictedInTx = await isCustomerCodRestricted(session.user.id, tx);
+          if (isRestrictedInTx) {
+            throw new Error("COD_RESTRICTED");
+          }
         }
 
         let orderSubtotal = 0;
@@ -769,6 +823,13 @@ export async function createOrderAction(
       if (existingOrder) {
         return { success: true, orderNumber: existingOrder.orderNumber };
       }
+    }
+
+    if (error instanceof Error && error.message === "COD_RESTRICTED") {
+      return {
+        success: false,
+        error: "Cash on delivery is not available for your account. Please choose another payment method.",
+      };
     }
 
     if (isCouponError) {
