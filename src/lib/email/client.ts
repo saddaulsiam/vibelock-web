@@ -10,6 +10,12 @@ if (env.RESEND_API_KEY) {
   resendClient = new Resend(env.RESEND_API_KEY);
 }
 
+export function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain || local.length <= 1) return "***@***";
+  return `${local[0]}***@${domain}`;
+}
+
 export async function sendPasswordResetEmail(email: string, rawToken: string): Promise<boolean> {
   if (!resendClient) {
     if (env.NODE_ENV === "production") {
@@ -18,7 +24,7 @@ export async function sendPasswordResetEmail(email: string, rawToken: string): P
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping password reset email for:", email);
+    console.warn("⚠️ Email provider not configured. Skipping password reset email for:", maskEmail(email));
     return true; // Pretend it succeeded in dev/test to allow local token usage manually
   }
 
@@ -66,7 +72,7 @@ export async function sendEmailVerificationEmail(
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping verification email for:", email);
+    console.warn("⚠️ Email provider not configured. Skipping verification email for:", maskEmail(email));
     return true; // Pretend it succeeded in dev/test to allow local token usage manually
   }
 
@@ -109,7 +115,7 @@ export async function sendNewsletterWelcomeEmail(email: string): Promise<boolean
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping newsletter welcome email for:", email);
+    console.warn("⚠️ Email provider not configured. Skipping newsletter welcome email for:", maskEmail(email));
     return true;
   }
 

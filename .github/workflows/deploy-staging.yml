@@ -9,6 +9,9 @@ concurrency:
   group: staging-deployment
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   deploy-staging:
     name: Run Staging Migration & Vercel Preview Deploy

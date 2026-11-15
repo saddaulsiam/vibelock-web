@@ -9,6 +9,9 @@ concurrency:
   group: production-migration
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   migrate:
     name: Run Prisma Migrate Deploy
