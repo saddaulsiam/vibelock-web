@@ -9,11 +9,11 @@ import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudina
 import { validateImageFile } from "@/lib/media/validation";
 import { serializeReturnReason } from "./utils";
 
-const ReturnRequestSchema = z.object({
+export const ReturnRequestSchema = z.object({
   orderNumber: z.string(),
   reason: z.string().optional().default("OTHER"),
   customerNote: z.string().max(1000).optional(),
-  images: z.array(z.string()).max(5).optional().default([]),
+  images: z.array(z.string()).max(5, "Cannot attach more than 5 images").optional().default([]),
   items: z
     .array(
       z.object({
@@ -97,6 +97,13 @@ export async function createReturnRequestAction(
     return {
       success: false,
       error: "Cannot return more than 20 items per request",
+    };
+  }
+
+  if (Array.isArray(data?.images) && data.images.length > 5) {
+    return {
+      success: false,
+      error: "Cannot attach more than 5 images",
     };
   }
 

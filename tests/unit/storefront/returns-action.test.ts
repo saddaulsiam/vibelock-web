@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { createReturnRequestAction } from "@/lib/returns/actions";
+import { createReturnRequestAction, ReturnRequestSchema } from "@/lib/returns/actions";
 import prisma from "@/lib/prisma/client";
 
 vi.mock("@/auth", () => ({
@@ -117,5 +117,38 @@ describe("Customer Returns Action Validation", () => {
       expect(res.error).toMatch(/cannot return more than 20 items/i);
     }
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("accepts 5 images (maximum bound)", async () => {
+    const images = Array.from({ length: 5 }, (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`);
+
+    const res = await createReturnRequestAction({
+      orderNumber: "ORD-12345",
+      items: [{ orderItemId: "item-1", quantity: 1 }],
+      images,
+    });
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.returnRequestId).toBe("return-req-1");
+    }
+  });
+
+  it("rejects 6 images before Zod parsing (exceeding maximum bound)", async () => {
+    const parseSpy = vi.spyOn(ReturnRequestSchema, "safeParse");
+    const images = Array.from({ length: 6 }, (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`);
+
+    const res = await createReturnRequestAction({
+      orderNumber: "ORD-12345",
+      items: [{ orderItemId: "item-1", quantity: 1 }],
+      images,
+    });
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.error).toBe("Cannot attach more than 5 images");
+    }
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+
+    parseSpy.mockRestore();
   });
 });
