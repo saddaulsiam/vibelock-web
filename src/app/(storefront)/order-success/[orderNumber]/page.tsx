@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
-import { cancelOrderAction } from "@/lib/orders/actions";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
@@ -65,12 +64,6 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const paymentQuery = resolvedSearchParams.payment?.toLowerCase();
 
-  // If customer returned from payment gateway after cancelling or failing,
-  // automatically cancel the pending order and release reserved stock.
-  if (paymentQuery === "cancelled" || paymentQuery === "failed") {
-    await cancelOrderAction(orderNumber);
-  }
-
   const order = await getCustomerOrderConfirmation(orderNumber);
   if (!order) notFound();
 
@@ -80,6 +73,9 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isPaymentFailed = order.paymentStatus === "FAILED";
   const isPaid = order.paymentStatus === "SUCCESS";
   const isCod = order.paymentMethod === "COD";
+  const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
+  const isRedirectUnfinished =
+    isAwaitingPayment && (paymentQuery === "cancelled" || paymentQuery === "failed");
 
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);
@@ -168,14 +164,18 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     ? "Order Cancelled"
                     : isPaymentFailed
                       ? "Payment Incomplete"
-                      : `Thank you, ${firstName || "Customer"}!`}
+                      : isRedirectUnfinished
+                        ? "Payment Incomplete"
+                        : `Thank you, ${firstName || "Customer"}!`}
                 </h1>
                 <p className="mt-1 text-xs text-neutral-500 sm:text-sm">
                   {isCancelled
                     ? "This order was cancelled. Reserved inventory was released and no funds were debited."
-                    : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
-                        order.customerEmail || "your email"
-                      }.`}
+                    : isRedirectUnfinished
+                      ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway settlement.`
+                      : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
+                          order.customerEmail || "your email"
+                        }.`}
                 </p>
               </div>
 
@@ -188,7 +188,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
               </div>
             </div>
 
-            {/* Live Progress Tracker / Cancellation State */}
+            {/* Live Progress Tracker / Cancellation State / Payment Notice */}
             {isCancelled ? (
               <div className="mt-6 flex items-center gap-3.5 rounded-xl border border-rose-200 bg-rose-50/70 p-4">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700">
@@ -205,7 +205,23 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 </div>
               </div>
             ) : (
-              <div className="border-vl-dark-900/6 mt-6 border-t pt-6">
+              <>
+                {isRedirectUnfinished && (
+                  <div className="mt-6 flex items-center gap-3.5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                      <AlertCircle className="size-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold tracking-wider text-amber-900 uppercase">
+                        Payment Not Confirmed
+                      </h4>
+                      <p className="mt-0.5 text-xs text-amber-700">
+                        The payment gateway reported a cancelled or incomplete session. Your order remains pending until final confirmation or expiration. You can check status or retry from your account orders.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                <div className="border-vl-dark-900/6 mt-6 border-t pt-6">
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
                   {steps.map((st, i) => (
                     <div key={st.id} className="relative flex flex-col items-start gap-1">
@@ -240,7 +256,8 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   ))}
                 </div>
               </div>
-            )}
+            </>
+          )}
           </div>
 
           {/* 2. Purchased Items Section & Financial Calculation */}
