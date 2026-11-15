@@ -10,6 +10,13 @@ const deleteAccountSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+class AccountDeletionBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AccountDeletionBlockedError";
+  }
+}
+
 export async function deleteAccountAction(data: { password?: string }) {
   try {
     const user = await requireUser();
@@ -51,16 +58,111 @@ export async function deleteAccountAction(data: { password?: string }) {
     }
 
     // Account Deletion Transaction
-    // As reviewed, the schema allows safe deletion.
-    // Order, Cart, AuditLog use SetNull on userId.
-    // Address, Session, Account, Review, Tokens use Cascade.
-    await prisma.$transaction([
-      prisma.session.deleteMany({ where: { userId: user.id } }),
-      prisma.user.delete({ where: { id: user.id } }),
-    ]);
+    // Encapsulate row locking, active checks, cart purge, session revocation,
+    // audit log creation and user deletion atomically to eliminate race conditions.
+    await prisma.$transaction(async (tx) => {
+      // 0. Acquire exclusive row locks in consistent hierarchy:
+      // a. User record (serializes against checkout and concurrent account updates)
+      await tx.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${user.id} FOR UPDATE`;
+
+      // b. All Order records belonging to user (serializes against concurrent return request creation and status updates)
+      await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "userId" = ${user.id} FOR UPDATE`;
+
+      // c. All Payment records belonging to user's orders (serializes against concurrent refund processing)
+      await tx.$queryRaw`
+        SELECT p."id"
+        FROM "Payment" p
+        JOIN "Order" o ON p."orderId" = o."id"
+        WHERE o."userId" = ${user.id}
+        FOR UPDATE
+      `;
+
+      // 1. Guard: Check active / in-transit orders (evaluated AFTER row locks are acquired)
+      const activeOrders = await tx.order.count({
+        where: {
+          userId: user.id,
+          status: {
+            in: [
+              "PENDING",
+              "CONFIRMED",
+              "PROCESSING",
+              "SHIPPED",
+              "RETURN_REQUESTED",
+              "RETURN_PROCESSING",
+            ],
+          },
+        },
+      });
+
+      if (activeOrders > 0) {
+        throw new AccountDeletionBlockedError(
+          "Cannot delete account while you have active, processing, or in-transit orders."
+        );
+      }
+
+      // 2. Guard: Check active return requests (PENDING, APPROVED, RECEIVED) (evaluated AFTER row locks are acquired)
+      const activeReturns = await tx.returnRequest.count({
+        where: {
+          order: { userId: user.id },
+          status: {
+            in: ["PENDING", "APPROVED", "RECEIVED"],
+          },
+        },
+      });
+
+      if (activeReturns > 0) {
+        throw new AccountDeletionBlockedError(
+          "Cannot delete account while you have active return requests in progress."
+        );
+      }
+
+      // 3. Guard: Check active refunds (PENDING, PROCESSING) (evaluated AFTER row locks are acquired)
+      const activeRefunds = await tx.refund.count({
+        where: {
+          payment: { order: { userId: user.id } },
+          status: {
+            in: ["PENDING", "PROCESSING"],
+          },
+        },
+      });
+
+      if (activeRefunds > 0) {
+        throw new AccountDeletionBlockedError(
+          "Cannot delete account while you have pending or processing refunds."
+        );
+      }
+
+      // 4. Purge active cart
+      await tx.cart.deleteMany({ where: { userId: user.id } });
+
+      // 5. Invalidate all active sessions
+      await tx.session.deleteMany({ where: { userId: user.id } });
+
+      // 6. Record audit log entry before deleting user
+      await tx.auditLog.create({
+        data: {
+          actorId: user.id,
+          action: "CUSTOMER_SELF_DELETED",
+          entityType: "User",
+          entityId: user.id,
+          metadata: {
+            deletedUserId: user.id,
+            email: user.email,
+            name: user.name,
+            reason: "Customer self-service account deletion",
+          },
+        },
+      });
+
+      // 7. Delete user record (Order and AuditLog use SetNull; Address, Review, Tokens use Cascade)
+      await tx.user.delete({ where: { id: user.id } });
+    });
 
     return { success: true };
   } catch (error) {
+    if (error instanceof AccountDeletionBlockedError) {
+      return { error: error.message };
+    }
     console.error("Account deletion error:", error);
     return { error: "An unexpected error occurred." };
   }

@@ -3,8 +3,27 @@ import crypto from "crypto";
 import prisma from "@/lib/prisma/client";
 
 /**
+ * Redacts a phone number for safe logging (e.g., "+88017****1234" or "017****1234").
+ * Safely accepts string, null, undefined, and unexpected runtime values.
+ * Returns "****" for null, undefined, non-string, and empty/whitespace input.
+ */
+export function maskPhoneNumber(phone?: unknown): string {
+  if (typeof phone !== "string") {
+    return "****";
+  }
+  const clean = phone.trim();
+  if (clean.length <= 4) {
+    return "****";
+  }
+  if (clean.length <= 8) {
+    return `${clean.slice(0, 2)}****${clean.slice(-2)}`;
+  }
+  return `${clean.slice(0, 5)}****${clean.slice(-3)}`;
+}
+
+/**
  * Generate and dispatch a 6-digit numeric OTP for phone verification.
- * In development, logs the OTP prominently to the server console and returns it for frictionless testing.
+ * In development, logs the OTP to the server console and returns it for local testing.
  */
 export async function sendOtp(phone: string): Promise<{ success: boolean; devOtp?: string }> {
   // Generate cryptographically random 6-digit numeric OTP
@@ -26,17 +45,22 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; devOtp
     },
   });
 
-  // Highlight OTP in console for local development and testing
-  console.log(
-    `\n┌───────────────────────────────────────────────┐\n` +
-      `│ 📱 [VibeLock SMS Gateway - Development Mode]    │\n` +
-      `│ Phone: ${phone.padEnd(38)} │\n` +
-      `│ OTP Code: ${rawOtp.padEnd(35)} │\n` +
-      `│ Valid for: 5 minutes                          │\n` +
-      `└───────────────────────────────────────────────┘\n`
-  );
+  // Strictly only return devOtp in local development environment
+  const isDev = process.env.NODE_ENV === "development";
 
-  const isDev = process.env.NODE_ENV !== "production";
+  // Highlight OTP in console for local development and testing with masked phone
+  if (isDev) {
+    const maskedPhone = maskPhoneNumber(phone);
+    console.log(
+      `\n┌───────────────────────────────────────────────┐\n` +
+        `│ 📱 [VibeLock SMS Gateway - Development Mode]    │\n` +
+        `│ Phone: ${maskedPhone.padEnd(38)} │\n` +
+        `│ OTP Code: ${rawOtp.padEnd(35)} │\n` +
+        `│ Valid for: 5 minutes                          │\n` +
+        `└───────────────────────────────────────────────┘\n`
+    );
+  }
+
   return { success: true, devOtp: isDev ? rawOtp : undefined };
 }
 
@@ -88,11 +112,15 @@ export async function sendSmsNotification({
 
   const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
 
-  // Safe developer / audit logging
+  // Safe developer / audit logging (masks phone and OTP digits)
   if (process.env.NODE_ENV !== "production") {
-    console.log(
-      `📱 [SMS Simulation - ${purpose.toUpperCase()}] To: ${cleanPhone} | Body: "${message}"`
-    );
+    if (process.env.NODE_ENV === "development") {
+      const maskedPhone = maskPhoneNumber(cleanPhone);
+      const sanitizedBody = message.replace(/\b\d{4,8}\b/g, "******");
+      console.log(
+        `📱 [SMS Simulation - ${purpose.toUpperCase()}] To: ${maskedPhone} | Body: "${sanitizedBody}"`
+      );
+    }
     return true;
   }
 
@@ -103,7 +131,7 @@ export async function sendSmsNotification({
 
     if (!smsApiKey) {
       console.warn(
-        `[SMS] SMS_API_KEY not configured in production. SMS notification skipped for ${cleanPhone}.`
+        `[SMS] SMS_API_KEY not configured in production. SMS notification skipped for ${maskPhoneNumber(cleanPhone)}.`
       );
       return false;
     }

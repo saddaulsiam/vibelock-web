@@ -300,4 +300,137 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
       expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
     });
   });
+
+  describe("3. In-Transaction User Row Locking for ALL Checkout Methods (SEC-9-06)", () => {
+    test("acquires exclusive User row lock before Cart or Order creation when paymentMethod is ONLINE", async () => {
+      mockIsPaymentMethodEnabled.mockResolvedValue(true);
+      vi.mocked(getCart).mockResolvedValueOnce({
+        id: "cart-online",
+        totalQuantity: 1,
+        subtotal: 100,
+        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+      } as any);
+
+      const queryLog: string[] = [];
+      mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
+        const sql = query?.strings?.join(" ") || String(query);
+        if (sql.includes('"User"')) {
+          queryLog.push("lock:User");
+          return [{ id: "cust-uuid-101", codBlocked: false }];
+        }
+        if (sql.includes('"Cart"')) {
+          queryLog.push("lock:Cart");
+          return [{ id: "cart-online" }];
+        }
+        return [];
+      });
+
+      mockPrisma.cart.findUnique.mockImplementation(async (args: any) => {
+        if (args?.select?.id) return { id: "cart-online" };
+        return {
+          id: "cart-online",
+          items: [],
+        };
+      });
+
+      await createOrderAction(
+        { ...validCheckoutPayload, paymentMethod: "ONLINE" },
+        "idempotency-key-online-lock-test"
+      );
+
+      expect(queryLog).toContain("lock:User");
+      expect(queryLog[0]).toBe("lock:User");
+    });
+
+    test("acquires exclusive User row lock before Cart or Order creation when paymentMethod is BKASH or NAGAD", async () => {
+      mockIsPaymentMethodEnabled.mockResolvedValue(true);
+      vi.mocked(getCart).mockResolvedValueOnce({
+        id: "cart-bkash",
+        totalQuantity: 1,
+        subtotal: 100,
+        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+      } as any);
+
+      const queryLog: string[] = [];
+      mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
+        const sql = query?.strings?.join(" ") || String(query);
+        if (sql.includes('"User"')) {
+          queryLog.push("lock:User");
+          return [{ id: "cust-uuid-101", codBlocked: false }];
+        }
+        return [];
+      });
+
+      mockPrisma.cart.findUnique.mockImplementation(async (args: any) => {
+        if (args?.select?.id) return { id: "cart-bkash" };
+        return { id: "cart-bkash", items: [] };
+      });
+
+      await createOrderAction(
+        { ...validCheckoutPayload, paymentMethod: "BKASH" },
+        "idempotency-key-bkash-lock-test"
+      );
+
+      expect(queryLog).toContain("lock:User");
+      expect(queryLog[0]).toBe("lock:User");
+    });
+
+    test("allows online checkout even if customer has codBlocked = true, without throwing COD_RESTRICTED", async () => {
+      mockIsPaymentMethodEnabled.mockResolvedValue(true);
+      vi.mocked(getCart).mockResolvedValueOnce({
+        id: "cart-online-blocked",
+        totalQuantity: 1,
+        subtotal: 100,
+        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+      } as any);
+
+      mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
+        const sql = query?.strings?.join(" ") || String(query);
+        if (sql.includes('"User"')) {
+          return [{ id: "cust-uuid-101", codBlocked: true }];
+        }
+        return [{ id: "cart-online-blocked" }];
+      });
+
+      mockPrisma.cart.findUnique.mockImplementation(async (args: any) => {
+        if (args?.select?.id) return { id: "cart-online-blocked" };
+        return { id: "cart-online-blocked", items: [] };
+      });
+
+      const result = await createOrderAction(
+        { ...validCheckoutPayload, paymentMethod: "ONLINE" },
+        "idempotency-key-online-not-blocked"
+      );
+
+      expect(result.error).not.toBe("Cash on delivery is not available for your account. Please choose another payment method.");
+      expect(result.error).toBe("Your cart is empty.");
+    });
+
+    test("fails closed if customer is not found or was deleted during checkout lock acquisition", async () => {
+      mockIsPaymentMethodEnabled.mockResolvedValue(true);
+      vi.mocked(getCart).mockResolvedValueOnce({
+        id: "cart-missing-user",
+        totalQuantity: 1,
+        subtotal: 100,
+        items: [{ id: "ci-1", variantId: "v-1", quantity: 1, availableQuantity: 5, variant: { available: true } } as any],
+      } as any);
+
+      mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
+        const sql = query?.strings?.join(" ") || String(query);
+        if (sql.includes('"User"')) {
+          return [];
+        }
+        return [{ id: "cart-missing-user" }];
+      });
+
+      const result = await createOrderAction(
+        { ...validCheckoutPayload, paymentMethod: "ONLINE" },
+        "idempotency-key-user-deleted"
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Customer account not found or no longer active.");
+      expect(mockPrisma.order.create).not.toHaveBeenCalled();
+    });
+  });
 });

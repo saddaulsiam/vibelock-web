@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
+import { validateImageFile, AVATAR_ALLOWED_IMAGE_MIMES } from "@/lib/media/validation";
 
 const addressSchema = z.object({
   label: z.string().trim().max(50).optional(),
@@ -25,8 +26,25 @@ const profileSchema = z.object({
     .refine(
       (val) => {
         if (!val) return true;
+        const lower = val.toLowerCase();
+        // Disallow SVG or script payload injection in user avatar
+        if (
+          lower.includes("image/svg") ||
+          lower.endsWith(".svg") ||
+          lower.includes("<svg") ||
+          lower.includes("<script")
+        ) {
+          return false;
+        }
         if (val.startsWith("/")) return true;
-        if (val.startsWith("data:image/")) return true;
+        if (
+          val.startsWith("data:image/jpeg;base64,") ||
+          val.startsWith("data:image/jpg;base64,") ||
+          val.startsWith("data:image/png;base64,") ||
+          val.startsWith("data:image/webp;base64,")
+        ) {
+          return true;
+        }
         try {
           const parsed = new URL(val);
           return parsed.protocol === "http:" || parsed.protocol === "https:";
@@ -34,7 +52,7 @@ const profileSchema = z.object({
           return false;
         }
       },
-      { message: "Must be a valid image URL or path" }
+      { message: "Must be a valid JPG, PNG, or WebP image URL (SVG is not permitted)" }
     )
     .nullable()
     .optional()
@@ -174,14 +192,13 @@ export async function uploadAvatarAction(formData: FormData) {
     return { success: false, error: "Please select an image file to upload." };
   }
 
-  // Validate image MIME type
-  if (!file.type.startsWith("image/")) {
-    return { success: false, error: "Only image files (JPEG, PNG, WebP) are supported." };
-  }
+  // Strictly validate avatar with magic bytes, allowed formats (JPEG, PNG, WebP), and reject SVGs
+  const validation = await validateImageFile(file, {
+    allowedMimes: AVATAR_ALLOWED_IMAGE_MIMES,
+  });
 
-  // Max 5MB
-  if (file.size > 5 * 1024 * 1024) {
-    return { success: false, error: "Image file size must not exceed 5MB." };
+  if (!validation.valid) {
+    return { success: false, error: validation.error || "Invalid avatar image file." };
   }
 
   try {
@@ -193,11 +210,12 @@ export async function uploadAvatarAction(formData: FormData) {
       return { success: true, url: uploadRes.url };
     }
 
-    // Local fallback: Base64 data URL
+    // Local fallback: Base64 data URL using the detected safe MIME
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const base64Data = buffer.toString("base64");
-    const dataUrl = `data:${file.type};base64,${base64Data}`;
+    const mime = validation.detectedMime || "image/jpeg";
+    const dataUrl = `data:${mime};base64,${base64Data}`;
     return { success: true, url: dataUrl };
   } catch (err) {
     console.error("[uploadAvatarAction] Error:", err);

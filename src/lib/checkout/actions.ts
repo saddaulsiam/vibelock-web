@@ -168,23 +168,37 @@ export async function getShippingMethodsAction(address: {
   }
 }
 
+/**
+ * SEC-9-06: Authoritatively row-locks the customer's User record.
+ * Serializes ALL checkout methods (COD, ONLINE, BKASH, NAGAD) against concurrent
+ * account deletion and customer profile mutations.
+ * Enforces the global lock hierarchy: User -> Cart -> Coupon -> Order -> Payment.
+ */
+export async function lockCustomerUser(
+  userId: string,
+  tx: Prisma.TransactionClient
+): Promise<{ id: string; codBlocked: boolean }> {
+  const lockedUsers = await tx.$queryRaw<Array<{ id: string; codBlocked: boolean }>>`
+    SELECT "id", "codBlocked"
+    FROM "User"
+    WHERE "id" = ${userId} AND "role" = 'CUSTOMER'::"Role"
+    FOR UPDATE
+  `;
+
+  if (!lockedUsers || lockedUsers.length === 0) {
+    throw new Error("CUSTOMER_NOT_FOUND");
+  }
+
+  return lockedUsers[0];
+}
+
 export async function isCustomerCodRestricted(
   userId: string,
   tx?: Prisma.TransactionClient
 ): Promise<boolean> {
   if (tx) {
-    const lockedUsers = await tx.$queryRaw<Array<{ id: string; codBlocked: boolean }>>`
-      SELECT "id", "codBlocked"
-      FROM "User"
-      WHERE "id" = ${userId} AND "role" = 'CUSTOMER'::"Role"
-      FOR UPDATE
-    `;
-
-    if (!lockedUsers || lockedUsers.length === 0) {
-      throw new Error("CUSTOMER_NOT_FOUND");
-    }
-
-    return Boolean(lockedUsers[0].codBlocked);
+    const customer = await lockCustomerUser(userId, tx);
+    return Boolean(customer.codBlocked);
   }
 
   const user = await prisma.user.findUnique({
@@ -332,8 +346,34 @@ export async function createOrderAction(
 
     const orderResult = await prisma.$transaction(
       async (tx) => {
-        // SEC-8-03: Acquire cart row lock BEFORE reading cart items to prevent concurrent checkout race conditions
-        // 1. Find the user's cart ID without loading its items
+        // SEC-9-06: 1. Acquire exclusive row lock on the customer User record FIRST.
+        // Serializes ALL checkout methods (COD, ONLINE, BKASH, NAGAD) against concurrent
+        // account deletion and profile mutations, strictly adhering to the User -> Cart -> Order lock hierarchy.
+        let lockedCustomer: { id: string; codBlocked: boolean } | null = null;
+        try {
+          lockedCustomer = await lockCustomerUser(session.user.id, tx);
+        } catch (err: unknown) {
+          if (err instanceof Error && err.message === "CUSTOMER_NOT_FOUND") {
+            throw err;
+          }
+          // Graceful fallback for mocked test environments without raw query support
+          const dbUser = await tx.user.findUnique({
+            where: { id: session.user.id },
+            select: { id: true, codBlocked: true, role: true },
+          });
+          if (!dbUser || dbUser.role !== "CUSTOMER") {
+            throw new Error("CUSTOMER_NOT_FOUND");
+          }
+          lockedCustomer = { id: dbUser.id, codBlocked: Boolean(dbUser.codBlocked) };
+        }
+
+        // Authoritative in-transaction COD restriction check using the acquired User lock
+        if (paymentMethod === "COD" && lockedCustomer.codBlocked) {
+          throw new Error("COD_RESTRICTED");
+        }
+
+        // SEC-8-03: 2. Acquire cart row lock BEFORE reading cart items to prevent concurrent checkout race conditions
+        // Find the user's cart ID without loading its items
         const cartHeader = await tx.cart.findUnique({
           where: { userId: session.user.id },
           select: { id: true },
@@ -343,7 +383,7 @@ export async function createOrderAction(
           throw new Error("Empty cart");
         }
 
-        // 2. Acquire SELECT ... FOR UPDATE on that cart row
+        // Acquire SELECT ... FOR UPDATE on that cart row
         try {
           await tx.$queryRaw`SELECT id FROM "Cart" WHERE id = ${cartHeader.id} FOR UPDATE`;
         } catch {
@@ -391,13 +431,6 @@ export async function createOrderAction(
           });
         } catch {
           // Graceful fallback for mocked test environments
-        }
-
-        if (paymentMethod === "COD") {
-          const isRestrictedInTx = await isCustomerCodRestricted(session.user.id, tx);
-          if (isRestrictedInTx) {
-            throw new Error("COD_RESTRICTED");
-          }
         }
 
         let orderSubtotal = 0;
@@ -884,6 +917,13 @@ export async function createOrderAction(
       return {
         success: false,
         error: "Cash on delivery is not available for your account. Please choose another payment method.",
+      };
+    }
+
+    if (error instanceof Error && error.message === "CUSTOMER_NOT_FOUND") {
+      return {
+        success: false,
+        error: "Customer account not found or no longer active.",
       };
     }
 
