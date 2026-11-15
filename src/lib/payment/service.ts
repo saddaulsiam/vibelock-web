@@ -27,35 +27,208 @@ export class PaymentService {
 
   async initiatePayment(order: Order, gateway: string): Promise<PaymentInitiationResponse> {
     const provider = this.getProvider(gateway);
+    const normalizedGateway = normalizePaymentGateway(gateway);
 
-    const request = {
-      orderId: order.id,
-      orderNumber: order.orderNumber,
-      amount: Number(order.total),
-      customerName: order.customerName || "Customer",
-      customerEmail: order.customerEmail,
-      customerPhone: order.customerPhone || "00000000000",
-      shippingStreet: order.shippingStreet,
-      shippingCity: order.shippingCity,
-      shippingZip: order.shippingZip || "1000",
-      shippingCountry: order.shippingCountry,
-    };
+    // Step 1: Pre-initiation short transaction
+    // Authoritatively verifies order state and serializes concurrent initiation attempts
+    // WITHOUT holding any database transaction open during subsequent external gateway calls.
+    const preCheck = await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+      const currentOrder = await tx.order.findUnique({
+        where: { id: order.id },
+      });
 
-    const response = await provider.initiatePayment(request);
+      if (!currentOrder) {
+        return { status: "ERROR" as const, error: "Order not found" };
+      }
+      if (currentOrder.paymentStatus === "SUCCESS") {
+        return { status: "ERROR" as const, error: "Order is already paid" };
+      }
+      if (currentOrder.status === "CANCELLED") {
+        return { status: "ERROR" as const, error: "Cannot initiate payment for a cancelled order" };
+      }
 
-    if (response.success && response.merchantReferenceId) {
-      // Create Payment record in INITIATED state
-      await prisma.payment.create({
-        data: {
+      // Handle stale PENDING placeholders safely across ALL gateways (> 30s old)
+      // This ensures abandoned, crashed, or dropped initiations do not permanently block subsequent attempts.
+      await tx.payment.updateMany({
+        where: {
           orderId: order.id,
-          amount: request.amount,
-          status: "INITIATED",
-          gateway: normalizePaymentGateway(gateway),
-          merchantReferenceId: response.merchantReferenceId,
+          status: "PENDING",
+          createdAt: { lte: new Date(Date.now() - 30 * 1000) },
+        },
+        data: {
+          status: "FAILED",
+          gatewayPayload: {
+            error: "Payment initiation timed out (stale pending placeholder cleaned up)",
+          },
         },
       });
 
-      // We don't update Order.paymentStatus yet, it stays PENDING until actual payment is successful
+      // Check if another concurrent initiation is actively in flight (< 30s) across ALL gateways
+      const activePending = await tx.payment.findFirst({
+        where: {
+          orderId: order.id,
+          status: "PENDING",
+          createdAt: { gt: new Date(Date.now() - 30 * 1000) },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (activePending) {
+        return {
+          status: "IN_FLIGHT" as const,
+          error: "A payment initiation is already in progress for this order. Please wait a moment.",
+        };
+      }
+
+      // Check for active INITIATED payment across ALL gateways within reservation TTL window (15 mins)
+      const existingInitiated = await tx.payment.findFirst({
+        where: {
+          orderId: order.id,
+          status: "INITIATED",
+          createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (existingInitiated?.merchantReferenceId) {
+        if (existingInitiated.gateway === normalizedGateway) {
+          // Same gateway: reuse active payment attempt if redirectUrl exists
+          const payload = existingInitiated.gatewayPayload as Record<string, unknown> | null;
+          if (typeof payload?.redirectUrl === "string" && payload.redirectUrl) {
+            return {
+              status: "REUSE" as const,
+              response: {
+                success: true,
+                redirectUrl: payload.redirectUrl,
+                merchantReferenceId: existingInitiated.merchantReferenceId,
+              },
+            };
+          }
+        } else {
+          // Different gateway: safely cancel the old active session across other gateways
+          await tx.payment.updateMany({
+            where: {
+              orderId: order.id,
+              status: "INITIATED",
+              gateway: { not: normalizedGateway },
+            },
+            data: {
+              status: "CANCELLED",
+              gatewayPayload: {
+                cancellationReason: `Superseded by new payment initiation via ${normalizedGateway}`,
+              },
+            },
+          });
+        }
+      }
+
+      // Create a PENDING placeholder to serialize and reserve the initiation slot
+      const placeholder = await tx.payment.create({
+        data: {
+          orderId: currentOrder.id,
+          amount: Number(currentOrder.total),
+          status: "PENDING",
+          gateway: normalizedGateway,
+        },
+      });
+
+      return {
+        status: "PROCEED" as const,
+        placeholderId: placeholder.id,
+        orderData: {
+          orderId: currentOrder.id,
+          orderNumber: currentOrder.orderNumber,
+          amount: Number(currentOrder.total),
+          customerName: currentOrder.customerName || "Customer",
+          customerEmail: currentOrder.customerEmail,
+          customerPhone: currentOrder.customerPhone || "00000000000",
+          shippingStreet: currentOrder.shippingStreet,
+          shippingCity: currentOrder.shippingCity,
+          shippingZip: currentOrder.shippingZip || "1000",
+          shippingCountry: currentOrder.shippingCountry,
+        },
+      };
+    });
+
+    if (preCheck.status === "REUSE") {
+      return preCheck.response;
+    }
+    if (preCheck.status === "ERROR" || preCheck.status === "IN_FLIGHT") {
+      return { success: false, error: preCheck.error };
+    }
+
+    const { placeholderId, orderData } = preCheck;
+
+    // Step 2: External gateway call strictly OUTSIDE any database transaction
+    let response: PaymentInitiationResponse;
+    try {
+      response = await provider.initiatePayment(orderData);
+    } catch (networkErr) {
+      await prisma.payment
+        .update({
+          where: { id: placeholderId },
+          data: {
+            status: "FAILED",
+            gatewayPayload: {
+              error:
+                networkErr instanceof Error ? networkErr.message : "Network error during initiation",
+            },
+          },
+        })
+        .catch(() => {});
+      throw networkErr;
+    }
+
+    // Step 3: Post-initiation short transaction
+    // Atomically updates the placeholder to INITIATED or FAILED
+    if (response.success && response.merchantReferenceId) {
+      await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${order.id} FOR UPDATE`;
+        const latestOrder = await tx.order.findUnique({
+          where: { id: order.id },
+          select: { status: true, paymentStatus: true },
+        });
+
+        if (latestOrder?.paymentStatus === "SUCCESS" || latestOrder?.status === "CANCELLED") {
+          // Order was paid or cancelled while external call was in flight
+          await tx.payment.update({
+            where: { id: placeholderId },
+            data: {
+              status: "CANCELLED",
+              merchantReferenceId: response.merchantReferenceId,
+              gatewayPayload: {
+                redirectUrl: response.redirectUrl,
+                cancellationReason: `Order transitioned to ${latestOrder.status}/${latestOrder.paymentStatus} during initiation`,
+              },
+            },
+          });
+          return;
+        }
+
+        await tx.payment.update({
+          where: { id: placeholderId },
+          data: {
+            status: "INITIATED",
+            merchantReferenceId: response.merchantReferenceId,
+            gatewayPayload: {
+              redirectUrl: response.redirectUrl,
+            },
+          },
+        });
+      });
+    } else {
+      await prisma.payment
+        .update({
+          where: { id: placeholderId },
+          data: {
+            status: "FAILED",
+            gatewayPayload: {
+              error: response.error || "Gateway rejected initiation",
+            },
+          },
+        })
+        .catch(() => {});
     }
 
     return response;
@@ -252,6 +425,8 @@ export class PaymentService {
       throw new Error("Payment verification failed");
     }
 
+    let shouldSendConfirmationEmail = false;
+
     // Wrap the final update in a transaction
     await prisma.$transaction(async (tx) => {
       // Clean payload
@@ -268,6 +443,16 @@ export class PaymentService {
       delete safePayload.signature;
       delete safePayload.merchantPrivateKey;
       delete safePayload.pgPublicKey;
+
+      // Concurrency lock: row-lock Order first to serialize against cancellation or concurrent callbacks
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${payment.orderId} FOR UPDATE`;
+      const currentOrder = await tx.order.findUnique({
+        where: { id: payment.orderId },
+        include: { items: true },
+      });
+      if (!currentOrder) {
+        throw new Error("Order not found");
+      }
 
       // 1. Atomic update of Payment:
       // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).
@@ -299,21 +484,116 @@ export class PaymentService {
         return;
       }
 
-      // 2. Update Order status
+      // 2. Process SUCCESS callback
       if (verification.status === "SUCCESS") {
+        // Finding PAY-5B-02 / Requirement 1: Late Gateway Success on CANCELLED order
+        // Never silently reactivate a cancelled order, never mutate or deduct inventory.
+        if (currentOrder.status === "CANCELLED") {
+          console.warn(
+            `[PaymentService] Late payment verified successful for CANCELLED order ${payment.orderId}. ` +
+              `Recording funds captured (trx: ${verification.providerTransactionId}) without reactivating order or mutating inventory.`
+          );
+
+          await tx.order.update({
+            where: { id: payment.orderId },
+            data: { paymentStatus: "SUCCESS" },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: "CANCELLED",
+              notes: `[LATE_PAYMENT_ON_CANCELLED_ORDER] Late payment verified successful via ${gateway} (trxId: ${verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}) after order was cancelled. Inventory was not deducted. Requires administrative review / refund.`,
+            },
+          });
+
+          if (typeof tx.auditLog?.create === "function") {
+            await tx.auditLog.create({
+              data: {
+                actorId: currentOrder.userId || null,
+                action: "LATE_PAYMENT_ON_CANCELLED_ORDER",
+                entityType: "Order",
+                entityId: payment.orderId,
+                metadata: {
+                  gateway,
+                  merchantReferenceId,
+                  providerTransactionId: verification.providerTransactionId,
+                  amount: Number(payment.amount),
+                  orderStatus: currentOrder.status,
+                },
+              },
+            });
+          }
+
+          return;
+        }
+
+        // Finding PAY-5B-03 / Requirement 3: Second successful gateway payment (Duplicate payment)
+        // Record funds as captured, flag for manual refund reconciliation, never deduct inventory twice.
+        const priorSuccessfulPayment =
+          typeof tx.payment.findFirst === "function"
+            ? await tx.payment.findFirst({
+                where: {
+                  orderId: payment.orderId,
+                  status: "SUCCESS",
+                  id: { not: payment.id },
+                },
+              })
+            : null;
+
+        if (priorSuccessfulPayment) {
+          console.warn(
+            `[PaymentService] Duplicate successful payment captured for order ${payment.orderId}. ` +
+              `Current payment: ${payment.id} (trx: ${verification.providerTransactionId}), Prior payment: ${priorSuccessfulPayment.id}. ` +
+              `Flagging for duplicate-payment / manual-refund reconciliation without duplicate inventory deduction.`
+          );
+
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: { paymentStatus: "SUCCESS" },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: currentOrder.status,
+              notes: `[DUPLICATE_PAYMENT] Second successful payment captured via ${gateway} (trxId: ${verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}). Prior payment: ${priorSuccessfulPayment.merchantReferenceId}. Flagged for duplicate-payment / manual-refund reconciliation.`,
+            },
+          });
+
+          if (typeof tx.auditLog?.create === "function") {
+            await tx.auditLog.create({
+              data: {
+                actorId: currentOrder.userId || null,
+                action: "DUPLICATE_PAYMENT_CAPTURED",
+                entityType: "Payment",
+                entityId: payment.id,
+                metadata: {
+                  orderId: payment.orderId,
+                  orderNumber: currentOrder.orderNumber,
+                  gateway,
+                  merchantReferenceId,
+                  providerTransactionId: verification.providerTransactionId,
+                  amount: Number(payment.amount),
+                  priorPaymentId: priorSuccessfulPayment.id,
+                  priorPaymentRef: priorSuccessfulPayment.merchantReferenceId,
+                },
+              },
+            });
+          }
+
+          return;
+        }
+
+        // Standard first SUCCESS path
         await tx.order.updateMany({
           where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
           data: { paymentStatus: "SUCCESS" },
         });
 
         // Load order and items for inventory processing
-        const orderWithItems = await tx.order.findUnique({
-          where: { id: payment.orderId },
-          include: { items: true },
-        });
-
-        if (orderWithItems && orderWithItems.items.length > 0) {
-          const skus = orderWithItems.items.map((i) => i.sku);
+        if (currentOrder.items.length > 0) {
+          const skus = currentOrder.items.map((i) => i.sku);
           const variants = await tx.productVariant.findMany({
             where: { sku: { in: skus } },
             select: { id: true, sku: true },
@@ -352,7 +632,7 @@ export class PaymentService {
               const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
 
               let hasOversell = false;
-              for (const item of orderWithItems.items) {
+              for (const item of currentOrder.items) {
                 const variantId = skuToVariant.get(item.sku);
                 if (variantId) {
                   const available = await inventoryService.calculateAvailableQuantity(
@@ -382,13 +662,13 @@ export class PaymentService {
                   data: {
                     orderId: payment.orderId,
                     status: "PENDING",
-                    notes: `[OVERSELL RISK] Payment succeeded after prior cancellation or reservation expiry, but stock was insufficient. Flagged for manual review.`,
+                    notes: `[OVERSELL RISK] Payment succeeded after reservation expiry, but stock was insufficient. Flagged for manual review.`,
                   },
                 });
               } else {
                 // Stock is safely available under row lock: commit reservations and record SALE ledger entries
                 const quantityByVariant = new Map<string, number>();
-                for (const item of orderWithItems.items) {
+                for (const item of currentOrder.items) {
                   const variantId = skuToVariant.get(item.sku);
                   if (variantId) {
                     quantityByVariant.set(
@@ -417,6 +697,8 @@ export class PaymentService {
             }
           }
         }
+
+        shouldSendConfirmationEmail = true;
       } else if (verification.status === "FAILED" || verification.status === "CANCELLED") {
         await tx.order.updateMany({
           where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
@@ -446,7 +728,11 @@ export class PaymentService {
     });
     if (!order) throw new Error("Order not found");
 
-    if (verification.status === "SUCCESS" && (order as { customerEmail?: string }).customerEmail) {
+    if (
+      verification.status === "SUCCESS" &&
+      shouldSendConfirmationEmail &&
+      (order as { customerEmail?: string }).customerEmail
+    ) {
       try {
         const fullOrder = order as unknown as {
           orderNumber: string;

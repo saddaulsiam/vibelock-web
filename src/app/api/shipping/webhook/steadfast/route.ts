@@ -146,11 +146,48 @@ export async function POST(req: NextRequest) {
     const service = new ShippingService(new SteadfastCourierProvider());
     const updated = await service.updateShipmentStatus(shipment.id, mappedStatus);
 
-    // If parcel is confirmed DELIVERED and was COD, reconcile payment status to SUCCESS
+    // Reconcile COD payment semantics
+    // Requirement 5 / PAY-5B-05: The documented Steadfast webhook contract communicates parcel transit
+    // and delivery status. It does not establish authoritative courier cash collection or bank remittance.
+    // As documented in docs/AppFlow.md and error_handling.md, DELIVERED status alone must NOT mark COD
+    // payment SUCCESS. Payment reconciliation remains pending courier remittance confirmation.
     if (mappedStatus === "DELIVERED" && shipment.order?.paymentMethod === "COD") {
-      await prisma.order.updateMany({
-        where: { id: shipment.orderId, paymentStatus: { not: "SUCCESS" } },
-        data: { paymentStatus: "SUCCESS" },
+      await prisma.$transaction(async (tx) => {
+        await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${shipment.orderId} FOR UPDATE`;
+        const currentOrder = await tx.order.findUnique({
+          where: { id: shipment.orderId },
+        });
+
+        if (!currentOrder) return;
+
+        // If order was cancelled or returned, NEVER mark payment status SUCCESS
+        if (currentOrder.status === "CANCELLED" || currentOrder.status === "RETURNED") {
+          console.warn(
+            `[Steadfast Webhook] Parcel delivered for terminal ${currentOrder.status} order ${currentOrder.id}. ` +
+              `Payment status will NOT be transitioned to SUCCESS.`
+          );
+          await tx.orderHistory.create({
+            data: {
+              orderId: currentOrder.id,
+              status: currentOrder.status,
+              notes: `[ANOMALY] Steadfast delivery webhook received for ${currentOrder.status} order. Payment was not marked SUCCESS.`,
+            },
+          });
+          return;
+        }
+
+        // Keep COD payment reconciliation pending for financial remittance verification.
+        console.info(
+          `[Steadfast Webhook] Parcel delivered for COD order ${currentOrder.id}. ` +
+            `Steadfast delivery webhook does not establish authoritative cash remittance. Leaving payment reconciliation pending.`
+        );
+        await tx.orderHistory.create({
+          data: {
+            orderId: currentOrder.id,
+            status: currentOrder.status,
+            notes: `Parcel delivered via Steadfast (CID: ${consignmentId || shipment.providerShipmentId || "N/A"}). COD cash collection remains pending courier remittance confirmation.`,
+          },
+        });
       });
     }
 
