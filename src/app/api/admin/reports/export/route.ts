@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { ForbiddenError, AuthRequiredError, requireRole } from "@/lib/auth/authorization";
 import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/reports";
+
+const reportsExportQuerySchema = z.object({
+  type: z.enum(["sales", "products", "orders"]).optional().default("sales"),
+  range: z.enum(["7d", "30d", "90d", "12m", "all", "custom"]).optional().default("30d"),
+  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)").optional(),
+  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)").optional(),
+  sort: z.string().trim().max(50, "Sort parameter must not exceed 50 characters").optional(),
+  search: z.string().trim().max(100, "Search parameter must not exceed 100 characters").optional(),
+});
 
 export function csvCell(value: unknown) {
   const rawText = value === null || value === undefined ? "" : String(value);
@@ -9,16 +19,6 @@ export function csvCell(value: unknown) {
 }
 export function csv(rows: unknown[][]) {
   return `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
-}
-function filters(request: NextRequest) {
-  const search = request.nextUrl.searchParams;
-  return {
-    range: search.get("range") ?? "30d",
-    from: search.get("from") ?? undefined,
-    to: search.get("to") ?? undefined,
-    sort: search.get("sort") ?? undefined,
-    search: search.get("q") ?? undefined,
-  };
 }
 function date(value: Date) {
   return value.toISOString().slice(0, 10);
@@ -30,9 +30,32 @@ function filename(type: string, start: Date, end: Date) {
 export async function GET(request: NextRequest) {
   try {
     await requireRole("MANAGER", { throw: true });
-    const type = request.nextUrl.searchParams.get("type") ?? "sales";
-    const report = await getAdminReport(filters(request));
-    const currentFilters = filters(request);
+
+    const searchParams = request.nextUrl.searchParams;
+    const rawFrom = searchParams.get("from") || undefined;
+    const rawTo = searchParams.get("to") || undefined;
+    const rawSort = searchParams.get("sort") || undefined;
+    const rawSearch = searchParams.get("q") || undefined;
+
+    const parseResult = reportsExportQuerySchema.safeParse({
+      type: searchParams.get("type") ?? undefined,
+      range: searchParams.get("range") ?? undefined,
+      from: rawFrom,
+      to: rawTo,
+      sort: rawSort,
+      search: rawSearch,
+    });
+
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid export parameters", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { type, range, from, to, sort, search } = parseResult.data;
+    const currentFilters = { range, from, to, sort, search };
+    const report = await getAdminReport(currentFilters);
     let rows: unknown[][] = [];
     if (type === "sales")
       rows = [

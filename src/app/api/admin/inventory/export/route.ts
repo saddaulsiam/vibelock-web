@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { AuthRequiredError, ForbiddenError, requireRole } from "@/lib/auth/authorization";
 import { getAdminInventoryForExport, type InventoryFilter } from "@/lib/admin/inventory";
+
+const inventoryExportQuerySchema = z.object({
+  search: z.string().trim().max(100, "Search query must not exceed 100 characters").optional(),
+  filter: z
+    .enum(["all", "in-stock", "low-stock", "out-of-stock", "negative"])
+    .optional()
+    .default("all"),
+});
 
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -16,27 +25,29 @@ export function csv(rows: unknown[][]): string {
   return `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
 }
 
-function parseFilter(filter: string | null): InventoryFilter {
-  if (
-    filter === "in-stock" ||
-    filter === "low-stock" ||
-    filter === "out-of-stock" ||
-    filter === "negative"
-  ) {
-    return filter;
-  }
-  return "all";
-}
-
 export async function GET(request: NextRequest) {
   try {
     await requireRole("MANAGER", { throw: true });
 
     const searchParams = request.nextUrl.searchParams;
-    const search = searchParams.get("q") ?? searchParams.get("search") ?? undefined;
-    const filter = parseFilter(searchParams.get("filter"));
+    const rawSearch = searchParams.get("q") ?? searchParams.get("search") ?? undefined;
+    const rawFilter = searchParams.get("filter") ?? undefined;
 
-    const result = await getAdminInventoryForExport({ search, filter });
+    const parseResult = inventoryExportQuerySchema.safeParse({
+      search: rawSearch || undefined,
+      filter: rawFilter || undefined,
+    });
+
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid export query parameters", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { search, filter } = parseResult.data;
+
+    const result = await getAdminInventoryForExport({ search, filter: filter as InventoryFilter });
 
     const dateStr = new Date().toISOString().slice(0, 10);
     const filterSuffix = filter !== "all" ? `-${filter}` : "";
