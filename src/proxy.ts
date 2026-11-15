@@ -29,12 +29,12 @@ export function proxy(request: NextRequest) {
   const nonce = randomBytes(18).toString("base64");
   const policy = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com`,
     "style-src 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data: blob: https://res.cloudinary.com",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://*.googleusercontent.com",
     "font-src 'self'",
-    "connect-src 'self'",
+    "connect-src 'self' https://vitals.vercel-insights.com",
     "form-action 'self' https://sandbox.sslcommerz.com https://securepay.sslcommerz.com",
     "base-uri 'self'",
     "object-src 'none'",
