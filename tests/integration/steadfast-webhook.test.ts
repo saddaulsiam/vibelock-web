@@ -85,7 +85,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     expect(data.message).toContain("ping acknowledged");
   });
 
-  test("processes delivery status update: delivered status alone leaves COD payment pending until explicit collection confirmation", async () => {
+  test("processes documented Steadfast delivery status update: updates shipment and order status, but keeps COD payment PENDING for remittance reconciliation", async () => {
     // 1. Create a test order and shipment
     const orderNumber = `TEST-STED-${Date.now()}`;
     const testCid = `CID-${Date.now()}`;
@@ -122,7 +122,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
       },
     });
 
-    // 2. Deliver event via HMAC signature with status "delivered" ALONE (no explicit cod_status)
+    // 2. Deliver event via HMAC signature using documented Steadfast payload format
     const event = {
       notification_type: "delivery_status",
       consignment_id: testCid,
@@ -137,37 +137,39 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     expect(data.success).toBe(true);
     expect(data.newStatus).toBe("DELIVERED");
 
-    // 3. Verify database state: order is DELIVERED, but paymentStatus remains PENDING (Requirement 5)
+    // 3. Verify database state: shipment and order become DELIVERED, but paymentStatus remains PENDING
     const updatedShipment = await prisma.shipment.findUniqueOrThrow({ where: { id: shipment.id } });
     expect(updatedShipment.status).toBe("DELIVERED");
     expect(updatedShipment.deliveredAt).not.toBeNull();
 
     const orderAfterDelivery = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
     expect(orderAfterDelivery.status).toBe("DELIVERED");
-    expect(orderAfterDelivery.paymentStatus).toBe("PENDING"); // Remittance unverified; stays pending
+    expect(orderAfterDelivery.paymentStatus).toBe("PENDING"); // Documented contract does not confirm remittance
 
-    // 4. Send explicit COD collection confirmation event
-    const collectionEvent = {
+    // 4. Send payload with unverified/undocumented collection fields (e.g. spoofed cod_status or payment_status)
+    const spoofedEvent = {
       notification_type: "delivery_status",
       consignment_id: testCid,
       invoice: orderNumber,
       status: "delivered",
       cod_status: "collected",
+      payment_status: "paid",
     };
 
-    const collectionReq = createSignedRequest(collectionEvent);
-    const collectionRes = await steadfastWebhook(collectionReq);
-    expect(collectionRes.status).toBe(200);
+    const spoofedReq = createSignedRequest(spoofedEvent);
+    const spoofedRes = await steadfastWebhook(spoofedReq);
+    expect(spoofedRes.status).toBe(200);
 
-    const orderAfterCollection = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
-    expect(orderAfterCollection.paymentStatus).toBe("SUCCESS"); // Reconciled on explicit confirmation
+    // Payment MUST still remain PENDING (undocumented collection fields are never trusted as authoritative)
+    const orderAfterSpoofed = await prisma.order.findUniqueOrThrow({ where: { id: order.id } });
+    expect(orderAfterSpoofed.paymentStatus).toBe("PENDING");
 
     // Cleanup
     await prisma.shipment.delete({ where: { id: shipment.id } });
     await prisma.order.delete({ where: { id: order.id } });
   });
 
-  test("never marks COD payment SUCCESS on a CANCELLED order even if collection is received", async () => {
+  test("never marks COD payment SUCCESS on a CANCELLED order", async () => {
     const orderNumber = `TEST-CANCEL-${Date.now()}`;
     const testCid = `CID-CAN-${Date.now()}`;
 
@@ -208,7 +210,6 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
       consignment_id: testCid,
       invoice: orderNumber,
       status: "delivered",
-      cod_status: "collected",
     };
 
     const req = createSignedRequest(event);

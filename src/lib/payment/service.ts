@@ -48,11 +48,43 @@ export class PaymentService {
         return { status: "ERROR" as const, error: "Cannot initiate payment for a cancelled order" };
       }
 
-      // Check for reusable active INITIATED payment within reservation TTL window (15 mins)
+      // Handle stale PENDING placeholders safely across ALL gateways (> 30s old)
+      // This ensures abandoned, crashed, or dropped initiations do not permanently block subsequent attempts.
+      await tx.payment.updateMany({
+        where: {
+          orderId: order.id,
+          status: "PENDING",
+          createdAt: { lte: new Date(Date.now() - 30 * 1000) },
+        },
+        data: {
+          status: "FAILED",
+          gatewayPayload: {
+            error: "Payment initiation timed out (stale pending placeholder cleaned up)",
+          },
+        },
+      });
+
+      // Check if another concurrent initiation is actively in flight (< 30s) across ALL gateways
+      const activePending = await tx.payment.findFirst({
+        where: {
+          orderId: order.id,
+          status: "PENDING",
+          createdAt: { gt: new Date(Date.now() - 30 * 1000) },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (activePending) {
+        return {
+          status: "IN_FLIGHT" as const,
+          error: "A payment initiation is already in progress for this order. Please wait a moment.",
+        };
+      }
+
+      // Check for active INITIATED payment across ALL gateways within reservation TTL window (15 mins)
       const existingInitiated = await tx.payment.findFirst({
         where: {
           orderId: order.id,
-          gateway: normalizedGateway,
           status: "INITIATED",
           createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
         },
@@ -60,35 +92,35 @@ export class PaymentService {
       });
 
       if (existingInitiated?.merchantReferenceId) {
-        const payload = existingInitiated.gatewayPayload as Record<string, unknown> | null;
-        if (typeof payload?.redirectUrl === "string" && payload.redirectUrl) {
-          return {
-            status: "REUSE" as const,
-            response: {
-              success: true,
-              redirectUrl: payload.redirectUrl,
-              merchantReferenceId: existingInitiated.merchantReferenceId,
+        if (existingInitiated.gateway === normalizedGateway) {
+          // Same gateway: reuse active payment attempt if redirectUrl exists
+          const payload = existingInitiated.gatewayPayload as Record<string, unknown> | null;
+          if (typeof payload?.redirectUrl === "string" && payload.redirectUrl) {
+            return {
+              status: "REUSE" as const,
+              response: {
+                success: true,
+                redirectUrl: payload.redirectUrl,
+                merchantReferenceId: existingInitiated.merchantReferenceId,
+              },
+            };
+          }
+        } else {
+          // Different gateway: safely cancel the old active session across other gateways
+          await tx.payment.updateMany({
+            where: {
+              orderId: order.id,
+              status: "INITIATED",
+              gateway: { not: normalizedGateway },
             },
-          };
+            data: {
+              status: "CANCELLED",
+              gatewayPayload: {
+                cancellationReason: `Superseded by new payment initiation via ${normalizedGateway}`,
+              },
+            },
+          });
         }
-      }
-
-      // Check if another concurrent initiation is actively in flight (PENDING placeholder in last 30s)
-      const existingPending = await tx.payment.findFirst({
-        where: {
-          orderId: order.id,
-          gateway: normalizedGateway,
-          status: "PENDING",
-          createdAt: { gt: new Date(Date.now() - 30 * 1000) },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      if (existingPending) {
-        return {
-          status: "IN_FLIGHT" as const,
-          error: "A payment initiation is already in progress for this order. Please wait a moment.",
-        };
       }
 
       // Create a PENDING placeholder to serialize and reserve the initiation slot

@@ -237,13 +237,17 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
       };
 
       mockPrisma.order.findUnique.mockResolvedValueOnce(pendingOrder);
-      mockPrisma.payment.findFirst.mockResolvedValueOnce({
-        id: "pay-existing-active",
-        status: "INITIATED",
-        merchantReferenceId: "SSLC-ACTIVE-REF-1",
-        gatewayPayload: { redirectUrl: "https://sandbox.sslcommerz.com/gwprocess/active-session" },
-        createdAt: new Date(),
-      });
+      mockPrisma.payment.findFirst
+        .mockResolvedValueOnce(null) // activePending (< 30s) is null
+        .mockResolvedValueOnce({
+          // existingInitiated (15m)
+          id: "pay-existing-active",
+          status: "INITIATED",
+          gateway: "SSLCOMMERZ",
+          merchantReferenceId: "SSLC-ACTIVE-REF-1",
+          gatewayPayload: { redirectUrl: "https://sandbox.sslcommerz.com/gwprocess/active-session" },
+          createdAt: new Date(),
+        });
 
       const mockProvider = {
         initiatePayment: vi.fn(),
@@ -258,6 +262,109 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
       expect(response.merchantReferenceId).toBe("SSLC-ACTIVE-REF-1");
       // External provider call was skipped because active session was reused!
       expect(mockProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    test("blocks concurrent cross-gateway payment initiation for the same order (e.g. BKASH in-flight blocks SSLCOMMERZ)", async () => {
+      const paymentService = new PaymentService();
+      const pendingOrder: any = {
+        id: "ord-concurrent-cross",
+        orderNumber: "VL-CROSS-01",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        total: 1500,
+      };
+
+      mockPrisma.order.findUnique.mockResolvedValueOnce(pendingOrder);
+      // Active PENDING placeholder exists across gateways (created 5 seconds ago by BKASH)
+      mockPrisma.payment.findFirst.mockResolvedValueOnce({
+        id: "pay-bkash-inflight",
+        orderId: "ord-concurrent-cross",
+        status: "PENDING",
+        gateway: "BKASH",
+        createdAt: new Date(Date.now() - 5 * 1000),
+      });
+
+      const mockSslProvider = {
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockSslProvider as any);
+
+      // Concurrent request attempts SSLCOMMERZ for the same order
+      const response = await paymentService.initiatePayment(pendingOrder, "SSLCOMMERZ");
+
+      expect(response.success).toBe(false);
+      expect(response.error).toContain("A payment initiation is already in progress for this order");
+      // Network call must NOT be made!
+      expect(mockSslProvider.initiatePayment).not.toHaveBeenCalled();
+    });
+
+    test("safely cleans up stale PENDING placeholders exceeding 30 seconds and proceeds with new initiation", async () => {
+      const paymentService = new PaymentService();
+      const pendingOrder: any = {
+        id: "ord-stale-pending",
+        orderNumber: "VL-STALE-01",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        total: 2500,
+      };
+
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(pendingOrder) // Step 1 preCheck
+        .mockResolvedValueOnce(pendingOrder); // Step 3 post-initiation check
+
+      // updateMany cleans up stale records
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      // findFirst for activePending (< 30s) returns null (stale placeholder was > 30s)
+      mockPrisma.payment.findFirst
+        .mockResolvedValueOnce(null) // activePending (< 30s)
+        .mockResolvedValueOnce(null); // existingInitiated (15m)
+
+      mockPrisma.payment.create.mockResolvedValueOnce({
+        id: "pay-new-placeholder-123",
+        status: "PENDING",
+        gateway: "BKASH",
+      });
+
+      const mockBkashProvider = {
+        initiatePayment: vi.fn(async () => ({
+          success: true,
+          redirectUrl: "https://sandbox.bkash.com/checkout/fresh-url",
+          merchantReferenceId: "BKASH-FRESH-123",
+        })),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockBkashProvider as any);
+
+      const response = await paymentService.initiatePayment(pendingOrder, "BKASH");
+
+      expect(response.success).toBe(true);
+      expect(response.redirectUrl).toBe("https://sandbox.bkash.com/checkout/fresh-url");
+
+      // Verify stale placeholders were cleaned up to FAILED
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            orderId: "ord-stale-pending",
+            status: "PENDING",
+          }),
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayPayload: expect.objectContaining({
+              error: expect.stringContaining("stale pending placeholder cleaned up"),
+            }),
+          }),
+        })
+      );
+
+      // Verify new payment was finalized to INITIATED
+      expect(mockPrisma.payment.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "pay-new-placeholder-123" },
+          data: expect.objectContaining({
+            status: "INITIATED",
+            merchantReferenceId: "BKASH-FRESH-123",
+          }),
+        })
+      );
     });
 
     test("second successful gateway payment captures funds but flags DUPLICATE_PAYMENT without double-deducting stock", async () => {

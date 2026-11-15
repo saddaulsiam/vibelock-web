@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
-import { Prisma, ShipmentStatus } from "@prisma/client";
+import { ShipmentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
 import prisma from "@/lib/prisma/client";
 import { ShippingService } from "@/lib/shipping/service";
@@ -61,47 +61,6 @@ function verifyAuth(req: NextRequest, rawBody: string, secret?: string): boolean
 }
 
 const MAX_STEADFAST_WEBHOOK_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
-
-function hasTrustworthyCodCollectionConfirmation(
-  payload: Record<string, unknown>,
-  expectedAmount?: number
-): boolean {
-  // 1. Explicit COD collection status indicators from provider
-  const codStatus =
-    typeof payload.cod_status === "string" ? payload.cod_status.toLowerCase().trim() : "";
-  const paymentStatus =
-    typeof payload.payment_status === "string" ? payload.payment_status.toLowerCase().trim() : "";
-  const notificationType =
-    typeof payload.notification_type === "string"
-      ? payload.notification_type.toLowerCase().trim()
-      : "";
-
-  const isExplicitCollected =
-    codStatus === "collected" ||
-    codStatus === "remitted" ||
-    paymentStatus === "paid" ||
-    paymentStatus === "collected" ||
-    notificationType === "payment_collected" ||
-    notificationType === "cod_collected" ||
-    notificationType === "cod_remitted";
-
-  if (isExplicitCollected) return true;
-
-  // 2. Explicit numeric collection verification: collected_amount matching expected amount
-  const rawCollected = payload.collected_amount ?? payload.cod_amount_collected;
-  const collectedAmount =
-    typeof rawCollected === "number" ? rawCollected : parseFloat(String(rawCollected || "0"));
-
-  if (Number.isFinite(collectedAmount) && collectedAmount > 0) {
-    if (expectedAmount && expectedAmount > 0) {
-      // Must match expected order total within 1.00 BDT tolerance
-      return Math.abs(collectedAmount - expectedAmount) <= 1.0;
-    }
-    return true;
-  }
-
-  return false;
-}
 
 export async function POST(req: NextRequest) {
   const bounded = await readBoundedBodyText(req, MAX_STEADFAST_WEBHOOK_BYTES);
@@ -188,16 +147,11 @@ export async function POST(req: NextRequest) {
     const updated = await service.updateShipmentStatus(shipment.id, mappedStatus);
 
     // Reconcile COD payment semantics
-    // Requirement 5: DELIVERED status alone must NOT mark COD payment SUCCESS.
-    // Require explicit, trustworthy COD collection confirmation from the provider.
-    // Otherwise leave payment reconciliation pending.
+    // Requirement 5 / PAY-5B-05: The documented Steadfast webhook contract communicates parcel transit
+    // and delivery status. It does not establish authoritative courier cash collection or bank remittance.
+    // As documented in docs/AppFlow.md and error_handling.md, DELIVERED status alone must NOT mark COD
+    // payment SUCCESS. Payment reconciliation remains pending courier remittance confirmation.
     if (mappedStatus === "DELIVERED" && shipment.order?.paymentMethod === "COD") {
-      const orderTotal = Number(shipment.order.total);
-      const isCodCollectionConfirmed = hasTrustworthyCodCollectionConfirmation(
-        payload,
-        orderTotal
-      );
-
       await prisma.$transaction(async (tx) => {
         await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${shipment.orderId} FOR UPDATE`;
         const currentOrder = await tx.order.findUnique({
@@ -222,51 +176,18 @@ export async function POST(req: NextRequest) {
           return;
         }
 
-        if (isCodCollectionConfirmed) {
-          if (currentOrder.paymentStatus !== "SUCCESS") {
-            await tx.order.update({
-              where: { id: currentOrder.id },
-              data: { paymentStatus: "SUCCESS" },
-            });
-
-            await tx.orderHistory.create({
-              data: {
-                orderId: currentOrder.id,
-                status: currentOrder.status,
-                notes: `Cash on Delivery payment collected and verified via Steadfast (Consignment: ${consignmentId || shipment.providerShipmentId || "N/A"}).`,
-              },
-            });
-
-            await tx.auditLog.create({
-              data: {
-                actorId: currentOrder.userId || null,
-                action: "COD_PAYMENT_RECONCILED",
-                entityType: "Order",
-                entityId: currentOrder.id,
-                metadata: {
-                  courier: "steadfast",
-                  consignmentId,
-                  trackingCode,
-                  payload: payload as Prisma.InputJsonValue,
-                },
-              },
-            });
-          }
-        } else {
-          // Requirement 5: DELIVERED status alone must NOT mark COD payment SUCCESS.
-          // Leave payment reconciliation pending and record note in order history.
-          console.info(
-            `[Steadfast Webhook] Parcel delivered for COD order ${currentOrder.id}. ` +
-              `Explicit COD collection confirmation was not provided in webhook. Payment remains ${currentOrder.paymentStatus}.`
-          );
-          await tx.orderHistory.create({
-            data: {
-              orderId: currentOrder.id,
-              status: currentOrder.status,
-              notes: `Parcel delivered via Steadfast (CID: ${consignmentId || shipment.providerShipmentId || "N/A"}). COD cash collection remains pending courier remittance confirmation.`,
-            },
-          });
-        }
+        // Keep COD payment reconciliation pending for financial remittance verification.
+        console.info(
+          `[Steadfast Webhook] Parcel delivered for COD order ${currentOrder.id}. ` +
+            `Steadfast delivery webhook does not establish authoritative cash remittance. Leaving payment reconciliation pending.`
+        );
+        await tx.orderHistory.create({
+          data: {
+            orderId: currentOrder.id,
+            status: currentOrder.status,
+            notes: `Parcel delivered via Steadfast (CID: ${consignmentId || shipment.providerShipmentId || "N/A"}). COD cash collection remains pending courier remittance confirmation.`,
+          },
+        });
       });
     }
 
