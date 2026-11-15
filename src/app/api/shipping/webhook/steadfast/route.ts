@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { ShipmentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
@@ -28,27 +29,51 @@ const statusMap: Record<string, ShipmentStatus> = {
   returned: "RETURNED",
 };
 
+const steadfastWebhookPayloadSchema = z
+  .object({
+    notification_type: z.string().max(50).optional(),
+    event: z.string().max(50).optional(),
+    consignment_id: z.union([z.string().max(100), z.number()]).optional(),
+    cid: z.union([z.string().max(100), z.number()]).optional(),
+    tracking_code: z.string().max(100).optional(),
+    invoice: z.string().max(100).optional(),
+    status: z.string().max(100).optional(),
+    delivery_status: z.string().max(100).optional(),
+  })
+  .passthrough();
+
 function verifyAuth(req: NextRequest, rawBody: string, secret?: string): boolean {
   if (!secret) {
     // If no secret configured in env, allow webhook in non-production
     return process.env.NODE_ENV !== "production";
   }
 
-  // 1. Check Bearer Token in Authorization header
+  // 1. Check Bearer Token in Authorization header (constant-time comparison)
   const authHeader = req.headers.get("authorization");
   if (authHeader && authHeader.startsWith("Bearer ")) {
     const token = authHeader.slice(7).trim();
-    if (token === secret) return true;
+    const tokenBuf = Buffer.from(token);
+    const secretBuf = Buffer.from(secret);
+    if (
+      tokenBuf.length === secretBuf.length &&
+      crypto.timingSafeEqual(tokenBuf, secretBuf)
+    ) {
+      return true;
+    }
   }
 
-  // 2. Check X-Signature / x-signature HMAC-SHA256
+  // 2. Check X-Signature / x-signature HMAC-SHA256 (constant-time comparison)
   const signature = req.headers.get("x-signature") || req.headers.get("x-courier-signature");
   if (signature) {
     try {
       const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
+      const suppliedBuf = /^[a-f\d]{64}$/i.test(signature)
+        ? Buffer.from(signature, "hex")
+        : Buffer.alloc(0);
+      const expectedBuf = Buffer.from(expected, "hex");
       if (
-        signature.length === expected.length &&
-        crypto.timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"))
+        suppliedBuf.length === expectedBuf.length &&
+        crypto.timingSafeEqual(suppliedBuf, expectedBuf)
       ) {
         return true;
       }
@@ -76,12 +101,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized Steadfast webhook request" }, { status: 401 });
   }
 
-  let payload: Record<string, unknown>;
+  let rawJson: unknown;
   try {
-    payload = JSON.parse(rawBody);
+    rawJson = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
+
+  const parseResult = steadfastWebhookPayloadSchema.safeParse(rawJson);
+  if (!parseResult.success) {
+    return NextResponse.json({ error: "Invalid payload format" }, { status: 400 });
+  }
+
+  const payload = parseResult.data as Record<string, unknown>;
 
   // Handle test ping from Steadfast dashboard
   const notificationType = String(payload.notification_type || payload.event || "").toLowerCase();

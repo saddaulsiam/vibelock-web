@@ -267,6 +267,11 @@ export class PaymentService {
       throw new Error("Missing transaction reference");
     }
 
+    if (merchantReferenceId.length > 128) {
+      console.error("[PaymentService] Transaction reference exceeds maximum allowed length");
+      throw new Error("Invalid transaction reference");
+    }
+
     // Find the payment record
     const payment = await prisma.payment.findUnique({
       where: { merchantReferenceId },

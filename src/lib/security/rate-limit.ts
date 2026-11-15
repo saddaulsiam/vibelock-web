@@ -25,7 +25,8 @@ export type RateLimitEndpoint =
   | "resendVerification"
   | "verifyEmail"
   | "sessionManagement"
-  | "accountDeletion";
+  | "accountDeletion"
+  | "search";
 
 interface LimitConfig {
   max: number;
@@ -44,6 +45,7 @@ const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   verifyEmail: { max: 5, windowMs: 60 * 60 * 1000 },
   sessionManagement: { max: 10, windowMs: 15 * 60 * 1000 },
   accountDeletion: { max: 3, windowMs: 60 * 60 * 1000 },
+  search: { max: 60, windowMs: 60 * 1000 },
 };
 
 // In-memory sliding window rate limiter store
@@ -112,6 +114,9 @@ const sessionManagementLimiter = redis
 const accountDeletionLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
   : null;
+const searchLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true })
+  : null;
 
 /**
  * Resolves the client IP address from trusted reverse-proxy headers.
@@ -153,9 +158,9 @@ export async function getIp(): Promise<string | null> {
 export async function checkRateLimit(
   endpoint: RateLimitEndpoint,
   identityModifier?: string,
-  options?: { skipIp?: boolean }
+  options?: { skipIp?: boolean; explicitIp?: string }
 ) {
-  const resolvedIp = options?.skipIp ? "" : await getIp();
+  const resolvedIp = options?.skipIp ? "" : (options?.explicitIp ?? (await getIp()));
   const ip = resolvedIp ?? "";
   const identifier =
     options?.skipIp && identityModifier
@@ -208,6 +213,9 @@ export async function checkRateLimit(
         break;
       case "accountDeletion":
         limiter = accountDeletionLimiter;
+        break;
+      case "search":
+        limiter = searchLimiter;
         break;
     }
 

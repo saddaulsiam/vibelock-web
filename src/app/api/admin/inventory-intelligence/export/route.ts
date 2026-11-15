@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { AuthRequiredError, ForbiddenError, requireRole } from "@/lib/auth/authorization";
 import {
   getAdminInventoryIntelligenceForExport,
   type InventoryIntelligenceWindow,
 } from "@/lib/admin/inventory";
+
+const inventoryIntelligenceExportQuerySchema = z.object({
+  window: z.enum(["30d", "60d", "90d"]).optional().default("90d"),
+  status: z
+    .enum(["all", "negative", "out-of-stock", "stockout-risk", "dead", "slow", "healthy"])
+    .optional(),
+  search: z.string().trim().max(100, "Search parameter must not exceed 100 characters").optional(),
+  sort: z.enum(["valuation", "stock", "velocity", "age", "runout"]).optional(),
+});
 
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return "";
@@ -16,7 +26,7 @@ export function csvCell(value: unknown): string {
 }
 
 export function csv(rows: unknown[][]): string {
-  return `﻿${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
+  return `\uFEFF${rows.map((row) => row.map(csvCell).join(",")).join("\r\n")}\r\n`;
 }
 
 export async function GET(request: NextRequest) {
@@ -24,13 +34,26 @@ export async function GET(request: NextRequest) {
     await requireRole("MANAGER", { throw: true });
 
     const searchParams = request.nextUrl.searchParams;
-    const window = (searchParams.get("window") ?? "90d") as InventoryIntelligenceWindow;
-    const status = searchParams.get("status") ?? undefined;
-    const search = searchParams.get("q") ?? searchParams.get("search") ?? undefined;
-    const sort = searchParams.get("sort") ?? undefined;
+    const rawSearch = searchParams.get("q") ?? searchParams.get("search") ?? undefined;
+
+    const parseResult = inventoryIntelligenceExportQuerySchema.safeParse({
+      window: searchParams.get("window") ?? undefined,
+      status: searchParams.get("status") ?? undefined,
+      search: rawSearch || undefined,
+      sort: searchParams.get("sort") ?? undefined,
+    });
+
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Invalid export query parameters", details: parseResult.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const { window, status, search, sort } = parseResult.data;
 
     const result = await getAdminInventoryIntelligenceForExport({
-      window,
+      window: window as InventoryIntelligenceWindow,
       status,
       search,
       sort,
