@@ -211,7 +211,7 @@ export async function sendPhoneOtpAction(data: PhoneOtpRequestInput) {
     return {
       success: true,
       phone: parsed.phone,
-      devOtp: result.devOtp,
+      devOtp: process.env.NODE_ENV === "development" ? result.devOtp : undefined,
     };
   } catch (error) {
     if (error instanceof ZodError) {

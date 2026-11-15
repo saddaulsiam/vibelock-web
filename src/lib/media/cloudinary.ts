@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { validateImageFile } from "./validation";
 
 export function isCloudinaryConfigured(): boolean {
   return Boolean(
@@ -58,17 +59,10 @@ export async function uploadToCloudinary(
     };
   }
 
-  // 5MB limit
-  if (file.size > 5 * 1024 * 1024) {
-    return { success: false, error: "Image file size must be under 5MB." };
-  }
-
-  const allowedMimes = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
-  if (!allowedMimes.includes(file.type)) {
-    return {
-      success: false,
-      error: "Only JPG, PNG, WebP, GIF, or AVIF image files are supported.",
-    };
+  // Enforce size, MIME, magic bytes, and SVG rejection
+  const validation = await validateImageFile(file);
+  if (!validation.valid) {
+    return { success: false, error: validation.error || "Invalid image file." };
   }
 
   const timestamp = await getSynchronizedTimestamp();

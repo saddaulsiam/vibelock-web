@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
 import { ReturnService } from "./service";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
+import { validateImageFile } from "@/lib/media/validation";
 import { serializeReturnReason } from "./utils";
 
 const ReturnRequestSchema = z.object({
@@ -54,13 +55,9 @@ export async function uploadReturnProofAction(
     return { success: false, error: "No image file provided." };
   }
 
-  if (file.size > 5 * 1024 * 1024) {
-    return { success: false, error: "Image file size must be under 5MB." };
-  }
-
-  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/avif"];
-  if (!allowedTypes.includes(file.type)) {
-    return { success: false, error: "Only JPG, PNG, and WebP images are supported." };
+  const validation = await validateImageFile(file);
+  if (!validation.valid) {
+    return { success: false, error: validation.error || "Invalid image file." };
   }
 
   try {
@@ -74,7 +71,8 @@ export async function uploadReturnProofAction(
 
     // Local / development fallback if Cloudinary credentials are not in .env
     const buffer = Buffer.from(await file.arrayBuffer());
-    const base64 = `data:${file.type};base64,${buffer.toString("base64")}`;
+    const mime = validation.detectedMime || "image/jpeg";
+    const base64 = `data:${mime};base64,${buffer.toString("base64")}`;
     return { success: true, url: base64 };
   } catch (err) {
     console.error("[uploadReturnProofAction] Error:", err);
