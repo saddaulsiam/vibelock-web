@@ -98,6 +98,8 @@ export async function updateOrderStatusAction(
         });
         const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
         await inventoryService.cancelOrderInventory(id, tx);
+        const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
+        await releaseOrderCoupon(id, tx);
         await tx.orderHistory.create({
           data: {
             orderId: id,
@@ -153,6 +155,7 @@ export async function updateOrderStatusAction(
           ? message
           : [
                 "Only pending orders can be cancelled.",
+                "Only pending or confirmed orders prior to shipment can be cancelled.",
                 "Orders cannot be cancelled after shipment processing has started.",
                 "Paid orders cannot be cancelled online at this time.",
                 "Order has already committed stock and cannot be safely cancelled.",
@@ -283,8 +286,8 @@ export async function quickUpdateOrderStatusAction(input: {
         if (order.status === "CANCELLED") {
           throw new Error("Cancelled orders cannot be changed.");
         }
-        if (order.status !== "PENDING") {
-          throw new Error("Only pending orders can be cancelled.");
+        if (order.status !== "PENDING" && order.status !== "CONFIRMED") {
+          throw new Error("Only pending or confirmed orders prior to shipment can be cancelled.");
         }
         if (order.shipment) {
           throw new Error("Orders cannot be cancelled after shipment processing has started.");
@@ -312,6 +315,8 @@ export async function quickUpdateOrderStatusAction(input: {
         });
         const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
         await inventoryService.cancelOrderInventory(orderId, tx);
+        const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
+        await releaseOrderCoupon(orderId, tx);
         await tx.orderHistory.create({
           data: {
             orderId,

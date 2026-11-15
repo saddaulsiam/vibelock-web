@@ -214,16 +214,20 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         ],
       } as any);
 
-      // Cart mock inside transaction
-      mockPrisma.cart.findUnique.mockResolvedValueOnce({
+      // Cart mock inside transaction (supports cart ID lookup and subsequent items fetch under row lock)
+      mockPrisma.cart.findUnique.mockResolvedValue({
         id: "cart-1",
         items: [{ id: "item-1" }],
       });
 
-      // But in-transaction row lock reads newly committed codBlocked: true
-      mockPrisma.$queryRaw.mockResolvedValueOnce([
-        { id: "cust-uuid-101", codBlocked: true },
-      ]);
+      // Mock $queryRaw to handle Cart row lock first, then return newly committed codBlocked: true on User
+      mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
+        const sql = query?.strings?.join(" ") || String(query);
+        if (sql.includes('"Cart"')) {
+          return [{ id: "cart-1" }];
+        }
+        return [{ id: "cust-uuid-101", codBlocked: true }];
+      });
 
       const result = await createOrderAction(
         validCheckoutPayload,

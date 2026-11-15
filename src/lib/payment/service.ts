@@ -724,6 +724,8 @@ export class PaymentService {
         // Release reservation and restock if needed
         const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
         await inventoryService.cancelOrderInventory(payment.orderId, tx);
+        const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
+        await releaseOrderCoupon(payment.orderId, tx);
       }
     });
 

@@ -105,11 +105,15 @@ childEnv.DIRECT_URL = concurrencyDbUrl;
 
 // 8. Execute Vitest child process
 const extraArgs = process.argv.slice(2);
+const targetTests =
+  extraArgs.length > 0
+    ? extraArgs
+    : ["tests/integration/payment-lifecycle-concurrency.test.ts"];
+
 const vitestArgs = [
   "vitest",
   "run",
-  "tests/integration/payment-lifecycle-concurrency.test.ts",
-  ...extraArgs,
+  ...targetTests,
 ];
 
 const result = spawnSync("npx", vitestArgs, {

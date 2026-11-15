@@ -43,7 +43,11 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderIdentity.id} FOR UPDATE`;
       const order = await tx.order.findUnique({
         where: { id: orderIdentity.id },
-        include: { inventoryReservations: true, shipment: true },
+        include: {
+          inventoryReservations: true,
+          shipment: true,
+          payments: { select: { status: true } },
+        },
       });
       if (!order) return { success: false as const, error: "Order not found or access denied." };
       if (order.status === "CANCELLED") {
@@ -61,7 +65,10 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
       if (
         order.paymentStatus === "SUCCESS" ||
         order.paymentStatus === "REFUNDED" ||
-        order.paymentStatus === "PARTIALLY_REFUNDED"
+        order.paymentStatus === "PARTIALLY_REFUNDED" ||
+        order.payments?.some((p) =>
+          ["SUCCESS", "REFUNDED", "PARTIALLY_REFUNDED"].includes(p.status)
+        )
       ) {
         return {
           success: false as const,
@@ -108,6 +115,8 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
 
       const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
       await inventoryService.cancelOrderInventory(order.id, tx);
+      const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
+      await releaseOrderCoupon(order.id, tx);
       return { success: true as const, message: "Order successfully cancelled." };
     });
 
