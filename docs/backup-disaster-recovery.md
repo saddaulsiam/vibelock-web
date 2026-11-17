@@ -1,11 +1,11 @@
 # VibeLock — Backup Architecture & Disaster Recovery Runbook
 
-**Document Status:** ACTIVE IMPLEMENTATION (Manual-Only Rollout; Schedule Pending Verification)
+**Document Status:** ACTIVE IMPLEMENTATION (Manual Backup + Staging Restore Drill Verified; Schedule Still Disabled)
 **Target System:** VibeLock E-Commerce Platform (`saddaulsiam/vibelock-web`)
-**Repository Branch:** `feature/backup-automation`
+**Repository Branch:** `main`
 **Storage Destination:** Cloudflare R2 (`vibelock-db-backups`)
 **Automation Workflow:** `.github/workflows/backup-neon-to-r2.yml`
-**Last Updated:** November 2026
+**Last Updated:** November 18, 2026
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Component | Production Configuration | Operational Role & Constraints |
 | :--- | :--- | :--- |
-| **Database Engine** | PostgreSQL 16 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
+| **Database Engine** | PostgreSQL 18.7 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
 | **Cloud Region** | AWS Singapore (`ap-southeast-1`) | Database compute and storage endpoints located in Singapore. |
 | **Database Plan** | **Neon Free Plan ($0/month)** | Shared compute, subject to inactivity scale-to-zero. |
 | **Continuous PITR** | **6-Hour History Window** | Continuous WAL retention allows branching or rewinding within 6 hours. |
@@ -193,7 +193,7 @@ VibeLock uses [`age`](https://github.com/FiloSottile/age) for client-side encryp
 
 ### 5.1 Triggering a Manual Backup
 
-During the initial rollout phase, the workflow trigger is **MANUAL ONLY (`workflow_dispatch`)**. The daily automated schedule (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled through a separate pull request once a manual backup and staging restore drill are successfully verified.
+During the initial rollout phase, the workflow trigger is **MANUAL ONLY (`workflow_dispatch`)**. The daily automated schedule (`03:00 UTC` / `09:00 Asia/Dhaka`) remains disabled after the successful November 17, 2026 restore drill. Do not enable it automatically as part of this runbook update; obtain a separate owner decision.
 
 To trigger an immediate backup:
 
@@ -283,6 +283,77 @@ pg_restore --list vibelock-decrypted.dump | head -n 25
    ```bash
    rm -f vibelock-decrypted.dump
    ```
+
+
+### 5.5 Verified Restore Drill — November 17, 2026
+
+**Result: SUCCESS.** The manual Neon-to-R2 backup artifact was downloaded, integrity-checked, decrypted locally, validated with PostgreSQL 18 tools, and restored into the separate Neon project `VibeLock-Staging`.
+
+| Check | Verified result |
+| :--- | :--- |
+| Backup object | `postgres/vibelock-2026-11-17-164031.dump.age` |
+| Backup timestamp | 2026-11-17 16:40:31 UTC |
+| Encrypted artifact SHA-256 | `cf58b4c1657ec5395754c292b5f6cb68ad5bff782d309a73078697e4d548a538` |
+| Archive format | PostgreSQL custom format |
+| Source dump version | pg_dump 18.6; source PostgreSQL 18.7 |
+| Archive TOC | 204 entries (215 listed objects) |
+| Restore utility | pg_restore 18.6 |
+| Restore target | Neon project `VibeLock-Staging`, branch `Staging`, database `neondb` |
+| Target region | AWS Asia Pacific 1 (Singapore) |
+| Post-restore public tables | 35 |
+| Prisma migration records | 12 |
+| Restore command result | `STAGING RESTORE COMPLETED SUCCESSFULLY.` |
+
+**Production safety:** The restore was executed only against the separate staging project. No production database, production branch, production schema, or production migration was modified.
+
+**Important validation boundary:** The archive checksum, decryption, archive listing, restore completion, public table count, and Prisma migration count were verified. The SQL orphan-record and inventory-ledger queries in Section 6, plus application-level admin/order workflows, remain follow-up validation items; do not mark those checks complete until their outputs are recorded.
+
+### 5.6 Vercel Preview Isolation — Staging Branch
+
+Vercel project `vibelock` uses the Git branch `staging` for the staging Preview deployment. Environment variable scope was reviewed and adjusted on November 18, 2026:
+
+- `DATABASE_URL` and `DIRECT_URL` have branch-specific Preview entries for `staging`, in addition to generic Preview fallbacks. Confirm the branch-specific values point to the separate `VibeLock-Staging` Neon project before running database-backed tests. Secret values must never be copied into logs or this document.
+- `AUTH_SECRET` remains Preview-only and separate from the Production value.
+- bKash and SSLCOMMERZ credential variables are Production-only. The `staging` Preview branch has explicit `BKASH_SANDBOX=true` and `SSLCOMMERZ_SANDBOX=true` overrides.
+- `SHIPPING_PROVIDER` is Production-only. Courier webhook secret remains Production-only; do not add live courier credentials to Preview.
+- `RESEND_API_KEY`, `EMAIL_FROM`, Cloudinary write credentials, and Upstash credentials are Production-only in the reviewed configuration. No email/SMS gateway credentials should be added to Preview.
+- Production values were preserved; only environment targets were narrowed to Production and branch-scoped sandbox flags were added for Preview.
+
+**Code behavior note:** SMS dispatch is gated by `NODE_ENV === "production"` and requires `SMS_API_KEY`. Vercel Preview can run with production-mode Node settings, so Preview must not receive `SMS_API_KEY` or `SMS_API_URL`. The current reviewed Vercel environment list did not contain those SMS variables.
+
+**Deployment protection:** Keep Preview deployments protected. The Vercel project currently reports SSO protection enabled for deployments other than custom domains; do not add a public custom domain to staging. A restored production-data clone contains personal/customer/order data and must be treated as sensitive.
+
+**Operational note:** Environment-variable changes apply to new deployments. Redeploy the `staging` branch after changing Preview variables and verify the resulting deployment before testing. Never use a Preview deployment as evidence of Production health.
+
+
+### 5.7 Staging Preview HTTP Smoke-Test Snapshot — November 18, 2026
+
+The Vercel deployment for branch `staging` reached `READY` and returned HTTP responses for these unauthenticated GET requests:
+
+| Route | HTTP result | Interpretation |
+| :--- | :---: | :--- |
+| `/` | 200 | Storefront route responds |
+| `/products` | 200 | Product listing route responds |
+| `/category/t-shirts` | 200 | Category route responds |
+| `/login` | 200 | Login route responds |
+| `/register` | 200 | Registration route responds |
+| `/cart` | 200 | Cart route responds |
+| `/account` | 200 | Route responds; authenticated account behavior not verified |
+| `/account/orders` | 200 | Route responds; authenticated order data not verified |
+| `/admin` | 200 | Route responds; admin authorization not verified |
+| `/shop` | 404 | This path is not a valid route in the tested build; use `/products` |
+| `/api/health` | 404 | No health endpoint exists at this path in the tested build |
+
+All tested Preview responses included `X-Robots-Tag: noindex`.
+
+**Blocking findings before calling the staging drill application-complete:**
+
+1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release.
+2. The tested deployment was built from staging commit `9f536757feed09e939002a14c6c3d68592a7279f` (October 10, 2026), not a current post-restore application commit. Re-deploy the intended, current staging commit before functional testing.
+3. HTTP 200 alone does not prove that authentication, authorization, product queries, cart persistence, checkout, order history, or admin workflows work. Those require browser/session tests using designated staging accounts and non-live integrations.
+4. Do not test real payment capture, real SMS/email delivery, or courier dispatch from staging. Use sandbox credentials and mocked courier behavior only.
+
+This snapshot is a route-level smoke test, not a full end-to-end acceptance test.
 
 ---
 
