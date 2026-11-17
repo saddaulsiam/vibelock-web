@@ -153,7 +153,7 @@ jobs:
           aws s3 cp "$CHECKSUM_FILE" "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
             --endpoint-url "$R2_ENDPOINT"
 
-          # 5. Verify upload integrity on remote bucket
+          # 5. Verify upload integrity on remote bucket via SHA-256 round-trip
           echo "Verifying object existence on Cloudflare R2..."
           aws s3 ls "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" \
             --endpoint-url "$R2_ENDPOINT"
@@ -161,12 +161,28 @@ jobs:
           aws s3 ls "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
             --endpoint-url "$R2_ENDPOINT"
 
+          echo "Downloading remote encrypted dump from Cloudflare R2 for round-trip SHA-256 verification..."
+          VERIFY_DOWNLOAD="${BACKUP_DIR}/verify-${BASENAME}.dump.age"
+          aws s3 cp "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" "$VERIFY_DOWNLOAD" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          REMOTE_CHECKSUM=$(sha256sum "$VERIFY_DOWNLOAD" | awk '{print $1}')
+          rm -f "$VERIFY_DOWNLOAD"
+
+          echo "Remote object SHA-256: ${REMOTE_CHECKSUM}"
+          if [ "$REMOTE_CHECKSUM" != "$CHECKSUM_VALUE" ]; then
+            echo "::error::Integrity check failed: Remote SHA-256 (${REMOTE_CHECKSUM}) does not match local checksum (${CHECKSUM_VALUE})!"
+            exit 1
+          fi
+          echo "Integrity verification PASSED: Remote object SHA-256 matches expected checksum."
+
           echo "========================================================"
           echo "VibeLock Backup Pipeline Completed Successfully!"
           echo "Object Name:     ${TARGET_DUMP_KEY}"
           echo "Checksum Object: ${TARGET_CHECKSUM_KEY}"
           echo "Encrypted Size:  ${ENCRYPTED_SIZE} bytes"
           echo "SHA-256:         ${CHECKSUM_VALUE}"
+          echo "Remote Verified: Verified matching SHA-256 from Cloudflare R2"
           echo "Retention:       7-Day Cloudflare R2 Lifecycle Managed"
           echo "========================================================"
 
