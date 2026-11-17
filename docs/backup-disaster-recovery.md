@@ -19,7 +19,7 @@
 | **Cloud Region** | AWS Singapore (`ap-southeast-1`) | Database compute and storage endpoints located in Singapore. |
 | **Database Plan** | **Neon Free Plan ($0/month)** | Shared compute, subject to inactivity scale-to-zero. |
 | **Continuous PITR** | **6-Hour History Window** | Continuous WAL retention allows branching or rewinding within 6 hours. |
-| **Connections** | Pooled (`DATABASE_URL`, port 5432) & Direct (`DIRECT_URL`, port 5432) | `DATABASE_URL` connects via PgBouncer; `DIRECT_URL` connects unpooled directly to compute. |
+| **Connections** | Pooled (`DATABASE_URL`, port 5432) & Direct (`DIRECT_URL`, port 5432) | `DATABASE_URL` connects via PgBouncer (used by Vercel serverless runtime for pooled app queries); `DIRECT_URL` connects unpooled directly to compute (used for Prisma migrations and GitHub Actions `pg_dump` backups). |
 | **Hosting Platform** | Vercel (Edge & Serverless Node.js runtime) | Next.js App Router connected via environment secrets. |
 | **ORM / Data Access** | Prisma ORM | Schema in `prisma/schema.prisma`; migrations via `prisma migrate deploy`. |
 | **Offsite Backup Storage** | **Cloudflare R2 (`vibelock-db-backups`)** | Private S3-compatible object storage located in APAC region. |
@@ -38,7 +38,7 @@
 
 The automated backup architecture implements a zero-trust, offsite storage strategy:
 
-$$\text{Neon PostgreSQL} \xrightarrow[\text{SSL Unpooled}]{\text{pg\_dump -Fc}} \text{Plaintext Dump} \xrightarrow[\text{Recipient Key}]{\text{age encryption}} \text{Encrypted Dump} \xrightarrow[\text{S3 API}]{\text{Upload}} \text{Cloudflare R2}$$
+$$\text{Neon PostgreSQL (DIRECT\_URL)} \xrightarrow[\text{SSL Unpooled}]{\text{pg\_dump -Fc}} \text{Plaintext Dump} \xrightarrow[\text{Recipient Key}]{\text{age encryption}} \text{Encrypted Dump} \xrightarrow[\text{S3 API}]{\text{Upload}} \text{Cloudflare R2} \xrightarrow[\text{Verify}]{\text{Download \& Hash}} \text{SHA-256 Match}$$
 
 ```mermaid
 flowchart TD
@@ -53,11 +53,13 @@ flowchart TD
         Dump["pg_dump -Fc (Max Compression)\nSecure Temp Dir (chmod 700)"]
         Encrypt["age Public-Key Encryption\n(BACKUP_AGE_RECIPIENT)"]
         Purge["Immediate Plaintext Deletion"]
-        Checksum["SHA-256 Checksum Calculation\n(*.dump.age.sha256)"]
+        Checksum["Local SHA-256 Checksum\n(*.dump.age.sha256)"]
         Upload["AWS CLI Upload\n(R2 S3-Compatible API)"]
-        Verify["Remote Upload Verification\n(aws s3 ls check)"]
+        VerifyRemote["Remote Existence Check\n(aws s3 ls)"]
+        DownloadVerify["Remote Artifact Download\n(aws s3 cp to verify)"]
+        CompareChecksum["Integrity Verification\n(Remote Hash == Local Hash)"]
 
-        Trigger --> Dump --> Encrypt --> Purge --> Checksum --> Upload --> Verify
+        Trigger --> Dump --> Encrypt --> Purge --> Checksum --> Upload --> VerifyRemote --> DownloadVerify --> CompareChecksum
     end
 
     subgraph R2["Cloudflare R2 (vibelock-db-backups, APAC)"]
@@ -68,10 +70,14 @@ flowchart TD
         HashObj --- Lifecycle
     end
 
-    Compute -->|"TLS Stream"| Dump
+    Compute -->|"TLS Stream (DIRECT_URL)"| Dump
     Upload -->|"Encrypted Artifact"| DumpObj
     Upload -->|"Hash File"| HashObj
+    DumpObj -->|"Download for Round-Trip Check"| DownloadVerify
 ```
+
+> [!NOTE]
+> **Round-Trip Integrity Verification:** Integrity verification is not limited to `aws s3 ls`. Immediately following the upload of the encrypted dump and checksum to Cloudflare R2, the workflow downloads the remote `.dump.age` artifact, calculates its SHA-256 checksum independently, and validates that it matches the original local checksum before concluding successfully.
 
 ---
 
@@ -129,9 +135,14 @@ To enable the automated backup workflow, the repository owner must configure fiv
 
 **Navigation:** `GitHub Repository` $\rightarrow$ `Settings` $\rightarrow$ `Secrets and variables` $\rightarrow$ `Actions` $\rightarrow$ `New repository secret`
 
+> [!IMPORTANT]
+> **Connection String Distinction (`DIRECT_URL` vs. `DATABASE_URL`):**
+> - **`DATABASE_URL` (Pooled):** Used exclusively by the Vercel application runtime and Prisma Client (`ep-...-pooler...`). Routes through PgBouncer for transaction connection pooling. PgBouncer does not support long-lived transactional snapshot locks required by `pg_dump`.
+> - **`DIRECT_URL` (Unpooled):** Direct unpooled connection string to the Neon compute endpoint (port 5432 with `sslmode=require`). The backup workflow specifically reads **`secrets.DIRECT_URL`** for `pg_dump`. Do not set `secrets.DATABASE_URL` for backup automation.
+
 | Secret Name | Value Description | Example / Format |
 | :--- | :--- | :--- |
-| **`DATABASE_URL`** | Neon direct PostgreSQL connection string (direct unpooled compute endpoint, port 5432 with `sslmode=require`). Bypasses PgBouncer pooler for reliable `pg_dump` streaming locks. | `postgres://user:password@ep-cool-butterfly-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
+| **`DIRECT_URL`** | Neon direct PostgreSQL connection string (direct unpooled compute endpoint, port 5432 with `sslmode=require`). Bypasses PgBouncer pooler for reliable `pg_dump` streaming locks. Configured in GitHub Secrets as `DIRECT_URL`. | `postgres://user:password@ep-cool-butterfly-123456.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` |
 | **`R2_ACCESS_KEY_ID`** | Cloudflare R2 token Access Key ID from the `vibelock-backup-automation` token. | `a1b2c3d4e5f67890abcdef1234567890` (32 characters) |
 | **`R2_SECRET_ACCESS_KEY`** | Cloudflare R2 token Secret Access Key from the `vibelock-backup-automation` token. | `0123456789abcdef...` (64-character hex string) |
 | **`R2_ACCOUNT_ID`** | Cloudflare Account ID (located in the right sidebar of the Cloudflare R2 overview dashboard). | `abc123def45678901234567890abcdef` (32 characters) |
@@ -394,10 +405,10 @@ If R2 API tokens expire or need routine rotation:
 
 | Compromise Scenario | Threat Impact | Required Immediate Containment Actions |
 | :--- | :--- | :--- |
-| **R2 API Token Compromised** | Attacker has read/write access to R2 bucket. | 1. Immediately revoke the token in Cloudflare Dashboard.<br>2. Generate a new R2 API token and update GitHub Secrets.<br>3. Inspect bucket object list for unauthorized additions or deletions.<br>*(Note: Existing backups remain encrypted with `age`; attacker cannot read database contents without the offline private key).* |
-| **`DATABASE_URL` Compromised** | Attacker has read access to production database. | 1. Reset database user password immediately in Neon Console.<br>2. Update `DATABASE_URL` and `DIRECT_URL` in Vercel environment variables.<br>3. Update `DATABASE_URL` in GitHub Actions Secrets.<br>4. Inspect database audit logs for unauthorized queries. |
+| **R2 API Token Compromised** | Attacker has read/write access to R2 bucket. | 1. Immediately revoke the token in Cloudflare Dashboard.<br>2. Generate a new R2 API token and update GitHub Secrets (`R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`).<br>3. Inspect bucket object list for unauthorized additions or deletions.<br>*(Note: Existing backups remain encrypted with `age`; attacker cannot read database contents without the offline private key).* |
+| **Database Credentials (`DIRECT_URL` / `DATABASE_URL`) Compromised** | Attacker has direct or pooled read/write access to production database. | 1. Reset database user password immediately in Neon Console.<br>2. Update `DATABASE_URL` (pooled) and `DIRECT_URL` (unpooled) in Vercel environment variables.<br>3. Update **`DIRECT_URL`** in GitHub Actions Secrets (the secret read by the backup workflow and migration jobs; do not confuse with the application's `DATABASE_URL`).<br>4. Inspect database audit logs in Neon Console for unauthorized queries. |
 | **`age` Private Key Compromised** | Attacker with bucket access can decrypt backup archives. | 1. Generate a new `age` key pair locally (`age-keygen`).<br>2. Update `BACKUP_AGE_RECIPIENT` in GitHub Actions Secrets.<br>3. Trigger an immediate manual backup to produce a backup under the new key.<br>4. Securely archive or re-encrypt historical backups under the new key. |
-| **GitHub Actions Runner Compromised** | Attacker compromises CI environment during execution. | 1. Rotate all repository secrets (`DATABASE_URL`, R2 tokens).<br>2. Revoke GitHub personal access tokens and review repository collaborator permissions.<br>3. Audit workflow run logs. |
+| **GitHub Actions Runner Compromised** | Attacker compromises CI environment during execution. | 1. Rotate all repository secrets in GitHub Actions: update `DIRECT_URL` (direct database compute connection), `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and `R2_ACCOUNT_ID`.<br>2. Revoke GitHub personal access tokens and review repository collaborator permissions.<br>3. Audit workflow run logs and Neon query logs. |
 
 ---
 
