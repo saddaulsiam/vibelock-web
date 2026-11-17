@@ -1,11 +1,11 @@
 # VibeLock — Backup Architecture & Disaster Recovery Runbook
 
-**Document Status:** ACTIVE IMPLEMENTATION (Manual-Only Rollout; Schedule Pending Verification)
+**Document Status:** ACTIVE IMPLEMENTATION (Manual Backup + Staging Restore Drill Verified; Schedule Still Disabled)
 **Target System:** VibeLock E-Commerce Platform (`saddaulsiam/vibelock-web`)
-**Repository Branch:** `feature/backup-automation`
+**Repository Branch:** `main`
 **Storage Destination:** Cloudflare R2 (`vibelock-db-backups`)
 **Automation Workflow:** `.github/workflows/backup-neon-to-r2.yml`
-**Last Updated:** November 2026
+**Last Updated:** November 18, 2026
 
 ---
 
@@ -15,7 +15,7 @@
 
 | Component | Production Configuration | Operational Role & Constraints |
 | :--- | :--- | :--- |
-| **Database Engine** | PostgreSQL 16 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
+| **Database Engine** | PostgreSQL 18.7 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
 | **Cloud Region** | AWS Singapore (`ap-southeast-1`) | Database compute and storage endpoints located in Singapore. |
 | **Database Plan** | **Neon Free Plan ($0/month)** | Shared compute, subject to inactivity scale-to-zero. |
 | **Continuous PITR** | **6-Hour History Window** | Continuous WAL retention allows branching or rewinding within 6 hours. |
@@ -193,7 +193,7 @@ VibeLock uses [`age`](https://github.com/FiloSottile/age) for client-side encryp
 
 ### 5.1 Triggering a Manual Backup
 
-During the initial rollout phase, the workflow trigger is **MANUAL ONLY (`workflow_dispatch`)**. The daily automated schedule (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled through a separate pull request once a manual backup and staging restore drill are successfully verified.
+During the initial rollout phase, the workflow trigger is **MANUAL ONLY (`workflow_dispatch`)**. The daily automated schedule (`03:00 UTC` / `09:00 Asia/Dhaka`) remains disabled after the successful November 17, 2026 restore drill. Do not enable it automatically as part of this runbook update; obtain a separate owner decision.
 
 To trigger an immediate backup:
 
@@ -283,6 +283,47 @@ pg_restore --list vibelock-decrypted.dump | head -n 25
    ```bash
    rm -f vibelock-decrypted.dump
    ```
+
+
+### 5.5 Verified Restore Drill — November 17, 2026
+
+**Result: SUCCESS.** The manual Neon-to-R2 backup artifact was downloaded, integrity-checked, decrypted locally, validated with PostgreSQL 18 tools, and restored into the separate Neon project `VibeLock-Staging`.
+
+| Check | Verified result |
+| :--- | :--- |
+| Backup object | `postgres/vibelock-2026-11-17-164031.dump.age` |
+| Backup timestamp | 2026-11-17 16:40:31 UTC |
+| Encrypted artifact SHA-256 | `cf58b4c1657ec5395754c292b5f6cb68ad5bff782d309a73078697e4d548a538` |
+| Archive format | PostgreSQL custom format |
+| Source dump version | pg_dump 18.6; source PostgreSQL 18.7 |
+| Archive TOC | 204 entries (215 listed objects) |
+| Restore utility | pg_restore 18.6 |
+| Restore target | Neon project `VibeLock-Staging`, branch `Staging`, database `neondb` |
+| Target region | AWS Asia Pacific 1 (Singapore) |
+| Post-restore public tables | 35 |
+| Prisma migration records | 12 |
+| Restore command result | `STAGING RESTORE COMPLETED SUCCESSFULLY.` |
+
+**Production safety:** The restore was executed only against the separate staging project. No production database, production branch, production schema, or production migration was modified.
+
+**Important validation boundary:** The archive checksum, decryption, archive listing, restore completion, public table count, and Prisma migration count were verified. The SQL orphan-record and inventory-ledger queries in Section 6, plus application-level admin/order workflows, remain follow-up validation items; do not mark those checks complete until their outputs are recorded.
+
+### 5.6 Vercel Preview Isolation — Staging Branch
+
+Vercel project `vibelock` uses the Git branch `staging` for the staging Preview deployment. Environment variable scope was reviewed and adjusted on November 18, 2026:
+
+- `DATABASE_URL` and `DIRECT_URL` have branch-specific Preview entries for `staging`, in addition to generic Preview fallbacks. Confirm the branch-specific values point to the separate `VibeLock-Staging` Neon project before running database-backed tests. Secret values must never be copied into logs or this document.
+- `AUTH_SECRET` remains Preview-only and separate from the Production value.
+- bKash and SSLCOMMERZ credential variables are Production-only. The `staging` Preview branch has explicit `BKASH_SANDBOX=true` and `SSLCOMMERZ_SANDBOX=true` overrides.
+- `SHIPPING_PROVIDER` is Production-only. Courier webhook secret remains Production-only; do not add live courier credentials to Preview.
+- `RESEND_API_KEY`, `EMAIL_FROM`, Cloudinary write credentials, and Upstash credentials are Production-only in the reviewed configuration. No email/SMS gateway credentials should be added to Preview.
+- Production values were preserved; only environment targets were narrowed to Production and branch-scoped sandbox flags were added for Preview.
+
+**Code behavior note:** SMS dispatch is gated by `NODE_ENV === "production"` and requires `SMS_API_KEY`. Vercel Preview can run with production-mode Node settings, so Preview must not receive `SMS_API_KEY` or `SMS_API_URL`. The current reviewed Vercel environment list did not contain those SMS variables.
+
+**Deployment protection:** Keep Preview deployments protected. The Vercel project currently reports SSO protection enabled for deployments other than custom domains; do not add a public custom domain to staging. A restored production-data clone contains personal/customer/order data and must be treated as sensitive.
+
+**Operational note:** Environment-variable changes apply to new deployments. Redeploy the `staging` branch after changing Preview variables and verify the resulting deployment before testing. Never use a Preview deployment as evidence of Production health.
 
 ---
 
