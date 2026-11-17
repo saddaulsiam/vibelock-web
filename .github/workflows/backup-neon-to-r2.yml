@@ -1,9 +1,11 @@
 name: Neon PostgreSQL to Cloudflare R2 Automated Backup
 
 on:
-  # Daily at 03:00 UTC (09:00 Asia/Dhaka).
-  schedule:
-    - cron: '0 3 * * *'
+  # Automated daily schedule temporarily disabled for initial rollout.
+  # Will be re-enabled after successful manual verification & staging restore drill.
+  # schedule:
+  #   # Daily at 03:00 UTC (09:00 Asia/Dhaka)
+  #   - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       reason:
@@ -127,7 +129,7 @@ jobs:
           DUMP_SIZE=$(stat -c%s "$PLAINTEXT_DUMP" 2>/dev/null || wc -c < "$PLAINTEXT_DUMP")
           echo "Database dump created. Raw size: ${DUMP_SIZE} bytes."
 
-          # 2. Encrypt dump using age recipient key
+          # 2. Encrypt dump using age before upload
           echo "Encrypting backup archive with age recipient key..."
           age --recipient "$BACKUP_AGE_RECIPIENT" --output "$ENCRYPTED_DUMP" "$PLAINTEXT_DUMP"
 
@@ -143,7 +145,7 @@ jobs:
           CHECKSUM_VALUE=$(awk '{print $1}' "$CHECKSUM_FILE")
           echo "SHA-256 Checksum: ${CHECKSUM_VALUE}"
 
-          # 4. Upload encrypted archive and checksum to Cloudflare R2
+          # 4. Upload to Cloudflare R2 via S3-compatible API
           R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
           export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
           export AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
@@ -152,21 +154,36 @@ jobs:
           TARGET_DUMP_KEY="${DEST_PREFIX}/${BASENAME}.dump.age"
           TARGET_CHECKSUM_KEY="${DEST_PREFIX}/${BASENAME}.dump.age.sha256"
 
-          echo "Uploading encrypted backup to Cloudflare R2..."
-          aws s3 cp "$ENCRYPTED_DUMP" "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" --endpoint-url "$R2_ENDPOINT"
-          aws s3 cp "$CHECKSUM_FILE" "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" --endpoint-url "$R2_ENDPOINT"
+          echo "Uploading encrypted backup to Cloudflare R2 (s3://${BUCKET_NAME}/${TARGET_DUMP_KEY})..."
+          aws s3 cp "$ENCRYPTED_DUMP" "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
 
-          # 5. Verify uploaded encrypted object by downloading and hashing it
+          echo "Uploading SHA-256 checksum to Cloudflare R2 (s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY})..."
+          aws s3 cp "$CHECKSUM_FILE" "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          # 5. Verify upload integrity on remote bucket via SHA-256 round-trip
+          echo "Verifying object existence on Cloudflare R2..."
+          aws s3 ls "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          aws s3 ls "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          echo "Downloading remote encrypted dump from Cloudflare R2 for round-trip SHA-256 verification..."
           VERIFY_DOWNLOAD="${BACKUP_DIR}/verify-${BASENAME}.dump.age"
-          aws s3 cp "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" "$VERIFY_DOWNLOAD" --endpoint-url "$R2_ENDPOINT"
+          aws s3 cp "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" "$VERIFY_DOWNLOAD" \
+            --endpoint-url "$R2_ENDPOINT"
+
           REMOTE_CHECKSUM=$(sha256sum "$VERIFY_DOWNLOAD" | awk '{print $1}')
           rm -f "$VERIFY_DOWNLOAD"
 
           echo "Remote object SHA-256: ${REMOTE_CHECKSUM}"
           if [ "$REMOTE_CHECKSUM" != "$CHECKSUM_VALUE" ]; then
-            echo "::error::Remote SHA-256 does not match local checksum."
+            echo "::error::Integrity check failed: Remote SHA-256 (${REMOTE_CHECKSUM}) does not match local checksum (${CHECKSUM_VALUE})!"
             exit 1
           fi
+          echo "Integrity verification PASSED: Remote object SHA-256 matches expected checksum."
 
           echo "========================================================"
           echo "VibeLock Backup Pipeline Completed Successfully!"
@@ -174,7 +191,7 @@ jobs:
           echo "Checksum Object: ${TARGET_CHECKSUM_KEY}"
           echo "Encrypted Size:  ${ENCRYPTED_SIZE} bytes"
           echo "SHA-256:         ${CHECKSUM_VALUE}"
-          echo "Remote Verified: matching SHA-256 from Cloudflare R2"
+          echo "Remote Verified: Verified matching SHA-256 from Cloudflare R2"
           echo "Retention:       7-Day Cloudflare R2 Lifecycle Managed"
           echo "========================================================"
 
