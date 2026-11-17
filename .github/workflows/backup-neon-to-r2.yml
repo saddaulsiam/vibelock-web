@@ -1,0 +1,177 @@
+name: Neon PostgreSQL to Cloudflare R2 Automated Backup
+
+on:
+  schedule:
+    # Daily at 03:00 UTC (09:00 Asia/Dhaka)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual backup trigger'
+        required: false
+        default: 'Manual operator trigger'
+
+concurrency:
+  group: neon-r2-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Backup, Encrypt & Upload to Cloudflare R2
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          check_secret() {
+            local name="$1"
+            local val="$2"
+            if [ -z "${val:-}" ]; then
+              echo "::error::Required secret '${name}' is missing or empty."
+              missing=1
+            fi
+          }
+          check_secret "DATABASE_URL" "${{ secrets.DATABASE_URL }}"
+          check_secret "R2_ACCESS_KEY_ID" "${{ secrets.R2_ACCESS_KEY_ID }}"
+          check_secret "R2_SECRET_ACCESS_KEY" "${{ secrets.R2_SECRET_ACCESS_KEY }}"
+          check_secret "R2_ACCOUNT_ID" "${{ secrets.R2_ACCOUNT_ID }}"
+          check_secret "BACKUP_AGE_RECIPIENT" "${{ secrets.BACKUP_AGE_RECIPIENT }}"
+
+          if [ "$missing" -eq 1 ]; then
+            echo "::error::One or more required secrets are not configured. Please refer to docs/backup-disaster-recovery.md."
+            exit 1
+          fi
+          echo "All required secrets are present."
+
+      - name: Install PostgreSQL client and age
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y postgresql-client age
+          echo "pg_dump version: $(pg_dump --version)"
+          echo "age version: $(age --version)"
+
+      - name: Execute Backup, Encryption, Checksum and Upload
+        shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+          BUCKET_NAME: "vibelock-db-backups"
+          DEST_PREFIX: "postgres"
+        run: |
+          set -euo pipefail
+
+          # Mask sensitive credentials in logs
+          echo "::add-mask::$DATABASE_URL"
+          echo "::add-mask::$R2_ACCESS_KEY_ID"
+          echo "::add-mask::$R2_SECRET_ACCESS_KEY"
+          echo "::add-mask::$R2_ACCOUNT_ID"
+          echo "::add-mask::$BACKUP_AGE_RECIPIENT"
+
+          # Create a secure temporary working directory with restrictive permissions
+          BACKUP_DIR="$(mktemp -d -t vibelock-backup-XXXXXX)"
+          chmod 700 "$BACKUP_DIR"
+
+          # Trap ensures local artifacts are cleaned up on any exit condition
+          cleanup() {
+            local exit_code=$?
+            if [ -d "$BACKUP_DIR" ]; then
+              rm -rf "$BACKUP_DIR"
+            fi
+            exit "$exit_code"
+          }
+          trap cleanup EXIT INT TERM
+
+          TIMESTAMP=$(date -u +'%Y-%m-%d-%H%M%S')
+          BASENAME="vibelock-${TIMESTAMP}"
+          PLAINTEXT_DUMP="${BACKUP_DIR}/${BASENAME}.dump"
+          ENCRYPTED_DUMP="${BACKUP_DIR}/${BASENAME}.dump.age"
+          CHECKSUM_FILE="${BACKUP_DIR}/${BASENAME}.dump.age.sha256"
+
+          echo "--------------------------------------------------------"
+          echo "Starting VibeLock PostgreSQL backup pipeline..."
+          echo "Timestamp (UTC): ${TIMESTAMP}"
+          echo "--------------------------------------------------------"
+
+          # 1. Execute pg_dump in custom format with max compression
+          echo "Executing pg_dump (custom format, compression level 9)..."
+          pg_dump \
+            --dbname="$DATABASE_URL" \
+            --format=custom \
+            --compress=9 \
+            --no-owner \
+            --no-privileges \
+            --file="$PLAINTEXT_DUMP"
+
+          DUMP_SIZE=$(stat -c%s "$PLAINTEXT_DUMP" 2>/dev/null || wc -c < "$PLAINTEXT_DUMP")
+          echo "Database dump created. Raw size: ${DUMP_SIZE} bytes."
+
+          # 2. Encrypt dump using age before upload
+          echo "Encrypting backup archive with age recipient key..."
+          age --recipient "$BACKUP_AGE_RECIPIENT" --output "$ENCRYPTED_DUMP" "$PLAINTEXT_DUMP"
+
+          # Remove plaintext dump immediately after encryption
+          rm -f "$PLAINTEXT_DUMP"
+
+          ENCRYPTED_SIZE=$(stat -c%s "$ENCRYPTED_DUMP" 2>/dev/null || wc -c < "$ENCRYPTED_DUMP")
+          echo "Encryption complete. Encrypted size: ${ENCRYPTED_SIZE} bytes."
+
+          # 3. Compute SHA-256 checksum (relative to filename)
+          echo "Calculating SHA-256 checksum..."
+          (cd "$BACKUP_DIR" && sha256sum "${BASENAME}.dump.age" > "${BASENAME}.dump.age.sha256")
+          CHECKSUM_VALUE=$(awk '{print $1}' "$CHECKSUM_FILE")
+          echo "SHA-256 Checksum: ${CHECKSUM_VALUE}"
+
+          # 4. Upload to Cloudflare R2 via S3-compatible API
+          R2_ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
+          export AWS_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY"
+          export AWS_DEFAULT_REGION="auto"
+
+          TARGET_DUMP_KEY="${DEST_PREFIX}/${BASENAME}.dump.age"
+          TARGET_CHECKSUM_KEY="${DEST_PREFIX}/${BASENAME}.dump.age.sha256"
+
+          echo "Uploading encrypted backup to Cloudflare R2 (s3://${BUCKET_NAME}/${TARGET_DUMP_KEY})..."
+          aws s3 cp "$ENCRYPTED_DUMP" "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          echo "Uploading SHA-256 checksum to Cloudflare R2 (s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY})..."
+          aws s3 cp "$CHECKSUM_FILE" "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          # 5. Verify upload integrity on remote bucket
+          echo "Verifying object existence on Cloudflare R2..."
+          aws s3 ls "s3://${BUCKET_NAME}/${TARGET_DUMP_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          aws s3 ls "s3://${BUCKET_NAME}/${TARGET_CHECKSUM_KEY}" \
+            --endpoint-url "$R2_ENDPOINT"
+
+          echo "========================================================"
+          echo "VibeLock Backup Pipeline Completed Successfully!"
+          echo "Object Name:     ${TARGET_DUMP_KEY}"
+          echo "Checksum Object: ${TARGET_CHECKSUM_KEY}"
+          echo "Encrypted Size:  ${ENCRYPTED_SIZE} bytes"
+          echo "SHA-256:         ${CHECKSUM_VALUE}"
+          echo "Retention:       7-Day Cloudflare R2 Lifecycle Managed"
+          echo "========================================================"
+
+      - name: Clean up temporary backup artifacts
+        if: always()
+        run: |
+          echo "Executing post-job runner cleanup..."
+          rm -rf /tmp/vibelock-backup-* 2>/dev/null || true
