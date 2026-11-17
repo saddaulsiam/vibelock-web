@@ -325,6 +325,36 @@ Vercel project `vibelock` uses the Git branch `staging` for the staging Preview 
 
 **Operational note:** Environment-variable changes apply to new deployments. Redeploy the `staging` branch after changing Preview variables and verify the resulting deployment before testing. Never use a Preview deployment as evidence of Production health.
 
+
+### 5.7 Staging Preview HTTP Smoke-Test Snapshot — November 18, 2026
+
+The Vercel deployment for branch `staging` reached `READY` and returned HTTP responses for these unauthenticated GET requests:
+
+| Route | HTTP result | Interpretation |
+| :--- | :---: | :--- |
+| `/` | 200 | Storefront route responds |
+| `/products` | 200 | Product listing route responds |
+| `/category/t-shirts` | 200 | Category route responds |
+| `/login` | 200 | Login route responds |
+| `/register` | 200 | Registration route responds |
+| `/cart` | 200 | Cart route responds |
+| `/account` | 200 | Route responds; authenticated account behavior not verified |
+| `/account/orders` | 200 | Route responds; authenticated order data not verified |
+| `/admin` | 200 | Route responds; admin authorization not verified |
+| `/shop` | 404 | This path is not a valid route in the tested build; use `/products` |
+| `/api/health` | 404 | No health endpoint exists at this path in the tested build |
+
+All tested Preview responses included `X-Robots-Tag: noindex`.
+
+**Blocking findings before calling the staging drill application-complete:**
+
+1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release.
+2. The tested deployment was built from staging commit `9f536757feed09e939002a14c6c3d68592a7279f` (October 10, 2026), not a current post-restore application commit. Re-deploy the intended, current staging commit before functional testing.
+3. HTTP 200 alone does not prove that authentication, authorization, product queries, cart persistence, checkout, order history, or admin workflows work. Those require browser/session tests using designated staging accounts and non-live integrations.
+4. Do not test real payment capture, real SMS/email delivery, or courier dispatch from staging. Use sandbox credentials and mocked courier behavior only.
+
+This snapshot is a route-level smoke test, not a full end-to-end acceptance test.
+
 ---
 
 ## 6. Read-Only Restore Integrity Verification Suite
