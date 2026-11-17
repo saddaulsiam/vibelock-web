@@ -132,7 +132,12 @@ export async function getShippingMethodsAction(address: {
     return { success: false, error: "Unauthorized" };
   }
 
-  if (!address || typeof address !== "object" || !address.country?.trim() || !address.city?.trim()) {
+  if (
+    !address ||
+    typeof address !== "object" ||
+    !address.country?.trim() ||
+    !address.city?.trim()
+  ) {
     return { success: false, error: "Please provide both delivery country and city." };
   }
 
@@ -186,6 +191,21 @@ export async function lockCustomerUser(
   `;
 
   if (!lockedUsers || lockedUsers.length === 0) {
+    try {
+      const existingUser = await tx.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      });
+
+      if (existingUser && existingUser.role !== "CUSTOMER") {
+        throw new Error("NON_CUSTOMER_ACCOUNT");
+      }
+    } catch (e: unknown) {
+      if (e instanceof Error && e.message === "NON_CUSTOMER_ACCOUNT") {
+        throw e;
+      }
+    }
+
     throw new Error("CUSTOMER_NOT_FOUND");
   }
 
@@ -206,8 +226,12 @@ export async function isCustomerCodRestricted(
     select: { codBlocked: true, role: true },
   });
 
-  if (!user || user.role !== "CUSTOMER") {
+  if (!user) {
     throw new Error("CUSTOMER_NOT_FOUND");
+  }
+
+  if (user.role !== "CUSTOMER") {
+    throw new Error("NON_CUSTOMER_ACCOUNT");
   }
 
   return Boolean(user.codBlocked);
@@ -222,8 +246,21 @@ export async function createOrderAction(
     return { success: false, error: "Unauthorized" };
   }
 
+  // Enforce customer-only storefront checkout with clear explanation
+  if (session.user.role && session.user.role !== "CUSTOMER") {
+    return {
+      success: false,
+      error:
+        "Store administration and staff accounts cannot place storefront orders. Please sign in with a customer account.",
+    };
+  }
+
   const trimmedIdempotencyKey = typeof idempotencyKey === "string" ? idempotencyKey.trim() : "";
-  if (!trimmedIdempotencyKey || trimmedIdempotencyKey.length < 8 || trimmedIdempotencyKey.length > 128) {
+  if (
+    !trimmedIdempotencyKey ||
+    trimmedIdempotencyKey.length < 8 ||
+    trimmedIdempotencyKey.length > 128
+  ) {
     return { success: false, error: "Invalid checkout request." };
   }
 
@@ -271,14 +308,29 @@ export async function createOrderAction(
       if (isRestricted) {
         return {
           success: false,
-          error: "Cash on delivery is not available for your account. Please choose another payment method.",
+          error:
+            "Cash on delivery is not available for your account. Please choose another payment method.",
         };
       }
     } catch (error) {
+      if (error instanceof Error && error.message === "NON_CUSTOMER_ACCOUNT") {
+        return {
+          success: false,
+          error:
+            "Store administration and staff accounts cannot place storefront orders. Please sign in with a customer account.",
+        };
+      }
+      if (error instanceof Error && error.message === "CUSTOMER_NOT_FOUND") {
+        return {
+          success: false,
+          error: "Customer account not found or no longer active.",
+        };
+      }
       console.error("[createOrderAction] Failed to verify customer COD eligibility:", error);
       return {
         success: false,
-        error: "Unable to verify payment method eligibility. Please try again or choose an online payment method.",
+        error:
+          "Unable to verify payment method eligibility. Please try again or choose an online payment method.",
       };
     }
   } else if (paymentMethod === "ONLINE") {
@@ -353,7 +405,10 @@ export async function createOrderAction(
         try {
           lockedCustomer = await lockCustomerUser(session.user.id, tx);
         } catch (err: unknown) {
-          if (err instanceof Error && err.message === "CUSTOMER_NOT_FOUND") {
+          if (
+            err instanceof Error &&
+            (err.message === "CUSTOMER_NOT_FOUND" || err.message === "NON_CUSTOMER_ACCOUNT")
+          ) {
             throw err;
           }
           // Graceful fallback for mocked test environments without raw query support
@@ -361,8 +416,11 @@ export async function createOrderAction(
             where: { id: session.user.id },
             select: { id: true, codBlocked: true, role: true },
           });
-          if (!dbUser || dbUser.role !== "CUSTOMER") {
+          if (!dbUser) {
             throw new Error("CUSTOMER_NOT_FOUND");
+          }
+          if (dbUser.role !== "CUSTOMER") {
+            throw new Error("NON_CUSTOMER_ACCOUNT");
           }
           lockedCustomer = { id: dbUser.id, codBlocked: Boolean(dbUser.codBlocked) };
         }
@@ -916,7 +974,16 @@ export async function createOrderAction(
     if (error instanceof Error && error.message === "COD_RESTRICTED") {
       return {
         success: false,
-        error: "Cash on delivery is not available for your account. Please choose another payment method.",
+        error:
+          "Cash on delivery is not available for your account. Please choose another payment method.",
+      };
+    }
+
+    if (error instanceof Error && error.message === "NON_CUSTOMER_ACCOUNT") {
+      return {
+        success: false,
+        error:
+          "Store administration and staff accounts cannot place storefront orders. Please sign in with a customer account.",
       };
     }
 
@@ -972,7 +1039,10 @@ export async function createOrderAction(
       if (error.message === "Item unavailable")
         return { success: false, error: "One or more items are no longer available." };
       if (error.message === "Invalid cart item quantity")
-        return { success: false, error: "Invalid item quantity in cart. Purchase limit is between 1 and 10." };
+        return {
+          success: false,
+          error: "Invalid item quantity in cart. Purchase limit is between 1 and 10.",
+        };
       if (error.message === "Invalid product price")
         return { success: false, error: "Invalid item price detected. Please review your cart." };
       if (
