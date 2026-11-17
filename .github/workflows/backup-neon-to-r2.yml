@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       reason:
-        description: 'Reason for manual backup trigger'
+        description: "Reason for manual backup trigger"
         required: false
-        default: 'Manual operator trigger'
+        default: "Manual operator trigger"
 
 concurrency:
   group: neon-r2-backup
@@ -33,7 +33,7 @@ jobs:
       - name: Validate required secrets
         shell: bash
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
@@ -73,7 +73,7 @@ jobs:
       - name: Execute Backup, Encryption, Checksum and Upload
         shell: bash
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
