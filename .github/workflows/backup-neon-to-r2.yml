@@ -32,6 +32,12 @@ jobs:
 
       - name: Validate required secrets
         shell: bash
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
         run: |
           set -euo pipefail
           missing=0
@@ -43,11 +49,11 @@ jobs:
               missing=1
             fi
           }
-          check_secret "DATABASE_URL" "${{ secrets.DATABASE_URL }}"
-          check_secret "R2_ACCESS_KEY_ID" "${{ secrets.R2_ACCESS_KEY_ID }}"
-          check_secret "R2_SECRET_ACCESS_KEY" "${{ secrets.R2_SECRET_ACCESS_KEY }}"
-          check_secret "R2_ACCOUNT_ID" "${{ secrets.R2_ACCOUNT_ID }}"
-          check_secret "BACKUP_AGE_RECIPIENT" "${{ secrets.BACKUP_AGE_RECIPIENT }}"
+          check_secret "DATABASE_URL" "${DATABASE_URL:-}"
+          check_secret "R2_ACCESS_KEY_ID" "${R2_ACCESS_KEY_ID:-}"
+          check_secret "R2_SECRET_ACCESS_KEY" "${R2_SECRET_ACCESS_KEY:-}"
+          check_secret "R2_ACCOUNT_ID" "${R2_ACCOUNT_ID:-}"
+          check_secret "BACKUP_AGE_RECIPIENT" "${BACKUP_AGE_RECIPIENT:-}"
 
           if [ "$missing" -eq 1 ]; then
             echo "::error::One or more required secrets are not configured. Please refer to docs/backup-disaster-recovery.md."

@@ -1,6 +1,6 @@
 # VibeLock — Backup Architecture & Disaster Recovery Runbook
 
-**Document Status:** ACTIVE IMPLEMENTATION (Automated Pipeline & Bucket Configured)
+**Document Status:** ACTIVE IMPLEMENTATION (Manual-Only Rollout; Schedule Pending Verification)
 **Target System:** VibeLock E-Commerce Platform (`saddaulsiam/vibelock-web`)
 **Repository Branch:** `feature/backup-automation`
 **Storage Destination:** Cloudflare R2 (`vibelock-db-backups`)
@@ -23,7 +23,7 @@
 | **Hosting Platform** | Vercel (Edge & Serverless Node.js runtime) | Next.js App Router connected via environment secrets. |
 | **ORM / Data Access** | Prisma ORM | Schema in `prisma/schema.prisma`; migrations via `prisma migrate deploy`. |
 | **Offsite Backup Storage** | **Cloudflare R2 (`vibelock-db-backups`)** | Private S3-compatible object storage located in APAC region. |
-| **Backup Automation** | GitHub Actions (`backup-neon-to-r2.yml`) | Automated daily backup at 03:00 UTC (09:00 Asia/Dhaka) + manual dispatch. |
+| **Backup Trigger** | GitHub Actions (`backup-neon-to-r2.yml`) | **MANUAL ONLY (`workflow_dispatch`) during initial rollout.** Daily automated scheduling (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled via follow-up PR after successful backup and staging restore verification. |
 | **Encryption Tool** | `age` (Actually Good Encryption) | Client-side public-key encryption before upload; private key preserved offline. |
 | **Media Storage** | Cloudinary | Product images, customer return evidence, and avatars stored offsite. |
 
@@ -49,7 +49,7 @@ flowchart TD
     end
 
     subgraph GHA["GitHub Actions Runner (ubuntu-latest)"]
-        Trigger["Trigger:\nDaily 03:00 UTC / Manual Dispatch"]
+        Trigger["Trigger:\nMANUAL ONLY (workflow_dispatch)\nSchedule enabled post-verification"]
         Dump["pg_dump -Fc (Max Compression)\nSecure Temp Dir (chmod 700)"]
         Encrypt["age Public-Key Encryption\n(BACKUP_AGE_RECIPIENT)"]
         Purge["Immediate Plaintext Deletion"]
@@ -182,7 +182,9 @@ VibeLock uses [`age`](https://github.com/FiloSottile/age) for client-side encryp
 
 ### 5.1 Triggering a Manual Backup
 
-In addition to the daily automated run at 03:00 UTC (09:00 Asia/Dhaka), you can trigger an immediate backup:
+During the initial rollout phase, the workflow trigger is **MANUAL ONLY (`workflow_dispatch`)**. The daily automated schedule (`03:00 UTC` / `09:00 Asia/Dhaka`) is intentionally disabled and will be enabled through a separate pull request once a manual backup and staging restore drill are successfully verified.
+
+To trigger an immediate backup:
 
 - **Via GitHub Web Interface:**
   1. Navigate to the repository on GitHub.
