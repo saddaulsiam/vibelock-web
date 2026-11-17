@@ -83,7 +83,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockSessionState.user = { id: "cust-uuid-101", email: "customer@vibelock.bd" };
+    mockSessionState.user = { id: "cust-uuid-101", email: "customer@vibelock.bd", role: "CUSTOMER" };
     mockIsPaymentMethodEnabled.mockResolvedValue(true);
     mockPrisma.order.findUnique.mockResolvedValue(null);
   });
@@ -116,6 +116,16 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
       expect(result).toBe(false);
     });
 
+    test("pre-flight (no tx): throws NON_CUSTOMER_ACCOUNT for non-CUSTOMER roles (ADMIN, STAFF, MANAGER)", async () => {
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        id: "admin-uuid-001",
+        role: "ADMIN",
+        codBlocked: false,
+      });
+
+      await expect(isCustomerCodRestricted("admin-uuid-001")).rejects.toThrow("NON_CUSTOMER_ACCOUNT");
+    });
+
     test("pre-flight (no tx): throws CUSTOMER_NOT_FOUND when user does not exist", async () => {
       mockPrisma.user.findUnique.mockResolvedValueOnce(null);
 
@@ -124,7 +134,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
 
     test("in-transaction (tx provided): executes parameterized SELECT FOR UPDATE row lock on User", async () => {
       const mockCustomTx = {
-        $queryRaw: vi.fn().mockResolvedValueOnce([{ id: "cust-uuid-101", codBlocked: true }]),
+        $queryRaw: vi.fn().mockResolvedValueOnce([{ id: "cust-uuid-101", codBlocked: true, role: "CUSTOMER" }]),
       };
 
       const result = await isCustomerCodRestricted("cust-uuid-101", mockCustomTx as any);
@@ -139,9 +149,25 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
       expect(queryStrings).toContain("FOR UPDATE");
     });
 
-    test("in-transaction (tx provided): throws CUSTOMER_NOT_FOUND when row lock returns empty", async () => {
+    test("in-transaction (tx provided): throws NON_CUSTOMER_ACCOUNT for ADMIN role", async () => {
       const mockCustomTx = {
         $queryRaw: vi.fn().mockResolvedValueOnce([]),
+        user: {
+          findUnique: vi.fn().mockResolvedValueOnce({ role: "ADMIN" }),
+        },
+      };
+
+      await expect(isCustomerCodRestricted("admin-uuid-001", mockCustomTx as any)).rejects.toThrow(
+        "NON_CUSTOMER_ACCOUNT"
+      );
+    });
+
+    test("in-transaction (tx provided): throws CUSTOMER_NOT_FOUND when user does not exist", async () => {
+      const mockCustomTx = {
+        $queryRaw: vi.fn().mockResolvedValueOnce([]),
+        user: {
+          findUnique: vi.fn().mockResolvedValueOnce(null),
+        },
       };
 
       await expect(
@@ -226,7 +252,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         if (sql.includes('"Cart"')) {
           return [{ id: "cart-1" }];
         }
-        return [{ id: "cust-uuid-101", codBlocked: true }];
+        return [{ id: "cust-uuid-101", codBlocked: true, role: "CUSTOMER" }];
       });
 
       const result = await createOrderAction(
@@ -299,6 +325,20 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
       expect(result.error).toBe("Unauthorized");
       expect(mockPrisma.user.findUnique).not.toHaveBeenCalled();
     });
+
+    test("rejects order placement with clear meaningful message when user role is ADMIN or STAFF", async () => {
+      mockSessionState.user = { id: "admin-1", email: "admin@vibelock.bd", role: "ADMIN" };
+
+      const result = await createOrderAction(
+        validCheckoutPayload,
+        "idempotency-key-admin-checkout"
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        "Store administration and staff accounts cannot place storefront orders. Please sign in with a customer account."
+      );
+    });
   });
 
   describe("3. In-Transaction User Row Locking for ALL Checkout Methods (SEC-9-06)", () => {
@@ -316,7 +356,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         const sql = query?.strings?.join(" ") || String(query);
         if (sql.includes('"User"')) {
           queryLog.push("lock:User");
-          return [{ id: "cust-uuid-101", codBlocked: false }];
+          return [{ id: "cust-uuid-101", codBlocked: false, role: "CUSTOMER" }];
         }
         if (sql.includes('"Cart"')) {
           queryLog.push("lock:Cart");
@@ -356,7 +396,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
         const sql = query?.strings?.join(" ") || String(query);
         if (sql.includes('"User"')) {
           queryLog.push("lock:User");
-          return [{ id: "cust-uuid-101", codBlocked: false }];
+          return [{ id: "cust-uuid-101", codBlocked: false, role: "CUSTOMER" }];
         }
         return [];
       });
@@ -387,7 +427,7 @@ describe("Phase 5B-2 — Dedicated Customer COD Restriction State & Checkout Row
       mockPrisma.$queryRaw.mockImplementation(async (query: any) => {
         const sql = query?.strings?.join(" ") || String(query);
         if (sql.includes('"User"')) {
-          return [{ id: "cust-uuid-101", codBlocked: true }];
+          return [{ id: "cust-uuid-101", codBlocked: true, role: "CUSTOMER" }];
         }
         return [{ id: "cart-online-blocked" }];
       });

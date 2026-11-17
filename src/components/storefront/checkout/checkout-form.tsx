@@ -118,42 +118,56 @@ function formatPrice(amount: number) {
 }
 
 function getSafeCheckoutError(error: string | undefined) {
+  if (!error) {
+    return "We could not place your order. Please review your details and try again.";
+  }
   if (error === "Your cart is empty" || error === "Your cart is empty.") {
     return "Your cart is empty. Return to your cart and try again.";
   }
-  if (error?.toLowerCase().includes("stock")) {
+  if (error.toLowerCase().includes("stock")) {
     return "Some items no longer have enough stock. Return to your cart to review them.";
   }
-  if (error?.toLowerCase().includes("unavailable")) {
+  if (error.toLowerCase().includes("unavailable")) {
     return "One or more items are no longer available. Return to your cart to review them.";
   }
   if (error === "Unauthorized" || error === "Unauthorized.") {
     return "Your session needs to be refreshed. Please sign in and try again.";
   }
-  if (error?.toLowerCase().includes("payment initiation failed")) {
+  if (error.toLowerCase().includes("payment initiation failed")) {
     return "Your order was created, but the online payment session could not be started. You can complete payment from your orders page.";
   }
   if (
-    error?.toLowerCase().includes("online payment is currently unavailable") ||
-    error?.toLowerCase().includes("sslcommerz payment is currently unavailable")
+    error.toLowerCase().includes("online payment is currently unavailable") ||
+    error.toLowerCase().includes("sslcommerz payment is currently unavailable")
   ) {
     return "SSLCOMMERZ payment is currently unavailable. Please choose cash on delivery.";
   }
-  if (error?.toLowerCase().includes("bkash payment is currently unavailable")) {
+  if (error.toLowerCase().includes("bkash payment is currently unavailable")) {
     return "bKash payment is currently unavailable. Please choose another payment method.";
   }
-  if (error?.toLowerCase().includes("nagad payment is currently unavailable")) {
+  if (error.toLowerCase().includes("nagad payment is currently unavailable")) {
     return "Nagad payment is currently unavailable. Please choose another payment method.";
   }
   if (
-    error?.toLowerCase().includes("shipping") ||
-    error?.toLowerCase().includes("delivery") ||
-    error?.toLowerCase().includes("coupon") ||
-    error?.toLowerCase().includes("minimum order")
+    error.toLowerCase().includes("shipping") ||
+    error.toLowerCase().includes("delivery") ||
+    error.toLowerCase().includes("coupon") ||
+    error.toLowerCase().includes("minimum order") ||
+    error.toLowerCase().includes("cash on delivery is not available") ||
+    error.toLowerCase().includes("payment method eligibility") ||
+    error.toLowerCase().includes("account") ||
+    error.toLowerCase().includes("staff") ||
+    error.toLowerCase().includes("administration") ||
+    error.toLowerCase().includes("customer") ||
+    error.toLowerCase().includes("suspended") ||
+    error.toLowerCase().includes("quantity") ||
+    error.toLowerCase().includes("price") ||
+    error.toLowerCase().includes("invalid checkout information") ||
+    error.toLowerCase().includes("order reference conflict")
   ) {
     return error;
   }
-  if (error?.toLowerCase().includes("timed out") || error?.toLowerCase().includes("timeout")) {
+  if (error.toLowerCase().includes("timed out") || error.toLowerCase().includes("timeout")) {
     return "Checkout timed out while securing items. Please try again.";
   }
   return "We could not place your order. Please review your details and try again.";
