@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
@@ -16,6 +17,9 @@ export default function Error({
   useEffect(() => {
     // Log the error to an error reporting service in production
     console.error("Application error:", error);
+    Sentry.captureException(error, {
+      extra: typeof error.digest === "string" ? { digest: error.digest } : undefined,
+    });
   }, [error]);
 
   return (
