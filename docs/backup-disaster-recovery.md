@@ -1,6 +1,6 @@
 # VibeLock — Backup Architecture & Disaster Recovery Runbook
 
-**Document Status:** ACTIVE IMPLEMENTATION (Manual Backup + Staging Restore Drill Verified; Schedule Still Disabled)
+**Document Status:** ACTIVE IMPLEMENTATION (Manual Backup + Staging Restore Verified; Workflow Schedule Disabled; Cloudflare Lifecycle Rules Pending Dashboard Verification; Neon PITR Limits Plan-Dependent)
 **Target System:** VibeLock E-Commerce Platform (`saddaulsiam/vibelock-web`)
 **Repository Branch:** `main`
 **Storage Destination:** Cloudflare R2 (`vibelock-db-backups`)
@@ -18,7 +18,7 @@
 | **Database Engine** | PostgreSQL 18.7 on Neon Serverless | Cloud-native serverless architecture with compute-storage separation. |
 | **Cloud Region** | AWS Singapore (`ap-southeast-1`) | Database compute and storage endpoints located in Singapore. |
 | **Database Plan** | **Neon Free Plan ($0/month)** | Shared compute, subject to inactivity scale-to-zero. |
-| **Continuous PITR** | **6-Hour History Window** | Continuous WAL retention allows branching or rewinding within 6 hours. |
+| **Neon PITR / Branching** | **Plan-Dependent (Requires Neon Dashboard Verification)** | Continuous WAL history retention and point-in-time restore capability depend on the active Neon tier and project history settings. Do not assume a fixed retention limit without dashboard verification. |
 | **Connections** | Pooled (`DATABASE_URL`, port 5432) & Direct (`DIRECT_URL`, port 5432) | `DATABASE_URL` connects via PgBouncer (used by Vercel serverless runtime for pooled app queries); `DIRECT_URL` connects unpooled directly to compute (used for Prisma migrations and GitHub Actions `pg_dump` backups). |
 | **Hosting Platform** | Vercel (Edge & Serverless Node.js runtime) | Next.js App Router connected via environment secrets. |
 | **ORM / Data Access** | Prisma ORM | Schema in `prisma/schema.prisma`; migrations via `prisma migrate deploy`. |
@@ -44,7 +44,7 @@ $$\text{Neon PostgreSQL (DIRECT\_URL)} \xrightarrow[\text{SSL Unpooled}]{\text{p
 flowchart TD
     subgraph Neon["Neon Infrastructure (AWS ap-southeast-1)"]
         Compute["Neon Compute Endpoint\n(DIRECT_URL, SSL required)"]
-        Storage["Neon Storage Engine\n(6h Continuous WAL)"]
+        Storage["Neon Storage Engine\n(WAL History & Branching)"]
         Compute <--> Storage
     end
 
@@ -92,8 +92,8 @@ The offsite backup bucket has been provisioned under the owner's Cloudflare acco
 | **Location Hint** | APAC | Proximity to VibeLock Singapore database infrastructure. |
 | **Public URL** | **Disabled** | Bucket is completely private; no public web access. |
 | **Custom Domains** | **None** | No external domain routing; accessed strictly via S3 credentials. |
-| **Lifecycle Rule 1** | **Delete objects after 7 days** | Automatically prunes dumps older than 7 days, maintaining a sliding 7-day restore window. |
-| **Lifecycle Rule 2** | **Abort incomplete multipart uploads after 7 days** | Automatically cleans up partial uploads, preventing hidden storage charges. |
+| **Lifecycle Rule 1** | **Delete objects after 7 days (Intended — Pending Verification)** | Intended specification to automatically prune dumps older than 7 days; requires verification in Cloudflare Dashboard. |
+| **Lifecycle Rule 2** | **Abort incomplete multipart uploads after 7 days (Intended — Pending Verification)** | Intended specification to automatically clean up partial uploads; requires verification in Cloudflare Dashboard. |
 | **API Token** | `vibelock-backup-automation` | Scoped token with **Object Read & Write** permissions restricted strictly to `vibelock-db-backups`. |
 
 ---
@@ -108,7 +108,7 @@ The offsite backup bucket has been provisioned under the owner's Cloudflare acco
   - **Egress:** **$0.00 / GB (Always Free)**.
 - **VibeLock Projected Footprint:**
   - A compressed daily database dump is estimated between 5 MB and 50 MB.
-  - With a 7-day retention policy, the steady-state storage footprint is approximately **35 MB to 350 MB**, consuming less than 4% of the 10 GB free allowance.
+  - Under the intended 7-day retention policy (once verified and active in Cloudflare R2), the steady-state storage footprint is approximately **35 MB to 350 MB**, consuming less than 4% of the 10 GB free allowance.
 - **Disclaimer:** Zero cost cannot be legally guaranteed if storage volume, operation count, or runner minutes exceed applicable provider free-tier limits.
 
 ---
@@ -304,6 +304,27 @@ pg_restore --list vibelock-decrypted.dump | head -n 25
 | Prisma migration records | 12 |
 | Restore command result | `STAGING RESTORE COMPLETED SUCCESSFULLY.` |
 
+#### 5.5.1 Exact Verification Queries for Restored Staging Database
+Execute these queries against the restored staging database (`VibeLock-Staging`) to verify structure and migration counts:
+
+```sql
+-- 1. Verify Public Base Tables Count (Verified count: 35)
+SELECT COUNT(*) AS total_public_tables
+FROM information_schema.tables
+WHERE table_schema = 'public'
+  AND table_type = 'BASE TABLE';
+
+-- 2. Verify Applied Prisma Migrations Count (Verified count: 12)
+SELECT COUNT(*) AS total_applied_migrations
+FROM "_prisma_migrations"
+WHERE rolled_back_at IS NULL;
+
+-- 3. Inspect All Applied Migrations in Order
+SELECT id, migration_name, finished_at, rolled_back_at
+FROM "_prisma_migrations"
+ORDER BY finished_at ASC;
+```
+
 **Production safety:** The restore was executed only against the separate staging project. No production database, production branch, production schema, or production migration was modified.
 
 **Important validation boundary:** The archive checksum, decryption, archive listing, restore completion, public table count, and Prisma migration count were verified. The SQL orphan-record and inventory-ledger queries in Section 6, plus application-level admin/order workflows, remain follow-up validation items; do not mark those checks complete until their outputs are recorded.
@@ -348,7 +369,7 @@ All tested Preview responses included `X-Robots-Tag: noindex`.
 
 **Blocking findings before calling the staging drill application-complete:**
 
-1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release.
+1. The tested staging deployment's canonical metadata pointed to `https://vibelock.com.bd`, which is not the VibeLock production canonical domain. Do not promote this staging deployment or treat its SEO metadata as correct. The production canonical domain remains `https://vibelock.bd`; fix and verify the branch before any production release. *(Resolved: Canonical domain configuration is defined as `https://vibelock.bd` in application site configuration `src/lib/seo/site.ts`).*
 2. The tested deployment was built from staging commit `9f536757feed09e939002a14c6c3d68592a7279f` (October 10, 2026), not a current post-restore application commit. Re-deploy the intended, current staging commit before functional testing.
 3. HTTP 200 alone does not prove that authentication, authorization, product queries, cart persistence, checkout, order history, or admin workflows work. Those require browser/session tests using designated staging accounts and non-live integrations.
 4. Do not test real payment capture, real SMS/email delivery, or courier dispatch from staging. Use sandbox credentials and mocked courier behavior only.
@@ -483,28 +504,257 @@ If R2 API tokens expire or need routine rotation:
 
 ---
 
-## 8. Emergency Disaster Recovery Checklist
+## 8. Production Disaster Recovery Runbook (Destructive — Approval Required)
+
+### 8.1 Critical Safety Boundary & Authorization
+
+> [!CAUTION]
+> **HIGH-RISK DESTRUCTIVE OPERATION — STRICT WRITTEN OWNER APPROVAL REQUIRED**
+> Restoring a database snapshot into Production is a catastrophic recovery procedure. Any transaction, customer account, or order created after the backup snapshot timestamp will be permanently lost unless manually reconciled from gateway logs.
+> - **NEVER** run `pg_restore` directly against the live Production database without explicit, written authorization from the Project Owner.
+> - **NEVER** overwrite existing data in-place when Point-in-Time Recovery (PITR) or branch-swapping can achieve zero data loss.
+> - **ALWAYS** perform a pre-recovery safety dump of the existing production database before initiating any recovery cutover.
+
+---
+
+### 8.2 Disaster Recovery Decision Framework (Neon Branching vs. R2 Cold Restore)
+
+> [!IMPORTANT]
+> **Neon PITR Limits Require Dashboard Verification:**
+> Continuous WAL retention and Point-in-Time Recovery (PITR) / time-travel branching in Neon depend strictly on the active project plan and configured history retention (configurable in Neon Console $\rightarrow$ Project Settings $\rightarrow$ History Retention). The repository does not specify or guarantee a fixed PITR history retention limit (such as 6 hours). Operators must inspect the active Neon Console to confirm the available retention window before attempting branching.
+
+The operational choice between **Neon Branching (PITR)** and **Cloudflare R2 Cold Restore** depends on four technical criteria:
+1. **Available PITR History Window:** Check Neon Console $\rightarrow$ Project Settings $\rightarrow$ History Retention. Does the active Neon project retain continuous WAL history to a timestamp $T_{\text{safe}}$ prior to the incident?
+2. **Incident Scope & Infrastructure Health:**
+   - Logical corruption / accidental DDL / bad migration within an accessible Neon project: Neon branching is preferred if within history limits.
+   - Catastrophic failure / Neon account loss / provider outage: Offsite Cloudflare R2 backup is the independent source of truth.
+3. **Backup Age & Data-Loss Tolerance (RPO):**
+   - Branching can pinpoint an exact timestamp down to the second immediately preceding corruption.
+   - R2 cold restore rolls back to the latest completed backup snapshot (which may be up to 24 hours old under daily scheduling), requiring gateway payment reconciliation for the delta window.
+4. **Recovery Time Objective (RTO):** Neon branching creates a new branch compute endpoint in seconds; R2 cold restore requires downloading, decrypting with the offline key, and executing `pg_restore` (several minutes).
+
+#### Recovery Decision Matrix
+
+| Incident Scenario | Evaluation Condition | Primary Recovery Method | Secondary / Fallback Method |
+| :--- | :--- | :--- | :--- |
+| **Accidental DDL / Bad Migration / Logical Corruption** | Incident occurred **within available Neon PITR retention window** (verified in Neon Console) | **Neon Point-in-Time Recovery (PITR):** Create an isolated recovery branch from `main` at timestamp $T_{\text{safe}}$ immediately prior to the event. | Restore latest verified R2 backup into a new isolated recovery branch or database. |
+| **Data Corruption Beyond PITR History** | Incident occurred **outside available Neon PITR retention window**, or PITR is exhausted/unsupported on active plan | **Cloudflare R2 Encrypted Backup Restore:** Download `.dump.age`, verify SHA-256, decrypt with offline key, and restore into a new clean database/branch. | Reconcile missing transactions from gateway/courier logs from snapshot time to incident time. |
+| **Catastrophic Failure / Neon Account or Project Loss** | Neon project or AWS Singapore infrastructure is completely unavailable, corrupted, or deleted | **Cross-Provider / Fresh Instance R2 Restore:** Provision a new PostgreSQL instance (Neon or alternative cloud PostgreSQL) and restore from R2 offsite backup. | None (Offsite Cloudflare R2 backup is the independent source of truth). |
+
+---
+
+### 8.3 Step-by-Step Production Cutover Workflow (Branch Switch Pattern)
+
+To achieve zero downtime and eliminate the risk of a botched in-place restore, VibeLock uses the **Connection String Cutover Pattern** rather than in-place database drops.
+
+> [!CAUTION]
+> **MANDATORY OWNER APPROVAL — NO AUTOMATIC CUTOVER:**
+> - Production database connection string changes are **NEVER** automated.
+> - Every step in this workflow requires explicit, written approval from the Project Owner.
+> - **Zero Production Targeting in Restore:** All restore commands restore into an **isolated recovery target** (`$RECOVERY_TARGET_DIRECT_URL`). Never execute `pg_restore` against the active production compute (`$PROD_DIRECT_URL`).
+> - Destructive recovery commands must **never** be executed during routine audits, staging smoke tests, or preflight checks.
+
+```mermaid
+flowchart TD
+    Incident["1. Incident Detected & Class 1 Severity Declared"]
+    Auth["2. Written Owner Authorization Received"]
+    Freeze["3. Write Freeze: Enable Maintenance Mode & Pause Webhooks"]
+    PreDump["4. Pre-Recovery Snapshot: Dump live database to local safety file (READ-ONLY)"]
+    Restore["5. Restore & Verify: Restore R2 dump into NEW isolated Neon branch/database"]
+    Verify["6. Run Read-Only Verification Suite (35 tables, 12 migrations, 0 orphans)"]
+    Cutover["7. Cutover (OWNER APPROVAL REQUIRED): Update DATABASE_URL & DIRECT_URL in Vercel"]
+    Redeploy["8. Redeploy Production on Vercel (Flush cache & connection pool)"]
+    Smoke["9. Smoke Test Storefront Routes & Verify DB Writes"]
+    Unfreeze["10. Lift Maintenance Mode & Resume Traffic"]
+    Reconcile["11. Reconcile SSLCOMMERZ gateway payments during delta gap"]
+
+    Incident --> Auth --> Freeze --> PreDump --> Restore --> Verify --> Cutover --> Redeploy --> Smoke --> Unfreeze --> Reconcile
+```
+
+#### Detailed Execution Steps:
+
+1. **Declare Write Freeze:** Enable Maintenance Mode in Vercel middleware and pause webhook ingest for SSLCOMMERZ and shipping partners to prevent in-flight customer writes.
+2. **Execute Pre-Recovery Safety Snapshot (READ-ONLY):** Even if current data is corrupted, capture an immutable snapshot of the live database for forensic auditing before any cutover:
+   ```bash
+   # Read-only custom-format dump of live production database for safety/forensics
+   pg_dump --dbname="$PROD_DIRECT_URL" --format=custom --file="vibelock-pre-recovery-safety-$(date +%s).dump"
+   ```
+3. **Provision Clean Recovery Target (ISOLATED TARGET ONLY):**
+   - In Neon Console: Create a new project or isolated branch (e.g., `prod-recovery-YYYYMMDD`).
+   - Record its direct unpooled connection string as `RECOVERY_TARGET_DIRECT_URL` and pooled connection string as `RECOVERY_TARGET_DATABASE_URL`.
+   - **CRITICAL SAFETY RULE:** Do NOT set `RECOVERY_TARGET_DIRECT_URL` to the live production database (`PROD_DIRECT_URL`).
+4. **Download, Decrypt & Restore (DESTRUCTIVE TO ISOLATED TARGET ONLY — NOT FOR AUDITS):**
+   ```bash
+   # 1. Download encrypted dump and checksum from R2
+   aws s3 cp s3://vibelock-db-backups/postgres/<BACKUP_FILE>.dump.age . --endpoint-url "$R2_ENDPOINT"
+   aws s3 cp s3://vibelock-db-backups/postgres/<BACKUP_FILE>.dump.age.sha256 . --endpoint-url "$R2_ENDPOINT"
+
+   # 2. Verify integrity before decryption
+   sha256sum -c <BACKUP_FILE>.dump.age.sha256
+
+   # 3. Decrypt with offline master private key
+   age --decrypt -i vibelock-backup-identity.txt -o recovery.dump <BACKUP_FILE>.dump.age
+
+   # 4. Validate archive TOC (Read-only check)
+   pg_restore --list recovery.dump | head -n 30
+
+   # 5. Restore into the NEW clean recovery target (NEVER into PROD_DIRECT_URL)
+   pg_restore --dbname="$RECOVERY_TARGET_DIRECT_URL" --clean --if-exists --no-owner --no-privileges -v recovery.dump
+
+   # 6. Immediately securely delete local plaintext dump
+   rm -f recovery.dump
+   ```
+5. **Execute Read-Only Integrity Suite:** Run the SQL queries in Section 6 against the isolated recovery target:
+   - Confirm 35 public base tables.
+   - Confirm 12 applied Prisma migrations.
+   - Confirm 0 orphan records across OrderItems, Payments, Refunds, ReturnRequests, and InventoryTransactions.
+6. **Switch Connection Strings in Vercel (REQUIRES EXPLICIT WRITTEN OWNER APPROVAL):**
+   - **No Automatic Cutover:** This step modifies live production traffic routing and requires manual operator action.
+   - **Pre-Cutover Recording of Settings:** Record the existing production `DATABASE_URL` and `DIRECT_URL` values before changing them to enable immediate rollback if needed.
+   - In Vercel Project Settings $\rightarrow$ Environment Variables $\rightarrow$ Production:
+     - Update `DATABASE_URL` $\rightarrow$ Set to `RECOVERY_TARGET_DATABASE_URL` (pooled connection string for the recovery compute).
+     - Update `DIRECT_URL` $\rightarrow$ Set to `RECOVERY_TARGET_DIRECT_URL` (unpooled connection string for the recovery compute).
+7. **Redeploy Production:** Trigger a production deployment in Vercel to establish connections to the new database and purge edge caches.
+8. **Smoke Test & Lift Freeze:** Test critical storefront routes (`/`, `/products`, `/cart`, `/login`), place a test order with a designated test customer account, verify database persistence, and then remove Maintenance Mode.
+9. **Financial Reconciliation:** Pull transaction reports from SSLCOMMERZ merchant portal for transactions processed between the backup snapshot time and the cutover time, ensuring every customer payment has a corresponding order record.
+
+---
+
+### 8.3.1 Rollback Procedure & Data-Loss Protection (Reverting Production Cutover)
+
+> [!CAUTION]
+> **CRITICAL DATA-LOSS WARNING ON ROLLBACK:**
+> - **Post-Cutover Writes:** Once production traffic was directed to the recovery database, subsequent customer orders, user registrations, payment confirmations, and inventory updates may have been committed to it.
+> - **Silent Data Loss Risk:** Simply reverting `DATABASE_URL` and `DIRECT_URL` in Vercel to the previous database is **NOT** a complete or data-safe rollback on its own. Any transaction created on the recovery database after cutover will be stranded or permanently lost if connection strings are blindly swapped back.
+> - **Stop Writes First:** Application writes must be halted immediately (via Maintenance Mode) before any rollback actions begin.
+> - **Evaluate & Reconcile Before Reverting:** Operators must dump the recovery database and evaluate/reconcile post-cutover delta data (Orders, Payments, Users, Inventory) against gateway logs before switching connection strings.
+
+If post-cutover smoke tests fail, data anomalies are discovered, or the Project Owner authorizes aborting the cutover:
+
+1. **Stop Application Writes (Immediate Write Freeze):** Maintain or immediately re-enable storefront Maintenance Mode in Vercel and pause webhook ingest to stop new writes to the recovery database.
+2. **Capture Encrypted Post-Cutover Delta Snapshot:** Stream custom-format dump directly into `age` encryption to preserve all delta transactions without writing unencrypted plaintext to disk:
+   ```bash
+   # Enable pipefail so a pg_dump failure aborts the pipeline and cannot produce a truncated encrypted file
+   set -o pipefail
+
+   # Stream dump from recovery target directly into age encryption using the public recipient key
+   DELTA_FILE="vibelock-post-cutover-delta-$(date +%s).dump.age"
+   pg_dump --dbname="$RECOVERY_TARGET_DIRECT_URL" --format=custom | age -r "$BACKUP_AGE_RECIPIENT" -o "$DELTA_FILE"
+
+   # Generate cryptographic checksum immediately
+   sha256sum "$DELTA_FILE" > "${DELTA_FILE}.sha256"
+   ```
+   **Artifact Handling & Verification:**
+   - **Target Isolation:** Reads exclusively from `$RECOVERY_TARGET_DIRECT_URL`. Never target or connect to `$PROD_DIRECT_URL`.
+   - **Pipeline Integrity (`set -o pipefail`):** Standard shell pipelines only report the exit status of the final command (`age`). `set -o pipefail` ensures that if `pg_dump` fails (e.g., connection drop, serialization failure), the pipeline exits with an error status and cannot produce a silent, empty, or corrupt `.dump.age` artifact.
+   - **Zero Plaintext on Disk:** Streaming stdout directly into `age -r "$BACKUP_AGE_RECIPIENT"` ensures sensitive customer records and payment details are never written unencrypted to the local filesystem.
+   - **Archive TOC Verification:** Operators can verify archive integrity without writing plaintext to disk by streaming decryption into `pg_restore --list`:
+     ```bash
+     age --decrypt -i vibelock-backup-identity.txt "$DELTA_FILE" | pg_restore --list | head -n 30
+     ```
+3. **Evaluate & Reconcile Post-Cutover Records:**
+   - Query tables (`Order`, `Payment`, `User`, `InventoryTransaction`) on `$RECOVERY_TARGET_DIRECT_URL` for rows created after the cutover timestamp $T_{\text{cutover}}$.
+   - Cross-check against SSLCOMMERZ gateway transactions. If transactions occurred, record their IDs for manual reconciliation or re-insertion before reverting.
+4. **Revert Connection Strings in Vercel (Owner Approval Required):**
+   - In Vercel Project Settings $\rightarrow$ Environment Variables $\rightarrow$ Production:
+   - Revert `DATABASE_URL` to the pre-cutover production pooled connection string.
+   - Revert `DIRECT_URL` to the pre-cutover production unpooled connection string.
+5. **Redeploy Production on Vercel:** Trigger an immediate redeployment in Vercel to reconnect application instances to the original database and purge cached pools.
+6. **Verify Connectivity to Original Database:** Run unauthenticated smoke tests against `/` and `/products` to confirm the application successfully reconnects to the original database.
+7. **Post-Rollback Data Reconciliation:** Decrypt the verified delta artifact in an isolated environment and safely reconcile any legitimate post-cutover orders or customer updates back into the active production database.
+8. **Investigate Recovery Failure:** Keep the recovery target database (`RECOVERY_TARGET_DIRECT_URL`) intact for offline forensic analysis. Do not delete it until the root cause of the incident is resolved.
+
+---
+
+### 8.4 Emergency Disaster Recovery Checklist
 
 ```markdown
 [ ] 1. INCIDENT DECLARED: Classify severity (SEV-1). Notify Project Owner.
 [ ] 2. OWNER AUTHORIZATION: Obtain written owner authorization before touching production.
 [ ] 3. WRITE FREEZE: Enable Maintenance Mode on Vercel; pause payment/courier webhooks.
 [ ] 4. FORENSIC RECORD: Record incident detection time and save current database logs.
-[ ] 5. SELECT RECOVERY SOURCE:
-      - If <= 6h: Create isolated Neon branch at T_safe via Neon Console / CLI.
-      - If > 6h: Download offsite backup from R2, verify sha256, decrypt with offline age key.
-[ ] 6. RESTORE TO ISOLATED TARGET: Restore into a NEW isolated Neon branch or staging database (NEVER in-place production).
-[ ] 7. VERIFY INTEGRITY: Execute read-only SQL verification suite (Section 6).
+[ ] 5. PRE-RECOVERY SNAPSHOT: Execute read-only pg_dump against current production for forensic safety.
+[ ] 6. SELECT RECOVERY SOURCE:
+      - Verify active Neon PITR history window in Neon Console.
+      - If corruption occurred within available PITR history and Neon is healthy: Create isolated Neon branch at T_safe via Neon Console / CLI.
+      - If corruption exceeds PITR history or Neon project is lost/unreachable: Download latest offsite backup from R2, verify SHA-256, decrypt with offline age key.
+[ ] 7. RESTORE TO ISOLATED TARGET: Restore into a NEW isolated Neon branch or database (NEVER in-place production; NEVER target production DIRECT_URL).
+[ ] 8. VERIFY INTEGRITY: Execute read-only SQL verification suite (Section 6) on the isolated recovery target.
+      - Confirm 35 public base tables.
+      - Confirm 12 Prisma migrations.
       - Confirm 0 orphan records.
       - Confirm inventory ledger invariant holds.
-      - Confirm orders, payments, refunds match.
-[ ] 8. PRISMA VALIDATION: Run `npx prisma validate` against isolated target.
-[ ] 9. MEDIA AUDIT: Check Cloudinary image URLs for HTTP 200 reachability.
-[ ] 10. CUTOVER APPROVAL: Present verification evidence to Owner. Receive explicit written approval.
-[ ] 11. SWITCH CONNECTION: Update DATABASE_URL and DIRECT_URL in Vercel Production secrets.
-[ ] 12. REDEPLOY: Deploy and verify cache purge.
-[ ] 13. SMOKE TESTS: Execute GET smoke tests on /, /shop, /login, /register, and cart.
-[ ] 14. RESTORE TRAFFIC: Disable Maintenance Mode.
-[ ] 15. RECONCILIATION: Audit SSLCOMMERZ gateway transactions during delta gap; notify affected users.
-[ ] 16. POST-MORTEM: Complete blameless post-mortem report.
+[ ] 9. PRISMA VALIDATION: Run `npm run db:validate` against isolated recovery target.
+[ ] 10. MEDIA AUDIT: Check Cloudinary image URLs for HTTP 200 reachability.
+[ ] 11. CUTOVER APPROVAL: Present verification evidence to Owner. Receive explicit written approval before modifying production connection strings.
+[ ] 12. SWITCH CONNECTION: Record original connection strings for rollback, then update DATABASE_URL and DIRECT_URL in Vercel Production secrets.
+[ ] 13. REDEPLOY: Deploy production on Vercel and verify cache purge.
+[ ] 14. SMOKE TESTS: Execute GET smoke tests on /, /products, /login, /register, and cart. If smoke tests fail or rollback is needed, execute Rollback Procedure (Section 8.3.1: halt writes, capture encrypted recovery delta dump, reconcile records before reverting connection strings).
+[ ] 15. RESTORE TRAFFIC: Disable Maintenance Mode.
+[ ] 16. RECONCILIATION: Audit SSLCOMMERZ gateway transactions during delta gap; notify affected users.
+[ ] 17. POST-MORTEM: Complete blameless post-mortem report.
 ```
+
+---
+
+## 9. Retention Policy & Schedule Verification Guide
+
+### 9.1 Cloudflare R2 Retention Policy & Lifecycle Status
+
+The offsite backup architecture strictly distinguishes between verified object storage, unverified lifecycle rules, intended retention policies, and actual object retention behavior:
+
+| Status Dimension | Current Operational State | Verification Evidence / Method | Operational Significance |
+| :--- | :--- | :--- | :--- |
+| **Verified Backup Object Storage** | **VERIFIED** | GitHub Actions Run ID `44128346808` successfully uploaded `postgres/vibelock-2026-11-17-164031.dump.age` (117,019 B) and `.sha256` (102 B), verified with a remote SHA-256 match. | Encrypted dumps are confirmed properly structured and written to the `vibelock-db-backups` bucket. |
+| **Unverified Cloudflare Lifecycle Rules** | **UNVERIFIED (Requires Dashboard Verification)** | Programmatic S3 API lifecycle rule inspection is not configured in local tooling; Cloudflare Dashboard access is required. | It is **unconfirmed** whether automatic deletion rules are currently enabled in the bucket. Operators must not assume automatic deletion is active. |
+| **Intended Retention Policy** | **7-Day Sliding Window** | Architecture design specification (Section 2.2 / 2.3). | Designed to automatically prune backup objects older than 7 days, maintaining a steady-state storage footprint under 350 MB (< 4% of free tier). |
+| **Actual Retention Once Confirmed** | **Persistent until rules confirmed/configured** | Absent active lifecycle rules in Cloudflare R2, objects persist indefinitely. Once confirmed or added in Cloudflare Console, actual retention matches the 7-day rule. | Until an operator verifies or creates the rules in Cloudflare Dashboard, backup objects will accumulate indefinitely without automatic pruning. |
+
+#### Required Cloudflare Dashboard Verification Procedure:
+1. Log into the [Cloudflare Dashboard](https://dash.cloudflare.com/).
+2. Navigate to **R2** $\rightarrow$ **Overview** $\rightarrow$ Click **`vibelock-db-backups`**.
+3. Select the **Settings** tab.
+4. Scroll down to the **Object Lifecycle Rules** section.
+5. Check whether the following two rules exist:
+   - **Rule 1 (Dump Expiration):** Prefix `postgres/` $\rightarrow$ Action: **Delete objects** after **7 days**.
+   - **Rule 2 (Multipart Cleanup):** Bucket-wide (or Prefix `postgres/`) $\rightarrow$ Action: **Abort incomplete multipart uploads** after **7 days**.
+6. **Action if missing:** If no lifecycle rules appear, click **Add rule** to configure both rules according to the intended specification above.
+
+---
+
+### 9.2 Daily Schedule & Bangladesh Time Conversion
+
+| Parameter | Specification | Details |
+| :--- | :--- | :--- |
+| **Configured Cron Expression** | `'0 3 * * *'` | Runs daily at 03:00 UTC. |
+| **Timezone Conversion** | $\text{03:00 UTC} + 6\text{h} = \mathbf{09:00 \text{ Asia/Dhaka (BST)}}$ | 09:00 AM Bangladesh Standard Time (UTC+6). |
+| **Operational Rationale** | Off-peak morning window | Selected to run before peak e-commerce browsing hours in Bangladesh while compute load is minimal. |
+| **Current Operational Status** | **DISABLED / COMMENTED OUT** | In `.github/workflows/backup-neon-to-r2.yml`, lines 6–8 are commented out. The workflow operates in **manual-only mode (`workflow_dispatch`)** until the repository owner explicitly approves enabling the daily cron. |
+
+---
+
+## 10. Troubleshooting Common Backup & Restore Failures
+
+### 10.1 Backup Pipeline Failure Modes (GitHub Actions)
+
+| Error Message / Symptom | Root Cause | Resolution Step |
+| :--- | :--- | :--- |
+| `pg_dump: error: connection to server at ... failed: FATAL: password authentication failed` | `DIRECT_URL` secret has expired, contains mistyped credentials, or password was rotated in Neon. | Verify and update `DIRECT_URL` in GitHub Actions Secrets (`Settings` $\rightarrow$ `Secrets` $\rightarrow$ `Actions`). Must be the unpooled compute connection string. |
+| `pg_dump: error: query failed: ERROR: prepared transactions are not supported on pooler` | Workflow attempted to connect via pooled `DATABASE_URL` (PgBouncer) instead of direct `DIRECT_URL`. | Ensure `secrets.DIRECT_URL` points directly to the Neon compute endpoint (port 5432, `ep-...`), not the PgBouncer pooler (`ep-...-pooler...`). |
+| `age: error: recipient "..." has unrecognized format` | `BACKUP_AGE_RECIPIENT` secret is malformed, missing, or contains leading/trailing whitespace. | Re-copy the public recipient key generated by `age-keygen`. Key must begin with `age1...` (e.g. `age1ql3z...`). Never paste the private `AGE-SECRET-KEY-1...` key into GitHub Secrets. |
+| `upload failed: ... An error occurred (InvalidAccessKeyId) when calling the PutObject operation` | `R2_ACCESS_KEY_ID` or `R2_SECRET_ACCESS_KEY` is invalid, revoked, or mistyped. | Re-generate API token in Cloudflare Dashboard (`R2` $\rightarrow$ `Manage R2 API Tokens`) with Object Read & Write permissions and update GitHub Secrets. |
+| `upload failed: ... An error occurred (AccessDenied) when calling the PutObject operation` | R2 API token is scoped to a different bucket or lacks Write permissions. | Confirm token permission includes **Object Read & Write** and bucket scope includes `vibelock-db-backups`. |
+| `Integrity check failed: Remote SHA-256 does not match local checksum` | Network corruption, interrupted upload, or multipart chunk mismatch during R2 upload. | Workflow automatically fails and exits. Re-trigger manual workflow run (`backup-neon-to-r2.yml`). Inspect Cloudflare R2 status page if repeated. |
+| `Required secret '...' is missing or empty` | One of the 5 required secrets is missing from the GitHub Actions environment. | Ensure all 5 required secrets are configured in GitHub Repository Secrets: `DIRECT_URL`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, and `BACKUP_AGE_RECIPIENT`. |
+
+---
+
+### 10.2 Decryption & Restore Failure Modes (Operator / Local)
+
+| Error Message / Symptom | Root Cause | Resolution Step |
+| :--- | :--- | :--- |
+| `age: error: no identity matched any of the recipients` | Attempting decryption with the wrong identity file or key pair. | Use the exact private identity file (`vibelock-backup-identity.txt`) that corresponds to the `BACKUP_AGE_RECIPIENT` public key used during backup. |
+| `pg_restore: error: unsupported version (1.15) in file header` | Local `pg_restore` utility version is older than source `pg_dump` version. | Upgrade local PostgreSQL client tools to match or exceed source database version (PostgreSQL 16+ or 18+). Run `pg_restore --version` to check. |
+| `pg_restore: error: could not execute query: ERROR: relation "..." already exists` | Target database already contains existing tables and `--clean --if-exists` was omitted. | Pass `--clean --if-exists` flags to `pg_restore`, or restore into an empty database / fresh Neon branch. |
+| `sha256sum: WARNING: 1 computed checksum did NOT match` | Downloaded `.dump.age` file is corrupted or incomplete. | Re-download the backup file from R2 using `aws s3 cp`. Verify file size matches size recorded in GitHub Actions workflow log. |
+| `could not connect to server: Connection refused / Operation timed out` | Target Neon compute is suspended (scale-to-zero) or IP is blocked by network firewall. | Connect via `psql` or Neon Console to wake the compute endpoint before running `pg_restore`. Ensure `sslmode=require` is present in connection string. |
