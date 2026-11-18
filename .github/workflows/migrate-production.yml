@@ -1,8 +1,11 @@
 name: Production Database Migration
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
     branches: ["main"]
+    types:
+      - completed
   workflow_dispatch: # Allow manual trigger
 
 concurrency:
@@ -11,16 +14,50 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   migrate:
     name: Run Prisma Migrate Deploy
     runs-on: ubuntu-latest
     environment: production
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') || github.event_name == 'workflow_dispatch' }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Verify CI Status for Manual Dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.sha }}
+        run: |
+          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
+            echo "::error::Production deployment is restricted to the 'main' branch."
+            exit 1
+          fi
+
+          echo "Verifying CI status for commit $TARGET_SHA on branch ${{ github.ref_name }}..."
+          CI_RUN_DATA=$(gh run list --repo "${{ github.repository }}" --workflow=ci.yml --commit="$TARGET_SHA" --json status,conclusion --jq '.[0]')
+
+          if [ -z "$CI_RUN_DATA" ] || [ "$CI_RUN_DATA" = "null" ]; then
+            echo "::error::No CI workflow run found for commit $TARGET_SHA. Automated CI must run and pass on main before deploying to production."
+            exit 1
+          fi
+
+          CONCLUSION=$(echo "$CI_RUN_DATA" | jq -r '.conclusion // empty')
+          STATUS=$(echo "$CI_RUN_DATA" | jq -r '.status // empty')
+
+          echo "CI Run Status: $STATUS, Conclusion: $CONCLUSION"
+          if [ "$CONCLUSION" != "success" ]; then
+            echo "::error::Cannot deploy commit $TARGET_SHA to Production: CI run is '$STATUS' with conclusion '$CONCLUSION'. Only successfully verified commits can be deployed."
+            exit 1
+          fi
+
+          echo "Pre-flight CI check passed successfully for commit $TARGET_SHA."
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
