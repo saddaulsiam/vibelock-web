@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { getAdminInventory, type InventoryFilter } from "./inventory-queries";
 import {
   getAdminInventoryIntelligence,
@@ -33,7 +34,13 @@ export async function adjustInventoryAction(
   _previous: InventoryActionState,
   formData: FormData
 ): Promise<InventoryActionState> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  try {
+    await checkRateLimit("adminInventory", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many inventory adjustment attempts. Please try again later." };
+  }
 
   const parsed = adjustmentSchema.safeParse({
     variantId: formData.get("variantId"),
@@ -82,6 +89,23 @@ export async function adjustInventoryAction(
           notes: reason,
         },
       });
+
+      // Authoritative audit log for inventory adjustment (SEC-10)
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "INVENTORY_ADJUSTED",
+          entityType: "ProductVariant",
+          entityId: variantId,
+          metadata: {
+            quantity,
+            reason,
+            previousStock: currentStock,
+            newStock: currentStock + quantity,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -109,7 +133,13 @@ export async function quickAdjustInventoryAction({
   reason: string;
   type?: InventoryTransactionType;
 }): Promise<InventoryActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
+
+  try {
+    await checkRateLimit("adminInventory", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many inventory adjustment attempts. Please try again later." };
+  }
 
   const q = Number(quantity);
   if (!Number.isInteger(q) || q === 0) {
@@ -163,6 +193,24 @@ export async function quickAdjustInventoryAction({
           notes: cleanReason,
         },
       });
+
+      // Authoritative audit log for quick inventory adjustment (SEC-10)
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "INVENTORY_QUICK_ADJUSTED",
+          entityType: "ProductVariant",
+          entityId: variantId,
+          metadata: {
+            quantity: q,
+            reason: cleanReason,
+            type,
+            previousStock: currentStock,
+            newStock: currentStock + q,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -193,7 +241,13 @@ export async function bulkAdjustInventoryAction({
   reason: string;
   type?: InventoryTransactionType;
 }): Promise<InventoryActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
+
+  try {
+    await checkRateLimit("adminInventory", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many inventory adjustment attempts. Please try again later." };
+  }
 
   if (!Array.isArray(variantIds) || variantIds.length === 0) {
     return { error: "No inventory items selected." };
@@ -249,6 +303,23 @@ export async function bulkAdjustInventoryAction({
           },
         });
       }
+
+      // Authoritative audit log for bulk inventory adjustment (SEC-10)
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "INVENTORY_BULK_ADJUSTED",
+          entityType: "ProductVariant",
+          entityId: "bulk",
+          metadata: {
+            variantCount: variantIds.length,
+            quantity: q,
+            reason: cleanReason,
+            type,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
     });
   } catch (error) {
     return {
@@ -299,7 +370,13 @@ export async function reconcileStocktakeAction({
   items: StocktakeReconcileItem[];
   auditNote?: string;
 }): Promise<InventoryActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
+
+  try {
+    await checkRateLimit("adminInventory", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many inventory adjustment attempts. Please try again later." };
+  }
 
   if (!Array.isArray(items) || items.length === 0) {
     return { error: "No stocktake items provided to reconcile." };
@@ -369,6 +446,21 @@ export async function reconcileStocktakeAction({
           },
         });
       }
+
+      // Authoritative audit log for stocktake reconciliation (SEC-10)
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "INVENTORY_STOCKTAKE_RECONCILED",
+          entityType: "Inventory",
+          entityId: "stocktake",
+          metadata: {
+            discrepancyCount: discrepancies.length,
+            auditNote: cleanNote,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
     });
   } catch (error) {
     return {

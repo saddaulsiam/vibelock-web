@@ -26,7 +26,11 @@ export type RateLimitEndpoint =
   | "verifyEmail"
   | "sessionManagement"
   | "accountDeletion"
-  | "search";
+  | "search"
+  | "adminUserManagement"
+  | "adminCustomerSecurity"
+  | "adminRefund"
+  | "adminInventory";
 
 interface LimitConfig {
   max: number;
@@ -46,6 +50,10 @@ const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   sessionManagement: { max: 10, windowMs: 15 * 60 * 1000 },
   accountDeletion: { max: 3, windowMs: 60 * 60 * 1000 },
   search: { max: 60, windowMs: 60 * 1000 },
+  adminUserManagement: { max: 30, windowMs: 10 * 60 * 1000 },
+  adminCustomerSecurity: { max: 30, windowMs: 15 * 60 * 1000 },
+  adminRefund: { max: 50, windowMs: 5 * 60 * 1000 },
+  adminInventory: { max: 100, windowMs: 5 * 60 * 1000 },
 };
 
 // In-memory sliding window rate limiter store
@@ -116,6 +124,18 @@ const accountDeletionLimiter = redis
   : null;
 const searchLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true })
+  : null;
+const adminUserManagementLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true })
+  : null;
+const adminCustomerSecurityLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
+  : null;
+const adminRefundLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "5 m"), analytics: true })
+  : null;
+const adminInventoryLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(100, "5 m"), analytics: true })
   : null;
 
 /**
@@ -216,6 +236,18 @@ export async function checkRateLimit(
         break;
       case "search":
         limiter = searchLimiter;
+        break;
+      case "adminUserManagement":
+        limiter = adminUserManagementLimiter;
+        break;
+      case "adminCustomerSecurity":
+        limiter = adminCustomerSecurityLimiter;
+        break;
+      case "adminRefund":
+        limiter = adminRefundLimiter;
+        break;
+      case "adminInventory":
+        limiter = adminInventoryLimiter;
         break;
     }
 
