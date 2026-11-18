@@ -1,11 +1,9 @@
 name: Neon PostgreSQL to Cloudflare R2 Automated Backup
 
 on:
-  # Automated daily schedule temporarily disabled for initial rollout.
-  # Will be re-enabled after successful manual verification & staging restore drill.
-  # schedule:
-  #   # Daily at 03:00 UTC (09:00 Asia/Dhaka)
-  #   - cron: '0 3 * * *'
+  schedule:
+    # Daily at 03:00 UTC (09:00 Asia/Dhaka)
+    - cron: '0 3 * * *'
   workflow_dispatch:
     inputs:
       reason:
