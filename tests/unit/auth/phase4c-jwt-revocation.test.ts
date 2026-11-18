@@ -662,11 +662,26 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
         passwordHash: "valid-hash",
       } as any);
 
-      const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
-        return Promise.all(fns);
-      });
       const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 3 });
-      vi.spyOn(prisma.user, "delete").mockResolvedValue({} as any);
+      const deleteUserSpy = vi.spyOn(prisma.user, "delete").mockResolvedValue({} as any);
+
+      const txMock: any = {
+        $queryRaw: vi.fn().mockResolvedValue([{ id: "user-delete" }]),
+        order: { count: vi.fn().mockResolvedValue(0) },
+        returnRequest: { count: vi.fn().mockResolvedValue(0) },
+        refund: { count: vi.fn().mockResolvedValue(0) },
+        cart: { deleteMany: vi.fn().mockResolvedValue({ count: 0 }) },
+        session: { deleteMany: deleteSessionsSpy },
+        auditLog: { create: vi.fn().mockResolvedValue({ id: "audit-del" }) },
+        user: { delete: deleteUserSpy },
+      };
+
+      const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (arg: any) => {
+        if (typeof arg === "function") {
+          return arg(txMock);
+        }
+        return Promise.all(arg);
+      });
 
       const result = await deleteAccountAction({ password: "ValidPassword123!" });
 

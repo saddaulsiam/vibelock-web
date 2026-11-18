@@ -1,8 +1,26 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest";
+import { describe, test, expect, beforeAll, afterAll, vi } from "vitest";
 import path from "path";
 import fs from "fs";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma, Role } from "@prisma/client";
 import { lockCustomerUser } from "@/lib/checkout/actions";
+import { deleteAccountAction } from "@/app/actions/account-deletion";
+import { createReturnRequestAction } from "@/lib/returns/actions";
+import { RefundService } from "@/lib/refunds/service";
+import bcrypt from "bcryptjs";
+
+let mockSessionUser: { id: string; email: string; name?: string; role: Role } | null = null;
+
+vi.mock("@/auth", () => ({
+  auth: vi.fn(async () => {
+    if (!mockSessionUser) return null;
+    return { user: mockSessionUser };
+  }),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  updateTag: vi.fn(),
+}));
 
 // Resolve and validate dedicated isolated test database URL
 let testDbUrl = process.env.DATABASE_URL || "";
@@ -264,5 +282,997 @@ describe("Phase 9 Real PostgreSQL Concurrency Verification", () => {
     expect(conn2CheckoutBlockedDurationMs).toBeGreaterThanOrEqual(100);
     expect(checkoutError).not.toBeNull();
     expect(checkoutError!.message).toBe("CUSTOMER_NOT_FOUND");
+  });
+
+  // =========================================================================
+  // SEC-9 Return/Refund Concurrency Tests (Phase 9 fix)
+  // =========================================================================
+
+  test("3. Account deletion starts first; return creation is blocked on User lock and sees user gone after deletion commits", async () => {
+    const ts = Date.now() + 2;
+    const testUser = await isolatedPrisma.user.create({
+      data: {
+        email: `p9-del-return-${ts}@example.com`,
+        name: "Phase 9 Deletion vs Return",
+        role: "CUSTOMER",
+      },
+    });
+    createdUserIds.push(testUser.id);
+
+    // Create a DELIVERED order for this user so a return could theoretically be attempted
+    const deliveredOrder = await isolatedPrisma.order.create({
+      data: {
+        orderNumber: `VL-P9-DR-${ts}`,
+        userId: testUser.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerName: "P9 Return Customer",
+        customerEmail: testUser.email,
+        shippingStreet: "1 Test St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        shippingCost: 60,
+        subtotal: 1000,
+        discount: 0,
+        taxAmount: 0,
+        taxRate: 0,
+        total: 1060,
+      },
+    });
+    createdOrderIds.push(deliveredOrder.id);
+
+    let deletionLockAcquired = false;
+    let deletionCommitted = false;
+    let returnBlockedDurationMs = 0;
+
+    // Transaction 1: Account deletion acquires User lock first (mirrors account-deletion.ts)
+    const deleteTxPromise = prismaConn1.$transaction(async (tx1) => {
+      await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      deletionLockAcquired = true;
+      // Check active returns guard (finds none — none were created yet)
+      const activeReturns = await tx1.returnRequest.count({
+        where: { order: { userId: testUser.id }, status: { in: ["PENDING", "APPROVED", "RECEIVED"] } },
+      });
+      expect(activeReturns).toBe(0); // Guard passes correctly
+      // Hold lock 150ms to let return creation attempt to run concurrently
+      await new Promise((r) => setTimeout(r, 150));
+      await tx1.user.delete({ where: { id: testUser.id } });
+      deletionCommitted = true;
+    });
+
+    while (!deletionLockAcquired) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+
+    // Transaction 2: Return creation now also acquires User lock FIRST (the fix).
+    // It must block in PostgreSQL until deletion commits, then find the user is gone.
+    let returnError: Error | null = null;
+    const returnTxPromise = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        // This SELECT FOR UPDATE on User must block until Conn1 releases the lock
+        await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+        returnBlockedDurationMs = Date.now() - startTime;
+
+        // After deletion commits, User row is gone — return creation must abort
+        const userStillExists = await tx2.user.findUnique({
+          where: { id: testUser.id },
+          select: { id: true },
+        });
+        if (!userStillExists) throw new Error("Order not found or access denied.");
+      })
+      .catch((err: Error) => {
+        returnError = err;
+      });
+
+    await Promise.all([deleteTxPromise, returnTxPromise]);
+
+    expect(deletionCommitted).toBe(true);
+    // Conn2 was blocked in PostgreSQL by Conn1's User lock (real mutual exclusion)
+    expect(returnBlockedDurationMs).toBeGreaterThanOrEqual(100);
+    // Return creation correctly aborted because the user was deleted
+    expect(returnError).not.toBeNull();
+    expect(returnError!.message).toBe("Order not found or access denied.");
+  });
+
+  test("4. Return creation starts first; account deletion blocks on User lock and correctly sees the new return after return commits", async () => {
+    const ts = Date.now() + 3;
+    const testUser = await isolatedPrisma.user.create({
+      data: {
+        email: `p9-return-del-${ts}@example.com`,
+        name: "Phase 9 Return First Then Delete",
+        role: "CUSTOMER",
+      },
+    });
+    createdUserIds.push(testUser.id);
+
+    const deliveredOrder = await isolatedPrisma.order.create({
+      data: {
+        orderNumber: `VL-P9-RD-${ts}`,
+        userId: testUser.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "COD",
+        customerName: "P9 Return First Customer",
+        customerEmail: testUser.email,
+        shippingStreet: "2 Test St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        shippingCost: 60,
+        subtotal: 1000,
+        discount: 0,
+        taxAmount: 0,
+        taxRate: 0,
+        total: 1060,
+      },
+    });
+    createdOrderIds.push(deliveredOrder.id);
+
+    let returnLockAcquired = false;
+    let returnCommitted = false;
+    let deletionBlockedDurationMs = 0;
+    let createdReturnId: string | null = null;
+
+    // Transaction 1: Return creation acquires User lock first (the fix)
+    const returnTxPromise = prismaConn1.$transaction(async (tx1) => {
+      await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      returnLockAcquired = true;
+      // Hold for 150ms while deletion tries concurrently
+      await new Promise((r) => setTimeout(r, 150));
+      // Lock Order, then create return (mirrors the fixed createReturnRequestAction)
+      await tx1.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${deliveredOrder.id} FOR UPDATE`;
+      const returnReq = await tx1.returnRequest.create({
+        data: { orderId: deliveredOrder.id, status: "PENDING" },
+      });
+      createdReturnId = returnReq.id;
+      returnCommitted = true;
+    });
+
+    while (!returnLockAcquired) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+
+    // Transaction 2: Account deletion also acquires User lock first — must block
+    let deleteSeenActiveReturns = 0;
+    const deleteTxPromise = prismaConn2.$transaction(async (tx2) => {
+      const startTime = Date.now();
+      // Blocks here until Conn1 commits
+      await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      deletionBlockedDurationMs = Date.now() - startTime;
+
+      // After return commits, the guard must see the new PENDING return
+      deleteSeenActiveReturns = await tx2.returnRequest.count({
+        where: { order: { userId: testUser.id }, status: { in: ["PENDING", "APPROVED", "RECEIVED"] } },
+      });
+      // Deletion must NOT proceed — rollback by throwing
+      throw new Error("DELETION_BLOCKED_BY_ACTIVE_RETURN");
+    }).catch(() => {});
+
+    await Promise.all([returnTxPromise, deleteTxPromise]);
+
+    expect(returnCommitted).toBe(true);
+    expect(createdReturnId).not.toBeNull();
+    // Deletion was genuinely blocked in PostgreSQL
+    expect(deletionBlockedDurationMs).toBeGreaterThanOrEqual(100);
+    // Guard correctly detected the return created by the concurrent transaction
+    expect(deleteSeenActiveReturns).toBe(1);
+
+    // Cleanup created return
+    await isolatedPrisma.returnRequest.delete({ where: { id: createdReturnId! } }).catch(() => {});
+  });
+
+  test("5. Account deletion starts first; refund initiation blocks on User lock and aborts when user is gone", async () => {
+    const ts = Date.now() + 4;
+    const testUser = await isolatedPrisma.user.create({
+      data: {
+        email: `p9-del-refund-${ts}@example.com`,
+        name: "Phase 9 Deletion vs Refund",
+        role: "CUSTOMER",
+      },
+    });
+    createdUserIds.push(testUser.id);
+
+    const deliveredOrder = await isolatedPrisma.order.create({
+      data: {
+        orderNumber: `VL-P9-DRF-${ts}`,
+        userId: testUser.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerName: "P9 Refund Customer",
+        customerEmail: testUser.email,
+        shippingStreet: "3 Test St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        shippingCost: 60,
+        subtotal: 1000,
+        discount: 0,
+        taxAmount: 0,
+        taxRate: 0,
+        total: 1060,
+      },
+    });
+    createdOrderIds.push(deliveredOrder.id);
+
+    const payment = await isolatedPrisma.payment.create({
+      data: {
+        orderId: deliveredOrder.id,
+        amount: new (await import("@prisma/client")).Prisma.Decimal("1060"),
+        status: "SUCCESS",
+        gateway: "sslcommerz",
+      },
+    });
+
+    let deletionLockAcquired = false;
+    let deletionCommitted = false;
+    let refundBlockedDurationMs = 0;
+
+    // Transaction 1: Account deletion acquires User → Order → Payment locks
+    const deleteTxPromise = prismaConn1.$transaction(async (tx1) => {
+      await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      deletionLockAcquired = true;
+      await tx1.$queryRaw`SELECT "id" FROM "Order" WHERE "userId" = ${testUser.id} FOR UPDATE`;
+      await tx1.$queryRaw`
+        SELECT p."id" FROM "Payment" p
+        JOIN "Order" o ON p."orderId" = o."id"
+        WHERE o."userId" = ${testUser.id}
+        FOR UPDATE
+      `;
+      // Guard: 0 active refunds — passes
+      await new Promise((r) => setTimeout(r, 150));
+      await tx1.user.delete({ where: { id: testUser.id } });
+      deletionCommitted = true;
+    });
+
+    while (!deletionLockAcquired) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+
+    // Transaction 2: Refund initiation now acquires User lock first (the fix),
+    // then Order, then Payment — must block until deletion commits.
+    let refundError: Error | null = null;
+    const refundTxPromise = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        // The fix: resolve userId from Payment → Order, then lock User first
+        const p = await tx2.payment.findUnique({
+          where: { id: payment.id },
+          select: { orderId: true, order: { select: { userId: true } } },
+        });
+        if (!p) throw new Error("Payment not found");
+        const uid = p.order.userId;
+        if (uid) {
+          // Blocks here until Conn1 releases the User lock
+          await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${uid} FOR UPDATE`;
+          refundBlockedDurationMs = Date.now() - startTime;
+          // After deletion commits, User no longer exists — guard against ghost refund
+          const userStillExists = await tx2.user.findUnique({ where: { id: uid }, select: { id: true } });
+          if (!userStillExists) throw new Error("Payment not found");
+        }
+        await tx2.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${p.orderId} FOR UPDATE`;
+        await tx2.$queryRaw`SELECT id FROM "Payment" WHERE id = ${payment.id} FOR UPDATE`;
+        // If we reached here (no exception), the refund creation would proceed — which should NOT happen
+        throw new Error("UNEXPECTED_REFUND_ALLOWED");
+      })
+      .catch((err: Error) => {
+        refundError = err;
+      });
+
+    await Promise.all([deleteTxPromise, refundTxPromise]);
+
+    expect(deletionCommitted).toBe(true);
+    expect(refundBlockedDurationMs).toBeGreaterThanOrEqual(100);
+    expect(refundError).not.toBeNull();
+    // The refund was aborted because the user was deleted, not because it slipped through
+    expect(refundError!.message).not.toBe("UNEXPECTED_REFUND_ALLOWED");
+
+    // Cleanup payment (order/user were deleted by the deletion tx)
+    await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+  });
+
+  test("6. Refund initiation starts first; account deletion blocks on User lock and correctly sees pending refund after refund commits", async () => {
+    const ts = Date.now() + 5;
+    const testUser = await isolatedPrisma.user.create({
+      data: {
+        email: `p9-refund-del-${ts}@example.com`,
+        name: "Phase 9 Refund First Then Delete",
+        role: "CUSTOMER",
+      },
+    });
+    createdUserIds.push(testUser.id);
+
+    const deliveredOrder = await isolatedPrisma.order.create({
+      data: {
+        orderNumber: `VL-P9-RFD-${ts}`,
+        userId: testUser.id,
+        status: "DELIVERED",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        customerName: "P9 Refund First Customer",
+        customerEmail: testUser.email,
+        shippingStreet: "4 Test St",
+        shippingCity: "Dhaka",
+        shippingCountry: "BD",
+        shippingMethodName: "Standard",
+        shippingCost: 60,
+        subtotal: 1000,
+        discount: 0,
+        taxAmount: 0,
+        taxRate: 0,
+        total: 1060,
+      },
+    });
+    createdOrderIds.push(deliveredOrder.id);
+
+    const payment = await isolatedPrisma.payment.create({
+      data: {
+        orderId: deliveredOrder.id,
+        amount: new (await import("@prisma/client")).Prisma.Decimal("1060"),
+        status: "SUCCESS",
+        gateway: "sslcommerz",
+      },
+    });
+
+    let refundLockAcquired = false;
+    let refundCommitted = false;
+    let deletionBlockedDurationMs = 0;
+    let createdRefundId: string | null = null;
+    let deletionSeenActiveRefunds = 0;
+
+    // Transaction 1: Refund acquires User → Order → Payment locks (the fix)
+    const refundTxPromise = prismaConn1.$transaction(async (tx1) => {
+      await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      refundLockAcquired = true;
+      await new Promise((r) => setTimeout(r, 150));
+      await tx1.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${deliveredOrder.id} FOR UPDATE`;
+      await tx1.$queryRaw`SELECT id FROM "Payment" WHERE id = ${payment.id} FOR UPDATE`;
+      const { Prisma: P } = await import("@prisma/client");
+      const refund = await tx1.refund.create({
+        data: { paymentId: payment.id, amount: new P.Decimal("100"), status: "PENDING" },
+      });
+      createdRefundId = refund.id;
+      refundCommitted = true;
+    });
+
+    while (!refundLockAcquired) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+
+    // Transaction 2: Account deletion blocks on User lock, then sees the committed refund
+    const deleteTxPromise = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        // Blocks until Conn1 (refund tx) releases User lock
+        await tx2.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+        deletionBlockedDurationMs = Date.now() - startTime;
+
+        await tx2.$queryRaw`SELECT "id" FROM "Order" WHERE "userId" = ${testUser.id} FOR UPDATE`;
+        await tx2.$queryRaw`
+          SELECT p."id" FROM "Payment" p
+          JOIN "Order" o ON p."orderId" = o."id"
+          WHERE o."userId" = ${testUser.id}
+          FOR UPDATE
+        `;
+
+        // Guard: must detect the PENDING refund created by the concurrent refund tx
+        deletionSeenActiveRefunds = await tx2.refund.count({
+          where: { payment: { order: { userId: testUser.id } }, status: { in: ["PENDING", "PROCESSING"] } },
+        });
+        // Deletion must NOT proceed
+        throw new Error("DELETION_BLOCKED_BY_ACTIVE_REFUND");
+      })
+      .catch(() => {});
+
+    await Promise.all([refundTxPromise, deleteTxPromise]);
+
+    expect(refundCommitted).toBe(true);
+    expect(createdRefundId).not.toBeNull();
+    expect(deletionBlockedDurationMs).toBeGreaterThanOrEqual(100);
+    // Critical: deletion saw 1 active refund (created by the concurrent tx) — guard fires
+    expect(deletionSeenActiveRefunds).toBe(1);
+
+    // Cleanup
+    await isolatedPrisma.refund.delete({ where: { id: createdRefundId! } }).catch(() => {});
+    await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+  });
+
+  test("7. Two concurrent deletion requests: second is blocked by first and sees consistent state after first commits", async () => {
+    const ts = Date.now() + 6;
+    const testUser = await isolatedPrisma.user.create({
+      data: {
+        email: `p9-double-del-${ts}@example.com`,
+        name: "Phase 9 Double Deletion",
+        role: "CUSTOMER",
+      },
+    });
+    createdUserIds.push(testUser.id);
+
+    let conn1LockAcquired = false;
+    let conn1Committed = false;
+    let conn2BlockedDurationMs = 0;
+    let conn2Error: Error | null = null;
+
+    // Transaction 1: First deletion acquires User lock and deletes
+    const deleteTx1 = prismaConn1.$transaction(async (tx1) => {
+      await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+      conn1LockAcquired = true;
+      await new Promise((r) => setTimeout(r, 150));
+      await tx1.user.delete({ where: { id: testUser.id } });
+      conn1Committed = true;
+    });
+
+    while (!conn1LockAcquired) {
+      await new Promise((r) => setTimeout(r, 10));
+    }
+
+    // Transaction 2: Second deletion attempt blocks on User lock, finds no user after Conn1 commits
+    const deleteTx2 = prismaConn2
+      .$transaction(async (tx2) => {
+        const startTime = Date.now();
+        // Blocks until Conn1 releases
+        const rows = await tx2.$queryRaw<Array<{ id: string }>>`
+          SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE
+        `;
+        conn2BlockedDurationMs = Date.now() - startTime;
+        // After Conn1 deleted the user, this returns empty — no user found
+        if (rows.length === 0) {
+          throw new Error("Account not found.");
+        }
+      })
+      .catch((err: Error) => {
+        conn2Error = err;
+      });
+
+    await Promise.all([deleteTx1, deleteTx2]);
+
+    expect(conn1Committed).toBe(true);
+    expect(conn2BlockedDurationMs).toBeGreaterThanOrEqual(100);
+    expect(conn2Error).not.toBeNull();
+    expect(conn2Error!.message).toBe("Account not found.");
+  });
+
+  // =========================================================================
+  // Real Application-Level Concurrency & Lifecycle Verification
+  // Invokes actual server actions / services:
+  // - deleteAccountAction
+  // - createReturnRequestAction
+  // - RefundService.initiateRefund
+  // =========================================================================
+  describe("Real Application-Level Concurrency & Lifecycle Verification", () => {
+    test("App-1: Account deletion wins; concurrent refund must not create a refund", async () => {
+      const ts = Date.now() + 10;
+      const testPassword = "ValidPassword123!";
+      const passwordHash = bcrypt.hashSync(testPassword, 10);
+      const testUser = await isolatedPrisma.user.create({
+        data: {
+          email: `app-del-refund-${ts}@example.com`,
+          name: "App Deletion vs Refund User",
+          role: "CUSTOMER",
+          passwordHash,
+        },
+      });
+      createdUserIds.push(testUser.id);
+
+      const deliveredOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-APP-DRF-${ts}`,
+          userId: testUser.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerName: "App Refund Customer",
+          customerEmail: testUser.email,
+          shippingStreet: "10 App St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 1000,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 1060,
+        },
+      });
+      createdOrderIds.push(deliveredOrder.id);
+
+      const payment = await isolatedPrisma.payment.create({
+        data: {
+          orderId: deliveredOrder.id,
+          amount: new Prisma.Decimal("1060"),
+          status: "SUCCESS",
+          gateway: "sslcommerz",
+        },
+      });
+
+      mockSessionUser = { id: testUser.id, email: testUser.email, role: "CUSTOMER" };
+
+      let deletionLockAcquired = false;
+      let refundBlockedDurationMs = 0;
+      let refundError: Error | null = null;
+
+      // Transaction 1: Connection 1 simulates deletion winning by holding User lock
+      // while calling the REAL RefundService.initiateRefund method concurrently on Conn2
+      const deleteTxPromise = prismaConn1.$transaction(async (tx1) => {
+        await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+        deletionLockAcquired = true;
+        // Hold lock for 150ms to force initiateRefund to block in PostgreSQL
+        await new Promise((r) => setTimeout(r, 150));
+        // Delete user
+        await tx1.user.delete({ where: { id: testUser.id } });
+      });
+
+      while (!deletionLockAcquired) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+
+      // Call actual RefundService.initiateRefund method
+      const refundService = new RefundService();
+      const refundPromise = (async () => {
+        const startTime = Date.now();
+        try {
+          await refundService.initiateRefund(payment.id, new Prisma.Decimal("500"), "App Concurrency Refund");
+        } catch (err) {
+          refundBlockedDurationMs = Date.now() - startTime;
+          refundError = err as Error;
+        }
+      })();
+
+      await Promise.all([deleteTxPromise, refundPromise]);
+
+      // Verify initiateRefund blocked in PostgreSQL on User lock
+      expect(refundBlockedDurationMs).toBeGreaterThanOrEqual(100);
+      // Verify initiateRefund threw because user was deleted while blocked
+      expect(refundError).not.toBeNull();
+      expect(refundError!.message).toContain("customer account deleted");
+
+      // Verify NO refund record was created in PostgreSQL
+      const refunds = await isolatedPrisma.refund.findMany({ where: { paymentId: payment.id } });
+      expect(refunds).toHaveLength(0);
+
+      // Clean up payment
+      await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+    });
+
+    test("App-2: Refund wins; deletion must correctly observe the pending refund", async () => {
+      const ts = Date.now() + 20;
+      const testPassword = "ValidPassword123!";
+      const passwordHash = bcrypt.hashSync(testPassword, 10);
+      const testUser = await isolatedPrisma.user.create({
+        data: {
+          email: `app-refund-first-${ts}@example.com`,
+          name: "App Refund Wins User",
+          role: "CUSTOMER",
+          passwordHash,
+        },
+      });
+      createdUserIds.push(testUser.id);
+
+      const deliveredOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-APP-RFD-${ts}`,
+          userId: testUser.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerName: "App Refund Wins Customer",
+          customerEmail: testUser.email,
+          shippingStreet: "20 App St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 1000,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 1060,
+        },
+      });
+      createdOrderIds.push(deliveredOrder.id);
+
+      const payment = await isolatedPrisma.payment.create({
+        data: {
+          orderId: deliveredOrder.id,
+          amount: new Prisma.Decimal("1060"),
+          status: "SUCCESS",
+          gateway: "sslcommerz",
+        },
+      });
+
+      mockSessionUser = { id: testUser.id, email: testUser.email, role: "CUSTOMER" };
+
+      // 1. Invoke actual RefundService.initiateRefund method
+      const refundService = new RefundService();
+      const refund = await refundService.initiateRefund(payment.id, new Prisma.Decimal("200"), "Customer Return Refund");
+      expect(refund.id).toBeDefined();
+      expect(refund.status).toBe("PENDING");
+
+      // 2. Invoke actual deleteAccountAction server action
+      const deleteResult = await deleteAccountAction({ password: testPassword });
+
+      // 3. Verify deleteAccountAction observed the pending refund and rejected
+      expect(deleteResult).toEqual({
+        error: "Cannot delete account while you have pending or processing refunds.",
+      });
+
+      // 4. Verify user was NOT deleted and still exists in PostgreSQL
+      const userStillExists = await isolatedPrisma.user.findUnique({ where: { id: testUser.id } });
+      expect(userStillExists).not.toBeNull();
+
+      // Clean up
+      await isolatedPrisma.refund.delete({ where: { id: refund.id } }).catch(() => {});
+      await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+    });
+
+    test("App-3: Account deletion wins; concurrent return creation must abort", async () => {
+      const ts = Date.now() + 30;
+      const testPassword = "ValidPassword123!";
+      const passwordHash = bcrypt.hashSync(testPassword, 10);
+      const testUser = await isolatedPrisma.user.create({
+        data: {
+          email: `app-del-return-${ts}@example.com`,
+          name: "App Deletion vs Return User",
+          role: "CUSTOMER",
+          passwordHash,
+        },
+      });
+      createdUserIds.push(testUser.id);
+
+      const product = await isolatedPrisma.product.create({
+        data: { name: `App Return Product ${ts}`, slug: `app-ret-${ts}`, status: "PUBLISHED" },
+      });
+      const variant = await isolatedPrisma.productVariant.create({
+        data: { productId: product.id, sku: `SKU-RET-${ts}`, costPrice: 100, sellingPrice: 300 },
+      });
+
+      const deliveredOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-APP-RET-${ts}`,
+          userId: testUser.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "COD",
+          customerName: "App Return Customer",
+          customerEmail: testUser.email,
+          shippingStreet: "30 App St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 600,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 660,
+          items: {
+            create: [
+              {
+                productName: "Returnable Item",
+                sku: variant.sku,
+                unitPrice: 300,
+                costPrice: 100,
+                lineSubtotal: 600,
+                lineTotal: 600,
+                quantity: 2,
+                taxRate: 0,
+                taxIncluded: false,
+              },
+            ],
+          },
+          shipment: {
+            create: {
+              trackingNumber: `TRK-RET-${ts}`,
+              provider: "STEADFAST",
+              status: "DELIVERED",
+              shippingAmount: 60,
+              deliveredAt: new Date(),
+            },
+          },
+        },
+        include: { items: true },
+      });
+      createdOrderIds.push(deliveredOrder.id);
+
+      mockSessionUser = { id: testUser.id, email: testUser.email, role: "CUSTOMER" };
+
+      let deletionLockAcquired = false;
+      let returnBlockedDurationMs = 0;
+
+      // Transaction 1: Connection 1 simulates deletion winning by holding User lock
+      const deleteTxPromise = prismaConn1.$transaction(async (tx1) => {
+        await tx1.$queryRaw`SELECT "id" FROM "User" WHERE "id" = ${testUser.id} FOR UPDATE`;
+        deletionLockAcquired = true;
+        // Hold lock 150ms while createReturnRequestAction runs concurrently
+        await new Promise((r) => setTimeout(r, 150));
+        // Delete user
+        await tx1.user.delete({ where: { id: testUser.id } });
+      });
+
+      while (!deletionLockAcquired) {
+        await new Promise((r) => setTimeout(r, 10));
+      }
+
+      // Call actual createReturnRequestAction server action
+      let returnResult: { success: boolean; error?: string } | null = null;
+      const returnPromise = (async () => {
+        const startTime = Date.now();
+        returnResult = await createReturnRequestAction({
+          orderNumber: deliveredOrder.orderNumber,
+          items: [{ orderItemId: deliveredOrder.items[0].id, quantity: 1 }],
+        });
+        returnBlockedDurationMs = Date.now() - startTime;
+      })();
+
+      await Promise.all([deleteTxPromise, returnPromise]);
+
+      expect(returnBlockedDurationMs).toBeGreaterThanOrEqual(100);
+      expect(returnResult).toEqual({
+        success: false,
+        error: "Order not found or access denied.",
+      });
+
+      // Verify NO return request was created in PostgreSQL
+      const returns = await isolatedPrisma.returnRequest.findMany({ where: { orderId: deliveredOrder.id } });
+      expect(returns).toHaveLength(0);
+
+      // Clean up variant & product
+      await isolatedPrisma.productVariant.delete({ where: { id: variant.id } }).catch(() => {});
+      await isolatedPrisma.product.delete({ where: { id: product.id } }).catch(() => {});
+    });
+
+    test("App-4: Return creation wins; deletion must correctly observe the active return", async () => {
+      const ts = Date.now() + 40;
+      const testPassword = "ValidPassword123!";
+      const passwordHash = bcrypt.hashSync(testPassword, 10);
+      const testUser = await isolatedPrisma.user.create({
+        data: {
+          email: `app-ret-first-${ts}@example.com`,
+          name: "App Return First User",
+          role: "CUSTOMER",
+          passwordHash,
+        },
+      });
+      createdUserIds.push(testUser.id);
+
+      const product = await isolatedPrisma.product.create({
+        data: { name: `App Ret Product 2 ${ts}`, slug: `app-ret2-${ts}`, status: "PUBLISHED" },
+      });
+      const variant = await isolatedPrisma.productVariant.create({
+        data: { productId: product.id, sku: `SKU-RET2-${ts}`, costPrice: 100, sellingPrice: 300 },
+      });
+
+      const deliveredOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-APP-RET2-${ts}`,
+          userId: testUser.id,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "COD",
+          customerName: "App Return First Customer",
+          customerEmail: testUser.email,
+          shippingStreet: "40 App St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 600,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 660,
+          items: {
+            create: [
+              {
+                productName: "Return Item 2",
+                sku: variant.sku,
+                unitPrice: 300,
+                costPrice: 100,
+                lineSubtotal: 600,
+                lineTotal: 600,
+                quantity: 2,
+                taxRate: 0,
+                taxIncluded: false,
+              },
+            ],
+          },
+          shipment: {
+            create: {
+              trackingNumber: `TRK-RET2-${ts}`,
+              provider: "STEADFAST",
+              status: "DELIVERED",
+              shippingAmount: 60,
+              deliveredAt: new Date(),
+            },
+          },
+        },
+        include: { items: true },
+      });
+      createdOrderIds.push(deliveredOrder.id);
+
+      mockSessionUser = { id: testUser.id, email: testUser.email, role: "CUSTOMER" };
+
+      // 1. Invoke actual createReturnRequestAction server action
+      const returnResult = await createReturnRequestAction({
+        orderNumber: deliveredOrder.orderNumber,
+        items: [{ orderItemId: deliveredOrder.items[0].id, quantity: 1 }],
+      });
+      expect(returnResult.success).toBe(true);
+
+      // 2. Invoke actual deleteAccountAction server action
+      const deleteResult = await deleteAccountAction({ password: testPassword });
+
+      // 3. Verify deleteAccountAction observed the active return and rejected
+      expect(deleteResult).toEqual({
+        error: "Cannot delete account while you have active return requests in progress.",
+      });
+
+      // 4. Verify user was NOT deleted
+      const userStillExists = await isolatedPrisma.user.findUnique({ where: { id: testUser.id } });
+      expect(userStillExists).not.toBeNull();
+
+      // Clean up return, variant, product
+      if (returnResult.success && "returnRequestId" in returnResult) {
+        await isolatedPrisma.returnItem.deleteMany({ where: { returnRequestId: returnResult.returnRequestId } }).catch(() => {});
+        await isolatedPrisma.returnRequest.delete({ where: { id: returnResult.returnRequestId } }).catch(() => {});
+      }
+      await isolatedPrisma.productVariant.delete({ where: { id: variant.id } }).catch(() => {});
+      await isolatedPrisma.product.delete({ where: { id: product.id } }).catch(() => {});
+    });
+
+    test("App-5: Guest-order refund remains functional", async () => {
+      const ts = Date.now() + 50;
+      // Guest order: userId is null
+      const guestOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-GUEST-${ts}`,
+          userId: null,
+          status: "DELIVERED",
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerName: "Guest Customer",
+          customerEmail: `guest-${ts}@example.com`,
+          shippingStreet: "50 Guest St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 800,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 860,
+        },
+      });
+      createdOrderIds.push(guestOrder.id);
+
+      const payment = await isolatedPrisma.payment.create({
+        data: {
+          orderId: guestOrder.id,
+          amount: new Prisma.Decimal("860"),
+          status: "SUCCESS",
+          gateway: "sslcommerz",
+        },
+      });
+
+      // Call actual RefundService.initiateRefund method on guest order
+      const refundService = new RefundService();
+      const refund = await refundService.initiateRefund(payment.id, new Prisma.Decimal("300"), "Guest Order Refund");
+
+      expect(refund.id).toBeDefined();
+      expect(refund.status).toBe("PENDING");
+      expect(refund.amount.toString()).toBe("300");
+
+      // Verify refund persisted correctly in PostgreSQL
+      const savedRefund = await isolatedPrisma.refund.findUnique({ where: { id: refund.id } });
+      expect(savedRefund).not.toBeNull();
+      expect(savedRefund!.paymentId).toBe(payment.id);
+
+      // Clean up
+      await isolatedPrisma.refund.delete({ where: { id: refund.id } }).catch(() => {});
+      await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+    });
+
+    test("App-6: Transaction rollback leaves no partial deletion or refund", async () => {
+      const ts = Date.now() + 60;
+      const testPassword = "ValidPassword123!";
+      const passwordHash = bcrypt.hashSync(testPassword, 10);
+      const testUser = await isolatedPrisma.user.create({
+        data: {
+          email: `app-rollback-${ts}@example.com`,
+          name: "App Rollback User",
+          role: "CUSTOMER",
+          passwordHash,
+        },
+      });
+      createdUserIds.push(testUser.id);
+
+      // Create session and cart for user
+      const session = await isolatedPrisma.session.create({
+        data: {
+          sessionToken: `token-rollback-${ts}`,
+          userId: testUser.id,
+          expires: new Date(Date.now() + 3600000),
+        },
+      });
+      const cart = await isolatedPrisma.cart.create({
+        data: {
+          userId: testUser.id,
+        },
+      });
+
+      // Create an active (PROCESSING) order which triggers deletion guard
+      const activeOrder = await isolatedPrisma.order.create({
+        data: {
+          orderNumber: `VL-ROLLBACK-${ts}`,
+          userId: testUser.id,
+          status: "PROCESSING", // Active status
+          paymentStatus: "SUCCESS",
+          paymentMethod: "ONLINE",
+          customerName: "Rollback User",
+          customerEmail: testUser.email,
+          shippingStreet: "60 Rollback St",
+          shippingCity: "Dhaka",
+          shippingCountry: "BD",
+          shippingMethodName: "Standard",
+          shippingCost: 60,
+          subtotal: 500,
+          discount: 0,
+          taxAmount: 0,
+          taxRate: 0,
+          total: 560,
+        },
+      });
+      createdOrderIds.push(activeOrder.id);
+
+      const payment = await isolatedPrisma.payment.create({
+        data: {
+          orderId: activeOrder.id,
+          amount: new Prisma.Decimal("560"),
+          status: "SUCCESS",
+          gateway: "sslcommerz",
+        },
+      });
+
+      mockSessionUser = { id: testUser.id, email: testUser.email, role: "CUSTOMER" };
+
+      // Sub-test A: Deletion rollback preserves user, cart, sessions, and creates no audit log
+      const delResult = await deleteAccountAction({ password: testPassword });
+      expect(delResult).toEqual({
+        error: "Cannot delete account while you have active, processing, or in-transit orders.",
+      });
+
+      // Verify atomic rollback in PostgreSQL:
+      const userAfterRollback = await isolatedPrisma.user.findUnique({ where: { id: testUser.id } });
+      expect(userAfterRollback).not.toBeNull();
+      const cartAfterRollback = await isolatedPrisma.cart.findUnique({ where: { userId: testUser.id } });
+      expect(cartAfterRollback).not.toBeNull();
+      const sessionsAfterRollback = await isolatedPrisma.session.findMany({ where: { userId: testUser.id } });
+      expect(sessionsAfterRollback).toHaveLength(1);
+      const auditLogsAfterRollback = await isolatedPrisma.auditLog.count({
+        where: { actorId: testUser.id, action: "CUSTOMER_SELF_DELETED" },
+      });
+      expect(auditLogsAfterRollback).toBe(0);
+
+      // Sub-test B: Refund rollback on invalid amount leaves no partial refund
+      const refundService = new RefundService();
+      // Amount 2000 exceeds payment amount 560
+      await expect(
+        refundService.initiateRefund(payment.id, new Prisma.Decimal("2000"), "Excessive Refund")
+      ).rejects.toThrow("Refund amount exceeds remaining refundable amount");
+
+      // Verify no refund record was created
+      const refundCount = await isolatedPrisma.refund.count({ where: { paymentId: payment.id } });
+      expect(refundCount).toBe(0);
+
+      // Clean up
+      await isolatedPrisma.payment.delete({ where: { id: payment.id } }).catch(() => {});
+      await isolatedPrisma.session.delete({ where: { id: session.id } }).catch(() => {});
+      await isolatedPrisma.cart.delete({ where: { id: cart.id } }).catch(() => {});
+    });
   });
 });

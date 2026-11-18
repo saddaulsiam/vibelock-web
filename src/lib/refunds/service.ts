@@ -33,6 +33,42 @@ export class RefundService {
    */
   async initiateRefund(paymentId: string, amount: Prisma.Decimal, reason?: string) {
     return await prisma.$transaction(async (tx) => {
+      // 0. Resolve the user who owns this payment's order so we can acquire
+      //    the User row lock BEFORE the Payment lock.
+      //    This matches account deletion's lock hierarchy (User → Order → Payment)
+      //    and prevents the race where:
+      //    - Account deletion holds User+Order+Payment locks, sees 0 pending refunds, proceeds.
+      //    - Concurrent refund initiation holds only the Payment lock and creates a Refund
+      //      row after deletion's guard check but before deletion commits.
+      //    With User locked first, refund initiation blocks until deletion either commits
+      //    (user gone → payment's order.userId is NULL → userId null → no lock target found)
+      //    or rolls back (safe to continue).
+      const paymentWithUser = await tx.payment.findUnique({
+        where: { id: paymentId },
+        select: { id: true, orderId: true, order: { select: { userId: true } } },
+      });
+      if (!paymentWithUser) throw new Error("Payment not found");
+
+      const userId = paymentWithUser.order.userId;
+      if (userId) {
+        // Lock User first (consistent hierarchy: User → Order → Payment)
+        const userLocks = await tx.$queryRaw<Array<{ id: string }>>`
+          SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE
+        `;
+        // If the order originally had a non-null userId, but the locked User query returns zero rows
+        // (i.e. user account was deleted concurrently while waiting for the lock), abort immediately.
+        if (!userLocks || userLocks.length === 0) {
+          throw new Error("Payment not found or customer account deleted");
+        }
+        // Then lock the Order
+        await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${paymentWithUser.orderId} FOR UPDATE`;
+      } else {
+        // Legitimate guest order (userId was already null before transaction):
+        // Lock Order to serialize against concurrent order/payment updates
+        await tx.$queryRaw`SELECT "id" FROM "Order" WHERE "id" = ${paymentWithUser.orderId} FOR UPDATE`;
+      }
+
+      // Finally lock the Payment row (original behaviour preserved)
       await tx.$queryRaw`SELECT id FROM "Payment" WHERE id = ${paymentId} FOR UPDATE`;
       const refundable = await this.getRefundableAmount(paymentId, tx);
       if (amount.lte(0)) {

@@ -119,7 +119,23 @@ export async function createReturnRequestAction(
 
   try {
     return await prisma.$transaction(async (tx) => {
-      // 1. Verify ownership and state
+      // 0. Acquire User row lock BEFORE the Order lock.
+      //    This matches the lock hierarchy used by account deletion
+      //    (User → Order → Payment) and prevents the following race:
+      //    - Account deletion holds User lock, sees 0 active returns, proceeds.
+      //    - Concurrent return creation holds only the Order lock and commits
+      //      a new ReturnRequest after deletion's guard check but before deletion commits.
+      //    By acquiring User first, return creation will block until account deletion
+      //    has either committed (User deleted → userLocks is empty / Order.userId is NULL)
+      //    or rolled back (User still present → guard fires correctly).
+      const userLocks = await tx.$queryRaw<Array<{ id: string }>>`
+        SELECT "id" FROM "User" WHERE "id" = ${userId} FOR UPDATE
+      `;
+      if (!userLocks || userLocks.length === 0) {
+        throw new Error("Order not found or access denied.");
+      }
+
+      // 1. Verify ownership and state — lock Order row after User lock is held
       await tx.$queryRaw`
         SELECT id FROM "Order"
         WHERE "orderNumber" = ${orderNumber} AND "userId" = ${userId}
