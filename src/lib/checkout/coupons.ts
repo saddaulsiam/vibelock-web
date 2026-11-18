@@ -121,6 +121,73 @@ export async function validateCustomerCouponEligibility(
 ): Promise<void> {
   const normalizedCode = couponCode.trim().toUpperCase();
 
+  // SEC-11: Personal store credit vouchers (VL-CREDIT-...) are issued exclusively to specific customers.
+  // Enforce customer account verification to prevent enumeration, leak exploitation, and store credit theft.
+  if (normalizedCode.startsWith("VL-CREDIT-")) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dbAny = db as any;
+    const hasReturnRequest = typeof dbAny.returnRequest?.findMany === "function";
+    const hasAuditLog = typeof dbAny.auditLog?.findMany === "function";
+
+    if (hasReturnRequest && hasAuditLog) {
+      let userEmail: string | null = null;
+      if (typeof dbAny.user?.findUnique === "function") {
+        try {
+          const userRec = await dbAny.user.findUnique({
+            where: { id: userId },
+            select: { email: true },
+          });
+          userEmail = userRec?.email ?? null;
+        } catch {
+          // Proceed with userId filter only
+        }
+      }
+
+      const userReturnRequests = await dbAny.returnRequest.findMany({
+        where: {
+          order: {
+            OR: [
+              { userId },
+              ...(userEmail ? [{ customerEmail: userEmail }] : []),
+            ],
+          },
+        },
+        select: { id: true },
+      });
+
+      const userReturnIds = (userReturnRequests as Array<{ id: string }>).map((r) => r.id);
+
+      if (userReturnIds.length === 0) {
+        throw new CouponError("This store credit voucher is not associated with your account.");
+      }
+
+      const userCreditAuditLogs = await dbAny.auditLog.findMany({
+        where: {
+          action: "STORE_CREDIT_ISSUED",
+          entityType: "ReturnRequest",
+          entityId: { in: userReturnIds },
+        },
+        select: { metadata: true },
+      });
+
+      let isOwner = false;
+      for (const log of (userCreditAuditLogs as Array<{ metadata: unknown }>)) {
+        const meta = (log.metadata as Record<string, unknown> | null) || {};
+        if (
+          typeof meta.couponCode === "string" &&
+          meta.couponCode.toUpperCase() === normalizedCode
+        ) {
+          isOwner = true;
+          break;
+        }
+      }
+
+      if (!isOwner) {
+        throw new CouponError("This store credit voucher is not associated with your account.");
+      }
+    }
+  }
+
   // SEC-8-02: Use exact delimiter matching to prevent substring/prefix false positives
   // (e.g. preventing 'WELCOME100' from matching 'WELCOME10').
   // Matches "Coupon applied: CODE (" from actions.ts or "Coupon applied: CODE" at the end of a note.

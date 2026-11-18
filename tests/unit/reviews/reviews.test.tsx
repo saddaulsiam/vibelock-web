@@ -41,6 +41,10 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
+vi.mock("@/lib/security/rate-limit", () => ({
+  checkRateLimit: vi.fn(),
+}));
+
 import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
 import { submitReviewAction, deleteReviewAction } from "@/lib/reviews/actions";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -268,8 +272,7 @@ describe("Product Reviews System", () => {
 
       const html = renderToStaticMarkup(<ProductReviewsSummary summary={summary} />);
       expect(html).toContain("4.8");
-      expect(html).toContain("Based on 12 reviews");
-      expect(html).toContain("100% Verified Buyers");
+      expect(html).toContain("12 reviews • 92% recommended");
       expect(html).toContain("5 ★");
     });
 

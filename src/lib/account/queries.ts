@@ -81,9 +81,46 @@ export async function getAccountOverview() {
       }),
     ]);
 
-  const unredeemedCoupons = activeCoupons.filter(
-    (c) => c.usageLimit === null || c.usageCount < c.usageLimit
-  );
+  const userReturnRequests = await prisma.returnRequest.findMany({
+    where: {
+      order: {
+        OR: [{ userId: user.id }, ...(user.email ? [{ customerEmail: user.email }] : [])],
+      },
+    },
+    select: { id: true },
+  });
+
+  const userReturnIds = userReturnRequests.map((r) => r.id);
+  const userCreditAuditLogs =
+    userReturnIds.length > 0
+      ? await prisma.auditLog.findMany({
+          where: {
+            action: "STORE_CREDIT_ISSUED",
+            entityType: "ReturnRequest",
+            entityId: { in: userReturnIds },
+          },
+          select: { metadata: true },
+        })
+      : [];
+
+  const userCreditCodes = new Set<string>();
+  for (const log of userCreditAuditLogs) {
+    const meta = (log.metadata as Record<string, unknown> | null) || {};
+    if (meta.couponCode && typeof meta.couponCode === "string") {
+      userCreditCodes.add(meta.couponCode.toUpperCase());
+    }
+  }
+
+  // SEC-11: Isolate personal store credit vouchers (VL-CREDIT-...) so other customers never see them
+  const unredeemedCoupons = activeCoupons.filter((c) => {
+    if (c.usageLimit !== null && c.usageCount >= c.usageLimit) {
+      return false;
+    }
+    if (c.code.toUpperCase().startsWith("VL-CREDIT-")) {
+      return userCreditCodes.has(c.code.toUpperCase());
+    }
+    return true;
+  });
 
   return {
     profile: {

@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma/client";
 import { sendNewsletterWelcomeEmail } from "@/lib/email/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { z } from "zod";
 
 const subscribeSchema = z.object({
@@ -19,6 +20,15 @@ export async function subscribeNewsletterAction(input: unknown) {
   }
 
   const { email, source } = parsed.data;
+
+  try {
+    await checkRateLimit("newsletter", email);
+  } catch {
+    return {
+      success: false,
+      error: "Too many subscription attempts. Please try again later.",
+    };
+  }
 
   try {
     // Save or update subscriber in DB — the NewsletterSubscriber model may not

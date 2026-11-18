@@ -27,6 +27,10 @@ export type RateLimitEndpoint =
   | "sessionManagement"
   | "accountDeletion"
   | "search"
+  | "newsletter"
+  | "profileUpdate"
+  | "customerUpload"
+  | "submitReview"
   | "adminUserManagement"
   | "adminCustomerSecurity"
   | "adminRefund"
@@ -50,6 +54,10 @@ const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   sessionManagement: { max: 10, windowMs: 15 * 60 * 1000 },
   accountDeletion: { max: 3, windowMs: 60 * 60 * 1000 },
   search: { max: 60, windowMs: 60 * 1000 },
+  newsletter: { max: 5, windowMs: 10 * 60 * 1000 },
+  profileUpdate: { max: 10, windowMs: 15 * 60 * 1000 },
+  customerUpload: { max: 10, windowMs: 10 * 60 * 1000 },
+  submitReview: { max: 10, windowMs: 10 * 60 * 1000 },
   adminUserManagement: { max: 30, windowMs: 10 * 60 * 1000 },
   adminCustomerSecurity: { max: 30, windowMs: 15 * 60 * 1000 },
   adminRefund: { max: 50, windowMs: 5 * 60 * 1000 },
@@ -124,6 +132,18 @@ const accountDeletionLimiter = redis
   : null;
 const searchLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true })
+  : null;
+const newsletterLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  : null;
+const profileUpdateLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  : null;
+const customerUploadLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
+  : null;
+const submitReviewLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
   : null;
 const adminUserManagementLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true })
@@ -236,6 +256,18 @@ export async function checkRateLimit(
         break;
       case "search":
         limiter = searchLimiter;
+        break;
+      case "newsletter":
+        limiter = newsletterLimiter;
+        break;
+      case "profileUpdate":
+        limiter = profileUpdateLimiter;
+        break;
+      case "customerUpload":
+        limiter = customerUploadLimiter;
+        break;
+      case "submitReview":
+        limiter = submitReviewLimiter;
         break;
       case "adminUserManagement":
         limiter = adminUserManagementLimiter;

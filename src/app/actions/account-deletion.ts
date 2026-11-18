@@ -163,6 +163,18 @@ export async function deleteAccountAction(data: { password?: string }) {
         },
       });
 
+      // 6b. Deactivate marketing newsletter subscriptions to uphold data privacy and consent
+      if (user.email) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const txAny = tx as any;
+        if (typeof txAny.newsletterSubscriber?.updateMany === "function") {
+          await txAny.newsletterSubscriber.updateMany({
+            where: { email: user.email.trim().toLowerCase() },
+            data: { isActive: false },
+          });
+        }
+      }
+
       // 7. Delete user record (Order and AuditLog use SetNull; Address, Review, Tokens use Cascade)
       await tx.user.delete({ where: { id: user.id } });
     });

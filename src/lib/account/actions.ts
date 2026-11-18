@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 import { validateImageFile, AVATAR_ALLOWED_IMAGE_MIMES } from "@/lib/media/validation";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 const addressSchema = z.object({
   label: z.string().trim().max(50).optional(),
@@ -146,6 +147,13 @@ export async function deleteAddressAction(id: string) {
 
 export async function updateProfileAction(input: unknown) {
   const user = await requireUser({ throw: true });
+
+  try {
+    await checkRateLimit("profileUpdate", user.id);
+  } catch {
+    return { success: false, error: "Too many profile updates. Please try again later." };
+  }
+
   const parsed = profileSchema.safeParse(input);
   if (!parsed.success)
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid profile data." };
@@ -185,7 +193,14 @@ export async function updateProfileAction(input: unknown) {
 }
 
 export async function uploadAvatarAction(formData: FormData) {
-  await requireUser({ throw: true });
+  const user = await requireUser({ throw: true });
+
+  try {
+    await checkRateLimit("customerUpload", user.id);
+  } catch {
+    return { success: false, error: "Too many upload attempts. Please try again later." };
+  }
+
   const file = formData.get("file") as File | null;
 
   if (!file || file.size === 0) {

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import prisma from "@/lib/prisma/client";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export interface SubmitReviewInput {
   productId: string;
@@ -26,6 +27,12 @@ export async function submitReviewAction(input: SubmitReviewInput): Promise<Revi
     const user = await getCurrentUser();
     if (!user || !user.id) {
       return { success: false, error: "Please log in to submit a review." };
+    }
+
+    try {
+      await checkRateLimit("submitReview", user.id);
+    } catch {
+      return { success: false, error: "Too many review attempts. Please try again later." };
     }
 
     const { productId, productSlug, rating, comment } = input;
