@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { Role } from "@prisma/client";
 import { hash } from "bcryptjs";
 import { z } from "zod";
@@ -24,7 +25,14 @@ export async function updateAdminUserRoleAction(input: {
 
   const { userId, newRole } = parsed.data;
 
-  // Prevent demoting self if sole admin
+  // Rate limiting for administrative user/role operations bound to authenticated admin ID (SEC-10)
+  try {
+    await checkRateLimit("adminUserManagement", currentAdmin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many admin management attempts. Please try again later." };
+  }
+
+  // Prevent demoting self if sole admin (pre-check)
   if (currentAdmin.id === userId && newRole !== "ADMIN") {
     const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
     if (adminCount <= 1) {
@@ -35,11 +43,21 @@ export async function updateAdminUserRoleAction(input: {
     }
   }
 
+  let previousRole: Role | null = null;
+  let targetUserEmail = "";
+
   try {
     await prisma.$transaction(async (tx) => {
-      // 1. Lock the user row to serialize role changes with concurrent password reset operations
-      const lockedUsers = await tx.$queryRaw<Array<{ id: string; role: Role }>>`
-        SELECT "id", "role"
+      // 1. Acquire PostgreSQL transaction-scoped advisory lock to serialize competing admin role mutations
+      if (typeof tx.$executeRaw === "function") {
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(982347102)`;
+      }
+
+      // 2. Lock the target user row to serialize role changes with concurrent password reset operations
+      const lockedUsers = await tx.$queryRaw<
+        Array<{ id: string; role: Role; email: string; name: string | null }>
+      >`
+        SELECT "id", "role", "email", "name"
         FROM "User"
         WHERE "id" = ${userId}
         FOR UPDATE
@@ -50,26 +68,61 @@ export async function updateAdminUserRoleAction(input: {
       }
 
       const currentUser = lockedUsers[0];
+      previousRole = currentUser.role;
+      targetUserEmail = currentUser.email;
+
+      // 3. Prevent demoting the sole remaining administrator (self or another admin)
+      if (currentUser.role === "ADMIN" && newRole !== "ADMIN") {
+        const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+        if (adminCount <= 1) {
+          throw new Error(
+            currentAdmin.id === userId
+              ? "Cannot demote yourself when you are the sole administrator."
+              : "Cannot demote the sole remaining administrator."
+          );
+        }
+      }
 
       // If the role is unchanged, do not invalidate sessions or tokens unnecessarily
       if (currentUser.role === newRole) {
         return;
       }
 
-      // 2. Update the user role
+      // 4. Update the user role
       await tx.user.update({
         where: { id: userId },
         data: { role: newRole as Role },
       });
 
-      // 3. Terminate all active sessions for the modified user to prevent privilege retention
+      // 5. Terminate all active sessions for the modified user to prevent privilege retention
       await tx.session.deleteMany({
         where: { userId },
       });
 
-      // 4. Invalidate all outstanding password reset tokens on role change
+      // 6. Invalidate all outstanding password reset tokens on role change
       await tx.passwordResetToken.deleteMany({
         where: { userId },
+      });
+
+      // 7. Authoritatively record role change audit log atomically inside the transaction (SEC-10)
+      const actorId =
+        typeof currentAdmin.id === "string" && z.string().uuid().safeParse(currentAdmin.id).success
+          ? currentAdmin.id
+          : null;
+
+      await tx.auditLog.create({
+        data: {
+          actorId,
+          action: "ADMIN_USER_ROLE_UPDATED",
+          entityType: "User",
+          entityId: userId,
+          metadata: {
+            targetEmail: targetUserEmail,
+            previousRole,
+            newRole,
+            actorName: currentAdmin.name || currentAdmin.email,
+          },
+        },
       });
     });
 
@@ -97,7 +150,15 @@ export async function createAdminUserAction(input: {
   role: "ADMIN" | "MANAGER" | "STAFF";
   password: string;
 }): Promise<{ success: boolean; error?: string }> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
+
+  // Rate limiting for admin user creation bound to authenticated admin ID (SEC-10)
+  try {
+    await checkRateLimit("adminUserManagement", admin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many admin creation attempts. Please try again later." };
+  }
+
   const parsed = createAdminUserSchema.safeParse(input);
   if (!parsed.success) {
     return { success: false, error: parsed.error.issues[0]?.message || "Invalid input." };
@@ -122,16 +183,39 @@ export async function createAdminUserAction(input: {
 
   try {
     const passwordHash = await hash(password, 12);
-    await prisma.user.create({
-      data: {
-        name,
-        email: cleanEmail,
-        phone: cleanPhone,
-        role: role as Role,
-        passwordHash,
-        emailVerified: new Date(),
-      },
-    });
+    const userId = crypto.randomUUID();
+    const actorId =
+      typeof admin.id === "string" && z.string().uuid().safeParse(admin.id).success
+        ? admin.id
+        : null;
+
+    // Atomically create user and audit log in one transaction (SEC-10)
+    await prisma.$transaction([
+      prisma.user.create({
+        data: {
+          id: userId,
+          name,
+          email: cleanEmail,
+          phone: cleanPhone,
+          role: role as Role,
+          passwordHash,
+          emailVerified: new Date(),
+        },
+      }),
+      prisma.auditLog.create({
+        data: {
+          actorId,
+          action: "ADMIN_USER_CREATED",
+          entityType: "User",
+          entityId: userId,
+          metadata: {
+            createdRole: role,
+            targetEmail: cleanEmail,
+            actorName: admin.name || admin.email,
+          },
+        },
+      }),
+    ]);
 
     revalidatePath("/admin/admins");
     return { success: true };

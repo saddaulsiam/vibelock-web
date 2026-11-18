@@ -29,11 +29,20 @@ export async function deleteAccountAction(data: { password?: string }) {
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { passwordHash: true },
+      select: { passwordHash: true, role: true },
     });
 
     if (!dbUser) {
       return { error: "Account not found." };
+    }
+
+    // SEC-10: Administrative and staff accounts cannot be deleted via customer self-service
+    const resolvedRole = dbUser.role ?? user.role;
+    if (resolvedRole === "ADMIN" || resolvedRole === "MANAGER" || resolvedRole === "STAFF") {
+      return {
+        error:
+          "Administrative and staff accounts cannot be self-deleted through customer settings. Contact system administration.",
+      };
     }
 
     // Require password if the account has a password

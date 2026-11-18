@@ -5,6 +5,7 @@ import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { RefundService } from "@/lib/refunds/service";
 import { ReturnService } from "@/lib/returns/service";
 import { getAdminReturns } from "./return-queries";
@@ -205,6 +206,13 @@ export async function initiateReturnRefundAction(
   formData: FormData
 ): Promise<AdminReturnActionState> {
   const admin = await requireRole("MANAGER", { throw: true });
+
+  try {
+    await checkRateLimit("adminRefund", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many refund operations. Please try again later." };
+  }
+
   const parsed = refundSchema.safeParse({
     returnId: String(formData.get("returnId") ?? ""),
     amount: String(formData.get("amount") ?? ""),
@@ -301,6 +309,13 @@ export async function processReturnRefundAction(
   formData: FormData
 ): Promise<AdminReturnActionState> {
   const admin = await requireRole("MANAGER", { throw: true });
+
+  try {
+    await checkRateLimit("adminRefund", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many refund operations. Please try again later." };
+  }
+
   const parsed = processRefundSchema.safeParse({
     returnId: String(formData.get("returnId") ?? ""),
     refundId: String(formData.get("refundId") ?? ""),
@@ -362,6 +377,13 @@ export async function recordManualReturnRefundAction(
   formData: FormData
 ): Promise<AdminReturnActionState> {
   const admin = await requireRole("MANAGER", { throw: true });
+
+  try {
+    await checkRateLimit("adminRefund", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many refund operations. Please try again later." };
+  }
+
   const parsed = recordManualRefundSchema.safeParse({
     returnId: String(formData.get("returnId") ?? ""),
     refundId: String(formData.get("refundId") ?? ""),
@@ -570,6 +592,12 @@ export async function issueStoreCreditRefundAction(
   formData: FormData
 ): Promise<AdminReturnActionState> {
   const admin = await requireRole("MANAGER", { throw: true });
+
+  try {
+    await checkRateLimit("adminRefund", admin.id, { skipIp: true });
+  } catch {
+    return { error: "Too many refund operations. Please try again later." };
+  }
 
   const returnId = String(formData.get("returnId") ?? "");
   const amountStr = String(formData.get("amount") ?? "");

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { appConfig } from "@/lib/config/app";
 import { sendPasswordResetEmail } from "@/lib/email/client";
 import { getAdminCustomers, type CustomerSegment, type CustomerSortBy } from "./customer-queries";
@@ -503,10 +504,16 @@ export async function toggleCustomerAccountSuspensionAction(
 export async function adminSendCustomerPasswordResetEmailAction(
   customerId: string
 ): Promise<{ success: boolean; error?: string }> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
 
   const cleanId = customerId?.trim();
   if (!cleanId) return { success: false, error: "Customer ID is required." };
+
+  try {
+    await checkRateLimit("adminCustomerSecurity", admin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many security reset requests. Please try again later." };
+  }
 
   try {
     const rawToken = crypto.randomBytes(32).toString("hex");
@@ -542,6 +549,20 @@ export async function adminSendCustomerPasswordResetEmailAction(
           expiresAt,
         },
       });
+
+      // Authoritative audit logging for admin-initiated password reset email (SEC-10)
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "CUSTOMER_PASSWORD_RESET_EMAIL_SENT",
+          entityType: "Customer",
+          entityId: verifiedCustomer.id,
+          metadata: {
+            targetEmail: recipientEmail,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
     });
 
     // Send email outside the transaction so database lock is not held during external request
@@ -570,15 +591,23 @@ export async function adminSendCustomerPasswordResetEmailAction(
 export async function adminGenerateCustomerPasswordResetLinkAction(
   customerId: string
 ): Promise<{ success: boolean; resetLink?: string; error?: string }> {
-  await requireRole("ADMIN");
+  const admin = await requireRole("ADMIN");
 
   const cleanId = customerId?.trim();
   if (!cleanId) return { success: false, error: "Customer ID is required." };
 
   try {
+    await checkRateLimit("adminCustomerSecurity", admin.id, { skipIp: true });
+  } catch {
+    return { success: false, error: "Too many security reset requests. Please try again later." };
+  }
+
+  try {
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24 hours validity
+
+    let customerEmail: string;
 
     await prisma.$transaction(async (tx) => {
       const lockedUsers = await tx.$queryRaw<Array<{ id: string; email: string; name: string | null }>>`
@@ -593,12 +622,28 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
       }
 
       const verifiedCustomer = lockedUsers[0];
+      customerEmail = verifiedCustomer.email;
 
       await tx.passwordResetToken.create({
         data: {
           userId: verifiedCustomer.id,
           tokenHash,
           expiresAt,
+        },
+      });
+
+      // Authoritative audit logging for admin reset link generation (SEC-10)
+      // Strictly omit raw reset token and reset URL from audit log
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "CUSTOMER_PASSWORD_RESET_LINK_GENERATED",
+          entityType: "Customer",
+          entityId: verifiedCustomer.id,
+          metadata: {
+            targetEmail: customerEmail,
+            actorName: admin.name || admin.email,
+          },
         },
       });
     });
