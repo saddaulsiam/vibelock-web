@@ -34,26 +34,29 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TARGET_SHA: ${{ github.sha }}
+          TARGET_REF: ${{ github.ref }}
+          REF_NAME: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
         run: |
-          if [ "${{ github.ref }}" != "refs/heads/main" ]; then
-            echo "::error::Production deployment is restricted to the 'main' branch."
+          if [ "$TARGET_REF" != "refs/heads/main" ]; then
+            echo "::error::Production deployment is restricted to the 'main' branch (attempted from $TARGET_REF)."
             exit 1
           fi
 
-          echo "Verifying CI status for commit $TARGET_SHA on branch ${{ github.ref_name }}..."
-          CI_RUN_DATA=$(gh run list --repo "${{ github.repository }}" --workflow=ci.yml --commit="$TARGET_SHA" --json status,conclusion --jq '.[0]')
+          echo "Verifying CI status for commit $TARGET_SHA on branch $REF_NAME in $REPO..."
+          RUN_INFO=$(gh run list --repo "$REPO" --workflow=ci.yml --branch=main --event=push --commit="$TARGET_SHA" --json databaseId,status,conclusion,event,headBranch --jq 'if length > 0 then (.[0] | "\(.status // "none") \(.conclusion // "none") \(.event // "none") \(.headBranch // "none")") else empty end')
 
-          if [ -z "$CI_RUN_DATA" ] || [ "$CI_RUN_DATA" = "null" ]; then
-            echo "::error::No CI workflow run found for commit $TARGET_SHA. Automated CI must run and pass on main before deploying to production."
+          if [ -z "$RUN_INFO" ] || [ "$RUN_INFO" = "null" ]; then
+            echo "::error::No completed push-event CI run found on branch 'main' for commit $TARGET_SHA. Automated CI must pass on main before deploying to production."
             exit 1
           fi
 
-          CONCLUSION=$(echo "$CI_RUN_DATA" | jq -r '.conclusion // empty')
-          STATUS=$(echo "$CI_RUN_DATA" | jq -r '.status // empty')
+          read -r STATUS CONCLUSION RUN_EVENT RUN_BRANCH <<< "$RUN_INFO"
 
-          echo "CI Run Status: $STATUS, Conclusion: $CONCLUSION"
-          if [ "$CONCLUSION" != "success" ]; then
-            echo "::error::Cannot deploy commit $TARGET_SHA to Production: CI run is '$STATUS' with conclusion '$CONCLUSION'. Only successfully verified commits can be deployed."
+          echo "CI Run Status: $STATUS, Conclusion: $CONCLUSION, Event: $RUN_EVENT, Branch: $RUN_BRANCH"
+
+          if [ "$STATUS" != "completed" ] || [ "$CONCLUSION" != "success" ] || [ "$RUN_EVENT" != "push" ] || [ "$RUN_BRANCH" != "main" ]; then
+            echo "::error::Cannot deploy commit $TARGET_SHA to Production: matching CI run has status='$STATUS', conclusion='$CONCLUSION', event='$RUN_EVENT', branch='$RUN_BRANCH'. A completed successful push-event CI run on branch 'main' is required."
             exit 1
           fi
 
