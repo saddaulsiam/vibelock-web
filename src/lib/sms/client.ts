@@ -151,7 +151,7 @@ export async function sendSmsNotification({
 
     return res.ok;
   } catch (error) {
-    console.error(`[SMS Error] Failed to send SMS to ${cleanPhone}:`, error);
+    console.error(`[SMS Error] Failed to send SMS to ${maskPhoneNumber(cleanPhone)}:`, error);
     return false;
   }
 }

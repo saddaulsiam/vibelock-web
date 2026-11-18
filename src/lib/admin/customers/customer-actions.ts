@@ -412,6 +412,17 @@ export async function deleteAdminCustomerAction(
       await tx.account.deleteMany({ where: { userId: cleanId } });
       await tx.passwordResetToken.deleteMany({ where: { userId: cleanId } });
 
+      if (customer.email) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const txAny = tx as any;
+        if (typeof txAny.newsletterSubscriber?.updateMany === "function") {
+          await txAny.newsletterSubscriber.updateMany({
+            where: { email: customer.email.trim().toLowerCase() },
+            data: { isActive: false },
+          });
+        }
+      }
+
       await tx.auditLog.create({
         data: {
           actorId: admin.id,

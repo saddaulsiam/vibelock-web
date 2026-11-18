@@ -8,6 +8,7 @@ import {
   ShippingProvider,
 } from "../types";
 import { env } from "@/lib/config/env";
+import { maskPhoneNumber } from "@/lib/sms/client";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -108,7 +109,10 @@ export class SteadfastCourierProvider implements ShippingProvider {
         signal: AbortSignal.timeout(15_000),
       });
     } catch (err) {
-      console.error("[SteadfastProvider] Request failed to URL:", `${this.baseUrl}${path}`, err);
+      const sanitizedPath = path.includes("/fraud_check/")
+        ? path.replace(/\/fraud_check\/([^/?#]+)/, (_, phone) => `/fraud_check/${maskPhoneNumber(decodeURIComponent(phone))}`)
+        : path;
+      console.error("[SteadfastProvider] Request failed to URL:", `${this.baseUrl}${sanitizedPath}`, err);
       throw new Error("Steadfast request failed.");
     }
 

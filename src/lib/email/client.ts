@@ -10,7 +10,8 @@ if (env.RESEND_API_KEY) {
   resendClient = new Resend(env.RESEND_API_KEY);
 }
 
-export function maskEmail(email: string): string {
+export function maskEmail(email: unknown): string {
+  if (typeof email !== "string" || !email.includes("@")) return "***@***";
   const [local, domain] = email.split("@");
   if (!domain || local.length <= 1) return "***@***";
   return `${local[0]}***@${domain}`;

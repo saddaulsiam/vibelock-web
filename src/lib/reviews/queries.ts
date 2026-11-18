@@ -2,6 +2,7 @@ import "server-only";
 
 import prisma from "@/lib/prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
+import { maskPhoneNumber } from "@/lib/sms/client";
 import type {
   ReviewItem,
   ReviewSummary,
@@ -52,6 +53,30 @@ export function calculateReviewSummary(reviews: Array<{ rating: number }>): Revi
 }
 
 /**
+ * Sanitizes customer names for public review display.
+ * Prevents raw phone numbers or email addresses from leaking if entered as a customer name.
+ */
+export function sanitizeReviewerName(name: string | null | undefined): string {
+  if (!name || typeof name !== "string") return "Verified Customer";
+  const trimmed = name.trim();
+  if (!trimmed) return "Verified Customer";
+
+  // If reviewer name contains an email address, mask local-part
+  if (trimmed.includes("@")) {
+    const [local, domain] = trimmed.split("@");
+    if (!domain || local.length <= 1) return "Customer";
+    return `${local[0]}***@${domain}`;
+  }
+
+  // If reviewer name is a phone number (e.g. 01XXXXXXXXX or +8801XXXXXXXXX), mask digits
+  if (/^(?:\+?880|0)1[3-9]\d{8}$/.test(trimmed) || /^\d{10,14}$/.test(trimmed)) {
+    return maskPhoneNumber(trimmed);
+  }
+
+  return trimmed;
+}
+
+/**
  * Get all published reviews for a product with full summary metrics
  */
 export async function getProductReviews(productId: string): Promise<{
@@ -83,7 +108,7 @@ export async function getProductReviews(productId: string): Promise<{
     updatedAt: r.updatedAt,
     user: {
       id: r.user.id,
-      name: r.user.name,
+      name: sanitizeReviewerName(r.user.name),
       image: r.user.image,
     },
   }));
