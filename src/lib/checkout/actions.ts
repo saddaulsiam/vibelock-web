@@ -269,7 +269,17 @@ export async function createOrderAction(
     where: { checkoutIdempotencyKey: trimmedIdempotencyKey },
   });
   if (existingOrder) {
-    if (existingOrder.userId !== session.user.id) return { success: false, error: "Unauthorized." };
+    if (existingOrder.userId !== session.user.id) {
+      const { logSecurityAlert, hashSecurityIdentifier } = await import(
+        "@/lib/monitoring/security-logger"
+      );
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "createOrderAction",
+        reason: "idempotency_ownership_mismatch",
+        orderHash: hashSecurityIdentifier(existingOrder.orderNumber),
+      });
+      return { success: false, error: "Unauthorized." };
+    }
     return { success: true, orderNumber: existingOrder.orderNumber };
   }
 
@@ -788,7 +798,7 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: "Payment initiation failed. You can retry from your orders page.",
+            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }
@@ -811,7 +821,7 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: "Payment initiation failed. You can retry from your orders page.",
+            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }
@@ -834,7 +844,7 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: "Payment initiation failed. You can retry from your orders page.",
+            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }

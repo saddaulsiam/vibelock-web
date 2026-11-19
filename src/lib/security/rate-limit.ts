@@ -40,7 +40,9 @@ export type RateLimitEndpoint =
   | "otpVerifyPhone"
   | "otpVerifyIp"
   | "otpSendPhone"
-  | "otpSendIp";
+  | "otpSendIp"
+  | "paymentInitiationUser"
+  | "paymentInitiationIp";
 
 interface LimitConfig {
   max: number;
@@ -72,6 +74,8 @@ const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   otpVerifyIp: { max: 20, windowMs: 10 * 60 * 1000 },
   otpSendPhone: { max: 5, windowMs: 10 * 60 * 1000 },
   otpSendIp: { max: 15, windowMs: 10 * 60 * 1000 },
+  paymentInitiationUser: { max: 10, windowMs: 15 * 60 * 1000 },
+  paymentInitiationIp: { max: 30, windowMs: 15 * 60 * 1000 },
 };
 
 // In-memory sliding window rate limiter store
@@ -178,6 +182,12 @@ const otpSendPhoneLimiter = redis
   : null;
 const otpSendIpLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "10 m"), analytics: true })
+  : null;
+const paymentInitiationUserLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  : null;
+const paymentInitiationIpLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
   : null;
 
 /**
@@ -373,6 +383,12 @@ export async function checkRateLimit(
         break;
       case "otpSendIp":
         limiter = otpSendIpLimiter;
+        break;
+      case "paymentInitiationUser":
+        limiter = paymentInitiationUserLimiter;
+        break;
+      case "paymentInitiationIp":
+        limiter = paymentInitiationIpLimiter;
         break;
     }
 
@@ -626,6 +642,79 @@ export async function checkOtpSendRateLimit(
 
   const phoneHash = hashForRateLimit(normalizedPhone);
   await checkRateLimit("otpSendPhone", phoneHash, { skipIp: true });
+}
+
+/**
+ * SEC-12-02: Payment Initiation Rate Limiter.
+ *
+ * Threshold Rationale:
+ * 1. Global per-IP ceiling (paymentInitiationIp): 30 attempts / 15 minutes.
+ *    - Uses trusted platform IP extraction from `getIp()`.
+ *    - Protects payment gateway APIs and merchant accounts from automated card-testing,
+ *      distributed payment flooding, and gateway API credential exhaustion.
+ *    - In shared NAT environments (e.g. Bangladesh mobile networks / universities),
+ *      30 attempts / 15 minutes provides ample capacity for multiple concurrent shoppers.
+ *    - Safe missing-IP handling: If trusted client IP cannot be resolved, logs a structured
+ *      warning and bypasses the global IP ceiling rather than grouping unidentifiable callers
+ *      into a shared "anonymous" bucket, avoiding shared-bucket DoS against innocent customers.
+ * 2. Authenticated Customer / Stable Identity throttling (paymentInitiationUser): 10 attempts / 15 minutes.
+ *    - Key: `paymentInitiationUser:${userHash}` using exact-byte HMAC mode (raw: true).
+ *    - 10 attempts in 15 minutes allows customers sufficient headroom to retry after card declines
+ *      or switch payment methods, while stopping script-driven abuse.
+ */
+export async function checkPaymentInitiationRateLimit(
+  userId?: string | null,
+  explicitIp?: string
+): Promise<void> {
+  const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
+
+  // 1. Global IP ceiling (defense against automated script attacks from a single IP)
+  if (resolvedIp && resolvedIp !== "unknown") {
+    await checkRateLimit("paymentInitiationIp", resolvedIp, { skipIp: true });
+  } else {
+    console.warn(
+      JSON.stringify({
+        event: "RATE_LIMIT_MISSING_CLIENT_IP",
+        level: "warn",
+        message:
+          "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket for payment initiation.",
+        timestamp: new Date().toISOString(),
+      })
+    );
+  }
+
+  // 2. Authenticated customer throttling (10 attempts / 15 min per customer)
+  if (userId && typeof userId === "string" && userId.trim()) {
+    const userHash = hashForRateLimit(userId, { raw: true });
+    await checkRateLimit("paymentInitiationUser", userHash, { skipIp: true });
+  }
+}
+
+/**
+ * Clears the customer-level payment initiation rate-limit counter upon successful checkout/payment.
+ */
+export async function clearPaymentInitiationRateLimit(userId: string): Promise<void> {
+  if (!userId || typeof userId !== "string" || !userId.trim()) return;
+  const userHash = hashForRateLimit(userId, { raw: true });
+  const identifier = `paymentInitiationUser:${userHash}`;
+
+  memoryStore.delete(identifier);
+
+  if (paymentInitiationUserLimiter) {
+    try {
+      await paymentInitiationUserLimiter.resetUsedTokens(identifier);
+    } catch (err) {
+      console.warn(
+        JSON.stringify({
+          event: "RATE_LIMIT_REDIS_RESET_ERROR",
+          level: "warn",
+          message: "Failed to reset Redis payment initiation counter.",
+          error: err instanceof Error ? err.message : "Unknown error",
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
+  }
 }
 
 /**

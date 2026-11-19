@@ -15,6 +15,7 @@ export const APPROVED_SECURITY_EVENTS = [
   "AUTH_ACCOUNT_SUSPENDED_LOGIN_ATTEMPT",
   "PAYMENT_TAMPERING_DETECTED",
   "PAYMENT_DUPLICATE_CAPTURE_ATTEMPT",
+  "PAYMENT_RATE_LIMIT_EXCEEDED",
 ] as const;
 
 export type SecurityEventName = (typeof APPROVED_SECURITY_EVENTS)[number];
@@ -36,6 +37,9 @@ export const APPROVED_METADATA_KEYS = new Set([
   "emailHash",
   "ipMasked",
   "status",
+  "gateway",
+  "referenceHash",
+  "orderHash",
 ]);
 
 export interface SecurityAlertMetadata {
@@ -48,6 +52,9 @@ export interface SecurityAlertMetadata {
   emailHash?: string;
   ipMasked?: string;
   status?: string;
+  gateway?: string;
+  referenceHash?: string;
+  orderHash?: string;
   [key: string]: unknown;
 }
 
