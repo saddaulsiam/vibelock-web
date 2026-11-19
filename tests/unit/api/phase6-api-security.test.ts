@@ -205,38 +205,19 @@ describe("Phase 6: API & Input Security Hardening", () => {
     });
 
     // =======================================================================
-    // SEC-6-01: Reverse-Proxy IP Extraction & Precedence Hardening
+    // SEC-6-01 / Phase 12.1: Reverse-Proxy IP Extraction & Ambiguity Rejection
     // =======================================================================
-    it("correctly extracts the last non-empty entry from a multi-hop X-Forwarded-For chain", async () => {
-      // Proxy chain: client -> proxy1 -> proxy2 -> edge
-      // Attacker controls first entry, proxy appends last entry
-      const forgedChain = "198.51.100.1, 203.0.113.195, 192.0.2.55";
+    it("rejects ambiguous comma-separated X-Forwarded-For chain and treats as missing IP", async () => {
+      // Ambiguous multi-hop chain without documented proxy configuration is rejected
+      const ambiguousChain = "198.51.100.1, 203.0.113.195, 192.0.2.55";
 
-      for (let i = 0; i < 60; i++) {
-        const req = new NextRequest("http://localhost:3000/api/search?q=tee", {
-          headers: { "x-forwarded-for": forgedChain },
-        });
-        mockFindManyProducts.mockResolvedValueOnce([]);
-        const res = await searchGet(req);
-        expect(res.status).toBe(200);
-      }
-
-      // 61st request with identical last IP should be rate-limited (429)
-      const throttledReq = new NextRequest("http://localhost:3000/api/search?q=tee", {
-        headers: { "x-forwarded-for": forgedChain },
-      });
-      const throttledRes = await searchGet(throttledReq);
-      expect(throttledRes.status).toBe(429);
-
-      // Request with different last IP but SAME forged first IP must succeed
-      // (proves rate limiting is keyed on last IP 192.0.2.55, not forged first IP 198.51.100.1)
-      const differentLastIpChain = "198.51.100.1, 203.0.113.195, 192.0.2.99";
       mockFindManyProducts.mockResolvedValueOnce([]);
-      const allowedReq = new NextRequest("http://localhost:3000/api/search?q=tee", {
-        headers: { "x-forwarded-for": differentLastIpChain },
+      const req = new NextRequest("http://localhost:3000/api/search?q=tee", {
+        headers: { "x-forwarded-for": ambiguousChain },
       });
-      const allowedRes = await searchGet(allowedReq);
-      expect(allowedRes.status).toBe(200);
+      const res = await searchGet(req);
+      // Fails open safely for anonymous search without throwing
+      expect(res.status).toBe(200);
     });
 
     it("gracefully handles empty or whitespace-only X-Forwarded-For header", async () => {

@@ -15,7 +15,7 @@ import { signIn, signOut, auth } from "@/auth";
 import { AuthError } from "next-auth";
 import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
-import { checkRateLimit } from "@/lib/security/rate-limit";
+import { checkRateLimit, checkOtpSendRateLimit } from "@/lib/security/rate-limit";
 import crypto from "crypto";
 import { sendEmailVerificationEmail } from "@/lib/email/client";
 import { sendOtp } from "@/lib/sms/client";
@@ -196,7 +196,7 @@ export async function sendPhoneOtpAction(data: PhoneOtpRequestInput) {
     const parsed = phoneOtpRequestSchema.parse(data);
 
     try {
-      await checkRateLimit("login", parsed.phone);
+      await checkOtpSendRateLimit(parsed.phone);
     } catch (e) {
       if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
         return { error: "Too many OTP requests. Please try again in a few minutes." };
@@ -226,15 +226,6 @@ export async function verifyPhoneOtpAction(data: PhoneOtpVerifyInput) {
   try {
     const parsed = phoneOtpVerifySchema.parse(data);
 
-    try {
-      await checkRateLimit("login", parsed.phone);
-    } catch (e) {
-      if (e instanceof Error && e.message === "RATE_LIMIT_EXCEEDED") {
-        return { error: "Too many attempts. Please try again later." };
-      }
-      return { error: "Authentication service is temporarily unavailable." };
-    }
-
     await signIn("credentials", {
       phone: parsed.phone,
       otp: parsed.otp,
@@ -244,6 +235,9 @@ export async function verifyPhoneOtpAction(data: PhoneOtpVerifyInput) {
 
     return { success: true };
   } catch (error) {
+    if (isRateLimitError(error)) {
+      return { error: "Too many attempts. Please try again later." };
+    }
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":

@@ -3,7 +3,7 @@ import { z } from "zod";
 import prisma from "@/lib/prisma/client";
 import { ProductStatus } from "@prisma/client";
 import { mapProductSummary } from "@/lib/catalog/mappers";
-import { checkRateLimit, getIp } from "@/lib/security/rate-limit";
+import { checkRateLimit, getIp, hashForRateLimit } from "@/lib/security/rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -18,30 +18,73 @@ const searchQuerySchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const realIp = request.headers.get("x-real-ip")?.trim();
-    const forwardedFor = request.headers.get("x-forwarded-for");
-    const forwardedParts = forwardedFor
-      ? forwardedFor.split(",").map((p) => p.trim()).filter(Boolean)
-      : [];
-    const lastForwarded =
-      forwardedParts.length > 0 ? forwardedParts[forwardedParts.length - 1] : null;
+    // Resolve client identifier for search rate limiting:
+    // 1. Primary: Trusted client IP from Vercel edge reverse proxy (x-real-ip / x-vercel-forwarded-for / x-forwarded-for).
+    // 2. Fallback when trusted IP is unavailable (e.g. local dev, test environments, or stripped headers):
+    //    a. Authenticated Users: Keyed by hashed session token (`sess:${hashForRateLimit(sessionToken, { raw: true })}`).
+    //       Uses exact token bytes without lowercasing/trimming to preserve token entropy and prevent collisions.
+    //       Provides isolated rate limiting (60 req/min) per logged-in account.
+    //    b. Guest Users with Cart: Keyed by hashed cart ID (`cart:${hashForRateLimit(cartId, { raw: true })}`).
+    //       Uses exact cart ID bytes without lowercasing/trimming.
+    //       Provides isolated rate limiting (60 req/min) per shopping session.
+    //    c. Anonymous Visitors with No IP & No Cookies:
+    //       LIMITATION & POLICY DOCUMENTATION:
+    //       Without a verified proxy-provided IP or a stable client cookie, anonymous requests
+    //       cannot be reliably differentiated from each other.
+    //       - A global shared "anonymous" bucket is rejected: it creates a critical shared-bucket DoS
+    //         vulnerability where one abusive visitor exhausts search quota for all unauthenticated users.
+    //       - User-Agent-based throttling is rejected: User-Agent is untrusted, trivially randomized by attackers
+    //         (bypassing any limit), while shared by millions of legitimate users (causing false-positive collisions).
+    //       - Policy Decision (Fail-Open with Structured Warning): For this public, read-only storefront search endpoint,
+    //         anonymous requests lacking trusted IP headers fail open (rate limiting is bypassed).
+    //         IMPORTANT: This fail-open policy does NOT provide DoS protection against high-volume automated traffic;
+    //         rather, it prioritizes search availability for legitimate visitors over a self-inflicted denial-of-service
+    //         from a shared bucket. Endpoint safety is bounded by strict input validation (q max 100 chars), hard
+    //         query limits (take: 8), and reading only published products. A structured server-side warning
+    //         (RATE_LIMIT_MISSING_CLIENT_IP) is emitted for operational visibility without logging PII.
+    const clientIp = await getIp(request.headers);
 
-    const clientIp =
-      (realIp && realIp.length > 0 ? realIp : null) ||
-      lastForwarded ||
-      (await getIp()) ||
-      "anonymous";
+    let searchIdentifier: string | null = null;
+    if (clientIp) {
+      searchIdentifier = clientIp;
+    } else {
+      const sessionToken =
+        request.cookies.get("authjs.session-token")?.value ||
+        request.cookies.get("__Secure-authjs.session-token")?.value;
+      const cartId = request.cookies.get("vbl_cart_id")?.value;
 
-    try {
-      await checkRateLimit("search", clientIp, { skipIp: true });
-    } catch (rateLimitErr) {
-      if (rateLimitErr instanceof Error && rateLimitErr.message === "RATE_LIMIT_EXCEEDED") {
-        return NextResponse.json(
-          { error: "Too many requests. Please slow down." },
-          { status: 429 }
+      if (sessionToken) {
+        searchIdentifier = `sess:${hashForRateLimit(sessionToken, { raw: true })}`;
+      } else if (cartId) {
+        searchIdentifier = `cart:${hashForRateLimit(cartId, { raw: true })}`;
+      } else {
+        // Anonymous request without trusted IP or cookies: fail-open policy
+        console.warn(
+          JSON.stringify({
+            event: "RATE_LIMIT_MISSING_CLIENT_IP",
+            level: "warn",
+            endpoint: "search",
+            policy: "fail_open",
+            message:
+              "Client IP could not be resolved from trusted proxy headers and no session/cart cookie present. Rate limit bypassed for public search (fail-open).",
+            timestamp: new Date().toISOString(),
+          })
         );
       }
-      throw rateLimitErr;
+    }
+
+    if (searchIdentifier) {
+      try {
+        await checkRateLimit("search", searchIdentifier, { skipIp: true });
+      } catch (rateLimitErr) {
+        if (rateLimitErr instanceof Error && rateLimitErr.message === "RATE_LIMIT_EXCEEDED") {
+          return NextResponse.json(
+            { error: "Too many requests. Please slow down." },
+            { status: 429 }
+          );
+        }
+        throw rateLimitErr;
+      }
     }
 
     const { searchParams } = new URL(request.url);
