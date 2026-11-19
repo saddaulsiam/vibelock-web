@@ -10,6 +10,7 @@ const SAFE_CONTEXT_KEYS = new Set([
   "nextjs",
   "app",
   "culture",
+  "security",
 ]);
 
 // Verified standard Sentry system tags (digest removed)
@@ -25,6 +26,8 @@ const SAFE_TAG_KEYS = new Set([
   "server_name",
   "os.name",
   "browser.name",
+  "security_event",
+  "event_type",
 ]);
 
 // Verified VibeLock parent segments whose dynamic child segments contain customer/order/admin IDs
@@ -264,6 +267,37 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
       event.contexts.nextjs = safeNextjs;
     } else {
       delete event.contexts.nextjs;
+    }
+
+    if (event.contexts.security && typeof event.contexts.security === "object") {
+      const rawSec = event.contexts.security as Record<string, unknown>;
+      const safeSec: Record<string, string | number | boolean> = {};
+      const ALLOWED_SEC_KEYS = new Set([
+        "endpoint",
+        "attemptCount",
+        "windowSeconds",
+        "role",
+        "reason",
+        "phoneHash",
+        "emailHash",
+        "ipMasked",
+        "status",
+      ]);
+
+      for (const [k, v] of Object.entries(rawSec)) {
+        if (!ALLOWED_SEC_KEYS.has(k)) continue;
+        if (typeof v === "number" && Number.isFinite(v)) {
+          safeSec[k] = v;
+        } else if (typeof v === "boolean") {
+          safeSec[k] = v;
+        } else if (typeof v === "string") {
+          safeSec[k] = scrubString(v);
+        }
+      }
+
+      event.contexts.security = safeSec;
+    } else {
+      delete event.contexts.security;
     }
   }
 

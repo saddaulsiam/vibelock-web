@@ -13,7 +13,13 @@ import Google from "next-auth/providers/google";
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { verifyOtp } from "@/lib/sms/client";
 import { isCustomerSuspended } from "@/lib/auth/suspension";
-import { checkLoginRateLimit, clearLoginRateLimit } from "@/lib/security/rate-limit";
+import {
+  checkLoginRateLimit,
+  clearLoginRateLimit,
+  checkOtpRateLimit,
+  clearOtpRateLimit,
+} from "@/lib/security/rate-limit";
+import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 export class RateLimitError extends CredentialsSignin {
   code = "rate_limit_exceeded";
@@ -245,10 +251,38 @@ export const authConfig: NextAuthConfig = {
         if (credentials?.phone && credentials?.otp) {
           const phone = normalizeBdPhoneNumber(credentials.phone as string);
           const otp = credentials.otp as string;
+
+          // Rate limit OTP verification attempts (per-phone hash & IP ceiling)
+          try {
+            await checkOtpRateLimit(phone);
+          } catch (error) {
+            if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
+              try {
+                logSecurityAlert("AUTH_OTP_RATE_LIMIT_EXCEEDED", {
+                  endpoint: "otpVerifyPhone",
+                  reason: "rate_limit_exceeded",
+                  phoneHash: hashSecurityIdentifier(phone),
+                });
+              } catch {
+                // Fail-safe
+              }
+              throw new RateLimitError();
+            }
+            console.error("OTP rate limit check error in authorize:", error);
+            throw new RateLimitError();
+          }
+
           const isValid = await verifyOtp(phone, otp);
 
           if (!isValid) {
             return null;
+          }
+
+          // Reset OTP rate limit counter on successful verification
+          try {
+            await clearOtpRateLimit(phone);
+          } catch (err) {
+            console.warn("Failed to clear OTP rate limit on success:", err);
           }
 
           let user = await prisma.user.findUnique({
@@ -275,6 +309,15 @@ export const authConfig: NextAuthConfig = {
           } else {
             // Check if customer account is suspended
             if (await isCustomerSuspended(user.id)) {
+              try {
+                logSecurityAlert("AUTH_ACCOUNT_SUSPENDED_LOGIN_ATTEMPT", {
+                  role: user.role,
+                  reason: "account_suspended",
+                  endpoint: "phone_otp",
+                });
+              } catch {
+                // Fail-safe
+              }
               return null;
             }
 
@@ -314,6 +357,15 @@ export const authConfig: NextAuthConfig = {
           await checkLoginRateLimit(email);
         } catch (error) {
           if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
+            try {
+              logSecurityAlert("AUTH_RATE_LIMIT_EXCEEDED", {
+                endpoint: "loginCompound",
+                reason: "rate_limit_exceeded",
+                emailHash: hashSecurityIdentifier(email),
+              });
+            } catch {
+              // Fail-safe
+            }
             throw new RateLimitError();
           }
           console.error("Rate limit check error in authorize:", error);
@@ -334,11 +386,33 @@ export const authConfig: NextAuthConfig = {
         const passwordsMatch = await compare(password, user.passwordHash);
 
         if (!passwordsMatch) {
+          // SEC-12-01: Log security event only for administrative account credential failures
+          if (user.role && user.role !== "CUSTOMER") {
+            try {
+              logSecurityAlert("AUTH_ADMIN_LOGIN_FAILED", {
+                role: user.role,
+                reason: "invalid_credentials",
+                emailHash: hashSecurityIdentifier(email),
+                endpoint: "credentials",
+              });
+            } catch {
+              // Fail-safe
+            }
+          }
           return null;
         }
 
         // Check if customer account is suspended
         if (await isCustomerSuspended(user.id)) {
+          try {
+            logSecurityAlert("AUTH_ACCOUNT_SUSPENDED_LOGIN_ATTEMPT", {
+              role: user.role,
+              reason: "account_suspended",
+              endpoint: "credentials",
+            });
+          } catch {
+            // Fail-safe
+          }
           return null;
         }
 

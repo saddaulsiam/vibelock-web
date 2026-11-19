@@ -275,10 +275,21 @@ describe("Phase 4B: Authentication Hardening & Post-Audit Remediation", () => {
       expect(resolvedIp).toBe("203.0.113.195");
     });
 
-    test("getIp falls back to last entry of x-forwarded-for when x-real-ip is missing", async () => {
+    test("getIp rejects ambiguous multi-value x-forwarded-for when x-real-ip is missing", async () => {
       mockHeaders.mockResolvedValueOnce(
         new Headers({
           "x-forwarded-for": "198.51.100.1, 203.0.113.50",
+        })
+      );
+
+      const resolvedIp = await getIp();
+      expect(resolvedIp).toBeNull();
+    });
+
+    test("getIp resolves single valid x-forwarded-for when x-real-ip is missing", async () => {
+      mockHeaders.mockResolvedValueOnce(
+        new Headers({
+          "x-forwarded-for": "203.0.113.50",
         })
       );
 
