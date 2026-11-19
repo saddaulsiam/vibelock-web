@@ -87,6 +87,12 @@ enum ReturnRequestStatus {
   COMPLETED
 }
 
+enum CaptureReconciliationStatus {
+  SETTLED
+  NEEDS_REVIEW
+  RESOLVED
+}
+
 enum BannerPlacement {
   CATEGORY
   SEARCH
@@ -474,9 +480,45 @@ model Payment {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  refunds Refund[]
+  refunds  Refund[]
+  captures PaymentCapture[]
 
   @@index([orderId])
+}
+
+model PaymentCapture {
+  id        String  @id @default(uuid())
+  paymentId String
+  payment   Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  // Gateway Settlement Identifiers
+  gateway    String
+  bankTranId String
+  valId      String?
+  cardType   String?
+  cardBrand  String?
+
+  // Financial Ledger
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @db.VarChar(3)
+
+  // Ledger Classification
+  isPrimary   Boolean @default(false)
+  isDuplicate Boolean @default(false)
+
+  // Operational Reconciliation (strictly required; no default)
+  reconciliationStatus CaptureReconciliationStatus
+  reconciliationNotes  String?
+
+  rawPayload Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([gateway, bankTranId])
+  @@index([paymentId])
+  @@index([gateway, valId])
+  @@index([reconciliationStatus])
 }
 
 model Refund {

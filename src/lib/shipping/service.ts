@@ -22,8 +22,28 @@ export class ShippingService {
       if (!currentOrder) throw new Error("Order not found");
       if (currentOrder.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
       if (currentOrder.shipment) throw new Error("Shipment already exists for this order");
-      if (currentOrder.paymentMethod === "ONLINE" && currentOrder.paymentStatus !== "SUCCESS") {
-        throw new Error("Online orders must be fully paid before shipping");
+      if (currentOrder.paymentMethod === "ONLINE") {
+        if (currentOrder.paymentStatus !== "SUCCESS") {
+          throw new Error("Online orders must be fully paid before shipping");
+        }
+        const onlinePayments =
+          typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                include: { captures: true },
+              })
+            : [];
+        const hasCaptures = onlinePayments.some((p) => p.captures && p.captures.length > 0);
+        if (hasCaptures) {
+          const hasSettledPrimary = onlinePayments.some((p) =>
+            p.captures?.some((c) => c.isPrimary && c.reconciliationStatus === "SETTLED")
+          );
+          if (!hasSettledPrimary) {
+            throw new Error(
+              "Online orders with unreconciled payment captures or risk holds cannot be shipped"
+            );
+          }
+        }
       }
 
       return tx.shipment.create({

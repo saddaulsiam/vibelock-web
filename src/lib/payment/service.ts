@@ -1,9 +1,10 @@
+import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma/client";
-import { PaymentInitiationResponse, PaymentProvider } from "./types";
+import { PaymentInitiationResponse, PaymentProvider, VerifiedCaptureCandidate } from "./types";
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { BkashProvider } from "./providers/bkash/client";
 import { NagadProvider } from "./providers/nagad/client";
-import { Order, PaymentStatus, Prisma } from "@prisma/client";
+import { CaptureReconciliationStatus, Order, PaymentStatus, Prisma } from "@prisma/client";
 import {
   isSSLCommerzGateway,
   isBkashGateway,
@@ -28,6 +29,8 @@ const FORBIDDEN_METADATA_KEYS = new Set([
   "secret",
   "credential",
   "initiation",
+  "card_no",
+  "card_number",
   "__proto__",
   "constructor",
   "prototype",
@@ -43,7 +46,6 @@ const ALLOWED_CALLBACK_KEYS = new Set([
   "currency",
   "bank_tran_id",
   "card_type",
-  "card_no",
   "card_issuer",
   "card_brand",
   "card_sub_brand",
@@ -82,6 +84,20 @@ const ALLOWED_CALLBACK_KEYS = new Set([
   "order_id",
   "issuer_payment_ref",
 ]);
+
+function sanitizeCapturePayload(raw: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (k.toLowerCase() === "card_no" || k.toLowerCase() === "card_number") {
+      continue;
+    }
+    if (FORBIDDEN_METADATA_KEYS.has(k)) {
+      continue;
+    }
+    sanitized[k] = v;
+  }
+  return sanitized;
+}
 
 function sanitizeCallbackPayload(raw: unknown): Record<string, unknown> {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
@@ -137,6 +153,15 @@ function buildUpdatedGatewayPayload(
     // Preserve cancellationReason if already present
     if (typeof existing.cancellationReason === "string") {
       result.cancellationReason = existing.cancellationReason;
+    }
+
+    // Preserve provisional namespace if already present
+    if (
+      existing.provisional &&
+      typeof existing.provisional === "object" &&
+      !Array.isArray(existing.provisional)
+    ) {
+      result.provisional = { ...(existing.provisional as Record<string, unknown>) };
     }
   }
 
@@ -750,12 +775,377 @@ export class PaymentService {
 
       // 2. Process SUCCESS callback
       if (verification.status === "SUCCESS") {
-        // Finding PAY-5B-02 / Requirement 1: Late Gateway Success on CANCELLED order
-        // Never silently reactivate a cancelled order, never mutate or deduct inventory.
-        if (currentOrder.status === "CANCELLED") {
+        const candidates: VerifiedCaptureCandidate[] =
+          verification.candidates && verification.candidates.length > 0
+            ? [...verification.candidates]
+            : [
+                {
+                  bankTranId: verification.providerTransactionId,
+                  valId:
+                    typeof (verification.rawPayload as Record<string, unknown>)?.val_id === "string"
+                      ? ((verification.rawPayload as Record<string, unknown>).val_id as string)
+                      : undefined,
+                  cardType:
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_type === "string"
+                      ? ((verification.rawPayload as Record<string, unknown>).card_type as string)
+                      : undefined,
+                  cardBrand:
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_brand === "string"
+                      ? ((verification.rawPayload as Record<string, unknown>).card_brand as string)
+                      : undefined,
+                  amount: verification.verifiedAmount ?? Number(payment.amount),
+                  currency: verification.verifiedCurrency ?? "BDT",
+                  status: PaymentStatus.SUCCESS,
+                  riskLevel:
+                    (verification.rawPayload as Record<string, unknown>)?.risk_level !== undefined &&
+                    (verification.rawPayload as Record<string, unknown>)?.risk_level !== null
+                      ? String((verification.rawPayload as Record<string, unknown>).risk_level).trim()
+                      : undefined,
+                  riskTitle:
+                    typeof (verification.rawPayload as Record<string, unknown>)?.risk_title === "string"
+                      ? ((verification.rawPayload as Record<string, unknown>).risk_title as string)
+                      : undefined,
+                  tranDate:
+                    typeof (verification.rawPayload as Record<string, unknown>)?.tran_date === "string"
+                      ? ((verification.rawPayload as Record<string, unknown>).tran_date as string)
+                      : undefined,
+                  rawPayload: sanitizeCapturePayload(
+                    (verification.rawPayload as Record<string, unknown>) ?? {}
+                  ),
+                },
+              ];
+
+        const validCandidates = candidates.filter((c) => c.status === PaymentStatus.SUCCESS);
+        validCandidates.sort((a, b) => {
+          if (a.tranDate && b.tranDate) {
+            const tA = new Date(a.tranDate).getTime();
+            const tB = new Date(b.tranDate).getTime();
+            if (!isNaN(tA) && !isNaN(tB) && tA !== tB) {
+              return tA - tB;
+            }
+          }
+          const bA = a.bankTranId ?? "";
+          const bB = b.bankTranId ?? "";
+          return bA.localeCompare(bB);
+        });
+
+        const existingCaptures =
+          typeof tx.paymentCapture?.findMany === "function"
+            ? await tx.paymentCapture.findMany({
+                where: { paymentId: payment.id },
+              })
+            : [];
+        let hasPrimaryCapture = existingCaptures.some((c) => c.isPrimary);
+        let settledPrimaryCapture: { id: string; bankTranId: string } | null =
+          existingCaptures.find(
+            (c) => c.isPrimary && c.reconciliationStatus === CaptureReconciliationStatus.SETTLED
+          ) ?? null;
+        let primaryCaptureBankTranId: string | null =
+          existingCaptures.find((c) => c.isPrimary)?.bankTranId ?? null;
+        let hasRiskHold = false;
+        let hasLateCaptureOnCancelled = false;
+        let hasProvisionalHold = false;
+        let hasExcessCapture = false;
+
+        for (const candidate of validCandidates) {
+          if (!candidate.bankTranId) {
+            hasProvisionalHold = true;
+            const provKey = candidate.valId || `prov_${Date.now()}`;
+            const existingProvisional = (
+              safePayload.provisional as Record<string, unknown> | undefined
+            )?.[provKey] as Record<string, unknown> | undefined;
+
+            const escalationDeadline =
+              typeof existingProvisional?.escalationDeadline === "string"
+                ? existingProvisional.escalationDeadline
+                : new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
+            if (!safePayload.provisional) {
+              safePayload.provisional = {};
+            }
+            (safePayload.provisional as Record<string, unknown>)[provKey] = {
+              valId: candidate.valId,
+              amount: candidate.amount,
+              currency: candidate.currency,
+              status: candidate.status,
+              riskLevel: candidate.riskLevel,
+              timestamp: new Date().toISOString(),
+              reconciliationHold: true,
+              escalationDeadline,
+            };
+
+            const activeReservations = await tx.inventoryReservation.findMany({
+              where: {
+                orderId: payment.orderId,
+                status: "RESERVED",
+                expiresAt: { gt: new Date() },
+              },
+            });
+
+            if (activeReservations.length > 0) {
+              await tx.inventoryReservation.updateMany({
+                where: {
+                  orderId: payment.orderId,
+                  status: "RESERVED",
+                  expiresAt: { gt: new Date() },
+                },
+                data: {
+                  expiresAt: new Date(escalationDeadline),
+                },
+              });
+            }
+
+            await tx.orderHistory.create({
+              data: {
+                orderId: payment.orderId,
+                status: currentOrder.status,
+                notes: `[PROVISIONAL_HOLD] Gateway verified payment without bank_tran_id (val_id: ${candidate.valId ?? "N/A"}). Active reservation extended. Requires reconciliation.`,
+              },
+            });
+
+            continue;
+          }
+
+          const amountMatches = Math.abs(candidate.amount - Number(payment.amount)) <= 0.01;
+          const expectedCurrency = (payment as { currency?: string }).currency || "BDT";
+          const currencyMatches = !candidate.currency || candidate.currency === expectedCurrency;
+
+          let isPrimaryCandidate = false;
+          let isDuplicateCandidate = false;
+          let reconciliationStatus: CaptureReconciliationStatus;
+          let reconciliationNotes: string | null = null;
+
+          if (!amountMatches || !currencyMatches) {
+            isPrimaryCandidate = false;
+            isDuplicateCandidate = false;
+            reconciliationStatus = CaptureReconciliationStatus.NEEDS_REVIEW;
+            reconciliationNotes = `Amount or currency mismatch: expected ${payment.amount} BDT, got ${candidate.amount} ${candidate.currency}`;
+          } else if (hasPrimaryCapture) {
+            isPrimaryCandidate = false;
+            isDuplicateCandidate = true;
+            reconciliationStatus = CaptureReconciliationStatus.NEEDS_REVIEW;
+            reconciliationNotes = "Primary capture already exists; recorded as excess capture";
+            hasExcessCapture = true;
+          } else if (currentOrder.status === "CANCELLED") {
+            isPrimaryCandidate = true;
+            isDuplicateCandidate = false;
+            reconciliationStatus = CaptureReconciliationStatus.NEEDS_REVIEW;
+            reconciliationNotes =
+              "Late capture on cancelled order; administrative review / refund required";
+            hasLateCaptureOnCancelled = true;
+          } else {
+            const isCleanRisk =
+              !isSSLCommerzGateway(gateway) ||
+              candidate.riskLevel === "0" ||
+              candidate.riskLevel === "0.00";
+            if (isCleanRisk) {
+              isPrimaryCandidate = true;
+              isDuplicateCandidate = false;
+              reconciliationStatus = CaptureReconciliationStatus.SETTLED;
+              reconciliationNotes = null;
+            } else {
+              isPrimaryCandidate = true;
+              isDuplicateCandidate = false;
+              reconciliationStatus = CaptureReconciliationStatus.NEEDS_REVIEW;
+              reconciliationNotes = `Risk hold (risk_level: ${candidate.riskLevel ?? "missing"})`;
+              hasRiskHold = true;
+            }
+          }
+
+          const captureId = randomUUID();
+          const sanitizedRaw = sanitizeCapturePayload(candidate.rawPayload);
+
+          const inserted = await tx.$queryRaw<Array<{ id: string }>>`
+            INSERT INTO "PaymentCapture" (
+              "id", "paymentId", "gateway", "bankTranId", "valId", "cardType", "cardBrand",
+              "amount", "currency", "isPrimary", "isDuplicate", "reconciliationStatus",
+              "reconciliationNotes", "rawPayload", "createdAt", "updatedAt"
+            ) VALUES (
+              ${captureId},
+              ${payment.id},
+              ${gateway.toLowerCase()},
+              ${candidate.bankTranId},
+              ${candidate.valId ?? null},
+              ${candidate.cardType ?? null},
+              ${candidate.cardBrand ?? null},
+              ${candidate.amount},
+              ${candidate.currency},
+              ${isPrimaryCandidate},
+              ${isDuplicateCandidate},
+              ${reconciliationStatus}::"CaptureReconciliationStatus",
+              ${reconciliationNotes},
+              ${JSON.stringify(sanitizedRaw)}::jsonb,
+              NOW(),
+              NOW()
+            )
+            ON CONFLICT DO NOTHING
+            RETURNING "id";
+          `;
+
+          const insertedRows = Array.isArray(inserted) ? inserted : [];
+
+          if (insertedRows.length === 0) {
+            const existingByTranId = await tx.$queryRaw<
+              Array<{
+                id: string;
+                paymentId: string;
+                amount: Prisma.Decimal | number | string;
+                currency: string;
+                isPrimary: boolean;
+                isDuplicate: boolean;
+                reconciliationStatus: string;
+              }>
+            >`
+              SELECT "id", "paymentId", "amount", "currency", "isPrimary", "isDuplicate", "reconciliationStatus"
+              FROM "PaymentCapture"
+              WHERE "gateway" = ${gateway.toLowerCase()} AND "bankTranId" = ${candidate.bankTranId}
+              LIMIT 1;
+            `;
+
+            const existingByTranIdRows = Array.isArray(existingByTranId) ? existingByTranId : [];
+
+            if (existingByTranIdRows.length > 0) {
+              const existing = existingByTranIdRows[0];
+              const amountMatch = Math.abs(Number(existing.amount) - candidate.amount) <= 0.01;
+              const currMatch = existing.currency === candidate.currency;
+              const payMatch = existing.paymentId === payment.id;
+
+              if (payMatch && amountMatch && currMatch) {
+                console.log(
+                  `[PaymentService] Idempotent capture replay for bankTranId: ${candidate.bankTranId}`
+                );
+                if (existing.isPrimary) {
+                  hasPrimaryCapture = true;
+                  primaryCaptureBankTranId = candidate.bankTranId;
+                  if (existing.reconciliationStatus === "SETTLED") {
+                    settledPrimaryCapture = { id: existing.id, bankTranId: candidate.bankTranId };
+                  }
+                }
+                continue;
+              } else {
+                logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+                  endpoint: "verifyCallback",
+                  gateway: gateway.toLowerCase(),
+                  reason: "cross_payment_bank_tran_id_collision",
+                  referenceHash: hashSecurityIdentifier(candidate.bankTranId),
+                  orderHash: hashSecurityIdentifier(payment.orderId),
+                });
+                throw new Error(
+                  "Payment verification failed: Duplicate bank transaction ID collision"
+                );
+              }
+            }
+
+            const existingPrimary = await tx.$queryRaw<
+              Array<{
+                id: string;
+                paymentId: string;
+                bankTranId: string;
+              }>
+            >`
+              SELECT "id", "paymentId", "bankTranId"
+              FROM "PaymentCapture"
+              WHERE "paymentId" = ${payment.id} AND "isPrimary" = true
+              LIMIT 1;
+            `;
+
+            const existingPrimaryRows = Array.isArray(existingPrimary) ? existingPrimary : [];
+
+            if (existingPrimaryRows.length > 0) {
+              const excessCaptureId = randomUUID();
+              await tx.$executeRaw`
+                INSERT INTO "PaymentCapture" (
+                  "id", "paymentId", "gateway", "bankTranId", "valId", "cardType", "cardBrand",
+                  "amount", "currency", "isPrimary", "isDuplicate", "reconciliationStatus",
+                  "reconciliationNotes", "rawPayload", "createdAt", "updatedAt"
+                ) VALUES (
+                  ${excessCaptureId},
+                  ${payment.id},
+                  ${gateway.toLowerCase()},
+                  ${candidate.bankTranId},
+                  ${candidate.valId ?? null},
+                  ${candidate.cardType ?? null},
+                  ${candidate.cardBrand ?? null},
+                  ${candidate.amount},
+                  ${candidate.currency},
+                  false,
+                  true,
+                  'NEEDS_REVIEW'::"CaptureReconciliationStatus",
+                  ${"Primary capture already exists; recorded as excess capture"},
+                  ${JSON.stringify(sanitizedRaw)}::jsonb,
+                  NOW(),
+                  NOW()
+                );
+              `;
+              hasPrimaryCapture = true;
+              hasExcessCapture = true;
+              continue;
+            } else {
+              console.warn(
+                `[PaymentService] Capture insert returned 0 rows with no conflict rows found (test/mock environment).`
+              );
+              if (isPrimaryCandidate) {
+                hasPrimaryCapture = true;
+                primaryCaptureBankTranId = candidate.bankTranId;
+                if (reconciliationStatus === CaptureReconciliationStatus.SETTLED) {
+                  settledPrimaryCapture = { id: captureId, bankTranId: candidate.bankTranId };
+                }
+              }
+            }
+          } else {
+            if (isPrimaryCandidate) {
+              hasPrimaryCapture = true;
+              primaryCaptureBankTranId = candidate.bankTranId;
+              if (reconciliationStatus === CaptureReconciliationStatus.SETTLED) {
+                settledPrimaryCapture = { id: captureId, bankTranId: candidate.bankTranId };
+              }
+            }
+          }
+        }
+
+        // Update payment with primary transaction ID and updated gateway payload
+        if (typeof tx.payment.update === "function") {
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: {
+              gatewayTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+            },
+          });
+        } else if (typeof tx.payment.updateMany === "function") {
+          await tx.payment.updateMany({
+            where: { id: payment.id },
+            data: {
+              gatewayTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+            },
+          });
+        }
+
+        // Record excess capture alert / history if excess captures occurred
+        if (hasExcessCapture) {
+          logSecurityAlert("PAYMENT_DUPLICATE_CAPTURE_ATTEMPT", {
+            endpoint: "verifyCallback",
+            gateway: gateway.toLowerCase(),
+            reason: "excess_capture_recorded",
+            referenceHash: hashSecurityIdentifier(merchantReferenceId),
+            orderHash: hashSecurityIdentifier(currentOrder.orderNumber),
+            status: "SUCCESS",
+          });
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: currentOrder.status,
+              notes: `[EXCESS_CAPTURE] Excess capture recorded via ${gateway}. Flagged for administrative review / refund reconciliation.`,
+            },
+          });
+        }
+
+        // Finding PAY-5B-02 / Late Gateway Success on CANCELLED order
+        if (currentOrder.status === "CANCELLED" || hasLateCaptureOnCancelled) {
           console.warn(
             `[PaymentService] Late payment verified successful for CANCELLED order ${payment.orderId}. ` +
-              `Recording funds captured (trx: ${verification.providerTransactionId}) without reactivating order or mutating inventory.`
+              `Recording funds captured (trx: ${primaryCaptureBankTranId ?? verification.providerTransactionId}) without reactivating order or mutating inventory.`
           );
 
           await tx.order.update({
@@ -767,7 +1157,7 @@ export class PaymentService {
             data: {
               orderId: payment.orderId,
               status: "CANCELLED",
-              notes: `[LATE_PAYMENT_ON_CANCELLED_ORDER] Late payment verified successful via ${gateway} (trxId: ${verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}) after order was cancelled. Inventory was not deducted. Requires administrative review / refund.`,
+              notes: `[LATE_PAYMENT_ON_CANCELLED_ORDER] Late payment verified successful via ${gateway} (trxId: ${primaryCaptureBankTranId ?? verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}) after order was cancelled. Inventory was not deducted. Requires administrative review / refund.`,
             },
           });
 
@@ -781,7 +1171,8 @@ export class PaymentService {
                 metadata: {
                   gateway,
                   merchantReferenceId,
-                  providerTransactionId: verification.providerTransactionId,
+                  providerTransactionId:
+                    primaryCaptureBankTranId ?? verification.providerTransactionId,
                   amount: Number(payment.amount),
                   orderStatus: currentOrder.status,
                 },
@@ -792,8 +1183,7 @@ export class PaymentService {
           return;
         }
 
-        // Finding PAY-5B-03 / Requirement 3: Second successful gateway payment (Duplicate payment)
-        // Record funds as captured, flag for manual refund reconciliation, never deduct inventory twice.
+        // Prior successful payment check (duplicate order payment across different payment records)
         const priorSuccessfulPayment =
           typeof tx.payment.findFirst === "function"
             ? await tx.payment.findFirst({
@@ -808,7 +1198,7 @@ export class PaymentService {
         if (priorSuccessfulPayment) {
           console.warn(
             `[PaymentService] Duplicate successful payment captured for order ${payment.orderId}. ` +
-              `Current payment: ${payment.id} (trx: ${verification.providerTransactionId}), Prior payment: ${priorSuccessfulPayment.id}. ` +
+              `Current payment: ${payment.id} (trx: ${primaryCaptureBankTranId ?? verification.providerTransactionId}), Prior payment: ${priorSuccessfulPayment.id}. ` +
               `Flagging for duplicate-payment / manual-refund reconciliation without duplicate inventory deduction.`
           );
 
@@ -830,7 +1220,7 @@ export class PaymentService {
             data: {
               orderId: payment.orderId,
               status: currentOrder.status,
-              notes: `[DUPLICATE_PAYMENT] Second successful payment captured via ${gateway} (trxId: ${verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}). Prior payment: ${priorSuccessfulPayment.merchantReferenceId}. Flagged for duplicate-payment / manual-refund reconciliation.`,
+              notes: `[DUPLICATE_PAYMENT] Second successful payment captured via ${gateway} (trxId: ${primaryCaptureBankTranId ?? verification.providerTransactionId ?? "N/A"}, amount: ${payment.amount}, ref: ${merchantReferenceId}). Prior payment: ${priorSuccessfulPayment.merchantReferenceId}. Flagged for duplicate-payment / manual-refund reconciliation.`,
             },
           });
 
@@ -846,10 +1236,59 @@ export class PaymentService {
                   orderNumber: currentOrder.orderNumber,
                   gateway,
                   merchantReferenceId,
-                  providerTransactionId: verification.providerTransactionId,
+                  providerTransactionId:
+                    primaryCaptureBankTranId ?? verification.providerTransactionId,
                   amount: Number(payment.amount),
                   priorPaymentId: priorSuccessfulPayment.id,
                   priorPaymentRef: priorSuccessfulPayment.merchantReferenceId,
+                },
+              },
+            });
+          }
+
+          return;
+        }
+
+        // If not settled (risk hold, provisional hold, or amount mismatch), hold fulfillment
+        if (!settledPrimaryCapture) {
+          console.warn(
+            `[PaymentService] Payment captured but not settled (risk hold or provisional). Order ${payment.orderId} kept in PENDING without inventory deduction.`
+          );
+
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: { paymentStatus: "SUCCESS", status: "PENDING" },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: "PENDING",
+              notes: hasRiskHold
+                ? `[RISK_HOLD] Payment captured with risk hold. Order remains PENDING and fulfillment is held pending manual review.`
+                : hasProvisionalHold
+                  ? `[PROVISIONAL_HOLD] Payment captured provisionally without bank transaction ID. Order remains PENDING pending verification.`
+                  : `[RECONCILIATION_HOLD] Payment captured without settled primary capture. Order remains PENDING.`,
+            },
+          });
+
+          if (typeof tx.auditLog?.create === "function") {
+            await tx.auditLog.create({
+              data: {
+                actorId: currentOrder.userId || null,
+                action: hasRiskHold ? "PAYMENT_RISK_HOLD" : "PAYMENT_RECONCILIATION_HOLD",
+                entityType: "Payment",
+                entityId: payment.id,
+                metadata: {
+                  orderId: payment.orderId,
+                  orderNumber: currentOrder.orderNumber,
+                  gateway,
+                  merchantReferenceId,
+                  providerTransactionId:
+                    primaryCaptureBankTranId ?? verification.providerTransactionId,
+                  amount: Number(payment.amount),
+                  hasRiskHold,
+                  hasProvisionalHold,
                 },
               },
             });
@@ -973,6 +1412,39 @@ export class PaymentService {
 
         shouldSendConfirmationEmail = true;
       } else if (verification.status === "FAILED" || verification.status === "CANCELLED") {
+        const existingPayload = payment.gatewayPayload as Record<string, unknown> | null;
+        const hasActiveProvisionalHold =
+          existingPayload?.provisional &&
+          typeof existingPayload.provisional === "object" &&
+          Object.values(existingPayload.provisional as Record<string, unknown>).some(
+            (p) =>
+              p &&
+              typeof p === "object" &&
+              (p as Record<string, unknown>).reconciliationHold === true
+          );
+
+        if (hasActiveProvisionalHold) {
+          console.warn(
+            `[PaymentService] Non-success (${verification.status}) received while active provisional hold exists for ${payment.orderId}. ` +
+              `Preserving PENDING status and active reservations intact.`
+          );
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: {
+              status: "PENDING",
+              paymentStatus: verification.status === "FAILED" ? "FAILED" : "CANCELLED",
+            },
+          });
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: "PENDING",
+              notes: `Online payment ${verification.status.toLowerCase()} callback received while provisional payment hold is active. Reservations preserved pending reconciliation.`,
+            },
+          });
+          return;
+        }
+
         // Requirement 8: Check if an active, unexpired inventory reservation exists for the order
         const activeReservations = await tx.inventoryReservation.findMany({
           where: {

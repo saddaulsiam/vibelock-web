@@ -60,7 +60,17 @@ export async function updateOrderStatusAction(
         include: {
           inventoryReservations: true,
           shipment: true,
-          payments: { select: { status: true } },
+          payments: {
+            select: {
+              status: true,
+              captures: {
+                select: {
+                  isPrimary: true,
+                  reconciliationStatus: true,
+                },
+              },
+            },
+          },
         },
       });
       if (!order) throw new Error("Order not found.");
@@ -123,6 +133,35 @@ export async function updateOrderStatusAction(
       if (transitionError) throw new Error(transitionError);
       if (order.status === status) return;
 
+      if (
+        order.paymentMethod === "ONLINE" &&
+        ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
+      ) {
+        const hasCaptures = (
+          order.payments as Array<{
+            status: PaymentStatus;
+            captures?: Array<{ isPrimary: boolean; reconciliationStatus: string }>;
+          }>
+        )?.some((p) => p.captures && p.captures.length > 0);
+
+        if (hasCaptures) {
+          const hasSettledPrimary = (
+            order.payments as Array<{
+              status: PaymentStatus;
+              captures?: Array<{ isPrimary: boolean; reconciliationStatus: string }>;
+            }>
+          )?.some((p) =>
+            p.captures?.some((c) => c.isPrimary && c.reconciliationStatus === "SETTLED")
+          );
+
+          if (!hasSettledPrimary) {
+            throw new Error(
+              "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+            );
+          }
+        }
+      }
+
       await tx.order.update({
         where: { id },
         data: { status },
@@ -151,7 +190,9 @@ export async function updateOrderStatusAction(
       error:
         message === "Order not found." ||
         message.startsWith("Order cannot transition") ||
-        message.endsWith("orders cannot be changed.")
+        message.endsWith("orders cannot be changed.") ||
+        message ===
+          "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
           ? message
           : [
                 "Only pending orders can be cancelled.",
@@ -277,7 +318,17 @@ export async function quickUpdateOrderStatusAction(input: {
         include: {
           inventoryReservations: true,
           shipment: true,
-          payments: { select: { status: true } },
+          payments: {
+            select: {
+              status: true,
+              captures: {
+                select: {
+                  isPrimary: true,
+                  reconciliationStatus: true,
+                },
+              },
+            },
+          },
         },
       });
       if (!order) throw new Error("Order not found.");

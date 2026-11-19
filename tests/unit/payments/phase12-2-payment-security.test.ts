@@ -576,7 +576,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
           verifiedAmount: 2000.0,
           verifiedCurrency: "BDT",
           providerTransactionId: "BANK-CONC-TRX-1",
-          rawPayload: { tran_id: "SSLC-CONCURRENT-SAME-1", val_id: "VAL-CONC-1" },
+          rawPayload: { tran_id: "SSLC-CONCURRENT-SAME-1", val_id: "VAL-CONC-1", risk_level: "0" },
         })),
         initiatePayment: vi.fn(),
       };

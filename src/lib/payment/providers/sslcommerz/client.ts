@@ -3,9 +3,22 @@ import {
   PaymentInitiationResponse,
   PaymentProvider,
   PaymentVerificationResult,
+  VerifiedCaptureCandidate,
 } from "../../types";
+import { PaymentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
 import { publicEnv } from "@/lib/config/public-env";
+
+function sanitizeCapturePayload(raw: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (k.toLowerCase() === "card_no" || k.toLowerCase() === "card_number") {
+      continue;
+    }
+    sanitized[k] = v;
+  }
+  return sanitized;
+}
 
 export class SSLCommerzProvider implements PaymentProvider {
   private readonly storeId = env.SSLCOMMERZ_STORE_ID;
@@ -155,6 +168,42 @@ export class SSLCommerzProvider implements PaymentProvider {
             };
           }
 
+          const sanitizedPayload = sanitizeCapturePayload(result);
+          const candidate: VerifiedCaptureCandidate = {
+            bankTranId:
+              typeof result.bank_tran_id === "string" && result.bank_tran_id.trim()
+                ? result.bank_tran_id.trim()
+                : undefined,
+            valId:
+              typeof result.val_id === "string" && result.val_id.trim()
+                ? result.val_id.trim()
+                : undefined,
+            cardType:
+              typeof result.card_type === "string" && result.card_type.trim()
+                ? result.card_type.trim()
+                : undefined,
+            cardBrand:
+              typeof result.card_brand === "string" && result.card_brand.trim()
+                ? result.card_brand.trim()
+                : undefined,
+            amount,
+            currency,
+            status: PaymentStatus.SUCCESS,
+            riskLevel:
+              result.risk_level !== undefined && result.risk_level !== null
+                ? String(result.risk_level).trim()
+                : undefined,
+            riskTitle:
+              typeof result.risk_title === "string" && result.risk_title.trim()
+                ? result.risk_title.trim()
+                : undefined,
+            tranDate:
+              typeof result.tran_date === "string" && result.tran_date.trim()
+                ? result.tran_date.trim()
+                : undefined,
+            rawPayload: sanitizedPayload,
+          };
+
           return {
             success: true,
             status: "SUCCESS",
@@ -162,7 +211,8 @@ export class SSLCommerzProvider implements PaymentProvider {
             verifiedMerchantReferenceId: result.tran_id,
             verifiedAmount: amount,
             verifiedCurrency: currency,
-            rawPayload: result,
+            candidates: [candidate],
+            rawPayload: sanitizedPayload,
             isUnverified: false,
           };
         } else if (normalized === "CANCELLED") {
@@ -333,13 +383,13 @@ export class SSLCommerzProvider implements PaymentProvider {
         };
       }
 
-      // Safely locate the matching tran_id record
-      const matchedRecord = result.element.find(
+      // Safely locate all matching tran_id records
+      const matchedRecords = (result.element as Array<Record<string, unknown>>).filter(
         (el: unknown) =>
           el && typeof el === "object" && (el as Record<string, unknown>).tran_id === tranId
-      ) as Record<string, unknown> | undefined;
+      );
 
-      if (!matchedRecord) {
+      if (matchedRecords.length === 0) {
         const { logSecurityAlert, hashSecurityIdentifier } = await import(
           "@/lib/monitoring/security-logger"
         );
@@ -358,6 +408,154 @@ export class SSLCommerzProvider implements PaymentProvider {
           rawPayload: result,
         };
       }
+
+      // Map all matched records to VerifiedCaptureCandidate
+      const candidates: VerifiedCaptureCandidate[] = matchedRecords.map((rec) => {
+        const normStatus = this.normalizeGatewayStatus(rec.status);
+        const mappedStatus =
+          normStatus === "SUCCESS"
+            ? PaymentStatus.SUCCESS
+            : normStatus === "CANCELLED"
+              ? PaymentStatus.CANCELLED
+              : normStatus === "FAILED"
+                ? PaymentStatus.FAILED
+                : PaymentStatus.PENDING;
+
+        return {
+          bankTranId:
+            typeof rec.bank_tran_id === "string" && rec.bank_tran_id.trim()
+              ? rec.bank_tran_id.trim()
+              : undefined,
+          valId:
+            typeof rec.val_id === "string" && rec.val_id.trim()
+              ? rec.val_id.trim()
+              : undefined,
+          cardType:
+            typeof rec.card_type === "string" && rec.card_type.trim()
+              ? rec.card_type.trim()
+              : undefined,
+          cardBrand:
+            typeof rec.card_brand === "string" && rec.card_brand.trim()
+              ? rec.card_brand.trim()
+              : undefined,
+          amount: Number(rec.amount),
+          currency:
+            typeof rec.currency === "string" ? rec.currency.trim().toUpperCase() : "",
+          status: mappedStatus,
+          riskLevel:
+            rec.risk_level !== undefined && rec.risk_level !== null
+              ? String(rec.risk_level).trim()
+              : undefined,
+          riskTitle:
+            typeof rec.risk_title === "string" && rec.risk_title.trim()
+              ? rec.risk_title.trim()
+              : undefined,
+          tranDate:
+            typeof rec.tran_date === "string" && rec.tran_date.trim()
+              ? rec.tran_date.trim()
+              : undefined,
+          rawPayload: sanitizeCapturePayload(rec),
+        };
+      });
+
+      // Filter and sort successful candidates deterministically: earliest tranDate, tiebreaker bankTranId
+      const validCandidates = candidates.filter((c) => c.status === PaymentStatus.SUCCESS);
+      validCandidates.sort((a, b) => {
+        if (a.tranDate && b.tranDate) {
+          const tA = new Date(a.tranDate).getTime();
+          const tB = new Date(b.tranDate).getTime();
+          if (!isNaN(tA) && !isNaN(tB) && tA !== tB) {
+            return tA - tB;
+          }
+        }
+        const bA = a.bankTranId ?? "";
+        const bB = b.bankTranId ?? "";
+        return bA.localeCompare(bB);
+      });
+
+      // If at least one successful candidate exists
+      if (validCandidates.length > 0) {
+        const primaryCandidate = validCandidates[0];
+
+        // Currency verification: must be BDT
+        if (primaryCandidate.currency !== "BDT") {
+          const { logSecurityAlert, hashSecurityIdentifier } = await import(
+            "@/lib/monitoring/security-logger"
+          );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "sslcommerz/verifyPayment",
+            gateway: "sslcommerz",
+            reason: "currency_mismatch",
+            referenceHash: hashSecurityIdentifier(tranId),
+          });
+          return {
+            success: false,
+            status: "FAILED",
+            isUnverified: true,
+            verifiedMerchantReferenceId: tranId,
+            candidates,
+            error: `Currency mismatch from gateway: expected BDT, got ${primaryCandidate.currency}`,
+            rawPayload: primaryCandidate.rawPayload,
+          };
+        }
+
+        // Amount verification: validate finite number
+        if (!Number.isFinite(primaryCandidate.amount)) {
+          return {
+            success: false,
+            status: "FAILED",
+            isUnverified: true,
+            verifiedMerchantReferenceId: tranId,
+            candidates,
+            error: "Invalid amount in gateway query response",
+            rawPayload: primaryCandidate.rawPayload,
+          };
+        }
+
+        // If callbackPayload provided an amount, cross-check it
+        if (callbackPayload.amount !== undefined) {
+          const expectedAmount = Number(callbackPayload.amount);
+          if (
+            Number.isFinite(expectedAmount) &&
+            Math.abs(primaryCandidate.amount - expectedAmount) > 0.01
+          ) {
+            const { logSecurityAlert, hashSecurityIdentifier } = await import(
+              "@/lib/monitoring/security-logger"
+            );
+            logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+              endpoint: "sslcommerz/verifyPayment",
+              gateway: "sslcommerz",
+              reason: "amount_mismatch",
+              referenceHash: hashSecurityIdentifier(tranId),
+            });
+            return {
+              success: false,
+              status: "FAILED",
+              isUnverified: true,
+              verifiedMerchantReferenceId: tranId,
+              candidates,
+              error: `Amount mismatch from gateway: expected ${expectedAmount}, got ${primaryCandidate.amount}`,
+              rawPayload: primaryCandidate.rawPayload,
+            };
+          }
+        }
+
+        return {
+          success: true,
+          status: "SUCCESS",
+          providerTransactionId: primaryCandidate.bankTranId || primaryCandidate.valId,
+          verifiedMerchantReferenceId: tranId,
+          verifiedAmount: primaryCandidate.amount,
+          verifiedCurrency: primaryCandidate.currency,
+          candidates,
+          rawPayload: primaryCandidate.rawPayload,
+          isUnverified: false,
+        };
+      }
+
+      // No successful candidate. Fallback to first candidate for status reporting
+      const firstCandidate = candidates[0];
+      const matchedRecord = matchedRecords[0];
 
       // Currency verification: must be BDT
       const currency =
@@ -379,26 +577,15 @@ export class SSLCommerzProvider implements PaymentProvider {
           status: "FAILED",
           isUnverified: true,
           verifiedMerchantReferenceId: tranId,
+          candidates,
           error: `Currency mismatch from gateway: expected BDT, got ${matchedRecord.currency}`,
-          rawPayload: matchedRecord,
-        };
-      }
-
-      // Amount verification: validate finite number
-      const recordAmount = Number(matchedRecord.amount);
-      if (!Number.isFinite(recordAmount)) {
-        return {
-          success: false,
-          status: "FAILED",
-          isUnverified: true,
-          verifiedMerchantReferenceId: tranId,
-          error: "Invalid amount in gateway query response",
-          rawPayload: matchedRecord,
+          rawPayload: firstCandidate.rawPayload,
         };
       }
 
       // If callbackPayload provided an amount, cross-check it
       if (callbackPayload.amount !== undefined) {
+        const recordAmount = Number(matchedRecord.amount);
         const expectedAmount = Number(callbackPayload.amount);
         if (Number.isFinite(expectedAmount) && Math.abs(recordAmount - expectedAmount) > 0.01) {
           const { logSecurityAlert, hashSecurityIdentifier } = await import(
@@ -415,53 +602,39 @@ export class SSLCommerzProvider implements PaymentProvider {
             status: "FAILED",
             isUnverified: true,
             verifiedMerchantReferenceId: tranId,
+            candidates,
             error: `Amount mismatch from gateway: expected ${expectedAmount}, got ${recordAmount}`,
-            rawPayload: matchedRecord,
+            rawPayload: firstCandidate.rawPayload,
           };
         }
       }
 
-      // Status classification
-      const normalized = this.normalizeGatewayStatus(matchedRecord.status);
-
-      if (normalized === "SUCCESS") {
-        return {
-          success: true,
-          status: "SUCCESS",
-          providerTransactionId:
-            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
-          verifiedMerchantReferenceId: tranId,
-          verifiedAmount: recordAmount,
-          verifiedCurrency: currency,
-          rawPayload: matchedRecord,
-          isUnverified: false,
-        };
-      } else if (normalized === "CANCELLED") {
+      if (firstCandidate.status === PaymentStatus.CANCELLED) {
         return {
           success: false,
           status: "CANCELLED",
-          providerTransactionId:
-            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
+          providerTransactionId: firstCandidate.bankTranId || firstCandidate.valId,
           verifiedMerchantReferenceId: tranId,
-          verifiedAmount: recordAmount,
-          verifiedCurrency: currency,
-          rawPayload: matchedRecord,
+          verifiedAmount: firstCandidate.amount,
+          verifiedCurrency: firstCandidate.currency,
+          candidates,
+          rawPayload: firstCandidate.rawPayload,
           isUnverified: false,
         };
-      } else if (normalized === "FAILED") {
+      } else if (firstCandidate.status === PaymentStatus.FAILED) {
         return {
           success: false,
           status: "FAILED",
-          providerTransactionId:
-            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
+          providerTransactionId: firstCandidate.bankTranId || firstCandidate.valId,
           verifiedMerchantReferenceId: tranId,
-          verifiedAmount: recordAmount,
-          verifiedCurrency: currency,
+          verifiedAmount: firstCandidate.amount,
+          verifiedCurrency: firstCandidate.currency,
+          candidates,
           error:
             (matchedRecord.error as string) ||
             (matchedRecord.failedreason as string) ||
             `Gateway reported ${matchedRecord.status}`,
-          rawPayload: matchedRecord,
+          rawPayload: firstCandidate.rawPayload,
           isUnverified: false,
         };
       } else {
@@ -481,8 +654,9 @@ export class SSLCommerzProvider implements PaymentProvider {
           status: "FAILED",
           isUnverified: true,
           verifiedMerchantReferenceId: tranId,
+          candidates,
           error: `Unknown or pending gateway status: ${matchedRecord.status}`,
-          rawPayload: matchedRecord,
+          rawPayload: firstCandidate.rawPayload,
         };
       }
     } catch (err) {
