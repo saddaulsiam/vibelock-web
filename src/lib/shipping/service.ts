@@ -178,52 +178,20 @@ export class ShippingService {
       }
 
       if (eligibilityError) {
-        // Attempt provider cancellation if supported by the provider
-        let providerCancelled = false;
-        if (
-          typeof this.provider.cancelShipment === "function" &&
-          providerRes.providerShipmentId
-        ) {
-          try {
-            const cancelRes = await this.provider.cancelShipment({
-              shipmentId: localShipment.id,
-              providerShipmentId: providerRes.providerShipmentId,
-            });
-            providerCancelled = cancelRes?.success === true;
-          } catch (err) {
-            console.error("[ShippingService] Failed to cancel shipment with provider:", err);
-          }
-        }
-
-        if (providerCancelled) {
-          const cancelledShipment = await tx.shipment.update({
-            where: { id: localShipment.id },
-            data: {
-              status: "CANCELLED",
-              providerShipmentId: providerRes.providerShipmentId,
-              trackingNumber: providerRes.trackingNumber,
-              cancelledAt: new Date(),
-              failureReason: `Fulfillment eligibility failed after provider acceptance (${eligibilityError}). Provider shipment cancelled successfully.`,
-            },
-          });
-          // Do not mark the order SHIPPED or DELIVERED!
-          return { shipment: cancelledShipment, error: eligibilityError };
-        } else {
-          // If the provider has already accepted the shipment, do not pretend it was cancelled.
-          // Preserve the provider shipment reference and response as durable evidence,
-          // and record a clear manual reconciliation requirement.
-          const heldShipment = await tx.shipment.update({
-            where: { id: localShipment.id },
-            data: {
-              status: providerRes.status || "CREATED",
-              providerShipmentId: providerRes.providerShipmentId,
-              trackingNumber: providerRes.trackingNumber,
-              failureReason: `MANUAL_RECONCILIATION_REQUIRED: Provider accepted shipment (${providerRes.providerShipmentId}) but post-provider fulfillment eligibility failed (${eligibilityError}). Automated cancellation not supported or failed. Manual operator reconciliation required.`,
-            },
-          });
-          // Do not mark the order SHIPPED or DELIVERED!
-          return { shipment: heldShipment, error: eligibilityError };
-        }
+        // We record the provider shipment reference and hold status atomically under lock.
+        // We do NOT perform network calls (e.g. this.provider.cancelShipment) inside this transaction
+        // to avoid holding the database connection and row lock during external API latency.
+        const heldShipment = await tx.shipment.update({
+          where: { id: localShipment.id },
+          data: {
+            status: providerRes.status || "CREATED",
+            providerShipmentId: providerRes.providerShipmentId,
+            trackingNumber: providerRes.trackingNumber,
+            failureReason: `MANUAL_RECONCILIATION_REQUIRED: Provider accepted shipment (${providerRes.providerShipmentId}) but post-provider fulfillment eligibility failed (${eligibilityError}). Automated cancellation not supported or failed. Manual operator reconciliation required.`,
+          },
+        });
+        // Do not mark the order SHIPPED or DELIVERED!
+        return { shipment: heldShipment, error: eligibilityError, needsProviderCancel: true };
       }
 
       // Normal path: Order is eligible and active.
@@ -245,6 +213,40 @@ export class ShippingService {
       });
       return { shipment: updated };
     });
+
+    if (result.needsProviderCancel && result.error) {
+      // Attempt provider cancellation OUTSIDE of database transaction / row lock
+      let providerCancelled = false;
+      if (
+        typeof this.provider.cancelShipment === "function" &&
+        providerRes.providerShipmentId
+      ) {
+        try {
+          const cancelRes = await this.provider.cancelShipment({
+            shipmentId: localShipment.id,
+            providerShipmentId: providerRes.providerShipmentId,
+          });
+          providerCancelled = cancelRes?.success === true;
+        } catch (err) {
+          console.error("[ShippingService] Failed to cancel shipment with provider:", err);
+        }
+      }
+
+      if (providerCancelled) {
+        await prisma.shipment.update({
+          where: { id: localShipment.id },
+          data: {
+            status: "CANCELLED",
+            providerShipmentId: providerRes.providerShipmentId,
+            trackingNumber: providerRes.trackingNumber,
+            cancelledAt: new Date(),
+            failureReason: `Fulfillment eligibility failed after provider acceptance (${result.error}). Provider shipment cancelled successfully.`,
+          },
+        });
+      }
+
+      throw new Error(result.error);
+    }
 
     if (result.error) {
       throw new Error(result.error);
@@ -282,6 +284,8 @@ export class ShippingService {
   }
 
   async updateShipmentStatus(shipmentId: string, newStatus: ShipmentStatus) {
+    const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
     return prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Shipment" WHERE id = ${shipmentId} FOR UPDATE`;
       const shipment = await tx.shipment.findUnique({ where: { id: shipmentId } });
@@ -331,16 +335,59 @@ export class ShippingService {
       const updated = await tx.shipment.findUnique({ where: { id: shipmentId } });
       if (!updated) return shipment;
 
-      if (newStatus === "DELIVERED") {
-        await tx.order.updateMany({
-          where: { id: shipment.orderId, status: { not: "CANCELLED" } },
-          data: { status: "DELIVERED" },
-        });
-      } else if (newStatus === "IN_TRANSIT" || newStatus === "OUT_FOR_DELIVERY") {
-        await tx.order.updateMany({
-          where: { id: shipment.orderId, status: { not: "CANCELLED" } },
-          data: { status: "SHIPPED" },
-        });
+      // Lock and re-read order to prevent concurrent races
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${shipment.orderId} FOR UPDATE`;
+      const currentOrder = await tx.order.findUnique({
+        where: { id: shipment.orderId },
+      });
+      if (!currentOrder) return updated;
+
+      // Cancelled order is NEVER resurrected
+      if (currentOrder.status === "CANCELLED") {
+        return updated;
+      }
+
+      const advancesToShipped = newStatus === "IN_TRANSIT" || newStatus === "OUT_FOR_DELIVERY";
+      const advancesToDelivered = newStatus === "DELIVERED";
+
+      if (advancesToShipped || advancesToDelivered) {
+        if (currentOrder.paymentMethod === "ONLINE") {
+          const onlinePayments = (typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                ...(hasCaptureTable ? { include: { captures: true } } : {}),
+              })
+            : []) as PaymentFulfillmentCheckTarget[];
+
+          const eligibility = checkOnlinePaymentFulfillmentEligibility({
+            paymentMethod: currentOrder.paymentMethod,
+            paymentStatus: currentOrder.paymentStatus,
+            payments: onlinePayments,
+          });
+
+          if (!eligibility.eligible) {
+            const failureReason = `MANUAL_RECONCILIATION_REQUIRED: Courier reported status ${newStatus} but online payment fulfillment eligibility failed: ${eligibility.error ?? "Payment not eligible"}. Order status not advanced.`;
+            const heldShipment = await tx.shipment.update({
+              where: { id: shipmentId },
+              data: {
+                failureReason,
+              },
+            });
+            return heldShipment;
+          }
+        }
+
+        if (advancesToDelivered) {
+          await tx.order.updateMany({
+            where: { id: shipment.orderId, status: { not: "CANCELLED" } },
+            data: { status: "DELIVERED" },
+          });
+        } else if (advancesToShipped) {
+          await tx.order.updateMany({
+            where: { id: shipment.orderId, status: { notIn: ["CANCELLED", "DELIVERED"] } },
+            data: { status: "SHIPPED" },
+          });
+        }
       }
 
       return updated;
