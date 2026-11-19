@@ -19,6 +19,7 @@ export interface PaymentInitiationResponse {
   success: boolean;
   redirectUrl?: string;
   merchantReferenceId?: string;
+  sessionKey?: string;
   error?: string;
 }
 
