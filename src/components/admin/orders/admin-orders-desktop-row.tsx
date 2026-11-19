@@ -154,6 +154,8 @@ export function AdminOrdersDesktopRow({
             <PaymentGatewayBadge
               gateway={order.paymentGateway}
               paymentMethod={order.paymentMethod}
+              cardType={order.cardType}
+              cardBrand={order.cardBrand}
             />
             {getPaymentStatusBadge(order.paymentStatus)}
           </div>

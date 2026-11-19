@@ -2,10 +2,13 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Banknote, CreditCard, Layers, QrCode, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatSslcommerzChannel } from "@/lib/payment/format";
 
 export interface PaymentGatewayBadgeProps {
   gateway?: string | null;
   paymentMethod?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   className?: string;
   showIcon?: boolean;
 }
@@ -19,7 +22,9 @@ export interface PaymentGatewayDisplayInfo {
 
 export function formatPaymentGatewayLabel(
   gateway?: string | null,
-  paymentMethod?: string | null
+  paymentMethod?: string | null,
+  cardType?: string | null,
+  cardBrand?: string | null
 ): PaymentGatewayDisplayInfo {
   const normalized = (gateway || paymentMethod || "COD").toUpperCase().trim();
 
@@ -37,13 +42,47 @@ export function formatPaymentGatewayLabel(
         icon: "PHONE",
       };
     case "SSLCOMMERZ":
-    case "ONLINE":
+    case "ONLINE": {
+      const channel = formatSslcommerzChannel(cardType, cardBrand);
+      if (channel === "Nagad") {
+        return {
+          label: "Nagad",
+          sublabel: "via SSLCOMMERZ",
+          colorClass: "border-amber-400 bg-amber-50 text-amber-900 font-bold hover:bg-amber-50",
+          icon: "PHONE",
+        };
+      }
+      if (channel === "bKash") {
+        return {
+          label: "bKash",
+          sublabel: "via SSLCOMMERZ",
+          colorClass: "border-pink-300 bg-pink-50 text-pink-700 font-bold hover:bg-pink-50",
+          icon: "PHONE",
+        };
+      }
+      if (channel === "Upay") {
+        return {
+          label: "Upay",
+          sublabel: "via SSLCOMMERZ",
+          colorClass: "border-blue-400 bg-blue-50 text-blue-900 font-bold hover:bg-blue-50",
+          icon: "PHONE",
+        };
+      }
+      if (channel === "Visa" || channel === "Mastercard" || channel === "American Express") {
+        return {
+          label: channel,
+          sublabel: "via SSLCOMMERZ",
+          colorClass: "border-blue-300 bg-blue-50 text-blue-800 font-bold hover:bg-blue-50",
+          icon: "CARD",
+        };
+      }
       return {
         label: "SSLCOMMERZ",
         sublabel: "Cards / MFS",
         colorClass: "border-blue-300 bg-blue-50 text-blue-800 font-bold hover:bg-blue-50",
         icon: "CARD",
       };
+    }
     case "BANGLA_QR":
       return {
         label: "Bangla QR",
@@ -90,10 +129,12 @@ export function formatPaymentGatewayLabel(
 export function PaymentGatewayBadge({
   gateway,
   paymentMethod,
+  cardType,
+  cardBrand,
   className,
   showIcon = true,
 }: PaymentGatewayBadgeProps) {
-  const info = formatPaymentGatewayLabel(gateway, paymentMethod);
+  const info = formatPaymentGatewayLabel(gateway, paymentMethod, cardType, cardBrand);
 
   return (
     <Badge

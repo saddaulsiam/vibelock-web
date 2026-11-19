@@ -1,3 +1,5 @@
+import { getHumanGatewayName } from "@/lib/payment/format";
+
 export interface PrintableOrderItem {
   id?: string;
   productName: string;
@@ -16,6 +18,8 @@ export interface PrintableOrder {
   paymentStatus: string;
   paymentMethod: string;
   paymentGateway?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   subtotal: number;
   shippingCost: number;
   discount?: number;
@@ -43,15 +47,13 @@ function escapeHtml(str: string | null | undefined): string {
     .replace(/'/g, "&#039;");
 }
 
-function formatPaymentMethod(method: string, gateway?: string | null): string {
-  if (method === "COD" || gateway === "COD" || gateway === "CASH") {
-    return "Cash on Delivery";
-  }
-  if (gateway === "BKASH" || method === "BKASH") return "bKash";
-  if (gateway === "NAGAD" || method === "NAGAD") return "Nagad";
-  if (gateway === "SSLCOMMERZ") return "SSLCOMMERZ (Cards / MFS)";
-  if (method === "ONLINE") return "SSLCOMMERZ";
-  return method || "Cash on Delivery";
+function formatPaymentMethod(
+  method: string,
+  gateway?: string | null,
+  cardType?: string | null,
+  cardBrand?: string | null
+): string {
+  return getHumanGatewayName(gateway, method, cardType, cardBrand);
 }
 
 function formatStatus(status: string): string {
@@ -549,7 +551,12 @@ export function printCustomerInvoice(order: PrintableOrder): void {
                 <tr>
                   <td class="meta-label">Payment method</td>
                   <td class="meta-value">${escapeHtml(
-                    formatPaymentMethod(order.paymentMethod, order.paymentGateway)
+                    formatPaymentMethod(
+                      order.paymentMethod,
+                      order.paymentGateway,
+                      order.cardType,
+                      order.cardBrand
+                    )
                   )}</td>
                 </tr>
                 <tr>

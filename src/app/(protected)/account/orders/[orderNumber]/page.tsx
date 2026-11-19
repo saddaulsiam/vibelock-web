@@ -354,6 +354,8 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                   <PaymentGatewayBadge
                     gateway={order.paymentGateway}
                     paymentMethod={order.paymentMethod}
+                    cardType={order.cardType}
+                    cardBrand={order.cardBrand}
                   />
                 </div>
                 <div className="flex items-center justify-between sm:justify-start sm:gap-4">

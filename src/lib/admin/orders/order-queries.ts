@@ -3,6 +3,7 @@ import "server-only";
 import { OrderStatus, PaymentMethod, PaymentStatus, Prisma, SalesChannel } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { extractCardMetadata } from "@/lib/payment/format";
 
 export type AdminOrderDateRange = "today" | "yesterday" | "7d" | "30d";
 
@@ -13,6 +14,8 @@ export interface AdminOrderItem {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   paymentGateway?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   salesChannel: string;
   total: number;
   subtotal: number;
@@ -150,6 +153,7 @@ export async function getAdminOrders({
           select: {
             gateway: true,
             status: true,
+            gatewayPayload: true,
           },
           orderBy: { createdAt: "desc" },
           take: 1,
@@ -186,7 +190,9 @@ export async function getAdminOrders({
   statusCounts.ALL = allCount;
 
   const mappedOrders: AdminOrderItem[] = orders.map((order) => {
-    const primaryGateway = order.payments?.[0]?.gateway;
+    const primaryPayment = order.payments?.[0];
+    const primaryGateway = primaryPayment?.gateway;
+    const { cardType, cardBrand } = extractCardMetadata(primaryPayment?.gatewayPayload);
     return {
       id: order.id,
       orderNumber: order.orderNumber,
@@ -194,6 +200,8 @@ export async function getAdminOrders({
       paymentStatus: order.paymentStatus,
       paymentMethod: order.paymentMethod,
       paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
+      cardType,
+      cardBrand,
       salesChannel: order.salesChannel,
       total: Number(order.total),
       subtotal: Number(order.subtotal),

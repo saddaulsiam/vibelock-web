@@ -168,6 +168,8 @@ export function OrdersInfiniteList({
                 <PaymentGatewayBadge
                   gateway={order.paymentGateway}
                   paymentMethod={order.paymentMethod}
+                  cardType={order.cardType}
+                  cardBrand={order.cardBrand}
                 />
                 <OrderStatusBadge status={order.status} />
               </div>

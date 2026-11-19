@@ -125,6 +125,8 @@ export function AdminOrdersMobileCard({
             <PaymentGatewayBadge
               gateway={order.paymentGateway}
               paymentMethod={order.paymentMethod}
+              cardType={order.cardType}
+              cardBrand={order.cardBrand}
             />
             <span>&middot;</span>
             <span

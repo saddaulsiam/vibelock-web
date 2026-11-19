@@ -8,10 +8,15 @@ import {
   Shipment,
 } from "@prisma/client";
 import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
+import { extractCardMetadata } from "@/lib/payment/format";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
-  payments?: Array<{ gateway: string; status?: string; createdAt?: Date } & Partial<Payment & { refunds: Refund[] }>>;
+  payments?: Array<
+    { gateway: string; status?: string; createdAt?: Date; gatewayPayload?: unknown } & Partial<
+      Payment & { refunds: Refund[] }
+    >
+  >;
   returns?: (ReturnRequest & { items: ReturnItem[] })[];
   shipment?: Shipment | null;
   history?: { status: Order["status"]; notes: string | null; createdAt: Date }[];
@@ -33,7 +38,10 @@ export function mapOrderItem(item: OrderItem, imageUrl?: string | null): OrderIt
 }
 
 export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
-  const primaryGateway = order.payments?.[0]?.gateway;
+  const primaryPayment = order.payments?.[0];
+  const primaryGateway = primaryPayment?.gateway;
+  const { cardType, cardBrand } = extractCardMetadata(primaryPayment?.gatewayPayload);
+
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -42,6 +50,8 @@ export function mapOrderSummary(order: PrismaOrderWithItems): OrderSummary {
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
     paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
+    cardType,
+    cardBrand,
     total: Number(order.total),
     itemCount: order.items.reduce((acc, item) => acc + item.quantity, 0),
     previewItems: order.items.slice(0, 3).map((item) => mapOrderItem(item)),
@@ -58,7 +68,9 @@ export function mapOrderDetail(
   order: PrismaOrderWithItems,
   imageBySku?: Map<string, string>
 ): OrderDetail {
-  const primaryGateway = order.payments?.[0]?.gateway;
+  const primaryPayment = order.payments?.[0];
+  const primaryGateway = primaryPayment?.gateway;
+  const { cardType, cardBrand } = extractCardMetadata(primaryPayment?.gatewayPayload);
   const hasActiveReservation = (order.inventoryReservations?.length ?? 0) > 0;
   const reservationExpiresAt = order.inventoryReservations?.[0]?.expiresAt ?? null;
   const latestPayment = order.payments?.[0];
@@ -94,6 +106,8 @@ export function mapOrderDetail(
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
     paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
+    cardType,
+    cardBrand,
     hasActiveReservation,
     reservationExpiresAt,
     latestPaymentStatus,
