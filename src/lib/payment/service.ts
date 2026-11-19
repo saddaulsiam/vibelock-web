@@ -10,6 +10,7 @@ import {
   isNagadGateway,
   normalizePaymentGateway,
 } from "./constants";
+import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
@@ -25,7 +26,32 @@ export class PaymentService {
     throw new Error(`Unsupported payment gateway: ${gateway}`);
   }
 
-  async initiatePayment(order: Order, gateway: string): Promise<PaymentInitiationResponse> {
+  async initiatePayment(
+    order: Order,
+    gateway: string,
+    options?: { skipRateLimit?: boolean; clientIp?: string }
+  ): Promise<PaymentInitiationResponse> {
+    if (!options?.skipRateLimit && order.userId) {
+      try {
+        const { checkPaymentInitiationRateLimit } = await import("@/lib/security/rate-limit");
+        await checkPaymentInitiationRateLimit(order.userId, options?.clientIp);
+      } catch (rateLimitErr: unknown) {
+        if (rateLimitErr instanceof Error && rateLimitErr.message === "RATE_LIMIT_EXCEEDED") {
+          logSecurityAlert("PAYMENT_RATE_LIMIT_EXCEEDED", {
+            endpoint: "initiatePayment",
+            gateway: gateway.toLowerCase(),
+            reason: "payment_initiation_rate_limit_exceeded",
+            orderHash: hashSecurityIdentifier(order.orderNumber),
+          });
+          return {
+            success: false,
+            error: "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
+          };
+        }
+        throw rateLimitErr;
+      }
+    }
+
     const provider = this.getProvider(gateway);
     const normalizedGateway = normalizePaymentGateway(gateway);
 
@@ -264,11 +290,21 @@ export class PaymentService {
 
     if (!merchantReferenceId) {
       console.error("[PaymentService] Missing transaction reference in callback");
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "verifyCallback",
+        gateway: gateway.toLowerCase(),
+        reason: "missing_transaction_reference",
+      });
       throw new Error("Missing transaction reference");
     }
 
     if (merchantReferenceId.length > 128) {
       console.error("[PaymentService] Transaction reference exceeds maximum allowed length");
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "verifyCallback",
+        gateway: gateway.toLowerCase(),
+        reason: "invalid_transaction_reference_length",
+      });
       throw new Error("Invalid transaction reference");
     }
 
@@ -279,6 +315,12 @@ export class PaymentService {
 
     if (!payment) {
       console.error(`[PaymentService] Payment not found for tran_id: ${merchantReferenceId}`);
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "verifyCallback",
+        gateway: gateway.toLowerCase(),
+        reason: "payment_not_found",
+        referenceHash: hashSecurityIdentifier(merchantReferenceId),
+      });
       throw new Error("Payment record not found");
     }
 
@@ -361,15 +403,37 @@ export class PaymentService {
       verification.verifiedMerchantReferenceId &&
       verification.verifiedMerchantReferenceId !== merchantReferenceId
     ) {
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "verifyCallback",
+        gateway: gateway.toLowerCase(),
+        reason: "transaction_reference_mismatch",
+        referenceHash: hashSecurityIdentifier(merchantReferenceId),
+        orderHash: hashSecurityIdentifier(payment.orderId),
+      });
       throw new Error("Payment verification failed: Transaction or Currency Mismatch");
     }
 
     // If verification was successful but the verified amount does not match, log error and fail securely.
     if (verification.success && verification.status === "SUCCESS") {
-      if (
-        verification.verifiedMerchantReferenceId !== merchantReferenceId ||
-        verification.verifiedCurrency !== "BDT"
-      ) {
+      if (verification.verifiedMerchantReferenceId !== merchantReferenceId) {
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "verifyCallback",
+          gateway: gateway.toLowerCase(),
+          reason: "transaction_reference_mismatch",
+          referenceHash: hashSecurityIdentifier(merchantReferenceId),
+          orderHash: hashSecurityIdentifier(payment.orderId),
+        });
+        throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+      }
+
+      if (verification.verifiedCurrency !== "BDT") {
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "verifyCallback",
+          gateway: gateway.toLowerCase(),
+          reason: "currency_mismatch",
+          referenceHash: hashSecurityIdentifier(merchantReferenceId),
+          orderHash: hashSecurityIdentifier(payment.orderId),
+        });
         throw new Error("Payment verification failed: Transaction or Currency Mismatch");
       }
 
@@ -384,6 +448,13 @@ export class PaymentService {
             `[PaymentService] Order reference mismatch for ${merchantReferenceId}. ` +
               `Expected ${order.orderNumber}, got ${verification.verifiedOrderNumber}`
           );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "verifyCallback",
+            gateway: gateway.toLowerCase(),
+            reason: "order_reference_mismatch",
+            referenceHash: hashSecurityIdentifier(merchantReferenceId),
+            orderHash: hashSecurityIdentifier(order.orderNumber),
+          });
           throw new Error("Payment verification failed: Order reference mismatch");
         }
       }
@@ -395,6 +466,15 @@ export class PaymentService {
         console.error(
           `[PaymentService] Amount mismatch for ${merchantReferenceId}. Expected ${payment.amount}, got ${verification.verifiedAmount}`
         );
+
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "verifyCallback",
+          gateway: gateway.toLowerCase(),
+          reason: "amount_mismatch",
+          referenceHash: hashSecurityIdentifier(merchantReferenceId),
+          orderHash: hashSecurityIdentifier(payment.orderId),
+          status: "FAILED",
+        });
 
         const safePayload = { ...(verification.rawPayload as object) } as Record<string, unknown>;
         delete safePayload.store_passwd;
@@ -456,21 +536,39 @@ export class PaymentService {
         include: { items: true },
       });
       if (!currentOrder) {
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "verifyCallback",
+          gateway: gateway.toLowerCase(),
+          reason: "order_not_found",
+          referenceHash: hashSecurityIdentifier(merchantReferenceId),
+        });
         throw new Error("Order not found");
       }
 
       // 1. Atomic update of Payment:
       // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).
-      // For FAILED/CANCELLED (server verified): only transition from INITIATED.
+      // Also allow PENDING if the payment record was in PENDING status.
+      // For FAILED/CANCELLED (server verified): only transition from INITIATED (or PENDING).
+      const allowedSuccessStatuses: PaymentStatus[] = [
+        PaymentStatus.INITIATED,
+        PaymentStatus.FAILED,
+        PaymentStatus.CANCELLED,
+      ];
+      if (payment.status === PaymentStatus.PENDING) {
+        allowedSuccessStatuses.unshift(PaymentStatus.PENDING);
+      }
+
       const whereCondition: Prisma.PaymentWhereInput =
         verification.status === "SUCCESS"
           ? {
               id: payment.id,
               status: {
-                in: [PaymentStatus.INITIATED, PaymentStatus.FAILED, PaymentStatus.CANCELLED],
+                in: allowedSuccessStatuses,
               },
             }
-          : { id: payment.id, status: PaymentStatus.INITIATED };
+          : payment.status === PaymentStatus.PENDING
+            ? { id: payment.id, status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] } }
+            : { id: payment.id, status: PaymentStatus.INITIATED };
 
       const updateResult = await tx.payment.updateMany({
         where: whereCondition,
@@ -552,6 +650,15 @@ export class PaymentService {
               `Current payment: ${payment.id} (trx: ${verification.providerTransactionId}), Prior payment: ${priorSuccessfulPayment.id}. ` +
               `Flagging for duplicate-payment / manual-refund reconciliation without duplicate inventory deduction.`
           );
+
+          logSecurityAlert("PAYMENT_DUPLICATE_CAPTURE_ATTEMPT", {
+            endpoint: "verifyCallback",
+            gateway: gateway.toLowerCase(),
+            reason: "duplicate_payment_captured",
+            referenceHash: hashSecurityIdentifier(merchantReferenceId),
+            orderHash: hashSecurityIdentifier(currentOrder.orderNumber),
+            status: "SUCCESS",
+          });
 
           await tx.order.updateMany({
             where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },

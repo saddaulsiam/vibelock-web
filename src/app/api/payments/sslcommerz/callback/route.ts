@@ -56,6 +56,12 @@ async function handleCallback(req: NextRequest) {
 
     if (isIpn) {
       if (result.verification.isUnverified) {
+        const { logSecurityAlert } = await import("@/lib/monitoring/security-logger");
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/callback",
+          gateway: "sslcommerz",
+          reason: "unverified_ipn_payload",
+        });
         return new NextResponse("Unverified IPN payload", {
           status: 400,
           headers: { "Content-Type": "text/plain" },

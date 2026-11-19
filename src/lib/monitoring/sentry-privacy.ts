@@ -282,6 +282,9 @@ export function sanitizeSentryEvent<T extends Event>(event: T): T {
         "emailHash",
         "ipMasked",
         "status",
+        "gateway",
+        "referenceHash",
+        "orderHash",
       ]);
 
       for (const [k, v] of Object.entries(rawSec)) {
