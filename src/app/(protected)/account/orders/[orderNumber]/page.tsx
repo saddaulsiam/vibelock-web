@@ -14,6 +14,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
 import { ReorderButton } from "@/components/storefront/orders/reorder-button";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
@@ -41,10 +42,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
   if (!order) notFound();
 
   const canCancel =
-    order.status === "PENDING" &&
-    order.paymentStatus !== "SUCCESS" &&
-    order.paymentStatus !== "REFUNDED" &&
-    order.paymentStatus !== "PARTIALLY_REFUNDED" &&
+    Boolean(order.canCancelOrder) &&
     !order.shipment;
 
   const isCancelled =
@@ -110,6 +108,15 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                 <ArrowRight className="size-3.5" />
               </Link>
             </Button>
+          )}
+
+          {order.canRetryPayment && (
+            <RetryPaymentButton
+              orderNumber={order.orderNumber}
+              gateway={order.paymentGateway ?? undefined}
+              variant="brand"
+              size="sm"
+            />
           )}
 
           {canCancel && <CancelOrderButton orderNumber={order.orderNumber} />}
@@ -353,6 +360,15 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                   <span className="text-neutral-400">Status</span>
                   <OrderStatusBadge status={order.paymentStatus} />
                 </div>
+                {order.status === "PENDING" && order.paymentStatus !== "SUCCESS" && order.paymentMethod === "ONLINE" && (
+                  <p className="pt-1 text-[11px] text-neutral-500">
+                    {order.hasUnresolvedOnlinePayment
+                      ? "Payment confirmation in progress. Retry and cancellation are paused to protect against duplicate charges."
+                      : order.hasActiveReservation
+                        ? "Payment was declined or failed. Items temporarily reserved. You can retry payment."
+                        : "Payment incomplete. Inventory reservation has expired."}
+                  </p>
+                )}
               </div>
             </div>
 

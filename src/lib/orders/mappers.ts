@@ -11,10 +11,11 @@ import { OrderSummary, OrderDetail, OrderItemSummary } from "./types";
 
 type PrismaOrderWithItems = Order & {
   items: OrderItem[];
-  payments?: Array<{ gateway: string } & Partial<Payment & { refunds: Refund[] }>>;
+  payments?: Array<{ gateway: string; status?: string; createdAt?: Date } & Partial<Payment & { refunds: Refund[] }>>;
   returns?: (ReturnRequest & { items: ReturnItem[] })[];
   shipment?: Shipment | null;
   history?: { status: Order["status"]; notes: string | null; createdAt: Date }[];
+  inventoryReservations?: Array<{ expiresAt: Date }>;
 };
 
 export function mapOrderItem(item: OrderItem, imageUrl?: string | null): OrderItemSummary {
@@ -58,6 +59,33 @@ export function mapOrderDetail(
   imageBySku?: Map<string, string>
 ): OrderDetail {
   const primaryGateway = order.payments?.[0]?.gateway;
+  const hasActiveReservation = (order.inventoryReservations?.length ?? 0) > 0;
+  const reservationExpiresAt = order.inventoryReservations?.[0]?.expiresAt ?? null;
+  const latestPayment = order.payments?.[0];
+  const latestPaymentStatus = latestPayment?.status ?? null;
+
+  const hasUnresolvedOnlinePayment =
+    order.paymentMethod === "ONLINE" &&
+    Boolean(
+      order.payments?.some(
+        (p) => p.status === "INITIATED" || p.status === "PENDING"
+      )
+    );
+
+  const canCancelOrder =
+    order.status === "PENDING" &&
+    order.paymentStatus !== "SUCCESS" &&
+    order.paymentStatus !== "REFUNDED" &&
+    order.paymentStatus !== "PARTIALLY_REFUNDED" &&
+    !hasUnresolvedOnlinePayment;
+
+  const canRetryPayment =
+    order.status === "PENDING" &&
+    order.paymentStatus !== "SUCCESS" &&
+    order.paymentMethod === "ONLINE" &&
+    hasActiveReservation &&
+    !hasUnresolvedOnlinePayment;
+
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -66,6 +94,12 @@ export function mapOrderDetail(
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
     paymentGateway: primaryGateway || (order.paymentMethod === "COD" ? "COD" : "ONLINE"),
+    hasActiveReservation,
+    reservationExpiresAt,
+    latestPaymentStatus,
+    hasUnresolvedOnlinePayment,
+    canRetryPayment,
+    canCancelOrder,
 
     subtotal: Number(order.subtotal),
     shippingCost: Number(order.shippingCost),

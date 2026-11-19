@@ -172,7 +172,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
       <div class="callout-box cod">
         <div class="callout-title">Tk 300 advance payment confirms this order.</div>
         <div class="callout-text">
-          Our team will call/WhatsApp you at 01942565664 to arrange it before shipping.
+          Our team will call/WhatsApp you at +8801311333277 to arrange it before shipping.
         </div>
       </div>
     `
@@ -614,7 +614,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             <div>
               <div class="footer-block-title">SUPPORT &amp; RETURNS</div>
               <p class="footer-block-body">
-                WhatsApp us at <strong>01311-333277</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.com/policies/terms-of-service
+                WhatsApp us at <strong>+8801311333277</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.com/policies/terms-of-service
               </p>
             </div>
 
