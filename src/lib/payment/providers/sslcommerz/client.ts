@@ -82,136 +82,449 @@ export class SSLCommerzProvider implements PaymentProvider {
     callbackPayload: Record<string, unknown>
   ): Promise<PaymentVerificationResult> {
     if (!this.storeId || !this.storePassword) {
-      return { success: false, status: "FAILED", error: "SSLCommerz configuration missing" };
+      return {
+        success: false,
+        status: "FAILED",
+        isUnverified: true,
+        error: "SSLCommerz configuration missing",
+      };
     }
 
     const { val_id } = callbackPayload as { val_id?: string };
-    const rawStatus =
-      typeof callbackPayload.status === "string" ? callbackPayload.status.toUpperCase() : "";
+    const tranId =
+      typeof callbackPayload.tran_id === "string" && callbackPayload.tran_id.trim()
+        ? callbackPayload.tran_id.trim()
+        : undefined;
 
-    // 1. Explicit cancellation reported by gateway without val_id (browser cancel_url callback)
-    // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
-    if (!val_id && (rawStatus === "CANCELLED" || rawStatus === "CANCEL")) {
-      return {
-        success: false,
-        status: "CANCELLED",
-        isUnverified: true,
-        verifiedMerchantReferenceId:
-          typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
-        error: "Unverified browser cancellation callback",
-        rawPayload: callbackPayload,
-      };
-    }
+    // 1. Primary path: if val_id is present, perform server-side validation via validationserverAPI.php
+    if (val_id) {
+      try {
+        const url = new URL(`${this.baseUrl}/validator/api/validationserverAPI.php`);
+        url.searchParams.append("val_id", val_id);
+        url.searchParams.append("store_id", this.storeId);
+        url.searchParams.append("store_passwd", this.storePassword);
+        url.searchParams.append("v", "1");
+        url.searchParams.append("format", "json");
 
-    // 2. Explicit failure reported by gateway without val_id (browser fail_url callback)
-    // Flagged as isUnverified: true so PaymentService does not mark terminal or release inventory
-    if (
-      !val_id &&
-      (rawStatus === "FAILED" ||
-        rawStatus === "FAIL" ||
-        rawStatus === "UNATTEMPTED" ||
-        rawStatus === "EXPIRED")
-    ) {
-      return {
-        success: false,
-        status: "FAILED",
-        isUnverified: true,
-        verifiedMerchantReferenceId:
-          typeof callbackPayload.tran_id === "string" ? callbackPayload.tran_id : undefined,
-        error:
-          (callbackPayload.failedreason as string) ||
-          (callbackPayload.error as string) ||
-          "Unverified browser failure callback",
-        rawPayload: callbackPayload,
-      };
-    }
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          signal: AbortSignal.timeout(10000),
+        });
 
-    // 3. For any transaction claiming success / validation, val_id is strictly required
-    if (!val_id) {
-      return {
-        success: false,
-        status: "FAILED",
-        isUnverified: false,
-        error: "Missing val_id for server-side verification",
-        rawPayload: callbackPayload,
-      };
-    }
-
-    // Verify with SSLCommerz server-side validation API
-    try {
-      const url = new URL(`${this.baseUrl}/validator/api/validationserverAPI.php`);
-      url.searchParams.append("val_id", val_id);
-      url.searchParams.append("store_id", this.storeId);
-      url.searchParams.append("store_passwd", this.storePassword);
-      url.searchParams.append("v", "1");
-      url.searchParams.append("format", "json");
-
-      const response = await fetch(url.toString(), {
-        method: "GET",
-      });
-
-      const result = await response.json();
-
-      if (result.status === "VALID" || result.status === "VALIDATED") {
-        const amount = Number(result.amount);
-        const currency =
-          typeof result.currency === "string" ? result.currency.toUpperCase() : undefined;
-
-        if (!Number.isFinite(amount) || !currency || !result.tran_id) {
+        if (!response.ok) {
+          const { logSecurityAlert, hashSecurityIdentifier } = await import(
+            "@/lib/monitoring/security-logger"
+          );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "sslcommerz/verifyPayment",
+            gateway: "sslcommerz",
+            reason: "gateway_query_failed",
+            referenceHash: hashSecurityIdentifier(tranId || val_id),
+          });
           return {
             success: false,
             status: "FAILED",
-            isUnverified: false,
-            error: "Incomplete validation response from SSLCommerz",
-            rawPayload: result,
+            isUnverified: true,
+            verifiedMerchantReferenceId: tranId,
+            error: `Gateway validation API returned HTTP ${response.status}`,
+            rawPayload: callbackPayload,
           };
         }
 
-        return {
-          success: true,
-          status: "SUCCESS",
-          providerTransactionId: result.bank_tran_id,
-          verifiedMerchantReferenceId: result.tran_id,
-          verifiedAmount: amount,
-          verifiedCurrency: currency,
-          rawPayload: result,
-          isUnverified: false,
-        };
-      } else if (result.status === "FAILED") {
-        return {
-          success: true,
-          status: "FAILED",
-          verifiedMerchantReferenceId: result.tran_id,
-          error: (result.failedreason as string) || "Payment failed on SSLCommerz server",
-          rawPayload: result,
-          isUnverified: false,
-        };
-      } else if (result.status === "CANCELLED") {
-        return {
-          success: true,
-          status: "CANCELLED",
-          verifiedMerchantReferenceId: result.tran_id,
-          rawPayload: result,
-          isUnverified: false,
-        };
-      } else {
+        const result = await response.json();
+        const normalized = this.normalizeGatewayStatus(result.status);
+
+        if (normalized === "SUCCESS") {
+          const amount = Number(result.amount);
+          const currency =
+            typeof result.currency === "string" ? result.currency.trim().toUpperCase() : undefined;
+
+          if (!Number.isFinite(amount) || !currency || !result.tran_id) {
+            return {
+              success: false,
+              status: "FAILED",
+              isUnverified: false,
+              error: "Incomplete validation response from SSLCommerz",
+              rawPayload: result,
+            };
+          }
+
+          return {
+            success: true,
+            status: "SUCCESS",
+            providerTransactionId: result.bank_tran_id || result.val_id,
+            verifiedMerchantReferenceId: result.tran_id,
+            verifiedAmount: amount,
+            verifiedCurrency: currency,
+            rawPayload: result,
+            isUnverified: false,
+          };
+        } else if (normalized === "CANCELLED") {
+          return {
+            success: false,
+            status: "CANCELLED",
+            providerTransactionId: result.bank_tran_id || result.val_id,
+            verifiedMerchantReferenceId: result.tran_id,
+            verifiedAmount: Number(result.amount) || undefined,
+            verifiedCurrency:
+              typeof result.currency === "string"
+                ? result.currency.trim().toUpperCase()
+                : undefined,
+            rawPayload: result,
+            isUnverified: false,
+          };
+        } else if (normalized === "FAILED") {
+          return {
+            success: false,
+            status: "FAILED",
+            providerTransactionId: result.bank_tran_id || result.val_id,
+            verifiedMerchantReferenceId: result.tran_id,
+            verifiedAmount: Number(result.amount) || undefined,
+            verifiedCurrency:
+              typeof result.currency === "string"
+                ? result.currency.trim().toUpperCase()
+                : undefined,
+            error:
+              (result.failedreason as string) ||
+              (result.error as string) ||
+              `Payment failed on SSLCommerz server (${result.status})`,
+            rawPayload: result,
+            isUnverified: false,
+          };
+        } else {
+          // Unknown or pending gateway status from validation API: do not mark as failed!
+          const { logSecurityAlert, hashSecurityIdentifier } = await import(
+            "@/lib/monitoring/security-logger"
+          );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "sslcommerz/verifyPayment",
+            gateway: "sslcommerz",
+            reason: "unknown_gateway_status",
+            referenceHash: hashSecurityIdentifier(result.tran_id || tranId || val_id),
+            status: String(result.status),
+          });
+          return {
+            success: false,
+            status: "FAILED",
+            isUnverified: true,
+            verifiedMerchantReferenceId: result.tran_id || tranId,
+            error: `Unknown or pending gateway status: ${result.status}`,
+            rawPayload: result,
+          };
+        }
+      } catch (err) {
+        console.error("[SSLCommerz] Payment validation request failed:", err);
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "gateway_query_failed",
+          referenceHash: hashSecurityIdentifier(tranId || val_id),
+        });
         return {
           success: false,
           status: "FAILED",
-          error: "Verification failed on SSLCommerz server",
-          rawPayload: result,
-          isUnverified: false,
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: "Verification request failed",
+          rawPayload: callbackPayload,
         };
       }
-    } catch {
-      console.error("[SSLCommerz] Payment verification request failed");
+    }
+
+    // 2. Fallback path: when val_id is missing, query Merchant Transaction ID Validation API
+    if (!tranId) {
       return {
         success: false,
         status: "FAILED",
-        isUnverified: false,
-        error: "Verification request failed",
+        isUnverified: true,
+        error: "Missing tran_id and val_id for server-side verification",
+        rawPayload: callbackPayload,
       };
     }
+
+    return this.queryTransactionByTranId(tranId, callbackPayload);
+  }
+
+  private async queryTransactionByTranId(
+    tranId: string,
+    callbackPayload: Record<string, unknown>
+  ): Promise<PaymentVerificationResult> {
+    try {
+      const url = new URL(`${this.baseUrl}/validator/api/merchantTransIDvalidationAPI.php`);
+      url.searchParams.append("tran_id", tranId);
+      url.searchParams.append("store_id", this.storeId!);
+      url.searchParams.append("store_passwd", this.storePassword!);
+      url.searchParams.append("format", "json");
+      url.searchParams.append("v", "1");
+
+      const response = await fetch(url.toString(), {
+        method: "GET",
+        signal: AbortSignal.timeout(10000),
+      });
+
+      if (!response.ok) {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "gateway_query_failed",
+          referenceHash: hashSecurityIdentifier(tranId),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: `Gateway query API returned HTTP ${response.status}`,
+          rawPayload: callbackPayload,
+        };
+      }
+
+      const result = await response.json();
+
+      if (!result || typeof result !== "object" || result.APIConnect !== "DONE") {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "gateway_query_failed",
+          referenceHash: hashSecurityIdentifier(tranId),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: (result?.failedreason as string) || "Gateway query did not complete successfully",
+          rawPayload: result,
+        };
+      }
+
+      if (!Array.isArray(result.element) || result.element.length === 0) {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "no_transaction_found",
+          referenceHash: hashSecurityIdentifier(tranId),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: "No transaction records found at gateway for merchant transaction ID",
+          rawPayload: result,
+        };
+      }
+
+      // Safely locate the matching tran_id record
+      const matchedRecord = result.element.find(
+        (el: unknown) =>
+          el && typeof el === "object" && (el as Record<string, unknown>).tran_id === tranId
+      ) as Record<string, unknown> | undefined;
+
+      if (!matchedRecord) {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "transaction_reference_mismatch",
+          referenceHash: hashSecurityIdentifier(tranId),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: "No matching tran_id found in gateway query elements",
+          rawPayload: result,
+        };
+      }
+
+      // Currency verification: must be BDT
+      const currency =
+        typeof matchedRecord.currency === "string"
+          ? matchedRecord.currency.trim().toUpperCase()
+          : "";
+      if (currency !== "BDT") {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "currency_mismatch",
+          referenceHash: hashSecurityIdentifier(tranId),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: `Currency mismatch from gateway: expected BDT, got ${matchedRecord.currency}`,
+          rawPayload: matchedRecord,
+        };
+      }
+
+      // Amount verification: validate finite number
+      const recordAmount = Number(matchedRecord.amount);
+      if (!Number.isFinite(recordAmount)) {
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: "Invalid amount in gateway query response",
+          rawPayload: matchedRecord,
+        };
+      }
+
+      // If callbackPayload provided an amount, cross-check it
+      if (callbackPayload.amount !== undefined) {
+        const expectedAmount = Number(callbackPayload.amount);
+        if (Number.isFinite(expectedAmount) && Math.abs(recordAmount - expectedAmount) > 0.01) {
+          const { logSecurityAlert, hashSecurityIdentifier } = await import(
+            "@/lib/monitoring/security-logger"
+          );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "sslcommerz/verifyPayment",
+            gateway: "sslcommerz",
+            reason: "amount_mismatch",
+            referenceHash: hashSecurityIdentifier(tranId),
+          });
+          return {
+            success: false,
+            status: "FAILED",
+            isUnverified: true,
+            verifiedMerchantReferenceId: tranId,
+            error: `Amount mismatch from gateway: expected ${expectedAmount}, got ${recordAmount}`,
+            rawPayload: matchedRecord,
+          };
+        }
+      }
+
+      // Status classification
+      const normalized = this.normalizeGatewayStatus(matchedRecord.status);
+
+      if (normalized === "SUCCESS") {
+        return {
+          success: true,
+          status: "SUCCESS",
+          providerTransactionId:
+            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
+          verifiedMerchantReferenceId: tranId,
+          verifiedAmount: recordAmount,
+          verifiedCurrency: currency,
+          rawPayload: matchedRecord,
+          isUnverified: false,
+        };
+      } else if (normalized === "CANCELLED") {
+        return {
+          success: false,
+          status: "CANCELLED",
+          providerTransactionId:
+            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
+          verifiedMerchantReferenceId: tranId,
+          verifiedAmount: recordAmount,
+          verifiedCurrency: currency,
+          rawPayload: matchedRecord,
+          isUnverified: false,
+        };
+      } else if (normalized === "FAILED") {
+        return {
+          success: false,
+          status: "FAILED",
+          providerTransactionId:
+            (matchedRecord.bank_tran_id as string) || (matchedRecord.val_id as string),
+          verifiedMerchantReferenceId: tranId,
+          verifiedAmount: recordAmount,
+          verifiedCurrency: currency,
+          error:
+            (matchedRecord.error as string) ||
+            (matchedRecord.failedreason as string) ||
+            `Gateway reported ${matchedRecord.status}`,
+          rawPayload: matchedRecord,
+          isUnverified: false,
+        };
+      } else {
+        // Unknown or pending gateway status (PENDING, PROCESSING, etc.)
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "sslcommerz/verifyPayment",
+          gateway: "sslcommerz",
+          reason: "unknown_gateway_status",
+          referenceHash: hashSecurityIdentifier(tranId),
+          status: String(matchedRecord.status),
+        });
+        return {
+          success: false,
+          status: "FAILED",
+          isUnverified: true,
+          verifiedMerchantReferenceId: tranId,
+          error: `Unknown or pending gateway status: ${matchedRecord.status}`,
+          rawPayload: matchedRecord,
+        };
+      }
+    } catch (err) {
+      console.error("[SSLCommerz] Merchant transaction query failed:", err);
+      const { logSecurityAlert, hashSecurityIdentifier } = await import(
+        "@/lib/monitoring/security-logger"
+      );
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "sslcommerz/verifyPayment",
+        gateway: "sslcommerz",
+        reason: "gateway_query_failed",
+        referenceHash: hashSecurityIdentifier(tranId),
+      });
+      return {
+        success: false,
+        status: "FAILED",
+        isUnverified: true,
+        verifiedMerchantReferenceId: tranId,
+        error: "Gateway transaction validation query timed out or failed",
+        rawPayload: callbackPayload,
+      };
+    }
+  }
+
+  private normalizeGatewayStatus(
+    rawStatus: unknown
+  ): "SUCCESS" | "FAILED" | "CANCELLED" | "UNKNOWN" {
+    if (typeof rawStatus !== "string") return "UNKNOWN";
+    const s = rawStatus.trim().toUpperCase();
+    if (s === "VALID" || s === "VALIDATED" || s === "SUCCESS") {
+      return "SUCCESS";
+    }
+    if (s === "CANCELLED" || s === "CANCEL") {
+      return "CANCELLED";
+    }
+    if (
+      s === "FAILED" ||
+      s === "FAIL" ||
+      s === "UNATTEMPTED" ||
+      s === "EXPIRED" ||
+      s === "DECLINED" ||
+      s === "ISSUER BANK DECLINED" ||
+      s === "ISSUER_BANK_DECLINED" ||
+      s === "BANK DECLINED"
+    ) {
+      return "FAILED";
+    }
+    return "UNKNOWN";
   }
 
   async refundPayment(request: {
