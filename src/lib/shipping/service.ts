@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma/client";
 import { ShipmentStatus } from "@prisma/client";
 import { ShippingProvider } from "./types";
+import { checkOnlinePaymentFulfillmentEligibility } from "@/lib/payment/fulfillment";
 
 export class ShippingService {
   constructor(private provider: ShippingProvider) {}
@@ -23,9 +24,6 @@ export class ShippingService {
       if (currentOrder.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
       if (currentOrder.shipment) throw new Error("Shipment already exists for this order");
       if (currentOrder.paymentMethod === "ONLINE") {
-        if (currentOrder.paymentStatus !== "SUCCESS") {
-          throw new Error("Online orders must be fully paid before shipping");
-        }
         const onlinePayments =
           typeof tx.payment?.findMany === "function"
             ? await tx.payment.findMany({
@@ -33,16 +31,20 @@ export class ShippingService {
                 include: { captures: true },
               })
             : [];
-        const hasCaptures = onlinePayments.some((p) => p.captures && p.captures.length > 0);
-        if (hasCaptures) {
-          const hasSettledPrimary = onlinePayments.some((p) =>
-            p.captures?.some((c) => c.isPrimary && c.reconciliationStatus === "SETTLED")
-          );
-          if (!hasSettledPrimary) {
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: currentOrder.paymentMethod,
+          paymentStatus: currentOrder.paymentStatus,
+          payments: onlinePayments,
+        });
+        if (!eligibility.eligible) {
+          if (eligibility.error?.includes("provisional")) {
             throw new Error(
-              "Online orders with unreconciled payment captures or risk holds cannot be shipped"
+              "Online payment has an unresolved provisional capture hold pending verification."
             );
           }
+          throw new Error(
+            "Online orders with unreconciled payment captures or risk holds cannot be shipped"
+          );
         }
       }
 

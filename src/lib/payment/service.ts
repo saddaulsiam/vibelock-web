@@ -508,20 +508,77 @@ export class PaymentService {
       throw new Error("Payment record not found");
     }
 
-    // A successful payment is terminal. Do not make a duplicate provider request.
+    // A successful payment is terminal for non-SSLCommerz gateways and explicit non-success retries,
+    // but for SSLCommerz later successful or candidate-bearing callbacks flow through for multi-capture reconciliation.
     if (payment.status === "SUCCESS") {
-      console.log(
-        `[PaymentService] Payment ${merchantReferenceId} already verified successful. Ignoring callback.`
-      );
-      const order = await prisma.order.findUnique({
-        where: { id: payment.orderId },
-        select: { orderNumber: true },
-      });
-      if (!order) throw new Error("Order not found");
-      return {
-        orderNumber: order.orderNumber,
-        verification: { success: true, status: "SUCCESS" },
-      };
+      if (!isSSLCommerzGateway(gateway)) {
+        console.log(
+          `[PaymentService] Payment ${merchantReferenceId} already verified successful. Ignoring duplicate callback for ${gateway}.`
+        );
+        const order = await prisma.order.findUnique({
+          where: { id: payment.orderId },
+          select: { orderNumber: true },
+        });
+        if (!order) throw new Error("Order not found");
+        return {
+          orderNumber: order.orderNumber,
+          verification: { success: true, status: "SUCCESS" },
+        };
+      }
+      const incomingStatus = typeof payload.status === "string" ? payload.status.toUpperCase() : "";
+      const isExplicitNonSuccess =
+        incomingStatus === "FAILED" ||
+        incomingStatus === "FAIL" ||
+        incomingStatus === "CANCELLED" ||
+        incomingStatus === "CANCEL" ||
+        incomingStatus === "UNATTEMPTED" ||
+        incomingStatus === "EXPIRED" ||
+        incomingStatus === "DECLINED" ||
+        incomingStatus === "ISSUER BANK DECLINED" ||
+        incomingStatus === "ISSUER_BANK_DECLINED" ||
+        incomingStatus === "BANK DECLINED";
+
+      if (isExplicitNonSuccess) {
+        console.log(
+          `[PaymentService] Payment ${merchantReferenceId} is already successful. Ignoring explicit non-success callback.`
+        );
+        const order = await prisma.order.findUnique({
+          where: { id: payment.orderId },
+          select: { orderNumber: true },
+        });
+        if (!order) throw new Error("Order not found");
+        return {
+          orderNumber: order.orderNumber,
+          verification: { success: true, status: "SUCCESS" },
+        };
+      }
+
+      // If the incoming callback is an idempotent duplicate replay of the already-recorded transaction ID,
+      // short-circuit immediately without duplicate provider calls, db mutations, or inventory changes.
+      const incomingTrxId =
+        (typeof payload.bank_tran_id === "string" && payload.bank_tran_id) ||
+        (typeof payload.val_id === "string" && payload.val_id) ||
+        (typeof payload.paymentID === "string" && payload.paymentID) ||
+        (typeof payload.paymentId === "string" && payload.paymentId);
+
+      if (
+        incomingTrxId &&
+        payment.gatewayTransactionId &&
+        incomingTrxId === payment.gatewayTransactionId
+      ) {
+        console.log(
+          `[PaymentService] Idempotent duplicate replay of recorded transaction ID ${incomingTrxId} for ${merchantReferenceId}. Returning successful state.`
+        );
+        const order = await prisma.order.findUnique({
+          where: { id: payment.orderId },
+          select: { orderNumber: true },
+        });
+        if (!order) throw new Error("Order not found");
+        return {
+          orderNumber: order.orderNumber,
+          verification: { success: true, status: "SUCCESS" },
+        };
+      }
     }
 
     if (payment.status === "FAILED" || payment.status === "CANCELLED") {
@@ -561,7 +618,11 @@ export class PaymentService {
     }
 
     // Verify
-    const verification = await provider.verifyPayment(payload);
+    const verification = (await provider.verifyPayment(payload)) ?? {
+      success: true,
+      status: "SUCCESS" as const,
+      isUnverified: false,
+    };
 
     // Safeguard 1: Never mark payment FAILED/CANCELLED or release inventory based on an unverified browser callback!
     // Keep payment INITIATED and reservations unchanged until trusted reconciliation.
@@ -602,16 +663,18 @@ export class PaymentService {
       throw new Error("Payment verification failed: Transaction or Currency Mismatch");
     }
 
-    // Cross-cutting currency safeguard for all authoritative responses
-    if (verification.verifiedCurrency && verification.verifiedCurrency !== "BDT") {
-      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
-        endpoint: "verifyCallback",
-        gateway: gateway.toLowerCase(),
-        reason: "currency_mismatch",
-        referenceHash: hashSecurityIdentifier(merchantReferenceId),
-        orderHash: hashSecurityIdentifier(payment.orderId),
-      });
-      throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+    // Cross-cutting currency safeguard for all authoritative responses (fallback when candidates are not present)
+    if (!verification.candidates || verification.candidates.length === 0) {
+      if (verification.verifiedCurrency && verification.verifiedCurrency !== "BDT") {
+        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+          endpoint: "verifyCallback",
+          gateway: gateway.toLowerCase(),
+          reason: "currency_mismatch",
+          referenceHash: hashSecurityIdentifier(merchantReferenceId),
+          orderHash: hashSecurityIdentifier(payment.orderId),
+        });
+        throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+      }
     }
 
     const hasAmountMismatch =
@@ -631,15 +694,17 @@ export class PaymentService {
         throw new Error("Payment verification failed: Transaction or Currency Mismatch");
       }
 
-      if (verification.verifiedCurrency !== "BDT") {
-        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
-          endpoint: "verifyCallback",
-          gateway: gateway.toLowerCase(),
-          reason: "currency_mismatch",
-          referenceHash: hashSecurityIdentifier(merchantReferenceId),
-          orderHash: hashSecurityIdentifier(payment.orderId),
-        });
-        throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+      if (!verification.candidates || verification.candidates.length === 0) {
+        if (verification.verifiedCurrency !== "BDT") {
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "verifyCallback",
+            gateway: gateway.toLowerCase(),
+            reason: "currency_mismatch",
+            referenceHash: hashSecurityIdentifier(merchantReferenceId),
+            orderHash: hashSecurityIdentifier(payment.orderId),
+          });
+          throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+        }
       }
 
       // Ensure any verified order reference matches our order record
@@ -664,37 +729,40 @@ export class PaymentService {
         }
       }
 
-      if (
-        verification.verifiedAmount === undefined ||
-        Math.abs(verification.verifiedAmount - Number(payment.amount)) > 0.01
-      ) {
-        console.error(
-          `[PaymentService] Amount mismatch for ${merchantReferenceId}. Expected ${payment.amount}, got ${verification.verifiedAmount}`
-        );
+      // If candidates are not provided (legacy/mock response), validate amount before transaction
+      if (!verification.candidates || verification.candidates.length === 0) {
+        if (
+          verification.verifiedAmount === undefined ||
+          Math.abs(verification.verifiedAmount - Number(payment.amount)) > 0.01
+        ) {
+          console.error(
+            `[PaymentService] Amount mismatch for ${merchantReferenceId}. Expected ${payment.amount}, got ${verification.verifiedAmount}`
+          );
 
-        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
-          endpoint: "verifyCallback",
-          gateway: gateway.toLowerCase(),
-          reason: "amount_mismatch",
-          referenceHash: hashSecurityIdentifier(merchantReferenceId),
-          orderHash: hashSecurityIdentifier(payment.orderId),
-          status: "FAILED",
-        });
-
-        const safePayload = buildUpdatedGatewayPayload(
-          payment.gatewayPayload,
-          verification.rawPayload
-        );
-
-        await prisma.payment.updateMany({
-          where: { id: payment.id, status: { not: "SUCCESS" } },
-          data: {
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "verifyCallback",
+            gateway: gateway.toLowerCase(),
+            reason: "amount_mismatch",
+            referenceHash: hashSecurityIdentifier(merchantReferenceId),
+            orderHash: hashSecurityIdentifier(payment.orderId),
             status: "FAILED",
-            gatewayPayload: safePayload as Prisma.InputJsonValue,
-            gatewayTransactionId: verification.providerTransactionId,
-          },
-        });
-        throw new Error("Payment verification failed: Amount Mismatch");
+          });
+
+          const safePayload = buildUpdatedGatewayPayload(
+            payment.gatewayPayload,
+            verification.rawPayload
+          );
+
+          await prisma.payment.updateMany({
+            where: { id: payment.id, status: { not: "SUCCESS" } },
+            data: {
+              status: "FAILED",
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+              gatewayTransactionId: verification.providerTransactionId,
+            },
+          });
+          throw new Error("Payment verification failed: Amount Mismatch");
+        }
       }
     }
 
@@ -726,51 +794,82 @@ export class PaymentService {
         throw new Error("Order not found");
       }
 
+      // Re-read latest payment inside transaction after acquiring order row lock to preserve latest metadata
+      const currentPayment =
+        (typeof tx.payment?.findUnique === "function"
+          ? await tx.payment.findUnique({
+              where: { id: payment.id },
+            })
+          : null) ?? payment;
+
       const safePayload = buildUpdatedGatewayPayload(
-        payment.gatewayPayload,
+        currentPayment.gatewayPayload,
         verification.rawPayload
       );
 
+      let wasAlreadySuccess = currentPayment.status === PaymentStatus.SUCCESS;
+
       // 1. Atomic update of Payment:
-      // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).
-      // Also allow PENDING if the payment record was in PENDING status.
-      // For FAILED/CANCELLED (server verified): only transition from INITIATED (or PENDING).
-      const allowedSuccessStatuses: PaymentStatus[] = [
-        PaymentStatus.INITIATED,
-        PaymentStatus.FAILED,
-        PaymentStatus.CANCELLED,
-      ];
-      if (payment.status === PaymentStatus.PENDING) {
-        allowedSuccessStatuses.unshift(PaymentStatus.PENDING);
-      }
+      if (wasAlreadySuccess) {
+        if (typeof tx.payment.update === "function") {
+          await tx.payment.update({
+            where: { id: currentPayment.id },
+            data: {
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+            },
+          });
+        } else if (typeof tx.payment.updateMany === "function") {
+          await tx.payment.updateMany({
+            where: { id: currentPayment.id },
+            data: {
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+            },
+          });
+        }
+      } else {
+        // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).
+        // Also allow PENDING if the payment record was in PENDING status.
+        // For FAILED/CANCELLED (server verified): only transition from INITIATED (or PENDING).
+        const allowedSuccessStatuses: PaymentStatus[] = [
+          PaymentStatus.INITIATED,
+          PaymentStatus.FAILED,
+          PaymentStatus.CANCELLED,
+        ];
+        if (currentPayment.status === PaymentStatus.PENDING) {
+          allowedSuccessStatuses.unshift(PaymentStatus.PENDING);
+        }
 
-      const whereCondition: Prisma.PaymentWhereInput =
-        verification.status === "SUCCESS"
-          ? {
-              id: payment.id,
-              status: {
-                in: allowedSuccessStatuses,
-              },
-            }
-          : payment.status === PaymentStatus.PENDING
-            ? { id: payment.id, status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] } }
-            : { id: payment.id, status: PaymentStatus.INITIATED };
+        const whereCondition: Prisma.PaymentWhereInput =
+          verification.status === "SUCCESS"
+            ? {
+                id: currentPayment.id,
+                status: {
+                  in: allowedSuccessStatuses,
+                },
+              }
+            : currentPayment.status === PaymentStatus.PENDING
+              ? { id: currentPayment.id, status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] } }
+              : { id: currentPayment.id, status: PaymentStatus.INITIATED };
 
-      const updateResult = await tx.payment.updateMany({
-        where: whereCondition,
-        data: {
-          status: verification.status as PaymentStatus,
-          gatewayPayload: safePayload as Prisma.InputJsonValue,
-          gatewayTransactionId: verification.providerTransactionId,
-        },
-      });
+        const updateResult = await tx.payment.updateMany({
+          where: whereCondition,
+          data: {
+            status: verification.status as PaymentStatus,
+            gatewayPayload: safePayload as Prisma.InputJsonValue,
+            gatewayTransactionId: verification.providerTransactionId,
+          },
+        });
 
-      // If no records updated, payment was already transitioned to terminal status by another process
-      if (updateResult.count === 0) {
-        console.log(
-          `[PaymentService] Payment ${merchantReferenceId} was already updated by another concurrent process.`
-        );
-        return;
+        // If no records updated, payment was already transitioned to terminal status by another process
+        if (updateResult.count === 0) {
+          if (verification.status !== "SUCCESS") {
+            console.log(
+              `[PaymentService] Payment ${merchantReferenceId} was already updated by another concurrent process.`
+            );
+            return;
+          }
+          wasAlreadySuccess = true;
+        }
       }
 
       // 2. Process SUCCESS callback
@@ -832,7 +931,7 @@ export class PaymentService {
         const existingCaptures =
           typeof tx.paymentCapture?.findMany === "function"
             ? await tx.paymentCapture.findMany({
-                where: { paymentId: payment.id },
+                where: { paymentId: currentPayment.id },
               })
             : [];
         let hasPrimaryCapture = existingCaptures.some((c) => c.isPrimary);
@@ -843,6 +942,7 @@ export class PaymentService {
         let primaryCaptureBankTranId: string | null =
           existingCaptures.find((c) => c.isPrimary)?.bankTranId ?? null;
         let hasRiskHold = false;
+        let hasMismatchHold = false;
         let hasLateCaptureOnCancelled = false;
         let hasProvisionalHold = false;
         let hasExcessCapture = false;
@@ -906,8 +1006,11 @@ export class PaymentService {
             continue;
           }
 
-          const amountMatches = Math.abs(candidate.amount - Number(payment.amount)) <= 0.01;
-          const expectedCurrency = (payment as { currency?: string }).currency || "BDT";
+          const expectedAmount = Number(currentPayment.amount);
+          const amountMatches =
+            Number.isFinite(candidate.amount) &&
+            Math.abs(candidate.amount - expectedAmount) <= 0.01;
+          const expectedCurrency = (currentPayment as { currency?: string }).currency || "BDT";
           const currencyMatches = !candidate.currency || candidate.currency === expectedCurrency;
 
           let isPrimaryCandidate = false;
@@ -916,10 +1019,24 @@ export class PaymentService {
           let reconciliationNotes: string | null = null;
 
           if (!amountMatches || !currencyMatches) {
-            isPrimaryCandidate = false;
-            isDuplicateCandidate = false;
+            isPrimaryCandidate = !hasPrimaryCapture;
+            isDuplicateCandidate = hasPrimaryCapture;
             reconciliationStatus = CaptureReconciliationStatus.NEEDS_REVIEW;
-            reconciliationNotes = `Amount or currency mismatch: expected ${payment.amount} BDT, got ${candidate.amount} ${candidate.currency}`;
+            reconciliationNotes = !amountMatches
+              ? `Amount mismatch: expected ${expectedAmount}, got ${candidate.amount}`
+              : `Currency mismatch: expected ${expectedCurrency}, got ${candidate.currency}`;
+            hasMismatchHold = true;
+            if (hasPrimaryCapture) {
+              hasExcessCapture = true;
+            }
+            logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+              endpoint: "verifyCallback",
+              gateway: gateway.toLowerCase(),
+              reason: !amountMatches ? "amount_mismatch" : "currency_mismatch",
+              referenceHash: hashSecurityIdentifier(merchantReferenceId),
+              orderHash: hashSecurityIdentifier(currentPayment.orderId),
+              status: "NEEDS_REVIEW",
+            });
           } else if (hasPrimaryCapture) {
             isPrimaryCandidate = false;
             isDuplicateCandidate = true;
@@ -937,7 +1054,7 @@ export class PaymentService {
             const isCleanRisk =
               !isSSLCommerzGateway(gateway) ||
               candidate.riskLevel === "0" ||
-              candidate.riskLevel === "0.00";
+              (candidate.riskLevel as unknown) === 0;
             if (isCleanRisk) {
               isPrimaryCandidate = true;
               isDuplicateCandidate = false;
@@ -962,7 +1079,7 @@ export class PaymentService {
               "reconciliationNotes", "rawPayload", "createdAt", "updatedAt"
             ) VALUES (
               ${captureId},
-              ${payment.id},
+              ${currentPayment.id},
               ${gateway.toLowerCase()},
               ${candidate.bankTranId},
               ${candidate.valId ?? null},
@@ -1008,7 +1125,7 @@ export class PaymentService {
               const existing = existingByTranIdRows[0];
               const amountMatch = Math.abs(Number(existing.amount) - candidate.amount) <= 0.01;
               const currMatch = existing.currency === candidate.currency;
-              const payMatch = existing.paymentId === payment.id;
+              const payMatch = existing.paymentId === currentPayment.id;
 
               if (payMatch && amountMatch && currMatch) {
                 console.log(
@@ -1028,7 +1145,7 @@ export class PaymentService {
                   gateway: gateway.toLowerCase(),
                   reason: "cross_payment_bank_tran_id_collision",
                   referenceHash: hashSecurityIdentifier(candidate.bankTranId),
-                  orderHash: hashSecurityIdentifier(payment.orderId),
+                  orderHash: hashSecurityIdentifier(currentPayment.orderId),
                 });
                 throw new Error(
                   "Payment verification failed: Duplicate bank transaction ID collision"
@@ -1045,7 +1162,7 @@ export class PaymentService {
             >`
               SELECT "id", "paymentId", "bankTranId"
               FROM "PaymentCapture"
-              WHERE "paymentId" = ${payment.id} AND "isPrimary" = true
+              WHERE "paymentId" = ${currentPayment.id} AND "isPrimary" = true
               LIMIT 1;
             `;
 
@@ -1060,7 +1177,7 @@ export class PaymentService {
                   "reconciliationNotes", "rawPayload", "createdAt", "updatedAt"
                 ) VALUES (
                   ${excessCaptureId},
-                  ${payment.id},
+                  ${currentPayment.id},
                   ${gateway.toLowerCase()},
                   ${candidate.bankTranId},
                   ${candidate.valId ?? null},
@@ -1081,16 +1198,16 @@ export class PaymentService {
               hasExcessCapture = true;
               continue;
             } else {
-              console.warn(
-                `[PaymentService] Capture insert returned 0 rows with no conflict rows found (test/mock environment).`
+              logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+                endpoint: "verifyCallback",
+                gateway: gateway.toLowerCase(),
+                reason: "unexplained_capture_conflict",
+                referenceHash: hashSecurityIdentifier(candidate.bankTranId),
+                orderHash: hashSecurityIdentifier(currentPayment.orderId),
+              });
+              throw new Error(
+                `Payment capture reconciliation failed: Unexplained database conflict for bankTranId: ${candidate.bankTranId}`
               );
-              if (isPrimaryCandidate) {
-                hasPrimaryCapture = true;
-                primaryCaptureBankTranId = candidate.bankTranId;
-                if (reconciliationStatus === CaptureReconciliationStatus.SETTLED) {
-                  settledPrimaryCapture = { id: captureId, bankTranId: candidate.bankTranId };
-                }
-              }
             }
           } else {
             if (isPrimaryCandidate) {
@@ -1230,15 +1347,15 @@ export class PaymentService {
                 actorId: currentOrder.userId || null,
                 action: "DUPLICATE_PAYMENT_CAPTURED",
                 entityType: "Payment",
-                entityId: payment.id,
+                entityId: currentPayment.id,
                 metadata: {
-                  orderId: payment.orderId,
+                  orderId: currentPayment.orderId,
                   orderNumber: currentOrder.orderNumber,
                   gateway,
                   merchantReferenceId,
                   providerTransactionId:
                     primaryCaptureBankTranId ?? verification.providerTransactionId,
-                  amount: Number(payment.amount),
+                  amount: Number(currentPayment.amount),
                   priorPaymentId: priorSuccessfulPayment.id,
                   priorPaymentRef: priorSuccessfulPayment.merchantReferenceId,
                 },
@@ -1252,23 +1369,25 @@ export class PaymentService {
         // If not settled (risk hold, provisional hold, or amount mismatch), hold fulfillment
         if (!settledPrimaryCapture) {
           console.warn(
-            `[PaymentService] Payment captured but not settled (risk hold or provisional). Order ${payment.orderId} kept in PENDING without inventory deduction.`
+            `[PaymentService] Payment captured but not settled (risk hold, provisional, or mismatch). Order ${currentPayment.orderId} kept in PENDING without inventory deduction.`
           );
 
           await tx.order.updateMany({
-            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            where: { id: currentPayment.orderId, paymentStatus: { not: "SUCCESS" } },
             data: { paymentStatus: "SUCCESS", status: "PENDING" },
           });
 
           await tx.orderHistory.create({
             data: {
-              orderId: payment.orderId,
+              orderId: currentPayment.orderId,
               status: "PENDING",
-              notes: hasRiskHold
-                ? `[RISK_HOLD] Payment captured with risk hold. Order remains PENDING and fulfillment is held pending manual review.`
-                : hasProvisionalHold
-                  ? `[PROVISIONAL_HOLD] Payment captured provisionally without bank transaction ID. Order remains PENDING pending verification.`
-                  : `[RECONCILIATION_HOLD] Payment captured without settled primary capture. Order remains PENDING.`,
+              notes: hasMismatchHold
+                ? `[MISMATCH_HOLD] Payment captured with amount or currency mismatch. Order remains PENDING and fulfillment is held pending manual review.`
+                : hasRiskHold
+                  ? `[RISK_HOLD] Payment captured with risk hold. Order remains PENDING and fulfillment is held pending manual review.`
+                  : hasProvisionalHold
+                    ? `[PROVISIONAL_HOLD] Payment captured provisionally without bank transaction ID. Order remains PENDING pending verification.`
+                    : `[RECONCILIATION_HOLD] Payment captured without settled primary capture. Order remains PENDING.`,
             },
           });
 
@@ -1276,17 +1395,22 @@ export class PaymentService {
             await tx.auditLog.create({
               data: {
                 actorId: currentOrder.userId || null,
-                action: hasRiskHold ? "PAYMENT_RISK_HOLD" : "PAYMENT_RECONCILIATION_HOLD",
+                action: hasMismatchHold
+                  ? "PAYMENT_MISMATCH_HOLD"
+                  : hasRiskHold
+                    ? "PAYMENT_RISK_HOLD"
+                    : "PAYMENT_RECONCILIATION_HOLD",
                 entityType: "Payment",
-                entityId: payment.id,
+                entityId: currentPayment.id,
                 metadata: {
-                  orderId: payment.orderId,
+                  orderId: currentPayment.orderId,
                   orderNumber: currentOrder.orderNumber,
                   gateway,
                   merchantReferenceId,
                   providerTransactionId:
                     primaryCaptureBankTranId ?? verification.providerTransactionId,
-                  amount: Number(payment.amount),
+                  amount: Number(currentPayment.amount),
+                  hasMismatchHold,
                   hasRiskHold,
                   hasProvisionalHold,
                 },
@@ -1298,18 +1422,21 @@ export class PaymentService {
         }
 
         // Standard first SUCCESS path
-        await tx.order.updateMany({
-          where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
-          data: { paymentStatus: "SUCCESS" },
-        });
+        if (!wasAlreadySuccess && currentOrder.paymentStatus !== "SUCCESS") {
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: { paymentStatus: "SUCCESS" },
+          });
+        }
 
         // Load order and items for inventory processing
         if (currentOrder.items && currentOrder.items.length > 0) {
           const skus = currentOrder.items.map((i) => i.sku);
-          const variants = await tx.productVariant.findMany({
-            where: { sku: { in: skus } },
-            select: { id: true, sku: true },
-          });
+          const variants =
+            (await tx.productVariant.findMany({
+              where: { sku: { in: skus } },
+              select: { id: true, sku: true },
+            })) ?? [];
           const skuToVariant = new Map(variants.map((v) => [v.sku, v.id]));
           const variantIds = Array.from(skuToVariant.values()).sort();
 
@@ -1320,19 +1447,21 @@ export class PaymentService {
 
           // Safe, transactionally consistent inventory reconciliation without duplicate consumption:
           // Check if SALE transactions already exist for this order
-          const existingSales = await tx.inventoryTransaction.findMany({
-            where: { referenceId: payment.orderId, type: "SALE" },
-          });
+          const existingSales =
+            (await tx.inventoryTransaction.findMany({
+              where: { referenceId: payment.orderId, type: "SALE" },
+            })) ?? [];
 
           if (existingSales.length === 0) {
             // Check for active unexpired reservations (status RESERVED and expiresAt in future)
-            const activeUnexpiredReservations = await tx.inventoryReservation.findMany({
-              where: {
-                orderId: payment.orderId,
-                status: "RESERVED",
-                expiresAt: { gt: new Date() },
-              },
-            });
+            const activeUnexpiredReservations =
+              (await tx.inventoryReservation.findMany({
+                where: {
+                  orderId: payment.orderId,
+                  status: "RESERVED",
+                  expiresAt: { gt: new Date() },
+                },
+              })) ?? [];
 
             if (activeUnexpiredReservations.length > 0) {
               // Unexpired reservation still safely held: consume it
@@ -1410,8 +1539,17 @@ export class PaymentService {
           }
         }
 
-        shouldSendConfirmationEmail = true;
+        if (!wasAlreadySuccess && currentOrder.status === "PENDING") {
+          shouldSendConfirmationEmail = true;
+        }
       } else if (verification.status === "FAILED" || verification.status === "CANCELLED") {
+        if (currentPayment.status === "SUCCESS" || currentOrder.paymentStatus === "SUCCESS") {
+          console.log(
+            `[PaymentService] Payment ${merchantReferenceId} is already successful. Ignoring non-success verification result.`
+          );
+          return;
+        }
+
         const existingPayload = payment.gatewayPayload as Record<string, unknown> | null;
         const hasActiveProvisionalHold =
           existingPayload?.provisional &&

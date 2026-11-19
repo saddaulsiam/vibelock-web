@@ -12,6 +12,7 @@ import {
   getOrderStatusTransitionError,
   getPaymentStatusTransitionError,
 } from "@/lib/orders/transitions";
+import { checkOnlinePaymentFulfillmentEligibility } from "@/lib/payment/fulfillment";
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Order updated successfully." };
@@ -63,6 +64,7 @@ export async function updateOrderStatusAction(
           payments: {
             select: {
               status: true,
+              gatewayPayload: true,
               captures: {
                 select: {
                   isPrimary: true,
@@ -137,28 +139,12 @@ export async function updateOrderStatusAction(
         order.paymentMethod === "ONLINE" &&
         ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
       ) {
-        const hasCaptures = (
-          order.payments as Array<{
-            status: PaymentStatus;
-            captures?: Array<{ isPrimary: boolean; reconciliationStatus: string }>;
-          }>
-        )?.some((p) => p.captures && p.captures.length > 0);
-
-        if (hasCaptures) {
-          const hasSettledPrimary = (
-            order.payments as Array<{
-              status: PaymentStatus;
-              captures?: Array<{ isPrimary: boolean; reconciliationStatus: string }>;
-            }>
-          )?.some((p) =>
-            p.captures?.some((c) => c.isPrimary && c.reconciliationStatus === "SETTLED")
-          );
-
-          if (!hasSettledPrimary) {
-            throw new Error(
+        const eligibility = checkOnlinePaymentFulfillmentEligibility(order);
+        if (!eligibility.eligible) {
+          throw new Error(
+            eligibility.error ??
               "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
-            );
-          }
+          );
         }
       }
 
@@ -191,8 +177,9 @@ export async function updateOrderStatusAction(
         message === "Order not found." ||
         message.startsWith("Order cannot transition") ||
         message.endsWith("orders cannot be changed.") ||
-        message ===
-          "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+        message.startsWith("Cannot advance order status") ||
+        message.includes("unresolved provisional capture hold") ||
+        message.includes("unreconciled")
           ? message
           : [
                 "Only pending orders can be cancelled.",
@@ -321,6 +308,7 @@ export async function quickUpdateOrderStatusAction(input: {
           payments: {
             select: {
               status: true,
+              gatewayPayload: true,
               captures: {
                 select: {
                   isPrimary: true,
@@ -390,6 +378,19 @@ export async function quickUpdateOrderStatusAction(input: {
       const transitionError = getOrderStatusTransitionError(order.status, status);
       if (transitionError) throw new Error(transitionError);
       if (order.status === status) return;
+
+      if (
+        order.paymentMethod === "ONLINE" &&
+        ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
+      ) {
+        const eligibility = checkOnlinePaymentFulfillmentEligibility(order);
+        if (!eligibility.eligible) {
+          throw new Error(
+            eligibility.error ??
+              "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+          );
+        }
+      }
 
       await tx.order.update({
         where: { id: orderId },

@@ -477,7 +477,7 @@ export class SSLCommerzProvider implements PaymentProvider {
       if (validCandidates.length > 0) {
         const primaryCandidate = validCandidates[0];
 
-        // Currency verification: must be BDT
+        // Currency check: log alert if mismatched, but preserve trustworthy evidence
         if (primaryCandidate.currency !== "BDT") {
           const { logSecurityAlert, hashSecurityIdentifier } = await import(
             "@/lib/monitoring/security-logger"
@@ -488,15 +488,6 @@ export class SSLCommerzProvider implements PaymentProvider {
             reason: "currency_mismatch",
             referenceHash: hashSecurityIdentifier(tranId),
           });
-          return {
-            success: false,
-            status: "FAILED",
-            isUnverified: true,
-            verifiedMerchantReferenceId: tranId,
-            candidates,
-            error: `Currency mismatch from gateway: expected BDT, got ${primaryCandidate.currency}`,
-            rawPayload: primaryCandidate.rawPayload,
-          };
         }
 
         // Amount verification: validate finite number
@@ -512,7 +503,7 @@ export class SSLCommerzProvider implements PaymentProvider {
           };
         }
 
-        // If callbackPayload provided an amount, cross-check it
+        // If callbackPayload provided an amount, cross-check and log alert if mismatched
         if (callbackPayload.amount !== undefined) {
           const expectedAmount = Number(callbackPayload.amount);
           if (
@@ -528,15 +519,6 @@ export class SSLCommerzProvider implements PaymentProvider {
               reason: "amount_mismatch",
               referenceHash: hashSecurityIdentifier(tranId),
             });
-            return {
-              success: false,
-              status: "FAILED",
-              isUnverified: true,
-              verifiedMerchantReferenceId: tranId,
-              candidates,
-              error: `Amount mismatch from gateway: expected ${expectedAmount}, got ${primaryCandidate.amount}`,
-              rawPayload: primaryCandidate.rawPayload,
-            };
           }
         }
 

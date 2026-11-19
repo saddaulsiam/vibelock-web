@@ -118,7 +118,11 @@ vi.mock("next/cache", () => ({
 import { PaymentService } from "@/lib/payment/service";
 import { SSLCommerzProvider } from "@/lib/payment/providers/sslcommerz/client";
 import { ShippingService } from "@/lib/shipping/service";
-import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
+import {
+  updateOrderStatusAction,
+  quickUpdateOrderStatusAction,
+  bulkUpdateOrderStatusAction,
+} from "@/lib/admin/orders/order-actions";
 
 describe("Phase 12.2 PR1: Multi-Capture Reconciliation & PaymentCapture Ledger", () => {
   let paymentService: PaymentService;
@@ -126,6 +130,30 @@ describe("Phase 12.2 PR1: Multi-Capture Reconciliation & PaymentCapture Ledger",
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.order.findUnique.mockReset().mockResolvedValue(null);
+    mockPrisma.order.findFirst.mockReset().mockResolvedValue(null);
+    mockPrisma.order.create.mockReset();
+    mockPrisma.order.update.mockReset().mockResolvedValue({});
+    mockPrisma.order.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    mockPrisma.payment.findUnique.mockReset().mockResolvedValue(null);
+    mockPrisma.payment.findFirst.mockReset().mockResolvedValue(null);
+    mockPrisma.payment.findMany.mockReset().mockResolvedValue([]);
+    mockPrisma.payment.create.mockReset().mockResolvedValue({ id: "pay-default-placeholder", status: "PENDING" });
+    mockPrisma.payment.update.mockReset().mockResolvedValue({});
+    mockPrisma.payment.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    mockPrisma.paymentCapture.findMany.mockReset().mockResolvedValue([]);
+    mockPrisma.paymentCapture.findUnique.mockReset().mockResolvedValue(null);
+    mockPrisma.paymentCapture.create.mockReset().mockResolvedValue({});
+    mockPrisma.inventoryReservation.findMany.mockReset().mockResolvedValue([]);
+    mockPrisma.inventoryReservation.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    mockPrisma.inventoryTransaction.findMany.mockReset().mockResolvedValue([]);
+    mockPrisma.inventoryTransaction.createMany.mockReset().mockResolvedValue({ count: 1 });
+    mockPrisma.orderHistory.create.mockReset();
+    mockPrisma.auditLog.create.mockReset();
+    mockPrisma.shipment.create.mockReset().mockResolvedValue({ id: "shipment-uuid-01" });
+    mockPrisma.$queryRaw.mockReset().mockResolvedValue([]);
+    mockPrisma.$executeRaw.mockReset().mockResolvedValue(1);
+
     global.fetch = vi.fn() as any;
     paymentService = new PaymentService();
     sslProvider = new SSLCommerzProvider();
@@ -960,6 +988,374 @@ describe("Phase 12.2 PR1: Multi-Capture Reconciliation & PaymentCapture Ledger",
         data: { paymentStatus: "SUCCESS" },
       });
     });
+
+    it("Scenario 12: Risk level '0.00' is treated as non-clean and produces risk hold NEEDS_REVIEW", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce(basePayment);
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(baseOrder)
+        .mockResolvedValueOnce(baseOrder);
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([{ id: "cap-risk-00" }]); // INSERT INTO PaymentCapture
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-RISK-00",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 1500.0,
+          verifiedCurrency: "BDT",
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-RISK-00",
+              valId: "VAL-RISK-00",
+              amount: 1500.0,
+              currency: "BDT",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0.00", // Non-clean! Must be strictly "0" or 0
+              tranDate: "2026-11-20 10:00:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-RISK-00", risk_level: "0.00" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: "SSLC-MULTI-REF-01",
+      });
+
+      // Verification held in PENDING
+      expect(mockConsumeReservation).not.toHaveBeenCalled();
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith({
+        where: { id: "ord-multi-01", paymentStatus: { not: "SUCCESS" } },
+        data: { paymentStatus: "SUCCESS", status: "PENDING" },
+      });
+      expect(mockPrisma.orderHistory.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            notes: expect.stringContaining("[RISK_HOLD]"),
+          }),
+        })
+      );
+    });
+
+    it("Scenario 13: Unknown/unexplained conflict during capture insertion throws reconciliation error and fails closed", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce(basePayment);
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(baseOrder)
+        .mockResolvedValueOnce(baseOrder);
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([]) // INSERT returns 0 rows (conflict!)
+        .mockResolvedValueOnce([]) // Step 1: query existing by bankTranId returns []
+        .mockResolvedValueOnce([]); // Step 2: query existing primary returns []
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-ANOMALY-01",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 1500.0,
+          verifiedCurrency: "BDT",
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-ANOMALY-01",
+              valId: "VAL-ANOMALY-01",
+              amount: 1500.0,
+              currency: "BDT",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0",
+              tranDate: "2026-11-20 10:00:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-ANOMALY-01", risk_level: "0" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await expect(
+        paymentService.verifyCallback("SSLCOMMERZ", {
+          tran_id: "SSLC-MULTI-REF-01",
+        })
+      ).rejects.toThrow(/Unexplained database conflict/);
+
+      expect(mockConsumeReservation).not.toHaveBeenCalled();
+    });
+
+    it("Scenario 14: Re-reads payment under transaction lock and preserves concurrent provisional evidence", async () => {
+      const paymentWithConcurrentProvisional = {
+        ...basePayment,
+        gatewayPayload: {
+          initiation: { sessionKey: "SESS-CONCURRENT-01" },
+          provisional: {
+            "VAL-CONCURRENT-01": {
+              valId: "VAL-CONCURRENT-01",
+              amount: 1500,
+              currency: "BDT",
+              reconciliationHold: true,
+            },
+          },
+        },
+      };
+
+      // Outside transaction read returns basePayment (without provisional)
+      mockPrisma.payment.findUnique
+        .mockResolvedValueOnce(basePayment) // outside transaction
+        .mockResolvedValueOnce(paymentWithConcurrentProvisional); // inside transaction after acquiring order lock
+
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(baseOrder)
+        .mockResolvedValueOnce(baseOrder);
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([{ id: "cap-clean-01" }]); // INSERT capture
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-CLEAN-01",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 1500.0,
+          verifiedCurrency: "BDT",
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-CLEAN-01",
+              valId: "VAL-CLEAN-01",
+              amount: 1500.0,
+              currency: "BDT",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0",
+              tranDate: "2026-11-20 10:00:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-CLEAN-01", risk_level: "0" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: "SSLC-MULTI-REF-01",
+      });
+
+      // Verify that the updated gatewayPayload in payment.updateMany preserved the concurrent provisional entry
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            gatewayPayload: expect.objectContaining({
+              provisional: expect.objectContaining({
+                "VAL-CONCURRENT-01": expect.objectContaining({
+                  reconciliationHold: true,
+                }),
+              }),
+            }),
+          }),
+        })
+      );
+    });
+
+    it("Scenario 15: Amount mismatch evidence persistence records candidate as NEEDS_REVIEW in PaymentCapture and holds fulfillment", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce(basePayment);
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(baseOrder)
+        .mockResolvedValueOnce(baseOrder);
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([{ id: "cap-mismatch-amt" }]); // INSERT into PaymentCapture
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-MISMATCH-AMT",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 50.0, // Expected: 1500, received: 50
+          verifiedCurrency: "BDT",
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-MISMATCH-AMT",
+              valId: "VAL-MISMATCH-AMT",
+              amount: 50.0,
+              currency: "BDT",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0",
+              tranDate: "2026-11-20 10:00:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-MISMATCH-AMT", amount: "50.00" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: "SSLC-MULTI-REF-01",
+      });
+
+      // Capture was persisted, but fulfillment is held
+      expect(mockConsumeReservation).not.toHaveBeenCalled();
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith({
+        where: { id: "ord-multi-01", paymentStatus: { not: "SUCCESS" } },
+        data: { paymentStatus: "SUCCESS", status: "PENDING" },
+      });
+      expect(mockPrisma.orderHistory.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            notes: expect.stringContaining("[MISMATCH_HOLD]"),
+          }),
+        })
+      );
+    });
+
+    it("Scenario 16: Currency mismatch evidence persistence records candidate as NEEDS_REVIEW in PaymentCapture and holds fulfillment", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce(basePayment);
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(baseOrder)
+        .mockResolvedValueOnce(baseOrder);
+      mockPrisma.payment.updateMany.mockResolvedValueOnce({ count: 1 });
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([{ id: "cap-mismatch-curr" }]); // INSERT into PaymentCapture
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-MISMATCH-CURR",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 1500.0,
+          verifiedCurrency: "USD", // Expected BDT, got USD
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-MISMATCH-CURR",
+              valId: "VAL-MISMATCH-CURR",
+              amount: 1500.0,
+              currency: "USD",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0",
+              tranDate: "2026-11-20 10:00:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-MISMATCH-CURR", currency: "USD" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: "SSLC-MULTI-REF-01",
+      });
+
+      // Capture was persisted, but fulfillment is held
+      expect(mockConsumeReservation).not.toHaveBeenCalled();
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith({
+        where: { id: "ord-multi-01", paymentStatus: { not: "SUCCESS" } },
+        data: { paymentStatus: "SUCCESS", status: "PENDING" },
+      });
+      expect(mockPrisma.orderHistory.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            notes: expect.stringContaining("[MISMATCH_HOLD]"),
+          }),
+        })
+      );
+    });
+
+    it("Scenario 17: Second distinct capture on already-SUCCESS payment records excess capture without duplicate inventory deduction or email", async () => {
+      const alreadySuccessPayment = {
+        ...basePayment,
+        status: "SUCCESS",
+        gatewayTransactionId: "BANK-PRIMARY-01",
+      };
+
+      const alreadyConfirmedOrder = {
+        ...baseOrder,
+        status: "PROCESSING",
+        paymentStatus: "SUCCESS",
+      };
+
+      mockPrisma.payment.findUnique.mockResolvedValueOnce(alreadySuccessPayment);
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(alreadyConfirmedOrder)
+        .mockResolvedValueOnce(alreadyConfirmedOrder);
+      mockPrisma.payment.update.mockResolvedValueOnce(alreadySuccessPayment);
+      mockPrisma.paymentCapture.findMany.mockResolvedValueOnce([
+        {
+          id: "cap-primary-01",
+          bankTranId: "BANK-PRIMARY-01",
+          isPrimary: true,
+          reconciliationStatus: CaptureReconciliationStatus.SETTLED,
+        },
+      ]);
+      mockPrisma.$queryRaw
+        .mockResolvedValueOnce([]) // row-lock order
+        .mockResolvedValueOnce([{ id: "cap-excess-02" }]); // INSERT returns ID
+
+      const mockProvider = {
+        verifyPayment: vi.fn(async () => ({
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: "BANK-EXCESS-02",
+          verifiedMerchantReferenceId: "SSLC-MULTI-REF-01",
+          verifiedAmount: 1500.0,
+          verifiedCurrency: "BDT",
+          isUnverified: false,
+          candidates: [
+            {
+              bankTranId: "BANK-EXCESS-02",
+              valId: "VAL-EXCESS-02",
+              amount: 1500.0,
+              currency: "BDT",
+              status: PaymentStatus.SUCCESS,
+              riskLevel: "0",
+              tranDate: "2026-11-20 10:20:00",
+              rawPayload: { tran_id: "SSLC-MULTI-REF-01", bank_tran_id: "BANK-EXCESS-02", risk_level: "0" },
+            },
+          ],
+        })),
+        initiatePayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      await paymentService.verifyCallback("SSLCOMMERZ", {
+        tran_id: "SSLC-MULTI-REF-01",
+      });
+
+      // Excess capture recorded in order history
+      expect(mockPrisma.orderHistory.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            notes: expect.stringContaining("[EXCESS_CAPTURE]"),
+          }),
+        })
+      );
+      // No duplicate inventory reservation consumption
+      expect(mockConsumeReservation).not.toHaveBeenCalled();
+      // Order status preserved as PROCESSING (not regressed to PENDING)
+      expect(mockPrisma.order.updateMany).not.toHaveBeenCalledWith(
+        expect.objectContaining({ data: expect.objectContaining({ status: "PENDING" }) })
+      );
+    });
   });
 
   // --------------------------------------------------------------------------
@@ -1014,7 +1410,7 @@ describe("Phase 12.2 PR1: Multi-Capture Reconciliation & PaymentCapture Ledger",
 
     it("Admin updateOrderStatusAction blocks status advancement when online payment has unreconciled primary capture", async () => {
       mockPrisma.order.findUnique.mockResolvedValueOnce({
-        id: "ord-admin-01",
+        id: "11111111-1111-1111-1111-111111111111",
         status: "PENDING",
         paymentStatus: "SUCCESS",
         paymentMethod: "ONLINE",
@@ -1041,6 +1437,161 @@ describe("Phase 12.2 PR1: Multi-Capture Reconciliation & PaymentCapture Ledger",
 
       expect(result.error).toBe(
         "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+      );
+    });
+
+    it("ShippingService blocks shipment creation when online order has an unresolved provisional hold", async () => {
+      const shippingProvider = {
+        name: "test-courier",
+        createShipment: vi.fn(),
+        trackShipment: vi.fn(),
+        cancelShipment: vi.fn(),
+      };
+      const shippingService = new ShippingService(shippingProvider as any);
+
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce({
+          id: "ord-prov-ship-01",
+          paymentMethod: "ONLINE",
+          paymentStatus: "SUCCESS",
+          status: "PENDING",
+          shipment: null,
+          shippingCost: 60,
+        })
+        .mockResolvedValueOnce({
+          id: "ord-prov-ship-01",
+          paymentMethod: "ONLINE",
+          paymentStatus: "SUCCESS",
+          status: "PENDING",
+          shipment: null,
+          shippingCost: 60,
+        });
+
+      mockPrisma.payment.findMany.mockResolvedValueOnce([
+        {
+          id: "pay-prov-01",
+          status: "SUCCESS",
+          gatewayPayload: {
+            provisional: {
+              "VAL-PROV-HOLD-01": {
+                valId: "VAL-PROV-HOLD-01",
+                reconciliationHold: true,
+              },
+            },
+          },
+          captures: [],
+        },
+      ]);
+
+      await expect(shippingService.createShipmentForOrder("ord-prov-ship-01")).rejects.toThrow(
+        "Online payment has an unresolved provisional capture hold pending verification."
+      );
+      expect(shippingProvider.createShipment).not.toHaveBeenCalled();
+    });
+
+    it("Admin updateOrderStatusAction blocks status advancement when online payment has an unresolved provisional hold", async () => {
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        id: "22222222-2222-2222-2222-222222222222",
+        status: "PENDING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        inventoryReservations: [],
+        shipment: null,
+        payments: [
+          {
+            status: "SUCCESS",
+            gatewayPayload: {
+              provisional: {
+                "VAL-PROV-HOLD-01": {
+                  valId: "VAL-PROV-HOLD-01",
+                  reconciliationHold: true,
+                },
+              },
+            },
+            captures: [],
+          },
+        ],
+      });
+
+      const formData = new FormData();
+      formData.set("id", "22222222-2222-2222-2222-222222222222");
+      formData.set("status", "CONFIRMED");
+
+      const result = await updateOrderStatusAction({ error: null }, formData);
+
+      expect(result.error).toBe(
+        "Online payment has an unresolved provisional capture hold pending verification."
+      );
+    });
+
+    it("Admin quickUpdateOrderStatusAction blocks status advancement when online payment has an unresolved provisional hold", async () => {
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        id: "ord-admin-quick-prov-01",
+        status: "PENDING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        inventoryReservations: [],
+        shipment: null,
+        payments: [
+          {
+            status: "SUCCESS",
+            gatewayPayload: {
+              provisional: {
+                "VAL-PROV-HOLD-01": {
+                  valId: "VAL-PROV-HOLD-01",
+                  reconciliationHold: true,
+                },
+              },
+            },
+            captures: [],
+          },
+        ],
+      });
+
+      const result = await quickUpdateOrderStatusAction({
+        orderId: "ord-admin-quick-prov-01",
+        status: "PROCESSING" as any,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.error).toBe(
+        "Online payment has an unresolved provisional capture hold pending verification."
+      );
+    });
+
+    it("Admin bulkUpdateOrderStatusAction blocks status advancement when any online order has an unresolved provisional hold", async () => {
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        id: "ord-admin-bulk-prov-01",
+        status: "PENDING",
+        paymentStatus: "SUCCESS",
+        paymentMethod: "ONLINE",
+        inventoryReservations: [],
+        shipment: null,
+        payments: [
+          {
+            status: "SUCCESS",
+            gatewayPayload: {
+              provisional: {
+                "VAL-PROV-HOLD-01": {
+                  valId: "VAL-PROV-HOLD-01",
+                  reconciliationHold: true,
+                },
+              },
+            },
+            captures: [],
+          },
+        ],
+      });
+
+      const result = await bulkUpdateOrderStatusAction({
+        orderIds: ["ord-admin-bulk-prov-01"],
+        status: "CONFIRMED" as any,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.updatedCount).toBe(0);
+      expect(result.errors).toContain(
+        "Online payment has an unresolved provisional capture hold pending verification."
       );
     });
   });
