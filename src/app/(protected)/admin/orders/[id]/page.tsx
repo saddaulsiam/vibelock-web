@@ -37,6 +37,7 @@ import {
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { getAdminOrderById } from "@/lib/admin/orders";
 import { getCustomerRiskProfile } from "@/lib/admin/customers";
+import { extractCardMetadata } from "@/lib/payment/format";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);
@@ -95,6 +96,9 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     netMerchandiseRevenue > 0
       ? Math.round((estimatedGrossProfit / netMerchandiseRevenue) * 100)
       : 0;
+
+  const primaryPayment = order.payments[0];
+  const { cardType, cardBrand } = extractCardMetadata(primaryPayment?.gatewayPayload);
 
   return (
     <div className="mx-auto w-full max-w-[100rem] space-y-6 pb-24 lg:pb-6">
@@ -212,6 +216,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
               <PaymentGatewayBadge
                 gateway={order.payments[0]?.gateway}
                 paymentMethod={order.paymentMethod}
+                cardType={cardType}
+                cardBrand={cardBrand}
               />
               {order.payments[0]?.gatewayTransactionId && (
                 <span

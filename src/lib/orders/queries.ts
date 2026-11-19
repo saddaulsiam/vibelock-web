@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { mapOrderSummary, mapOrderDetail } from "./mappers";
 import { OrderSummary, OrderDetail, OrderConfirmation } from "./types";
+import { extractCardMetadata } from "@/lib/payment/format";
 
 export async function getCustomerOrders(
   page = 1,
@@ -24,7 +25,7 @@ export async function getCustomerOrders(
         items: true,
         shipment: true,
         payments: {
-          select: { gateway: true },
+          select: { gateway: true, gatewayPayload: true },
           orderBy: { createdAt: "desc" },
           take: 1,
         },
@@ -156,6 +157,7 @@ export async function getCustomerOrderConfirmation(
           gatewayTransactionId: true,
           status: true,
           createdAt: true,
+          gatewayPayload: true,
         },
         orderBy: { createdAt: "desc" },
         take: 5,
@@ -211,6 +213,7 @@ export async function getCustomerOrderConfirmation(
   const latestPayment = order.payments?.[0];
   const paymentGateway =
     latestPayment?.gateway ?? (order.paymentMethod === "COD" ? "COD" : "ONLINE");
+  const { cardType, cardBrand } = extractCardMetadata(latestPayment?.gatewayPayload);
 
   const hasActiveReservation = (order.inventoryReservations?.length ?? 0) > 0;
   const reservationExpiresAt = order.inventoryReservations?.[0]?.expiresAt ?? null;
@@ -245,6 +248,8 @@ export async function getCustomerOrderConfirmation(
     paymentStatus: order.paymentStatus,
     paymentMethod: order.paymentMethod,
     paymentGateway,
+    cardType,
+    cardBrand,
     transactionId: latestPayment?.gatewayTransactionId ?? null,
     hasActiveReservation,
     reservationExpiresAt,

@@ -3,6 +3,7 @@ import { OrderPrintAction } from "@/components/storefront/orders/order-print-act
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { getHumanGatewayName } from "@/lib/payment/format";
 import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
 import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
 import { Button } from "@/components/ui/button";
@@ -44,20 +45,6 @@ function formatDate(date: Date) {
   }).format(new Date(date));
 }
 
-function getHumanGatewayName(gateway?: string | null, method?: string) {
-  if (method === "COD" || gateway === "COD" || gateway === "CASH") {
-    return "Cash on Delivery";
-  }
-  if (!gateway || gateway === "ONLINE") return "SSLCOMMERZ (Cards / MFS)";
-  const normalized = gateway.toUpperCase();
-  if (normalized === "BKASH") return "bKash";
-  if (normalized === "NAGAD") return "Nagad";
-  if (normalized === "SSLCOMMERZ") return "SSLCOMMERZ (Cards / MFS)";
-  if (normalized === "BANGLA_QR") return "Bangla QR";
-  if (normalized === "CARD") return "Credit / Debit Card";
-  return gateway;
-}
-
 export default async function OrderSuccessPage({ params, searchParams }: OrderSuccessPageProps) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
@@ -82,7 +69,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);
   const totalItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-  const gatewayLabel = getHumanGatewayName(order.paymentGateway, order.paymentMethod);
+  const gatewayLabel = getHumanGatewayName(
+    order.paymentGateway,
+    order.paymentMethod,
+    order.cardType,
+    order.cardBrand
+  );
 
   // Delivery Journey milestones
   const steps = [
@@ -136,7 +128,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         aria-hidden="true"
       />
 
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:px-8">
         {/* ── Top Navigation & Utility Toolbar ── */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link
@@ -191,6 +183,8 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 <PaymentGatewayBadge
                   gateway={order.paymentGateway}
                   paymentMethod={order.paymentMethod}
+                  cardType={order.cardType}
+                  cardBrand={order.cardBrand}
                 />
                 <OrderStatusBadge status={order.status} />
               </div>
@@ -225,11 +219,16 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                           Payment Not Confirmed
                         </h4>
                         <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-                          The payment gateway reported a cancelled or incomplete session, but trusted confirmation has not yet been received from the payment provider. Your order remains pending payment confirmation.
+                          The payment gateway reported a cancelled or incomplete session, but
+                          trusted confirmation has not yet been received from the payment provider.
+                          Your order remains pending payment confirmation.
                         </p>
                         {order.hasUnresolvedOnlinePayment ? (
                           <p className="mt-2 text-xs text-amber-800">
-                            A payment attempt is currently awaiting gateway confirmation. To protect you from duplicate charges, retry and cancellation are paused until the transaction is confirmed by the gateway. If you completed payment, please wait a few moments or contact support on WhatsApp (
+                            A payment attempt is currently awaiting gateway confirmation. To protect
+                            you from duplicate charges, retry and cancellation are paused until the
+                            transaction is confirmed by the gateway. If you completed payment,
+                            please wait a few moments or contact support on WhatsApp (
                             <a
                               href="https://wa.me/8801311333277"
                               target="_blank"
@@ -281,14 +280,19 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                           Payment Failed
                         </h4>
                         <p className="mt-0.5 text-xs leading-relaxed text-rose-700">
-                          The payment transaction was declined or failed by the gateway. No funds were debited.
+                          The payment transaction was declined or failed by the gateway. No funds
+                          were debited.
                           {order.hasActiveReservation ? (
                             <span>
-                              {" "}Your reserved items remain safe temporarily if you wish to retry payment.
+                              {" "}
+                              Your reserved items remain safe temporarily if you wish to retry
+                              payment.
                             </span>
                           ) : (
                             <span>
-                              {" "}The temporary reservation window has expired and items have been released back to stock.
+                              {" "}
+                              The temporary reservation window has expired and items have been
+                              released back to stock.
                             </span>
                           )}
                         </p>
@@ -316,42 +320,42 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   </div>
                 )}
                 <div className="border-vl-dark-900/6 mt-6 border-t pt-6">
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
-                  {steps.map((st, i) => (
-                    <div key={st.id} className="relative flex flex-col items-start gap-1">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
-                            st.isDone
-                              ? "bg-emerald-600 text-white"
-                              : st.isCurrent
-                                ? "bg-vl-dark-900 ring-vl-cyan text-white ring-2"
-                                : "bg-neutral-100 text-neutral-400"
-                          }`}
-                        >
-                          {st.isDone ? (
-                            <Check className="size-3 stroke-[3]" />
-                          ) : st.isCurrent ? (
-                            <Clock className="size-3" />
-                          ) : (
-                            <span>{i + 1}</span>
-                          )}
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
+                    {steps.map((st, i) => (
+                      <div key={st.id} className="relative flex flex-col items-start gap-1">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold transition-colors ${
+                              st.isDone
+                                ? "bg-emerald-600 text-white"
+                                : st.isCurrent
+                                  ? "bg-vl-dark-900 ring-vl-cyan text-white ring-2"
+                                  : "bg-neutral-100 text-neutral-400"
+                            }`}
+                          >
+                            {st.isDone ? (
+                              <Check className="size-3 stroke-[3]" />
+                            ) : st.isCurrent ? (
+                              <Clock className="size-3" />
+                            ) : (
+                              <span>{i + 1}</span>
+                            )}
+                          </div>
+                          <span
+                            className={`text-xs font-semibold tracking-wider uppercase ${
+                              st.isDone || st.isCurrent ? "text-vl-dark-900" : "text-neutral-400"
+                            }`}
+                          >
+                            {st.label}
+                          </span>
                         </div>
-                        <span
-                          className={`text-xs font-semibold tracking-wider uppercase ${
-                            st.isDone || st.isCurrent ? "text-vl-dark-900" : "text-neutral-400"
-                          }`}
-                        >
-                          {st.label}
-                        </span>
+                        <p className="pl-8 text-[11px] text-neutral-500">{st.sublabel}</p>
                       </div>
-                      <p className="pl-8 text-[11px] text-neutral-500">{st.sublabel}</p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
           </div>
 
           {/* 2. Purchased Items Section & Financial Calculation */}
@@ -473,9 +477,9 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
           {/* 3. Integrated Metadata Grid (Address, Payment & Delivery) */}
           <div className="border-vl-dark-900/8 bg-vl-white-100 border-t p-5 sm:p-7 md:p-8">
-            <div className="divide-vl-dark-900/8 grid grid-cols-1 gap-6 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
+            <div className="divide-vl-dark-900/8 grid grid-cols-1 gap-6 divide-y sm:grid-cols-3 sm:divide-x sm:divide-y-0 lg:grid-cols-3">
               {/* Delivery Destination */}
-              <div className="sm:pr-6">
+              <div>
                 <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                   <MapPin className="text-vl-dark-900 size-3.5" />
                   <span>Delivery Destination</span>
@@ -499,18 +503,18 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
               </div>
 
               {/* Payment Details */}
-              <div className="pt-5 sm:px-6 sm:pt-0">
+              <div>
                 <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                   <CreditCard className="text-vl-dark-900 size-3.5" />
                   <span>Payment Details</span>
                 </div>
                 <div className="mt-3 space-y-2.5 text-xs text-neutral-600">
                   <div className="flex items-center justify-between sm:justify-start sm:gap-4">
-                    <span className="text-neutral-500">Method</span>
+                    <span className="text-neutral-500">Method:</span>
                     <span className="text-vl-dark-900 font-semibold">{gatewayLabel}</span>
                   </div>
                   <div className="flex items-center justify-between sm:justify-start sm:gap-4">
-                    <span className="text-neutral-500">Status</span>
+                    <span className="text-neutral-500">Status:</span>
                     <span
                       className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                         isPaid
@@ -525,8 +529,10 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   </div>
                   {order.transactionId && (
                     <div className="flex items-center justify-between sm:justify-start sm:gap-4">
-                      <span className="text-neutral-500">TrxID</span>
-                      <span className="font-mono text-neutral-800">{order.transactionId}</span>
+                      <span className="text-neutral-500">TrxID:</span>
+                      <span className="overflow-hidden font-mono wrap-break-word text-neutral-800">
+                        {order.transactionId}
+                      </span>
                     </div>
                   )}
                   <p className="pt-1 text-[11px] text-neutral-500">
@@ -544,7 +550,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
               </div>
 
               {/* Courier & Assurance */}
-              <div className="pt-5 sm:col-span-2 sm:pt-6 lg:col-span-1 lg:pt-0 lg:pl-6">
+              <div>
                 <div className="text-vl-dark-900 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                   <Truck className="text-vl-dark-900 size-3.5" />
                   <span>Courier &amp; Assurance</span>

@@ -20,6 +20,8 @@ export type OrderSummary = {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   paymentGateway?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   total: number;
   itemCount: number;
   previewItems: OrderItemSummary[];
@@ -34,6 +36,8 @@ export type OrderConfirmation = Pick<
   "orderNumber" | "createdAt" | "status" | "paymentStatus" | "paymentMethod"
 > & {
   paymentGateway?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   transactionId?: string | null;
   customerName?: string | null;
   customerEmail?: string | null;
@@ -71,6 +75,8 @@ export type OrderDetail = {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   paymentGateway?: string | null;
+  cardType?: string | null;
+  cardBrand?: string | null;
   hasActiveReservation?: boolean;
   reservationExpiresAt?: Date | null;
   latestPaymentStatus?: string | null;
