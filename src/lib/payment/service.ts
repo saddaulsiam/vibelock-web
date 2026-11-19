@@ -12,6 +12,155 @@ import {
 } from "./constants";
 import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
+const FORBIDDEN_METADATA_KEYS = new Set([
+  "store_passwd",
+  "store_id",
+  "password",
+  "app_secret",
+  "app_key",
+  "id_token",
+  "refreshToken",
+  "token",
+  "sensitiveData",
+  "signature",
+  "merchantPrivateKey",
+  "pgPublicKey",
+  "secret",
+  "credential",
+  "initiation",
+  "__proto__",
+  "constructor",
+  "prototype",
+]);
+
+const ALLOWED_CALLBACK_KEYS = new Set([
+  // SSLCommerz
+  "status",
+  "tran_id",
+  "val_id",
+  "amount",
+  "store_amount",
+  "currency",
+  "bank_tran_id",
+  "card_type",
+  "card_no",
+  "card_issuer",
+  "card_brand",
+  "card_sub_brand",
+  "card_issuer_country",
+  "card_issuer_country_code",
+  "currency_type",
+  "currency_amount",
+  "currency_rate",
+  "base_fair",
+  "value_a",
+  "value_b",
+  "value_c",
+  "value_d",
+  "risk_level",
+  "risk_title",
+  "error",
+  "failedreason",
+  "tran_date",
+  "gw_version",
+  "validated_on",
+  "gw_element",
+  // bKash
+  "paymentID",
+  "trxID",
+  "transactionStatus",
+  "intent",
+  "paymentCreateTime",
+  "paymentExecuteTime",
+  "payerReference",
+  "customerMsisdn",
+  "merchantInvoiceNumber",
+  "errorMessage",
+  "errorCode",
+  // Nagad
+  "payment_ref_id",
+  "order_id",
+  "issuer_payment_ref",
+]);
+
+function sanitizeCallbackPayload(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return {};
+  }
+  const clean: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    if (ALLOWED_CALLBACK_KEYS.has(key) && !FORBIDDEN_METADATA_KEYS.has(key)) {
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        value === null
+      ) {
+        clean[key] = value;
+      }
+    }
+  }
+  return clean;
+}
+
+function buildUpdatedGatewayPayload(
+  existingPayload: unknown,
+  rawCallbackPayload: unknown
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  const existing =
+    existingPayload && typeof existingPayload === "object" && !Array.isArray(existingPayload)
+      ? (existingPayload as Record<string, unknown>)
+      : null;
+
+  // 1. Preserve existing trusted initiation metadata intact
+  if (existing) {
+    const existingInitiation = existing.initiation;
+    if (
+      existingInitiation &&
+      typeof existingInitiation === "object" &&
+      !Array.isArray(existingInitiation)
+    ) {
+      result.initiation = { ...(existingInitiation as Record<string, unknown>) };
+    } else if (typeof existing.redirectUrl === "string") {
+      // Legacy initiation format fallback: lift existing redirectUrl into initiation namespace
+      result.initiation = {
+        redirectUrl: existing.redirectUrl,
+      };
+    }
+
+    // Preserve root-level redirectUrl if present (backwards compatibility for session reuse checks)
+    if (typeof existing.redirectUrl === "string") {
+      result.redirectUrl = existing.redirectUrl;
+    }
+
+    // Preserve cancellationReason if already present
+    if (typeof existing.cancellationReason === "string") {
+      result.cancellationReason = existing.cancellationReason;
+    }
+  }
+
+  // 2. Add sanitized callback fields strictly under callback namespace
+  const cleanCallback = sanitizeCallbackPayload(rawCallbackPayload);
+  result.callback = cleanCallback;
+
+  // 3. Backward-compatible root properties for order views & DTO mappers
+  const cardType =
+    typeof cleanCallback.card_type === "string"
+      ? cleanCallback.card_type
+      : typeof cleanCallback.cardType === "string"
+        ? cleanCallback.cardType
+        : typeof existing?.card_type === "string"
+          ? existing.card_type
+          : undefined;
+
+  if (cardType) {
+    result.card_type = cardType;
+  }
+
+  return result;
+}
+
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
     if (isSSLCommerzGateway(gateway)) {
@@ -213,6 +362,17 @@ export class PaymentService {
           select: { status: true, paymentStatus: true },
         });
 
+        const nowIso = new Date().toISOString();
+        const initiationMetadata: Record<string, unknown> = {
+          initiatedAt: nowIso,
+        };
+        if (typeof response.redirectUrl === "string" && response.redirectUrl) {
+          initiationMetadata.redirectUrl = response.redirectUrl;
+        }
+        if (typeof response.sessionKey === "string" && response.sessionKey) {
+          initiationMetadata.sessionKey = response.sessionKey;
+        }
+
         if (latestOrder?.paymentStatus === "SUCCESS" || latestOrder?.status === "CANCELLED") {
           // Order was paid or cancelled while external call was in flight
           await tx.payment.update({
@@ -221,9 +381,10 @@ export class PaymentService {
               status: "CANCELLED",
               merchantReferenceId: response.merchantReferenceId,
               gatewayPayload: {
+                initiation: initiationMetadata,
                 redirectUrl: response.redirectUrl,
                 cancellationReason: `Order transitioned to ${latestOrder.status}/${latestOrder.paymentStatus} during initiation`,
-              },
+              } as Prisma.InputJsonValue,
             },
           });
           return;
@@ -235,8 +396,9 @@ export class PaymentService {
             status: "INITIATED",
             merchantReferenceId: response.merchantReferenceId,
             gatewayPayload: {
+              initiation: initiationMetadata,
               redirectUrl: response.redirectUrl,
-            },
+            } as Prisma.InputJsonValue,
           },
         });
       });
@@ -494,19 +656,10 @@ export class PaymentService {
           status: "FAILED",
         });
 
-        const safePayload = { ...(verification.rawPayload as object) } as Record<string, unknown>;
-        delete safePayload.store_passwd;
-        delete safePayload.store_id;
-        delete safePayload.password;
-        delete safePayload.app_secret;
-        delete safePayload.app_key;
-        delete safePayload.id_token;
-        delete safePayload.refreshToken;
-        delete safePayload.token;
-        delete safePayload.sensitiveData;
-        delete safePayload.signature;
-        delete safePayload.merchantPrivateKey;
-        delete safePayload.pgPublicKey;
+        const safePayload = buildUpdatedGatewayPayload(
+          payment.gatewayPayload,
+          verification.rawPayload
+        );
 
         await prisma.payment.updateMany({
           where: { id: payment.id, status: { not: "SUCCESS" } },
@@ -532,21 +685,6 @@ export class PaymentService {
 
     // Wrap the final update in a transaction
     await prisma.$transaction(async (tx) => {
-      // Clean payload
-      const safePayload = { ...(verification.rawPayload as object) } as Record<string, unknown>;
-      delete safePayload.store_passwd;
-      delete safePayload.store_id;
-      delete safePayload.password;
-      delete safePayload.app_secret;
-      delete safePayload.app_key;
-      delete safePayload.id_token;
-      delete safePayload.refreshToken;
-      delete safePayload.token;
-      delete safePayload.sensitiveData;
-      delete safePayload.signature;
-      delete safePayload.merchantPrivateKey;
-      delete safePayload.pgPublicKey;
-
       // Concurrency lock: row-lock Order first to serialize against cancellation or concurrent callbacks
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${payment.orderId} FOR UPDATE`;
       const currentOrder = await tx.order.findUnique({
@@ -562,6 +700,11 @@ export class PaymentService {
         });
         throw new Error("Order not found");
       }
+
+      const safePayload = buildUpdatedGatewayPayload(
+        payment.gatewayPayload,
+        verification.rawPayload
+      );
 
       // 1. Atomic update of Payment:
       // For SUCCESS: allow transitioning from INITIATED, FAILED, or CANCELLED (Late SUCCESS recovery path).

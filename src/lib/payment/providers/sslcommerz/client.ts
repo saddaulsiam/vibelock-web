@@ -61,10 +61,16 @@ export class SSLCommerzProvider implements PaymentProvider {
       const result = await response.json();
 
       if (result.status === "SUCCESS" && result.GatewayPageURL) {
+        const sessionKey =
+          typeof result.sessionkey === "string" && result.sessionkey.trim()
+            ? result.sessionkey.trim()
+            : undefined;
+
         return {
           success: true,
           redirectUrl: result.GatewayPageURL,
           merchantReferenceId,
+          sessionKey,
         };
       }
 
