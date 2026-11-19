@@ -12,7 +12,37 @@ import {
   getOrderStatusTransitionError,
   getPaymentStatusTransitionError,
 } from "@/lib/orders/transitions";
-import { checkOnlinePaymentFulfillmentEligibility } from "@/lib/payment/fulfillment";
+import {
+  checkOnlinePaymentFulfillmentEligibility,
+  type PaymentFulfillmentCheckTarget,
+} from "@/lib/payment/fulfillment";
+
+let isPaymentCaptureTableAvailable: boolean | null = null;
+
+async function checkPaymentCaptureTableAvailability(): Promise<boolean> {
+  if (isPaymentCaptureTableAvailable !== null) {
+    return isPaymentCaptureTableAvailable;
+  }
+  const paymentCapture = (
+    prisma as unknown as { paymentCapture?: { findFirst?: () => Promise<unknown> } }
+  ).paymentCapture;
+  if (typeof paymentCapture?.findFirst !== "function") {
+    isPaymentCaptureTableAvailable = false;
+    return false;
+  }
+  try {
+    await paymentCapture.findFirst();
+    isPaymentCaptureTableAvailable = true;
+    return true;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("does not exist") || msg.includes("P2021")) {
+      isPaymentCaptureTableAvailable = false;
+      return false;
+    }
+    return true;
+  }
+}
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Order updated successfully." };
@@ -53,6 +83,8 @@ export async function updateOrderStatusAction(
 
   const { id, status, notes } = parsed.data;
 
+  const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${id} FOR UPDATE`;
@@ -65,12 +97,16 @@ export async function updateOrderStatusAction(
             select: {
               status: true,
               gatewayPayload: true,
-              captures: {
-                select: {
-                  isPrimary: true,
-                  reconciliationStatus: true,
-                },
-              },
+              ...(hasCaptureTable
+                ? {
+                    captures: {
+                      select: {
+                        isPrimary: true,
+                        reconciliationStatus: true,
+                      },
+                    },
+                  }
+                : {}),
             },
           },
         },
@@ -139,7 +175,11 @@ export async function updateOrderStatusAction(
         order.paymentMethod === "ONLINE" &&
         ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
       ) {
-        const eligibility = checkOnlinePaymentFulfillmentEligibility(order);
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          payments: order.payments as PaymentFulfillmentCheckTarget[],
+        });
         if (!eligibility.eligible) {
           throw new Error(
             eligibility.error ??
@@ -297,6 +337,8 @@ export async function quickUpdateOrderStatusAction(input: {
     return { success: false, error: "Order ID and status are required." };
   }
 
+  const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
@@ -309,12 +351,16 @@ export async function quickUpdateOrderStatusAction(input: {
             select: {
               status: true,
               gatewayPayload: true,
-              captures: {
-                select: {
-                  isPrimary: true,
-                  reconciliationStatus: true,
-                },
-              },
+              ...(hasCaptureTable
+                ? {
+                    captures: {
+                      select: {
+                        isPrimary: true,
+                        reconciliationStatus: true,
+                      },
+                    },
+                  }
+                : {}),
             },
           },
         },
@@ -383,7 +429,11 @@ export async function quickUpdateOrderStatusAction(input: {
         order.paymentMethod === "ONLINE" &&
         ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
       ) {
-        const eligibility = checkOnlinePaymentFulfillmentEligibility(order);
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          payments: order.payments as PaymentFulfillmentCheckTarget[],
+        });
         if (!eligibility.eligible) {
           throw new Error(
             eligibility.error ??

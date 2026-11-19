@@ -1,6 +1,7 @@
 import { PaymentStatus } from "@prisma/client";
 
 export * from "./constants";
+export { CaptureReconciliationStatus } from "./fulfillment";
 
 export interface PaymentInitiationRequest {
   orderId: string;

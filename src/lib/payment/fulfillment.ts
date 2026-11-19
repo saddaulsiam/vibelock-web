@@ -1,19 +1,31 @@
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
 
+export type CaptureReconciliationStatus = "SETTLED" | "NEEDS_REVIEW" | "RESOLVED";
+export const CaptureReconciliationStatus = {
+  SETTLED: "SETTLED",
+  NEEDS_REVIEW: "NEEDS_REVIEW",
+  RESOLVED: "RESOLVED",
+} as const;
+
+export interface CaptureFulfillmentCheckTarget {
+  isPrimary?: boolean;
+  reconciliationStatus?: string | CaptureReconciliationStatus;
+  [key: string]: unknown;
+}
+
 export interface PaymentFulfillmentCheckTarget {
   id?: string;
-  status: PaymentStatus;
+  status?: PaymentStatus | string;
   gatewayPayload?: unknown;
-  captures?: Array<{
-    isPrimary: boolean;
-    reconciliationStatus: string;
-  }>;
+  captures?: CaptureFulfillmentCheckTarget[] | null;
+  [key: string]: unknown;
 }
 
 export interface OrderFulfillmentCheckTarget {
-  paymentMethod: PaymentMethod | string;
-  paymentStatus: PaymentStatus | string;
-  payments?: PaymentFulfillmentCheckTarget[];
+  paymentMethod?: PaymentMethod | string;
+  paymentStatus?: PaymentStatus | string;
+  payments?: PaymentFulfillmentCheckTarget[] | null;
+  [key: string]: unknown;
 }
 
 export interface FulfillmentEligibilityResult {
@@ -28,9 +40,12 @@ export interface FulfillmentEligibilityResult {
  * Rules:
  * - COD orders are always eligible for fulfillment advancement.
  * - Online orders must have order.paymentStatus === "SUCCESS".
+ * - Online orders must have authoritative payment records (payments array cannot be missing or empty).
+ * - Online orders must have at least one confirmed successful payment record (status === "SUCCESS").
  * - Online orders with unresolved provisional holds (gatewayPayload.provisional with reconciliationHold: true) are BLOCKED.
  * - Online orders with PaymentCapture records must have at least one settled primary capture (isPrimary: true, reconciliationStatus: "SETTLED").
  * - Online orders with unreconciled primary capture (NEEDS_REVIEW / risk hold / amount mismatch) are BLOCKED.
+ * - Online orders with confirmed successful payment and empty captures (legacy/non-capture gateways) are ELIGIBLE as long as no provisional/risk holds exist.
  */
 export function checkOnlinePaymentFulfillmentEligibility(
   order: OrderFulfillmentCheckTarget
@@ -47,8 +62,24 @@ export function checkOnlinePaymentFulfillmentEligibility(
   }
 
   const payments = order.payments ?? [];
+  if (payments.length === 0) {
+    return {
+      eligible: false,
+      error: "Online orders must have authoritative payment records before fulfillment.",
+    };
+  }
+
+  const hasSuccessfulPayment = payments.some((p) => p && p.status === "SUCCESS");
+  if (!hasSuccessfulPayment) {
+    return {
+      eligible: false,
+      error: "Online orders must have a confirmed successful payment record before fulfillment.",
+    };
+  }
 
   for (const payment of payments) {
+    if (!payment) continue;
+
     // 1. Check for unresolved provisional holds in gatewayPayload
     const payload = payment.gatewayPayload as Record<string, unknown> | null;
     if (payload?.provisional && typeof payload.provisional === "object") {
@@ -72,7 +103,7 @@ export function checkOnlinePaymentFulfillmentEligibility(
     const captures = payment.captures ?? [];
     if (captures.length > 0) {
       const hasSettledPrimary = captures.some(
-        (c) => c.isPrimary && c.reconciliationStatus === "SETTLED"
+        (c) => c && c.isPrimary && c.reconciliationStatus === "SETTLED"
       );
       if (!hasSettledPrimary) {
         return {

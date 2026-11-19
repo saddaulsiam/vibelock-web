@@ -1,10 +1,15 @@
 import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma/client";
-import { PaymentInitiationResponse, PaymentProvider, VerifiedCaptureCandidate } from "./types";
+import {
+  CaptureReconciliationStatus,
+  PaymentInitiationResponse,
+  PaymentProvider,
+  VerifiedCaptureCandidate,
+} from "./types";
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { BkashProvider } from "./providers/bkash/client";
 import { NagadProvider } from "./providers/nagad/client";
-import { CaptureReconciliationStatus, Order, PaymentStatus, Prisma } from "@prisma/client";
+import { Order, PaymentStatus, Prisma } from "@prisma/client";
 import {
   isSSLCommerzGateway,
   isBkashGateway,

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import { CaptureReconciliationStatus, PaymentStatus } from "@prisma/client";
+import { PaymentStatus } from "@prisma/client";
+import { CaptureReconciliationStatus } from "@/lib/payment/types";
 
 // Hoist mock env
 const { mockEnv } = vi.hoisted(() => ({

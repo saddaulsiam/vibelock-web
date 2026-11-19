@@ -1,7 +1,37 @@
 import prisma from "@/lib/prisma/client";
 import { ShipmentStatus } from "@prisma/client";
 import { ShippingProvider } from "./types";
-import { checkOnlinePaymentFulfillmentEligibility } from "@/lib/payment/fulfillment";
+import {
+  checkOnlinePaymentFulfillmentEligibility,
+  type PaymentFulfillmentCheckTarget,
+} from "@/lib/payment/fulfillment";
+
+let isPaymentCaptureTableAvailable: boolean | null = null;
+
+async function checkPaymentCaptureTableAvailability(): Promise<boolean> {
+  if (isPaymentCaptureTableAvailable !== null) {
+    return isPaymentCaptureTableAvailable;
+  }
+  const paymentCapture = (
+    prisma as unknown as { paymentCapture?: { findFirst?: () => Promise<unknown> } }
+  ).paymentCapture;
+  if (typeof paymentCapture?.findFirst !== "function") {
+    isPaymentCaptureTableAvailable = false;
+    return false;
+  }
+  try {
+    await paymentCapture.findFirst();
+    isPaymentCaptureTableAvailable = true;
+    return true;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("does not exist") || msg.includes("P2021")) {
+      isPaymentCaptureTableAvailable = false;
+      return false;
+    }
+    return true;
+  }
+}
 
 export class ShippingService {
   constructor(private provider: ShippingProvider) {}
@@ -13,6 +43,10 @@ export class ShippingService {
     });
 
     if (!order) throw new Error("Order not found");
+    if (order.shipment) throw new Error("Shipment already exists for this order");
+
+    const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
     // 1. Transactional validation and local intent creation
     const localShipment = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
@@ -24,13 +58,15 @@ export class ShippingService {
       if (currentOrder.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
       if (currentOrder.shipment) throw new Error("Shipment already exists for this order");
       if (currentOrder.paymentMethod === "ONLINE") {
-        const onlinePayments =
-          typeof tx.payment?.findMany === "function"
-            ? await tx.payment.findMany({
-                where: { orderId: currentOrder.id },
-                include: { captures: true },
-              })
-            : [];
+        if (currentOrder.paymentStatus !== "SUCCESS") {
+          throw new Error("Online orders must be fully paid before shipping");
+        }
+        const onlinePayments = (typeof tx.payment?.findMany === "function"
+          ? await tx.payment.findMany({
+              where: { orderId: currentOrder.id },
+              ...(hasCaptureTable ? { include: { captures: true } } : {}),
+            })
+          : []) as PaymentFulfillmentCheckTarget[];
         const eligibility = checkOnlinePaymentFulfillmentEligibility({
           paymentMethod: currentOrder.paymentMethod,
           paymentStatus: currentOrder.paymentStatus,
@@ -105,15 +141,92 @@ export class ShippingService {
     }
 
     // 3. Update shipment and order atomically after provider acceptance.
-    const updatedShipment = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
       const currentOrder = await tx.order.findUnique({
         where: { id: orderId },
         include: { shipment: true },
       });
-      if (!currentOrder || currentOrder.status === "CANCELLED") {
-        throw new Error("Order was cancelled while shipment creation was in progress");
+      if (!currentOrder) throw new Error("Order not found");
+
+      const wasCancelled = currentOrder.status === "CANCELLED";
+      let eligibilityError: string | undefined;
+
+      if (wasCancelled) {
+        eligibilityError = "Order was cancelled while shipment creation was in progress";
+      } else if (currentOrder.paymentMethod === "ONLINE") {
+        if (currentOrder.paymentStatus !== "SUCCESS") {
+          eligibilityError = "Online orders must be fully paid before shipping";
+        } else {
+          const onlinePayments = (typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                ...(hasCaptureTable ? { include: { captures: true } } : {}),
+              })
+            : []) as PaymentFulfillmentCheckTarget[];
+          const eligibility = checkOnlinePaymentFulfillmentEligibility({
+            paymentMethod: currentOrder.paymentMethod,
+            paymentStatus: currentOrder.paymentStatus,
+            payments: onlinePayments,
+          });
+          if (!eligibility.eligible) {
+            eligibilityError = eligibility.error?.includes("provisional")
+              ? "Online payment has an unresolved provisional capture hold pending verification."
+              : "Online orders with unreconciled payment captures or risk holds cannot be shipped";
+          }
+        }
       }
+
+      if (eligibilityError) {
+        // Attempt provider cancellation if supported by the provider
+        let providerCancelled = false;
+        if (
+          typeof this.provider.cancelShipment === "function" &&
+          providerRes.providerShipmentId
+        ) {
+          try {
+            const cancelRes = await this.provider.cancelShipment({
+              shipmentId: localShipment.id,
+              providerShipmentId: providerRes.providerShipmentId,
+            });
+            providerCancelled = cancelRes?.success === true;
+          } catch (err) {
+            console.error("[ShippingService] Failed to cancel shipment with provider:", err);
+          }
+        }
+
+        if (providerCancelled) {
+          const cancelledShipment = await tx.shipment.update({
+            where: { id: localShipment.id },
+            data: {
+              status: "CANCELLED",
+              providerShipmentId: providerRes.providerShipmentId,
+              trackingNumber: providerRes.trackingNumber,
+              cancelledAt: new Date(),
+              failureReason: `Fulfillment eligibility failed after provider acceptance (${eligibilityError}). Provider shipment cancelled successfully.`,
+            },
+          });
+          // Do not mark the order SHIPPED or DELIVERED!
+          return { shipment: cancelledShipment, error: eligibilityError };
+        } else {
+          // If the provider has already accepted the shipment, do not pretend it was cancelled.
+          // Preserve the provider shipment reference and response as durable evidence,
+          // and record a clear manual reconciliation requirement.
+          const heldShipment = await tx.shipment.update({
+            where: { id: localShipment.id },
+            data: {
+              status: providerRes.status || "CREATED",
+              providerShipmentId: providerRes.providerShipmentId,
+              trackingNumber: providerRes.trackingNumber,
+              failureReason: `MANUAL_RECONCILIATION_REQUIRED: Provider accepted shipment (${providerRes.providerShipmentId}) but post-provider fulfillment eligibility failed (${eligibilityError}). Automated cancellation not supported or failed. Manual operator reconciliation required.`,
+            },
+          });
+          // Do not mark the order SHIPPED or DELIVERED!
+          return { shipment: heldShipment, error: eligibilityError };
+        }
+      }
+
+      // Normal path: Order is eligible and active.
       const providerStatus = providerRes.status || "CREATED";
       const updated = await tx.shipment.update({
         where: { id: localShipment.id },
@@ -130,10 +243,14 @@ export class ShippingService {
         where: { id: orderId },
         data: { status: providerStatus === "DELIVERED" ? "DELIVERED" : "SHIPPED" },
       });
-      return updated;
+      return { shipment: updated };
     });
 
-    return updatedShipment;
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    return result.shipment;
   }
 
   async syncShipmentStatus(providerShipmentId: string, eventStatus?: ShipmentStatus) {
