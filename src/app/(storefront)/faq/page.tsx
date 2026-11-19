@@ -178,7 +178,7 @@ export default function FAQPage() {
                   </Link>
 
                   <a
-                    href="https://wa.me/+8801311333277"
+                    href="https://wa.me/8801311333277"
                     target="_blank"
                     rel="noreferrer"
                     className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex min-h-11 w-full items-center justify-center gap-2 border bg-white px-4 text-xs font-bold tracking-wider uppercase transition-colors"

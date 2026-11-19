@@ -939,6 +939,118 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       // Does not throw RATE_LIMIT_EXCEEDED because skipRateLimit was true!
       expect(response.success).toBe(true);
     });
+
+    it("blocks switching gateways when an earlier payment attempt on another gateway is unresolved (INITIATED) regardless of age", async () => {
+      const testOrder: any = {
+        id: "ord-switch-gate-inflight",
+        userId: "cust-switch-inflight",
+        orderNumber: "VL-SWITCH-01",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        total: 1200,
+      };
+
+      mockPrisma.order.findUnique.mockResolvedValueOnce(testOrder);
+      mockPrisma.payment.updateMany.mockResolvedValue({ count: 0 });
+      mockPrisma.payment.findFirst
+        .mockResolvedValueOnce(null) // activePending (< 30s)
+        .mockResolvedValueOnce({
+          id: "pay-existing-sslc",
+          orderId: "ord-switch-gate-inflight",
+          gateway: "SSLCOMMERZ",
+          status: "INITIATED",
+          merchantReferenceId: "SSLC-REF-INFLIGHT",
+          createdAt: new Date(Date.now() - 25 * 60 * 1000), // even 25 mins old is unresolved!
+          gatewayPayload: {},
+        });
+
+      const response = await paymentService.initiatePayment(testOrder, "BKASH", {
+        skipRateLimit: true,
+      });
+
+      expect(response.success).toBe(false);
+      expect(response.error).toContain("Switching payment methods is blocked until the existing transaction is confirmed");
+    });
+
+    it("blocks same-gateway initiation if previous attempt is unresolved and has no cached redirectUrl to prevent blind duplicate sessions", async () => {
+      const testOrder: any = {
+        id: "ord-same-gate-no-url",
+        userId: "cust-same-no-url",
+        orderNumber: "VL-SAME-01",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        total: 1200,
+      };
+
+      mockPrisma.order.findUnique.mockResolvedValueOnce(testOrder);
+      mockPrisma.payment.updateMany.mockResolvedValue({ count: 0 });
+      mockPrisma.payment.findFirst
+        .mockResolvedValueOnce(null) // activePending (< 30s)
+        .mockResolvedValueOnce({
+          id: "pay-existing-sslc-nourl",
+          orderId: "ord-same-gate-no-url",
+          gateway: "SSLCOMMERZ",
+          status: "INITIATED",
+          merchantReferenceId: "SSLC-REF-NOURL",
+          createdAt: new Date(Date.now() - 5 * 60 * 1000),
+          gatewayPayload: {}, // No redirectUrl cached
+        });
+
+      const response = await paymentService.initiatePayment(testOrder, "SSLCOMMERZ", {
+        skipRateLimit: true,
+      });
+
+      expect(response.success).toBe(false);
+      expect(response.error).toContain("A payment attempt on this gateway is currently unresolved");
+    });
+
+    it("allows initiating on a new gateway when all previous payment attempts on other gateways are confirmed terminal FAILED", async () => {
+      const testOrder: any = {
+        id: "ord-switch-gate-failed",
+        userId: "cust-switch-failed",
+        orderNumber: "VL-SWITCH-02",
+        status: "PENDING",
+        paymentStatus: "FAILED",
+        total: 1200,
+      };
+
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce(testOrder) // preCheck
+        .mockResolvedValueOnce(testOrder); // post-initiation
+      mockPrisma.payment.updateMany.mockResolvedValue({ count: 0 });
+
+      mockPrisma.payment.findFirst
+        .mockResolvedValueOnce(null) // activePending (< 30s)
+        .mockResolvedValueOnce(null); // existingInitiated (null because previous was FAILED)
+
+      mockPrisma.payment.create.mockResolvedValueOnce({ id: "pay-placeholder-bkash" });
+      mockPrisma.payment.update.mockResolvedValueOnce({
+        id: "pay-placeholder-bkash",
+        status: "INITIATED",
+      });
+
+      const mockProvider = {
+        initiatePayment: vi.fn(async () => ({
+          success: true,
+          redirectUrl: "https://sandbox.bkash.com/payment",
+          merchantReferenceId: "BKASH-REF-NEW",
+        })),
+        verifyPayment: vi.fn(),
+      };
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
+
+      const response = await paymentService.initiatePayment(testOrder, "BKASH", {
+        skipRateLimit: true,
+      });
+
+      expect(response.success).toBe(true);
+      expect(response.redirectUrl).toBe("https://sandbox.bkash.com/payment");
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ status: "CANCELLED" }),
+        })
+      );
+    });
   });
 
   describe("4. Provider Callback Immunity (Callbacks NEVER blocked by customer rate limits)", () => {

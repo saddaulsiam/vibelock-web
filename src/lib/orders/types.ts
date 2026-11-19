@@ -55,6 +55,12 @@ export type OrderConfirmation = Pick<
   > & {
     imageUrl?: string | null;
   })[];
+  hasActiveReservation?: boolean;
+  reservationExpiresAt?: Date | null;
+  latestPaymentStatus?: string | null;
+  hasUnresolvedOnlinePayment?: boolean;
+  canRetryPayment?: boolean;
+  canCancelOrder?: boolean;
 };
 
 export type OrderDetail = {
@@ -65,6 +71,12 @@ export type OrderDetail = {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   paymentGateway?: string | null;
+  hasActiveReservation?: boolean;
+  reservationExpiresAt?: Date | null;
+  latestPaymentStatus?: string | null;
+  hasUnresolvedOnlinePayment?: boolean;
+  canRetryPayment?: boolean;
+  canCancelOrder?: boolean;
 
   // Financials
   subtotal: number;

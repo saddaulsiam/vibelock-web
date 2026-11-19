@@ -107,12 +107,11 @@ export class PaymentService {
         };
       }
 
-      // Check for active INITIATED payment across ALL gateways within reservation TTL window (15 mins)
+      // Check for any active INITIATED payment across ALL gateways
       const existingInitiated = await tx.payment.findFirst({
         where: {
           orderId: order.id,
           status: "INITIATED",
-          createdAt: { gt: new Date(Date.now() - 15 * 60 * 1000) },
         },
         orderBy: { createdAt: "desc" },
       });
@@ -131,21 +130,19 @@ export class PaymentService {
               },
             };
           }
+
+          // Same gateway but no cached redirectUrl: do not blindly create a duplicate active session
+          return {
+            status: "IN_FLIGHT" as const,
+            error:
+              "A payment attempt on this gateway is currently unresolved. Please wait while the transaction is verified, or contact support.",
+          };
         } else {
-          // Different gateway: safely cancel the old active session across other gateways
-          await tx.payment.updateMany({
-            where: {
-              orderId: order.id,
-              status: "INITIATED",
-              gateway: { not: normalizedGateway },
-            },
-            data: {
-              status: "CANCELLED",
-              gatewayPayload: {
-                cancellationReason: `Superseded by new payment initiation via ${normalizedGateway}`,
-              },
-            },
-          });
+          // Different gateway: strictly block switching gateways while an earlier attempt is unresolved
+          return {
+            status: "IN_FLIGHT" as const,
+            error: `A payment attempt via ${existingInitiated.gateway} is currently unresolved. Switching payment methods is blocked until the existing transaction is confirmed or resolved.`,
+          };
         }
       }
 

@@ -64,6 +64,15 @@ export async function getCustomerOrder(orderNumber: string): Promise<OrderDetail
       },
       payments: {
         include: { refunds: true },
+        orderBy: { createdAt: "desc" },
+      },
+      inventoryReservations: {
+        where: {
+          status: "RESERVED",
+          expiresAt: { gt: new Date() },
+        },
+        select: { expiresAt: true },
+        take: 1,
       },
       shipment: true,
       history: {
@@ -145,8 +154,18 @@ export async function getCustomerOrderConfirmation(
         select: {
           gateway: true,
           gatewayTransactionId: true,
+          status: true,
+          createdAt: true,
         },
         orderBy: { createdAt: "desc" },
+        take: 5,
+      },
+      inventoryReservations: {
+        where: {
+          status: "RESERVED",
+          expiresAt: { gt: new Date() },
+        },
+        select: { expiresAt: true },
         take: 1,
       },
       items: {
@@ -193,6 +212,32 @@ export async function getCustomerOrderConfirmation(
   const paymentGateway =
     latestPayment?.gateway ?? (order.paymentMethod === "COD" ? "COD" : "ONLINE");
 
+  const hasActiveReservation = (order.inventoryReservations?.length ?? 0) > 0;
+  const reservationExpiresAt = order.inventoryReservations?.[0]?.expiresAt ?? null;
+  const latestPaymentStatus = latestPayment?.status ?? null;
+
+  const hasUnresolvedOnlinePayment =
+    order.paymentMethod === "ONLINE" &&
+    Boolean(
+      order.payments?.some(
+        (p) => p.status === "INITIATED" || p.status === "PENDING"
+      )
+    );
+
+  const canCancelOrder =
+    order.status === "PENDING" &&
+    order.paymentStatus !== "SUCCESS" &&
+    order.paymentStatus !== "REFUNDED" &&
+    order.paymentStatus !== "PARTIALLY_REFUNDED" &&
+    !hasUnresolvedOnlinePayment;
+
+  const canRetryPayment =
+    order.status === "PENDING" &&
+    order.paymentStatus !== "SUCCESS" &&
+    order.paymentMethod === "ONLINE" &&
+    hasActiveReservation &&
+    !hasUnresolvedOnlinePayment;
+
   return {
     orderNumber: order.orderNumber,
     createdAt: order.createdAt,
@@ -201,6 +246,12 @@ export async function getCustomerOrderConfirmation(
     paymentMethod: order.paymentMethod,
     paymentGateway,
     transactionId: latestPayment?.gatewayTransactionId ?? null,
+    hasActiveReservation,
+    reservationExpiresAt,
+    latestPaymentStatus,
+    hasUnresolvedOnlinePayment,
+    canRetryPayment,
+    canCancelOrder,
     customerName: order.customerName,
     customerEmail: order.customerEmail,
     customerPhone: order.customerPhone,

@@ -10,9 +10,16 @@ import { Loader2 } from "lucide-react";
 interface CancelOrderButtonProps {
   orderNumber: string;
   className?: string;
+  variant?: "destructive" | "outline" | "secondary" | "danger";
+  size?: "default" | "sm" | "lg" | "xs";
 }
 
-export function CancelOrderButton({ orderNumber, className }: CancelOrderButtonProps) {
+export function CancelOrderButton({
+  orderNumber,
+  className,
+  variant = "destructive",
+  size = "sm",
+}: CancelOrderButtonProps) {
   const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -41,11 +48,11 @@ export function CancelOrderButton({ orderNumber, className }: CancelOrderButtonP
 
   return (
     <Button
-      variant="destructive"
+      variant={variant}
       className={className}
       onClick={handleCancel}
       type="button"
-      size="sm"
+      size={size}
       disabled={isCancelling}
     >
       {isCancelling ? (

@@ -3,6 +3,8 @@ import { OrderPrintAction } from "@/components/storefront/orders/order-print-act
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
 import { Button } from "@/components/ui/button";
 import {
   AlertCircle,
@@ -98,7 +100,11 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         ? "Pay on delivery"
         : isPaid
           ? "Settled via " + gatewayLabel
-          : "Pending settlement",
+          : isRedirectUnfinished
+            ? "Session incomplete"
+            : isPaymentFailed
+              ? "Payment failed"
+              : "Verifying payment",
       isDone: isPaid || isCod,
       isCurrent: !isPaid && !isCod,
     },
@@ -171,11 +177,13 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 <p className="mt-1 text-xs text-neutral-500 sm:text-sm">
                   {isCancelled
                     ? "This order was cancelled. Reserved inventory was released and no funds were debited."
-                    : isRedirectUnfinished
-                      ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway settlement.`
-                      : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
-                          order.customerEmail || "your email"
-                        }.`}
+                    : isPaymentFailed
+                      ? `Payment for order #${order.orderNumber} was not successful. Your items remain reserved temporarily if you wish to retry.`
+                      : isRedirectUnfinished
+                        ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
+                        : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
+                            order.customerEmail || "your email"
+                          }.`}
                 </p>
               </div>
 
@@ -207,18 +215,104 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
             ) : (
               <>
                 {isRedirectUnfinished && (
-                  <div className="mt-6 flex items-center gap-3.5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-                    <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                      <AlertCircle className="size-5" />
+                  <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <AlertCircle className="size-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold tracking-wider text-amber-900 uppercase">
+                          Payment Not Confirmed
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
+                          The payment gateway reported a cancelled or incomplete session, but trusted confirmation has not yet been received from the payment provider. Your order remains pending payment confirmation.
+                        </p>
+                        {order.hasUnresolvedOnlinePayment ? (
+                          <p className="mt-2 text-xs text-amber-800">
+                            A payment attempt is currently awaiting gateway confirmation. To protect you from duplicate charges, retry and cancellation are paused until the transaction is confirmed by the gateway. If you completed payment, please wait a few moments or contact support on WhatsApp (
+                            <a
+                              href="https://wa.me/8801311333277"
+                              target="_blank"
+                              rel="noreferrer"
+                              className="font-semibold underline hover:text-amber-950"
+                            >
+                              +8801311333277
+                            </a>
+                            ).
+                          </p>
+                        ) : (
+                          <p className="mt-2 text-xs text-amber-800">
+                            {order.hasActiveReservation
+                              ? "Your items remain reserved. You can retry payment now to complete your order."
+                              : "Inventory reservation has expired. Please create a new order."}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold tracking-wider text-amber-900 uppercase">
-                        Payment Not Confirmed
-                      </h4>
-                      <p className="mt-0.5 text-xs text-amber-700">
-                        The payment gateway reported a cancelled or incomplete session. Your order remains pending until final confirmation or expiration. You can check status or retry from your account orders.
-                      </p>
+                    {(order.canRetryPayment || order.canCancelOrder) && (
+                      <div className="flex flex-wrap items-center gap-2 pt-1 sm:pl-12.5">
+                        {order.canRetryPayment && (
+                          <RetryPaymentButton
+                            orderNumber={order.orderNumber}
+                            gateway={order.paymentGateway ?? undefined}
+                            variant="brand"
+                            size="sm"
+                          />
+                        )}
+                        {order.canCancelOrder && (
+                          <CancelOrderButton
+                            orderNumber={order.orderNumber}
+                            variant="outline"
+                            size="sm"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isPaymentFailed && (
+                  <div className="mt-6 flex flex-col gap-3 rounded-xl border border-rose-200 bg-rose-50/70 p-4">
+                    <div className="flex items-start gap-3.5">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-700">
+                        <AlertCircle className="size-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-xs font-bold tracking-wider text-rose-900 uppercase">
+                          Payment Failed
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-relaxed text-rose-700">
+                          The payment transaction was declined or failed by the gateway. No funds were debited.
+                          {order.hasActiveReservation ? (
+                            <span>
+                              {" "}Your reserved items remain safe temporarily if you wish to retry payment.
+                            </span>
+                          ) : (
+                            <span>
+                              {" "}The temporary reservation window has expired and items have been released back to stock.
+                            </span>
+                          )}
+                        </p>
+                      </div>
                     </div>
+                    {(order.canRetryPayment || order.canCancelOrder) && (
+                      <div className="flex flex-wrap items-center gap-2 pt-1 sm:pl-12.5">
+                        {order.canRetryPayment && (
+                          <RetryPaymentButton
+                            orderNumber={order.orderNumber}
+                            gateway={order.paymentGateway ?? undefined}
+                            variant="brand"
+                            size="sm"
+                          />
+                        )}
+                        {order.canCancelOrder && (
+                          <CancelOrderButton
+                            orderNumber={order.orderNumber}
+                            variant="outline"
+                            size="sm"
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 <div className="border-vl-dark-900/6 mt-6 border-t pt-6">
@@ -440,7 +534,11 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       ? "Payment settled and verified."
                       : isCod
                         ? "Please have exact cash ready for courier."
-                        : "Awaiting settlement verification."}
+                        : isRedirectUnfinished
+                          ? "Payment session incomplete. Awaiting trusted confirmation."
+                          : isPaymentFailed
+                            ? "Payment attempt declined or failed."
+                            : "Payment status is being verified. Please check again shortly."}
                   </p>
                 </div>
               </div>
@@ -465,7 +563,14 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     </div>
                     <div className="flex items-center gap-1.5 text-[11px] text-neutral-700">
                       <Phone className="size-3.5 text-neutral-500" />
-                      <span>WhatsApp Support: 01942565664</span>
+                      <a
+                        href="https://wa.me/8801311333277"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="hover:underline"
+                      >
+                        WhatsApp Support: +8801311333277
+                      </a>
                     </div>
                   </div>
                 </div>
