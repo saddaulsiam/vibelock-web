@@ -345,7 +345,12 @@ export class PaymentService {
         incomingStatus === "FAIL" ||
         incomingStatus === "CANCELLED" ||
         incomingStatus === "CANCEL" ||
-        incomingStatus === "UNATTEMPTED";
+        incomingStatus === "UNATTEMPTED" ||
+        incomingStatus === "EXPIRED" ||
+        incomingStatus === "DECLINED" ||
+        incomingStatus === "ISSUER BANK DECLINED" ||
+        incomingStatus === "ISSUER_BANK_DECLINED" ||
+        incomingStatus === "BANK DECLINED";
 
       if (isIncomingNonSuccess) {
         console.log(
@@ -410,8 +415,24 @@ export class PaymentService {
       throw new Error("Payment verification failed: Transaction or Currency Mismatch");
     }
 
-    // If verification was successful but the verified amount does not match, log error and fail securely.
-    if (verification.success && verification.status === "SUCCESS") {
+    // Cross-cutting currency safeguard for all authoritative responses
+    if (verification.verifiedCurrency && verification.verifiedCurrency !== "BDT") {
+      logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+        endpoint: "verifyCallback",
+        gateway: gateway.toLowerCase(),
+        reason: "currency_mismatch",
+        referenceHash: hashSecurityIdentifier(merchantReferenceId),
+        orderHash: hashSecurityIdentifier(payment.orderId),
+      });
+      throw new Error("Payment verification failed: Transaction or Currency Mismatch");
+    }
+
+    const hasAmountMismatch =
+      verification.verifiedAmount !== undefined &&
+      Math.abs(verification.verifiedAmount - Number(payment.amount)) > 0.01;
+
+    // If verification was successful or amount mismatches, validate references and amount safely
+    if ((verification.success && verification.status === "SUCCESS") || hasAmountMismatch) {
       if (verification.verifiedMerchantReferenceId !== merchantReferenceId) {
         logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
           endpoint: "verifyCallback",
@@ -701,7 +722,7 @@ export class PaymentService {
         });
 
         // Load order and items for inventory processing
-        if (currentOrder.items.length > 0) {
+        if (currentOrder.items && currentOrder.items.length > 0) {
           const skus = currentOrder.items.map((i) => i.sku);
           const variants = await tx.productVariant.findMany({
             where: { sku: { in: skus } },
@@ -809,27 +830,59 @@ export class PaymentService {
 
         shouldSendConfirmationEmail = true;
       } else if (verification.status === "FAILED" || verification.status === "CANCELLED") {
-        await tx.order.updateMany({
-          where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
-          data: {
-            status: "CANCELLED",
-            paymentStatus: verification.status === "FAILED" ? "FAILED" : "CANCELLED",
-          },
-        });
-
-        await tx.orderHistory.create({
-          data: {
+        // Requirement 8: Check if an active, unexpired inventory reservation exists for the order
+        const activeReservations = await tx.inventoryReservation.findMany({
+          where: {
             orderId: payment.orderId,
-            status: "CANCELLED",
-            notes: `Online payment ${verification.status.toLowerCase()} via ${gateway}. Order automatically cancelled and reserved stock released.`,
+            status: "RESERVED",
+            expiresAt: { gt: new Date() },
           },
         });
 
-        // Release reservation and restock if needed
-        const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
-        await inventoryService.cancelOrderInventory(payment.orderId, tx);
-        const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
-        await releaseOrderCoupon(payment.orderId, tx);
+        const hasActiveReservation =
+          activeReservations.length > 0 && currentOrder.status !== "CANCELLED";
+
+        if (verification.status === "FAILED" && hasActiveReservation) {
+          // Preserve PENDING status and active reservation to allow customer payment retry
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: {
+              status: "PENDING",
+              paymentStatus: "FAILED",
+            },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: "PENDING",
+              notes: `Online payment failed via ${gateway}. Active inventory reservation preserved to allow customer payment retry.`,
+            },
+          });
+        } else {
+          // Explicit cancellation or reservation expired / already cancelled
+          await tx.order.updateMany({
+            where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
+            data: {
+              status: "CANCELLED",
+              paymentStatus: verification.status === "FAILED" ? "FAILED" : "CANCELLED",
+            },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: payment.orderId,
+              status: "CANCELLED",
+              notes: `Online payment ${verification.status.toLowerCase()} via ${gateway}. Order automatically cancelled and reserved stock released.`,
+            },
+          });
+
+          // Release reservation and restock if needed
+          const inventoryService = (await import("@/lib/inventory/service")).InventoryService;
+          await inventoryService.cancelOrderInventory(payment.orderId, tx);
+          const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
+          await releaseOrderCoupon(payment.orderId, tx);
+        }
       }
     });
 
