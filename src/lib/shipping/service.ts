@@ -142,14 +142,23 @@ export class ShippingService {
 
     // 3. Update shipment and order atomically after provider acceptance.
     const result = await prisma.$transaction(async (tx) => {
+      // Standardized lock order: Always lock Order first, then Shipment
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM "Shipment" WHERE id = ${localShipment.id} FOR UPDATE`;
+
       const currentOrder = await tx.order.findUnique({
         where: { id: orderId },
         include: { shipment: true },
       });
       if (!currentOrder) throw new Error("Order not found");
 
-      const wasCancelled = currentOrder.status === "CANCELLED";
+      const currentShipment = await tx.shipment.findUnique({
+        where: { id: localShipment.id },
+      });
+      if (!currentShipment) throw new Error("Shipment not found");
+
+      const wasCancelled =
+        currentOrder.status === "CANCELLED" || currentShipment.status === "CANCELLED";
       let eligibilityError: string | undefined;
 
       if (wasCancelled) {
@@ -284,13 +293,31 @@ export class ShippingService {
   }
 
   async updateShipmentStatus(shipmentId: string, newStatus: ShipmentStatus) {
+    // 1. Identify shipment's orderId without locking
+    const preliminaryShipment = await prisma.shipment.findUnique({
+      where: { id: shipmentId },
+      select: { id: true, orderId: true },
+    });
+    if (!preliminaryShipment) throw new Error("Shipment not found");
+
+    const orderId = preliminaryShipment.orderId;
     const hasCaptureTable = await checkPaymentCaptureTableAvailability();
 
     return prisma.$transaction(async (tx) => {
+      // Standardized lock order: Always lock Order first, then Shipment
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM "Shipment" WHERE id = ${shipmentId} FOR UPDATE`;
+
+      // Re-read both records inside the transaction after acquiring both locks
+      const currentOrder = await tx.order.findUnique({
+        where: { id: orderId },
+      });
+      if (!currentOrder) throw new Error("Order not found");
+
       const shipment = await tx.shipment.findUnique({ where: { id: shipmentId } });
       if (!shipment) throw new Error("Shipment not found");
 
+      // Revalidate shipment state after acquiring both locks
       const terminalStatuses: ShipmentStatus[] = ["DELIVERED", "CANCELLED", "RETURNED"];
       if (shipment.status === newStatus || terminalStatuses.includes(shipment.status)) {
         return shipment;
@@ -334,13 +361,6 @@ export class ShippingService {
 
       const updated = await tx.shipment.findUnique({ where: { id: shipmentId } });
       if (!updated) return shipment;
-
-      // Lock and re-read order to prevent concurrent races
-      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${shipment.orderId} FOR UPDATE`;
-      const currentOrder = await tx.order.findUnique({
-        where: { id: shipment.orderId },
-      });
-      if (!currentOrder) return updated;
 
       // Cancelled order is NEVER resurrected
       if (currentOrder.status === "CANCELLED") {

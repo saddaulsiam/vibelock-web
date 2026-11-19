@@ -52,6 +52,11 @@ describe("ShippingService: Post-Provider Race Condition & Fulfillment Re-Check (
       }),
       getShipmentStatus: vi.fn(),
     };
+    mockPrisma.shipment.findUnique.mockResolvedValue({
+      id: "local-shipment-uuid-01",
+      orderId: "ord-race-01",
+      status: "PENDING",
+    });
   });
 
   it("Scenario 1: Payment becomes risk-held between initial validation and provider response", async () => {
@@ -514,8 +519,9 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
       paymentStatus: "SUCCESS",
     };
 
-    // 1. Shipment lock & read (Call 1: initial, Call 2: after updateMany)
+    // 1. Shipment reads (Call 1: preliminary, Call 2: locked re-read inside tx, Call 3: after updateMany)
     mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce(initialShipment)
       .mockResolvedValueOnce(initialShipment)
       .mockResolvedValueOnce({ ...initialShipment, status: "IN_TRANSIT" });
 
@@ -583,6 +589,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
 
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(inTransitShipment)
+      .mockResolvedValueOnce(inTransitShipment)
       .mockResolvedValueOnce({ ...inTransitShipment, status: "DELIVERED" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(riskHeldOrder);
@@ -647,6 +654,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
 
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(initialShipment)
+      .mockResolvedValueOnce(initialShipment)
       .mockResolvedValueOnce({ ...initialShipment, status: "IN_TRANSIT" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(provisionalOrder);
@@ -707,6 +715,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
 
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(shipmentCreated)
+      .mockResolvedValueOnce(shipmentCreated)
       .mockResolvedValueOnce({ ...shipmentCreated, status: "IN_TRANSIT" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(cleanOrder);
@@ -750,6 +759,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
     };
 
     mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce({ ...shipmentInTransit, status: "DELIVERED" });
 
@@ -797,6 +807,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
 
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(shipmentCreated)
+      .mockResolvedValueOnce(shipmentCreated)
       .mockResolvedValueOnce({ ...shipmentCreated, status: "IN_TRANSIT" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(codOrder);
@@ -822,6 +833,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
       shippedAt: new Date(),
     };
     mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce({ ...shipmentInTransit, status: "DELIVERED" });
     mockPrisma.order.findUnique.mockResolvedValueOnce({ ...codOrder, status: "SHIPPED" });
@@ -854,6 +866,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
 
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(shipmentCreated)
+      .mockResolvedValueOnce(shipmentCreated)
       .mockResolvedValueOnce({ ...shipmentCreated, status: "IN_TRANSIT" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(cancelledOrder);
@@ -871,6 +884,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
       status: "IN_TRANSIT",
     };
     mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce(shipmentInTransit)
       .mockResolvedValueOnce({ ...shipmentInTransit, status: "DELIVERED" });
 
@@ -906,6 +920,7 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
     // 2. updateShipmentStatus execution
     mockPrisma.shipment.findUnique
       .mockResolvedValueOnce(localShipment)
+      .mockResolvedValueOnce(localShipment)
       .mockResolvedValueOnce({ ...localShipment, status: "IN_TRANSIT" });
 
     mockPrisma.order.findUnique.mockResolvedValueOnce(riskHeldOrder);
@@ -937,5 +952,248 @@ describe("ShippingService: Courier Webhook Fulfillment Eligibility Enforcement (
         }),
       })
     );
+  });
+});
+
+describe("ShippingService: Lock Acquisition Ordering & Concurrency Invariance (Deadlock Safety)", () => {
+  let mockProvider: {
+    name: string;
+    createShipment: any;
+    getShipmentStatus: any;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockProvider = {
+      name: "steadfast",
+      createShipment: vi.fn().mockResolvedValue({
+        success: true,
+        providerShipmentId: "PROV-TEST-999",
+        trackingNumber: "TRK-TEST-999",
+        status: "CREATED",
+      }),
+      getShipmentStatus: vi.fn(),
+    };
+    mockPrisma.order.findUnique.mockReset();
+    mockPrisma.order.update.mockReset();
+    mockPrisma.order.updateMany.mockReset();
+    mockPrisma.order.updateMany.mockResolvedValue({ count: 1 });
+    mockPrisma.payment.findMany.mockReset();
+    mockPrisma.payment.findMany.mockResolvedValue([]);
+    mockPrisma.shipment.findUnique.mockReset();
+    mockPrisma.shipment.create.mockReset();
+    mockPrisma.shipment.create.mockResolvedValue({
+      id: "ship-concur-01",
+      orderId: "ord-concur-01",
+      status: "PENDING",
+    });
+    mockPrisma.shipment.update.mockReset();
+    mockPrisma.shipment.update.mockImplementation(async (args: any) => ({
+      id: args.where.id,
+      ...args.data,
+    }));
+    mockPrisma.shipment.updateMany.mockReset();
+    mockPrisma.shipment.updateMany.mockResolvedValue({ count: 1 });
+  });
+
+  /**
+   * Concurrency & Deadlock Invariance Test
+   *
+   * Architectural Guarantee:
+   * PostgreSQL row-level locks on Order and Shipment must be acquired in a canonical,
+   * deterministic total hierarchy across all execution paths:
+   *   1. Order row lock (SELECT ... FROM "Order" ... FOR UPDATE)
+   *   2. Shipment row lock (SELECT ... FROM "Shipment" ... FOR UPDATE)
+   *
+   * By ensuring neither transaction ever acquires Shipment before Order, Coffman condition #4
+   * (Circular Wait) is impossible, preventing database deadlocks between simultaneous shipment
+   * creation (createShipmentForOrder) and courier webhook status updates (updateShipmentStatus).
+   *
+   * Limitation Documentation:
+   * Vitest runs in a mocked database environment without an active PostgreSQL lock manager.
+   * Lock acquisition ordering is tested directly by inspecting the sequence of $queryRaw calls
+   * and verifying strict invariant compliance.
+   */
+  it("verifies canonical lock order [Order FOR UPDATE -> Shipment FOR UPDATE] in createShipmentForOrder()", async () => {
+    const shippingService = new ShippingService(mockProvider as any);
+
+    const cleanOrder = {
+      id: "ord-lock-01",
+      orderNumber: "VL-ORD-LOCK-01",
+      status: "PENDING",
+      paymentMethod: "ONLINE",
+      paymentStatus: "SUCCESS",
+      shipment: null,
+      shippingCost: 60,
+      total: 1060,
+    };
+
+    mockPrisma.order.findUnique
+      .mockResolvedValueOnce(cleanOrder) // outside check
+      .mockResolvedValueOnce(cleanOrder) // tx1 check
+      .mockResolvedValueOnce(cleanOrder); // tx3 check
+
+    mockPrisma.shipment.findUnique.mockResolvedValueOnce({
+      id: "local-shipment-uuid-01",
+      orderId: "ord-lock-01",
+      status: "PENDING",
+    });
+
+    mockPrisma.payment.findMany
+      .mockResolvedValueOnce([
+        {
+          id: "pay-lock-01",
+          status: "SUCCESS",
+          captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          id: "pay-lock-01",
+          status: "SUCCESS",
+          captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+        },
+      ]);
+
+    await shippingService.createShipmentForOrder("ord-lock-01");
+
+    // Inspect $queryRaw calls:
+    // Tx 1: SELECT id FROM "Order" WHERE id = 'ord-lock-01' FOR UPDATE
+    // Tx 3: SELECT id FROM "Order" WHERE id = 'ord-lock-01' FOR UPDATE
+    // Tx 3: SELECT id FROM "Shipment" WHERE id = 'local-shipment-uuid-01' FOR UPDATE
+    const rawCalls = mockPrisma.$queryRaw.mock.calls;
+    expect(rawCalls.length).toBe(3);
+
+    const tx1OrderLock = JSON.stringify(rawCalls[0]);
+    expect(tx1OrderLock).toContain("Order");
+    expect(tx1OrderLock).toContain("FOR UPDATE");
+
+    const tx3OrderLock = JSON.stringify(rawCalls[1]);
+    expect(tx3OrderLock).toContain("Order");
+    expect(tx3OrderLock).toContain("FOR UPDATE");
+
+    const tx3ShipmentLock = JSON.stringify(rawCalls[2]);
+    expect(tx3ShipmentLock).toContain("Shipment");
+    expect(tx3ShipmentLock).toContain("FOR UPDATE");
+  });
+
+  it("verifies preliminary non-locking lookup and canonical lock order [Order FOR UPDATE -> Shipment FOR UPDATE] in updateShipmentStatus()", async () => {
+    const shippingService = new ShippingService(mockProvider as any);
+
+    const orderId = "ord-lock-02";
+    const shipmentId = "ship-lock-02";
+    const shipmentRecord = {
+      id: shipmentId,
+      orderId: orderId,
+      status: "CREATED",
+      shippedAt: null,
+      deliveredAt: null,
+    };
+    const orderRecord = {
+      id: orderId,
+      status: "PENDING",
+      paymentMethod: "ONLINE",
+      paymentStatus: "SUCCESS",
+    };
+
+    mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce({ id: shipmentId, orderId }) // 1. preliminary non-locking read
+      .mockResolvedValueOnce(shipmentRecord) // 2. locked re-read inside tx
+      .mockResolvedValueOnce({ ...shipmentRecord, status: "IN_TRANSIT" }); // 3. re-read after updateMany
+
+    mockPrisma.order.findUnique.mockResolvedValueOnce(orderRecord);
+
+    mockPrisma.payment.findMany.mockResolvedValueOnce([
+      {
+        id: "pay-lock-02",
+        status: "SUCCESS",
+        captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+      },
+    ]);
+
+    await shippingService.updateShipmentStatus(shipmentId, "IN_TRANSIT");
+
+    const rawCalls = mockPrisma.$queryRaw.mock.calls;
+    expect(rawCalls.length).toBe(2);
+
+    // Call 1 MUST be Order FOR UPDATE
+    const firstLock = JSON.stringify(rawCalls[0]);
+    expect(firstLock).toContain("Order");
+    expect(firstLock).toContain("FOR UPDATE");
+
+    // Call 2 MUST be Shipment FOR UPDATE
+    const secondLock = JSON.stringify(rawCalls[1]);
+    expect(secondLock).toContain("Shipment");
+    expect(secondLock).toContain("FOR UPDATE");
+  });
+
+  it("simulates concurrent shipment creation and status update with consistent lock hierarchy", async () => {
+    const shippingService = new ShippingService(mockProvider as any);
+
+    const orderId = "ord-concurrent-01";
+    const shipmentId = "ship-concurrent-01";
+
+    const activeOrder = {
+      id: orderId,
+      orderNumber: "VL-ORD-CONCURRENT",
+      status: "PENDING",
+      paymentMethod: "ONLINE",
+      paymentStatus: "SUCCESS",
+      shipment: null,
+      shippingCost: 60,
+      total: 1060,
+    };
+    const shipmentRecord = {
+      id: shipmentId,
+      orderId: orderId,
+      status: "CREATED",
+      shippedAt: null,
+      deliveredAt: null,
+    };
+
+    // Mocks for creation
+    mockPrisma.order.findUnique
+      .mockResolvedValueOnce(activeOrder)
+      .mockResolvedValueOnce(activeOrder)
+      .mockResolvedValueOnce(activeOrder);
+    mockPrisma.shipment.findUnique.mockResolvedValueOnce({
+      id: "local-shipment-uuid-01",
+      orderId,
+      status: "PENDING",
+    });
+    mockPrisma.payment.findMany.mockResolvedValue([
+      {
+        id: "pay-concur",
+        status: "SUCCESS",
+        captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+      },
+    ]);
+
+    // Creation executes
+    await shippingService.createShipmentForOrder(orderId);
+
+    // Now updateShipmentStatus executes
+    mockPrisma.shipment.findUnique
+      .mockResolvedValueOnce({ id: shipmentId, orderId })
+      .mockResolvedValueOnce(shipmentRecord)
+      .mockResolvedValueOnce({ ...shipmentRecord, status: "IN_TRANSIT" });
+    mockPrisma.order.findUnique.mockResolvedValueOnce({ ...activeOrder, status: "SHIPPED" });
+
+    await shippingService.updateShipmentStatus(shipmentId, "IN_TRANSIT");
+
+    // Verify all 5 lock queries strictly followed [Order FOR UPDATE] before [Shipment FOR UPDATE]
+    const allRawCalls = mockPrisma.$queryRaw.mock.calls.map((c: any) => JSON.stringify(c));
+    expect(allRawCalls.length).toBe(5);
+
+    // Call 0 (Create Tx1): Order lock
+    expect(allRawCalls[0]).toContain("Order");
+    // Call 1 (Create Tx3): Order lock
+    expect(allRawCalls[1]).toContain("Order");
+    // Call 2 (Create Tx3): Shipment lock
+    expect(allRawCalls[2]).toContain("Shipment");
+    // Call 3 (Update Tx): Order lock
+    expect(allRawCalls[3]).toContain("Order");
+    // Call 4 (Update Tx): Shipment lock
+    expect(allRawCalls[4]).toContain("Shipment");
   });
 });
