@@ -74,7 +74,18 @@ const { mockPrisma } = vi.hoisted(() => {
     auditLog: {
       create: vi.fn(),
     },
-    $queryRaw: vi.fn(async () => []),
+    paymentCapture: {
+      findMany: vi.fn(async () => []),
+      findUnique: vi.fn(async () => null),
+      create: vi.fn(async () => ({})),
+    },
+    $queryRaw: vi.fn(async (strings: any) => {
+      const sql = Array.isArray(strings) ? strings.join(" ") : String(strings ?? "");
+      if (sql.includes('INSERT INTO "PaymentCapture"')) {
+        return [{ id: "mock-capture-uuid" }];
+      }
+      return [];
+    }),
     $transaction: vi.fn(async (cb: any) => cb(mock)),
   };
   return { mockPrisma: mock };

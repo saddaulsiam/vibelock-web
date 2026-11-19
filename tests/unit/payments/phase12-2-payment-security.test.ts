@@ -73,7 +73,18 @@ const { mockPrisma } = vi.hoisted(() => {
     auditLog: {
       create: vi.fn(),
     },
-    $queryRaw: vi.fn(async () => []),
+    paymentCapture: {
+      findMany: vi.fn(async () => []),
+      findUnique: vi.fn(async () => null),
+      create: vi.fn(async () => ({})),
+    },
+    $queryRaw: vi.fn(async (strings: any) => {
+      const sql = Array.isArray(strings) ? strings.join(" ") : String(strings ?? "");
+      if (sql.includes('INSERT INTO "PaymentCapture"')) {
+        return [{ id: "mock-capture-uuid" }];
+      }
+      return [];
+    }),
     $transaction: vi.fn(async (cb: any) => cb(mock)),
   };
   return { mockPrisma: mock };
@@ -110,6 +121,11 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.order.findUnique.mockReset().mockResolvedValue(null);
+    mockPrisma.payment.findUnique.mockReset().mockResolvedValue(null);
+    mockPrisma.payment.findFirst.mockReset().mockResolvedValue(null);
+    mockPrisma.payment.updateMany.mockReset().mockResolvedValue({ count: 1 });
+    mockPrisma.paymentCapture.findMany.mockReset().mockResolvedValue([]);
     resetRateLimitMemoryStore();
     paymentService = new PaymentService();
   });
@@ -504,6 +520,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
         amount: new Prisma.Decimal("1500.00"),
         status: "SUCCESS",
         merchantReferenceId: "SSLC-REPEAT-REF-1",
+        gatewayTransactionId: "VAL-REPEAT-1",
         gateway: "SSLCOMMERZ",
       };
 
@@ -576,7 +593,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
           verifiedAmount: 2000.0,
           verifiedCurrency: "BDT",
           providerTransactionId: "BANK-CONC-TRX-1",
-          rawPayload: { tran_id: "SSLC-CONCURRENT-SAME-1", val_id: "VAL-CONC-1" },
+          rawPayload: { tran_id: "SSLC-CONCURRENT-SAME-1", val_id: "VAL-CONC-1", risk_level: "0" },
         })),
         initiatePayment: vi.fn(),
       };

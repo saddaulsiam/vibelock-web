@@ -48,7 +48,13 @@ const { mockPrisma } = vi.hoisted(() => {
       create: vi.fn(),
     },
     $transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(mock)),
-    $queryRaw: vi.fn(),
+    $queryRaw: vi.fn(async (strings: any) => {
+      const sql = Array.isArray(strings) ? strings.join(" ") : String(strings ?? "");
+      if (sql.includes('INSERT INTO "PaymentCapture"')) {
+        return [{ id: "mock-capture-uuid" }];
+      }
+      return [];
+    }),
   };
   return { mockPrisma: mock };
 });

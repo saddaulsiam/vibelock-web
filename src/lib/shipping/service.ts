@@ -1,6 +1,37 @@
 import prisma from "@/lib/prisma/client";
 import { ShipmentStatus } from "@prisma/client";
 import { ShippingProvider } from "./types";
+import {
+  checkOnlinePaymentFulfillmentEligibility,
+  type PaymentFulfillmentCheckTarget,
+} from "@/lib/payment/fulfillment";
+
+let isPaymentCaptureTableAvailable: boolean | null = null;
+
+async function checkPaymentCaptureTableAvailability(): Promise<boolean> {
+  if (isPaymentCaptureTableAvailable !== null) {
+    return isPaymentCaptureTableAvailable;
+  }
+  const paymentCapture = (
+    prisma as unknown as { paymentCapture?: { findFirst?: () => Promise<unknown> } }
+  ).paymentCapture;
+  if (typeof paymentCapture?.findFirst !== "function") {
+    isPaymentCaptureTableAvailable = false;
+    return false;
+  }
+  try {
+    await paymentCapture.findFirst();
+    isPaymentCaptureTableAvailable = true;
+    return true;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("does not exist") || msg.includes("P2021")) {
+      isPaymentCaptureTableAvailable = false;
+      return false;
+    }
+    return true;
+  }
+}
 
 export class ShippingService {
   constructor(private provider: ShippingProvider) {}
@@ -12,6 +43,10 @@ export class ShippingService {
     });
 
     if (!order) throw new Error("Order not found");
+    if (order.shipment) throw new Error("Shipment already exists for this order");
+
+    const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
     // 1. Transactional validation and local intent creation
     const localShipment = await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
@@ -22,8 +57,31 @@ export class ShippingService {
       if (!currentOrder) throw new Error("Order not found");
       if (currentOrder.status === "CANCELLED") throw new Error("Cannot ship a cancelled order");
       if (currentOrder.shipment) throw new Error("Shipment already exists for this order");
-      if (currentOrder.paymentMethod === "ONLINE" && currentOrder.paymentStatus !== "SUCCESS") {
-        throw new Error("Online orders must be fully paid before shipping");
+      if (currentOrder.paymentMethod === "ONLINE") {
+        if (currentOrder.paymentStatus !== "SUCCESS") {
+          throw new Error("Online orders must be fully paid before shipping");
+        }
+        const onlinePayments = (typeof tx.payment?.findMany === "function"
+          ? await tx.payment.findMany({
+              where: { orderId: currentOrder.id },
+              ...(hasCaptureTable ? { include: { captures: true } } : {}),
+            })
+          : []) as PaymentFulfillmentCheckTarget[];
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: currentOrder.paymentMethod,
+          paymentStatus: currentOrder.paymentStatus,
+          payments: onlinePayments,
+        });
+        if (!eligibility.eligible) {
+          if (eligibility.error?.includes("provisional")) {
+            throw new Error(
+              "Online payment has an unresolved provisional capture hold pending verification."
+            );
+          }
+          throw new Error(
+            "Online orders with unreconciled payment captures or risk holds cannot be shipped"
+          );
+        }
       }
 
       return tx.shipment.create({
@@ -83,15 +141,69 @@ export class ShippingService {
     }
 
     // 3. Update shipment and order atomically after provider acceptance.
-    const updatedShipment = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
+      // Standardized lock order: Always lock Order first, then Shipment
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+      await tx.$queryRaw`SELECT id FROM "Shipment" WHERE id = ${localShipment.id} FOR UPDATE`;
+
       const currentOrder = await tx.order.findUnique({
         where: { id: orderId },
         include: { shipment: true },
       });
-      if (!currentOrder || currentOrder.status === "CANCELLED") {
-        throw new Error("Order was cancelled while shipment creation was in progress");
+      if (!currentOrder) throw new Error("Order not found");
+
+      const currentShipment = await tx.shipment.findUnique({
+        where: { id: localShipment.id },
+      });
+      if (!currentShipment) throw new Error("Shipment not found");
+
+      const wasCancelled =
+        currentOrder.status === "CANCELLED" || currentShipment.status === "CANCELLED";
+      let eligibilityError: string | undefined;
+
+      if (wasCancelled) {
+        eligibilityError = "Order was cancelled while shipment creation was in progress";
+      } else if (currentOrder.paymentMethod === "ONLINE") {
+        if (currentOrder.paymentStatus !== "SUCCESS") {
+          eligibilityError = "Online orders must be fully paid before shipping";
+        } else {
+          const onlinePayments = (typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                ...(hasCaptureTable ? { include: { captures: true } } : {}),
+              })
+            : []) as PaymentFulfillmentCheckTarget[];
+          const eligibility = checkOnlinePaymentFulfillmentEligibility({
+            paymentMethod: currentOrder.paymentMethod,
+            paymentStatus: currentOrder.paymentStatus,
+            payments: onlinePayments,
+          });
+          if (!eligibility.eligible) {
+            eligibilityError = eligibility.error?.includes("provisional")
+              ? "Online payment has an unresolved provisional capture hold pending verification."
+              : "Online orders with unreconciled payment captures or risk holds cannot be shipped";
+          }
+        }
       }
+
+      if (eligibilityError) {
+        // We record the provider shipment reference and hold status atomically under lock.
+        // We do NOT perform network calls (e.g. this.provider.cancelShipment) inside this transaction
+        // to avoid holding the database connection and row lock during external API latency.
+        const heldShipment = await tx.shipment.update({
+          where: { id: localShipment.id },
+          data: {
+            status: providerRes.status || "CREATED",
+            providerShipmentId: providerRes.providerShipmentId,
+            trackingNumber: providerRes.trackingNumber,
+            failureReason: `MANUAL_RECONCILIATION_REQUIRED: Provider accepted shipment (${providerRes.providerShipmentId}) but post-provider fulfillment eligibility failed (${eligibilityError}). Automated cancellation not supported or failed. Manual operator reconciliation required.`,
+          },
+        });
+        // Do not mark the order SHIPPED or DELIVERED!
+        return { shipment: heldShipment, error: eligibilityError, needsProviderCancel: true };
+      }
+
+      // Normal path: Order is eligible and active.
       const providerStatus = providerRes.status || "CREATED";
       const updated = await tx.shipment.update({
         where: { id: localShipment.id },
@@ -108,10 +220,48 @@ export class ShippingService {
         where: { id: orderId },
         data: { status: providerStatus === "DELIVERED" ? "DELIVERED" : "SHIPPED" },
       });
-      return updated;
+      return { shipment: updated };
     });
 
-    return updatedShipment;
+    if (result.needsProviderCancel && result.error) {
+      // Attempt provider cancellation OUTSIDE of database transaction / row lock
+      let providerCancelled = false;
+      if (
+        typeof this.provider.cancelShipment === "function" &&
+        providerRes.providerShipmentId
+      ) {
+        try {
+          const cancelRes = await this.provider.cancelShipment({
+            shipmentId: localShipment.id,
+            providerShipmentId: providerRes.providerShipmentId,
+          });
+          providerCancelled = cancelRes?.success === true;
+        } catch (err) {
+          console.error("[ShippingService] Failed to cancel shipment with provider:", err);
+        }
+      }
+
+      if (providerCancelled) {
+        await prisma.shipment.update({
+          where: { id: localShipment.id },
+          data: {
+            status: "CANCELLED",
+            providerShipmentId: providerRes.providerShipmentId,
+            trackingNumber: providerRes.trackingNumber,
+            cancelledAt: new Date(),
+            failureReason: `Fulfillment eligibility failed after provider acceptance (${result.error}). Provider shipment cancelled successfully.`,
+          },
+        });
+      }
+
+      throw new Error(result.error);
+    }
+
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    return result.shipment;
   }
 
   async syncShipmentStatus(providerShipmentId: string, eventStatus?: ShipmentStatus) {
@@ -143,11 +293,31 @@ export class ShippingService {
   }
 
   async updateShipmentStatus(shipmentId: string, newStatus: ShipmentStatus) {
+    // 1. Identify shipment's orderId without locking
+    const preliminaryShipment = await prisma.shipment.findUnique({
+      where: { id: shipmentId },
+      select: { id: true, orderId: true },
+    });
+    if (!preliminaryShipment) throw new Error("Shipment not found");
+
+    const orderId = preliminaryShipment.orderId;
+    const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
     return prisma.$transaction(async (tx) => {
+      // Standardized lock order: Always lock Order first, then Shipment
+      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
       await tx.$queryRaw`SELECT id FROM "Shipment" WHERE id = ${shipmentId} FOR UPDATE`;
+
+      // Re-read both records inside the transaction after acquiring both locks
+      const currentOrder = await tx.order.findUnique({
+        where: { id: orderId },
+      });
+      if (!currentOrder) throw new Error("Order not found");
+
       const shipment = await tx.shipment.findUnique({ where: { id: shipmentId } });
       if (!shipment) throw new Error("Shipment not found");
 
+      // Revalidate shipment state after acquiring both locks
       const terminalStatuses: ShipmentStatus[] = ["DELIVERED", "CANCELLED", "RETURNED"];
       if (shipment.status === newStatus || terminalStatuses.includes(shipment.status)) {
         return shipment;
@@ -192,16 +362,52 @@ export class ShippingService {
       const updated = await tx.shipment.findUnique({ where: { id: shipmentId } });
       if (!updated) return shipment;
 
-      if (newStatus === "DELIVERED") {
-        await tx.order.updateMany({
-          where: { id: shipment.orderId, status: { not: "CANCELLED" } },
-          data: { status: "DELIVERED" },
-        });
-      } else if (newStatus === "IN_TRANSIT" || newStatus === "OUT_FOR_DELIVERY") {
-        await tx.order.updateMany({
-          where: { id: shipment.orderId, status: { not: "CANCELLED" } },
-          data: { status: "SHIPPED" },
-        });
+      // Cancelled order is NEVER resurrected
+      if (currentOrder.status === "CANCELLED") {
+        return updated;
+      }
+
+      const advancesToShipped = newStatus === "IN_TRANSIT" || newStatus === "OUT_FOR_DELIVERY";
+      const advancesToDelivered = newStatus === "DELIVERED";
+
+      if (advancesToShipped || advancesToDelivered) {
+        if (currentOrder.paymentMethod === "ONLINE") {
+          const onlinePayments = (typeof tx.payment?.findMany === "function"
+            ? await tx.payment.findMany({
+                where: { orderId: currentOrder.id },
+                ...(hasCaptureTable ? { include: { captures: true } } : {}),
+              })
+            : []) as PaymentFulfillmentCheckTarget[];
+
+          const eligibility = checkOnlinePaymentFulfillmentEligibility({
+            paymentMethod: currentOrder.paymentMethod,
+            paymentStatus: currentOrder.paymentStatus,
+            payments: onlinePayments,
+          });
+
+          if (!eligibility.eligible) {
+            const failureReason = `MANUAL_RECONCILIATION_REQUIRED: Courier reported status ${newStatus} but online payment fulfillment eligibility failed: ${eligibility.error ?? "Payment not eligible"}. Order status not advanced.`;
+            const heldShipment = await tx.shipment.update({
+              where: { id: shipmentId },
+              data: {
+                failureReason,
+              },
+            });
+            return heldShipment;
+          }
+        }
+
+        if (advancesToDelivered) {
+          await tx.order.updateMany({
+            where: { id: shipment.orderId, status: { not: "CANCELLED" } },
+            data: { status: "DELIVERED" },
+          });
+        } else if (advancesToShipped) {
+          await tx.order.updateMany({
+            where: { id: shipment.orderId, status: { notIn: ["CANCELLED", "DELIVERED"] } },
+            data: { status: "SHIPPED" },
+          });
+        }
       }
 
       return updated;

@@ -581,9 +581,7 @@ describe("SSLCommerz Failed Payment Verification & Query Fallback", () => {
       items: [],
     };
 
-    mockPrisma.payment.findUnique
-      .mockResolvedValueOnce(initiatedPayment)
-      .mockResolvedValueOnce(initiatedPayment);
+    mockPrisma.payment.findUnique.mockResolvedValue(initiatedPayment);
     mockPrisma.order.findUnique
       .mockResolvedValueOnce(orderRecord) // worker 1 tx lock
       .mockResolvedValueOnce(orderRecord) // worker 1 final lookup

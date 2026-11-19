@@ -1,6 +1,7 @@
 import { PaymentStatus } from "@prisma/client";
 
 export * from "./constants";
+export { CaptureReconciliationStatus } from "./fulfillment";
 
 export interface PaymentInitiationRequest {
   orderId: string;
@@ -23,6 +24,20 @@ export interface PaymentInitiationResponse {
   error?: string;
 }
 
+export interface VerifiedCaptureCandidate {
+  bankTranId?: string;
+  valId?: string;
+  cardType?: string;
+  cardBrand?: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  riskLevel?: string;
+  riskTitle?: string;
+  tranDate?: string;
+  rawPayload: Record<string, unknown>;
+}
+
 export interface PaymentVerificationResult {
   success: boolean;
   status: PaymentStatus;
@@ -31,6 +46,7 @@ export interface PaymentVerificationResult {
   verifiedOrderNumber?: string;
   verifiedAmount?: number;
   verifiedCurrency?: string;
+  candidates?: VerifiedCaptureCandidate[];
   rawPayload?: unknown;
   error?: string;
   isUnverified?: boolean;

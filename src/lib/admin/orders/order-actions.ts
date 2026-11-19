@@ -12,6 +12,37 @@ import {
   getOrderStatusTransitionError,
   getPaymentStatusTransitionError,
 } from "@/lib/orders/transitions";
+import {
+  checkOnlinePaymentFulfillmentEligibility,
+  type PaymentFulfillmentCheckTarget,
+} from "@/lib/payment/fulfillment";
+
+let isPaymentCaptureTableAvailable: boolean | null = null;
+
+async function checkPaymentCaptureTableAvailability(): Promise<boolean> {
+  if (isPaymentCaptureTableAvailable !== null) {
+    return isPaymentCaptureTableAvailable;
+  }
+  const paymentCapture = (
+    prisma as unknown as { paymentCapture?: { findFirst?: () => Promise<unknown> } }
+  ).paymentCapture;
+  if (typeof paymentCapture?.findFirst !== "function") {
+    isPaymentCaptureTableAvailable = false;
+    return false;
+  }
+  try {
+    await paymentCapture.findFirst();
+    isPaymentCaptureTableAvailable = true;
+    return true;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("does not exist") || msg.includes("P2021")) {
+      isPaymentCaptureTableAvailable = false;
+      return false;
+    }
+    return true;
+  }
+}
 
 export type AdminActionState = { error: string | null; message?: string };
 const ok: AdminActionState = { error: null, message: "Order updated successfully." };
@@ -52,6 +83,8 @@ export async function updateOrderStatusAction(
 
   const { id, status, notes } = parsed.data;
 
+  const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${id} FOR UPDATE`;
@@ -60,7 +93,22 @@ export async function updateOrderStatusAction(
         include: {
           inventoryReservations: true,
           shipment: true,
-          payments: { select: { status: true } },
+          payments: {
+            select: {
+              status: true,
+              gatewayPayload: true,
+              ...(hasCaptureTable
+                ? {
+                    captures: {
+                      select: {
+                        isPrimary: true,
+                        reconciliationStatus: true,
+                      },
+                    },
+                  }
+                : {}),
+            },
+          },
         },
       });
       if (!order) throw new Error("Order not found.");
@@ -123,6 +171,23 @@ export async function updateOrderStatusAction(
       if (transitionError) throw new Error(transitionError);
       if (order.status === status) return;
 
+      if (
+        order.paymentMethod === "ONLINE" &&
+        ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
+      ) {
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          payments: order.payments as PaymentFulfillmentCheckTarget[],
+        });
+        if (!eligibility.eligible) {
+          throw new Error(
+            eligibility.error ??
+              "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+          );
+        }
+      }
+
       await tx.order.update({
         where: { id },
         data: { status },
@@ -151,7 +216,10 @@ export async function updateOrderStatusAction(
       error:
         message === "Order not found." ||
         message.startsWith("Order cannot transition") ||
-        message.endsWith("orders cannot be changed.")
+        message.endsWith("orders cannot be changed.") ||
+        message.startsWith("Cannot advance order status") ||
+        message.includes("unresolved provisional capture hold") ||
+        message.includes("unreconciled")
           ? message
           : [
                 "Only pending orders can be cancelled.",
@@ -269,6 +337,8 @@ export async function quickUpdateOrderStatusAction(input: {
     return { success: false, error: "Order ID and status are required." };
   }
 
+  const hasCaptureTable = await checkPaymentCaptureTableAvailability();
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
@@ -277,7 +347,22 @@ export async function quickUpdateOrderStatusAction(input: {
         include: {
           inventoryReservations: true,
           shipment: true,
-          payments: { select: { status: true } },
+          payments: {
+            select: {
+              status: true,
+              gatewayPayload: true,
+              ...(hasCaptureTable
+                ? {
+                    captures: {
+                      select: {
+                        isPrimary: true,
+                        reconciliationStatus: true,
+                      },
+                    },
+                  }
+                : {}),
+            },
+          },
         },
       });
       if (!order) throw new Error("Order not found.");
@@ -339,6 +424,23 @@ export async function quickUpdateOrderStatusAction(input: {
       const transitionError = getOrderStatusTransitionError(order.status, status);
       if (transitionError) throw new Error(transitionError);
       if (order.status === status) return;
+
+      if (
+        order.paymentMethod === "ONLINE" &&
+        ["CONFIRMED", "PROCESSING", "SHIPPED"].includes(status)
+      ) {
+        const eligibility = checkOnlinePaymentFulfillmentEligibility({
+          paymentMethod: order.paymentMethod,
+          paymentStatus: order.paymentStatus,
+          payments: order.payments as PaymentFulfillmentCheckTarget[],
+        });
+        if (!eligibility.eligible) {
+          throw new Error(
+            eligibility.error ??
+              "Cannot advance order status: online payment has unreconciled primary capture or risk hold."
+          );
+        }
+      }
 
       await tx.order.update({
         where: { id: orderId },
