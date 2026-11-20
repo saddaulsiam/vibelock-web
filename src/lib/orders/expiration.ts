@@ -163,7 +163,7 @@ export async function expireOrder(
 
     // 5. Release redeemed coupon (idempotent, decrements usageCount, reactivates if limit was exhausted)
     const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
-    const couponResult = await releaseOrderCoupon(order.id, tx, order);
+    const couponResult = await releaseOrderCoupon(order.id, tx);
 
     if (!couponResult.success && couponResult.reason !== "NO_COUPON") {
       throw new Error(

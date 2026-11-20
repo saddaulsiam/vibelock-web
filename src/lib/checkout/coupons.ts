@@ -234,35 +234,36 @@ export async function validateCustomerCouponEligibility(
  */
 export async function releaseOrderCoupon(
   orderId: string,
-  tx: Prisma.TransactionClient,
-  orderContext?: { status?: string; paymentStatus?: string; userId?: string | null }
+  tx: Prisma.TransactionClient
 ): Promise<{ success: boolean; releasedCoupon?: string; reason?: string; alreadyReleased?: boolean }> {
   // 1. Fail-closed: Row-lock the Order first to serialize cancellation and release
   await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
 
-  // 1b. Defensive guard: Load order state under lock and verify order is eligible for release
-  const order =
-    orderContext ??
-    (typeof tx.order?.findUnique === "function"
-      ? await tx.order.findUnique({
-          where: { id: orderId },
-          select: { id: true, status: true, paymentStatus: true, userId: true },
-        })
-      : null);
+  // 1b. Fresh order state under lock (fail-closed if delegate missing or order missing)
+  if (typeof tx.order?.findUnique !== "function") {
+    throw new Error("Order repository delegate missing in transaction client");
+  }
+
+  const order = await tx.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, status: true, paymentStatus: true, userId: true },
+  });
+
+  if (!order) {
+    throw new Error(`Order ${orderId} not found during coupon release`);
+  }
 
   // Preserve existing protection: Do not release coupon if order is successfully paid or actively fulfilling
-  if (order) {
-    if (
-      order.paymentStatus === "SUCCESS" &&
-      order.status !== "CANCELLED" &&
-      order.status !== "REFUNDED"
-    ) {
-      return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
-    }
-    const ACTIVE_FULFILLMENT_STATUSES = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
-    if (ACTIVE_FULFILLMENT_STATUSES.includes(order.status as string)) {
-      return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
-    }
+  if (
+    order.paymentStatus === "SUCCESS" &&
+    order.status !== "CANCELLED" &&
+    order.status !== "REFUNDED"
+  ) {
+    return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
+  }
+  const ACTIVE_FULFILLMENT_STATUSES = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+  if (ACTIVE_FULFILLMENT_STATUSES.includes(order.status as string)) {
+    return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
   }
 
   // 2. Check if a coupon was redeemed on this order (via AuditLog or OrderHistory)
@@ -333,26 +334,68 @@ export async function releaseOrderCoupon(
   }
 
   // 4. Fail-closed: Row-lock the coupon row. Fail-closed without unlocked fallbacks.
-  const lockedCoupons = await tx.$queryRaw<
-    Array<{
-      id: string;
-      code: string;
-      usageCount: number;
-      usageLimit: number | null;
-      isActive: boolean;
-    }>
-  >`
-    SELECT "id", "code", "usageCount", "usageLimit", "isActive"
-    FROM "Coupon"
-    WHERE ${couponIdToRelease ? Prisma.sql`"id" = ${couponIdToRelease} OR` : Prisma.empty}
-          UPPER("code") = ${couponCodeToRelease.toUpperCase()}
-    FOR UPDATE
-  `;
+  let lockedCoupons: Array<{
+    id: string;
+    code: string;
+    usageCount: number;
+    usageLimit: number | null;
+    isActive: boolean;
+  }>;
 
-  if (lockedCoupons.length === 0) {
-    throw new Error(
-      `Coupon release required for order ${orderId}, but coupon "${couponCodeToRelease}" was not found.`
-    );
+  if (couponIdToRelease) {
+    // If couponId exists, lock by ID only
+    lockedCoupons = await tx.$queryRaw<
+      Array<{
+        id: string;
+        code: string;
+        usageCount: number;
+        usageLimit: number | null;
+        isActive: boolean;
+      }>
+    >`
+      SELECT "id", "code", "usageCount", "usageLimit", "isActive"
+      FROM "Coupon"
+      WHERE "id" = ${couponIdToRelease}
+      FOR UPDATE
+    `;
+
+    // Require exactly one matching coupon row
+    if (lockedCoupons.length !== 1) {
+      throw new Error(
+        `Coupon release required for order ${orderId}, but expected exactly 1 coupon with id "${couponIdToRelease}", found ${lockedCoupons.length}.`
+      );
+    }
+
+    const lockedCoupon = lockedCoupons[0];
+    // Verify the locked row's normalized code exactly matches the redeemed coupon code
+    if (lockedCoupon.code.trim().toUpperCase() !== couponCodeToRelease.trim().toUpperCase()) {
+      throw new Error(
+        `Coupon metadata mismatch for order ${orderId}: couponId "${couponIdToRelease}" has code "${lockedCoupon.code}", expected "${couponCodeToRelease}".`
+      );
+    }
+  } else {
+    // If ID is absent, lock by normalized code
+    lockedCoupons = await tx.$queryRaw<
+      Array<{
+        id: string;
+        code: string;
+        usageCount: number;
+        usageLimit: number | null;
+        isActive: boolean;
+      }>
+    >`
+      SELECT "id", "code", "usageCount", "usageLimit", "isActive"
+      FROM "Coupon"
+      WHERE UPPER("code") = ${couponCodeToRelease.trim().toUpperCase()}
+      FOR UPDATE
+    `;
+
+    // Require exactly one matching coupon row
+    if (lockedCoupons.length !== 1) {
+      throw new Error(
+        `Coupon release required for order ${orderId}, but expected exactly 1 coupon with code "${couponCodeToRelease}", found ${lockedCoupons.length}.`
+      );
+    }
   }
 
   const coupon = lockedCoupons[0];

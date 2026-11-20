@@ -280,6 +280,14 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
     test("repeated release does not decrement usageCount twice (idempotency)", async () => {
       const mockTx = {
         $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: "order-already-rel",
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: "user-alice-123",
+          })),
+        },
         auditLog: {
           findFirst: vi
             .fn()
@@ -356,6 +364,14 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
     test("returns success: false when no coupon was applied to the order", async () => {
       const mockTx = {
         $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: "order-no-coupon",
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: "user-alice-123",
+          })),
+        },
         auditLog: {
           findFirst: vi.fn(async () => null),
         },
