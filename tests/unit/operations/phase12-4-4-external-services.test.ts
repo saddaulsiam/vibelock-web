@@ -78,6 +78,92 @@ describe("Phase 12.4.4: External Services & Operations", () => {
       expect(result.error).toContain("Failed to deliver SMS verification code");
       expect(createSpy).toHaveBeenCalledTimes(1);
       expect(deleteManySpy).toHaveBeenCalledTimes(2);
+      expect(deleteManySpy).toHaveBeenLastCalledWith({
+        where: {
+          identifier: "phone_otp:01712345678",
+          token: expect.any(String),
+        },
+      });
+    });
+
+    it("preserves concurrent newer OTP token when an earlier request's SMS dispatch fails", async () => {
+      (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+      process.env.SMS_API_KEY = "test-sms-key";
+      process.env.SMS_API_URL = "https://mock-sms.local";
+
+      const phone = "01712345678";
+      const identifier = `phone_otp:${phone}`;
+
+      // In-memory simulation of the VerificationToken table
+      const tokenStore = new Map<string, { identifier: string; token: string; expires: Date }>();
+
+      vi.spyOn(prisma.verificationToken, "deleteMany").mockImplementation(((args?: any) => {
+        let count = 0;
+        if (args?.where) {
+          for (const [key, item] of Array.from(tokenStore.entries())) {
+            const matchesId = !args.where.identifier || item.identifier === args.where.identifier;
+            const matchesToken = !args.where.token || item.token === args.where.token;
+            if (matchesId && matchesToken) {
+              tokenStore.delete(key);
+              count++;
+            }
+          }
+        }
+        return Promise.resolve({ count });
+      }) as any);
+
+      vi.spyOn(prisma.verificationToken, "create").mockImplementation(((args: any) => {
+        const item = args.data;
+        tokenStore.set(`${item.identifier}:${item.token}`, item);
+        return Promise.resolve(item);
+      }) as any);
+
+      // Controlled dispatch promises for Request A and Request B
+      let rejectRequestAFetch!: (reason?: any) => void;
+      const requestAFetchPromise = new Promise<Response>((_, reject) => {
+        rejectRequestAFetch = reject;
+      });
+
+      let fetchCallCount = 0;
+      vi.spyOn(global, "fetch").mockImplementation(async () => {
+        fetchCallCount++;
+        if (fetchCallCount === 1) {
+          // Request A dispatch hangs until rejected
+          return requestAFetchPromise;
+        } else {
+          // Request B dispatch succeeds immediately
+          return { ok: true, status: 200 } as any;
+        }
+      });
+
+      // 1. Request A starts, generates token A in DB, and enters SMS gateway dispatch
+      const requestAPromise = sendOtp(phone);
+      await new Promise((resolve) => setTimeout(resolve, 15));
+
+      expect(tokenStore.size).toBe(1);
+      const tokenA = Array.from(tokenStore.values())[0];
+
+      // 2. Request B starts for the same phone, creates token B, and its SMS succeeds
+      const resultB = await sendOtp(phone);
+      expect(resultB.success).toBe(true);
+
+      // Verify Token B is now in DB
+      expect(tokenStore.size).toBe(1);
+      const tokenB = Array.from(tokenStore.values())[0];
+      expect(tokenB.token).not.toBe(tokenA.token);
+
+      // 3 & 4. Request A's SMS dispatch fails and Request A executes rollback
+      rejectRequestAFetch(new Error("Network timeout contacting SMS gateway"));
+      const resultA = await requestAPromise;
+
+      expect(resultA.success).toBe(false);
+      expect(resultA.error).toContain("Failed to deliver SMS verification code");
+
+      // 5. Verify Request B's token is STILL in the database and valid
+      expect(tokenStore.size).toBe(1);
+      const preservedToken = Array.from(tokenStore.values())[0];
+      expect(preservedToken.token).toBe(tokenB.token);
+      expect(preservedToken.identifier).toBe(identifier);
     });
 
     it("stores token and returns success in production only when SMS dispatch succeeds", async () => {

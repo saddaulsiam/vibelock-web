@@ -70,9 +70,12 @@ export async function sendOtp(
     });
 
     if (!sent) {
-      // Rollback: delete token immediately so no unusable token lingers in database
+      // Rollback: delete only this specific token so concurrent newer requests are preserved
       await prisma.verificationToken.deleteMany({
-        where: { identifier: `phone_otp:${phone}` },
+        where: {
+          identifier: `phone_otp:${phone}`,
+          token: tokenHash,
+        },
       });
       console.error(
         `[SMS] Failed to deliver OTP via SMS gateway to ${maskPhoneNumber(phone)}. Token invalidated.`
