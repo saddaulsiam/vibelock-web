@@ -230,123 +230,113 @@ export async function validateCustomerCouponEligibility(
 /**
  * Releases a redeemed coupon when an order is cancelled, refunded, or payment fails.
  * Decrements the coupon's usageCount and reactivates it if it was deactivated due to reaching its usageLimit.
- * Safe and idempotent under concurrent or repeated execution.
+ * Safe, atomic, and idempotent under concurrent or repeated execution with fail-closed row locking.
  */
 export async function releaseOrderCoupon(
   orderId: string,
   tx: Prisma.TransactionClient
-): Promise<{ success: boolean; releasedCoupon?: string; reason?: string }> {
-  // 1. Serialize cancellation per order
-  try {
-    await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
-  } catch {
-    // Graceful fallback for test environments without raw queries
+): Promise<{ success: boolean; releasedCoupon?: string; reason?: string; alreadyReleased?: boolean }> {
+  // 1. Fail-closed: Row-lock the Order first to serialize cancellation and release
+  await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
+
+  // 1b. Fresh order state under lock (fail-closed if delegate missing or order missing)
+  if (typeof tx.order?.findUnique !== "function") {
+    throw new Error("Order repository delegate missing in transaction client");
   }
 
-  // 1b. Defensive guard: Do not release coupon if order is successfully paid or actively fulfilling
-  let orderUserId: string | null = null;
-  if (typeof tx.order?.findUnique === "function") {
-    try {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
-        select: { id: true, status: true, paymentStatus: true, userId: true },
-      });
-      if (order) {
-        orderUserId = order.userId ?? null;
-        if (
-          order.paymentStatus === "SUCCESS" &&
-          order.status !== "CANCELLED" &&
-          order.status !== "REFUNDED"
-        ) {
-          return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
-        }
-        if (
-          ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"].includes(
-            order.status as string
-          )
-        ) {
-          return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
-        }
-      }
-    } catch {
-      // Proceed if order check query fails
-    }
+  const order = await tx.order.findUnique({
+    where: { id: orderId },
+    select: { id: true, status: true, paymentStatus: true, userId: true },
+  });
+
+  if (!order) {
+    throw new Error(`Order ${orderId} not found during coupon release`);
   }
 
-  // 2. Check if a coupon was redeemed on this order via audit log
+  // Preserve existing protection: Do not release coupon if order is successfully paid or actively fulfilling
+  if (
+    order.paymentStatus === "SUCCESS" &&
+    order.status !== "CANCELLED" &&
+    order.status !== "REFUNDED"
+  ) {
+    return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
+  }
+  const ACTIVE_FULFILLMENT_STATUSES = ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"];
+  if (ACTIVE_FULFILLMENT_STATUSES.includes(order.status as string)) {
+    return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
+  }
+
+  // 2. Check if a coupon was redeemed on this order (via AuditLog or OrderHistory)
   let couponCodeToRelease: string | null = null;
   let couponIdToRelease: string | null = null;
 
-  try {
-    const redemptionLog = await tx.auditLog.findFirst({
-      where: {
-        entityType: "Order",
-        entityId: orderId,
-        action: "COUPON_REDEEMED",
-      },
-    });
+  const redemptionLog = await tx.auditLog.findFirst({
+    where: {
+      entityType: "Order",
+      entityId: orderId,
+      action: "COUPON_REDEEMED",
+    },
+  });
 
-    if (redemptionLog?.metadata && typeof redemptionLog.metadata === "object") {
-      const meta = redemptionLog.metadata as { couponCode?: string; couponId?: string };
-      couponCodeToRelease = meta.couponCode ?? null;
-      couponIdToRelease = meta.couponId ?? null;
-    }
-  } catch {
-    // Fallback if audit log query fails
-  }
-
-  // Fallback to order history if audit log does not have coupon
-  if (!couponCodeToRelease && typeof tx.orderHistory?.findFirst === "function") {
-    try {
-      const historyEntry = await tx.orderHistory.findFirst({
-        where: {
-          orderId,
-          notes: { contains: "Coupon applied:" },
-        },
-      });
-      if (historyEntry?.notes) {
-        const match = historyEntry.notes.match(/Coupon applied:\s*([A-Z0-9_-]+)/i);
-        if (match) {
-          couponCodeToRelease = match[1].toUpperCase();
-        }
-      }
-    } catch {
-      // Proceed if orderHistory query fails
-    }
+  if (redemptionLog?.metadata && typeof redemptionLog.metadata === "object") {
+    const meta = redemptionLog.metadata as { couponCode?: string; couponId?: string };
+    couponCodeToRelease = meta.couponCode ?? null;
+    couponIdToRelease = meta.couponId ?? null;
   }
 
   if (!couponCodeToRelease) {
-    return { success: false };
-  }
-
-  // 3. Idempotency check: has this order's coupon already been released?
-  try {
-    const alreadyReleased = await tx.auditLog.findFirst({
+    const historyEntry = await tx.orderHistory.findFirst({
       where: {
-        entityType: "Order",
-        entityId: orderId,
-        action: "COUPON_RELEASED",
+        orderId,
+        notes: { contains: "Coupon applied:" },
       },
     });
-
-    if (alreadyReleased) {
-      return { success: true, releasedCoupon: couponCodeToRelease };
+    if (historyEntry?.notes) {
+      const match = historyEntry.notes.match(/Coupon applied:\s*([A-Z0-9_-]+)/i);
+      if (match) {
+        couponCodeToRelease = match[1].toUpperCase();
+      }
     }
-  } catch {
-    // Proceed if auditLog check fails
   }
 
-  // 4. Lock and load the coupon row
-  let coupon: {
+  // If no coupon was redeemed on this order, nothing to release
+  if (!couponCodeToRelease) {
+    return { success: false, reason: "NO_COUPON" };
+  }
+
+  // 3. Durable Idempotency check: has this order's coupon already been released?
+  // Checks both AuditLog and OrderHistory transactional records under the Order row lock
+  const alreadyReleasedAudit = await tx.auditLog.findFirst({
+    where: {
+      entityType: "Order",
+      entityId: orderId,
+      action: "COUPON_RELEASED",
+    },
+  });
+
+  const alreadyReleasedHistory = await tx.orderHistory.findFirst({
+    where: {
+      orderId,
+      notes: { contains: "usage released" },
+    },
+  });
+
+  if (alreadyReleasedAudit || alreadyReleasedHistory) {
+    return { success: true, releasedCoupon: couponCodeToRelease, alreadyReleased: true };
+  }
+
+  // 4. Fail-closed: Row-lock the coupon row. Fail-closed without unlocked fallbacks.
+  let lockedCoupons: Array<{
     id: string;
     code: string;
     usageCount: number;
     usageLimit: number | null;
     isActive: boolean;
-  } | null = null;
+  }>;
 
-  try {
-    const lockedCoupons = await tx.$queryRaw<
+  if (couponIdToRelease) {
+    // If couponId exists, lock by ID only
+    lockedCoupons = await tx.$queryRaw<
       Array<{
         id: string;
         code: string;
@@ -357,35 +347,50 @@ export async function releaseOrderCoupon(
     >`
       SELECT "id", "code", "usageCount", "usageLimit", "isActive"
       FROM "Coupon"
-      WHERE ${couponIdToRelease ? Prisma.sql`"id" = ${couponIdToRelease} OR` : Prisma.empty}
-            UPPER("code") = ${couponCodeToRelease.toUpperCase()}
+      WHERE "id" = ${couponIdToRelease}
       FOR UPDATE
     `;
-    if (lockedCoupons.length > 0) {
-      coupon = lockedCoupons[0];
+
+    // Require exactly one matching coupon row
+    if (lockedCoupons.length !== 1) {
+      throw new Error(
+        `Coupon release required for order ${orderId}, but expected exactly 1 coupon with id "${couponIdToRelease}", found ${lockedCoupons.length}.`
+      );
     }
-  } catch {
-    // Fallback for mocked test environments
-    coupon = await tx.coupon.findFirst({
-      where: {
-        OR: [
-          ...(couponIdToRelease ? [{ id: couponIdToRelease }] : []),
-          { code: couponCodeToRelease.toUpperCase() },
-        ],
-      },
-      select: {
-        id: true,
-        code: true,
-        usageCount: true,
-        usageLimit: true,
-        isActive: true,
-      },
-    });
+
+    const lockedCoupon = lockedCoupons[0];
+    // Verify the locked row's normalized code exactly matches the redeemed coupon code
+    if (lockedCoupon.code.trim().toUpperCase() !== couponCodeToRelease.trim().toUpperCase()) {
+      throw new Error(
+        `Coupon metadata mismatch for order ${orderId}: couponId "${couponIdToRelease}" has code "${lockedCoupon.code}", expected "${couponCodeToRelease}".`
+      );
+    }
+  } else {
+    // If ID is absent, lock by normalized code
+    lockedCoupons = await tx.$queryRaw<
+      Array<{
+        id: string;
+        code: string;
+        usageCount: number;
+        usageLimit: number | null;
+        isActive: boolean;
+      }>
+    >`
+      SELECT "id", "code", "usageCount", "usageLimit", "isActive"
+      FROM "Coupon"
+      WHERE UPPER("code") = ${couponCodeToRelease.trim().toUpperCase()}
+      FOR UPDATE
+    `;
+
+    // Require exactly one matching coupon row
+    if (lockedCoupons.length !== 1) {
+      throw new Error(
+        `Coupon release required for order ${orderId}, but expected exactly 1 coupon with code "${couponCodeToRelease}", found ${lockedCoupons.length}.`
+      );
+    }
   }
 
-  if (!coupon) {
-    return { success: false };
-  }
+  const coupon = lockedCoupons[0];
 
   // SEC-8-01: Capture original usage stats under row lock before updating.
   // Cancellation only reactivates a coupon if it was disabled because its usage limit was exhausted.
@@ -409,56 +414,32 @@ export async function releaseOrderCoupon(
     },
   });
 
-  // 6. Record audit log for idempotency and traceability
-  if (!orderUserId && typeof tx.order?.findUnique === "function") {
-    try {
-      const order = await tx.order.findUnique({
-        where: { id: orderId },
-        select: { userId: true },
-      });
-      orderUserId = order?.userId ?? null;
-    } catch {
-      // Proceed if order query fails
-    }
-  }
+  // 6. Record audit log and order history for durable idempotency and traceability (fail-closed)
+  await tx.auditLog.create({
+    data: {
+      actorId: order.userId ?? null,
+      action: "COUPON_RELEASED",
+      entityType: "Order",
+      entityId: orderId,
+      metadata: {
+        couponId: coupon.id,
+        couponCode: coupon.code,
+        previousUsageCount: originalUsageCount,
+        newUsageCount,
+        reactivated: shouldReactivate,
+        wasExhausted,
+        reason: "Order cancelled or online payment failed/expired",
+      },
+    },
+  });
 
-  if (typeof tx.auditLog?.create === "function") {
-    try {
-      await tx.auditLog.create({
-        data: {
-          actorId: orderUserId,
-          action: "COUPON_RELEASED",
-          entityType: "Order",
-          entityId: orderId,
-          metadata: {
-            couponId: coupon.id,
-            couponCode: coupon.code,
-            previousUsageCount: originalUsageCount,
-            newUsageCount,
-            reactivated: shouldReactivate,
-            wasExhausted,
-            reason: "Order cancelled or online payment failed",
-          },
-        },
-      });
-    } catch {
-      // Proceed if auditLog write fails
-    }
-  }
-
-  if (typeof tx.orderHistory?.create === "function") {
-    try {
-      await tx.orderHistory.create({
-        data: {
-          orderId,
-          status: "CANCELLED",
-          notes: `Coupon "${coupon.code}" usage released (count: ${originalUsageCount} -> ${newUsageCount}${shouldReactivate ? ", coupon reactivated" : ""}).`,
-        },
-      });
-    } catch {
-      // Proceed if orderHistory write fails
-    }
-  }
+  await tx.orderHistory.create({
+    data: {
+      orderId,
+      status: "CANCELLED",
+      notes: `Coupon "${coupon.code}" usage released (count: ${originalUsageCount} -> ${newUsageCount}${shouldReactivate ? ", coupon reactivated" : ""}).`,
+    },
+  });
 
   return { success: true, releasedCoupon: coupon.code };
 }

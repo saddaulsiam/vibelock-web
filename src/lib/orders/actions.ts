@@ -315,17 +315,18 @@ export async function retryOrderPaymentAction(
       // Check active unexpired stock reservation
       if (!order.inventoryReservations || order.inventoryReservations.length === 0) {
         // Just-in-time order expiration: release inventory reservations and restore coupon for reuse
-        try {
-          const { expireOrder } = await import("@/lib/orders/expiration");
-          await expireOrder(order.id, {
-            tx,
-            force: true,
-            initialOrder: order,
-            reason:
-              "Order expired due to reservation timeout on retry payment attempt. Inventory and coupon released.",
-          });
-        } catch {
-          // Fallback if expiration fails so caller still receives the reservation expired rejection
+        const { expireOrder } = await import("@/lib/orders/expiration");
+        const expirationOutcome = await expireOrder(order.id, {
+          tx,
+          force: true,
+          reason:
+            "Order expired due to reservation timeout on retry payment attempt. Inventory and coupon released.",
+        });
+
+        if (!expirationOutcome.success) {
+          throw new Error(
+            `Failed to expire timed out order: ${expirationOutcome.reason || "Unknown expiration error"}`
+          );
         }
 
         return {

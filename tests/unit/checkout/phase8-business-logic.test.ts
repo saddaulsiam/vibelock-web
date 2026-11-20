@@ -280,6 +280,14 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
     test("repeated release does not decrement usageCount twice (idempotency)", async () => {
       const mockTx = {
         $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: "order-already-rel",
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: "user-alice-123",
+          })),
+        },
         auditLog: {
           findFirst: vi
             .fn()
@@ -291,6 +299,10 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
               action: "COUPON_RELEASED",
               metadata: { couponCode: "WELCOME10" },
             }),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => null),
+          create: vi.fn(async () => ({})),
         },
         coupon: {
           update: vi.fn(),
@@ -356,6 +368,14 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
     test("returns success: false when no coupon was applied to the order", async () => {
       const mockTx = {
         $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: "order-no-coupon",
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: "user-alice-123",
+          })),
+        },
         auditLog: {
           findFirst: vi.fn(async () => null),
         },
@@ -703,7 +723,10 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
             }),
             update: vi.fn(async () => ({ id: "ord-confirmed-1", status: "CANCELLED" })),
           },
-          orderHistory: { create: vi.fn(async () => ({})) },
+          orderHistory: {
+            create: vi.fn(async () => ({})),
+            findFirst: vi.fn(async () => null),
+          },
           auditLog: {
             create: vi.fn(async () => ({})),
             findFirst: vi.fn(async () => null),
@@ -740,7 +763,10 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
             }),
             update: vi.fn(async () => ({ id: "00000000-0000-0000-0000-000000000009", status: "CANCELLED" })),
           },
-          orderHistory: { create: vi.fn(async () => ({})) },
+          orderHistory: {
+            create: vi.fn(async () => ({})),
+            findFirst: vi.fn(async () => null),
+          },
           auditLog: {
             create: vi.fn(async () => ({})),
             findFirst: vi.fn(async () => null),
