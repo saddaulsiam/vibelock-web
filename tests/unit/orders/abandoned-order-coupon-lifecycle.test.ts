@@ -1168,6 +1168,208 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
       // Coupon was NOT decremented again
       expect(mockTx.coupon.update).not.toHaveBeenCalled();
     });
+
+    it("throws and causes transaction rollback when tx.auditLog.create fails during coupon release", async () => {
+      const mockTx = {
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([]) // Order lock
+          .mockResolvedValueOnce([
+            { id: "c-fail-audit", code: "FAIL_AUDIT", usageCount: 5, usageLimit: 10, isActive: true },
+          ]),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "FAIL_AUDIT", couponId: "c-fail-audit" },
+            })
+            .mockResolvedValueOnce(null),
+          create: vi.fn().mockRejectedValue(new Error("Database write failure on AuditLog")),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => null),
+          create: vi.fn(),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow(
+        "Database write failure on AuditLog"
+      );
+    });
+
+    it("throws and causes transaction rollback when tx.orderHistory.create fails during coupon release", async () => {
+      const mockTx = {
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([]) // Order lock
+          .mockResolvedValueOnce([
+            { id: "c-fail-hist", code: "FAIL_HIST", usageCount: 5, usageLimit: 10, isActive: true },
+          ]),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "FAIL_HIST", couponId: "c-fail-hist" },
+            })
+            .mockResolvedValueOnce(null),
+          create: vi.fn(),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => null),
+          create: vi.fn().mockRejectedValue(new Error("Database write failure on OrderHistory")),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow(
+        "Database write failure on OrderHistory"
+      );
+    });
+
+    it("throws when tx.auditLog delegate is missing and does not silently treat as no coupon", async () => {
+      const mockTx = {
+        $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        // auditLog delegate missing entirely
+        orderHistory: {
+          findFirst: vi.fn(async () => null),
+          create: vi.fn(),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow();
+      expect(mockTx.coupon.update).not.toHaveBeenCalled();
+    });
+
+    it("throws when tx.orderHistory delegate is missing and does not silently treat as unreleased", async () => {
+      const mockTx = {
+        $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "SOME_CODE", couponId: "c-some" },
+            })
+            .mockResolvedValueOnce(null), // AuditLog says not released
+          create: vi.fn(),
+        },
+        // orderHistory delegate missing entirely
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow();
+      expect(mockTx.coupon.update).not.toHaveBeenCalled();
+    });
+
+    it("repeated successful release does not decrement usageCount twice", async () => {
+      let currentUsage = 5;
+      const recordedAuditLogs: any[] = [];
+      const recordedHistory: any[] = [];
+
+      const createTx = () => ({
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([]) // Order lock
+          .mockResolvedValueOnce([
+            { id: "c-repeat", code: "REPEAT10", usageCount: currentUsage, usageLimit: 10, isActive: true },
+          ]),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi.fn(async ({ where }: any) => {
+            if (where.action === "COUPON_REDEEMED") {
+              return { action: "COUPON_REDEEMED", metadata: { couponCode: "REPEAT10", couponId: "c-repeat" } };
+            }
+            if (where.action === "COUPON_RELEASED") {
+              return recordedAuditLogs.find((l) => l.action === "COUPON_RELEASED") || null;
+            }
+            return null;
+          }),
+          create: vi.fn(async ({ data }: any) => {
+            recordedAuditLogs.push(data);
+          }),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => {
+            return recordedHistory[0] || null;
+          }),
+          create: vi.fn(async ({ data }: any) => {
+            recordedHistory.push(data);
+          }),
+        },
+        coupon: {
+          update: vi.fn(async ({ data }: any) => {
+            currentUsage = data.usageCount;
+          }),
+        },
+      } as any);
+
+      // Run 1: First release succeeds and decrements count
+      const res1 = await releaseOrderCoupon(sampleOrderId, createTx());
+      expect(res1.success).toBe(true);
+      expect(res1.releasedCoupon).toBe("REPEAT10");
+      expect(res1.alreadyReleased).toBeUndefined();
+      expect(currentUsage).toBe(4);
+      expect(recordedAuditLogs).toHaveLength(1);
+      expect(recordedHistory).toHaveLength(1);
+
+      // Run 2: Second release for the same order detects existing release and does NOT decrement again
+      const res2 = await releaseOrderCoupon(sampleOrderId, createTx());
+      expect(res2.success).toBe(true);
+      expect(res2.releasedCoupon).toBe("REPEAT10");
+      expect(res2.alreadyReleased).toBe(true);
+      expect(currentUsage).toBe(4); // Remains 4, never decremented twice!
+    });
   });
 
   describe("9. Payment Callback vs Expiration Concurrency & Lock Ordering", () => {

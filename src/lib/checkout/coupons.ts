@@ -270,23 +270,21 @@ export async function releaseOrderCoupon(
   let couponCodeToRelease: string | null = null;
   let couponIdToRelease: string | null = null;
 
-  if (typeof tx.auditLog?.findFirst === "function") {
-    const redemptionLog = await tx.auditLog.findFirst({
-      where: {
-        entityType: "Order",
-        entityId: orderId,
-        action: "COUPON_REDEEMED",
-      },
-    });
+  const redemptionLog = await tx.auditLog.findFirst({
+    where: {
+      entityType: "Order",
+      entityId: orderId,
+      action: "COUPON_REDEEMED",
+    },
+  });
 
-    if (redemptionLog?.metadata && typeof redemptionLog.metadata === "object") {
-      const meta = redemptionLog.metadata as { couponCode?: string; couponId?: string };
-      couponCodeToRelease = meta.couponCode ?? null;
-      couponIdToRelease = meta.couponId ?? null;
-    }
+  if (redemptionLog?.metadata && typeof redemptionLog.metadata === "object") {
+    const meta = redemptionLog.metadata as { couponCode?: string; couponId?: string };
+    couponCodeToRelease = meta.couponCode ?? null;
+    couponIdToRelease = meta.couponId ?? null;
   }
 
-  if (!couponCodeToRelease && typeof tx.orderHistory?.findFirst === "function") {
+  if (!couponCodeToRelease) {
     const historyEntry = await tx.orderHistory.findFirst({
       where: {
         orderId,
@@ -308,26 +306,20 @@ export async function releaseOrderCoupon(
 
   // 3. Durable Idempotency check: has this order's coupon already been released?
   // Checks both AuditLog and OrderHistory transactional records under the Order row lock
-  const alreadyReleasedAudit =
-    typeof tx.auditLog?.findFirst === "function"
-      ? await tx.auditLog.findFirst({
-          where: {
-            entityType: "Order",
-            entityId: orderId,
-            action: "COUPON_RELEASED",
-          },
-        })
-      : null;
+  const alreadyReleasedAudit = await tx.auditLog.findFirst({
+    where: {
+      entityType: "Order",
+      entityId: orderId,
+      action: "COUPON_RELEASED",
+    },
+  });
 
-  const alreadyReleasedHistory =
-    typeof tx.orderHistory?.findFirst === "function"
-      ? await tx.orderHistory.findFirst({
-          where: {
-            orderId,
-            notes: { contains: "usage released" },
-          },
-        })
-      : null;
+  const alreadyReleasedHistory = await tx.orderHistory.findFirst({
+    where: {
+      orderId,
+      notes: { contains: "usage released" },
+    },
+  });
 
   if (alreadyReleasedAudit || alreadyReleasedHistory) {
     return { success: true, releasedCoupon: couponCodeToRelease, alreadyReleased: true };
@@ -423,35 +415,31 @@ export async function releaseOrderCoupon(
   });
 
   // 6. Record audit log and order history for durable idempotency and traceability (fail-closed)
-  if (typeof tx.auditLog?.create === "function") {
-    await tx.auditLog.create({
-      data: {
-        actorId: order?.userId ?? null,
-        action: "COUPON_RELEASED",
-        entityType: "Order",
-        entityId: orderId,
-        metadata: {
-          couponId: coupon.id,
-          couponCode: coupon.code,
-          previousUsageCount: originalUsageCount,
-          newUsageCount,
-          reactivated: shouldReactivate,
-          wasExhausted,
-          reason: "Order cancelled or online payment failed/expired",
-        },
+  await tx.auditLog.create({
+    data: {
+      actorId: order.userId ?? null,
+      action: "COUPON_RELEASED",
+      entityType: "Order",
+      entityId: orderId,
+      metadata: {
+        couponId: coupon.id,
+        couponCode: coupon.code,
+        previousUsageCount: originalUsageCount,
+        newUsageCount,
+        reactivated: shouldReactivate,
+        wasExhausted,
+        reason: "Order cancelled or online payment failed/expired",
       },
-    });
-  }
+    },
+  });
 
-  if (typeof tx.orderHistory?.create === "function") {
-    await tx.orderHistory.create({
-      data: {
-        orderId,
-        status: "CANCELLED",
-        notes: `Coupon "${coupon.code}" usage released (count: ${originalUsageCount} -> ${newUsageCount}${shouldReactivate ? ", coupon reactivated" : ""}).`,
-      },
-    });
-  }
+  await tx.orderHistory.create({
+    data: {
+      orderId,
+      status: "CANCELLED",
+      notes: `Coupon "${coupon.code}" usage released (count: ${originalUsageCount} -> ${newUsageCount}${shouldReactivate ? ", coupon reactivated" : ""}).`,
+    },
+  });
 
   return { success: true, releasedCoupon: coupon.code };
 }
