@@ -62,6 +62,9 @@
 - Restock must be idempotent.
 - Never make direct stock changes to "repair" an error without a
   reviewed ledger transaction.
+- Order expiration cleanup via `/api/cron/orders/cleanup` enforces timing-safe
+  `CRON_SECRET` authentication; failures emit a Sentry `CRON_EXECUTION_FAILED` alert
+  and fail closed without mutating inconsistent state.
 
 ## Shipment handling
 

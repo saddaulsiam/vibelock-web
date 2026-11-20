@@ -36,6 +36,10 @@
 9.  Redirect based on the trusted payment/order record, not untrusted
     callback fields.
 10. Repeated callback/retry must be idempotent.
+11. Unpaid or abandoned online orders are automatically cancelled and their
+    inventory reservations and coupons released every 15 minutes by
+    `.github/workflows/cron-order-cleanup.yml` invoking `/api/cron/orders/cleanup`
+    (documented in `docs/order-cleanup-scheduler.md`).
 
 ## 3. Admin order transition
 
