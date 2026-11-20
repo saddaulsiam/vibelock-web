@@ -1,15 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  registerAction,
-  sendPhoneOtpAction,
-  verifyPhoneOtpAction,
-  googleSignInAction,
-} from "@/app/actions/auth";
+import { registerAction, googleSignInAction } from "@/app/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -26,19 +20,11 @@ import {
   AlertCircle,
   ChevronLeft,
   CheckCircle2,
-  ShieldCheck,
   Check,
 } from "lucide-react";
 
 function RegisterForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-
-  // Auth method: "email" (standard password flow) or "phone" (instant OTP registration)
-  const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
-
-  // Email form state
+  // Registration form state
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,35 +33,10 @@ function RegisterForm() {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Phone OTP state
-  const [phoneName, setPhoneName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
-  const [countdown, setCountdown] = useState(0);
-  const [devOtp, setDevOtp] = useState<string | null>(null);
-  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
   // Feedback states
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-
-  // OTP Countdown Timer
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
-  // Focus OTP box on send
-  useEffect(() => {
-    if (otpSent && otpInputRefs.current[0]) {
-      otpInputRefs.current[0].focus();
-    }
-  }, [otpSent]);
 
   // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,8 +50,8 @@ function RegisterForm() {
   // Inline Password Validation
   const hasMinLength = formData.password.length >= 8;
 
-  // Handle Standard Email/Password Register
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  // Handle Registration Submit
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name.trim().length < 2) {
       setError("Full name must be at least 2 characters.");
@@ -112,6 +73,7 @@ function RegisterForm() {
       const res = await registerAction({
         name: formData.name.trim(),
         email: formData.email.trim(),
+        phone: formData.phone.trim() || undefined,
         password: formData.password,
         confirmPassword: formData.password,
       });
@@ -126,97 +88,6 @@ function RegisterForm() {
     } catch {
       setError("An unexpected error occurred during registration. Please try again.");
       setIsLoading(false);
-    }
-  };
-
-  // Handle Send Phone OTP for quick join
-  const handleSendPhoneOtp = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!phoneName.trim() || phoneName.trim().length < 2) {
-      setError("Please enter your full name (minimum 2 characters).");
-      return;
-    }
-    if (!phone || phone.trim().length < 10) {
-      setError("Please enter a valid 11-digit Bangladeshi mobile number.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    const res = await sendPhoneOtpAction({ phone });
-    if (res?.error) {
-      setError(res.error);
-      setIsLoading(false);
-    } else {
-      setOtpSent(true);
-      setCountdown(60);
-      if (res?.devOtp) setDevOtp(res.devOtp);
-      setIsLoading(false);
-    }
-  };
-
-  // Handle OTP digit changes
-  const handleOtpChange = (index: number, val: string) => {
-    if (!/^\d*$/.test(val)) return;
-
-    const newDigits = [...otpDigits];
-    newDigits[index] = val.slice(-1);
-    setOtpDigits(newDigits);
-
-    if (val && index < 5 && otpInputRefs.current[index + 1]) {
-      otpInputRefs.current[index + 1]?.focus();
-    }
-
-    if (val && index === 5 && newDigits.every((d) => d !== "")) {
-      triggerVerifyPhoneOtp(newDigits.join(""));
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpInputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const paste = e.clipboardData.getData("text").trim();
-    if (/^\d{6}$/.test(paste)) {
-      setOtpDigits(paste.split(""));
-      otpInputRefs.current[5]?.focus();
-      triggerVerifyPhoneOtp(paste);
-    }
-  };
-
-  const handleAutoFillDevOtp = () => {
-    if (!devOtp || devOtp.length !== 6) return;
-    setOtpDigits(devOtp.split(""));
-    triggerVerifyPhoneOtp(devOtp);
-  };
-
-  const triggerVerifyPhoneOtp = async (codeToVerify?: string) => {
-    const code = codeToVerify || otpDigits.join("");
-    if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    const res = await verifyPhoneOtpAction({
-      phone,
-      otp: code,
-      name: phoneName.trim(),
-    });
-
-    if (res?.error) {
-      setError(res.error);
-      setIsLoading(false);
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
     }
   };
 
@@ -354,38 +225,6 @@ function RegisterForm() {
                 </p>
               </div>
 
-              {/* Method Switcher */}
-              <div className="border-vl-dark-600/60 bg-vl-dark-800 mt-4 flex rounded-lg border p-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMethod("email");
-                    setError("");
-                  }}
-                  className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold tracking-wider uppercase transition-all ${
-                    authMethod === "email"
-                      ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
-                      : "text-vl-dark-400 hover:text-vl-white-300"
-                  }`}
-                >
-                  Email & Password
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMethod("phone");
-                    setError("");
-                  }}
-                  className={`flex-1 rounded-md py-1.5 text-center text-xs font-bold tracking-wider uppercase transition-all ${
-                    authMethod === "phone"
-                      ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
-                      : "text-vl-dark-400 hover:text-vl-white-300"
-                  }`}
-                >
-                  Phone OTP
-                </button>
-              </div>
-
               {/* Error Banner */}
               {error && (
                 <div
@@ -397,333 +236,161 @@ function RegisterForm() {
                 </div>
               )}
 
-              {/* ── METHOD 1: EMAIL SIGNUP (Mockup Specification) ── */}
-              {authMethod === "email" && (
-                <form onSubmit={handleEmailSubmit} className="mt-4 space-y-3">
-                  {/* Full Name */}
-                  <div className="space-y-1">
-                    <Label htmlFor="name" className="text-vl-white-300 text-xs font-medium">
-                      Full Name
-                    </Label>
-                    <div className="relative">
-                      <User className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
-                      <Input
-                        id="name"
-                        name="name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        required
-                        value={formData.name}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        autoComplete="name"
-                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
-                      />
-                    </div>
+              {/* ── REGISTRATION FORM ── */}
+              <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+                {/* Full Name */}
+                <div className="space-y-1">
+                  <Label htmlFor="name" className="text-vl-white-300 text-xs font-medium">
+                    Full Name
+                  </Label>
+                  <div className="relative">
+                    <User className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      autoComplete="name"
+                      className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
+                    />
                   </div>
-
-                  {/* Email */}
-                  <div className="space-y-1">
-                    <Label htmlFor="email" className="text-vl-white-300 text-xs font-medium">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Mail className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        autoComplete="email"
-                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Phone Number (Optional) */}
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
-                        Phone Number
-                      </Label>
-                      <span className="text-vl-dark-400 text-[10px]">Optional</span>
-                    </div>
-                    <div className="relative">
-                      <Phone className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
-                      <Input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        autoComplete="tel"
-                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div className="space-y-1">
-                    <Label htmlFor="password" className="text-vl-white-300 text-xs font-medium">
-                      Password
-                    </Label>
-                    <div className="relative">
-                      <Lock className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
-                      <Input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Create a password"
-                        required
-                        value={formData.password}
-                        onChange={handleChange}
-                        disabled={isLoading}
-                        autoComplete="new-password"
-                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        tabIndex={-1}
-                        className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3 right-3 transition-colors"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                      >
-                        {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                      </button>
-                    </div>
-
-                    {/* Inline Password Requirement Check */}
-                    <div className="flex items-center gap-1.5 pt-0.5 text-[11px]">
-                      <span
-                        className={`flex size-3.5 items-center justify-center rounded-full ${
-                          hasMinLength
-                            ? "bg-vl-cyan text-vl-dark-900"
-                            : "bg-vl-dark-600 text-vl-dark-400"
-                        }`}
-                      >
-                        <Check className="size-2.5 stroke-[3]" />
-                      </span>
-                      <span className={hasMinLength ? "text-vl-white-300" : "text-vl-dark-400"}>
-                        Minimum 8 characters
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Terms & Privacy statement */}
-                  <p className="text-vl-dark-400 text-[10px] leading-relaxed">
-                    By creating an account, you agree to VibeLock&apos;s{" "}
-                    <Link href="/terms" className="text-vl-cyan underline-offset-2 hover:underline">
-                      Terms of Service
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      href="/privacy"
-                      className="text-vl-cyan underline-offset-2 hover:underline"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-
-                  {/* Primary Cyan Create Account Button */}
-                  <Button
-                    type="submit"
-                    disabled={isLoading}
-                    className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-1 h-10.5 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="size-3.5 animate-spin" />
-                        <span>CREATING ACCOUNT...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Create Account</span>
-                        <ArrowRight className="size-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              )}
-
-              {/* ── METHOD 2: PHONE OTP SIGNUP ── */}
-              {authMethod === "phone" && (
-                <div className="mt-6">
-                  {!otpSent ? (
-                    <form onSubmit={handleSendPhoneOtp} className="space-y-4">
-                      {/* Name */}
-                      <div className="space-y-1.5">
-                        <Label
-                          htmlFor="phoneName"
-                          className="text-vl-white-300 text-xs font-medium"
-                        >
-                          Full Name
-                        </Label>
-                        <div className="relative">
-                          <User className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
-                          <Input
-                            id="phoneName"
-                            type="text"
-                            placeholder="Enter your full name"
-                            required
-                            value={phoneName}
-                            onChange={(e) => setPhoneName(e.target.value)}
-                            disabled={isLoading}
-                            className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pl-10 text-sm focus-visible:ring-1"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Phone */}
-                      <div className="space-y-1.5">
-                        <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
-                          Mobile Number
-                        </Label>
-                        <div className="border-vl-dark-600 bg-vl-dark-800 focus-within:border-vl-cyan focus-within:ring-vl-cyan-400 relative flex rounded-lg border focus-within:ring-1">
-                          <div className="border-vl-dark-600 bg-vl-dark-900 text-vl-white-300 flex items-center gap-1.5 border-r px-3 text-xs font-bold select-none">
-                            <span>🇧🇩</span>
-                            <span>+880</span>
-                          </div>
-                          <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="01712345678"
-                            required
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            disabled={isLoading}
-                            className="text-vl-white-300 placeholder:text-vl-dark-500 h-11 border-0 bg-transparent py-2.5 text-sm shadow-none focus-visible:ring-0"
-                          />
-                        </div>
-                        <p className="text-vl-dark-400 text-[11px]">
-                          We will verify this number with a one-time 6-digit passcode.
-                        </p>
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={isLoading || !phone || !phoneName}
-                        className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
-                      >
-                        {isLoading ? (
-                          <>
-                            <RefreshCw className="size-3.5 animate-spin" />
-                            <span>SENDING CODE...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>GET JOIN CODE</span>
-                            <ArrowRight className="size-4" />
-                          </>
-                        )}
-                      </Button>
-                    </form>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="border-vl-cyan-200 bg-vl-cyan-50 rounded-lg border p-3 text-center">
-                        <p className="text-vl-white-300 text-xs">
-                          Enter the 6-digit code sent to{" "}
-                          <span className="text-vl-cyan font-bold">{phone}</span>
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOtpSent(false);
-                            setOtpDigits(["", "", "", "", "", ""]);
-                            setDevOtp(null);
-                            setError("");
-                          }}
-                          className="text-vl-cyan mt-1 text-xs font-medium underline-offset-4 hover:underline"
-                        >
-                          Change number
-                        </button>
-                      </div>
-
-                      {devOtp && (
-                        <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
-                          <span className="text-amber-300">
-                            ⚡ Dev OTP: <strong className="font-mono text-white">{devOtp}</strong>
-                          </span>
-                          <button
-                            type="button"
-                            onClick={handleAutoFillDevOtp}
-                            className="rounded bg-amber-500/20 px-2 py-0.5 font-bold text-amber-200 hover:bg-amber-500/30"
-                          >
-                            Auto-fill
-                          </button>
-                        </div>
-                      )}
-
-                      <div
-                        className="flex justify-between gap-1.5 sm:gap-2"
-                        onPaste={handleOtpPaste}
-                      >
-                        {otpDigits.map((digit, index) => (
-                          <input
-                            key={index}
-                            ref={(el) => {
-                              otpInputRefs.current[index] = el;
-                            }}
-                            type="text"
-                            inputMode="numeric"
-                            maxLength={1}
-                            value={digit}
-                            onChange={(e) => handleOtpChange(index, e.target.value)}
-                            onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                            className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 focus:border-vl-cyan focus:ring-vl-cyan-400 h-12 w-11 rounded-lg border text-center font-mono text-xl font-black transition-all focus:ring-1 focus:outline-none sm:w-12"
-                          />
-                        ))}
-                      </div>
-
-                      <Button
-                        type="button"
-                        onClick={() => triggerVerifyPhoneOtp()}
-                        disabled={isLoading || otpDigits.some((d) => !d)}
-                        className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
-                      >
-                        {isLoading ? (
-                          <>
-                            <RefreshCw className="size-3.5 animate-spin" />
-                            <span>VERIFYING & JOINING...</span>
-                          </>
-                        ) : (
-                          <>
-                            <ShieldCheck className="text-vl-dark-900 size-4" />
-                            <span>COMPLETE REGISTRATION</span>
-                          </>
-                        )}
-                      </Button>
-
-                      <div className="text-center text-xs">
-                        {countdown > 0 ? (
-                          <span className="text-vl-dark-400">
-                            Resend code in{" "}
-                            <strong className="text-vl-white-300">{countdown}s</strong>
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleSendPhoneOtp()}
-                            disabled={isLoading}
-                            className="text-vl-cyan font-bold underline-offset-4 hover:underline"
-                          >
-                            Resend OTP Code
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </div>
-              )}
+
+                {/* Email */}
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-vl-white-300 text-xs font-medium">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      autoComplete="email"
+                      className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number (Optional) */}
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
+                      Phone Number
+                    </Label>
+                    <span className="text-vl-dark-400 text-[10px]">Optional</span>
+                  </div>
+                  <div className="relative">
+                    <Phone className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      placeholder="Enter your phone number (e.g. 01712345678)"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      autoComplete="tel"
+                      className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pl-10 text-sm focus-visible:ring-1"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1">
+                  <Label htmlFor="password" className="text-vl-white-300 text-xs font-medium">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="text-vl-dark-400 pointer-events-none absolute top-3 left-3.5 size-4" />
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create a password"
+                      required
+                      value={formData.password}
+                      onChange={handleChange}
+                      disabled={isLoading}
+                      autoComplete="new-password"
+                      className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-10 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                      className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3 right-3 transition-colors"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    </button>
+                  </div>
+
+                  {/* Inline Password Requirement Check */}
+                  <div className="flex items-center gap-1.5 pt-0.5 text-[11px]">
+                    <span
+                      className={`flex size-3.5 items-center justify-center rounded-full ${
+                        hasMinLength
+                          ? "bg-vl-cyan text-vl-dark-900"
+                          : "bg-vl-dark-600 text-vl-dark-400"
+                      }`}
+                    >
+                      <Check className="size-2.5 stroke-[3]" />
+                    </span>
+                    <span className={hasMinLength ? "text-vl-white-300" : "text-vl-dark-400"}>
+                      Minimum 8 characters
+                    </span>
+                  </div>
+                </div>
+
+                {/* Terms & Privacy statement */}
+                <p className="text-vl-dark-400 text-[10px] leading-relaxed">
+                  By creating an account, you agree to VibeLock&apos;s{" "}
+                  <Link href="/terms" className="text-vl-cyan underline-offset-2 hover:underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    href="/privacy"
+                    className="text-vl-cyan underline-offset-2 hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
+
+                {/* Primary Cyan Create Account Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-1 h-10.5 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <RefreshCw className="size-3.5 animate-spin" />
+                      <span>CREATING ACCOUNT...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="size-4" />
+                    </>
+                  )}
+                </Button>
+              </form>
 
               {/* Social Login Divider */}
-              <div className="relative my-3 sm:my-4">
+              <div className="relative my-4 sm:my-5">
                 <div className="absolute inset-0 flex items-center">
                   <span className="border-vl-dark-600 w-full border-t" />
                 </div>
@@ -732,7 +399,7 @@ function RegisterForm() {
                 </div>
               </div>
 
-              {/* Google Sign-Up Button */}
+              {/* Google Sign-In Button */}
               <form action={googleSignInAction} className="w-full">
                 <SubmitButton
                   variant="outline"

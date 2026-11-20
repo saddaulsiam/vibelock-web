@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  loginAction,
-  sendPhoneOtpAction,
-  verifyPhoneOtpAction,
-  googleSignInAction,
-} from "@/app/actions/auth";
+import { loginAction, googleSignInAction } from "@/app/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -23,7 +18,6 @@ import {
   EyeOff,
   AlertCircle,
   ChevronLeft,
-  ShieldCheck,
 } from "lucide-react";
 
 function LoginForm() {
@@ -31,48 +25,21 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
-  // Auth method: "email" (matches primary design mockup) or "phone" (OTP flow)
-  const [authMethod, setAuthMethod] = useState<"email" | "phone">("email");
-
-  // Email / Password state
+  // Login form state
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
 
-  // Phone OTP state
-  const [phone, setPhone] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", "", "", ""]);
-  const [countdown, setCountdown] = useState(0);
-  const [devOtp, setDevOtp] = useState<string | null>(null);
-  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
   // Feedback & Loading
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Countdown timer for OTP
-  useEffect(() => {
-    if (countdown <= 0) return;
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [countdown]);
-
-  // Focus first OTP field on send
-  useEffect(() => {
-    if (otpSent && otpInputRefs.current[0]) {
-      otpInputRefs.current[0].focus();
-    }
-  }, [otpSent]);
-
-  // Handle Email + Password Submit
-  const handleEmailSubmit = async (e: React.FormEvent) => {
+  // Handle Login Submit
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailOrPhone.trim()) {
-      setError("Please enter your email address.");
+      setError("Please enter your email or phone number.");
       return;
     }
     if (!password) {
@@ -98,100 +65,17 @@ function LoginForm() {
     }
   };
 
-  // Handle Send Phone OTP
-  const handleSendOtp = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!phone || phone.trim().length < 10) {
-      setError("Please enter a valid 11-digit Bangladeshi mobile number.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    const res = await sendPhoneOtpAction({ phone });
-    if (res?.error) {
-      setError(res.error);
-      setIsLoading(false);
-    } else {
-      setOtpSent(true);
-      setCountdown(60);
-      if (res?.devOtp) setDevOtp(res.devOtp);
-      setIsLoading(false);
-    }
-  };
-
-  // Handle OTP digit changes
-  const handleOtpChange = (index: number, val: string) => {
-    if (!/^\d*$/.test(val)) return;
-
-    const newDigits = [...otpDigits];
-    newDigits[index] = val.slice(-1);
-    setOtpDigits(newDigits);
-
-    if (val && index < 5 && otpInputRefs.current[index + 1]) {
-      otpInputRefs.current[index + 1]?.focus();
-    }
-
-    if (val && index === 5 && newDigits.every((d) => d !== "")) {
-      triggerVerifyOtp(newDigits.join(""));
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpInputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const paste = e.clipboardData.getData("text").trim();
-    if (/^\d{6}$/.test(paste)) {
-      const chars = paste.split("");
-      setOtpDigits(chars);
-      otpInputRefs.current[5]?.focus();
-      triggerVerifyOtp(paste);
-    }
-  };
-
-  const handleAutoFillDevOtp = () => {
-    if (!devOtp || devOtp.length !== 6) return;
-    setOtpDigits(devOtp.split(""));
-    triggerVerifyOtp(devOtp);
-  };
-
-  const triggerVerifyOtp = async (codeToVerify?: string) => {
-    const code = codeToVerify || otpDigits.join("");
-    if (code.length !== 6) {
-      setError("Please enter the complete 6-digit code.");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    const res = await verifyPhoneOtpAction({ phone, otp: code });
-    if (res?.error) {
-      setError(res.error);
-      setIsLoading(false);
-    } else {
-      router.push(callbackUrl);
-      router.refresh();
-    }
-  };
-
   return (
     <div className="flex min-h-screen w-full flex-col lg:grid lg:grid-cols-2">
       {/* ══════════════════════════════════════════════════════
           HERO PHOTOGRAPHY PANEL (Split-Screen Left Column on Desktop)
-          Back-view model wearing black oversized VibeLock T-shirt
-          with the large white VibeLock back logo.
+          Back-view model wearing black oversized VibeLock hoodie,
+          beanie, and silver chain in an urban alley.
       ══════════════════════════════════════════════════════ */}
       <div className="bg-vl-dark-900 relative hidden h-full w-full overflow-hidden lg:block">
         <Image
           src="/images/auth/login-back-model.png"
-          alt="VibeLock Login Page Image"
+          alt="VibeLock Streetwear Model"
           fill
           priority
           sizes="50vw"
@@ -199,19 +83,19 @@ function LoginForm() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent" />
-        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-t via-transparent to-black/30" />
+        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent" />
+        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
-        <div className="absolute bottom-10 left-10 z-10 max-w-xs">
+        <div className="absolute bottom-12 left-12 z-10 max-w-xs">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-3 py-1 backdrop-blur-md">
             <span className="bg-vl-cyan size-1.5 rounded-full" />
             <span className="font-heading tracking-streetwear text-vl-white-300 text-[10px] font-bold uppercase">
-              DHAKA STREETWEAR // EDITION 2026
+              DROP 001 // DHAKA EDITION
             </span>
           </div>
           <p className="font-heading text-vl-white-300 mt-3 text-2xl font-black tracking-tight uppercase">
-            BUILT FOR REAL MOVEMENT
+            WEAR THE REBELLION
           </p>
         </div>
       </div>
@@ -219,16 +103,16 @@ function LoginForm() {
       {/* ══════════════════════════════════════════════════════
           MOBILE COMPACT HERO BANNER (< lg screens)
       ══════════════════════════════════════════════════════ */}
-      <div className="bg-vl-dark-900 relative h-44 w-full overflow-hidden sm:h-56 lg:hidden">
+      <div className="bg-vl-dark-900 relative h-48 w-full overflow-hidden sm:h-64 lg:hidden">
         <Image
           src="/images/auth/login-back-model.png"
-          alt="VibeLock Login Page Image"
+          alt="VibeLock Streetwear Model"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-[center_25%]"
+          className="object-cover object-[center_30%]"
         />
-        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-linear-to-t to-black/50" />
+        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-gradient-to-t to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
@@ -284,38 +168,6 @@ function LoginForm() {
             <p className="text-vl-grey text-sm font-normal">Log in to your VibeLock account</p>
           </div>
 
-          {/* Authentication Method Switcher (Minimalist streetwear pills) */}
-          <div className="border-vl-border/60 bg-vl-dark-800 mt-6 flex rounded-lg border p-1">
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMethod("email");
-                setError("");
-              }}
-              className={`flex-1 rounded-md py-2 text-center text-xs font-bold tracking-wider uppercase transition-all ${
-                authMethod === "email"
-                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
-                  : "text-vl-dark-400 hover:text-vl-white-300"
-              }`}
-            >
-              Email & Password
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAuthMethod("phone");
-                setError("");
-              }}
-              className={`flex-1 rounded-md py-2 text-center text-xs font-bold tracking-wider uppercase transition-all ${
-                authMethod === "phone"
-                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
-                  : "text-vl-dark-400 hover:text-vl-white-300"
-              }`}
-            >
-              Phone OTP
-            </button>
-          </div>
-
           {/* Error Banner */}
           {error && (
             <div
@@ -327,247 +179,99 @@ function LoginForm() {
             </div>
           )}
 
-          {/* ── METHOD 1: EMAIL & PASSWORD (Design Mockup Default) ── */}
-          {authMethod === "email" && (
-            <form onSubmit={handleEmailSubmit} className="mt-6 space-y-4">
-              {/* Email / Phone Field */}
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-vl-white-300 text-xs font-medium">
-                  Email or Phone
-                </Label>
-                <div className="relative">
-                  <Mail className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
-                  <Input
-                    id="email"
-                    type="text"
-                    placeholder="Enter your email or phone"
-                    required
-                    value={emailOrPhone}
-                    onChange={(e) => setEmailOrPhone(e.target.value)}
-                    disabled={isLoading}
-                    autoComplete="username"
-                    className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pl-10 text-sm focus-visible:ring-1"
-                  />
-                </div>
+          {/* ── EMAIL OR PHONE + PASSWORD FORM ── */}
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {/* Email / Phone Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-vl-white-300 text-xs font-medium">
+                Email or Phone
+              </Label>
+              <div className="relative">
+                <Mail className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
+                <Input
+                  id="email"
+                  type="text"
+                  placeholder="Enter your email or phone"
+                  required
+                  value={emailOrPhone}
+                  onChange={(e) => setEmailOrPhone(e.target.value)}
+                  disabled={isLoading}
+                  autoComplete="username"
+                  className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pl-10 text-sm focus-visible:ring-1"
+                />
               </div>
-
-              {/* Password Field */}
-              <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-vl-white-300 text-xs font-medium">
-                  Password
-                </Label>
-                <div className="relative">
-                  <Lock className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={isLoading}
-                    autoComplete="current-password"
-                    className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3.5 right-3 transition-colors"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me & Forgot Password Row */}
-              <div className="flex items-center justify-between pt-1">
-                <label className="flex cursor-pointer items-center gap-2 select-none">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="border-vl-dark-600 bg-vl-dark-800 text-vl-cyan accent-vl-cyan size-4 rounded focus:ring-0"
-                  />
-                  <span className="text-vl-dark-400 hover:text-vl-white-300 text-xs">
-                    Remember me
-                  </span>
-                </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-vl-cyan text-xs font-medium transition-colors hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              {/* Primary Cyan Submit Button */}
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-2 h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
-              >
-                {isLoading ? (
-                  <>
-                    <RefreshCw className="size-3.5 animate-spin" />
-                    <span>LOGGING IN...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Log In</span>
-                    <ArrowRight className="size-4" />
-                  </>
-                )}
-              </Button>
-            </form>
-          )}
-
-          {/* ── METHOD 2: PHONE OTP (Bangladeshi Mobile Flow) ── */}
-          {authMethod === "phone" && (
-            <div className="mt-6">
-              {!otpSent ? (
-                <form onSubmit={handleSendOtp} className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="phone" className="text-vl-white-300 text-xs font-medium">
-                      Mobile Number
-                    </Label>
-                    <div className="border-vl-dark-600 bg-vl-dark-800 focus-within:border-vl-cyan focus-within:ring-vl-cyan-400 relative flex rounded-lg border focus-within:ring-1">
-                      <div className="border-vl-dark-600 bg-vl-dark-900 text-vl-white-300 flex items-center gap-1.5 border-r px-3 text-xs font-bold select-none">
-                        <span>🇧🇩</span>
-                        <span>+880</span>
-                      </div>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="01712345678"
-                        required
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        disabled={isLoading}
-                        autoFocus
-                        className="text-vl-white-300 placeholder:text-vl-dark-500 h-11 border-0 bg-transparent py-2.5 text-sm shadow-none focus-visible:ring-0"
-                      />
-                    </div>
-                    <p className="text-vl-dark-400 text-[11px]">
-                      We&apos;ll send a 6-digit verification code to this number.
-                    </p>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    disabled={isLoading || !phone}
-                    className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="size-3.5 animate-spin" />
-                        <span>SENDING CODE...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>GET LOGIN CODE</span>
-                        <ArrowRight className="size-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-              ) : (
-                <div className="space-y-4">
-                  <div className="border-vl-cyan-200 bg-vl-cyan-50 rounded-lg border p-3 text-center">
-                    <p className="text-vl-white-300 text-xs">
-                      Enter the 6-digit code sent to{" "}
-                      <span className="text-vl-cyan font-bold">{phone}</span>
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setOtpSent(false);
-                        setOtpDigits(["", "", "", "", "", ""]);
-                        setDevOtp(null);
-                        setError("");
-                      }}
-                      className="text-vl-cyan mt-1 text-xs font-medium underline-offset-4 hover:underline"
-                    >
-                      Change number
-                    </button>
-                  </div>
-
-                  {/* Dev mode helper */}
-                  {devOtp && (
-                    <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
-                      <span className="text-amber-300">
-                        ⚡ Dev OTP: <strong className="font-mono text-white">{devOtp}</strong>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleAutoFillDevOtp}
-                        className="rounded bg-amber-500/20 px-2 py-0.5 font-bold text-amber-200 hover:bg-amber-500/30"
-                      >
-                        Auto-fill
-                      </button>
-                    </div>
-                  )}
-
-                  {/* 6-digit OTP Inputs */}
-                  <div className="flex justify-between gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
-                    {otpDigits.map((digit, index) => (
-                      <input
-                        key={index}
-                        ref={(el) => {
-                          otpInputRefs.current[index] = el;
-                        }}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 focus:border-vl-cyan focus:ring-vl-cyan-400 h-12 w-11 rounded-lg border text-center font-mono text-xl font-black transition-all focus:ring-1 focus:outline-none sm:w-12"
-                      />
-                    ))}
-                  </div>
-
-                  <Button
-                    type="button"
-                    onClick={() => triggerVerifyOtp()}
-                    disabled={isLoading || otpDigits.some((d) => !d)}
-                    className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all"
-                  >
-                    {isLoading ? (
-                      <>
-                        <RefreshCw className="size-3.5 animate-spin" />
-                        <span>VERIFYING...</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShieldCheck className="text-vl-dark-900 size-4" />
-                        <span>VERIFY & SIGN IN</span>
-                      </>
-                    )}
-                  </Button>
-
-                  {/* Resend Code / Countdown */}
-                  <div className="text-center text-xs">
-                    {countdown > 0 ? (
-                      <span className="text-vl-dark-400">
-                        Resend code in <strong className="text-vl-white-300">{countdown}s</strong>
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSendOtp()}
-                        disabled={isLoading}
-                        className="text-vl-cyan font-bold underline-offset-4 hover:underline"
-                      >
-                        Resend OTP Code
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-          )}
+
+            {/* Password Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-vl-white-300 text-xs font-medium">
+                Password
+              </Label>
+              <div className="relative">
+                <Lock className="text-vl-dark-400 pointer-events-none absolute top-3.5 left-3.5 size-4" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  autoComplete="current-password"
+                  className="border-vl-dark-600 bg-vl-dark-800 text-vl-white-300 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 h-11 rounded-lg pr-10 pl-10 text-sm focus-visible:ring-1"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                  className="text-vl-dark-400 hover:text-vl-white-300 absolute top-3.5 right-3 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Forgot Password Row */}
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex cursor-pointer items-center gap-2 select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="border-vl-dark-600 bg-vl-dark-800 text-vl-cyan accent-vl-cyan size-4 rounded focus:ring-0"
+                />
+                <span className="text-vl-dark-400 hover:text-vl-white-300 text-xs">
+                  Remember me
+                </span>
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-vl-cyan text-xs font-medium transition-colors hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Primary Cyan Submit Button */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="font-heading bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan mt-2 h-11 w-full gap-2 rounded-lg text-xs font-black tracking-widest uppercase transition-all focus-visible:ring-2"
+            >
+              {isLoading ? (
+                <>
+                  <RefreshCw className="size-3.5 animate-spin" />
+                  <span>LOGGING IN...</span>
+                </>
+              ) : (
+                <>
+                  <span>Log In</span>
+                  <ArrowRight className="size-4" />
+                </>
+              )}
+            </Button>
+          </form>
 
           {/* Social Login Divider */}
           <div className="relative my-6">
