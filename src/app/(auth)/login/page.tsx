@@ -199,8 +199,8 @@ function LoginForm() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent" />
-        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/30" />
+        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent" />
+        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-t via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
         <div className="absolute bottom-12 left-12 z-10 max-w-xs">
@@ -228,7 +228,7 @@ function LoginForm() {
           sizes="100vw"
           className="object-cover object-[center_30%]"
         />
-        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-gradient-to-t to-black/50" />
+        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-linear-to-t to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
@@ -275,7 +275,7 @@ function LoginForm() {
         <main className="mx-auto my-auto w-full max-w-md py-4 sm:py-8">
           {/* Brand Tagline & Headings */}
           <div className="space-y-1.5 text-left">
-            <span className="font-heading text-vl-cyan inline-block text-[11px] font-bold tracking-[0.25em] uppercase">
+            <span className="font-heading text-vl-cyan tracking-tag inline-block text-[11px] font-bold uppercase">
               STREETWEAR FOR DHAKA YOUTH
             </span>
             <h1 className="font-heading text-vl-white-300 text-3xl font-black tracking-tight sm:text-4xl">
@@ -294,7 +294,7 @@ function LoginForm() {
               }}
               className={`flex-1 rounded-md py-2 text-center text-xs font-bold tracking-wider uppercase transition-all ${
                 authMethod === "email"
-                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
+                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan shadow-sm ring-1"
                   : "text-vl-dark-400 hover:text-vl-white-300"
               }`}
             >
@@ -308,7 +308,7 @@ function LoginForm() {
               }}
               className={`flex-1 rounded-md py-2 text-center text-xs font-bold tracking-wider uppercase transition-all ${
                 authMethod === "phone"
-                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan-300 shadow-sm ring-1"
+                  ? "bg-vl-dark-900 text-vl-white-300 ring-vl-cyan shadow-sm ring-1"
                   : "text-vl-dark-400 hover:text-vl-white-300"
               }`}
             >
@@ -474,7 +474,7 @@ function LoginForm() {
                 </form>
               ) : (
                 <div className="space-y-4">
-                  <div className="border-vl-cyan-200 bg-vl-cyan-50 rounded-lg border p-3 text-center">
+                  <div className="border-vl-cyan-500/30 bg-vl-cyan-500/10 text-vl-white-300 rounded-lg border p-3 text-center">
                     <p className="text-vl-white-300 text-xs">
                       Enter the 6-digit code sent to{" "}
                       <span className="text-vl-cyan font-bold">{phone}</span>

@@ -109,8 +109,8 @@ function RegisterForm() {
         />
 
         {/* Subtle dark gradient overlay to blend into the right panel */}
-        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-transparent" />
-        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-gradient-to-t via-transparent to-black/30" />
+        <div className="to-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-transparent" />
+        <div className="from-vl-dark-900 pointer-events-none absolute inset-0 bg-linear-to-t via-transparent to-black/30" />
 
         {/* Editorial Fashion Badge */}
         <div className="absolute bottom-10 left-10 z-10 max-w-xs">
@@ -138,7 +138,7 @@ function RegisterForm() {
           sizes="100vw"
           className="object-cover object-[center_25%]"
         />
-        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-gradient-to-t to-black/50" />
+        <div className="from-vl-dark-900 via-vl-dark-900/40 pointer-events-none absolute inset-0 bg-linear-to-t to-black/50" />
 
         {/* Mobile Top Header Links */}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
@@ -214,7 +214,7 @@ function RegisterForm() {
             <>
               {/* Brand Tagline & Headings */}
               <div className="space-y-1 text-left">
-                <span className="font-heading text-vl-cyan inline-block text-[10px] font-bold tracking-[0.25em] uppercase">
+                <span className="font-heading text-vl-cyan tracking-tag inline-block text-[10px] font-bold uppercase">
                   STREETWEAR FOR DHAKA YOUTH
                 </span>
                 <h1 className="font-heading text-vl-white-300 text-2xl font-black tracking-tight sm:text-3xl">
@@ -345,7 +345,7 @@ function RegisterForm() {
                           : "bg-vl-dark-600 text-vl-dark-400"
                       }`}
                     >
-                      <Check className="size-2.5 stroke-[3]" />
+                      <Check className="size-2.5 stroke-3" />
                     </span>
                     <span className={hasMinLength ? "text-vl-white-300" : "text-vl-dark-400"}>
                       Minimum 8 characters
@@ -360,10 +360,7 @@ function RegisterForm() {
                     Terms of Service
                   </Link>{" "}
                   and{" "}
-                  <Link
-                    href="/privacy"
-                    className="text-vl-cyan underline-offset-2 hover:underline"
-                  >
+                  <Link href="/privacy" className="text-vl-cyan underline-offset-2 hover:underline">
                     Privacy Policy
                   </Link>
                   .
