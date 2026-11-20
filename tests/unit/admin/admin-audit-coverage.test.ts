@@ -40,6 +40,15 @@ const mockDb = prisma as unknown as Record<string, unknown>;
 describe("Phase 12.3 Admin Audit Coverage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockDb.$transaction = vi.fn(async (cb: unknown) => {
+      if (typeof cb === "function") {
+        return (cb as (tx: unknown) => unknown)(prisma);
+      }
+      if (Array.isArray(cb)) {
+        return Promise.all(cb);
+      }
+      return cb;
+    });
   });
 
   describe("Metadata Sanitization & Privacy", () => {
@@ -85,9 +94,100 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
       expect(arr[0].token).toBe("[REDACTED]");
       expect(arr[1].harmless).toBe(100);
     });
+
+    test("normalizes key names across camelCase, snake_case, and kebab-case variants while preserving non-sensitive keys", () => {
+      const metadata = {
+        // camelCase variants
+        apiKey: "key-123",
+        secretKey: "sec-123",
+        userToken: "tok-123",
+        cardNo: "4111-1111",
+        cardNumber: "4222-2222",
+        authHeader: "Bearer 123",
+        passwordHash: "hash-xyz",
+        pinCode: "1234",
+        // snake_case variants
+        api_key: "key-456",
+        secret_key: "sec-456",
+        user_token: "tok-456",
+        card_no: "4333-3333",
+        card_number: "4444-4444",
+        auth_header: "Bearer 456",
+        password_hash: "hash-abc",
+        pin_code: "5678",
+        // kebab-case variants
+        "api-key": "key-789",
+        "secret-key": "sec-789",
+        "user-token": "tok-789",
+        "card-no": "4555-5555",
+        "card-number": "4666-6666",
+        "auth-header": "Bearer 789",
+        "password-hash": "hash-def",
+        "pin-code": "9012",
+        // Non-sensitive keys that contain partial matches
+        author: "John Doe",
+        authority: "Civil Aviation Authority",
+        cardigan: "Wool Cardigan",
+        itemCount: 42,
+        pinned: true,
+      };
+
+      const sanitized = sanitizeAuditMetadata(metadata) as Record<string, unknown>;
+
+      // Verified redacted variants
+      expect(sanitized.apiKey).toBe("[REDACTED]");
+      expect(sanitized.secretKey).toBe("[REDACTED]");
+      expect(sanitized.userToken).toBe("[REDACTED]");
+      expect(sanitized.cardNo).toBe("[REDACTED]");
+      expect(sanitized.cardNumber).toBe("[REDACTED]");
+      expect(sanitized.authHeader).toBe("[REDACTED]");
+      expect(sanitized.passwordHash).toBe("[REDACTED]");
+      expect(sanitized.pinCode).toBe("[REDACTED]");
+
+      expect(sanitized.api_key).toBe("[REDACTED]");
+      expect(sanitized.secret_key).toBe("[REDACTED]");
+      expect(sanitized.user_token).toBe("[REDACTED]");
+      expect(sanitized.card_no).toBe("[REDACTED]");
+      expect(sanitized.card_number).toBe("[REDACTED]");
+      expect(sanitized.auth_header).toBe("[REDACTED]");
+      expect(sanitized.password_hash).toBe("[REDACTED]");
+      expect(sanitized.pin_code).toBe("[REDACTED]");
+
+      expect(sanitized["api-key"]).toBe("[REDACTED]");
+      expect(sanitized["secret-key"]).toBe("[REDACTED]");
+      expect(sanitized["user-token"]).toBe("[REDACTED]");
+      expect(sanitized["card-no"]).toBe("[REDACTED]");
+      expect(sanitized["card-number"]).toBe("[REDACTED]");
+      expect(sanitized["auth-header"]).toBe("[REDACTED]");
+      expect(sanitized["password-hash"]).toBe("[REDACTED]");
+      expect(sanitized["pin-code"]).toBe("[REDACTED]");
+
+      // Verified preserved non-sensitive fields
+      expect(sanitized.author).toBe("John Doe");
+      expect(sanitized.authority).toBe("Civil Aviation Authority");
+      expect(sanitized.cardigan).toBe("Wool Cardigan");
+      expect(sanitized.itemCount).toBe(42);
+      expect(sanitized.pinned).toBe(true);
+    });
   });
 
   describe("Fail-Closed Transactional Audit Logging", () => {
+    test("fails explicitly when auditLog client model or create method is missing", async () => {
+      const mockTxWithoutAuditLog = {} as unknown as Prisma.TransactionClient;
+
+      await expect(
+        recordAuditLog({
+          actorId: "admin-uuid-1",
+          action: "TEST_MISSING_CLIENT",
+          entityType: "Order",
+          entityId: "order-123",
+          tx: mockTxWithoutAuditLog,
+        })
+      ).rejects.toThrow(
+        /\[AuditLog\] Audit logging unavailable: auditLog model or create\(\) method is missing on Prisma client\./
+      );
+    });
+
     test("fails closed and aborts transaction if auditLog.create fails in a transaction", async () => {
       const mockTx = {
         auditLog: {
@@ -104,6 +204,49 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
           tx: mockTx,
         })
       ).rejects.toThrow(/Audit log creation failed for action TEST_CRITICAL_ACTION\. Transaction aborted\./);
+    });
+
+    test("demonstrates transactional rollback: mutation does not persist when auditLog.create rejects", async () => {
+      let mutationCommitted = false;
+
+      const mockTx = {
+        coupon: {
+          delete: vi.fn().mockImplementation(async () => {
+            mutationCommitted = true;
+            return { id: "coup-1" };
+          }),
+        },
+        auditLog: {
+          create: vi.fn().mockRejectedValue(new Error("AUDIT_TABLE_LOCKED")),
+        },
+      };
+
+      const transactionExecutor = async () => {
+        return prisma.$transaction(async (tx) => {
+          const t = tx as unknown as typeof mockTx;
+          await t.coupon.delete({ where: { id: "coup-1" } });
+          await recordAuditLog({
+            actorId: "admin-uuid-1",
+            action: "COUPON_DELETED",
+            entityType: "Coupon",
+            entityId: "coup-1",
+            tx: t as unknown as Prisma.TransactionClient,
+          });
+        });
+      };
+
+      mockDb.$transaction = vi.fn(async (cb: (tx: unknown) => unknown) => {
+        try {
+          return await cb(mockTx);
+        } catch (error) {
+          // Transaction aborts on error, rolling back changes
+          mutationCommitted = false;
+          throw error;
+        }
+      });
+
+      await expect(transactionExecutor()).rejects.toThrow(/Audit log creation failed for action COUPON_DELETED/);
+      expect(mutationCommitted).toBe(false);
     });
 
     test("successfully writes audit log when auditLog.create succeeds", async () => {
@@ -725,6 +868,51 @@ describe("Phase 12.3 Admin Audit Coverage", () => {
               paymentId: "pay-1",
               amount: 1000,
               failureReason: "Bank rejected refund",
+            }),
+          }),
+        })
+      );
+    });
+
+    test("markRefundFailed initiates its own transaction when tx is not provided", async () => {
+      const auditCreateMock = vi.fn().mockResolvedValue({ id: "audit-1" });
+      const refundUpdateMock = vi.fn().mockResolvedValue({ id: "ref-standalone", status: "FAILED" });
+      const mockRefund = {
+        id: "ref-standalone",
+        paymentId: "pay-standalone",
+        amount: new Prisma.Decimal(750),
+        status: "PENDING",
+      };
+
+      const mockTx = {
+        refund: {
+          findUnique: vi.fn().mockResolvedValue(mockRefund),
+          update: refundUpdateMock,
+        },
+        auditLog: { create: auditCreateMock },
+      };
+
+      mockDb.$transaction = vi.fn(async (cb: (tx: unknown) => unknown) => cb(mockTx));
+
+      const refundService = new RefundService();
+      await refundService.markRefundFailed("ref-standalone", undefined, "admin-uuid-1", "Gateway timeout");
+
+      expect(mockDb.$transaction).toHaveBeenCalled();
+      expect(refundUpdateMock).toHaveBeenCalledWith({
+        where: { id: "ref-standalone" },
+        data: { status: "FAILED" },
+      });
+      expect(auditCreateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            actorId: "admin-uuid-1",
+            action: "REFUND_FAILED",
+            entityType: "Refund",
+            entityId: "ref-standalone",
+            metadata: expect.objectContaining({
+              paymentId: "pay-standalone",
+              amount: 750,
+              failureReason: "Gateway timeout",
             }),
           }),
         })

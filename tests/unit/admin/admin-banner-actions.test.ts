@@ -6,16 +6,23 @@ vi.mock("@/lib/auth/authorization", () => ({
   requireRole: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/prisma/client", () => ({
-  default: {
+vi.mock("@/lib/prisma/client", () => {
+  const client: Record<string, unknown> = {
     banner: {
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
       findUnique: vi.fn(),
     },
-  },
-}));
+    auditLog: {
+      create: vi.fn().mockResolvedValue({ id: "audit-1" }),
+    },
+    $transaction: vi.fn(async (cb: unknown) =>
+      typeof cb === "function" ? (cb as (tx: unknown) => unknown)(client) : cb
+    ),
+  };
+  return { default: client };
+});
 
 vi.mock("next/cache", () => ({
   updateTag: vi.fn(),

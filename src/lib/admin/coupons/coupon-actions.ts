@@ -120,80 +120,89 @@ export async function saveCouponAction(
     .filter((v) => /^[0-9a-fA-F-]{36}$/.test(v));
 
   try {
-    if (id) {
-      const existing = await prisma.coupon.findUnique({
-        where: { id },
-        select: { id: true, usageCount: true },
-      });
-      if (!existing) return { error: "This coupon no longer exists." };
-      if (usageLimit && Number(usageLimit) < existing.usageCount)
-        return { error: "Usage limit cannot be below current usage." };
-      const updated = await prisma.coupon.update({
-        where: { id },
-        data: {
-          code,
-          discountType,
-          discountValue: new Prisma.Decimal(discountValue),
-          minOrderValue: minOrderValue ? new Prisma.Decimal(minOrderValue) : null,
-          usageLimit: usageLimit ? Number(usageLimit) : null,
-          isActive,
-          startDate,
-          endDate,
-          categories: {
-            set: rawCategoryIds.map((catId) => ({ id: catId })),
+    await prisma.$transaction(async (tx) => {
+      if (id) {
+        const existing = await tx.coupon.findUnique({
+          where: { id },
+          select: { id: true, usageCount: true },
+        });
+        if (!existing) throw new Error("COUPON_NOT_FOUND");
+        if (usageLimit && Number(usageLimit) < existing.usageCount)
+          throw new Error("USAGE_LIMIT_BELOW_CURRENT");
+        const updated = await tx.coupon.update({
+          where: { id },
+          data: {
+            code,
+            discountType,
+            discountValue: new Prisma.Decimal(discountValue),
+            minOrderValue: minOrderValue ? new Prisma.Decimal(minOrderValue) : null,
+            usageLimit: usageLimit ? Number(usageLimit) : null,
+            isActive,
+            startDate,
+            endDate,
+            categories: {
+              set: rawCategoryIds.map((catId) => ({ id: catId })),
+            },
           },
-        },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "COUPON_UPDATED",
-        entityType: "Coupon",
-        entityId: updated.id,
-        metadata: {
-          code: updated.code,
-          discountType: updated.discountType,
-          discountValue: Number(updated.discountValue),
-          minOrderValue: updated.minOrderValue ? Number(updated.minOrderValue) : null,
-          usageLimit: updated.usageLimit,
-          isActive: updated.isActive,
-          startDate: updated.startDate,
-          endDate: updated.endDate,
-        },
-      });
-    } else {
-      const created = await prisma.coupon.create({
-        data: {
-          code,
-          discountType,
-          discountValue: new Prisma.Decimal(discountValue),
-          minOrderValue: minOrderValue ? new Prisma.Decimal(minOrderValue) : null,
-          usageLimit: usageLimit ? Number(usageLimit) : null,
-          isActive,
-          startDate,
-          endDate,
-          categories: rawCategoryIds.length
-            ? { connect: rawCategoryIds.map((catId) => ({ id: catId })) }
-            : undefined,
-        },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "COUPON_CREATED",
-        entityType: "Coupon",
-        entityId: created.id,
-        metadata: {
-          code: created.code,
-          discountType: created.discountType,
-          discountValue: Number(created.discountValue),
-          minOrderValue: created.minOrderValue ? Number(created.minOrderValue) : null,
-          usageLimit: created.usageLimit,
-          isActive: created.isActive,
-          startDate: created.startDate,
-          endDate: created.endDate,
-        },
-      });
-    }
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "COUPON_UPDATED",
+          entityType: "Coupon",
+          entityId: updated.id,
+          metadata: {
+            code: updated.code,
+            discountType: updated.discountType,
+            discountValue: Number(updated.discountValue),
+            minOrderValue: updated.minOrderValue ? Number(updated.minOrderValue) : null,
+            usageLimit: updated.usageLimit,
+            isActive: updated.isActive,
+            startDate: updated.startDate,
+            endDate: updated.endDate,
+          },
+          tx,
+        });
+      } else {
+        const created = await tx.coupon.create({
+          data: {
+            code,
+            discountType,
+            discountValue: new Prisma.Decimal(discountValue),
+            minOrderValue: minOrderValue ? new Prisma.Decimal(minOrderValue) : null,
+            usageLimit: usageLimit ? Number(usageLimit) : null,
+            isActive,
+            startDate,
+            endDate,
+            categories: rawCategoryIds.length
+              ? { connect: rawCategoryIds.map((catId) => ({ id: catId })) }
+              : undefined,
+          },
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "COUPON_CREATED",
+          entityType: "Coupon",
+          entityId: created.id,
+          metadata: {
+            code: created.code,
+            discountType: created.discountType,
+            discountValue: Number(created.discountValue),
+            minOrderValue: created.minOrderValue ? Number(created.minOrderValue) : null,
+            usageLimit: created.usageLimit,
+            isActive: created.isActive,
+            startDate: created.startDate,
+            endDate: created.endDate,
+          },
+          tx,
+        });
+      }
+    });
   } catch (error) {
+    if (error instanceof Error) {
+      if (error.message === "COUPON_NOT_FOUND") return { error: "This coupon no longer exists." };
+      if (error.message === "USAGE_LIMIT_BELOW_CURRENT")
+        return { error: "Usage limit cannot be below current usage." };
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return { error: "That coupon code is already in use." };
     }
@@ -213,36 +222,44 @@ export async function toggleCouponStatusAction(
   const admin = await requireRole("MANAGER");
 
   try {
-    const existing = await prisma.coupon.findUnique({
-      where: { id },
-      select: { id: true, code: true, isActive: true },
-    });
+    const updated = await prisma.$transaction(async (tx) => {
+      const existing = await tx.coupon.findUnique({
+        where: { id },
+        select: { id: true, code: true, isActive: true },
+      });
 
-    if (!existing) {
-      return { success: false, error: "Coupon not found." };
-    }
+      if (!existing) {
+        throw new Error("COUPON_NOT_FOUND");
+      }
 
-    const updated = await prisma.coupon.update({
-      where: { id },
-      data: { isActive: !existing.isActive },
-      select: { id: true, code: true, isActive: true },
-    });
+      const res = await tx.coupon.update({
+        where: { id },
+        data: { isActive: !existing.isActive },
+        select: { id: true, code: true, isActive: true },
+      });
 
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "COUPON_STATUS_TOGGLED",
-      entityType: "Coupon",
-      entityId: updated.id,
-      metadata: {
-        code: updated.code,
-        previousActive: existing.isActive,
-        isActive: updated.isActive,
-      },
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "COUPON_STATUS_TOGGLED",
+        entityType: "Coupon",
+        entityId: res.id,
+        metadata: {
+          code: res.code,
+          previousActive: existing.isActive,
+          isActive: res.isActive,
+        },
+        tx,
+      });
+
+      return res;
     });
 
     refreshCoupons();
     return { success: true, newStatus: updated.isActive };
   } catch (err: unknown) {
+    if (err instanceof Error && err.message === "COUPON_NOT_FOUND") {
+      return { success: false, error: "Coupon not found." };
+    }
     const msg = err instanceof Error ? err.message : "Failed to toggle coupon status.";
     console.error("[CouponActions] toggleCouponStatusAction error:", err);
     return { success: false, error: msg };
@@ -272,17 +289,20 @@ export async function deleteCouponAction(
       };
     }
 
-    await prisma.coupon.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.coupon.delete({ where: { id } });
 
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "COUPON_DELETED",
-      entityType: "Coupon",
-      entityId: id,
-      metadata: {
-        code: existing.code,
-        usageCount: existing.usageCount,
-      },
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "COUPON_DELETED",
+        entityType: "Coupon",
+        entityId: id,
+        metadata: {
+          code: existing.code,
+          usageCount: existing.usageCount,
+        },
+        tx,
+      });
     });
 
     refreshCoupons();

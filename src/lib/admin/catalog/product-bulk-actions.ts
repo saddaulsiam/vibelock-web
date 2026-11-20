@@ -21,21 +21,24 @@ export async function bulkUpdateProductStatusAction(
     return { error: "Invalid product status." };
   }
 
-  await prisma.product.updateMany({
-    where: { id: { in: productIds } },
-    data: { status: validStatus.data },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.product.updateMany({
+      where: { id: { in: productIds } },
+      data: { status: validStatus.data },
+    });
 
-  await recordAuditLog({
-    actorId: admin?.id,
-    action: "PRODUCT_BULK_STATUS_UPDATED",
-    entityType: "Product",
-    entityId: "bulk",
-    metadata: {
-      productIds,
-      count: productIds.length,
-      newStatus: validStatus.data,
-    },
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_BULK_STATUS_UPDATED",
+      entityType: "Product",
+      entityId: "bulk",
+      metadata: {
+        productIds,
+        count: productIds.length,
+        newStatus: validStatus.data,
+      },
+      tx,
+    });
   });
 
   refreshCatalog();
@@ -88,19 +91,22 @@ export async function bulkDeleteProductsAction(productIds: string[]): Promise<Ad
   }
 
   if (safeToDeleteIds.length > 0) {
-    await prisma.product.deleteMany({
-      where: { id: { in: safeToDeleteIds } },
-    });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "PRODUCT_BULK_DELETED",
-      entityType: "Product",
-      entityId: "bulk",
-      metadata: {
-        deletedProductIds: safeToDeleteIds,
-        deletedCount: safeToDeleteIds.length,
-        blockedCount: blockedNames.length,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.product.deleteMany({
+        where: { id: { in: safeToDeleteIds } },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "PRODUCT_BULK_DELETED",
+        entityType: "Product",
+        entityId: "bulk",
+        metadata: {
+          deletedProductIds: safeToDeleteIds,
+          deletedCount: safeToDeleteIds.length,
+          blockedCount: blockedNames.length,
+        },
+        tx,
+      });
     });
     refreshCatalog();
   }
@@ -272,23 +278,26 @@ export async function quickUpdateProductPricesAction(
     discountPrice = new Prisma.Decimal(discNum);
   }
 
-  await prisma.productVariant.updateMany({
-    where: { productId },
-    data: {
-      sellingPrice: new Prisma.Decimal(sellingPrice),
-      discountPrice,
-    },
-  });
+  await prisma.$transaction(async (tx) => {
+    await tx.productVariant.updateMany({
+      where: { productId },
+      data: {
+        sellingPrice: new Prisma.Decimal(sellingPrice),
+        discountPrice,
+      },
+    });
 
-  await recordAuditLog({
-    actorId: admin?.id,
-    action: "PRODUCT_PRICES_UPDATED",
-    entityType: "Product",
-    entityId: productId,
-    metadata: {
-      sellingPrice,
-      discountPrice: discountPrice ? Number(discountPrice) : null,
-    },
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_PRICES_UPDATED",
+      entityType: "Product",
+      entityId: productId,
+      metadata: {
+        sellingPrice,
+        discountPrice: discountPrice ? Number(discountPrice) : null,
+      },
+      tx,
+    });
   });
 
   refreshCatalog();

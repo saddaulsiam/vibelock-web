@@ -180,8 +180,13 @@ export class RefundService {
     tx?: Prisma.TransactionClient,
     actorId?: string,
     failureReason?: string
-  ) {
-    const db = tx || prisma;
+  ): Promise<Refund> {
+    if (!tx) {
+      return prisma.$transaction((transaction) =>
+        this.markRefundFailed(refundId, transaction, actorId, failureReason)
+      );
+    }
+    const db = tx;
     const refund = await db.refund.findUnique({ where: { id: refundId } });
     if (!refund) throw new Error("Refund not found");
     if (refund.status === "SUCCESS") throw new Error("Cannot fail a successful refund");

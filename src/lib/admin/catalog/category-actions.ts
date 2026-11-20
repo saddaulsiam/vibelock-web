@@ -135,65 +135,76 @@ export async function saveCategoryAction(
 
   try {
     if (id) {
-      const existing = await prisma.category.findUnique({
-        where: { id },
-        select: { id: true, imageUrl: true },
-      });
-      if (!existing) return { error: "This category no longer exists." };
-      const updated = await prisma.category.update({
-        where: { id },
-        data: {
-          name,
-          slug: slug.data,
-          description: description || null,
-          metaTitle: metaTitle || null,
-          metaDescription: metaDescription || null,
-          imageUrl: finalImageUrl !== undefined ? finalImageUrl : existing.imageUrl,
-          parentId: parentId ?? null,
-          isActive,
-          sortOrder,
-        },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "CATEGORY_UPDATED",
-        entityType: "Category",
-        entityId: updated.id,
-        metadata: {
-          name: updated.name,
-          slug: updated.slug,
-          parentId: updated.parentId,
-          isActive: updated.isActive,
-        },
+      await prisma.$transaction(async (tx) => {
+        const existing = await tx.category.findUnique({
+          where: { id },
+          select: { id: true, imageUrl: true },
+        });
+        if (!existing) {
+          throw new Error("CATEGORY_NOT_FOUND");
+        }
+        const updated = await tx.category.update({
+          where: { id },
+          data: {
+            name,
+            slug: slug.data,
+            description: description || null,
+            metaTitle: metaTitle || null,
+            metaDescription: metaDescription || null,
+            imageUrl: finalImageUrl !== undefined ? finalImageUrl : existing.imageUrl,
+            parentId: parentId ?? null,
+            isActive,
+            sortOrder,
+          },
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "CATEGORY_UPDATED",
+          entityType: "Category",
+          entityId: updated.id,
+          metadata: {
+            name: updated.name,
+            slug: updated.slug,
+            parentId: updated.parentId,
+            isActive: updated.isActive,
+          },
+          tx,
+        });
       });
     } else {
-      const created = await prisma.category.create({
-        data: {
-          name,
-          slug: slug.data,
-          description: description || null,
-          metaTitle: metaTitle || null,
-          metaDescription: metaDescription || null,
-          imageUrl: finalImageUrl ?? null,
-          parentId: parentId ?? null,
-          isActive,
-          sortOrder,
-        },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "CATEGORY_CREATED",
-        entityType: "Category",
-        entityId: created.id,
-        metadata: {
-          name: created.name,
-          slug: created.slug,
-          parentId: created.parentId,
-          isActive: created.isActive,
-        },
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.category.create({
+          data: {
+            name,
+            slug: slug.data,
+            description: description || null,
+            metaTitle: metaTitle || null,
+            metaDescription: metaDescription || null,
+            imageUrl: finalImageUrl ?? null,
+            parentId: parentId ?? null,
+            isActive,
+            sortOrder,
+          },
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "CATEGORY_CREATED",
+          entityType: "Category",
+          entityId: created.id,
+          metadata: {
+            name: created.name,
+            slug: created.slug,
+            parentId: created.parentId,
+            isActive: created.isActive,
+          },
+          tx,
+        });
       });
     }
   } catch (error) {
+    if (error instanceof Error && error.message === "CATEGORY_NOT_FOUND") {
+      return { error: "This category no longer exists." };
+    }
     return {
       error: duplicateMessage(error) ?? "The category could not be saved. Please try again.",
     };
@@ -209,16 +220,19 @@ export async function toggleCategoryStatusAction(
 ): Promise<AdminActionState> {
   const admin = await requireRole("MANAGER");
   try {
-    await prisma.category.update({
-      where: { id },
-      data: { isActive: !currentActive },
-    });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "CATEGORY_STATUS_TOGGLED",
-      entityType: "Category",
-      entityId: id,
-      metadata: { previousActive: currentActive, isActive: !currentActive },
+    await prisma.$transaction(async (tx) => {
+      await tx.category.update({
+        where: { id },
+        data: { isActive: !currentActive },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "CATEGORY_STATUS_TOGGLED",
+        entityType: "Category",
+        entityId: id,
+        metadata: { previousActive: currentActive, isActive: !currentActive },
+        tx,
+      });
     });
     refreshCatalog();
     return {
@@ -250,12 +264,15 @@ export async function deleteCategoryAction(
     };
   }
   try {
-    await prisma.category.delete({ where: { id: id.data } });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "CATEGORY_DELETED",
-      entityType: "Category",
-      entityId: id.data,
+    await prisma.$transaction(async (tx) => {
+      await tx.category.delete({ where: { id: id.data } });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "CATEGORY_DELETED",
+        entityType: "Category",
+        entityId: id.data,
+        tx,
+      });
     });
   } catch {
     return { error: "The category is still in use and could not be deleted." };
@@ -273,20 +290,23 @@ export async function assignProductsToCategoryAction(
     return { error: "No products selected." };
   }
   try {
-    await prisma.category.update({
-      where: { id: categoryId },
-      data: {
-        products: {
-          connect: productIds.map((id) => ({ id })),
+    await prisma.$transaction(async (tx) => {
+      await tx.category.update({
+        where: { id: categoryId },
+        data: {
+          products: {
+            connect: productIds.map((id) => ({ id })),
+          },
         },
-      },
-    });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "CATEGORY_PRODUCTS_ASSIGNED",
-      entityType: "Category",
-      entityId: categoryId,
-      metadata: { productIds, count: productIds.length },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "CATEGORY_PRODUCTS_ASSIGNED",
+        entityType: "Category",
+        entityId: categoryId,
+        metadata: { productIds, count: productIds.length },
+        tx,
+      });
     });
     refreshCatalog();
     revalidatePath(`/admin/categories/${categoryId}`);
@@ -304,20 +324,23 @@ export async function removeProductFromCategoryAction(
 ): Promise<AdminActionState> {
   const admin = await requireRole("MANAGER");
   try {
-    await prisma.category.update({
-      where: { id: categoryId },
-      data: {
-        products: {
-          disconnect: { id: productId },
+    await prisma.$transaction(async (tx) => {
+      await tx.category.update({
+        where: { id: categoryId },
+        data: {
+          products: {
+            disconnect: { id: productId },
+          },
         },
-      },
-    });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "CATEGORY_PRODUCT_REMOVED",
-      entityType: "Category",
-      entityId: categoryId,
-      metadata: { productId },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "CATEGORY_PRODUCT_REMOVED",
+        entityType: "Category",
+        entityId: categoryId,
+        metadata: { productId },
+        tx,
+      });
     });
     refreshCatalog();
     revalidatePath(`/admin/categories/${categoryId}`);

@@ -71,27 +71,33 @@ export async function saveShippingZoneAction(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {
     if (parsed.data.id) {
-      const updated = await prisma.shippingZone.update({
-        where: { id: parsed.data.id },
-        data: { name: parsed.data.name, countries: parsed.data.countries },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "SHIPPING_ZONE_UPDATED",
-        entityType: "ShippingZone",
-        entityId: updated.id,
-        metadata: { name: updated.name, countries: updated.countries },
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.shippingZone.update({
+          where: { id: parsed.data.id },
+          data: { name: parsed.data.name, countries: parsed.data.countries },
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "SHIPPING_ZONE_UPDATED",
+          entityType: "ShippingZone",
+          entityId: updated.id,
+          metadata: { name: updated.name, countries: updated.countries },
+          tx,
+        });
       });
     } else {
-      const created = await prisma.shippingZone.create({
-        data: { name: parsed.data.name, countries: parsed.data.countries },
-      });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "SHIPPING_ZONE_CREATED",
-        entityType: "ShippingZone",
-        entityId: created.id,
-        metadata: { name: created.name, countries: created.countries },
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.shippingZone.create({
+          data: { name: parsed.data.name, countries: parsed.data.countries },
+        });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "SHIPPING_ZONE_CREATED",
+          entityType: "ShippingZone",
+          entityId: created.id,
+          metadata: { name: created.name, countries: created.countries },
+          tx,
+        });
       });
     }
   } catch {
@@ -133,32 +139,38 @@ export async function saveShippingMethodAction(
       isActive: parsed.data.isActive !== "false",
     };
     if (parsed.data.id) {
-      const updated = await prisma.shippingMethod.update({ where: { id: parsed.data.id }, data });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "SHIPPING_METHOD_UPDATED",
-        entityType: "ShippingMethod",
-        entityId: updated.id,
-        metadata: {
-          zoneId: updated.zoneId,
-          name: updated.name,
-          cost: Number(updated.cost),
-          isActive: updated.isActive,
-        },
+      await prisma.$transaction(async (tx) => {
+        const updated = await tx.shippingMethod.update({ where: { id: parsed.data.id }, data });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "SHIPPING_METHOD_UPDATED",
+          entityType: "ShippingMethod",
+          entityId: updated.id,
+          metadata: {
+            zoneId: updated.zoneId,
+            name: updated.name,
+            cost: Number(updated.cost),
+            isActive: updated.isActive,
+          },
+          tx,
+        });
       });
     } else {
-      const created = await prisma.shippingMethod.create({ data });
-      await recordAuditLog({
-        actorId: admin?.id,
-        action: "SHIPPING_METHOD_CREATED",
-        entityType: "ShippingMethod",
-        entityId: created.id,
-        metadata: {
-          zoneId: created.zoneId,
-          name: created.name,
-          cost: Number(created.cost),
-          isActive: created.isActive,
-        },
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.shippingMethod.create({ data });
+        await recordAuditLog({
+          actorId: admin?.id,
+          action: "SHIPPING_METHOD_CREATED",
+          entityType: "ShippingMethod",
+          entityId: created.id,
+          metadata: {
+            zoneId: created.zoneId,
+            name: created.name,
+            cost: Number(created.cost),
+            isActive: created.isActive,
+          },
+          tx,
+        });
       });
     }
   } catch {
@@ -179,23 +191,29 @@ export async function toggleShippingMethodAction(
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipping method." };
   try {
-    const method = await prisma.shippingMethod.findUnique({
-      where: { id: parsed.data },
-      select: { isActive: true },
+    await prisma.$transaction(async (tx) => {
+      const method = await tx.shippingMethod.findUnique({
+        where: { id: parsed.data },
+        select: { isActive: true },
+      });
+      if (!method) throw new Error("METHOD_NOT_FOUND");
+      const updated = await tx.shippingMethod.update({
+        where: { id: parsed.data },
+        data: { isActive: !method.isActive },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "SHIPPING_METHOD_TOGGLED",
+        entityType: "ShippingMethod",
+        entityId: updated.id,
+        metadata: { previousActive: method.isActive, isActive: updated.isActive },
+        tx,
+      });
     });
-    if (!method) return { error: "Shipping method not found." };
-    const updated = await prisma.shippingMethod.update({
-      where: { id: parsed.data },
-      data: { isActive: !method.isActive },
-    });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "SHIPPING_METHOD_TOGGLED",
-      entityType: "ShippingMethod",
-      entityId: updated.id,
-      metadata: { previousActive: method.isActive, isActive: updated.isActive },
-    });
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.message === "METHOD_NOT_FOUND") {
+      return { error: "Shipping method not found." };
+    }
     return { error: "The shipping method status could not be changed." };
   }
   refreshShipping();
@@ -251,6 +269,8 @@ export async function refreshShipmentStatusAction(
     if (shipment.provider !== provider.name) {
       return { error: "The configured shipping provider does not match this shipment." };
     }
+    // External courier API synchronization cannot be rolled back atomically via database transaction;
+    // if audit logging fails after external status sync, the provider sync remains recorded in shipment history.
     const synced = await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
     await recordAuditLog({
       actorId: admin?.id,

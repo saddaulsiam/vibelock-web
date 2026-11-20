@@ -500,18 +500,21 @@ export async function toggleProductPublishedAction(
   if (!product) return { error: "This product no longer exists." };
   const newStatus =
     product.status === ProductStatus.PUBLISHED ? ProductStatus.DRAFT : ProductStatus.PUBLISHED;
-  await prisma.product.update({
-    where: { id: id.data },
-    data: {
-      status: newStatus,
-    },
-  });
-  await recordAuditLog({
-    actorId: admin?.id,
-    action: "PRODUCT_STATUS_TOGGLED",
-    entityType: "Product",
-    entityId: id.data,
-    metadata: { previousStatus: product.status, newStatus },
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id: id.data },
+      data: {
+        status: newStatus,
+      },
+    });
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_STATUS_TOGGLED",
+      entityType: "Product",
+      entityId: id.data,
+      metadata: { previousStatus: product.status, newStatus },
+      tx,
+    });
   });
   refreshCatalog();
   return ok;
@@ -553,12 +556,15 @@ export async function deleteProductAction(
     };
   }
   try {
-    await prisma.product.delete({ where: { id: id.data } });
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "PRODUCT_DELETED",
-      entityType: "Product",
-      entityId: id.data,
+    await prisma.$transaction(async (tx) => {
+      await tx.product.delete({ where: { id: id.data } });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "PRODUCT_DELETED",
+        entityType: "Product",
+        entityId: id.data,
+        tx,
+      });
     });
   } catch {
     return {
@@ -590,18 +596,23 @@ export async function toggleProductFeaturedAction(
   if (!productId) return { error: "Missing product ID." };
 
   try {
-    const updated = await prisma.product.update({
-      where: { id: productId },
-      data: { isFeatured },
-      select: { id: true, name: true, isFeatured: true },
-    });
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.product.update({
+        where: { id: productId },
+        data: { isFeatured },
+        select: { id: true, name: true, isFeatured: true },
+      });
 
-    await recordAuditLog({
-      actorId: admin?.id,
-      action: "PRODUCT_FEATURED_TOGGLED",
-      entityType: "Product",
-      entityId: updated.id,
-      metadata: { name: updated.name, isFeatured: updated.isFeatured },
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "PRODUCT_FEATURED_TOGGLED",
+        entityType: "Product",
+        entityId: u.id,
+        metadata: { name: u.name, isFeatured: u.isFeatured },
+        tx,
+      });
+
+      return u;
     });
 
     refreshCatalog();

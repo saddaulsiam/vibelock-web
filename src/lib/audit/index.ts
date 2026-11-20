@@ -2,15 +2,12 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
 
-const SENSITIVE_KEYS = new Set([
+const SENSITIVE_WORDS = new Set([
   "password",
-  "passwordhash",
-  "token",
   "secret",
+  "token",
   "apikey",
-  "card_no",
-  "cardno",
-  "cardnumber",
+  "card",
   "cvv",
   "cvc",
   "pin",
@@ -19,6 +16,37 @@ const SENSITIVE_KEYS = new Set([
   "cookie",
   "sessionid",
 ]);
+
+const SENSITIVE_SUBSTRINGS = [
+  "password",
+  "secret",
+  "token",
+  "apikey",
+  "cardnumber",
+  "cardno",
+  "creditcard",
+  "debitcard",
+  "cvv",
+  "cvc",
+  "sessionid",
+];
+
+/**
+ * Checks whether a key is sensitive, normalizing across camelCase, snake_case,
+ * kebab-case, and dot-separated naming conventions.
+ */
+export function isSensitiveAuditKey(key: string): boolean {
+  const normalized = key.toLowerCase().replace(/[-_\s.]/g, "");
+  const words = key
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase()
+    .split(/[-_\s.]+/);
+
+  return (
+    words.some((w) => SENSITIVE_WORDS.has(w)) ||
+    SENSITIVE_SUBSTRINGS.some((s) => normalized.includes(s))
+  );
+}
 
 /**
  * Recursively redacts sensitive keys from audit log metadata objects.
@@ -33,18 +61,7 @@ export function sanitizeAuditMetadata(obj: unknown): unknown {
 
   const sanitized: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
-    const lowerKey = key.toLowerCase();
-    if (
-      SENSITIVE_KEYS.has(lowerKey) ||
-      lowerKey.includes("password") ||
-      lowerKey.includes("secret") ||
-      lowerKey.includes("token") ||
-      lowerKey.includes("card") ||
-      lowerKey.includes("auth") ||
-      lowerKey.includes("cookie") ||
-      lowerKey.includes("cvv") ||
-      lowerKey.includes("pin")
-    ) {
+    if (isSensitiveAuditKey(key)) {
       sanitized[key] = "[REDACTED]";
     } else if (typeof value === "object" && value !== null) {
       sanitized[key] = sanitizeAuditMetadata(value);
@@ -89,17 +106,9 @@ export async function recordAuditLog(params: RecordAuditLogParams) {
   const auditLogClient = (db as unknown as { auditLog?: { create?: unknown } }).auditLog;
 
   if (typeof auditLogClient?.create !== "function") {
-    return {
-      id: "stub-audit-id",
-      actorId: validActorId,
-      action,
-      entityType,
-      entityId,
-      metadata: (sanitized as Prisma.InputJsonValue) ?? null,
-      ipAddress: ipAddress ?? null,
-      userAgent: userAgent ?? null,
-      createdAt: new Date(),
-    };
+    const errorMsg = `[AuditLog] Audit logging unavailable: auditLog model or create() method is missing on Prisma client.`;
+    console.error(errorMsg);
+    throw new Error(errorMsg);
   }
 
   try {
