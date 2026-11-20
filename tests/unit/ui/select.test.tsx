@@ -53,7 +53,7 @@ describe("Unified Global Select Component", () => {
 
       expect(html).toContain('data-slot="native-select"');
       expect(html).toContain("rounded-brand");
-      expect(html).toContain("h-10");
+      expect(html).toContain("h-11");
       expect(html).toContain("Dhaka");
       expect(html).toContain("Chittagong");
     });
