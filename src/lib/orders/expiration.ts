@@ -6,28 +6,10 @@ export const MAX_EXPIRATION_BATCH_SIZE = 100;
 export const DEFAULT_ABANDONED_TIMEOUT_MINUTES = 15;
 export const PAYMENT_IN_FLIGHT_GRACE_MINUTES = 15;
 
-export type ExpireOrderCandidate = {
-  id: string;
-  orderNumber: string;
-  userId?: string | null;
-  status: string;
-  paymentStatus: string;
-  paymentMethod: string;
-  inventoryReservations?: Array<{
-    status: string;
-    expiresAt?: Date | string | null;
-  }>;
-  payments?: Array<{
-    status: string;
-    createdAt: Date | string;
-  }>;
-};
-
 export type ExpireOrderOptions = {
   tx?: Prisma.TransactionClient;
   reason?: string;
   force?: boolean;
-  initialOrder?: ExpireOrderCandidate;
 };
 
 export type ExpireOrderResult = {
@@ -65,25 +47,19 @@ export async function expireOrder(
   options?: ExpireOrderOptions
 ): Promise<ExpireOrderResult> {
   const execute = async (tx: Prisma.TransactionClient): Promise<ExpireOrderResult> => {
-    // 1. Serialize using pessimistic row lock on Order
-    try {
-      await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
-    } catch {
-      // Fallback for mocked test environments without raw queries
-    }
+    // 1. Serialize using pessimistic row lock on Order (fail-closed: lock failure aborts transaction)
+    await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
 
-    // 2. Fetch order state under lock (or reuse initialOrder if already fetched under lock)
-    const order: ExpireOrderCandidate | null =
-      options?.initialOrder ??
-      (await tx.order.findUnique({
-        where: { id: orderId },
-        include: {
-          inventoryReservations: true,
-          payments: {
-            orderBy: { createdAt: "desc" },
-          },
+    // 2. Fetch fresh order state under lock
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      include: {
+        inventoryReservations: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
         },
-      }));
+      },
+    });
 
     if (!order) {
       return {
@@ -187,49 +163,43 @@ export async function expireOrder(
 
     // 5. Release redeemed coupon (idempotent, decrements usageCount, reactivates if limit was exhausted)
     const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
-    const couponResult = await releaseOrderCoupon(order.id, tx);
+    const couponResult = await releaseOrderCoupon(order.id, tx, order);
+
+    if (!couponResult.success && couponResult.reason !== "NO_COUPON") {
+      throw new Error(
+        `Failed to release coupon for order ${order.id}: ${couponResult.reason || "Unknown coupon release failure"}`
+      );
+    }
 
     const expirationReason =
       options?.reason ||
       "Order expired due to unpaid checkout timeout. Reserved inventory and coupon released.";
 
-    // 6. Record order history
-    if (typeof tx.orderHistory?.create === "function") {
-      try {
-        await tx.orderHistory.create({
-          data: {
-            orderId: order.id,
-            status: "CANCELLED",
-            notes: expirationReason,
-          },
-        });
-      } catch {
-        // Proceed if orderHistory write fails
-      }
-    }
+    // 6. Record order history (fail-closed, part of transactional consistency)
+    await tx.orderHistory.create({
+      data: {
+        orderId: order.id,
+        status: "CANCELLED",
+        notes: expirationReason,
+      },
+    });
 
-    // 7. Record audit log
-    if (typeof tx.auditLog?.create === "function") {
-      try {
-        await tx.auditLog.create({
-          data: {
-            actorId: order.userId ?? null,
-            action: "ORDER_EXPIRED",
-            entityType: "Order",
-            entityId: order.id,
-            metadata: {
-              from: order.status,
-              to: "CANCELLED",
-              reason: options?.reason || "UNPAID_TIMEOUT",
-              orderNumber: order.orderNumber,
-              releasedCoupon: couponResult.releasedCoupon ?? null,
-            },
-          },
-        });
-      } catch {
-        // Proceed if auditLog write fails
-      }
-    }
+    // 7. Record audit log (fail-closed, part of transactional consistency)
+    await tx.auditLog.create({
+      data: {
+        actorId: order.userId ?? null,
+        action: "ORDER_EXPIRED",
+        entityType: "Order",
+        entityId: order.id,
+        metadata: {
+          from: order.status,
+          to: "CANCELLED",
+          reason: options?.reason || "UNPAID_TIMEOUT",
+          orderNumber: order.orderNumber,
+          releasedCoupon: couponResult.releasedCoupon ?? null,
+        },
+      },
+    });
 
     return {
       success: true,

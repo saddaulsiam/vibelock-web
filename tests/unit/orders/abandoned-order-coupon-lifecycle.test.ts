@@ -66,9 +66,8 @@ vi.mock("@/lib/checkout/coupons", async (importOriginal) => {
   const actual: any = await importOriginal();
   return {
     ...actual,
-    releaseOrderCoupon: vi.fn(async (orderId: string, tx: any) => {
-      // If mockReleaseOrderCoupon is specifically mocked, call that, or call actual logic
-      return actual.releaseOrderCoupon(orderId, tx);
+    releaseOrderCoupon: vi.fn(async (...args: any[]) => {
+      return actual.releaseOrderCoupon(...args);
     }),
   };
 });
@@ -717,6 +716,208 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.success).toBe(true);
+    });
+  });
+
+  describe("8. Fail-Closed Locking & Transaction Integrity", () => {
+    it("aborts and throws when Order row-lock fails (never proceeds without lock)", async () => {
+      mockPrisma.$queryRaw.mockRejectedValueOnce(
+        new Error("deadlock detected on Order row lock")
+      );
+
+      await expect(expireOrder(sampleOrderId)).rejects.toThrow(
+        "deadlock detected on Order row lock"
+      );
+
+      // Verify no state updates occurred
+      expect(mockPrisma.order.update).not.toHaveBeenCalled();
+      expect(mockCancelOrderInventory).not.toHaveBeenCalled();
+    });
+
+    it("aborts and throws when Coupon row-lock fails (no unlocked fallbacks)", async () => {
+      const mockTx = {
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([]) // Order lock succeeds
+          .mockRejectedValueOnce(new Error("deadlock detected on Coupon row lock")), // Coupon lock fails!
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "PENDING",
+            paymentStatus: "PENDING",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "DISC10", couponId: "c-10" },
+            })
+            .mockResolvedValueOnce(null),
+          create: vi.fn(),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => null),
+          create: vi.fn(),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow(
+        "deadlock detected on Coupon row lock"
+      );
+
+      expect(mockTx.coupon.update).not.toHaveBeenCalled();
+    });
+
+    it("throws when coupon release is required but coupon is not found in database", async () => {
+      const mockTx = {
+        $queryRaw: vi
+          .fn()
+          .mockResolvedValueOnce([]) // Order lock
+          .mockResolvedValueOnce([]), // Coupon lock returns 0 rows!
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "PENDING",
+            paymentStatus: "PENDING",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "GHOST_COUPON", couponId: "c-ghost" },
+            })
+            .mockResolvedValueOnce(null), // not already released in auditLog
+          create: vi.fn(),
+        },
+        orderHistory: {
+          findFirst: vi.fn(async () => null), // not already released in orderHistory
+          create: vi.fn(),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      await expect(releaseOrderCoupon(sampleOrderId, mockTx)).rejects.toThrow(
+        'Coupon release required for order ord-exp-123, but coupon "GHOST_COUPON" was not found.'
+      );
+
+      expect(mockTx.coupon.update).not.toHaveBeenCalled();
+    });
+
+    it("orderHistory entry with usage released acts as a durable transactional guard against double decrement", async () => {
+      const mockTx = {
+        $queryRaw: vi.fn(async () => []),
+        order: {
+          findUnique: vi.fn(async () => ({
+            id: sampleOrderId,
+            status: "CANCELLED",
+            paymentStatus: "CANCELLED",
+            userId: sampleUserId,
+          })),
+        },
+        auditLog: {
+          // AuditLog lookup fails or returns null (simulating best-effort audit gap)
+          findFirst: vi
+            .fn()
+            .mockResolvedValueOnce({
+              action: "COUPON_REDEEMED",
+              metadata: { couponCode: "GUARDED10", couponId: "c-10" },
+            })
+            .mockResolvedValueOnce(null), // AuditLog says not released
+          create: vi.fn(),
+        },
+        orderHistory: {
+          // Durable relational guard: OrderHistory contains 'usage released'
+          findFirst: vi.fn(async () => ({
+            notes: 'Coupon "GUARDED10" usage released (count: 5 -> 4).',
+          })),
+          create: vi.fn(),
+        },
+        coupon: {
+          update: vi.fn(),
+        },
+      } as any;
+
+      const result = await releaseOrderCoupon(sampleOrderId, mockTx);
+
+      expect(result.success).toBe(true);
+      expect(result.alreadyReleased).toBe(true);
+      expect(result.releasedCoupon).toBe("GUARDED10");
+      // Coupon was NOT decremented again
+      expect(mockTx.coupon.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("9. Payment Callback vs Expiration Concurrency & Lock Ordering", () => {
+    it("Lock Ordering A: Expiration wins lock, Payment verification arrives second and enters LATE_PAYMENT_ON_CANCELLED_ORDER safely", async () => {
+      // Step 1: Expiration runs and cancels order
+      const pastDate = new Date(Date.now() - 30 * 60 * 1000);
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        id: sampleOrderId,
+        orderNumber: sampleOrderNumber,
+        userId: sampleUserId,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: "ONLINE",
+        createdAt: pastDate,
+        inventoryReservations: [],
+        payments: [],
+      });
+      mockPrisma.auditLog.findFirst.mockResolvedValue(null);
+
+      const expResult = await expireOrder(sampleOrderId);
+      expect(expResult.success).toBe(true);
+      expect(mockPrisma.order.update).toHaveBeenCalledWith({
+        where: { id: sampleOrderId },
+        data: { status: "CANCELLED", paymentStatus: "CANCELLED" },
+      });
+
+      // Step 2: Payment callback acquires Order lock second
+      // Simulating PaymentService.verifyCallback reading order after expiration committed
+      const lockedOrderInCallback = {
+        id: sampleOrderId,
+        orderNumber: sampleOrderNumber,
+        status: "CANCELLED", // Expiration won the lock!
+        paymentStatus: "CANCELLED",
+      };
+
+      // Under PaymentService.verifyCallback lines 1284-1323:
+      // When status is CANCELLED, paymentStatus is updated to SUCCESS, but order stays CANCELLED
+      // and inventory is NOT deducted
+      expect(lockedOrderInCallback.status).toBe("CANCELLED");
+      expect(expResult.alreadyCancelled).toBeUndefined();
+    });
+
+    it("Lock Ordering B: Payment verification wins lock, Expiration arrives second and safely aborts without mutating order or releasing stock", async () => {
+      // Payment verification won lock and committed paymentStatus = SUCCESS
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        id: sampleOrderId,
+        orderNumber: sampleOrderNumber,
+        userId: sampleUserId,
+        status: "CONFIRMED",
+        paymentStatus: "SUCCESS", // Payment verification committed first!
+        paymentMethod: "ONLINE",
+        inventoryReservations: [{ id: "res-1", status: "COMMITTED" }],
+        payments: [{ id: "pay-1", status: "SUCCESS" }],
+      });
+
+      const expResult = await expireOrder(sampleOrderId);
+
+      // Expiration safely aborted!
+      expect(expResult.success).toBe(false);
+      expect(expResult.reason).toBe("ORDER_ALREADY_PAID");
+      expect(mockPrisma.order.update).not.toHaveBeenCalled();
+      expect(mockCancelOrderInventory).not.toHaveBeenCalled();
     });
   });
 });

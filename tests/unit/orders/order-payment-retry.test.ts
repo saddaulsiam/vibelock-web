@@ -46,7 +46,7 @@ const {
     mockPrisma: mockP,
     mockInitiatePayment: vi.fn(),
     mockCancelOrderInventory: vi.fn(),
-    mockReleaseOrderCoupon: vi.fn(),
+    mockReleaseOrderCoupon: vi.fn(async () => ({ success: true })),
     mockRevalidatePath: vi.fn(),
     mockGetIp: vi.fn(async () => "103.1.2.3"),
     mockCheckPaymentInitiationRateLimit: vi.fn(async () => {}),
@@ -243,18 +243,21 @@ describe("Order Payment Retry & Cancellation Financial Safeguards", () => {
     });
 
     it("fails if reservation has expired (no active reservation)", async () => {
+      const expiredOrderData = {
+        id: "ord-1",
+        orderNumber: sampleOrderNumber,
+        userId: sampleUserId,
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        paymentMethod: "ONLINE",
+        inventoryReservations: [], // expired or empty
+        payments: [{ id: "pay-1", status: "FAILED" }], // previous attempt failed
+      };
+
       mockPrisma.order.findUnique
         .mockResolvedValueOnce({ id: "ord-1" })
-        .mockResolvedValueOnce({
-          id: "ord-1",
-          orderNumber: sampleOrderNumber,
-          userId: sampleUserId,
-          status: "PENDING",
-          paymentStatus: "PENDING",
-          paymentMethod: "ONLINE",
-          inventoryReservations: [], // expired or empty
-          payments: [{ id: "pay-1", status: "FAILED" }], // previous attempt failed
-        });
+        .mockResolvedValueOnce(expiredOrderData)
+        .mockResolvedValueOnce(expiredOrderData);
 
       const res = await retryOrderPaymentAction(sampleOrderNumber);
       expect(res.success).toBe(false);
