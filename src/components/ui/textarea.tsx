@@ -4,7 +4,7 @@ import { cn } from "cn";
 
 const textareaVariants = cva(
   [
-    "border-input placeholder:text-muted-foreground",
+    "border-input placeholder:text-vl-dark-900/30",
     "focus-visible:border-ring focus-visible:ring-ring/50",
     "disabled:bg-input/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
     "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
@@ -20,9 +20,9 @@ const textareaVariants = cva(
         default: "rounded-brand",
         /** Brand — storefront style: governed by master brand radius, clean white surface, subtle obsidian border, cyan focus ring */
         brand:
-          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-vl-dark-900/30 hover:border-vl-black/40 focus-visible:border-vl-black focus-visible:ring-2 focus-visible:ring-vl-cyan",
         /** Dark — auth/POS dark-surface style */
-        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-muted-foreground focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-vl-dark-900/30 focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
       size: {
         sm: "min-h-16 text-xs",

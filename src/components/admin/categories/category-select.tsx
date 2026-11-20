@@ -24,9 +24,12 @@ export function CategorySearchableSelect({
   const [isOpen, setIsOpen] = React.useState(false);
   const [query, setQuery] = React.useState("");
   const [openUpwards, setOpenUpwards] = React.useState(false);
+  const [highlightedIndex, setHighlightedIndex] = React.useState<number>(0);
 
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const listRef = React.useRef<HTMLDivElement>(null);
 
   // Exclude current category so a category cannot be its own parent
   const availableCategories = React.useMemo(() => {
@@ -43,12 +46,35 @@ export function CategorySearchableSelect({
     return availableCategories.filter((cat) => cat.name.toLowerCase().includes(q));
   }, [availableCategories, query]);
 
+  // All selectable items including top-level root option at index 0
+  const selectableItems = React.useMemo(() => {
+    return [
+      { id: "", name: "No parent (Top-level category)" },
+      ...filteredCategories,
+    ];
+  }, [filteredCategories]);
+
+  const itemIndexMap = React.useMemo(() => {
+    const map = new Map<string, number>();
+    selectableItems.forEach((item, idx) => {
+      map.set(item.id, idx);
+    });
+    return map;
+  }, [selectableItems]);
+
+  const totalItems = selectableItems.length;
   const selectedCategoryName = value ? categoryMap.get(value) : null;
 
   const closeDropdown = React.useCallback(() => {
     setIsOpen(false);
     setQuery("");
   }, []);
+
+  const openDropdown = React.useCallback(() => {
+    const selectedIdx = itemIndexMap.get(value);
+    setHighlightedIndex(selectedIdx !== undefined ? selectedIdx : 0);
+    setIsOpen(true);
+  }, [itemIndexMap, value]);
 
   // Close dropdown on click outside
   React.useEffect(() => {
@@ -81,6 +107,27 @@ export function CategorySearchableSelect({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, closeDropdown]);
+
+  // Restore focus to trigger button when dropdown closes
+  const prevIsOpenRef = React.useRef(false);
+  React.useEffect(() => {
+    if (prevIsOpenRef.current && !isOpen) {
+      triggerRef.current?.focus();
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  // Auto-scroll list container to keep highlighted item in view
+  React.useEffect(() => {
+    if (isOpen && listRef.current && highlightedIndex >= 0) {
+      const highlightedEl = listRef.current.querySelector<HTMLElement>(
+        `[data-category-index="${highlightedIndex}"]`
+      );
+      if (highlightedEl) {
+        highlightedEl.scrollIntoView({ block: "nearest" });
+      }
+    }
+  }, [highlightedIndex, isOpen]);
 
   // Measure space and auto-flip upwards if near bottom of viewport
   React.useEffect(() => {
@@ -116,6 +163,47 @@ export function CategorySearchableSelect({
     onChange("");
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    setHighlightedIndex(0);
+  };
+
+  // Keyboard navigation inside search input
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (totalItems === 0) return;
+      setHighlightedIndex((prev) => (prev < totalItems - 1 ? prev + 1 : 0));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (totalItems === 0) return;
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : totalItems - 1));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (highlightedIndex >= 0 && highlightedIndex < totalItems) {
+        handleSelect(selectableItems[highlightedIndex].id);
+      }
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      if (totalItems > 0) setHighlightedIndex(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      if (totalItems > 0) setHighlightedIndex(totalItems - 1);
+    } else if (e.key === "Tab") {
+      closeDropdown();
+    }
+  };
+
+  // Keyboard navigation on trigger button
+  const handleTriggerKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (!isOpen) {
+        openDropdown();
+      }
+    }
+  };
+
   return (
     <div className="relative w-full space-y-1.5" ref={containerRef}>
       {/* Hidden input to feed formData for Next.js Server Actions */}
@@ -123,10 +211,12 @@ export function CategorySearchableSelect({
 
       {/* Dropdown Trigger */}
       <button
+        ref={triggerRef}
         type="button"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((prev) => !prev)}
+        onClick={() => (isOpen ? closeDropdown() : openDropdown())}
+        onKeyDown={handleTriggerKeyDown}
         className="border-vl-dark-900/20 text-vl-dark-900 hover:border-vl-dark-900/40 focus-visible:ring-vl-cyan flex min-h-11 w-full items-center justify-between border bg-white px-3 py-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
         <div className="flex items-center gap-2 overflow-hidden pr-2">
@@ -198,7 +288,8 @@ export function CategorySearchableSelect({
                 ref={searchInputRef}
                 type="text"
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={handleSearchChange}
+                onKeyDown={handleSearchKeyDown}
                 placeholder={placeholder}
                 size="sm"
                 className="bg-white pr-8 pl-9"
@@ -208,6 +299,7 @@ export function CategorySearchableSelect({
                   type="button"
                   onClick={() => {
                     setQuery("");
+                    setHighlightedIndex(0);
                     searchInputRef.current?.focus();
                   }}
                   className="text-vl-dark-900/40 hover:text-vl-dark-900 absolute right-2.5 z-10"
@@ -230,14 +322,16 @@ export function CategorySearchableSelect({
           </div>
 
           {/* Options List */}
-          <div className="max-h-60 overflow-y-auto">
-            {/* Top-Level / Root Option */}
+          <div ref={listRef} className="max-h-60 overflow-y-auto">
+            {/* Top-Level / Root Option (Index 0) */}
             <button
               type="button"
+              data-category-index={0}
+              onMouseEnter={() => setHighlightedIndex(0)}
               onClick={() => handleSelect("")}
               className={`border-vl-dark-900/10 flex w-full items-center justify-between border-b px-3 py-2.5 text-left text-xs transition-colors ${
-                value === ""
-                  ? "bg-vl-dark-900/5 text-vl-dark-900 font-semibold"
+                value === "" || highlightedIndex === 0
+                  ? "bg-vl-dark-900/10 text-vl-dark-900 font-semibold"
                   : "text-vl-dark-900 hover:bg-vl-white-300"
               }`}
             >
@@ -264,15 +358,20 @@ export function CategorySearchableSelect({
             {filteredCategories.length > 0 ? (
               <ul className="divide-vl-dark-900/5 divide-y py-1">
                 {filteredCategories.map((cat) => {
+                  const itemIdx = itemIndexMap.get(cat.id) ?? 0;
                   const isSelected = value === cat.id;
+                  const isHighlighted = highlightedIndex === itemIdx;
+
                   return (
                     <li key={cat.id}>
                       <button
                         type="button"
+                        data-category-index={itemIdx}
+                        onMouseEnter={() => setHighlightedIndex(itemIdx)}
                         onClick={() => handleSelect(cat.id)}
                         className={`flex w-full items-center justify-between px-3 py-2 text-left text-xs transition-colors ${
-                          isSelected
-                            ? "bg-vl-dark-900/5 text-vl-dark-900 font-semibold"
+                          isSelected || isHighlighted
+                            ? "bg-vl-dark-900/10 text-vl-dark-900 font-semibold"
                             : "text-vl-dark-900 hover:bg-vl-white-300"
                         }`}
                       >

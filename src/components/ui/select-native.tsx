@@ -34,14 +34,15 @@ const nativeSelectVariants = cva(
         default: "rounded-brand",
         /** Brand — storefront style: governed by master brand radius, vl-black focus border */
         brand:
-          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-vl-dark-900/30 hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
         /** Dark — auth/POS dark-surface style */
         dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
       size: {
-        sm: "h-7 text-xs",
-        default: "h-8",
-        lg: "h-10",
+        sm: "h-8 text-xs",
+        default: "h-10",
+        md: "h-10",
+        lg: "h-11",
         xl: "h-12 text-base",
       },
     },
