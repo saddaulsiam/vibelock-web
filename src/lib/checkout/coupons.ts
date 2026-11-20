@@ -235,12 +235,42 @@ export async function validateCustomerCouponEligibility(
 export async function releaseOrderCoupon(
   orderId: string,
   tx: Prisma.TransactionClient
-): Promise<{ success: boolean; releasedCoupon?: string }> {
+): Promise<{ success: boolean; releasedCoupon?: string; reason?: string }> {
   // 1. Serialize cancellation per order
   try {
     await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
   } catch {
     // Graceful fallback for test environments without raw queries
+  }
+
+  // 1b. Defensive guard: Do not release coupon if order is successfully paid or actively fulfilling
+  let orderUserId: string | null = null;
+  if (typeof tx.order?.findUnique === "function") {
+    try {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        select: { id: true, status: true, paymentStatus: true, userId: true },
+      });
+      if (order) {
+        orderUserId = order.userId ?? null;
+        if (
+          order.paymentStatus === "SUCCESS" &&
+          order.status !== "CANCELLED" &&
+          order.status !== "REFUNDED"
+        ) {
+          return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
+        }
+        if (
+          ["CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"].includes(
+            order.status as string
+          )
+        ) {
+          return { success: false, reason: "ORDER_PAID_OR_ACTIVE" };
+        }
+      }
+    } catch {
+      // Proceed if order check query fails
+    }
   }
 
   // 2. Check if a coupon was redeemed on this order via audit log
@@ -380,8 +410,7 @@ export async function releaseOrderCoupon(
   });
 
   // 6. Record audit log for idempotency and traceability
-  let orderUserId: string | null = null;
-  if (typeof tx.order?.findUnique === "function") {
+  if (!orderUserId && typeof tx.order?.findUnique === "function") {
     try {
       const order = await tx.order.findUnique({
         where: { id: orderId },

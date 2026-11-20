@@ -575,3 +575,28 @@ export async function addOrderNoteAction(input: {
     return { success: false, error: message };
   }
 }
+
+export async function cleanupExpiredOrdersAction(options?: {
+  batchSize?: number;
+  olderThanMinutes?: number;
+}): Promise<{
+  success: boolean;
+  data?: import("@/lib/orders/expiration").CleanupResult;
+  error?: string;
+}> {
+  await requireRole("STAFF", { throw: true });
+
+  try {
+    const { cleanupExpiredOrders } = await import("@/lib/orders/expiration");
+    const result = await cleanupExpiredOrders(options);
+    refreshOrders();
+    return { success: true, data: result };
+  } catch (error) {
+    console.error("[cleanupExpiredOrdersAction] Error:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to run expired orders cleanup.",
+    };
+  }
+}
+

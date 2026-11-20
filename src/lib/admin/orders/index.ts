@@ -6,6 +6,7 @@ export {
   bulkUpdateOrderStatusAction,
   checkCustomerRiskAction,
   addOrderNoteAction,
+  cleanupExpiredOrdersAction,
   type AdminActionState,
 } from "./order-actions";
 export {
