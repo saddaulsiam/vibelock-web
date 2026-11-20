@@ -16,6 +16,10 @@ import {
   normalizeLoginIdentifier,
   resetRateLimitMemoryStore,
   checkRateLimit,
+  setLimiterForTesting,
+  setRedisClientForTesting,
+  isSensitiveRateLimitEndpoint,
+  isDistributedRateLimitAvailable,
 } from "@/lib/security/rate-limit";
 
 const { mockCompare, mockHeaders } = vi.hoisted(() => ({
@@ -197,11 +201,7 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
       expect(mockCompare).toHaveBeenCalledWith("CorrectPassword123!", mockUser.passwordHash);
       expect(prisma.user.findFirst).toHaveBeenCalledWith({
         where: {
-          OR: [
-            { phone: "01712345678" },
-            { email: "01712345678" },
-            { email: "01712345678" },
-          ],
+          OR: [{ phone: "01712345678" }, { email: "01712345678" }, { email: "01712345678" }],
         },
       });
     });
@@ -230,11 +230,7 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
       expect(result?.id).toBe("user-phone-2");
       expect(prisma.user.findFirst).toHaveBeenCalledWith({
         where: {
-          OR: [
-            { phone: "01799999999" },
-            { email: "01799999999" },
-            { email: "+8801799999999" },
-          ],
+          OR: [{ phone: "01799999999" }, { email: "01799999999" }, { email: "+8801799999999" }],
         },
       });
     });
@@ -304,7 +300,7 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
     });
   });
 
-  describe("3. Production Rate-Limit Hardening", () => {
+  describe("3. Production Rate-Limit Hardening & Security Policies", () => {
     test("normalizeLoginIdentifier normalizes phone number variations to identical keys", () => {
       const k1 = normalizeLoginIdentifier("01712345678");
       const k2 = normalizeLoginIdentifier("+8801712345678");
@@ -321,7 +317,7 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
       expect(normalizeLoginIdentifier("  Member@VibeLock.BD  ")).toBe("member@vibelock.bd");
     });
 
-    test("phone rate-limiting enforces quota across +880 and local representations", async () => {
+    test("phone rate-limiting enforces quota across +880 and local representations in same bucket", async () => {
       const testIp = "192.168.1.100";
 
       // 5 failed attempts using +880 format
@@ -330,7 +326,9 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
       }
 
       // 6th attempt using local format (01712345678) must be blocked because they share the normalized key
-      await expect(checkLoginRateLimit("01712345678", testIp)).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      await expect(checkLoginRateLimit("01712345678", testIp)).rejects.toThrow(
+        "RATE_LIMIT_EXCEEDED"
+      );
 
       // Successful clear via local format clears the quota
       await clearLoginRateLimit("01712345678", testIp);
@@ -339,16 +337,147 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
       await expect(checkLoginRateLimit("+8801712345678", testIp)).resolves.toBeUndefined();
     });
 
-    test("in-memory sliding window fallback operates safely without throwing when Redis is absent", async () => {
-      // Memory store is active (UPSTASH_REDIS_REST_URL is empty in test environment)
-      for (let i = 0; i < 5; i++) {
-        await expect(checkRateLimit("login", "test-user-rate-limit")).resolves.toBeUndefined();
-      }
+    test("isSensitiveRateLimitEndpoint correctly classifies sensitive vs public endpoints", () => {
+      expect(isSensitiveRateLimitEndpoint("login")).toBe(true);
+      expect(isSensitiveRateLimitEndpoint("loginCompound")).toBe(true);
+      expect(isSensitiveRateLimitEndpoint("register")).toBe(true);
+      expect(isSensitiveRateLimitEndpoint("forgotPassword")).toBe(true);
+      expect(isSensitiveRateLimitEndpoint("otpVerifyPhone")).toBe(true);
+      expect(isSensitiveRateLimitEndpoint("adminUserManagement")).toBe(true);
 
-      // 6th attempt throws RATE_LIMIT_EXCEEDED
-      await expect(checkRateLimit("login", "test-user-rate-limit")).rejects.toThrow(
-        "RATE_LIMIT_EXCEEDED"
-      );
+      // Public / Storefront non-sensitive endpoints
+      expect(isSensitiveRateLimitEndpoint("search")).toBe(false);
+      expect(isSensitiveRateLimitEndpoint("newsletter")).toBe(false);
+      expect(isSensitiveRateLimitEndpoint("submitReview")).toBe(false);
+    });
+
+    test("Production without Redis configuration: sensitive endpoints FAIL CLOSED", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = "production";
+        setRedisClientForTesting(null);
+
+        expect(isDistributedRateLimitAvailable()).toBe(false);
+
+        // Sensitive auth endpoints must throw RATE_LIMIT_EXCEEDED in production when Redis is missing
+        await expect(checkRateLimit("login", "attacker-account")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+        await expect(checkRateLimit("loginCompound", "192.168.1.1:victim")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+        await expect(checkRateLimit("register", "newuser@example.com")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+        await expect(checkRateLimit("forgotPassword", "victim@example.com")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+        await expect(checkLoginRateLimit("01712345678")).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+        setRedisClientForTesting(null);
+      }
+    });
+
+    test("Production without Redis configuration: non-sensitive public endpoints DO NOT fail closed", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = "production";
+        setRedisClientForTesting(null);
+
+        // Non-sensitive public endpoints use local in-memory store so users can still search
+        await expect(checkRateLimit("search", "summer-hoodie")).resolves.toBeUndefined();
+        await expect(checkRateLimit("newsletter", "user@example.com")).resolves.toBeUndefined();
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+        setRedisClientForTesting(null);
+      }
+    });
+
+    test("Production Redis infrastructure failure: sensitive endpoints FAIL CLOSED to prevent bypass", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = "production";
+
+        // Create a mock limiter that throws an unexpected network error (simulating Redis outage)
+        const mockFailingLimiter = {
+          limit: vi
+            .fn()
+            .mockRejectedValue(new Error("ETIMEDOUT: Connection to Upstash Redis lost")),
+          resetUsedTokens: vi.fn(),
+        } as any;
+
+        // Set simulated redis presence and failing limiter
+        setRedisClientForTesting({} as any);
+        setLimiterForTesting("loginCompound", mockFailingLimiter);
+        setLimiterForTesting("register", mockFailingLimiter);
+
+        // In production, when Redis fails on sensitive auth, it must FAIL CLOSED
+        await expect(
+          checkRateLimit("loginCompound", "192.168.1.1:user@vibelock.bd")
+        ).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+        await expect(checkRateLimit("register", "user@vibelock.bd")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+
+        // Public non-sensitive endpoint should fall back gracefully rather than crash
+        const mockFailingSearchLimiter = {
+          limit: vi.fn().mockRejectedValue(new Error("ETIMEDOUT: Redis down")),
+          resetUsedTokens: vi.fn(),
+        } as any;
+        setLimiterForTesting("search", mockFailingSearchLimiter);
+        await expect(checkRateLimit("search", "graphic-tee")).resolves.toBeUndefined();
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+        setRedisClientForTesting(null);
+      }
+    });
+
+    test("Successful distributed rate limiting: respects distributed quota and enforces ceiling", async () => {
+      let callCount = 0;
+      const mockLimiter = {
+        limit: vi.fn().mockImplementation(async (key: string) => {
+          expect(key).toContain("dist-user");
+          callCount++;
+          return { success: callCount <= 3 };
+        }),
+        resetUsedTokens: vi.fn(),
+      } as any;
+
+      setRedisClientForTesting({} as any);
+      setLimiterForTesting("login", mockLimiter);
+
+      // First 3 calls succeed
+      await expect(checkRateLimit("login", "dist-user")).resolves.toBeUndefined();
+      await expect(checkRateLimit("login", "dist-user")).resolves.toBeUndefined();
+      await expect(checkRateLimit("login", "dist-user")).resolves.toBeUndefined();
+
+      // 4th call is blocked by distributed limiter
+      await expect(checkRateLimit("login", "dist-user")).rejects.toThrow("RATE_LIMIT_EXCEEDED");
+
+      expect(mockLimiter.limit).toHaveBeenCalledTimes(4);
+      setRedisClientForTesting(null);
+    });
+
+    test("Development fallback: in-memory store enables full offline local usability", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      try {
+        (process.env as any).NODE_ENV = "development";
+        setRedisClientForTesting(null);
+
+        // Memory store allows 5 attempts in development without Redis
+        for (let i = 0; i < 5; i++) {
+          await expect(checkRateLimit("login", "dev-user-login")).resolves.toBeUndefined();
+        }
+
+        // 6th attempt throws RATE_LIMIT_EXCEEDED in development memory limiter
+        await expect(checkRateLimit("login", "dev-user-login")).rejects.toThrow(
+          "RATE_LIMIT_EXCEEDED"
+        );
+      } finally {
+        (process.env as any).NODE_ENV = originalEnv;
+        setRedisClientForTesting(null);
+      }
     });
   });
 });

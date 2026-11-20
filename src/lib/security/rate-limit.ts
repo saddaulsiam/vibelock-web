@@ -110,85 +110,97 @@ function checkMemoryRateLimit(identifier: string, endpoint: RateLimitEndpoint): 
   return true;
 }
 
-// Define the Upstash limiters (used when Upstash is configured)
-const loginLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
-  : null;
-const loginCompoundLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
-  : null;
-const loginIpLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "5 m"), analytics: true })
-  : null;
-const registerLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
-  : null;
-const forgotPasswordLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
-  : null;
-const resetPasswordLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
-  : null;
-const changePasswordLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
-  : null;
-const resendVerificationLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
-  : null;
-const verifyEmailLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
-  : null;
-const sessionManagementLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
-  : null;
-const accountDeletionLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
-  : null;
-const searchLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true })
-  : null;
-const newsletterLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
-  : null;
-const profileUpdateLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
-  : null;
-const customerUploadLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
-  : null;
-const submitReviewLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
-  : null;
-const adminUserManagementLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true })
-  : null;
-const adminCustomerSecurityLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
-  : null;
-const adminRefundLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "5 m"), analytics: true })
-  : null;
-const adminInventoryLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(100, "5 m"), analytics: true })
-  : null;
-const otpVerifyPhoneLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
-  : null;
-const otpVerifyIpLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "10 m"), analytics: true })
-  : null;
-const otpSendPhoneLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
-  : null;
-const otpSendIpLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "10 m"), analytics: true })
-  : null;
-const paymentInitiationUserLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
-  : null;
-const paymentInitiationIpLimiter = redis
-  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
-  : null;
+/**
+ * Endpoints that require strict distributed rate-limiting in production.
+ * If distributed rate limiting (Upstash Redis) is unavailable or degraded in production,
+ * these sensitive authentication, authorization, financial, and admin endpoints MUST fail closed
+ * to prevent distributed brute-force, credential stuffing, and bypass across serverless instances.
+ */
+export const SENSITIVE_RATE_LIMIT_ENDPOINTS: ReadonlySet<RateLimitEndpoint> = new Set([
+  "login",
+  "loginCompound",
+  "loginIp",
+  "register",
+  "forgotPassword",
+  "resetPassword",
+  "changePassword",
+  "resendVerification",
+  "verifyEmail",
+  "sessionManagement",
+  "accountDeletion",
+  "adminUserManagement",
+  "adminCustomerSecurity",
+  "adminRefund",
+  "adminInventory",
+  "otpVerifyPhone",
+  "otpVerifyIp",
+  "otpSendPhone",
+  "otpSendIp",
+  "paymentInitiationUser",
+  "paymentInitiationIp",
+]);
+
+export function isSensitiveRateLimitEndpoint(endpoint: RateLimitEndpoint): boolean {
+  return SENSITIVE_RATE_LIMIT_ENDPOINTS.has(endpoint);
+}
+
+// Distributed limiters map keyed by endpoint
+const limiters = new Map<RateLimitEndpoint, Ratelimit>();
+
+function initLimiters() {
+  limiters.clear();
+  if (!redis) return;
+
+  limiters.set("login", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true }));
+  limiters.set("loginCompound", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true }));
+  limiters.set("loginIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "5 m"), analytics: true }));
+  limiters.set("register", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
+  limiters.set("forgotPassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
+  limiters.set("resetPassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true }));
+  limiters.set("changePassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
+  limiters.set("resendVerification", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
+  limiters.set("verifyEmail", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true }));
+  limiters.set("sessionManagement", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
+  limiters.set("accountDeletion", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
+  limiters.set("search", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true }));
+  limiters.set("newsletter", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
+  limiters.set("profileUpdate", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
+  limiters.set("customerUpload", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true }));
+  limiters.set("submitReview", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true }));
+  limiters.set("adminUserManagement", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true }));
+  limiters.set("adminCustomerSecurity", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true }));
+  limiters.set("adminRefund", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "5 m"), analytics: true }));
+  limiters.set("adminInventory", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(100, "5 m"), analytics: true }));
+  limiters.set("otpVerifyPhone", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
+  limiters.set("otpVerifyIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "10 m"), analytics: true }));
+  limiters.set("otpSendPhone", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
+  limiters.set("otpSendIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "10 m"), analytics: true }));
+  limiters.set("paymentInitiationUser", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
+  limiters.set("paymentInitiationIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true }));
+}
+
+initLimiters();
+
+export function isDistributedRateLimitAvailable(): boolean {
+  return redis !== null;
+}
+
+export function getLimiterForEndpoint(endpoint: RateLimitEndpoint): Ratelimit | null {
+  return limiters.get(endpoint) ?? null;
+}
+
+export function setLimiterForTesting(endpoint: RateLimitEndpoint, limiter: Ratelimit | null): void {
+  if (limiter) {
+    limiters.set(endpoint, limiter);
+  } else {
+    limiters.delete(endpoint);
+  }
+}
+
+export function setRedisClientForTesting(client: Redis | null): void {
+  redis = client;
+  initLimiters();
+}
 
 /**
  * Validates whether a string looks like a plausible IPv4 or IPv6 address.
@@ -285,14 +297,15 @@ export async function getIp(
   }
 }
 
-let hasWarnedMissingRedisInProd = false;
-
 // Check if rate limited (Throws generic safe error if limit exceeded)
 export async function checkRateLimit(
   endpoint: RateLimitEndpoint,
   identityModifier?: string,
   options?: { skipIp?: boolean; explicitIp?: string }
 ) {
+  const isProd = process.env.NODE_ENV === "production";
+  const isSensitive = isSensitiveRateLimitEndpoint(endpoint);
+
   const resolvedIp = options?.skipIp ? "" : (options?.explicitIp ?? (await getIp()));
   const ip = resolvedIp ?? "";
   const identifier =
@@ -302,20 +315,23 @@ export async function checkRateLimit(
         ? `${endpoint}:${ip}:${identityModifier}`
         : `${endpoint}:${ip}`;
 
-  // If Upstash Redis is not configured, use in-memory rate limiter fallback
+  // 1. Missing Redis Configuration Policy
   if (!redis) {
-    if (process.env.NODE_ENV === "production" && !hasWarnedMissingRedisInProd) {
-      hasWarnedMissingRedisInProd = true;
-      console.warn(
+    if (isProd && isSensitive) {
+      console.error(
         JSON.stringify({
-          event: "RATE_LIMIT_REDIS_NOT_CONFIGURED",
-          level: "warn",
+          event: "RATE_LIMIT_DISTRIBUTED_REQUIRED_FAIL_CLOSED",
+          level: "error",
+          endpoint,
           message:
-            "Upstash Redis credentials are not configured in production. In-memory sliding-window fallback is active.",
+            "Distributed rate limiting via Upstash Redis is required in production for sensitive endpoints. Failing closed to prevent distributed bypass across serverless instances.",
           timestamp: new Date().toISOString(),
         })
       );
+      throw new Error("RATE_LIMIT_EXCEEDED");
     }
+
+    // In development/test or for non-sensitive public endpoints:
     const allowed = checkMemoryRateLimit(identifier, endpoint);
     if (!allowed) {
       throw new Error("RATE_LIMIT_EXCEEDED");
@@ -323,90 +339,24 @@ export async function checkRateLimit(
     return;
   }
 
+  // 2. Distributed Rate Limiting via Upstash
   try {
-    let limiter: Ratelimit | null = null;
-    switch (endpoint) {
-      case "login":
-        limiter = loginLimiter;
-        break;
-      case "loginCompound":
-        limiter = loginCompoundLimiter;
-        break;
-      case "loginIp":
-        limiter = loginIpLimiter;
-        break;
-      case "register":
-        limiter = registerLimiter;
-        break;
-      case "forgotPassword":
-        limiter = forgotPasswordLimiter;
-        break;
-      case "resetPassword":
-        limiter = resetPasswordLimiter;
-        break;
-      case "changePassword":
-        limiter = changePasswordLimiter;
-        break;
-      case "resendVerification":
-        limiter = resendVerificationLimiter;
-        break;
-      case "verifyEmail":
-        limiter = verifyEmailLimiter;
-        break;
-      case "sessionManagement":
-        limiter = sessionManagementLimiter;
-        break;
-      case "accountDeletion":
-        limiter = accountDeletionLimiter;
-        break;
-      case "search":
-        limiter = searchLimiter;
-        break;
-      case "newsletter":
-        limiter = newsletterLimiter;
-        break;
-      case "profileUpdate":
-        limiter = profileUpdateLimiter;
-        break;
-      case "customerUpload":
-        limiter = customerUploadLimiter;
-        break;
-      case "submitReview":
-        limiter = submitReviewLimiter;
-        break;
-      case "adminUserManagement":
-        limiter = adminUserManagementLimiter;
-        break;
-      case "adminCustomerSecurity":
-        limiter = adminCustomerSecurityLimiter;
-        break;
-      case "adminRefund":
-        limiter = adminRefundLimiter;
-        break;
-      case "adminInventory":
-        limiter = adminInventoryLimiter;
-        break;
-      case "otpVerifyPhone":
-        limiter = otpVerifyPhoneLimiter;
-        break;
-      case "otpVerifyIp":
-        limiter = otpVerifyIpLimiter;
-        break;
-      case "otpSendPhone":
-        limiter = otpSendPhoneLimiter;
-        break;
-      case "otpSendIp":
-        limiter = otpSendIpLimiter;
-        break;
-      case "paymentInitiationUser":
-        limiter = paymentInitiationUserLimiter;
-        break;
-      case "paymentInitiationIp":
-        limiter = paymentInitiationIpLimiter;
-        break;
-    }
+    const limiter = limiters.get(endpoint);
 
     if (!limiter) {
+      if (isProd && isSensitive) {
+        console.error(
+          JSON.stringify({
+            event: "RATE_LIMIT_LIMITER_MISSING_FAIL_CLOSED",
+            level: "error",
+            endpoint,
+            message:
+              "Limiter configuration missing for sensitive endpoint in production. Failing closed.",
+            timestamp: new Date().toISOString(),
+          })
+        );
+        throw new Error("RATE_LIMIT_EXCEEDED");
+      }
       const allowed = checkMemoryRateLimit(identifier, endpoint);
       if (!allowed) {
         throw new Error("RATE_LIMIT_EXCEEDED");
@@ -423,13 +373,31 @@ export async function checkRateLimit(
     if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
       throw error;
     }
-    // SEC-4B-02: Structured server-side warning log (strictly sanitized, no PII, no credentials)
+
+    // 3. Infrastructure Error Handling Policy
+    if (isProd && isSensitive) {
+      console.error(
+        JSON.stringify({
+          event: "RATE_LIMIT_INFRASTRUCTURE_FAILURE_FAIL_CLOSED",
+          level: "error",
+          endpoint,
+          message:
+            "Upstash Redis infrastructure error during rate limiting for sensitive endpoint. Failing closed to prevent distributed bypass.",
+          error: error instanceof Error ? error.message : "Unknown Redis error",
+          timestamp: new Date().toISOString(),
+        })
+      );
+      throw new Error("RATE_LIMIT_EXCEEDED");
+    }
+
+    // Non-sensitive public endpoints or non-production environment:
     console.warn(
       JSON.stringify({
         event: "RATE_LIMIT_REDIS_FALLBACK",
         level: "warn",
         endpoint,
-        message: "Upstash Redis unavailable during rate limiting. Activating local in-memory fallback.",
+        message:
+          "Upstash Redis unavailable during rate limiting. Activating local in-memory fallback for non-sensitive endpoint.",
         error: error instanceof Error ? error.message : "Unknown Redis error",
         timestamp: new Date().toISOString(),
       })
@@ -512,9 +480,10 @@ export async function clearLoginRateLimit(
   memoryStore.delete(compoundIdentifier);
 
   // Clear from Redis if configured using official Upstash Ratelimit resetUsedTokens
-  if (loginCompoundLimiter) {
+  const limiter = limiters.get("loginCompound");
+  if (limiter) {
     try {
-      await loginCompoundLimiter.resetUsedTokens(compoundIdentifier);
+      await limiter.resetUsedTokens(compoundIdentifier);
     } catch (err) {
       console.warn(
         JSON.stringify({
@@ -618,9 +587,10 @@ export async function clearOtpRateLimit(phone: string): Promise<void> {
   memoryStore.delete(identifier);
 
   // Clear from Redis if configured
-  if (otpVerifyPhoneLimiter) {
+  const limiter = limiters.get("otpVerifyPhone");
+  if (limiter) {
     try {
-      await otpVerifyPhoneLimiter.resetUsedTokens(identifier);
+      await limiter.resetUsedTokens(identifier);
     } catch (err) {
       console.warn(
         JSON.stringify({
@@ -726,9 +696,10 @@ export async function clearPaymentInitiationRateLimit(userId: string): Promise<v
 
   memoryStore.delete(identifier);
 
-  if (paymentInitiationUserLimiter) {
+  const limiter = limiters.get("paymentInitiationUser");
+  if (limiter) {
     try {
-      await paymentInitiationUserLimiter.resetUsedTokens(identifier);
+      await limiter.resetUsedTokens(identifier);
     } catch (err) {
       console.warn(
         JSON.stringify({
