@@ -6,6 +6,7 @@ import {
   loginSchema,
   phoneOtpRequestSchema,
   phoneOtpVerifySchema,
+  normalizeBdPhoneNumber,
   type RegisterInput,
   type LoginInput,
   type PhoneOtpRequestInput,
@@ -25,6 +26,9 @@ export async function registerAction(data: RegisterInput) {
   try {
     const parsed = registerSchema.parse(data);
     const email = parsed.email.toLowerCase();
+    const normalizedPhone = parsed.phone?.trim()
+      ? normalizeBdPhoneNumber(parsed.phone.trim())
+      : undefined;
 
     try {
       await checkRateLimit("register", email);
@@ -38,16 +42,18 @@ export async function registerAction(data: RegisterInput) {
       };
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
+    const existingUser = normalizedPhone
+      ? await prisma.user.findFirst({
+          where: {
+            OR: [{ email }, { phone: normalizedPhone }],
+          },
+        })
+      : await prisma.user.findUnique({
+          where: { email },
+        });
 
     if (existingUser) {
-      // Do not explicitly tell if email exists for security, but return generic error
-      // Actually, UX usually says "Email already in use", but prompt says:
-      // "Do not leak unnecessary account existence information... Handle duplicate emails safely"
-      // We will just return a generic failure or "Registration failed."
-      return { error: "An account with this email may already exist or registration failed." };
+      return { error: "An account with this email or phone number may already exist or registration failed." };
     }
 
     const passwordHash = await hash(parsed.password, 12);
@@ -56,6 +62,7 @@ export async function registerAction(data: RegisterInput) {
       data: {
         name: parsed.name,
         email,
+        phone: normalizedPhone,
         passwordHash,
         role: "CUSTOMER",
       },
@@ -87,7 +94,7 @@ export async function registerAction(data: RegisterInput) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        return { error: "An account with this email may already exist or registration failed." };
+        return { error: "An account with this email or phone number may already exist or registration failed." };
       }
     }
     console.error("Registration error:", error);
@@ -116,10 +123,10 @@ function isRateLimitError(error: unknown): boolean {
 export async function loginAction(data: LoginInput) {
   try {
     const parsed = loginSchema.parse(data);
-    const email = parsed.email.trim().toLowerCase();
+    const identifier = parsed.email.trim();
 
     await signIn("credentials", {
-      email,
+      email: identifier,
       password: parsed.password,
       redirect: false, // Handle redirect on client or handle it carefully
     });

@@ -10,7 +10,7 @@ import { compare } from "bcryptjs";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 
-import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
+import { normalizeBdPhoneNumber, isValidBdPhoneNumber } from "@/lib/validations/auth";
 import { verifyOtp } from "@/lib/sms/client";
 import { isCustomerSuspended } from "@/lib/auth/suspension";
 import {
@@ -339,7 +339,7 @@ export const authConfig: NextAuthConfig = {
           };
         }
 
-        // Email + Password Flow
+        // Email or Phone + Password Flow
         if (
           !credentials?.email ||
           !credentials?.password ||
@@ -349,19 +349,23 @@ export const authConfig: NextAuthConfig = {
           return null;
         }
 
-        const email = credentials.email.trim().toLowerCase();
+        const rawIdentifier = credentials.email.trim();
         const password = credentials.password;
+
+        const isPhone = isValidBdPhoneNumber(rawIdentifier);
+        const normalizedPhone = isPhone ? normalizeBdPhoneNumber(rawIdentifier) : null;
+        const normalizedIdentifier = isPhone ? normalizedPhone! : rawIdentifier.toLowerCase();
 
         // V-03 & V-05: Enforce rate limits before expensive DB & bcrypt operations
         try {
-          await checkLoginRateLimit(email);
+          await checkLoginRateLimit(normalizedIdentifier);
         } catch (error) {
           if (error instanceof Error && error.message === "RATE_LIMIT_EXCEEDED") {
             try {
               logSecurityAlert("AUTH_RATE_LIMIT_EXCEEDED", {
                 endpoint: "loginCompound",
                 reason: "rate_limit_exceeded",
-                emailHash: hashSecurityIdentifier(email),
+                emailHash: hashSecurityIdentifier(normalizedIdentifier),
               });
             } catch {
               // Fail-safe
@@ -372,9 +376,22 @@ export const authConfig: NextAuthConfig = {
           throw new RateLimitError();
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email },
-        });
+        let user;
+        if (isPhone && normalizedPhone) {
+          user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { phone: normalizedPhone },
+                { email: normalizedPhone },
+                { email: rawIdentifier.toLowerCase() },
+              ],
+            },
+          });
+        } else {
+          user = await prisma.user.findUnique({
+            where: { email: normalizedIdentifier },
+          });
+        }
 
         if (!user || !user.passwordHash) {
           // V-06: Mitigate account-enumeration and timing side-channel via constant-time dummy comparison
@@ -392,7 +409,7 @@ export const authConfig: NextAuthConfig = {
               logSecurityAlert("AUTH_ADMIN_LOGIN_FAILED", {
                 role: user.role,
                 reason: "invalid_credentials",
-                emailHash: hashSecurityIdentifier(email),
+                emailHash: hashSecurityIdentifier(normalizedIdentifier),
                 endpoint: "credentials",
               });
             } catch {
@@ -418,7 +435,7 @@ export const authConfig: NextAuthConfig = {
 
         // SEC-4B-01: Reset compound rate-limit counter on successful login for this IP + account
         try {
-          await clearLoginRateLimit(email);
+          await clearLoginRateLimit(normalizedIdentifier);
         } catch (err) {
           console.warn("Failed to clear compound login rate limit on successful authentication:", err);
         }

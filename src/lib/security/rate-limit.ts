@@ -5,7 +5,7 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { env } from "@/lib/config/env";
 import { headers } from "next/headers";
-import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
+import { normalizeBdPhoneNumber, isValidBdPhoneNumber } from "@/lib/validations/auth";
 
 let redis: Redis | null = null;
 if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
@@ -285,6 +285,8 @@ export async function getIp(
   }
 }
 
+let hasWarnedMissingRedisInProd = false;
+
 // Check if rate limited (Throws generic safe error if limit exceeded)
 export async function checkRateLimit(
   endpoint: RateLimitEndpoint,
@@ -302,6 +304,18 @@ export async function checkRateLimit(
 
   // If Upstash Redis is not configured, use in-memory rate limiter fallback
   if (!redis) {
+    if (process.env.NODE_ENV === "production" && !hasWarnedMissingRedisInProd) {
+      hasWarnedMissingRedisInProd = true;
+      console.warn(
+        JSON.stringify({
+          event: "RATE_LIMIT_REDIS_NOT_CONFIGURED",
+          level: "warn",
+          message:
+            "Upstash Redis credentials are not configured in production. In-memory sliding-window fallback is active.",
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
     const allowed = checkMemoryRateLimit(identifier, endpoint);
     if (!allowed) {
       throw new Error("RATE_LIMIT_EXCEEDED");
@@ -428,20 +442,32 @@ export async function checkRateLimit(
 }
 
 /**
+ * Normalizes a login identifier (email or Bangladeshi phone number) deterministically
+ * for consistent rate-limiting across input formatting variants.
+ */
+export function normalizeLoginIdentifier(identifier: string): string {
+  const trimmed = identifier.trim();
+  if (isValidBdPhoneNumber(trimmed)) {
+    return normalizeBdPhoneNumber(trimmed);
+  }
+  return trimmed.toLowerCase();
+}
+
+/**
  * SEC-4B-01 & SEC-4B-03: Layered login rate limiter.
  *
  * 1. Global per-IP throttling: 30 attempts / 5 minutes per client IP.
  *    Only evaluated when a trusted client IP is resolved.
  *    If IP is missing, avoids grouping all users into a shared localhost/unknown bucket.
  * 2. Compound IP + normalized account throttling: 5 attempts / 5 minutes.
- *    Key: `loginCompound:${clientIp}:${normalizedEmail}`
+ *    Key: `loginCompound:${clientIp}:${normalizedIdentifier}`
  *    Ensures failed attempts from attacker IP A cannot exhaust quota for legitimate user on IP B.
  */
 export async function checkLoginRateLimit(
   email: string,
   explicitIp?: string
 ): Promise<void> {
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedIdentifier = normalizeLoginIdentifier(email);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
 
   // 1. Global per-IP throttling (defense against single IP credential spraying across accounts)
@@ -461,12 +487,12 @@ export async function checkLoginRateLimit(
 
   // 2. Compound IP + normalized account throttling (5 attempts / 5 min per IP per account)
   const ipKey = resolvedIp && resolvedIp !== "unknown" ? resolvedIp : "no_ip";
-  const compoundKey = `${ipKey}:${normalizedEmail}`;
+  const compoundKey = `${ipKey}:${normalizedIdentifier}`;
   await checkRateLimit("loginCompound", compoundKey, { skipIp: true });
 }
 
 /**
- * SEC-4B-01: Resets the compound rate-limit counter for the specific (IP, normalized email) pair
+ * SEC-4B-01: Resets the compound rate-limit counter for the specific (IP, normalized account) pair
  * upon successful authentication.
  *
  * Guarantees that only the successful caller's compound counter is cleared,
@@ -476,10 +502,10 @@ export async function clearLoginRateLimit(
   email: string,
   explicitIp?: string
 ): Promise<void> {
-  const normalizedEmail = email.trim().toLowerCase();
+  const normalizedIdentifier = normalizeLoginIdentifier(email);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
   const ipKey = resolvedIp && resolvedIp !== "unknown" ? resolvedIp : "no_ip";
-  const compoundKey = `${ipKey}:${normalizedEmail}`;
+  const compoundKey = `${ipKey}:${normalizedIdentifier}`;
   const compoundIdentifier = `loginCompound:${compoundKey}`;
 
   // Clear from process-local memory store
