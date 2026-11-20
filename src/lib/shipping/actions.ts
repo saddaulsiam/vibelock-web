@@ -1,11 +1,12 @@
 "use server";
 
 import { requireRole } from "@/lib/auth/authorization";
+import { recordAuditLog } from "@/lib/audit";
 import { ShippingService } from "./service";
 import { getShippingProvider } from "./provider";
 
 export async function adminCreateShipmentAction(orderId: string) {
-  await requireRole("STAFF");
+  const admin = await requireRole("STAFF");
 
   let provider;
   try {
@@ -23,6 +24,18 @@ export async function adminCreateShipmentAction(orderId: string) {
 
   try {
     const shipment = await service.createShipmentForOrder(orderId);
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "SHIPMENT_CREATED",
+      entityType: "Shipment",
+      entityId: shipment.id,
+      metadata: {
+        orderId,
+        provider: shipment.provider,
+        trackingNumber: shipment.trackingNumber,
+        status: shipment.status,
+      },
+    });
     return { success: true, shipmentId: shipment.id };
   } catch (error) {
     console.error("[adminCreateShipmentAction] Shipment creation failed", error);

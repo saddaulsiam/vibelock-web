@@ -8,6 +8,7 @@ import { updateTag, revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { recordAuditLog } from "@/lib/audit";
 
 export type BannerActionState = { error: string | null; message?: string };
 
@@ -65,7 +66,7 @@ export async function saveBannerAction(
   _previous: BannerActionState,
   formData: FormData
 ): Promise<BannerActionState> {
-  await requireRole("MANAGER", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
 
   let rawImageUrl = String(formData.get("imageUrl") ?? "").trim();
   const desktopImageFile = formData.get("desktopImageFile");
@@ -201,18 +202,44 @@ export async function saveBannerAction(
     if (id) {
       const existing = await prisma.banner.findUnique({ where: { id }, select: { id: true } });
       if (!existing) return { error: "This banner no longer exists." };
-      await prisma.banner.update({
+      const updated = await prisma.banner.update({
         where: { id },
         data: {
           ...data,
           categories: { set: categoryIds.map((categoryId) => ({ id: categoryId })) },
         },
       });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "BANNER_UPDATED",
+        entityType: "Banner",
+        entityId: updated.id,
+        metadata: {
+          title: updated.title,
+          placement: updated.placement,
+          sortOrder: updated.sortOrder,
+          isActive: updated.isActive,
+          categoryIds,
+        },
+      });
     } else {
-      await prisma.banner.create({
+      const created = await prisma.banner.create({
         data: {
           ...data,
           categories: { connect: categoryIds.map((categoryId) => ({ id: categoryId })) },
+        },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "BANNER_CREATED",
+        entityType: "Banner",
+        entityId: created.id,
+        metadata: {
+          title: created.title,
+          placement: created.placement,
+          sortOrder: created.sortOrder,
+          isActive: created.isActive,
+          categoryIds,
         },
       });
     }
@@ -232,18 +259,31 @@ export async function saveBannerAction(
 }
 
 export async function toggleBannerAction(formData: FormData): Promise<void> {
-  await requireRole("MANAGER", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
   const id = String(formData.get("id") ?? "");
   const active = String(formData.get("active") ?? "") === "true";
   if (!z.string().uuid().safeParse(id).success) throw new Error("Invalid banner ID.");
   await prisma.banner.update({ where: { id }, data: { isActive: active } });
+  await recordAuditLog({
+    actorId: admin?.id,
+    action: "BANNER_STATUS_TOGGLED",
+    entityType: "Banner",
+    entityId: id,
+    metadata: { isActive: active },
+  });
   refreshBanners();
 }
 
 export async function deleteBannerAction(formData: FormData): Promise<void> {
-  await requireRole("MANAGER", { throw: true });
+  const admin = await requireRole("MANAGER", { throw: true });
   const id = String(formData.get("id") ?? "");
   if (!z.string().uuid().safeParse(id).success) throw new Error("Invalid banner ID.");
   await prisma.banner.delete({ where: { id } });
+  await recordAuditLog({
+    actorId: admin?.id,
+    action: "BANNER_DELETED",
+    entityType: "Banner",
+    entityId: id,
+  });
   refreshBanners();
 }

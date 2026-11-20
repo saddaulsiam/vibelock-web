@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { recordAuditLog } from "@/lib/audit";
 import { ShippingService } from "@/lib/shipping/service";
 import { adminCreateShipmentAction } from "@/lib/shipping/actions";
 import { getShippingProvider } from "@/lib/shipping/provider";
@@ -41,7 +42,7 @@ export async function saveShippingZoneAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
 
   // Pre-validation guards: reject oversized input before splitting and Zod parsing
   const rawCountriesStr = String(formData.get("countries") ?? "");
@@ -70,13 +71,27 @@ export async function saveShippingZoneAction(
   if (!parsed.success) return { error: parsed.error.issues[0].message };
   try {
     if (parsed.data.id) {
-      await prisma.shippingZone.update({
+      const updated = await prisma.shippingZone.update({
         where: { id: parsed.data.id },
         data: { name: parsed.data.name, countries: parsed.data.countries },
       });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "SHIPPING_ZONE_UPDATED",
+        entityType: "ShippingZone",
+        entityId: updated.id,
+        metadata: { name: updated.name, countries: updated.countries },
+      });
     } else {
-      await prisma.shippingZone.create({
+      const created = await prisma.shippingZone.create({
         data: { name: parsed.data.name, countries: parsed.data.countries },
+      });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "SHIPPING_ZONE_CREATED",
+        entityType: "ShippingZone",
+        entityId: created.id,
+        metadata: { name: created.name, countries: created.countries },
       });
     }
   } catch {
@@ -93,7 +108,7 @@ export async function saveShippingMethodAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   const parsed = z
     .object({
       id: id.optional(),
@@ -118,9 +133,33 @@ export async function saveShippingMethodAction(
       isActive: parsed.data.isActive !== "false",
     };
     if (parsed.data.id) {
-      await prisma.shippingMethod.update({ where: { id: parsed.data.id }, data });
+      const updated = await prisma.shippingMethod.update({ where: { id: parsed.data.id }, data });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "SHIPPING_METHOD_UPDATED",
+        entityType: "ShippingMethod",
+        entityId: updated.id,
+        metadata: {
+          zoneId: updated.zoneId,
+          name: updated.name,
+          cost: Number(updated.cost),
+          isActive: updated.isActive,
+        },
+      });
     } else {
-      await prisma.shippingMethod.create({ data });
+      const created = await prisma.shippingMethod.create({ data });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "SHIPPING_METHOD_CREATED",
+        entityType: "ShippingMethod",
+        entityId: created.id,
+        metadata: {
+          zoneId: created.zoneId,
+          name: created.name,
+          cost: Number(created.cost),
+          isActive: created.isActive,
+        },
+      });
     }
   } catch {
     return { error: "The shipping method could not be saved. Please try again." };
@@ -136,7 +175,7 @@ export async function toggleShippingMethodAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipping method." };
   try {
@@ -145,9 +184,16 @@ export async function toggleShippingMethodAction(
       select: { isActive: true },
     });
     if (!method) return { error: "Shipping method not found." };
-    await prisma.shippingMethod.update({
+    const updated = await prisma.shippingMethod.update({
       where: { id: parsed.data },
       data: { isActive: !method.isActive },
+    });
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "SHIPPING_METHOD_TOGGLED",
+      entityType: "ShippingMethod",
+      entityId: updated.id,
+      metadata: { previousActive: method.isActive, isActive: updated.isActive },
     });
   } catch {
     return { error: "The shipping method status could not be changed." };
@@ -160,7 +206,7 @@ export async function updateShipmentStatusAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("STAFF");
+  const admin = await requireRole("STAFF");
   const parsed = z.object({ id, status: z.nativeEnum(ShipmentStatus) }).safeParse({
     id: formData.get("id"),
     status: formData.get("status"),
@@ -171,7 +217,7 @@ export async function updateShipmentStatusAction(
       name: "internal",
       createShipment: async () => ({ success: false }),
       getShipmentStatus: async () => ({ success: false }),
-    }).updateShipmentStatus(parsed.data.id, parsed.data.status);
+    }).updateShipmentStatus(parsed.data.id, parsed.data.status, admin?.id);
     if (updated.status !== parsed.data.status) {
       return { error: "That shipment status transition is not allowed." };
     }
@@ -189,7 +235,7 @@ export async function refreshShipmentStatusAction(
   _previous: ShippingActionState,
   formData: FormData
 ): Promise<ShippingActionState> {
-  await requireRole("STAFF");
+  const admin = await requireRole("STAFF");
   const parsed = id.safeParse(formData.get("id"));
   if (!parsed.success) return { error: "Choose a valid shipment." };
 
@@ -205,7 +251,18 @@ export async function refreshShipmentStatusAction(
     if (shipment.provider !== provider.name) {
       return { error: "The configured shipping provider does not match this shipment." };
     }
-    await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+    const synced = await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "SHIPMENT_STATUS_SYNCED",
+      entityType: "Shipment",
+      entityId: parsed.data,
+      metadata: {
+        provider: shipment.provider,
+        providerShipmentId: shipment.providerShipmentId,
+        syncedStatus: synced?.status ?? null,
+      },
+    });
   } catch (error) {
     return {
       error:

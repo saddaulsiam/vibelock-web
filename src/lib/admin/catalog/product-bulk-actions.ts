@@ -4,6 +4,7 @@ import { Prisma, ProductStatus } from "@prisma/client";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { recordAuditLog } from "@/lib/audit";
 import { getAdminProducts, type AdminProductsQueryOptions } from "./catalog-queries";
 import { type AdminActionState, refreshCatalog } from "./catalog-action-helpers";
 
@@ -11,7 +12,7 @@ export async function bulkUpdateProductStatusAction(
   productIds: string[],
   status: ProductStatus
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -25,6 +26,18 @@ export async function bulkUpdateProductStatusAction(
     data: { status: validStatus.data },
   });
 
+  await recordAuditLog({
+    actorId: admin?.id,
+    action: "PRODUCT_BULK_STATUS_UPDATED",
+    entityType: "Product",
+    entityId: "bulk",
+    metadata: {
+      productIds,
+      count: productIds.length,
+      newStatus: validStatus.data,
+    },
+  });
+
   refreshCatalog();
   return {
     error: null,
@@ -33,7 +46,7 @@ export async function bulkUpdateProductStatusAction(
 }
 
 export async function bulkDeleteProductsAction(productIds: string[]): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -77,6 +90,17 @@ export async function bulkDeleteProductsAction(productIds: string[]): Promise<Ad
   if (safeToDeleteIds.length > 0) {
     await prisma.product.deleteMany({
       where: { id: { in: safeToDeleteIds } },
+    });
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_BULK_DELETED",
+      entityType: "Product",
+      entityId: "bulk",
+      metadata: {
+        deletedProductIds: safeToDeleteIds,
+        deletedCount: safeToDeleteIds.length,
+        blockedCount: blockedNames.length,
+      },
     });
     refreshCatalog();
   }
@@ -159,7 +183,7 @@ export async function bulkAssignProductCategoryAction(
   categoryId: string,
   mode: "add" | "replace" = "add"
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   if (!Array.isArray(productIds) || productIds.length === 0) {
     return { error: "No products selected." };
   }
@@ -197,6 +221,20 @@ export async function bulkAssignProductCategoryAction(
         });
       }
     }
+
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_BULK_CATEGORY_ASSIGNED",
+      entityType: "Category",
+      entityId: categoryId,
+      metadata: {
+        productIds,
+        count: productIds.length,
+        categoryName: category.name,
+        mode,
+      },
+      tx,
+    });
   });
 
   refreshCatalog();
@@ -210,7 +248,7 @@ export async function quickUpdateProductPricesAction(
   productId: string,
   prices: { sellingPrice: number; discountPrice: number | null }
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   if (!productId) return { error: "Missing product ID." };
 
   const sellingPrice = Number(prices.sellingPrice);
@@ -239,6 +277,17 @@ export async function quickUpdateProductPricesAction(
     data: {
       sellingPrice: new Prisma.Decimal(sellingPrice),
       discountPrice,
+    },
+  });
+
+  await recordAuditLog({
+    actorId: admin?.id,
+    action: "PRODUCT_PRICES_UPDATED",
+    entityType: "Product",
+    entityId: productId,
+    metadata: {
+      sellingPrice,
+      discountPrice: discountPrice ? Number(discountPrice) : null,
     },
   });
 
