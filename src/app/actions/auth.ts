@@ -215,6 +215,13 @@ export async function sendPhoneOtpAction(data: PhoneOtpRequestInput) {
     }
 
     const result = await sendOtp(parsed.phone);
+    if (!result.success) {
+      return {
+        error:
+          result.error ||
+          "SMS service is temporarily unavailable. Please sign in with your phone and password or email.",
+      };
+    }
     return {
       success: true,
       phone: parsed.phone,

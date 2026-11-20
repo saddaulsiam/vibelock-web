@@ -72,8 +72,12 @@
   state before retry to avoid duplicate consignment.
 - Unknown status: map conservatively and require status refresh/manual
   review; do not invent delivery success.
-- Until an official webhook contract is verified, rely on
-  authenticated status refresh for Steadfast.
+- Steadfast webhooks at `/api/shipping/webhook/steadfast` enforce size limits (64 KB)
+  and constant-time signature verification (`COURIER_WEBHOOK_SECRET`). Unverified or
+  malformed payloads fail closed with 401/400.
+- `DELIVERED` webhook status transitions shipment state but never marks COD payment
+  as `SUCCESS` without verified cash remittance.
+- Manual authenticated status refresh is available as an operational fallback.
 
 ## Logging
 

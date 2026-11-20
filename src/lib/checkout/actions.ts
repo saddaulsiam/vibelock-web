@@ -967,6 +967,21 @@ export async function createOrderAction(
       cartItemCount: cart.items.length,
     });
 
+    if (errorCategory === "PRISMA_DATABASE_ERROR" || errorCategory === "ORDER_CREATION_FAILED") {
+      try {
+        const { logSecurityAlert, hashSecurityIdentifier } = await import(
+          "@/lib/monitoring/security-logger"
+        );
+        logSecurityAlert("CHECKOUT_ORDER_CREATION_FAILED", {
+          endpoint: "createOrderAction",
+          orderHash: hashSecurityIdentifier(orderNumber),
+          reason: errorMessage,
+        });
+      } catch {
+        // Telemetry dispatch must never mask the original failure
+      }
+    }
+
     // Check for Prisma's unique constraint violation error (P2002)
     if (isIdempotencyConflict) {
       // Hit unique constraint -> race condition won -> order already exists

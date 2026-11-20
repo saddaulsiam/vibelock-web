@@ -3,6 +3,7 @@ import "server-only";
 import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
 import { Resend } from "resend";
+import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 let resendClient: Resend | null = null;
 
@@ -55,8 +56,14 @@ export async function sendPasswordResetEmail(email: string, rawToken: string): P
       `,
     });
     return true;
-  } catch {
+  } catch (error) {
     console.error("Failed to send password reset email (Provider Error).");
+    logSecurityAlert("EMAIL_DELIVERY_FAILED", {
+      endpoint: "sendPasswordResetEmail",
+      emailHash: hashSecurityIdentifier(email),
+      provider: "resend",
+      reason: error instanceof Error ? error.message : "resend_provider_error",
+    });
     // We catch the error internally so we can return false. The caller will handle cleanup.
     return false;
   }
@@ -102,8 +109,14 @@ export async function sendEmailVerificationEmail(
       `,
     });
     return true;
-  } catch {
+  } catch (error) {
     console.error("Failed to send verification email (Provider Error).");
+    logSecurityAlert("EMAIL_DELIVERY_FAILED", {
+      endpoint: "sendEmailVerificationEmail",
+      emailHash: hashSecurityIdentifier(email),
+      provider: "resend",
+      reason: error instanceof Error ? error.message : "resend_provider_error",
+    });
     return false;
   }
 }
@@ -157,6 +170,12 @@ export async function sendNewsletterWelcomeEmail(email: string): Promise<boolean
     return true;
   } catch (error) {
     console.error("Failed to send newsletter welcome email (Provider Error):", error);
+    logSecurityAlert("EMAIL_DELIVERY_FAILED", {
+      endpoint: "sendNewsletterWelcomeEmail",
+      emailHash: hashSecurityIdentifier(email),
+      provider: "resend",
+      reason: error instanceof Error ? error.message : "resend_provider_error",
+    });
     return false;
   }
 }

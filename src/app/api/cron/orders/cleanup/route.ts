@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
 import { auth } from "@/auth";
 import { cleanupExpiredOrders } from "@/lib/orders/expiration";
+import { logSecurityAlert } from "@/lib/monitoring/security-logger";
 
 function verifyCronSecret(req: NextRequest): boolean {
   const cronSecret = process.env.CRON_SECRET;
@@ -93,6 +94,11 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error("[Cron:cleanupExpiredOrders] Error:", err);
+    logSecurityAlert("CRON_EXECUTION_FAILED", {
+      endpoint: "/api/cron/orders/cleanup",
+      jobName: "cleanupExpiredOrders",
+      reason: err instanceof Error ? err.message : "Internal server error",
+    });
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -121,6 +127,11 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: unknown) {
     console.error("[Cron:cleanupExpiredOrders] Error:", err);
+    logSecurityAlert("CRON_EXECUTION_FAILED", {
+      endpoint: "/api/cron/orders/cleanup",
+      jobName: "cleanupExpiredOrders",
+      reason: err instanceof Error ? err.message : "Internal server error",
+    });
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

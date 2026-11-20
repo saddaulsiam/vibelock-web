@@ -193,6 +193,24 @@ jobs:
           echo "Retention:       7-Day Cloudflare R2 Lifecycle Managed"
           echo "========================================================"
 
+      - name: Notify on backup pipeline failure
+        if: failure()
+        shell: bash
+        env:
+          BACKUP_ALERT_WEBHOOK: ${{ secrets.BACKUP_ALERT_WEBHOOK }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "::error::Neon PostgreSQL automated backup pipeline failed for run ${GITHUB_RUN_ID}."
+          if [ -n "${BACKUP_ALERT_WEBHOOK:-}" ]; then
+            echo "Dispatching failure notification to configured webhook..."
+            curl -s -X POST -H "Content-Type: application/json" \
+              -d "{\"event\":\"BACKUP_FAILED\",\"repository\":\"${GITHUB_REPOSITORY}\",\"runId\":\"${GITHUB_RUN_ID}\",\"timestamp\":\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" \
+              "${BACKUP_ALERT_WEBHOOK}" > /dev/null || echo "::warning::Failed to deliver alert payload to BACKUP_ALERT_WEBHOOK."
+          else
+            echo "::warning::BACKUP_ALERT_WEBHOOK is not configured. Failure logged to GitHub Actions runner telemetry."
+          fi
+
       - name: Clean up temporary backup artifacts
         if: always()
         run: |

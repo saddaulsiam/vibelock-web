@@ -8,6 +8,7 @@ import prisma from "@/lib/prisma/client";
 import { ShippingService } from "@/lib/shipping/service";
 import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
 import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
+import { logSecurityAlert, maskIpAddress } from "@/lib/monitoring/security-logger";
 
 const statusMap: Record<string, ShipmentStatus> = {
   pending: "CREATED",
@@ -98,6 +99,12 @@ export async function POST(req: NextRequest) {
   const secret = env.COURIER_WEBHOOK_SECRET || process.env.COURIER_WEBHOOK_SECRET;
 
   if (!verifyAuth(req, rawBody, secret)) {
+    logSecurityAlert("COURIER_WEBHOOK_REJECTED", {
+      endpoint: "shipping/webhook/steadfast",
+      gateway: "steadfast",
+      reason: "unauthorized_signature",
+      ipMasked: maskIpAddress(req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip")),
+    });
     return NextResponse.json({ error: "Unauthorized Steadfast webhook request" }, { status: 401 });
   }
 
