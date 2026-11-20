@@ -5,6 +5,8 @@ import { authConfig } from "@/auth";
 import {
   loginSchema,
   registerSchema,
+  phoneOtpRequestSchema,
+  phoneOtpVerifySchema,
   isValidBdPhoneNumber,
   isValidEmail,
   isValidLoginIdentifier,
@@ -478,6 +480,89 @@ describe("Phase 12.4.2: Phone Login Alignment & Production Rate-Limit Hardening"
         (process.env as any).NODE_ENV = originalEnv;
         setRedisClientForTesting(null);
       }
+    });
+  });
+
+  describe("4. Authentication Architecture Coexistence (Phone + Password and Phone OTP)", () => {
+    test("phoneOtpRequestSchema normalizes and validates Bangladeshi numbers", () => {
+      const parsed = phoneOtpRequestSchema.parse({ phone: "+8801712345678" });
+      expect(parsed.phone).toBe("01712345678");
+
+      expect(() => phoneOtpRequestSchema.parse({ phone: "01234567890" })).toThrow();
+    });
+
+    test("phoneOtpVerifySchema validates 6-digit OTP codes", () => {
+      const valid = phoneOtpVerifySchema.parse({
+        phone: "01812345678",
+        otp: "654321",
+      });
+      expect(valid.phone).toBe("01812345678");
+      expect(valid.otp).toBe("654321");
+
+      // Non-digit OTP fails
+      expect(() =>
+        phoneOtpVerifySchema.parse({
+          phone: "01812345678",
+          otp: "abcdef",
+        })
+      ).toThrow();
+
+      // Less than 6 digits fails
+      expect(() =>
+        phoneOtpVerifySchema.parse({
+          phone: "01812345678",
+          otp: "12345",
+        })
+      ).toThrow();
+    });
+
+    test("authorize handler correctly routes Phone OTP vs Phone + Password credentials", async () => {
+      // 1. Phone + Password route
+      vi.spyOn(prisma.user, "findFirst").mockResolvedValueOnce({
+        id: "pw-user-id",
+        name: "Password User",
+        email: "pwuser@example.com",
+        phone: "01711111111",
+        passwordHash: "$2a$10$mockPasswordHash",
+        role: "CUSTOMER",
+        emailVerified: new Date(),
+      } as any);
+      mockCompare.mockResolvedValueOnce(true);
+
+      const pwUser = await authorize({
+        email: "01711111111",
+        password: "ValidPassword123!",
+      });
+      expect(pwUser).toMatchObject({
+        id: "pw-user-id",
+        name: "Password User",
+      });
+
+      // 2. Phone + OTP route
+      vi.spyOn(prisma.verificationToken, "findFirst").mockResolvedValueOnce({
+        identifier: "phone_otp:01722222222",
+        token: "mock-token-hash",
+        expires: new Date(Date.now() + 60000),
+      } as any);
+      vi.spyOn(prisma.verificationToken, "deleteMany").mockResolvedValueOnce({ count: 1 } as any);
+
+      vi.spyOn(prisma.user, "findUnique").mockResolvedValueOnce({
+        id: "otp-user-id",
+        name: "OTP User",
+        email: "01722222222@vibelock.bd",
+        phone: "01722222222",
+        role: "CUSTOMER",
+        phoneVerified: new Date("2026-01-01"),
+      } as any);
+
+      const otpUser = await authorize({
+        phone: "01722222222",
+        otp: "123456",
+      });
+      expect(otpUser).toMatchObject({
+        id: "otp-user-id",
+        name: "OTP User",
+      });
     });
   });
 });
