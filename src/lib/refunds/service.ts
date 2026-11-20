@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma/client";
 import { Prisma, Refund } from "@prisma/client";
 import { isSSLCommerzGateway } from "@/lib/payment/constants";
+import { recordAuditLog } from "@/lib/audit";
 
 export class RefundService {
   /**
@@ -31,7 +32,12 @@ export class RefundService {
   /**
    * Initiates a refund locally (PENDING state).
    */
-  async initiateRefund(paymentId: string, amount: Prisma.Decimal, reason?: string) {
+  async initiateRefund(
+    paymentId: string,
+    amount: Prisma.Decimal,
+    reason?: string,
+    actorId?: string
+  ) {
     return await prisma.$transaction(async (tx) => {
       // 0. Resolve the user who owns this payment's order so we can acquire
       //    the User row lock BEFORE the Payment lock.
@@ -87,6 +93,20 @@ export class RefundService {
         },
       });
 
+      await recordAuditLog({
+        actorId,
+        action: "REFUND_INITIATED",
+        entityType: "Refund",
+        entityId: refund.id,
+        metadata: {
+          paymentId,
+          orderId: paymentWithUser.orderId,
+          amount: Number(amount),
+          reason: reason ?? null,
+        },
+        tx,
+      });
+
       return refund;
     });
   }
@@ -97,11 +117,12 @@ export class RefundService {
   async markRefundSuccess(
     refundId: string,
     gatewayRefId: string,
-    tx?: Prisma.TransactionClient
+    tx?: Prisma.TransactionClient,
+    actorId?: string
   ): Promise<Refund> {
     if (!tx) {
       return prisma.$transaction((transaction) =>
-        this.markRefundSuccess(refundId, gatewayRefId, transaction)
+        this.markRefundSuccess(refundId, gatewayRefId, transaction, actorId)
       );
     }
     const db = tx;
@@ -133,22 +154,62 @@ export class RefundService {
       data: { paymentStatus },
     });
 
+    await recordAuditLog({
+      actorId,
+      action: "REFUND_COMPLETED",
+      entityType: "Refund",
+      entityId: updatedRefund.id,
+      metadata: {
+        paymentId: updatedRefund.paymentId,
+        orderId: payment.orderId,
+        amount: Number(updatedRefund.amount),
+        gatewayRefId,
+        paymentStatus,
+      },
+      tx: db,
+    });
+
     return updatedRefund;
   }
 
   /**
    * Marks a refund as failed. Recoverable.
    */
-  async markRefundFailed(refundId: string, tx?: Prisma.TransactionClient) {
-    const db = tx || prisma;
+  async markRefundFailed(
+    refundId: string,
+    tx?: Prisma.TransactionClient,
+    actorId?: string,
+    failureReason?: string
+  ): Promise<Refund> {
+    if (!tx) {
+      return prisma.$transaction((transaction) =>
+        this.markRefundFailed(refundId, transaction, actorId, failureReason)
+      );
+    }
+    const db = tx;
     const refund = await db.refund.findUnique({ where: { id: refundId } });
     if (!refund) throw new Error("Refund not found");
     if (refund.status === "SUCCESS") throw new Error("Cannot fail a successful refund");
 
-    return await db.refund.update({
+    const updated = await db.refund.update({
       where: { id: refundId },
       data: { status: "FAILED" },
     });
+
+    await recordAuditLog({
+      actorId,
+      action: "REFUND_FAILED",
+      entityType: "Refund",
+      entityId: refundId,
+      metadata: {
+        paymentId: refund.paymentId,
+        amount: Number(refund.amount),
+        failureReason: failureReason ?? null,
+      },
+      tx: db,
+    });
+
+    return updated;
   }
 
   /**
@@ -335,22 +396,21 @@ export class RefundService {
       });
 
       // Write immutable AuditLog
-      await db.auditLog.create({
-        data: {
-          actorId: cleanAdminId,
-          action: "MANUAL_REFUND_COMPLETED",
-          entityType: "Refund",
-          entityId: refund.id,
-          metadata: {
-            paymentId: payment.id,
-            orderId: payment.orderId,
-            refundAmount: Number(refund.amount),
-            transactionReference: cleanRef,
-            gateway: payment.gateway,
-            isFullRefund,
-            notes: params.notes?.trim() || null,
-          },
+      await recordAuditLog({
+        actorId: cleanAdminId,
+        action: "MANUAL_REFUND_COMPLETED",
+        entityType: "Refund",
+        entityId: refund.id,
+        metadata: {
+          paymentId: payment.id,
+          orderId: payment.orderId,
+          refundAmount: Number(refund.amount),
+          transactionReference: cleanRef,
+          gateway: payment.gateway,
+          isFullRefund,
+          notes: params.notes?.trim() || null,
         },
+        tx: db,
       });
 
       // Write OrderHistory

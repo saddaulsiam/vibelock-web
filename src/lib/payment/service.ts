@@ -17,6 +17,7 @@ import {
   normalizePaymentGateway,
 } from "./constants";
 import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
+import { recordAuditLog } from "@/lib/audit";
 
 const FORBIDDEN_METADATA_KEYS = new Set([
   "store_passwd",
@@ -1260,6 +1261,22 @@ export class PaymentService {
               status: currentOrder.status,
               notes: `[EXCESS_CAPTURE] Excess capture recorded via ${gateway}. Flagged for administrative review / refund reconciliation.`,
             },
+          });
+          await recordAuditLog({
+            actorId: currentOrder.userId || null,
+            action: "PAYMENT_EXCESS_CAPTURE_RECORDED",
+            entityType: "Payment",
+            entityId: currentPayment.id,
+            metadata: {
+              orderId: currentPayment.orderId,
+              orderNumber: currentOrder.orderNumber,
+              gateway,
+              merchantReferenceId,
+              providerTransactionId:
+                primaryCaptureBankTranId ?? verification.providerTransactionId,
+              amount: Number(currentPayment.amount),
+            },
+            tx,
           });
         }
 

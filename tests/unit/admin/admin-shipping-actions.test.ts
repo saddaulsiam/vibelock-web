@@ -6,14 +6,21 @@ vi.mock("@/lib/auth/authorization", () => ({
   requireRole: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/prisma/client", () => ({
-  default: {
+vi.mock("@/lib/prisma/client", () => {
+  const client: Record<string, unknown> = {
     shippingZone: {
       create: vi.fn(),
       update: vi.fn(),
     },
-  },
-}));
+    auditLog: {
+      create: vi.fn().mockResolvedValue({ id: "audit-1" }),
+    },
+    $transaction: vi.fn(async (cb: unknown) =>
+      typeof cb === "function" ? (cb as (tx: unknown) => unknown)(client) : cb
+    ),
+  };
+  return { default: client };
+});
 
 vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),

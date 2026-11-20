@@ -22,6 +22,9 @@ const { mockPrisma } = vi.hoisted(() => {
       updateMany: vi.fn(async () => ({ count: 1 })),
       delete: vi.fn(async () => ({})),
     },
+    auditLog: {
+      create: vi.fn(async () => ({ id: "audit-log-uuid" })),
+    },
     $queryRaw: vi.fn(async () => []),
     $transaction: vi.fn(async (cb: any) => cb(mock)),
   };

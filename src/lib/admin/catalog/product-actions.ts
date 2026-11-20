@@ -10,6 +10,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 import prisma from "@/lib/prisma/client";
+import { recordAuditLog } from "@/lib/audit";
 import { getAdminProducts, type AdminProductsQueryOptions } from "./catalog-queries";
 import {
   type AdminActionState,
@@ -281,7 +282,7 @@ export async function saveProductAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   const parsed = await parseProduct(formData);
   if ("error" in parsed) return { error: parsed.error ?? null };
   const product = parsed.data;
@@ -447,6 +448,21 @@ export async function saveProductAction(
           })),
         });
       }
+
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: product.id ? "PRODUCT_UPDATED" : "PRODUCT_CREATED",
+        entityType: "Product",
+        entityId: productId!,
+        metadata: {
+          name: product.name,
+          slug: product.slug,
+          status: product.status,
+          categoryIds: product.categoryIds,
+          variantCount: product.variants.length,
+        },
+        tx,
+      });
     });
   } catch (error) {
     if (error instanceof Error) {
@@ -474,7 +490,7 @@ export async function toggleProductPublishedAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid product." };
   const product = await prisma.product.findUnique({
@@ -482,12 +498,23 @@ export async function toggleProductPublishedAction(
     select: { status: true },
   });
   if (!product) return { error: "This product no longer exists." };
-  await prisma.product.update({
-    where: { id: id.data },
-    data: {
-      status:
-        product.status === ProductStatus.PUBLISHED ? ProductStatus.DRAFT : ProductStatus.PUBLISHED,
-    },
+  const newStatus =
+    product.status === ProductStatus.PUBLISHED ? ProductStatus.DRAFT : ProductStatus.PUBLISHED;
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id: id.data },
+      data: {
+        status: newStatus,
+      },
+    });
+    await recordAuditLog({
+      actorId: admin?.id,
+      action: "PRODUCT_STATUS_TOGGLED",
+      entityType: "Product",
+      entityId: id.data,
+      metadata: { previousStatus: product.status, newStatus },
+      tx,
+    });
   });
   refreshCatalog();
   return ok;
@@ -497,7 +524,7 @@ export async function deleteProductAction(
   _previous: AdminActionState,
   formData: FormData
 ): Promise<AdminActionState> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   const id = z.string().uuid().safeParse(formData.get("id"));
   if (!id.success) return { error: "Choose a valid product." };
   const product = await prisma.product.findUnique({
@@ -529,7 +556,16 @@ export async function deleteProductAction(
     };
   }
   try {
-    await prisma.product.delete({ where: { id: id.data } });
+    await prisma.$transaction(async (tx) => {
+      await tx.product.delete({ where: { id: id.data } });
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "PRODUCT_DELETED",
+        entityType: "Product",
+        entityId: id.data,
+        tx,
+      });
+    });
   } catch {
     return {
       error: "This product is still in use and could not be deleted. Unpublish it instead.",
@@ -556,14 +592,27 @@ export async function toggleProductFeaturedAction(
   productId: string,
   isFeatured: boolean
 ): Promise<AdminActionState & { isFeatured?: boolean }> {
-  await requireRole("MANAGER");
+  const admin = await requireRole("MANAGER");
   if (!productId) return { error: "Missing product ID." };
 
   try {
-    const updated = await prisma.product.update({
-      where: { id: productId },
-      data: { isFeatured },
-      select: { id: true, name: true, isFeatured: true },
+    const updated = await prisma.$transaction(async (tx) => {
+      const u = await tx.product.update({
+        where: { id: productId },
+        data: { isFeatured },
+        select: { id: true, name: true, isFeatured: true },
+      });
+
+      await recordAuditLog({
+        actorId: admin?.id,
+        action: "PRODUCT_FEATURED_TOGGLED",
+        entityType: "Product",
+        entityId: u.id,
+        metadata: { name: u.name, isFeatured: u.isFeatured },
+        tx,
+      });
+
+      return u;
     });
 
     refreshCatalog();

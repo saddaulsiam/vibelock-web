@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma/client";
 import { ShipmentStatus } from "@prisma/client";
 import { ShippingProvider } from "./types";
+import { recordAuditLog } from "@/lib/audit";
 import {
   checkOnlinePaymentFulfillmentEligibility,
   type PaymentFulfillmentCheckTarget,
@@ -36,7 +37,7 @@ async function checkPaymentCaptureTableAvailability(): Promise<boolean> {
 export class ShippingService {
   constructor(private provider: ShippingProvider) {}
 
-  async createShipmentForOrder(orderId: string) {
+  async createShipmentForOrder(orderId: string, actorId?: string | null) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: { shipment: true },
@@ -220,6 +221,20 @@ export class ShippingService {
         where: { id: orderId },
         data: { status: providerStatus === "DELIVERED" ? "DELIVERED" : "SHIPPED" },
       });
+      await recordAuditLog({
+        actorId,
+        action: "SHIPMENT_CREATED",
+        entityType: "Shipment",
+        entityId: updated.id,
+        metadata: {
+          orderId,
+          provider: updated.provider,
+          providerShipmentId: updated.providerShipmentId,
+          trackingNumber: updated.trackingNumber,
+          status: updated.status,
+        },
+        tx,
+      });
       return { shipment: updated };
     });
 
@@ -292,7 +307,11 @@ export class ShippingService {
     return this.updateShipmentStatus(shipment.id, result.status);
   }
 
-  async updateShipmentStatus(shipmentId: string, newStatus: ShipmentStatus) {
+  async updateShipmentStatus(
+    shipmentId: string,
+    newStatus: ShipmentStatus,
+    actorId?: string | null
+  ) {
     // 1. Identify shipment's orderId without locking
     const preliminaryShipment = await prisma.shipment.findUnique({
       where: { id: shipmentId },
@@ -393,6 +412,20 @@ export class ShippingService {
                 failureReason,
               },
             });
+            await recordAuditLog({
+              actorId,
+              action: "SHIPMENT_STATUS_UPDATED",
+              entityType: "Shipment",
+              entityId: shipmentId,
+              metadata: {
+                orderId,
+                from: shipment.status,
+                to: newStatus,
+                failureReason,
+                orderStatusAdvanced: false,
+              },
+              tx,
+            });
             return heldShipment;
           }
         }
@@ -409,6 +442,20 @@ export class ShippingService {
           });
         }
       }
+
+      await recordAuditLog({
+        actorId,
+        action: "SHIPMENT_STATUS_UPDATED",
+        entityType: "Shipment",
+        entityId: shipmentId,
+        metadata: {
+          orderId,
+          from: shipment.status,
+          to: newStatus,
+          orderStatusAdvanced: advancesToShipped || advancesToDelivered,
+        },
+        tx,
+      });
 
       return updated;
     });
