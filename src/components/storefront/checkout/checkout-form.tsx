@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/select-native";
+import { DistrictSelect } from "./district-select";
 import { Textarea } from "@/components/ui/textarea";
 import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
 import {
@@ -28,74 +28,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-
-// ── 64 Districts of Bangladesh ───────────────────────────────────────────────
-const BD_DISTRICTS = [
-  "Dhaka", // Placed first as the highest volume market
-  "Chattogram",
-  "Gazipur",
-  "Narayanganj",
-  "Sylhet",
-  "Rajshahi",
-  "Khulna",
-  "Barishal",
-  "Rangpur",
-  "Mymensingh",
-  "Cumilla",
-  "Cox's Bazar",
-  "Bogura",
-  "Bagerhat",
-  "Bandarban",
-  "Barguna",
-  "Bhola",
-  "Brahmanbaria",
-  "Chandpur",
-  "Chapai Nawabganj",
-  "Chuadanga",
-  "Dinajpur",
-  "Faridpur",
-  "Feni",
-  "Gaibandha",
-  "Gopalganj",
-  "Habiganj",
-  "Jamalpur",
-  "Jashore",
-  "Jhalokathi",
-  "Jhenaidah",
-  "Joypurhat",
-  "Khagrachhari",
-  "Kishoreganj",
-  "Kurigram",
-  "Kushtia",
-  "Lakshmipur",
-  "Lalmonirhat",
-  "Madaripur",
-  "Magura",
-  "Manikganj",
-  "Meherpur",
-  "Moulvibazar",
-  "Munshiganj",
-  "Naogaon",
-  "Narail",
-  "Narsingdi",
-  "Natore",
-  "Netrokona",
-  "Nilphamari",
-  "Noakhali",
-  "Pabna",
-  "Panchagarh",
-  "Patuakhali",
-  "Pirojpur",
-  "Rajbari",
-  "Rangamati",
-  "Satkhira",
-  "Shariatpur",
-  "Sherpur",
-  "Sirajganj",
-  "Sunamganj",
-  "Tangail",
-  "Thakurgaon",
-] as const;
 
 interface CheckoutFormProps {
   cart: CartDTO;
@@ -572,7 +504,7 @@ export function CheckoutForm({
                     size="lg"
                     type="tel"
                     autoComplete="tel"
-                    value={customerPhone}
+                    value={customerPhone && customerPhone}
                     onChange={(e) => {
                       setCustomerPhone(e.target.value);
                       if (errors.customerPhone)
@@ -640,28 +572,16 @@ export function CheckoutForm({
                   >
                     Delivery District <span className="text-red-500">*</span>
                   </Label>
-                  <NativeSelect
+                  <DistrictSelect
                     id="shippingCity"
-                    variant="brand"
-                    size="lg"
                     value={shippingCity}
-                    onChange={(e) => {
-                      setShippingCity(e.target.value);
+                    onChange={(city) => {
+                      setShippingCity(city);
                       if (errors.shippingCity)
                         setErrors((prev) => ({ ...prev, shippingCity: undefined }));
                     }}
-                    aria-invalid={Boolean(errors.shippingCity)}
-                    className={!shippingCity ? "text-neutral-400" : ""}
-                  >
-                    <option value="" disabled>
-                      Select your district
-                    </option>
-                    {BD_DISTRICTS.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
-                      </option>
-                    ))}
-                  </NativeSelect>
+                    error={Boolean(errors.shippingCity)}
+                  />
                   {fieldError("shippingCity")}
                 </div>
               </div>
@@ -699,8 +619,8 @@ export function CheckoutForm({
                               name="shippingMethodSelection"
                               value={method.id}
                               checked={isSelected}
-                              size="sm"
-                              withRing={true}
+                              size="default"
+                              className="items-center"
                               onChange={() => {
                                 setSelectedShippingMethodId(method.id);
                                 if (errors.shippingCity) {

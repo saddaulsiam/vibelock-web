@@ -5,7 +5,7 @@ import { cn } from "cn";
 
 const inputVariants = cva(
   [
-    "border-input file:text-foreground placeholder:text-muted-foreground",
+    "border-input file:text-foreground placeholder:text-vl-dark-900/30",
     "focus-visible:border-ring focus-visible:ring-ring/50",
     "disabled:bg-input/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20",
     "dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
@@ -27,11 +27,11 @@ const inputVariants = cva(
          * obsidian border, and electric cyber cyan focus ring.
          */
         brand:
-          "rounded-brand bg-white border-vl-black/15 text-vl-black placeholder:text-muted-foreground hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
+          "rounded-brand bg-white border-vl-black/15 text-vl-black hover:border-vl-black/40 focus-visible:border-vl-cyan focus-visible:ring focus-visible:ring-vl-cyan",
         /**
          * dark — Auth page & POS terminal dark-surface style.
          */
-        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white placeholder:text-muted-foreground focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
+        dark: "rounded-ui bg-surface-dark border-[var(--color-border-dark-input)] text-white focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400",
       },
       size: {
         /**
