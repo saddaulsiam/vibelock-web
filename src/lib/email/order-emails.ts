@@ -3,6 +3,8 @@ import "server-only";
 import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
 import { Resend } from "resend";
+import { maskEmail } from "@/lib/email/client";
+import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 let resendClient: Resend | null = null;
 if (env.RESEND_API_KEY) {
@@ -70,11 +72,11 @@ export async function sendOrderConfirmationEmail(
     if (env.NODE_ENV === "production") {
       console.warn(
         "⚠️ RESEND_API_KEY is not configured in production. Order confirmation email skipped for:",
-        data.customerEmail
+        maskEmail(data.customerEmail)
       );
     } else {
       console.log(
-        `[Order Email Simulation] Confirmation email for order #${data.orderNumber} sent to ${data.customerEmail}`
+        `[Order Email Simulation] Confirmation email for order #${data.orderNumber} sent to ${maskEmail(data.customerEmail)}`
       );
     }
     return true;
@@ -188,9 +190,16 @@ export async function sendOrderConfirmationEmail(
     return true;
   } catch (error) {
     console.error(
-      `[Order Email] Failed to send order confirmation to ${data.customerEmail}:`,
+      `[Order Email] Failed to send order confirmation to ${maskEmail(data.customerEmail)}:`,
       error
     );
+    logSecurityAlert("EMAIL_DELIVERY_FAILED", {
+      endpoint: "sendOrderConfirmationEmail",
+      emailHash: hashSecurityIdentifier(data.customerEmail),
+      orderHash: hashSecurityIdentifier(data.orderNumber),
+      provider: "resend",
+      reason: error instanceof Error ? error.message : "resend_provider_error",
+    });
     return false;
   }
 }

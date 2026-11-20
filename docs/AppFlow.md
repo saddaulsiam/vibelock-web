@@ -86,8 +86,11 @@
 6.  Sync order/shipment timestamps consistently.
 7.  If provider credentials are missing or mock provider is configured
     in production, fail safely.
-8.  Use authenticated status refresh for Steadfast until a verified
-    official webhook contract is available.
+8.  Steadfast webhook updates are received at `/api/shipping/webhook/steadfast`
+    authenticated via Bearer token or HMAC-SHA256 signature against `COURIER_WEBHOOK_SECRET`.
+    Delivery updates (`DELIVERED`) transition shipment status but leave COD payment
+    reconciliation pending until courier cash remittance is confirmed.
+    Admin manual status refresh remains available as a fail-safe fallback.
 
 ## 7. Future POS flow
 

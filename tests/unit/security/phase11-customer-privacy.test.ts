@@ -417,8 +417,10 @@ describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
       const envObj = process.env as Record<string, string | undefined>;
       const prevEnv = envObj.NODE_ENV;
       const prevApiKey = envObj.SMS_API_KEY;
+      const prevApiUrl = envObj.SMS_API_URL;
       envObj.NODE_ENV = "production";
       envObj.SMS_API_KEY = "dummy-sms-api-key";
+      envObj.SMS_API_URL = "https://mock-sms.local";
 
       const originalFetch = globalThis.fetch;
       globalThis.fetch = vi.fn().mockRejectedValue(new Error("SMS gateway connection refused"));
@@ -437,6 +439,7 @@ describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
       globalThis.fetch = originalFetch;
       envObj.NODE_ENV = prevEnv;
       envObj.SMS_API_KEY = prevApiKey;
+      envObj.SMS_API_URL = prevApiUrl;
       consoleSpy.mockRestore();
     });
 

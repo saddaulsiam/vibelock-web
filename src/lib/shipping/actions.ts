@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import { recordAuditLog } from "@/lib/audit";
 import { ShippingService } from "./service";
 import { getShippingProvider } from "./provider";
+import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 export async function adminCreateShipmentAction(orderId: string) {
   const admin = await requireRole("STAFF");
@@ -39,6 +40,12 @@ export async function adminCreateShipmentAction(orderId: string) {
     return { success: true, shipmentId: shipment.id };
   } catch (error) {
     console.error("[adminCreateShipmentAction] Shipment creation failed", error);
+    logSecurityAlert("COURIER_DISPATCH_FAILED", {
+      endpoint: "adminCreateShipmentAction",
+      gateway: provider?.name || "courier",
+      orderHash: hashSecurityIdentifier(orderId),
+      reason: error instanceof Error ? error.message : "shipment_creation_failed",
+    });
     const safeMessages = new Set([
       "Order not found",
       "Cannot ship a cancelled order",

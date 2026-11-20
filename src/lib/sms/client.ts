@@ -24,19 +24,35 @@ export function maskPhoneNumber(phone?: unknown): string {
 /**
  * Generate and dispatch a 6-digit numeric OTP for phone verification.
  * In development, logs the OTP to the server console and returns it for local testing.
+ * In production, requires a configured SMS provider and verifies actual dispatch.
  */
-export async function sendOtp(phone: string): Promise<{ success: boolean; devOtp?: string }> {
+export async function sendOtp(
+  phone: string
+): Promise<{ success: boolean; devOtp?: string; error?: string }> {
+  const isDev = process.env.NODE_ENV === "development";
+  const isProd = process.env.NODE_ENV === "production";
+
+  // When SMS provider is unconfigured in production, fail honestly with an actionable message
+  if (isProd && (!process.env.SMS_API_KEY || !process.env.SMS_API_URL)) {
+    console.warn(
+      `[SMS] SMS gateway is unconfigured in production. OTP dispatch rejected for ${maskPhoneNumber(phone)}.`
+    );
+    return {
+      success: false,
+      error: "SMS service is temporarily unavailable. Please sign in with your phone and password or email.",
+    };
+  }
+
   // Generate cryptographically random 6-digit numeric OTP
   const rawOtp = crypto.randomInt(100000, 999999).toString();
   const tokenHash = crypto.createHash("sha256").update(`${phone}:${rawOtp}`).digest("hex");
   const expires = new Date(Date.now() + 5 * 60 * 1000); // 5-minute validity window
 
-  // Invalidate any older OTPs for this phone number
+  // Store verification record first so that database errors abort before any SMS dispatch
   await prisma.verificationToken.deleteMany({
     where: { identifier: `phone_otp:${phone}` },
   });
 
-  // Store new verification record
   await prisma.verificationToken.create({
     data: {
       identifier: `phone_otp:${phone}`,
@@ -45,8 +61,31 @@ export async function sendOtp(phone: string): Promise<{ success: boolean; devOtp
     },
   });
 
-  // Strictly only return devOtp in local development environment
-  const isDev = process.env.NODE_ENV === "development";
+  // In production with a verified provider configured, dispatch the SMS
+  if (isProd) {
+    const sent = await sendSmsNotification({
+      phone,
+      message: `Your VibeLock verification code is ${rawOtp}. Valid for 5 minutes.`,
+      purpose: "otp",
+    });
+
+    if (!sent) {
+      // Rollback: delete only this specific token so concurrent newer requests are preserved
+      await prisma.verificationToken.deleteMany({
+        where: {
+          identifier: `phone_otp:${phone}`,
+          token: tokenHash,
+        },
+      });
+      console.error(
+        `[SMS] Failed to deliver OTP via SMS gateway to ${maskPhoneNumber(phone)}. Token invalidated.`
+      );
+      return {
+        success: false,
+        error: "Failed to deliver SMS verification code. Please try again or sign in with your password.",
+      };
+    }
+  }
 
   // Highlight OTP in console for local development and testing with masked phone
   if (isDev) {
@@ -125,20 +164,18 @@ export async function sendSmsNotification({
   }
 
   try {
-    // In production, dispatch via configured BD SMS gateway (e.g., Greenweb, ElitBuzz, BulkSMSBD)
     const smsApiKey = process.env.SMS_API_KEY;
+    const smsApiUrl = process.env.SMS_API_URL;
     const smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
 
-    if (!smsApiKey) {
+    if (!smsApiKey || !smsApiUrl) {
       console.warn(
-        `[SMS] SMS_API_KEY not configured in production. SMS notification skipped for ${maskPhoneNumber(cleanPhone)}.`
+        `[SMS] Verified SMS provider is unconfigured in production. SMS notification skipped for ${maskPhoneNumber(cleanPhone)}.`
       );
       return false;
     }
 
-    // Generic BD HTTP GET/POST API structure compatible with major Bangladeshi SMS aggregators
-    const endpoint = process.env.SMS_API_URL || "https://api.smsnet.com.bd/sendsms";
-    const res = await fetch(endpoint, {
+    const res = await fetch(smsApiUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

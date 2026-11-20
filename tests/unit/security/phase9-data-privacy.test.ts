@@ -296,14 +296,21 @@ describe("Phase 9: Data Protection & Privacy Security", () => {
 
     it("never returns devOtp when NODE_ENV is production", async () => {
       const originalEnv = process.env.NODE_ENV;
+      const originalKey = process.env.SMS_API_KEY;
+      const originalUrl = process.env.SMS_API_URL;
       try {
         (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+        (process.env as Record<string, string | undefined>).SMS_API_KEY = "test-sms-api-key";
+        (process.env as Record<string, string | undefined>).SMS_API_URL = "https://mock-sms.local";
+        vi.spyOn(global, "fetch").mockResolvedValueOnce({ ok: true } as unknown as Response);
         const { sendOtp } = await import("@/lib/sms/client");
         const res = await sendOtp("01712345678");
         expect(res.success).toBe(true);
         expect(res.devOtp).toBeUndefined();
       } finally {
         (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
+        (process.env as Record<string, string | undefined>).SMS_API_KEY = originalKey;
+        (process.env as Record<string, string | undefined>).SMS_API_URL = originalUrl;
       }
     });
 

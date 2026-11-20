@@ -16,6 +16,12 @@ export const APPROVED_SECURITY_EVENTS = [
   "PAYMENT_TAMPERING_DETECTED",
   "PAYMENT_DUPLICATE_CAPTURE_ATTEMPT",
   "PAYMENT_RATE_LIMIT_EXCEEDED",
+  // Operational Failure Events (Phase 12.4.4)
+  "EMAIL_DELIVERY_FAILED",
+  "COURIER_DISPATCH_FAILED",
+  "COURIER_WEBHOOK_REJECTED",
+  "CRON_EXECUTION_FAILED",
+  "CHECKOUT_ORDER_CREATION_FAILED",
 ] as const;
 
 export type SecurityEventName = (typeof APPROVED_SECURITY_EVENTS)[number];
@@ -40,6 +46,9 @@ export const APPROVED_METADATA_KEYS = new Set([
   "gateway",
   "referenceHash",
   "orderHash",
+  "provider",
+  "jobName",
+  "errorCode",
 ]);
 
 export interface SecurityAlertMetadata {
@@ -55,6 +64,9 @@ export interface SecurityAlertMetadata {
   gateway?: string;
   referenceHash?: string;
   orderHash?: string;
+  provider?: string;
+  jobName?: string;
+  errorCode?: string;
   [key: string]: unknown;
 }
 
