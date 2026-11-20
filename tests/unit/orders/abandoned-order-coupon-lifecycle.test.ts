@@ -844,6 +844,24 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
       expect(json.success).toBe(true);
     });
 
+    it("accepts valid Bearer CRON_SECRET authorization for POST requests", async () => {
+      process.env.CRON_SECRET = "super-secret-cron-token";
+      mockPrisma.order.findMany.mockResolvedValueOnce([]);
+
+      const req = new NextRequest("http://localhost:3000/api/cron/orders/cleanup", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer super-secret-cron-token",
+        },
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.result).toBeDefined();
+    });
+
     it("accepts authorized STAFF user session even if CRON_SECRET is unconfigured", async () => {
       mockAuth.mockResolvedValueOnce({
         user: { id: "staff-1", role: "STAFF" },
