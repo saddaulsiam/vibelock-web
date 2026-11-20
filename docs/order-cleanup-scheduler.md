@@ -41,13 +41,16 @@ concurrency:
   group: cron-order-cleanup
   cancel-in-progress: false
 ```
-Overlapping workflow runs are queued rather than canceled (`cancel-in-progress: false`), ensuring that in-flight cleanups complete without race conditions or aborted transactions.
+- **Single Active Execution:** Only one workflow run in the `cron-order-cleanup` concurrency group executes at any given time. In-flight cleanups are never canceled (`cancel-in-progress: false`), preventing database transaction aborts or mid-batch race conditions.
+- **Pending Run Replacement (Non-FIFO):** GitHub Actions concurrency does **not** guarantee FIFO queuing of every pending run. If multiple triggers occur while a run is in progress, GitHub Actions retains at most one pending run in the queue; a newer pending run replaces an older pending run.
+- **Stateless Catch-up Guarantee:** This behavior is completely safe for order expiration. Because the endpoint evaluates `WHERE "expiresAt" < NOW()` under PostgreSQL `FOR UPDATE` pessimistic row locks, the cleanup operation is fully cumulative and stateless. If a pending run was replaced by a newer trigger during a backlog or high runner contention, the subsequent run evaluates and cleans up all accumulated expired orders across the database, guaranteeing full catch-up without dropped work or orphaned stock reservations.
 
-### Timeouts & Retries
+### Timeouts & Transient HTTP Retries
 - **Job Timeout:** `timeout-minutes: 5` ensures hung workflows fail fast.
 - **Connection Timeout:** `--connect-timeout 10` (10 seconds to establish TCP/TLS connection).
 - **Execution Max Time:** `--max-time 30` (30 seconds maximum total duration per request).
-- **Transient Failure Retries:** `--retry 3 --retry-delay 5 --retry-connrefused` automatically retries up to 3 times with a 5-second backoff on network blips or gateway timeouts (502/503/504).
+- **Transient HTTP Retries:** `--fail-with-body --retry 3 --retry-delay 5 --retry-connrefused` ensures curl treats HTTP 4xx and 5xx responses as errors, making transient HTTP status codes (408, 429, 500, 502, 503, 504) eligible for automatic retries up to 3 times with a 5-second backoff, while saving the response payload locally for safe inspection.
+- **Harden Metrics Logging:** Aggregate counts (`scanned`, `expired`, `skipped`) are extracted only if they are valid JSON numbers. The workflow strictly validates values against integer digits before logging; non-numeric values fall back to `N/A`, and raw responses or arbitrary strings are never echoed.
 
 ### Failure Visibility
 - Any non-2xx HTTP response (401, 500, 502, 503) or exhausted retries exits with code `1`, causing GitHub Actions to mark the job run as **Failed** (`::error::`).
