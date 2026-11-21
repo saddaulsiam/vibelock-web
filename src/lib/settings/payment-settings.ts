@@ -140,8 +140,8 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
   if (paystationActive) {
     options.push({
       value: "PAYSTATION",
-      title: "PayStation",
-      detail: "Pay securely via cards, mobile banking, or internet banking via PayStation.",
+      title: "Payment Online",
+      detail: "Instant payment via Cards, bKash, and Mobile Banking via PayStation.",
     });
   }
 

@@ -15,6 +15,7 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import {
+  Banknote,
   Check,
   CreditCard,
   ImageOff,
@@ -167,17 +168,17 @@ export function CheckoutForm({
           {
             value: "COD",
             title: "Cash on delivery",
-            detail: "Pay in cash when you receive your drop at your doorstep.",
+            detail: "Pay when your order arrives.",
           },
           {
             value: "PAYSTATION",
-            title: "Online Payment",
+            title: "Payment Online",
             detail: "Instant payment via Cards, bKash, and Mobile Banking via PayStation.",
           },
           {
             value: "BKASH",
-            title: "Direct bKash",
-            detail: "Fast direct checkout using your bKash wallet.",
+            title: "bKash",
+            detail: "Pay directly with your bKash wallet.",
           },
         ] as const);
 
@@ -843,14 +844,22 @@ export function CheckoutForm({
                               </span>
                             </div>
                           )}
-                          {method.value !== "COD" &&
-                            method.value !== "BKASH" && (
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center">
-                                <span className="bg-vl-dark-900/5 text-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-xs">
-                                  <CreditCard className="size-4" aria-hidden="true" />
-                                </span>
-                              </div>
-                            )}
+                          {method.value === "PAYSTATION" && (
+                            <div className="flex h-6 w-8 shrink-0 items-center justify-center">
+                              <Image
+                                src="/icons/paystation.png"
+                                alt="cod"
+                                width={130}
+                                height={30}
+                                className="h-auto w-7 object-contain"
+                              />
+                            </div>
+                            // <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+                            //   <span className="bg-vl-dark-900/5 text-vl-dark-900 flex size-7 shrink-0 items-center justify-center rounded-xs">
+                            //     <CreditCard className="size-4" aria-hidden="true" />
+                            //   </span>
+                            // </div>
+                          )}
                           <span className="text-vl-black text-sm leading-none font-bold">
                             {method.title}
                           </span>
@@ -872,10 +881,22 @@ export function CheckoutForm({
                             Direct bKash
                           </Badge>
                         )}
-                        {(method.value === "PAYSTATION" || method.value === "ONLINE") && (
-                          <Badge variant="outline" size="sm" className="border-purple-300 bg-purple-50 font-semibold text-purple-900">
-                            Cards / MFS
-                          </Badge>
+                        {method.value === "PAYSTATION" && (
+                          <div
+                            className="flex flex-wrap items-center gap-1.5"
+                            aria-label="Supported payment methods"
+                          >
+                            <span className="inline-flex h-5 items-center justify-center rounded-xs border border-purple-300 bg-purple-50 px-1.5 font-sans text-[9px] font-bold tracking-wider text-purple-700 shadow-xs">
+                              MFS
+                            </span>
+                            <span className="border-border inline-flex h-5 items-center justify-center rounded-xs border bg-white px-1.5 font-sans text-[9px] font-black tracking-wider text-[#1a1f71] italic shadow-xs">
+                              VISA
+                            </span>
+                            <span className="border-border inline-flex h-5 items-center justify-center gap-0.5 rounded-xs border bg-white px-1.5 shadow-xs">
+                              <span className="size-2.5 rounded-full bg-[#eb001b]" />
+                              <span className="-ml-1 size-2.5 rounded-full bg-[#f79e1b] opacity-90" />
+                            </span>
+                          </div>
                         )}
                       </div>
                     </SelectableCard>
@@ -1068,7 +1089,7 @@ export function CheckoutForm({
                   : paymentMethod === "COD"
                     ? "Place Order (Cash on Delivery)"
                     : paymentMethod === "ONLINE" || paymentMethod === "PAYSTATION"
-                      ? "Pay with PayStation"
+                      ? "Pay with (PayStation)"
                       : paymentMethod === "BKASH"
                         ? "Pay with bKash"
                         : "Pay Now"}
