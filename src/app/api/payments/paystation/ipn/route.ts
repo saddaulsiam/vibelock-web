@@ -46,6 +46,27 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const errorMessage = result.verification.error || "";
+
+      // Internal credential or configuration issue -> HTTP 500 (not tampering, not 400)
+      if (errorMessage.toLowerCase().includes("configuration missing")) {
+        return NextResponse.json({ error: "Payment gateway configuration error" }, { status: 500 });
+      }
+
+      // Upstream HTTP 4xx failures from PayStation query -> HTTP 500/502 (not client tampering, not 400)
+      if (errorMessage.includes("PayStation transaction-status query returned HTTP 4")) {
+        const isAuthError = errorMessage.includes("HTTP 401") || errorMessage.includes("HTTP 403");
+        return NextResponse.json(
+          {
+            error: isAuthError
+              ? "Payment gateway authentication error"
+              : "Upstream gateway query error",
+          },
+          { status: isAuthError ? 500 : 502 }
+        );
+      }
+
+      // Genuine untrusted or mismatched payload: caller reported transaction that fails authoritative verification
       const { logSecurityAlert } = await import("@/lib/monitoring/security-logger");
       logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
         endpoint: "paystation/ipn",
@@ -68,25 +89,39 @@ export async function POST(req: NextRequest) {
     const error = err as Error;
     console.error("[PayStation IPN Error] Processing failed:", error?.message);
 
-    // Differentiate retryable infrastructure/DB errors vs client errors
+    const message = error?.message || "";
+
+    // 1. Differentiate retryable infrastructure / network / timeout / DB failures -> HTTP 503
     const isRetryable =
       error?.name === "TimeoutError" ||
       error?.name === "AbortError" ||
       Boolean(
-        error?.message &&
-          (error.message.includes("P2028") ||
-            error.message.includes("P1001") ||
-            error.message.includes("P1002") ||
-            error.message.includes("P1008") ||
-            error.message.toLowerCase().includes("timeout") ||
-            error.message.toLowerCase().includes("econnreset") ||
-            error.message.toLowerCase().includes("etimedout") ||
-            error.message.toLowerCase().includes("fetch failed"))
+        message.includes("P2028") ||
+        message.includes("P1001") ||
+        message.includes("P1002") ||
+        message.includes("P1008") ||
+        message.toLowerCase().includes("timeout") ||
+        message.toLowerCase().includes("econnreset") ||
+        message.toLowerCase().includes("etimedout") ||
+        message.toLowerCase().includes("fetch failed")
       );
 
-    return NextResponse.json(
-      { error: isRetryable ? "Service temporarily unavailable" : "Bad Request" },
-      { status: isRetryable ? 503 : 400 }
-    );
+    if (isRetryable) {
+      return NextResponse.json({ error: "Service temporarily unavailable" }, { status: 503 });
+    }
+
+    // 2. Differentiate client payload errors / mismatches (e.g. unknown invoice, amount mismatch, etc.) -> HTTP 400
+    const isClientError =
+      message.includes("Missing transaction reference") ||
+      message.includes("Invalid transaction reference") ||
+      message.includes("Payment record not found") ||
+      message.includes("Payment verification failed");
+
+    if (isClientError) {
+      return NextResponse.json({ error: message || "Bad Request" }, { status: 400 });
+    }
+
+    // 3. Unexpected internal server exceptions return HTTP 500
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

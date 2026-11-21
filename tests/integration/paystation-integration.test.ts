@@ -306,7 +306,9 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
 
       const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toContain("/order-success/VL-20261121-PS01?payment=success");
+      expect(res.headers.get("location")).toContain(
+        "/order-success/VL-20261121-PS01?payment=success"
+      );
     });
 
     test("handles POST form-urlencoded browser callback redirect", async () => {
@@ -332,7 +334,9 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
 
       const res = await paystationCallbackPost(req);
       expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toContain("/order-success/VL-20261121-PS01?payment=success");
+      expect(res.headers.get("location")).toContain(
+        "/order-success/VL-20261121-PS01?payment=success"
+      );
     });
 
     test("supports JSON client response for headless verification", async () => {
@@ -445,7 +449,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(json.error).toContain("temporarily unavailable");
     });
 
-    test("returns 400 when IPN payload is genuinely unverified / rejected by PayStation", async () => {
+    test("returns 502 when upstream PayStation status query fails with HTTP 400 without tampering alert", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 400,
@@ -460,9 +464,118 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       });
 
       const res = await paystationIpnPost(req);
+      expect(res.status).toBe(502);
+      const json = await res.json();
+      expect(json.error).toContain("Upstream gateway query error");
+    });
+
+    test("returns 500 when upstream PayStation status query fails with HTTP 401 without tampering alert", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+      });
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(500);
+      const json = await res.json();
+      expect(json.error).toContain("authentication error");
+    });
+
+    test("returns 500 when PayStation merchant configuration is missing without tampering alert", async () => {
+      mockEnv.PAYSTATION_MERCHANT_ID = "";
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(500);
+      const json = await res.json();
+      expect(json.error).toContain("configuration error");
+
+      mockEnv.PAYSTATION_MERCHANT_ID = "test_merchant_id_123";
+    });
+
+    test("returns 400 when IPN payload transaction is genuinely rejected / not found by PayStation", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "1004",
+          status: "failed",
+          message: "Transaction not found",
+        }),
+      });
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
       expect(res.status).toBe(400);
       const json = await res.json();
       expect(json.error).toContain("Unverified IPN");
+    });
+
+    test("returns 400 for malformed JSON payload", async () => {
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{ malformed json",
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(400);
+      const json = await res.json();
+      expect(json.error).toBe("Invalid JSON payload");
+    });
+
+    test("returns 413 for oversized payload", async () => {
+      const oversizedText = "x".repeat(70000); // > 64 KB
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: oversizedText,
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(413);
+      const json = await res.json();
+      expect(json.error).toBe("Payload too large");
+    });
+
+    test("returns 500 on unexpected internal runtime exception", async () => {
+      mockPrisma.payment.findUnique.mockRejectedValueOnce(
+        new TypeError("Unexpected null pointer in database client")
+      );
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(500);
+      const json = await res.json();
+      expect(json.error).toBe("Internal Server Error");
     });
 
     test("returns 503 retryable status on database timeout/connectivity failure", async () => {

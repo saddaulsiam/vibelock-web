@@ -241,7 +241,8 @@ export class PaymentService {
           });
           return {
             success: false,
-            error: "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
+            error:
+              "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
           };
         }
         throw rateLimitErr;
@@ -299,7 +300,8 @@ export class PaymentService {
       if (activePending) {
         return {
           status: "IN_FLIGHT" as const,
-          error: "A payment initiation is already in progress for this order. Please wait a moment.",
+          error:
+            "A payment initiation is already in progress for this order. Please wait a moment.",
         };
       }
 
@@ -391,7 +393,9 @@ export class PaymentService {
             status: "FAILED",
             gatewayPayload: {
               error:
-                networkErr instanceof Error ? networkErr.message : "Network error during initiation",
+                networkErr instanceof Error
+                  ? networkErr.message
+                  : "Network error during initiation",
             },
           },
         })
@@ -616,7 +620,11 @@ export class PaymentService {
       const incomingTrxStatus =
         typeof payload.trx_status === "string" ? payload.trx_status.toUpperCase() : "";
       const isIncomingNonSuccess =
-        (!payload.val_id && !payload.paymentID && !payload.paymentId && !payload.trx_id && !payload.trxId) ||
+        (!payload.val_id &&
+          !payload.paymentID &&
+          !payload.paymentId &&
+          !payload.trx_id &&
+          !payload.trxId) ||
         incomingStatus === "FAILED" ||
         incomingStatus === "FAIL" ||
         incomingStatus === "CANCELLED" ||
@@ -679,6 +687,7 @@ export class PaymentService {
           status: verification.status,
           isUnverified: true,
           isRetryable: verification.isRetryable,
+          error: verification.error,
           verifiedMerchantReferenceId: merchantReferenceId,
           rawPayload: payload,
         },
@@ -885,7 +894,10 @@ export class PaymentService {
                 },
               }
             : currentPayment.status === PaymentStatus.PENDING
-              ? { id: currentPayment.id, status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] } }
+              ? {
+                  id: currentPayment.id,
+                  status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] },
+                }
               : { id: currentPayment.id, status: PaymentStatus.INITIATED };
 
         const updateResult = await tx.payment.updateMany({
@@ -922,27 +934,34 @@ export class PaymentService {
                       ? ((verification.rawPayload as Record<string, unknown>).val_id as string)
                       : undefined,
                   cardType:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.card_type === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_type ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).card_type as string)
                       : undefined,
                   cardBrand:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.card_brand === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_brand ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).card_brand as string)
                       : undefined,
                   amount: verification.verifiedAmount ?? Number(payment.amount),
                   currency: verification.verifiedCurrency ?? "BDT",
                   status: PaymentStatus.SUCCESS,
                   riskLevel:
-                    (verification.rawPayload as Record<string, unknown>)?.risk_level !== undefined &&
+                    (verification.rawPayload as Record<string, unknown>)?.risk_level !==
+                      undefined &&
                     (verification.rawPayload as Record<string, unknown>)?.risk_level !== null
-                      ? String((verification.rawPayload as Record<string, unknown>).risk_level).trim()
+                      ? String(
+                          (verification.rawPayload as Record<string, unknown>).risk_level
+                        ).trim()
                       : undefined,
                   riskTitle:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.risk_title === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.risk_title ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).risk_title as string)
                       : undefined,
                   tranDate:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.tran_date === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.tran_date ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).tran_date as string)
                       : undefined,
                   rawPayload: sanitizeCapturePayload(
@@ -1303,8 +1322,7 @@ export class PaymentService {
               orderNumber: currentOrder.orderNumber,
               gateway,
               merchantReferenceId,
-              providerTransactionId:
-                primaryCaptureBankTranId ?? verification.providerTransactionId,
+              providerTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
               amount: Number(currentPayment.amount),
             },
             tx,
