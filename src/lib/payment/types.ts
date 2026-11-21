@@ -50,6 +50,7 @@ export interface PaymentVerificationResult {
   rawPayload?: unknown;
   error?: string;
   isUnverified?: boolean;
+  isRetryable?: boolean;
 }
 
 export interface RefundInitiationRequest {

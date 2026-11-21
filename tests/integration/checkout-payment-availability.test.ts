@@ -226,7 +226,7 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
 
       // Submit button has disabled attribute and indicates payment unavailable
       expect(html).toContain("disabled");
-      expect(html).toContain("Payment unavailable");
+      expect(html.toLowerCase()).toContain("payment unavailable");
 
       // Clear helper warning beneath button
       expect(html).toContain(

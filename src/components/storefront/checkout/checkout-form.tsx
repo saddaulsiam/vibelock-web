@@ -35,7 +35,7 @@ interface CheckoutFormProps {
   defaultName: string;
   defaultPhone?: string;
   availablePaymentMethods?: Array<{
-    value: "COD" | "ONLINE" | "BKASH" | "NAGAD";
+    value: "COD" | "ONLINE" | "BKASH" | "NAGAD" | "PAYSTATION";
     title: string;
     detail: string;
   }>;
@@ -79,6 +79,9 @@ function getSafeCheckoutError(error: string | undefined) {
   }
   if (error.toLowerCase().includes("nagad payment is currently unavailable")) {
     return "Nagad payment is currently unavailable. Please choose another payment method.";
+  }
+  if (error.toLowerCase().includes("paystation payment is currently unavailable")) {
+    return "PayStation payment is currently unavailable. Please choose another payment method.";
   }
   if (
     error.toLowerCase().includes("shipping") ||
@@ -914,6 +917,11 @@ export function CheckoutForm({
                           <span className="inline-flex h-5 items-center justify-center rounded-xs bg-[#e31018] px-1.5 text-[9px] font-bold text-white shadow-xs">
                             Direct Wallet
                           </span>
+                        )}
+                        {method.value === "PAYSTATION" && (
+                          <Badge variant="outline" size="sm" className="border-purple-300 bg-purple-50 font-semibold text-purple-900">
+                            Cards / MFS
+                          </Badge>
                         )}
                       </div>
                     </SelectableCard>

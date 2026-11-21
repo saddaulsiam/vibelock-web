@@ -169,6 +169,9 @@ export function getHumanGatewayName(
   if (normalized === "NAGAD") {
     return "Nagad";
   }
+  if (normalized === "PAYSTATION") {
+    return "PayStation";
+  }
   if (normalized === "BANGLA_QR") {
     return "Bangla QR";
   }
