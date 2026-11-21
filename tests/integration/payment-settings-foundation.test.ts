@@ -16,9 +16,9 @@ const { mockEnv } = vi.hoisted(() => ({
     NODE_ENV: "test",
     DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock",
     AUTH_SECRET: "mock-secret-for-testing-at-least-32-chars-long",
-    SSLCOMMERZ_STORE_ID: "vibelock_ssl_store",
-    SSLCOMMERZ_STORE_PASSWORD: "vibelock_ssl_passwd",
-    SSLCOMMERZ_SANDBOX: true,
+    PAYSTATION_MERCHANT_ID: "vibelock_ps_merchant",
+    PAYSTATION_PASSWORD: "vibelock_ps_passwd",
+    PAYSTATION_SANDBOX: true,
   },
 }));
 
@@ -91,8 +91,8 @@ import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout
 describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Validation", () => {
   beforeEach(() => {
     mockSession = null;
-    mockEnv.SSLCOMMERZ_STORE_ID = "vibelock_ssl_store";
-    mockEnv.SSLCOMMERZ_STORE_PASSWORD = "vibelock_ssl_passwd";
+    mockEnv.PAYSTATION_MERCHANT_ID = "vibelock_ps_merchant";
+    mockEnv.PAYSTATION_PASSWORD = "vibelock_ps_passwd";
     vi.clearAllMocks();
 
     // Default mock behavior: database table exists and queries return empty/null (missing rows)
@@ -183,28 +183,37 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       expect(enabled).toBe(true);
     });
 
-    test("SSLCOMMERZ defaults to enabled ONLY when store credentials are configured", async () => {
-      // With credentials
-      mockEnv.SSLCOMMERZ_STORE_ID = "test_store";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "test_passwd";
+    test("PAYSTATION requires both merchant credentials and database enablement", async () => {
+      // With credentials but no DB row -> false
+      mockEnv.PAYSTATION_MERCHANT_ID = "test_merchant";
+      mockEnv.PAYSTATION_PASSWORD = "test_passwd";
       mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue(null);
-      const enabledWithKeys = await isPaymentMethodEnabled("ONLINE");
-      expect(enabledWithKeys).toBe(true);
+      const enabledWithoutRow = await isPaymentMethodEnabled("ONLINE");
+      expect(enabledWithoutRow).toBe(false);
 
-      // Without credentials
-      mockEnv.SSLCOMMERZ_STORE_ID = "";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "";
+      // With credentials and DB row enabled -> true
+      mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue({
+        id: "ps-row-id",
+        code: "PAYSTATION",
+        name: "PayStation",
+        isEnabled: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+      const enabledWithRow = await isPaymentMethodEnabled("ONLINE");
+      expect(enabledWithRow).toBe(true);
+
+      // Without credentials even if DB row is enabled -> false
+      mockEnv.PAYSTATION_MERCHANT_ID = "";
+      mockEnv.PAYSTATION_PASSWORD = "";
       const enabledWithoutKeys = await isPaymentMethodEnabled("ONLINE");
       expect(enabledWithoutKeys).toBe(false);
     });
 
-    test("BKASH and NAGAD default to disabled when database row is missing", async () => {
+    test("BKASH defaults to disabled when database row is missing", async () => {
       mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue(null);
       const bkashEnabled = await isPaymentMethodEnabled("BKASH");
       expect(bkashEnabled).toBe(false);
-
-      const nagadEnabled = await isPaymentMethodEnabled("NAGAD");
-      expect(nagadEnabled).toBe(false);
     });
 
     test("unknown or arbitrary payment method codes default to disabled", async () => {
@@ -285,31 +294,31 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       expect(codStatus).toBe(true);
     });
 
-    test("enforces credential gating: cannot enable SSLCOMMERZ in DB if credentials missing in environment", async () => {
-      mockEnv.SSLCOMMERZ_STORE_ID = "";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "";
+    test("enforces credential gating: cannot enable PAYSTATION in DB if credentials missing in environment", async () => {
+      mockEnv.PAYSTATION_MERCHANT_ID = "";
+      mockEnv.PAYSTATION_PASSWORD = "";
 
-      const result = await updatePaymentMethodSetting("SSLCOMMERZ", true, "admin-1");
+      const result = await updatePaymentMethodSetting("PAYSTATION", true, "admin-1");
       expect(result.success).toBe(false);
       expect(result.error).toContain(
-        "Cannot enable SSLCOMMERZ without configured store credentials"
+        "Cannot enable PayStation without configured credentials in environment"
       );
     });
 
-    test("enforces credential gating: isPaymentMethodEnabled returns false for SSLCOMMERZ even if DB row is true", async () => {
-      mockEnv.SSLCOMMERZ_STORE_ID = "";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "";
+    test("enforces credential gating: isPaymentMethodEnabled returns false for PAYSTATION even if DB row is true", async () => {
+      mockEnv.PAYSTATION_MERCHANT_ID = "";
+      mockEnv.PAYSTATION_PASSWORD = "";
       mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue({
-        id: "ssl-row-id",
-        code: "SSLCOMMERZ",
-        name: "SSLCOMMERZ Gateway",
+        id: "ps-row-id",
+        code: "PAYSTATION",
+        name: "PayStation Gateway",
         isEnabled: true,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
 
-      const sslStatus = await isPaymentMethodEnabled("ONLINE");
-      expect(sslStatus).toBe(false);
+      const psStatus = await isPaymentMethodEnabled("ONLINE");
+      expect(psStatus).toBe(false);
     });
 
     test("rejects modifying unapproved providers like ROCKET", async () => {
@@ -365,28 +374,41 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
   });
 
   describe("6. Storefront Payment Methods Dynamic Visibility", () => {
-    test("returns COD and ONLINE when both are active", async () => {
-      mockEnv.SSLCOMMERZ_STORE_ID = "valid_store";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "valid_passwd";
-      mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue(null);
+    test("returns COD and PAYSTATION when both are active", async () => {
+      mockEnv.PAYSTATION_MERCHANT_ID = "valid_merchant";
+      mockEnv.PAYSTATION_PASSWORD = "valid_passwd";
+      mockPrisma.paymentMethodSetting.findUnique.mockImplementation(
+        async ({ where }: { where: { code?: string } }) => {
+        if (where?.code === "PAYSTATION") {
+          return {
+            id: "ps-1",
+            code: "PAYSTATION",
+            name: "PayStation",
+            isEnabled: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          };
+        }
+        return null;
+      });
 
       const options = await getStorefrontPaymentMethods();
       const values = options.map((o) => o.value);
 
       expect(values).toContain("COD");
-      expect(values).toContain("ONLINE");
+      expect(values).toContain("PAYSTATION");
     });
 
-    test("omits ONLINE when SSLCOMMERZ credentials are missing", async () => {
-      mockEnv.SSLCOMMERZ_STORE_ID = "";
-      mockEnv.SSLCOMMERZ_STORE_PASSWORD = "";
+    test("omits PAYSTATION when PayStation credentials are missing", async () => {
+      mockEnv.PAYSTATION_MERCHANT_ID = "";
+      mockEnv.PAYSTATION_PASSWORD = "";
       mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue(null);
 
       const options = await getStorefrontPaymentMethods();
       const values = options.map((o) => o.value);
 
       expect(values).toContain("COD");
-      expect(values).not.toContain("ONLINE");
+      expect(values).not.toContain("PAYSTATION");
     });
   });
 
@@ -396,10 +418,9 @@ describe("VibeLock Phase 2B — Database-Backed Payment Settings & Bootstrap Val
       const overview = await getPaymentSettingsOverview();
       const stringified = JSON.stringify(overview);
 
-      expect(stringified).not.toContain("vibelock_ssl_passwd");
-      expect(stringified).not.toContain("storePassword");
-      expect(stringified).not.toContain("store_passwd");
-      expect(stringified).not.toContain("SSLCOMMERZ_STORE_PASSWORD");
+      expect(stringified).not.toContain("vibelock_ps_passwd");
+      expect(stringified).not.toContain("merchantPassword");
+      expect(stringified).not.toContain("PAYSTATION_PASSWORD");
       expect(stringified).not.toContain("appSecret");
       expect(stringified).not.toContain("BKASH_APP_SECRET");
     });

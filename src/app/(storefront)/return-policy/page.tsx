@@ -195,11 +195,11 @@ export default function ReturnPolicyPage() {
                       no expiry date.
                     </li>
                     <li>
-                      <strong>Mobile Financial Service (bKash / Nagad):</strong> Credited back to
+                      <strong>Mobile Financial Service (bKash):</strong> Credited back to
                       your account within <strong>3 to 5 business days</strong>.
                     </li>
                     <li>
-                      <strong>Card / Net Banking:</strong> Dispatched through SSLCOMMERZ gateway
+                      <strong>Card / Net Banking:</strong> Dispatched through PayStation gateway
                       within <strong>5 to 10 business days</strong> depending on your issuing bank.
                     </li>
                   </ul>

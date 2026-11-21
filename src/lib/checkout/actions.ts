@@ -175,7 +175,7 @@ export async function getShippingMethodsAction(address: {
 
 /**
  * SEC-9-06: Authoritatively row-locks the customer's User record.
- * Serializes ALL checkout methods (COD, ONLINE, BKASH, NAGAD) against concurrent
+ * Serializes ALL checkout methods (COD, ONLINE, BKASH, PAYSTATION) against concurrent
  * account deletion and customer profile mutations.
  * Enforces the global lock hierarchy: User -> Cart -> Coupon -> Order -> Payment.
  */
@@ -359,14 +359,6 @@ export async function createOrderAction(
         error: "bKash payment is currently unavailable. Please choose another payment method.",
       };
     }
-  } else if (paymentMethod === "NAGAD") {
-    const isNagadEnabled = await isPaymentMethodEnabled("NAGAD");
-    if (!isNagadEnabled) {
-      return {
-        success: false,
-        error: "Nagad payment is currently unavailable. Please choose another payment method.",
-      };
-    }
   } else if (paymentMethod === "PAYSTATION") {
     const isPaystationEnabled = await isPaymentMethodEnabled("PAYSTATION");
     if (!isPaystationEnabled) {
@@ -417,7 +409,7 @@ export async function createOrderAction(
     const orderResult = await prisma.$transaction(
       async (tx) => {
         // SEC-9-06: 1. Acquire exclusive row lock on the customer User record FIRST.
-        // Serializes ALL checkout methods (COD, ONLINE, BKASH, NAGAD) against concurrent
+        // Serializes ALL checkout methods (COD, ONLINE, BKASH, PAYSTATION) against concurrent
         // account deletion and profile mutations, strictly adhering to the User -> Cart -> Order lock hierarchy.
         let lockedCustomer: { id: string; codBlocked: boolean } | null = null;
         try {
@@ -795,7 +787,7 @@ export async function createOrderAction(
         const paymentService = (await import("@/lib/payment/service")).PaymentService;
         const service = new paymentService();
 
-        const initiation = await service.initiatePayment(orderRecord, "SSLCOMMERZ");
+        const initiation = await service.initiatePayment(orderRecord, "PAYSTATION");
         if (initiation.success && initiation.redirectUrl) {
           return {
             success: true,
@@ -819,29 +811,6 @@ export async function createOrderAction(
         const service = new paymentService();
 
         const initiation = await service.initiatePayment(orderRecord, "BKASH");
-        if (initiation.success && initiation.redirectUrl) {
-          return {
-            success: true,
-            orderNumber: finalOrderNumber,
-            redirectUrl: initiation.redirectUrl,
-          };
-        } else {
-          return {
-            success: true,
-            orderNumber: finalOrderNumber,
-            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
-          };
-        }
-      }
-    } else if (paymentMethod === "NAGAD") {
-      const orderRecord = await prisma.order.findUnique({
-        where: { orderNumber: finalOrderNumber },
-      });
-      if (orderRecord) {
-        const paymentService = (await import("@/lib/payment/service")).PaymentService;
-        const service = new paymentService();
-
-        const initiation = await service.initiatePayment(orderRecord, "NAGAD");
         if (initiation.success && initiation.redirectUrl) {
           return {
             success: true,
@@ -884,7 +853,7 @@ export async function createOrderAction(
     if (paymentMethod === "COD") {
       try {
         const { sendOrderConfirmationEmail } = await import("@/lib/email/order-emails");
-        sendOrderConfirmationEmail({
+        const emailPromise = sendOrderConfirmationEmail({
           orderNumber: orderResult.orderNumber,
           customerName: orderResult.customerName,
           customerEmail: orderResult.customerEmail,
@@ -908,9 +877,12 @@ export async function createOrderAction(
             zip: orderResult.shippingZip,
             country: orderResult.shippingCountry ?? "Bangladesh",
           },
-        }).catch((err) => {
-          console.error("[Checkout] Non-blocking background order email error:", err);
         });
+        if (emailPromise && typeof emailPromise.catch === "function") {
+          emailPromise.catch((err) => {
+            console.error("[Checkout] Non-blocking background order email error:", err);
+          });
+        }
       } catch (emailErr) {
         console.error("[Checkout] Failed to load order email module:", emailErr);
       }

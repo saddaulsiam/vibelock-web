@@ -27,21 +27,7 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
 
-  // SSLCommerz placeholders
-  SSLCOMMERZ_STORE_ID: z.string().optional(),
-  SSLCOMMERZ_STORE_PASSWORD: z.string().optional(),
-  SSLCOMMERZ_SANDBOX: z.preprocess((val) => {
-    if (typeof val === "string") {
-      const trimmed = val.trim().toLowerCase();
-      if (trimmed === "false" || trimmed === "0" || trimmed === "no") return false;
-      if (trimmed === "true" || trimmed === "1" || trimmed === "yes") return true;
-      if (trimmed === "") return undefined;
-    }
-    if (typeof val === "boolean") return val;
-    return undefined;
-  }, z.boolean().default(true)),
-
-  // bKash placeholders (Tokenized API v1.2.0)
+  // bKash configuration (Tokenized API v1.2.0)
   BKASH_APP_KEY: z.string().optional(),
   BKASH_APP_SECRET: z.string().optional(),
   BKASH_USERNAME: z.string().optional(),
@@ -56,42 +42,6 @@ const envSchema = z.object({
     if (typeof val === "boolean") return val;
     return undefined;
   }, z.boolean().default(true)),
-
-  // Nagad configuration (Online PG DFS API v-0.2.0)
-  NAGAD_MERCHANT_ID: z.preprocess(
-    (val) => (typeof val === "string" && val.trim() ? val : process.env.NAGAD_APP_MERCHANTID),
-    z.string().optional()
-  ),
-  NAGAD_MERCHANT_NUMBER: z.string().optional(),
-  NAGAD_PG_PUBLIC_KEY: z.preprocess(
-    (val) =>
-      typeof val === "string" && val.trim() ? val : process.env.NAGAD_APP_MERCHANT_PG_PUBLIC_KEY,
-    z.string().optional()
-  ),
-  NAGAD_MERCHANT_PRIVATE_KEY: z.preprocess(
-    (val) =>
-      typeof val === "string" && val.trim() ? val : process.env.NAGAD_APP_MERCHANT_PRIVATE_KEY,
-    z.string().optional()
-  ),
-  NAGAD_SANDBOX: z.preprocess((val) => {
-    if (typeof val === "string") {
-      const trimmed = val.trim().toLowerCase();
-      if (trimmed === "false" || trimmed === "0" || trimmed === "no") return false;
-      if (trimmed === "true" || trimmed === "1" || trimmed === "yes") return true;
-      if (trimmed === "") return undefined;
-    }
-    if (
-      process.env.NODE_ENV !== "production" &&
-      process.env.NAGAD_APP_ENV?.trim().toLowerCase() === "development"
-    ) {
-      return true;
-    }
-    return undefined;
-  }, z.boolean().default(true)),
-  NAGAD_APP_ENV: z.string().optional(),
-  NAGAD_APP_LOG: z.string().optional(),
-  NAGAD_APP_MERCHANTID: z.string().optional(),
-  NAGAD_APP_TIMEZONE: z.string().optional(),
 
   // PayStation configuration (Hosted Checkout & Transaction Status v1)
   PAYSTATION_MERCHANT_ID: z.string().optional(),

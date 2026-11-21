@@ -14,6 +14,9 @@ const { mockEnv } = vi.hoisted(() => ({
     BKASH_USERNAME: "mock_bkash_username",
     BKASH_PASSWORD: "mock_bkash_password",
     BKASH_SANDBOX: true,
+    PAYSTATION_MERCHANT_ID: "mock_paystation_merchant",
+    PAYSTATION_PASSWORD: "mock_paystation_password",
+    PAYSTATION_SANDBOX: true,
     INVENTORY_RESERVATION_TTL_SECONDS: 600,
   },
 }));
@@ -127,8 +130,17 @@ const { mockPrisma } = vi.hoisted(() => {
     cartItem: {
       deleteMany: vi.fn(),
     },
+    user: {
+      findUnique: vi.fn(async () => ({ id: "user-mock-uuid", codBlocked: false, role: "CUSTOMER" })),
+    },
     $transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(mock)),
-    $queryRaw: vi.fn(async () => []),
+    $queryRaw: vi.fn(async (sql: any) => {
+      const sqlStr = String(sql?.strings ? sql.strings.join("") : sql);
+      if (sqlStr.includes("PaymentCapture") || sqlStr.includes("INSERT INTO")) {
+        return [{ id: "capture-mock-id" }];
+      }
+      return [{ id: "user-mock-uuid" }];
+    }),
   };
   return { mockPrisma: mock };
 });
@@ -261,6 +273,15 @@ describe("Phase 2D — bKash Checkout Integration", () => {
       createdPayments.push(payment);
       return payment;
     });
+
+    mockPrisma.payment.update.mockImplementation(async ({ where, data }: any) => {
+      const payment = createdPayments.find((p) => p.id === where.id);
+      if (payment) {
+        Object.assign(payment, data);
+        return payment;
+      }
+      return { id: where.id, ...data };
+    });
   });
 
   afterEach(() => {
@@ -384,13 +405,14 @@ describe("Phase 2D — bKash Checkout Integration", () => {
       expect(result.success).toBe(true);
       expect(result.orderNumber).toBeDefined();
       expect(result.redirectUrl).toBeUndefined();
-      expect(result.error).toBe("Payment initiation failed. You can retry from your orders page.");
+      expect(result.error).toMatch(/Invalid Amount|Payment initiation failed/);
 
       // Order was created, inventory reserved
       expect(createdOrders.length).toBe(1);
       expect(createdOrders[0].paymentStatus).toBe("PENDING");
-      // No payment was created in INITIATED state since gateway returned error
-      expect(createdPayments.length).toBe(0);
+      // No payment remained in INITIATED state since gateway returned error
+      expect(createdPayments.filter((p) => p.status === "INITIATED").length).toBe(0);
+      expect(createdPayments[0]?.status).toBe("FAILED");
     });
   });
 
@@ -418,7 +440,7 @@ describe("Phase 2D — bKash Checkout Integration", () => {
     });
   });
 
-  describe("4. Preserves COD and SSLCOMMERZ Integration", () => {
+  describe("4. Preserves COD and PayStation Integration", () => {
     test("COD order consumes inventory immediately and completes without payment initiation", async () => {
       mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => code === "COD");
 
@@ -438,31 +460,32 @@ describe("Phase 2D — bKash Checkout Integration", () => {
       expect(createdPayments.length).toBe(0);
     });
 
-    test("SSLCOMMERZ online order initiates SSLCommerz payment gateway", async () => {
-      mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => code === "ONLINE");
+    test("ONLINE payment method initiates PayStation payment gateway", async () => {
+      mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => code === "ONLINE" || code === "PAYSTATION");
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          status: "SUCCESS",
-          GatewayPageURL: "https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=pay",
+          status_code: "200",
+          status: "success",
+          payment_url: "https://sandbox.paystation.com.bd/checkout/pay",
         }),
       });
 
       const result = await createOrderAction(
         { ...validCheckoutPayload, paymentMethod: "ONLINE" },
-        "idempotency-ssl-test"
+        "idempotency-ps-test"
       );
 
       expect(result.success).toBe(true);
       expect(result.orderNumber).toBeDefined();
-      expect(result.redirectUrl).toBe("https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=pay");
+      expect(result.redirectUrl).toBe("https://sandbox.paystation.com.bd/checkout/pay");
 
       expect(createdOrders.length).toBe(1);
       expect(createdOrders[0].paymentMethod).toBe("ONLINE");
       expect(mockConsumeReservation).not.toHaveBeenCalled();
       expect(createdPayments.length).toBe(1);
-      expect(createdPayments[0].gateway).toBe("SSLCOMMERZ");
+      expect(createdPayments[0].gateway).toBe("PAYSTATION");
     });
   });
 

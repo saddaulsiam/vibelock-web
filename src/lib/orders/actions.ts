@@ -225,7 +225,7 @@ export async function retryOrderPaymentAction(
   let gateway: string | undefined = requestedGateway;
   if (gateway) {
     const normalized = gateway.toUpperCase();
-    if (!["SSLCOMMERZ", "BKASH", "NAGAD", "PAYSTATION"].includes(normalized)) {
+    if (!["PAYSTATION", "BKASH"].includes(normalized)) {
       return { success: false, error: "Unsupported payment gateway selected." };
     }
     gateway = normalized;
@@ -336,11 +336,13 @@ export async function retryOrderPaymentAction(
         };
       }
 
-      // Determine target gateway: use requestedGateway or order's previous gateway or default to SSLCOMMERZ
+      // Determine target gateway: use requestedGateway or order's previous gateway or default to PAYSTATION
       const targetGateway =
         gateway ||
-        order.payments?.[0]?.gateway ||
-        "SSLCOMMERZ";
+        (order.payments?.[0]?.gateway &&
+        ["PAYSTATION", "BKASH"].includes(order.payments[0].gateway.toUpperCase())
+          ? order.payments[0].gateway.toUpperCase()
+          : "PAYSTATION");
 
       return {
         success: true as const,
@@ -353,18 +355,11 @@ export async function retryOrderPaymentAction(
       return { success: false, error: verification.error };
     }
 
-    // Step 1.5: Server-side payment method enablement check (consistent across SSLCOMMERZ, BKASH, NAGAD, PAYSTATION)
+    // Step 1.5: Server-side payment method enablement check (consistent across PAYSTATION, BKASH)
     const { isPaymentMethodEnabled } = await import("@/lib/settings/payment-settings");
     const isGatewayEnabled = await isPaymentMethodEnabled(verification.gateway);
     if (!isGatewayEnabled) {
-      const gatewayName =
-        verification.gateway === "SSLCOMMERZ"
-          ? "SSLCOMMERZ"
-          : verification.gateway === "BKASH"
-            ? "bKash"
-            : verification.gateway === "NAGAD"
-              ? "Nagad"
-              : "PayStation";
+      const gatewayName = verification.gateway === "BKASH" ? "bKash" : "PayStation";
       return {
         success: false,
         error: `${gatewayName} payment is currently unavailable. Please select another payment method.`,

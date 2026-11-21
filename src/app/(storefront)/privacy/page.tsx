@@ -135,7 +135,7 @@ export default function PrivacyPolicyPage() {
                       address, phone number, and COD cash collection invoice amount.
                     </li>
                     <li>
-                      <strong>Payment Gateways (SSLCOMMERZ, bKash, Nagad):</strong> Secure tokenized
+                      <strong>Payment Gateways (PayStation, bKash):</strong> Secure tokenized
                       payment references. We never receive or store your card CVVs or MFS PINs.
                     </li>
                     <li>

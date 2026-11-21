@@ -28,7 +28,7 @@ export default async function AdminPaymentsPage() {
         title="Payment Management & Transactions"
         badgeLabel="Real-Time Ledger"
         badgeVariant="emerald"
-        description="Monitor customer payment transactions, gateway settlements (bKash, Nagad, SSLCommerz, COD), and transaction verification."
+        description="Monitor customer payment transactions, gateway settlements (PayStation, bKash, COD), and transaction verification."
       >
         <Link href="/admin/settings/payments" className={ADMIN_TABLE_CLASSES.buttonSecondary}>
           <Settings className="size-3.5" />

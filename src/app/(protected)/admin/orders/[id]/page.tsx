@@ -9,6 +9,7 @@ import {
   Phone,
   RotateCcw,
   ShieldCheck,
+  Smartphone,
   TrendingUp,
   Truck,
   User,
@@ -152,9 +153,13 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
                   <>
                     <Banknote className="size-3.5 text-emerald-700" /> COD
                   </>
+                ) : primaryPayment?.gateway?.toUpperCase() === "BKASH" ? (
+                  <>
+                    <Smartphone className="size-3.5 text-pink-700" /> bKash
+                  </>
                 ) : (
                   <>
-                    <CreditCard className="size-3.5 text-blue-700" /> SSLCOMMERZ
+                    <CreditCard className="size-3.5 text-purple-700" /> PayStation
                   </>
                 )}
               </span>

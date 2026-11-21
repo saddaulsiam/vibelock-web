@@ -6,15 +6,11 @@ import {
   PaymentProvider,
   VerifiedCaptureCandidate,
 } from "./types";
-import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { BkashProvider } from "./providers/bkash/client";
-import { NagadProvider } from "./providers/nagad/client";
 import { PaystationProvider } from "./providers/paystation/client";
 import { Order, PaymentStatus, Prisma } from "@prisma/client";
 import {
-  isSSLCommerzGateway,
   isBkashGateway,
-  isNagadGateway,
   isPaystationGateway,
   normalizePaymentGateway,
 } from "./constants";
@@ -229,14 +225,8 @@ function resolveSafeGatewayTransactionId(
 
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
-    if (isSSLCommerzGateway(gateway)) {
-      return new SSLCommerzProvider();
-    }
     if (isBkashGateway(gateway)) {
       return new BkashProvider();
-    }
-    if (isNagadGateway(gateway)) {
-      return new NagadProvider();
     }
     if (isPaystationGateway(gateway)) {
       return new PaystationProvider();
@@ -562,79 +552,20 @@ export class PaymentService {
       throw new Error("Payment record not found");
     }
 
-    // A successful payment is terminal for non-SSLCommerz gateways and explicit non-success retries,
-    // but for SSLCommerz later successful or candidate-bearing callbacks flow through for multi-capture reconciliation.
+    // A successful payment is terminal; short-circuit idempotent replays immediately.
     if (payment.status === "SUCCESS") {
-      if (!isSSLCommerzGateway(gateway)) {
-        console.log(
-          `[PaymentService] Payment ${merchantReferenceId} already verified successful. Ignoring duplicate callback for ${gateway}.`
-        );
-        const order = await prisma.order.findUnique({
-          where: { id: payment.orderId },
-          select: { orderNumber: true },
-        });
-        if (!order) throw new Error("Order not found");
-        return {
-          orderNumber: order.orderNumber,
-          verification: { success: true, status: "SUCCESS" },
-        };
-      }
-      const incomingStatus = typeof payload.status === "string" ? payload.status.toUpperCase() : "";
-      const isExplicitNonSuccess =
-        incomingStatus === "FAILED" ||
-        incomingStatus === "FAIL" ||
-        incomingStatus === "CANCELLED" ||
-        incomingStatus === "CANCEL" ||
-        incomingStatus === "UNATTEMPTED" ||
-        incomingStatus === "EXPIRED" ||
-        incomingStatus === "DECLINED" ||
-        incomingStatus === "ISSUER BANK DECLINED" ||
-        incomingStatus === "ISSUER_BANK_DECLINED" ||
-        incomingStatus === "BANK DECLINED";
-
-      if (isExplicitNonSuccess) {
-        console.log(
-          `[PaymentService] Payment ${merchantReferenceId} is already successful. Ignoring explicit non-success callback.`
-        );
-        const order = await prisma.order.findUnique({
-          where: { id: payment.orderId },
-          select: { orderNumber: true },
-        });
-        if (!order) throw new Error("Order not found");
-        return {
-          orderNumber: order.orderNumber,
-          verification: { success: true, status: "SUCCESS" },
-        };
-      }
-
-      // If the incoming callback is an idempotent duplicate replay of the already-recorded transaction ID,
-      // short-circuit immediately without duplicate provider calls, db mutations, or inventory changes.
-      const incomingTrxId =
-        (typeof payload.bank_tran_id === "string" && payload.bank_tran_id) ||
-        (typeof payload.val_id === "string" && payload.val_id) ||
-        (typeof payload.paymentID === "string" && payload.paymentID) ||
-        (typeof payload.paymentId === "string" && payload.paymentId) ||
-        (typeof payload.trx_id === "string" && payload.trx_id) ||
-        (typeof payload.trxId === "string" && payload.trxId);
-
-      if (
-        incomingTrxId &&
-        payment.gatewayTransactionId &&
-        incomingTrxId === payment.gatewayTransactionId
-      ) {
-        console.log(
-          `[PaymentService] Idempotent duplicate replay of recorded transaction ID ${incomingTrxId} for ${merchantReferenceId}. Returning successful state.`
-        );
-        const order = await prisma.order.findUnique({
-          where: { id: payment.orderId },
-          select: { orderNumber: true },
-        });
-        if (!order) throw new Error("Order not found");
-        return {
-          orderNumber: order.orderNumber,
-          verification: { success: true, status: "SUCCESS" },
-        };
-      }
+      console.log(
+        `[PaymentService] Payment ${merchantReferenceId} already verified successful. Ignoring duplicate callback for ${gateway}.`
+      );
+      const order = await prisma.order.findUnique({
+        where: { id: payment.orderId },
+        select: { orderNumber: true },
+      });
+      if (!order) throw new Error("Order not found");
+      return {
+        orderNumber: order.orderNumber,
+        verification: { success: true, status: "SUCCESS" },
+      };
     }
 
     if (payment.status === "FAILED" || payment.status === "CANCELLED") {
@@ -1230,7 +1161,7 @@ export class PaymentService {
             hasLateCaptureOnCancelled = true;
           } else {
             const isCleanRisk =
-              !isSSLCommerzGateway(gateway) ||
+              candidate.riskLevel === undefined ||
               candidate.riskLevel === "0" ||
               (candidate.riskLevel as unknown) === 0;
             if (isCleanRisk) {
