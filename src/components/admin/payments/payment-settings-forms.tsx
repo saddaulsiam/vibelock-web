@@ -31,7 +31,7 @@ export function TogglePaymentMethodForm({
   isEnabled,
   isConfigured = true,
 }: {
-  code: "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD";
+  code: "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD" | "PAYSTATION";
   isEnabled: boolean;
   isConfigured?: boolean;
 }) {
@@ -40,7 +40,7 @@ export function TogglePaymentMethodForm({
   if (
     !isConfigured &&
     !isEnabled &&
-    (code === "SSLCOMMERZ" || code === "BKASH" || code === "NAGAD")
+    (code === "SSLCOMMERZ" || code === "BKASH" || code === "NAGAD" || code === "PAYSTATION")
   ) {
     return (
       <div className="text-xs font-medium text-amber-700">
@@ -48,7 +48,9 @@ export function TogglePaymentMethodForm({
           ? "Configure bKash credentials in .env to enable"
           : code === "NAGAD"
             ? "Configure Nagad credentials in .env to enable"
-            : "Configure store credentials in .env to enable"}
+            : code === "PAYSTATION"
+              ? "Configure PayStation credentials in .env to enable"
+              : "Configure store credentials in .env to enable"}
       </div>
     );
   }

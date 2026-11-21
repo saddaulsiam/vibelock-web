@@ -41,6 +41,13 @@ export function formatPaymentGatewayLabel(
         colorClass: "border-amber-400 bg-amber-50 text-amber-900 font-bold hover:bg-amber-50",
         icon: "PHONE",
       };
+    case "PAYSTATION":
+      return {
+        label: "PayStation",
+        sublabel: "Cards / MFS / Online Banking",
+        colorClass: "border-purple-300 bg-purple-50 text-purple-900 font-bold hover:bg-purple-50",
+        icon: "CARD",
+      };
     case "SSLCOMMERZ":
     case "ONLINE": {
       const channel = formatSslcommerzChannel(cardType, cardBrand);

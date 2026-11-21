@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { PaymentMethodSetting } from "@prisma/client";
 import { validateRsaKeyMaterial } from "@/lib/payment/providers/nagad/crypto";
 
-export type PaymentMethodCode = "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD";
+export type PaymentMethodCode = "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD" | "PAYSTATION";
 
 export interface PaymentMethodStatus {
   code: PaymentMethodCode;
@@ -29,7 +29,7 @@ export interface PaymentSettingsOverview {
 }
 
 export interface StorefrontPaymentOption {
-  value: "COD" | "ONLINE" | "BKASH" | "NAGAD";
+  value: "COD" | "ONLINE" | "BKASH" | "NAGAD" | "PAYSTATION";
   title: string;
   detail: string;
 }
@@ -72,6 +72,16 @@ export function isNagadCredentialConfigured(): boolean {
   }
 
   return true;
+}
+
+/**
+ * Checks whether required PayStation credentials are present and non-empty after trimming.
+ */
+export function isPaystationCredentialConfigured(): boolean {
+  return Boolean(
+    env.PAYSTATION_MERCHANT_ID?.trim() &&
+    env.PAYSTATION_PASSWORD?.trim()
+  );
 }
 
 /**
@@ -146,6 +156,12 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
     return record ? record.isEnabled : false;
   }
 
+  if (normalized === "PAYSTATION") {
+    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
+    if (!isPaystationCredentialConfigured()) return false;
+    return record ? record.isEnabled : false;
+  }
+
   // Any unknown provider code is rejected
   return false;
 }
@@ -154,11 +170,12 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
  * Returns available payment methods formatted for the customer checkout UI.
  */
 export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOption[]> {
-  const [codActive, onlineActive, bkashActive, nagadActive] = await Promise.all([
+  const [codActive, onlineActive, bkashActive, nagadActive, paystationActive] = await Promise.all([
     isPaymentMethodEnabled("COD"),
     isPaymentMethodEnabled("ONLINE"),
     isPaymentMethodEnabled("BKASH"),
     isPaymentMethodEnabled("NAGAD"),
+    isPaymentMethodEnabled("PAYSTATION"),
   ]);
 
   const options: StorefrontPaymentOption[] = [];
@@ -195,6 +212,14 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
     });
   }
 
+  if (paystationActive) {
+    options.push({
+      value: "PAYSTATION",
+      title: "PayStation",
+      detail: "Pay securely via cards, mobile banking, or internet banking via PayStation.",
+    });
+  }
+
   return options;
 }
 
@@ -207,6 +232,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
   );
   const isBkashConfigured = isBkashCredentialConfigured();
   const isNagadConfigured = isNagadCredentialConfigured();
+  const isPaystationConfigured = isPaystationCredentialConfigured();
 
   let dbRecords: PaymentMethodSetting[] = [];
   let isTableMigrated = false;
@@ -232,6 +258,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
   const sslRecord = dbRecords.find((r) => r.code === "SSLCOMMERZ");
   const bkashRecord = dbRecords.find((r) => r.code === "BKASH");
   const nagadRecord = dbRecords.find((r) => r.code === "NAGAD");
+  const paystationRecord = dbRecords.find((r) => r.code === "PAYSTATION");
 
   // Determine effective status using Strategy A bootstrap rules
   const codEnabled = codRecord ? codRecord.isEnabled : true;
@@ -239,6 +266,8 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
     (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
   const bkashEnabled = (bkashRecord ? bkashRecord.isEnabled : false) && isBkashConfigured;
   const nagadEnabled = (nagadRecord ? nagadRecord.isEnabled : false) && isNagadConfigured;
+  const paystationEnabled =
+    (paystationRecord ? paystationRecord.isEnabled : false) && isPaystationConfigured;
 
   const methods: PaymentMethodStatus[] = [
     {
@@ -312,6 +341,25 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
       checkoutImpact:
         "When active, redirects customer to Nagad payment portal to complete payment via OTP and PIN.",
     },
+    {
+      code: "PAYSTATION",
+      name: "PayStation Gateway",
+      description: "Accept cards, mobile banking, and internet banking via PayStation hosted checkout.",
+      type: "ONLINE_GATEWAY",
+      isEnabled: paystationEnabled,
+      isConfigured: isPaystationConfigured,
+      isPersisted: isTableMigrated && Boolean(paystationRecord),
+      environmentMode: isPaystationConfigured
+        ? env.PAYSTATION_SANDBOX
+          ? "sandbox"
+          : "production"
+        : "unconfigured",
+      persistenceBlockerReason: isTableMigrated
+        ? undefined
+        : "Database migration pending approval.",
+      checkoutImpact:
+        "Customer is redirected to PayStation hosted checkout. Inventory reservations are held until verified callback/IPN settles the transaction.",
+    },
   ];
 
   const serverEnforcedMethodCount = methods.filter((m) => m.isEnabled).length;
@@ -335,7 +383,13 @@ export async function updatePaymentMethodSetting(
   actorId?: string
 ): Promise<{ success: boolean; error?: string }> {
   // Validate allowed codes
-  if (code !== "COD" && code !== "SSLCOMMERZ" && code !== "BKASH" && code !== "NAGAD") {
+  if (
+    code !== "COD" &&
+    code !== "SSLCOMMERZ" &&
+    code !== "BKASH" &&
+    code !== "NAGAD" &&
+    code !== "PAYSTATION"
+  ) {
     return {
       success: false,
       error: `Payment method ${code} cannot be toggled at this stage.`,
@@ -373,6 +427,15 @@ export async function updatePaymentMethodSetting(
     }
   }
 
+  if (code === "PAYSTATION" && isEnabled) {
+    if (!isPaystationCredentialConfigured()) {
+      return {
+        success: false,
+        error: "Cannot enable PayStation without configured credentials in environment.",
+      };
+    }
+  }
+
   try {
     await prisma.$transaction(async (tx) => {
       const existing = await tx.paymentMethodSetting.findUnique({ where: { code } });
@@ -389,7 +452,9 @@ export async function updatePaymentMethodSetting(
                 ? "SSLCOMMERZ Gateway"
                 : code === "BKASH"
                   ? "Direct bKash Checkout"
-                  : "Nagad Gateway",
+                  : code === "NAGAD"
+                    ? "Nagad Gateway"
+                    : "PayStation Gateway",
           isEnabled,
         },
       });

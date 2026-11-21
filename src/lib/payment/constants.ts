@@ -2,6 +2,7 @@ export const PAYMENT_GATEWAY = {
   SSLCOMMERZ: "SSLCOMMERZ",
   BKASH: "BKASH",
   NAGAD: "NAGAD",
+  PAYSTATION: "PAYSTATION",
 } as const;
 
 export const PAYMENT_GATEWAYS = PAYMENT_GATEWAY;
@@ -33,6 +34,14 @@ export function isNagadGateway(gateway: string | null | undefined): boolean {
 }
 
 /**
+ * Returns true if the provided gateway identifier matches PAYSTATION (case-insensitive).
+ */
+export function isPaystationGateway(gateway: string | null | undefined): boolean {
+  if (!gateway) return false;
+  return gateway.trim().toUpperCase() === PAYMENT_GATEWAY.PAYSTATION;
+}
+
+/**
  * Normalizes payment gateway strings to the canonical uppercase form if known.
  */
 export function normalizePaymentGateway(gateway: string | null | undefined): string {
@@ -46,6 +55,9 @@ export function normalizePaymentGateway(gateway: string | null | undefined): str
   }
   if (upper === PAYMENT_GATEWAY.NAGAD) {
     return PAYMENT_GATEWAY.NAGAD;
+  }
+  if (upper === PAYMENT_GATEWAY.PAYSTATION) {
+    return PAYMENT_GATEWAY.PAYSTATION;
   }
   return gateway.trim();
 }

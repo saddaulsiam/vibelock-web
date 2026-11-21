@@ -9,11 +9,13 @@ import {
 import { SSLCommerzProvider } from "./providers/sslcommerz/client";
 import { BkashProvider } from "./providers/bkash/client";
 import { NagadProvider } from "./providers/nagad/client";
+import { PaystationProvider } from "./providers/paystation/client";
 import { Order, PaymentStatus, Prisma } from "@prisma/client";
 import {
   isSSLCommerzGateway,
   isBkashGateway,
   isNagadGateway,
+  isPaystationGateway,
   normalizePaymentGateway,
 } from "./constants";
 import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
@@ -89,6 +91,17 @@ const ALLOWED_CALLBACK_KEYS = new Set([
   "payment_ref_id",
   "order_id",
   "issuer_payment_ref",
+  // PayStation
+  "invoice_number",
+  "invoiceNumber",
+  "trx_status",
+  "trx_id",
+  "trxId",
+  "payment_amount",
+  "trx_amount",
+  "order_date_time",
+  "payment_method",
+  "reference",
 ]);
 
 function sanitizeCapturePayload(raw: Record<string, unknown>): Record<string, unknown> {
@@ -203,6 +216,9 @@ export class PaymentService {
     if (isNagadGateway(gateway)) {
       return new NagadProvider();
     }
+    if (isPaystationGateway(gateway)) {
+      return new PaystationProvider();
+    }
     throw new Error(`Unsupported payment gateway: ${gateway}`);
   }
 
@@ -225,7 +241,8 @@ export class PaymentService {
           });
           return {
             success: false,
-            error: "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
+            error:
+              "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
           };
         }
         throw rateLimitErr;
@@ -283,7 +300,8 @@ export class PaymentService {
       if (activePending) {
         return {
           status: "IN_FLIGHT" as const,
-          error: "A payment initiation is already in progress for this order. Please wait a moment.",
+          error:
+            "A payment initiation is already in progress for this order. Please wait a moment.",
         };
       }
 
@@ -375,7 +393,9 @@ export class PaymentService {
             status: "FAILED",
             gatewayPayload: {
               error:
-                networkErr instanceof Error ? networkErr.message : "Network error during initiation",
+                networkErr instanceof Error
+                  ? networkErr.message
+                  : "Network error during initiation",
             },
           },
         })
@@ -460,7 +480,7 @@ export class PaymentService {
     const provider = this.getProvider(gateway);
 
     // Extract merchant reference ID:
-    // SSLCommerz uses 'tran_id', bKash uses 'paymentID', Nagad uses 'payment_ref_id'
+    // SSLCommerz uses 'tran_id', bKash uses 'paymentID', Nagad uses 'payment_ref_id', PayStation uses 'invoice_number'
     const merchantReferenceId =
       (typeof payload.tran_id === "string" && payload.tran_id.trim()
         ? payload.tran_id.trim()
@@ -476,6 +496,12 @@ export class PaymentService {
         : undefined) ??
       (typeof payload.paymentRefId === "string" && payload.paymentRefId.trim()
         ? payload.paymentRefId.trim()
+        : undefined) ??
+      (typeof payload.invoice_number === "string" && payload.invoice_number.trim()
+        ? payload.invoice_number.trim()
+        : undefined) ??
+      (typeof payload.invoiceNumber === "string" && payload.invoiceNumber.trim()
+        ? payload.invoiceNumber.trim()
         : undefined);
 
     if (!merchantReferenceId) {
@@ -565,7 +591,9 @@ export class PaymentService {
         (typeof payload.bank_tran_id === "string" && payload.bank_tran_id) ||
         (typeof payload.val_id === "string" && payload.val_id) ||
         (typeof payload.paymentID === "string" && payload.paymentID) ||
-        (typeof payload.paymentId === "string" && payload.paymentId);
+        (typeof payload.paymentId === "string" && payload.paymentId) ||
+        (typeof payload.trx_id === "string" && payload.trx_id) ||
+        (typeof payload.trxId === "string" && payload.trxId);
 
       if (
         incomingTrxId &&
@@ -589,8 +617,14 @@ export class PaymentService {
 
     if (payment.status === "FAILED" || payment.status === "CANCELLED") {
       const incomingStatus = typeof payload.status === "string" ? payload.status.toUpperCase() : "";
+      const incomingTrxStatus =
+        typeof payload.trx_status === "string" ? payload.trx_status.toUpperCase() : "";
       const isIncomingNonSuccess =
-        (!payload.val_id && !payload.paymentID && !payload.paymentId) ||
+        (!payload.val_id &&
+          !payload.paymentID &&
+          !payload.paymentId &&
+          !payload.trx_id &&
+          !payload.trxId) ||
         incomingStatus === "FAILED" ||
         incomingStatus === "FAIL" ||
         incomingStatus === "CANCELLED" ||
@@ -600,7 +634,11 @@ export class PaymentService {
         incomingStatus === "DECLINED" ||
         incomingStatus === "ISSUER BANK DECLINED" ||
         incomingStatus === "ISSUER_BANK_DECLINED" ||
-        incomingStatus === "BANK DECLINED";
+        incomingStatus === "BANK DECLINED" ||
+        incomingTrxStatus === "FAILED" ||
+        incomingTrxStatus === "FAIL" ||
+        incomingTrxStatus === "CANCELLED" ||
+        incomingTrxStatus === "CANCEL";
 
       if (isIncomingNonSuccess) {
         console.log(
@@ -648,6 +686,8 @@ export class PaymentService {
           success: false,
           status: verification.status,
           isUnverified: true,
+          isRetryable: verification.isRetryable,
+          error: verification.error,
           verifiedMerchantReferenceId: merchantReferenceId,
           rawPayload: payload,
         },
@@ -854,7 +894,10 @@ export class PaymentService {
                 },
               }
             : currentPayment.status === PaymentStatus.PENDING
-              ? { id: currentPayment.id, status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] } }
+              ? {
+                  id: currentPayment.id,
+                  status: { in: [PaymentStatus.PENDING, PaymentStatus.INITIATED] },
+                }
               : { id: currentPayment.id, status: PaymentStatus.INITIATED };
 
         const updateResult = await tx.payment.updateMany({
@@ -891,27 +934,34 @@ export class PaymentService {
                       ? ((verification.rawPayload as Record<string, unknown>).val_id as string)
                       : undefined,
                   cardType:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.card_type === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_type ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).card_type as string)
                       : undefined,
                   cardBrand:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.card_brand === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.card_brand ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).card_brand as string)
                       : undefined,
                   amount: verification.verifiedAmount ?? Number(payment.amount),
                   currency: verification.verifiedCurrency ?? "BDT",
                   status: PaymentStatus.SUCCESS,
                   riskLevel:
-                    (verification.rawPayload as Record<string, unknown>)?.risk_level !== undefined &&
+                    (verification.rawPayload as Record<string, unknown>)?.risk_level !==
+                      undefined &&
                     (verification.rawPayload as Record<string, unknown>)?.risk_level !== null
-                      ? String((verification.rawPayload as Record<string, unknown>).risk_level).trim()
+                      ? String(
+                          (verification.rawPayload as Record<string, unknown>).risk_level
+                        ).trim()
                       : undefined,
                   riskTitle:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.risk_title === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.risk_title ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).risk_title as string)
                       : undefined,
                   tranDate:
-                    typeof (verification.rawPayload as Record<string, unknown>)?.tran_date === "string"
+                    typeof (verification.rawPayload as Record<string, unknown>)?.tran_date ===
+                    "string"
                       ? ((verification.rawPayload as Record<string, unknown>).tran_date as string)
                       : undefined,
                   rawPayload: sanitizeCapturePayload(
@@ -1272,8 +1322,7 @@ export class PaymentService {
               orderNumber: currentOrder.orderNumber,
               gateway,
               merchantReferenceId,
-              providerTransactionId:
-                primaryCaptureBankTranId ?? verification.providerTransactionId,
+              providerTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
               amount: Number(currentPayment.amount),
             },
             tx,
