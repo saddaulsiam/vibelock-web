@@ -34,6 +34,7 @@ vi.mock("@/lib/orders/actions", () => ({
 vi.mock("next/navigation", () => ({
   redirect: mockRedirect,
   notFound: mockNotFound,
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }));
 
 // Mock Image and child components that may have client interactions
@@ -175,6 +176,8 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     const html = renderToStaticMarkup(jsx);
     expect(html).toContain("Order Cancelled");
     expect(html).toContain("Items Returned to Stock");
+    expect(html).toContain("CANCELLED");
+    expect(html).toContain("Order was cancelled and payment was not completed.");
   });
 
   test("renders standard confirmation when payment is success", async () => {
@@ -195,6 +198,48 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     const html = renderToStaticMarkup(jsx);
     expect(html).toContain("Thank you, Siam!");
     expect(html).toContain("Order #VL-20261115-ABC is confirmed");
+  });
+
+  test("renders Confirmed order status badge when payment is SUCCESS even if database status is PENDING", async () => {
+    const paidOrderWithPendingStatus = {
+      ...samplePendingOrder,
+      status: "PENDING",
+      paymentStatus: "SUCCESS",
+    };
+    mockGetCustomerOrderConfirmation.mockResolvedValueOnce(paidOrderWithPendingStatus);
+
+    const jsx = await OrderSuccessPage({
+      params: Promise.resolve({ orderNumber: "VL-20261115-ABC" }),
+      searchParams: Promise.resolve({ payment: "success" }),
+    });
+
+    const html = renderToStaticMarkup(jsx);
+    expect(html).toContain("Thank you, Siam!");
+    expect(html).toContain("CONFIRMED");
+  });
+
+  test("renders Try Payment Again and Close Order actions when PayStation checkout is cancelled with active reservation", async () => {
+    const paystationCancelledOrder = {
+      ...samplePendingOrder,
+      paymentGateway: "PAYSTATION",
+      status: "PENDING",
+      paymentStatus: "PENDING",
+      hasActiveReservation: true,
+      hasUnresolvedOnlinePayment: false,
+      canRetryPayment: true,
+      canCancelOrder: true,
+    };
+    mockGetCustomerOrderConfirmation.mockResolvedValueOnce(paystationCancelledOrder);
+
+    const jsx = await OrderSuccessPage({
+      params: Promise.resolve({ orderNumber: "VL-20261115-ABC" }),
+      searchParams: Promise.resolve({ payment: "cancelled" }),
+    });
+
+    const html = renderToStaticMarkup(jsx);
+    expect(html).toContain("Checkout Cancelled");
+    expect(html).toContain("Try Payment Again");
+    expect(html).toContain("Close Order");
   });
 
   test("redirects unauthenticated user to login", async () => {

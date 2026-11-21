@@ -63,8 +63,17 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isPaid = order.paymentStatus === "SUCCESS";
   const isCod = order.paymentMethod === "COD";
   const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
+  const isPaystation = order.paymentGateway === "PAYSTATION";
+  const isPaystationCancelled = isAwaitingPayment && isPaystation && paymentQuery === "cancelled";
   const isRedirectUnfinished =
-    isAwaitingPayment && (paymentQuery === "cancelled" || paymentQuery === "failed");
+    isAwaitingPayment &&
+    (paymentQuery === "cancelled" || paymentQuery === "failed" || paymentQuery === "pending");
+
+  const displayOrderStatus = isCancelled
+    ? "CANCELLED"
+    : (isPaid || isCod) && order.status === "PENDING"
+      ? "CONFIRMED"
+      : order.status;
 
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);
@@ -133,7 +142,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link
             href="/shop"
-            className="group hover:text-vl-dark-900 inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
+            className="group hover:text-vl-dark-900 inline-flex min-h-9.5 items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
             <span>Continue Shopping</span>
@@ -162,31 +171,35 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     ? "Order Cancelled"
                     : isPaymentFailed
                       ? "Payment Incomplete"
-                      : isRedirectUnfinished
-                        ? "Payment Incomplete"
-                        : `Thank you, ${firstName || "Customer"}!`}
+                      : isPaystationCancelled
+                        ? "Checkout Cancelled"
+                        : isRedirectUnfinished
+                          ? "Payment Incomplete"
+                          : `Thank you, ${firstName || "Customer"}!`}
                 </h1>
                 <p className="mt-1 text-xs text-neutral-500 sm:text-sm">
                   {isCancelled
                     ? "This order was cancelled. Reserved inventory was released and no funds were debited."
                     : isPaymentFailed
                       ? `Payment for order #${order.orderNumber} was not successful. Your items remain reserved temporarily if you wish to retry.`
-                      : isRedirectUnfinished
-                        ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
-                        : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
-                            order.customerEmail || "your email"
-                          }.`}
+                      : isPaystationCancelled
+                        ? "You closed or exited the PayStation checkout before payment was completed. Your reserved items remain safe if you wish to try payment again or close the order."
+                        : isRedirectUnfinished
+                          ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
+                          : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
+                              order.customerEmail || "your email"
+                            }.`}
                 </p>
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0">
+              <div className="mt-2 flex items-center gap-2 sm:mt-0">
                 <PaymentGatewayBadge
                   gateway={order.paymentGateway}
                   paymentMethod={order.paymentMethod}
                   cardType={order.cardType}
                   cardBrand={order.cardBrand}
                 />
-                <OrderStatusBadge status={order.status} />
+                <OrderStatusBadge status={displayOrderStatus} />
               </div>
             </div>
 
@@ -216,12 +229,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-xs font-bold tracking-wider text-amber-900 uppercase">
-                          Payment Not Confirmed
+                          {isPaystationCancelled ? "Checkout Cancelled" : "Payment Not Confirmed"}
                         </h4>
                         <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-                          The payment gateway reported a cancelled or incomplete session, but
-                          trusted confirmation has not yet been received from the payment provider.
-                          Your order remains pending payment confirmation.
+                          {isPaystationCancelled
+                            ? "You closed or exited the PayStation checkout before payment was completed. Your items remain safely reserved if you wish to try payment again or close the order."
+                            : "The checkout window was closed or incomplete before payment confirmation was received. Your items remain safely reserved while awaiting gateway confirmation."}
                         </p>
                         {order.hasUnresolvedOnlinePayment ? (
                           <p className="mt-2 text-xs text-amber-800">
@@ -242,7 +255,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                         ) : (
                           <p className="mt-2 text-xs text-amber-800">
                             {order.hasActiveReservation
-                              ? "Your items remain reserved. You can retry payment now to complete your order."
+                              ? "Your items remain safely reserved. You can retry payment now to complete your order."
                               : "Inventory reservation has expired. Please create a new order."}
                           </p>
                         )}
@@ -256,6 +269,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             gateway={order.paymentGateway ?? undefined}
                             variant="brand"
                             size="sm"
+                            label="Try Payment Again"
                           />
                         )}
                         {order.canCancelOrder && (
@@ -263,6 +277,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             orderNumber={order.orderNumber}
                             variant="outline"
                             size="sm"
+                            label="Close Order"
                           />
                         )}
                       </div>
@@ -306,6 +321,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             gateway={order.paymentGateway ?? undefined}
                             variant="brand"
                             size="sm"
+                            label="Try Payment Again"
                           />
                         )}
                         {order.canCancelOrder && (
@@ -313,6 +329,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             orderNumber={order.orderNumber}
                             variant="outline"
                             size="sm"
+                            label="Close Order"
                           />
                         )}
                       </div>
@@ -334,7 +351,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             }`}
                           >
                             {st.isDone ? (
-                              <Check className="size-3 stroke-[3]" />
+                              <Check className="size-3 stroke-3" />
                             ) : st.isCurrent ? (
                               <Clock className="size-3" />
                             ) : (
@@ -519,12 +536,24 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                         isPaid
                           ? "bg-emerald-100 text-emerald-800"
-                          : isCod
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-amber-100 text-amber-800"
+                          : isCancelled
+                            ? "bg-rose-100 text-rose-800"
+                            : isPaymentFailed
+                              ? "bg-rose-100 text-rose-800"
+                              : isCod
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {isPaid ? "PAID" : isCod ? "CASH ON DELIVERY" : "PENDING"}
+                      {isPaid
+                        ? "PAID"
+                        : isCancelled
+                          ? "CANCELLED"
+                          : isPaymentFailed
+                            ? "FAILED"
+                            : isCod
+                              ? "CASH ON DELIVERY"
+                              : "PENDING"}
                     </span>
                   </div>
                   {order.transactionId && (
@@ -538,13 +567,15 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   <p className="pt-1 text-[11px] text-neutral-500">
                     {isPaid
                       ? "Payment settled and verified."
-                      : isCod
-                        ? "Please have exact cash ready for courier."
-                        : isRedirectUnfinished
-                          ? "Payment session incomplete. Awaiting trusted confirmation."
-                          : isPaymentFailed
-                            ? "Payment attempt declined or failed."
-                            : "Payment status is being verified. Please check again shortly."}
+                      : isCancelled
+                        ? "Order was cancelled and payment was not completed."
+                        : isCod
+                          ? "Please have exact cash ready for courier."
+                          : isRedirectUnfinished
+                            ? "Payment session incomplete. Awaiting trusted confirmation."
+                            : isPaymentFailed
+                              ? "Payment attempt declined or failed."
+                              : "Payment status is being verified. Please check again shortly."}
                   </p>
                 </div>
               </div>

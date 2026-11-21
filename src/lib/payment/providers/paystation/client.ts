@@ -69,7 +69,9 @@ export class PaystationProvider implements PaymentProvider {
 
     const invoiceNumber = `PS-${request.orderNumber}-${Date.now()}`;
     const appUrl = publicEnv.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const callbackUrl = `${appUrl}/api/payments/paystation/callback`;
+    const callbackUrl = new URL("/api/payments/paystation/callback", appUrl);
+    callbackUrl.searchParams.set("invoice_number", invoiceNumber);
+    callbackUrl.searchParams.set("order_number", request.orderNumber);
 
     const body = new URLSearchParams();
     body.append("merchantId", this.merchantId);
@@ -81,7 +83,7 @@ export class PaystationProvider implements PaymentProvider {
     body.append("cust_name", request.customerName);
     body.append("cust_phone", request.customerPhone);
     body.append("cust_email", request.customerEmail);
-    body.append("callback_url", callbackUrl);
+    body.append("callback_url", callbackUrl.toString());
 
     if (request.shippingStreet) {
       const addressParts = [request.shippingStreet, request.shippingCity].filter(Boolean);
@@ -100,6 +102,18 @@ export class PaystationProvider implements PaymentProvider {
       });
 
       if (!response.ok) {
+        console.error(
+          "[PayStation][Initiate]",
+          JSON.stringify({
+            event: "initiate_failed",
+            orderNumber: request.orderNumber,
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            success: false,
+            error: `HTTP ${response.status}`,
+          })
+        );
         return {
           success: false,
           error: `PayStation initiate-payment request failed with HTTP ${response.status}`,
@@ -112,6 +126,20 @@ export class PaystationProvider implements PaymentProvider {
       const statusStr = String(result?.status ?? "").toLowerCase();
 
       if (statusCodeStr !== "200" || statusStr !== "success") {
+        console.warn(
+          "[PayStation][Initiate]",
+          JSON.stringify({
+            event: "initiate_rejected",
+            orderNumber: request.orderNumber,
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            success: false,
+            error: result?.message || "Rejected by gateway",
+          })
+        );
         return {
           success: false,
           error:
@@ -169,6 +197,20 @@ export class PaystationProvider implements PaymentProvider {
         };
       }
 
+      console.info(
+        "[PayStation][Initiate]",
+        JSON.stringify({
+          event: "initiate_success",
+          orderNumber: request.orderNumber,
+          invoiceNumber,
+          gateway: "PAYSTATION",
+          httpStatus: response.status,
+          statusCode: result?.status_code,
+          status: result?.status,
+          success: true,
+        })
+      );
+
       return {
         success: true,
         redirectUrl: result.payment_url,
@@ -176,7 +218,16 @@ export class PaystationProvider implements PaymentProvider {
       };
     } catch (err: unknown) {
       const error = err as Error;
-      console.error("[PayStation Provider] Payment initiation failed:", error?.message);
+      console.error(
+        "[PayStation][Initiate]",
+        JSON.stringify({
+          event: "initiate_exception",
+          orderNumber: request.orderNumber,
+          invoiceNumber,
+          gateway: "PAYSTATION",
+          error: error?.message,
+        })
+      );
       return {
         success: false,
         error: error?.message || "Internal PayStation initiation error",
@@ -209,6 +260,34 @@ export class PaystationProvider implements PaymentProvider {
         ? callbackPayload.invoiceNumber.trim()
         : undefined);
 
+    const rawCallbackStatus =
+      (typeof callbackPayload.status === "string" && callbackPayload.status.trim().toLowerCase()) ||
+      (typeof callbackPayload.trx_status === "string" &&
+        callbackPayload.trx_status.trim().toLowerCase()) ||
+      (typeof callbackPayload.payment_status === "string" &&
+        callbackPayload.payment_status.trim().toLowerCase()) ||
+      "";
+
+    const isExplicitCancel =
+      rawCallbackStatus === "cancel" ||
+      rawCallbackStatus === "canceled" ||
+      rawCallbackStatus === "cancelled" ||
+      rawCallbackStatus === "aborted" ||
+      callbackPayload.cancel === "true" ||
+      callbackPayload.cancelled === "true" ||
+      callbackPayload.canceled === "true";
+
+    if (isExplicitCancel) {
+      return {
+        success: false,
+        status: "CANCELLED",
+        isUnverified: false,
+        verifiedMerchantReferenceId: invoiceNumber,
+        error: "Customer cancelled payment on PayStation checkout",
+        rawPayload: callbackPayload,
+      };
+    }
+
     if (!invoiceNumber) {
       return {
         success: false,
@@ -239,9 +318,23 @@ export class PaystationProvider implements PaymentProvider {
       if (!response.ok) {
         const isUpstreamUnavailable = response.status >= 500 || response.status === 429;
 
+        console.warn(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_http_error",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            verificationResult: isUpstreamUnavailable ? "PENDING" : "FAILED",
+            isUnverified: true,
+            isRetryable: isUpstreamUnavailable,
+            error: `HTTP ${response.status}`,
+          })
+        );
+
         return {
           success: false,
-          status: "FAILED",
+          status: isUpstreamUnavailable ? "PENDING" : "FAILED",
           isUnverified: true,
           isRetryable: isUpstreamUnavailable,
           verifiedMerchantReferenceId: invoiceNumber,
@@ -256,9 +349,25 @@ export class PaystationProvider implements PaymentProvider {
       const statusStr = String(result?.status ?? "").toLowerCase();
 
       if (statusCodeStr !== "200" || statusStr !== "success") {
+        console.warn(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_rejected",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            verificationResult: "PENDING",
+            isUnverified: true,
+            isRetryable: false,
+            error: result?.message || `Gateway code ${result?.status_code}`,
+          })
+        );
+
         return {
           success: false,
-          status: "FAILED",
+          status: "PENDING",
           isUnverified: true,
           verifiedMerchantReferenceId: invoiceNumber,
           error:
@@ -288,6 +397,22 @@ export class PaystationProvider implements PaymentProvider {
 
       // Status resolution
       if (rawTrxStatus === "success" || rawTrxStatus === "successful") {
+        console.info(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_result",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            trxStatus: data?.trx_status,
+            verificationResult: "SUCCESS",
+            isUnverified: false,
+            isRetryable: false,
+          })
+        );
+
         return {
           success: true,
           status: "SUCCESS" as PaymentStatus,
@@ -303,12 +428,36 @@ export class PaystationProvider implements PaymentProvider {
         rawTrxStatus === "failed" ||
         rawTrxStatus === "fail" ||
         rawTrxStatus === "cancelled" ||
-        rawTrxStatus === "cancel"
+        rawTrxStatus === "cancel" ||
+        rawTrxStatus === "canceled" ||
+        rawTrxStatus === "aborted"
       ) {
-        const isCancelled = rawTrxStatus === "cancelled" || rawTrxStatus === "cancel";
+        const isCancelled =
+          rawTrxStatus === "cancelled" ||
+          rawTrxStatus === "cancel" ||
+          rawTrxStatus === "canceled" ||
+          rawTrxStatus === "aborted";
+        console.info(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_result",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            trxStatus: data?.trx_status,
+            verificationResult: isCancelled ? "CANCELLED" : "FAILED",
+            isUnverified: false,
+            isRetryable: false,
+          })
+        );
+
         return {
           success: false,
           status: isCancelled ? ("CANCELLED" as PaymentStatus) : ("FAILED" as PaymentStatus),
+          isUnverified: false,
+          isRetryable: false,
           providerTransactionId: trxId,
           verifiedMerchantReferenceId: verifiedInvoice,
           verifiedAmount: amountVal,
@@ -318,7 +467,54 @@ export class PaystationProvider implements PaymentProvider {
         };
       }
 
+      if (rawTrxStatus === "refund") {
+        console.info(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_result",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            trxStatus: data?.trx_status,
+            verificationResult: "REFUNDED",
+            isUnverified: false,
+            isRetryable: false,
+          })
+        );
+
+        return {
+          success: false,
+          status: "REFUNDED" as PaymentStatus,
+          isUnverified: false,
+          isRetryable: false,
+          providerTransactionId: trxId,
+          verifiedMerchantReferenceId: verifiedInvoice,
+          verifiedAmount: amountVal,
+          verifiedCurrency: "BDT",
+          error: "PayStation transaction was refunded",
+          rawPayload: result,
+        };
+      }
+
       if (rawTrxStatus === "processing" || rawTrxStatus === "pending") {
+        console.info(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_result",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            trxStatus: data?.trx_status,
+            verificationResult: "PENDING",
+            isUnverified: true,
+            isRetryable: true,
+          })
+        );
+
         return {
           success: false,
           status: "PENDING" as PaymentStatus,
@@ -333,6 +529,20 @@ export class PaystationProvider implements PaymentProvider {
         };
       }
 
+      console.warn(
+        "[PayStation][Verify]",
+        JSON.stringify({
+          event: "transaction_status_unrecognized",
+          invoiceNumber,
+          gateway: "PAYSTATION",
+          httpStatus: response.status,
+          trxStatus: data?.trx_status,
+          verificationResult: "FAILED",
+          isUnverified: true,
+          isRetryable: false,
+        })
+      );
+
       return {
         success: false,
         status: "FAILED" as PaymentStatus,
@@ -345,25 +555,34 @@ export class PaystationProvider implements PaymentProvider {
       };
     } catch (err: unknown) {
       const error = err as Error;
-      console.error(
-        `[PayStation Provider] Server-to-server transaction status query failed for ${invoiceNumber}:`,
-        error?.message
-      );
       const isRetryableError =
         error?.name === "TimeoutError" ||
         error?.name === "AbortError" ||
         Boolean(
           error?.message &&
           (error.message.toLowerCase().includes("timeout") ||
+            error.message.toLowerCase().includes("timed out") ||
             error.message.toLowerCase().includes("econnreset") ||
             error.message.toLowerCase().includes("etimedout") ||
             error.message.toLowerCase().includes("fetch failed") ||
             error.message.toLowerCase().includes("network"))
         );
 
+      console.error(
+        "[PayStation][Verify]",
+        JSON.stringify({
+          event: "transaction_status_error",
+          invoiceNumber,
+          gateway: "PAYSTATION",
+          isUnverified: true,
+          isRetryable: isRetryableError,
+          error: error?.message,
+        })
+      );
+
       return {
         success: false,
-        status: "FAILED",
+        status: isRetryableError ? "PENDING" : "FAILED",
         isUnverified: true,
         isRetryable: isRetryableError,
         verifiedMerchantReferenceId: invoiceNumber,
