@@ -140,7 +140,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 print:hidden">
           <Link
             href="/shop"
-            className="group hover:text-vl-dark-900 inline-flex min-h-[38px] items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
+            className="group hover:text-vl-dark-900 inline-flex min-h-9.5 items-center gap-1.5 text-xs font-semibold tracking-wider text-neutral-500 uppercase transition-colors"
           >
             <ArrowLeft className="size-3.5 transition-transform group-hover:-translate-x-1" />
             <span>Continue Shopping</span>
@@ -186,7 +186,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                 </p>
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0">
+              <div className="mt-2 flex items-center gap-2 sm:mt-0">
                 <PaymentGatewayBadge
                   gateway={order.paymentGateway}
                   paymentMethod={order.paymentMethod}
@@ -341,7 +341,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             }`}
                           >
                             {st.isDone ? (
-                              <Check className="size-3 stroke-[3]" />
+                              <Check className="size-3 stroke-3" />
                             ) : st.isCurrent ? (
                               <Clock className="size-3" />
                             ) : (
