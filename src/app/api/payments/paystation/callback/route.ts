@@ -19,6 +19,7 @@ function extractOrderNumberFromInvoice(invoiceNumber?: string): string | undefin
 
 async function handleCallback(req: NextRequest) {
   let correlatedOrderNumber: string | undefined;
+  let hasCancelSignal = false;
 
   try {
     const isUrlEncoded = req.headers
@@ -118,9 +119,10 @@ async function handleCallback(req: NextRequest) {
       (typeof payload.status === "string" && payload.status.trim().toLowerCase()) ||
       (typeof payload.trx_status === "string" && payload.trx_status.trim().toLowerCase()) ||
       "";
-    const hasCancelSignal =
+    hasCancelSignal =
       rawCallbackStatus === "cancel" ||
       rawCallbackStatus === "cancelled" ||
+      rawCallbackStatus === "canceled" ||
       rawCallbackStatus === "aborted" ||
       payload.cancel === "true";
 
@@ -160,9 +162,18 @@ async function handleCallback(req: NextRequest) {
 
     const isJsonClient = req.headers.get("accept")?.includes("application/json");
     if (isJsonClient) {
+      const jsonStatus =
+        result.verification.status === "SUCCESS"
+          ? "SUCCESS"
+          : result.verification.status === "FAILED" && !result.verification.isUnverified
+            ? "FAILED"
+            : hasCancelSignal || result.verification.status === "CANCELLED"
+              ? "CANCELLED"
+              : "PENDING";
+
       return NextResponse.json({
         success: result.verification.success,
-        status: result.verification.status,
+        status: jsonStatus,
         orderNumber: correlatedOrderNumber,
         isUnverified: result.verification.isUnverified ?? false,
       });
@@ -174,7 +185,9 @@ async function handleCallback(req: NextRequest) {
     } else if (result.verification.status === "FAILED" && !result.verification.isUnverified) {
       // ONLY authoritatively verified failures get payment=failed!
       paymentState = "failed";
-    } else if (result.verification.status === "CANCELLED") {
+    } else if (result.verification.status === "CANCELLED" || hasCancelSignal) {
+      // Customer cancelled/closed checkout session; UI shows checkout cancelled
+      // while database payment status remains safely INITIATED/PENDING (unverified).
       paymentState = "cancelled";
     } else {
       // Unverified, processing, pending, or retryable timeout -> pending!
@@ -213,7 +226,7 @@ async function handleCallback(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            status: "PENDING",
+            status: hasCancelSignal ? "CANCELLED" : "PENDING",
             orderNumber: correlatedOrderNumber,
             isUnverified: true,
             isRetryable: true,
@@ -228,13 +241,14 @@ async function handleCallback(req: NextRequest) {
       );
     }
 
-    // Correlated order is safely redirected to order confirmation with pending state
+    // Correlated order is safely redirected to order confirmation with appropriate state
     if (correlatedOrderNumber) {
+      const paymentState = hasCancelSignal ? "cancelled" : "pending";
       const redirectUrl = new URL(
         `/order-success/${encodeURIComponent(correlatedOrderNumber)}`,
         publicEnv.NEXT_PUBLIC_APP_URL
       );
-      redirectUrl.searchParams.set("payment", "pending");
+      redirectUrl.searchParams.set("payment", paymentState);
 
       console.warn(
         "[PayStation][Decision]",
@@ -243,7 +257,7 @@ async function handleCallback(req: NextRequest) {
           orderNumber: correlatedOrderNumber,
           gateway: "PAYSTATION",
           error: error?.message,
-          paymentState: "pending",
+          paymentState,
           redirectDestination: redirectUrl.pathname + redirectUrl.search,
         })
       );

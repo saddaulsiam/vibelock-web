@@ -40,11 +40,14 @@ const { mockPrisma } = vi.hoisted(() => {
     payment: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
       updateMany: vi.fn(),
     },
     order: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
+      findMany: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
     },
@@ -102,7 +105,12 @@ vi.mock("@/lib/inventory/service", () => ({
 }));
 
 vi.mock("@/lib/checkout/coupons", () => ({
-  releaseOrderCoupon: vi.fn(),
+  releaseOrderCoupon: vi.fn(async () => ({ success: true })),
+}));
+
+vi.mock("@/lib/security/rate-limit", () => ({
+  getIp: vi.fn(async () => "103.1.2.3"),
+  checkPaymentInitiationRateLimit: vi.fn(async () => {}),
 }));
 
 vi.mock("next/cache", () => ({
@@ -119,6 +127,7 @@ import {
   isPaymentMethodEnabled,
   updatePaymentMethodSetting,
 } from "@/lib/settings/payment-settings";
+import { retryOrderPaymentAction } from "@/lib/orders/actions";
 
 describe("PayStation Hosted Checkout Integration Tests", () => {
   let paymentService: PaymentService;
@@ -127,10 +136,23 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
   const mockOrder = {
     id: "ord-paystation-101",
     orderNumber: "VL-20261121-PS01",
+    userId: "user-ps-123",
+    customerName: "Test Customer",
+    customerPhone: "+8801700000000",
+    customerEmail: "customer@vibelock.bd",
+    shippingStreet: "Gulshan",
+    shippingCity: "Dhaka",
     total: 2500,
     status: "PENDING",
     paymentStatus: "PENDING",
     paymentMethod: "ONLINE",
+    inventoryReservations: [
+      {
+        id: "res-101",
+        status: "RESERVED",
+        expiresAt: new Date(Date.now() + 600000),
+      },
+    ],
   };
 
   const mockPayment = {
@@ -159,11 +181,19 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     paymentService = new PaymentService();
 
     mockPrisma.payment.findUnique.mockResolvedValue(mockPayment);
+    mockPrisma.payment.findFirst.mockResolvedValue(null);
+    mockPrisma.payment.create.mockResolvedValue(mockPayment);
+    mockPrisma.payment.update.mockResolvedValue(mockPayment);
     mockPrisma.order.findUnique.mockResolvedValue(mockOrder);
     mockPrisma.payment.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.order.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.orderHistory.create.mockResolvedValue({});
     mockPrisma.inventoryReservation.findMany.mockResolvedValue([]);
+    mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue({
+      id: "setting-ps-1",
+      code: "PAYSTATION",
+      isEnabled: true,
+    });
   });
 
   afterEach(() => {
@@ -384,6 +414,19 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     });
 
     test("redirects to order-success with payment=cancelled when customer cancels with explicit status=cancel", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
       const req = new NextRequest(
         "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=cancel",
         { method: "GET" }
@@ -562,6 +605,19 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     });
 
     test("returns JSON response with status CANCELLED when JSON client reports explicit cancel", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
       const req = new NextRequest(
         "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=cancel",
         {
@@ -845,6 +901,180 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const result = await updatePaymentMethodSetting("PAYSTATION", true, "admin-user-id");
       expect(result.success).toBe(false);
       expect(result.error).toContain("Cannot enable PayStation without configured credentials");
+    });
+  });
+
+  describe("5. Checkout Cancellation, Status Mapping & Retry Safety", () => {
+    test("1. status=Canceled with empty trx_id queries transaction status, preserves pending DB payment, and redirects to payment=cancelled", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=Canceled&trx_id=",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+      );
+      // Zero-trust: DB payment remains INITIATED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("2. processing status preserves pending payment without releasing reservations", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+      });
+
+      expect(result.verification.status).toBe("PENDING");
+      expect(result.verification.isUnverified).toBe(true);
+      expect(result.verification.isRetryable).toBe(true);
+      // Ensure zero-trust: payment in DB must NOT be marked FAILED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("3. verified failed marks payment FAILED and allows retry", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce({
+        ...mockPayment,
+        status: "INITIATED",
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "PS_TRX_FAILED_101",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const verifyResult = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+      });
+
+      expect(verifyResult.verification.status).toBe("FAILED");
+      expect(verifyResult.verification.isUnverified).toBe(false);
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+          }),
+        })
+      );
+
+      // Verify retry eligibility: customer can now initiate a new payment attempt
+      mockAuth.mockResolvedValueOnce({ user: { id: "user-ps-123" } });
+      mockPrisma.order.findUnique.mockResolvedValue({
+        ...mockOrder,
+        userId: "user-ps-123",
+        payments: [{ ...mockPayment, status: "FAILED" }],
+      });
+      mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue({
+        id: "setting-ps-1",
+        code: "PAYSTATION",
+        isEnabled: true,
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          payment_url: "https://sandbox.paystation.com.bd/checkout/token_retry_001",
+        }),
+      });
+
+      mockPrisma.payment.create = vi.fn().mockResolvedValue({
+        id: "pay-new-123",
+        merchantReferenceId: "PS-VL-20261121-PS01-123456",
+      });
+
+      const retryResult = await retryOrderPaymentAction("VL-20261121-PS01", "PAYSTATION");
+      expect(retryResult.success).toBe(true);
+      expect(retryResult.redirectUrl).toBe(
+        "https://sandbox.paystation.com.bd/checkout/token_retry_001"
+      );
+    });
+
+    test("4. verified success prevents duplicate payment on retry", async () => {
+      mockAuth.mockResolvedValueOnce({ user: { id: "user-ps-123" } });
+      mockPrisma.order.findUnique.mockResolvedValue({
+        ...mockOrder,
+        userId: "user-ps-123",
+        paymentStatus: "SUCCESS",
+        payments: [{ ...mockPayment, status: "SUCCESS" }],
+      });
+
+      const retryResult = await retryOrderPaymentAction("VL-20261121-PS01", "PAYSTATION");
+      expect(retryResult.success).toBe(false);
+      expect(retryResult.error).toBe("Order is already paid.");
+      // No payment initiation fetch
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("5. timeout or network error preserves pending status", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("Connection to PayStation timed out")
+      );
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+      });
+
+      expect(result.verification.status).toBe("PENDING");
+      expect(result.verification.isUnverified).toBe(true);
+      expect(result.verification.isRetryable).toBe(true);
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("6. duplicate callbacks do not cause duplicate settlement", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce({
+        ...mockPayment,
+        status: "SUCCESS",
+        gatewayTransactionId: "PS_TRX_ALREADY_SETTLED_999",
+      });
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        trx_id: "PS_TRX_ALREADY_SETTLED_999",
+      });
+
+      expect(result.orderNumber).toBe("VL-20261121-PS01");
+      expect(result.verification.success).toBe(true);
+      expect(result.verification.status).toBe("SUCCESS");
+      // Idempotent: no fetch, no db updates
+      expect(global.fetch).not.toHaveBeenCalled();
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
     });
   });
 });

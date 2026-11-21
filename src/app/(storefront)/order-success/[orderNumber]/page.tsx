@@ -63,6 +63,8 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isPaid = order.paymentStatus === "SUCCESS";
   const isCod = order.paymentMethod === "COD";
   const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
+  const isPaystation = order.paymentGateway === "PAYSTATION";
+  const isPaystationCancelled = isAwaitingPayment && isPaystation && paymentQuery === "cancelled";
   const isRedirectUnfinished =
     isAwaitingPayment &&
     (paymentQuery === "cancelled" || paymentQuery === "failed" || paymentQuery === "pending");
@@ -169,20 +171,24 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     ? "Order Cancelled"
                     : isPaymentFailed
                       ? "Payment Incomplete"
-                      : isRedirectUnfinished
-                        ? "Payment Incomplete"
-                        : `Thank you, ${firstName || "Customer"}!`}
+                      : isPaystationCancelled
+                        ? "Checkout Cancelled"
+                        : isRedirectUnfinished
+                          ? "Payment Incomplete"
+                          : `Thank you, ${firstName || "Customer"}!`}
                 </h1>
                 <p className="mt-1 text-xs text-neutral-500 sm:text-sm">
                   {isCancelled
                     ? "This order was cancelled. Reserved inventory was released and no funds were debited."
                     : isPaymentFailed
                       ? `Payment for order #${order.orderNumber} was not successful. Your items remain reserved temporarily if you wish to retry.`
-                      : isRedirectUnfinished
-                        ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
-                        : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
-                            order.customerEmail || "your email"
-                          }.`}
+                      : isPaystationCancelled
+                        ? "You closed or exited the PayStation checkout before payment was confirmed. The payment provider has not yet returned a final transaction status. Your order is temporarily awaiting confirmation."
+                        : isRedirectUnfinished
+                          ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
+                          : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
+                              order.customerEmail || "your email"
+                            }.`}
                 </p>
               </div>
 
@@ -223,12 +229,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-xs font-bold tracking-wider text-amber-900 uppercase">
-                          Payment Not Confirmed
+                          {isPaystationCancelled ? "Checkout Cancelled" : "Payment Not Confirmed"}
                         </h4>
                         <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
-                          The payment gateway reported a cancelled or incomplete session, but
-                          trusted confirmation has not yet been received from the payment provider.
-                          Your order remains pending payment confirmation.
+                          {isPaystationCancelled
+                            ? "You closed or exited the PayStation checkout before payment was confirmed. The payment provider has not yet returned a final transaction status. Your order is temporarily awaiting confirmation."
+                            : "The checkout window was closed or incomplete before payment confirmation was received. Your items remain safely reserved while awaiting gateway confirmation."}
                         </p>
                         {order.hasUnresolvedOnlinePayment ? (
                           <p className="mt-2 text-xs text-amber-800">
@@ -249,7 +255,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                         ) : (
                           <p className="mt-2 text-xs text-amber-800">
                             {order.hasActiveReservation
-                              ? "Your items remain reserved. You can retry payment now to complete your order."
+                              ? "Your items remain safely reserved. You can retry payment now to complete your order."
                               : "Inventory reservation has expired. Please create a new order."}
                           </p>
                         )}

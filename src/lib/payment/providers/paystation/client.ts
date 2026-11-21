@@ -262,8 +262,10 @@ export class PaystationProvider implements PaymentProvider {
 
     const rawCallbackStatus =
       (typeof callbackPayload.status === "string" && callbackPayload.status.trim().toLowerCase()) ||
-      (typeof callbackPayload.trx_status === "string" && callbackPayload.trx_status.trim().toLowerCase()) ||
-      (typeof callbackPayload.payment_status === "string" && callbackPayload.payment_status.trim().toLowerCase()) ||
+      (typeof callbackPayload.trx_status === "string" &&
+        callbackPayload.trx_status.trim().toLowerCase()) ||
+      (typeof callbackPayload.payment_status === "string" &&
+        callbackPayload.payment_status.trim().toLowerCase()) ||
       "";
 
     const isExplicitCancel =
@@ -424,9 +426,11 @@ export class PaystationProvider implements PaymentProvider {
         rawTrxStatus === "failed" ||
         rawTrxStatus === "fail" ||
         rawTrxStatus === "cancelled" ||
-        rawTrxStatus === "cancel"
+        rawTrxStatus === "cancel" ||
+        rawTrxStatus === "canceled"
       ) {
-        const isCancelled = rawTrxStatus === "cancelled" || rawTrxStatus === "cancel";
+        const isCancelled =
+          rawTrxStatus === "cancelled" || rawTrxStatus === "cancel" || rawTrxStatus === "canceled";
         console.info(
           "[PayStation][Verify]",
           JSON.stringify({
@@ -453,6 +457,37 @@ export class PaystationProvider implements PaymentProvider {
           verifiedAmount: amountVal,
           verifiedCurrency: "BDT",
           error: `PayStation transaction finished with status: ${data.trx_status}`,
+          rawPayload: result,
+        };
+      }
+
+      if (rawTrxStatus === "refund") {
+        console.info(
+          "[PayStation][Verify]",
+          JSON.stringify({
+            event: "transaction_status_result",
+            invoiceNumber,
+            gateway: "PAYSTATION",
+            httpStatus: response.status,
+            statusCode: result?.status_code,
+            status: result?.status,
+            trxStatus: data?.trx_status,
+            verificationResult: "REFUNDED",
+            isUnverified: false,
+            isRetryable: false,
+          })
+        );
+
+        return {
+          success: false,
+          status: "REFUNDED" as PaymentStatus,
+          isUnverified: false,
+          isRetryable: false,
+          providerTransactionId: trxId,
+          verifiedMerchantReferenceId: verifiedInvoice,
+          verifiedAmount: amountVal,
+          verifiedCurrency: "BDT",
+          error: "PayStation transaction was refunded",
           rawPayload: result,
         };
       }
@@ -520,6 +555,7 @@ export class PaystationProvider implements PaymentProvider {
         Boolean(
           error?.message &&
           (error.message.toLowerCase().includes("timeout") ||
+            error.message.toLowerCase().includes("timed out") ||
             error.message.toLowerCase().includes("econnreset") ||
             error.message.toLowerCase().includes("etimedout") ||
             error.message.toLowerCase().includes("fetch failed") ||
