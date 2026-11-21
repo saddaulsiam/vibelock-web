@@ -270,16 +270,18 @@ export class PaystationProvider implements PaymentProvider {
 
     const isExplicitCancel =
       rawCallbackStatus === "cancel" ||
+      rawCallbackStatus === "canceled" ||
       rawCallbackStatus === "cancelled" ||
       rawCallbackStatus === "aborted" ||
       callbackPayload.cancel === "true" ||
-      callbackPayload.cancelled === "true";
+      callbackPayload.cancelled === "true" ||
+      callbackPayload.canceled === "true";
 
     if (isExplicitCancel) {
       return {
         success: false,
         status: "CANCELLED",
-        isUnverified: true,
+        isUnverified: false,
         verifiedMerchantReferenceId: invoiceNumber,
         error: "Customer cancelled payment on PayStation checkout",
         rawPayload: callbackPayload,
@@ -427,10 +429,14 @@ export class PaystationProvider implements PaymentProvider {
         rawTrxStatus === "fail" ||
         rawTrxStatus === "cancelled" ||
         rawTrxStatus === "cancel" ||
-        rawTrxStatus === "canceled"
+        rawTrxStatus === "canceled" ||
+        rawTrxStatus === "aborted"
       ) {
         const isCancelled =
-          rawTrxStatus === "cancelled" || rawTrxStatus === "cancel" || rawTrxStatus === "canceled";
+          rawTrxStatus === "cancelled" ||
+          rawTrxStatus === "cancel" ||
+          rawTrxStatus === "canceled" ||
+          rawTrxStatus === "aborted";
         console.info(
           "[PayStation][Verify]",
           JSON.stringify({

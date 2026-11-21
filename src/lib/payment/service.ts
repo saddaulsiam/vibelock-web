@@ -938,7 +938,12 @@ export class PaymentService {
               newPaymentStatus: verification.status,
               oldOrderStatus: currentOrder.status,
               newOrderStatus: currentOrder.status,
-              decision: verification.status === "SUCCESS" ? "SETTLED" : "FAILED",
+              decision:
+                verification.status === "SUCCESS"
+                  ? "SETTLED"
+                  : verification.status === "CANCELLED"
+                    ? "CANCELLED"
+                    : "FAILED",
             })
           );
         }
@@ -1701,13 +1706,16 @@ export class PaymentService {
         const hasActiveReservation =
           activeReservations.length > 0 && currentOrder.status !== "CANCELLED";
 
-        if (verification.status === "FAILED" && hasActiveReservation) {
+        const isPaystationCancel =
+          isPaystationGateway(gateway) && verification.status === "CANCELLED";
+
+        if ((verification.status === "FAILED" || isPaystationCancel) && hasActiveReservation) {
           // Preserve PENDING status and active reservation to allow customer payment retry
           await tx.order.updateMany({
             where: { id: payment.orderId, paymentStatus: { not: "SUCCESS" } },
             data: {
               status: "PENDING",
-              paymentStatus: "FAILED",
+              paymentStatus: isPaystationCancel ? "PENDING" : "FAILED",
             },
           });
 
@@ -1715,7 +1723,9 @@ export class PaymentService {
             data: {
               orderId: payment.orderId,
               status: "PENDING",
-              notes: `Online payment failed via ${gateway}. Active inventory reservation preserved to allow customer payment retry.`,
+              notes: isPaystationCancel
+                ? `Online payment cancelled via ${gateway}. Order remains PENDING with active inventory reservation preserved to allow customer payment retry or order closure.`
+                : `Online payment failed via ${gateway}. Active inventory reservation preserved to allow customer payment retry.`,
             },
           });
         } else {

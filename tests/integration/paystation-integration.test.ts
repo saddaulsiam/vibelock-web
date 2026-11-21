@@ -414,18 +414,13 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     });
 
     test("redirects to order-success with payment=cancelled when customer cancels with explicit status=cancel", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          status_code: "200",
-          status: "success",
-          data: {
-            invoice_number: "PS-VL-20261121-PS01-123456",
-            trx_status: "Processing",
-            payment_amount: 2500,
-          },
-        }),
-      });
+      mockPrisma.inventoryReservation.findMany.mockResolvedValueOnce([
+        {
+          id: "res-101",
+          status: "RESERVED",
+          expiresAt: new Date(Date.now() + 600000),
+        },
+      ]);
 
       const req = new NextRequest(
         "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=cancel",
@@ -437,8 +432,18 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(res.headers.get("location")).toBe(
         "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
       );
-      // Ensure zero-trust: payment in DB must NOT be marked FAILED or CANCELLED, preserving INITIATED
-      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+      // Explicit cancellation marks only that payment attempt as CANCELLED
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: "pay-paystation-101",
+            status: "INITIATED",
+          }),
+          data: expect.objectContaining({
+            status: "CANCELLED",
+          }),
+        })
+      );
     });
 
     test("redirects to order-success with payment=pending when customer exits and PayStation status query returns Processing", async () => {
@@ -632,7 +637,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(json.success).toBe(false);
       expect(json.status).toBe("CANCELLED");
       expect(json.orderNumber).toBe("VL-20261121-PS01");
-      expect(json.isUnverified).toBe(true);
+      expect(json.isUnverified).toBe(false);
     });
   });
 
@@ -905,19 +910,14 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
   });
 
   describe("5. Checkout Cancellation, Status Mapping & Retry Safety", () => {
-    test("1. status=Canceled with empty trx_id queries transaction status, preserves pending DB payment, and redirects to payment=cancelled", async () => {
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          status_code: "200",
-          status: "success",
-          data: {
-            invoice_number: "PS-VL-20261121-PS01-123456",
-            trx_status: "Processing",
-            payment_amount: 2500,
-          },
-        }),
-      });
+    test("1. status=Canceled marks payment attempt CANCELLED, preserves pending order & reservation, and redirects to payment=cancelled", async () => {
+      mockPrisma.inventoryReservation.findMany.mockResolvedValueOnce([
+        {
+          id: "res-101",
+          status: "RESERVED",
+          expiresAt: new Date(Date.now() + 600000),
+        },
+      ]);
 
       const req = new NextRequest(
         "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=Canceled&trx_id=",
@@ -929,8 +929,115 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(res.headers.get("location")).toBe(
         "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
       );
-      // Zero-trust: DB payment remains INITIATED
+      // Payment attempt in DB is marked CANCELLED
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: "pay-paystation-101",
+            status: "INITIATED",
+          }),
+          data: expect.objectContaining({
+            status: "CANCELLED",
+          }),
+        })
+      );
+      // Order status is preserved as PENDING
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "PENDING",
+            paymentStatus: "PENDING",
+          }),
+        })
+      );
+    });
+
+    test("1b. recognizes cancel, canceled, cancelled, and aborted variants and marks payment CANCELLED", async () => {
+      const cancelVariants = ["cancel", "canceled", "cancelled", "aborted", "Canceled", "Cancelled"];
+      for (const variant of cancelVariants) {
+        mockPrisma.payment.updateMany.mockClear();
+        mockPrisma.payment.findUnique.mockResolvedValueOnce({
+          ...mockPayment,
+          status: "INITIATED",
+        });
+        mockPrisma.order.findUnique.mockResolvedValueOnce(mockOrder);
+
+        const verifyResult = await paymentService.verifyCallback("PAYSTATION", {
+          invoice_number: "PS-VL-20261121-PS01-123456",
+          status: variant,
+        });
+
+        expect(verifyResult.verification.status).toBe("CANCELLED");
+        expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            data: expect.objectContaining({
+              status: "CANCELLED",
+            }),
+          })
+        );
+      }
+    });
+
+    test("1c. allows retry to initiate a new payment attempt after previous attempt is CANCELLED", async () => {
+      mockAuth.mockResolvedValueOnce({ user: { id: "user-ps-123" } });
+      mockPrisma.order.findUnique.mockResolvedValue({
+        ...mockOrder,
+        userId: "user-ps-123",
+        status: "PENDING",
+        paymentStatus: "PENDING",
+        payments: [{ ...mockPayment, status: "CANCELLED" }],
+      });
+      mockPrisma.paymentMethodSetting.findUnique.mockResolvedValue({
+        id: "setting-ps-1",
+        code: "PAYSTATION",
+        isEnabled: true,
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          payment_url: "https://sandbox.paystation.com.bd/checkout/token_retry_cancel_001",
+        }),
+      });
+
+      mockPrisma.payment.create = vi.fn().mockResolvedValue({
+        id: "pay-new-456",
+        merchantReferenceId: "PS-VL-20261121-PS01-retry",
+      });
+
+      const retryResult = await retryOrderPaymentAction("VL-20261121-PS01", "PAYSTATION");
+      expect(retryResult.success).toBe(true);
+      expect(retryResult.redirectUrl).toBe(
+        "https://sandbox.paystation.com.bd/checkout/token_retry_cancel_001"
+      );
+    });
+
+    test("1d. never overwrites a verified SUCCESS payment with CANCELLED", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValueOnce({
+        ...mockPayment,
+        status: "SUCCESS",
+      });
+      mockPrisma.order.findUnique.mockResolvedValueOnce({
+        ...mockOrder,
+        paymentStatus: "SUCCESS",
+        status: "CONFIRMED",
+      });
+
+      mockPrisma.payment.updateMany.mockClear();
+      mockPrisma.order.updateMany.mockClear();
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        status: "Canceled",
+      });
+
+      expect(result.verification.status).toBe("SUCCESS");
+      // Must not update payment status to CANCELLED
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+      // Must not cancel order or release inventory
+      expect(mockPrisma.order.updateMany).not.toHaveBeenCalled();
     });
 
     test("2. processing status preserves pending payment without releasing reservations", async () => {

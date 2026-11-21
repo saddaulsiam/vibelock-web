@@ -118,13 +118,16 @@ async function handleCallback(req: NextRequest) {
     const rawCallbackStatus =
       (typeof payload.status === "string" && payload.status.trim().toLowerCase()) ||
       (typeof payload.trx_status === "string" && payload.trx_status.trim().toLowerCase()) ||
+      (typeof payload.payment_status === "string" && payload.payment_status.trim().toLowerCase()) ||
       "";
     hasCancelSignal =
       rawCallbackStatus === "cancel" ||
-      rawCallbackStatus === "cancelled" ||
       rawCallbackStatus === "canceled" ||
+      rawCallbackStatus === "cancelled" ||
       rawCallbackStatus === "aborted" ||
-      payload.cancel === "true";
+      payload.cancel === "true" ||
+      payload.cancelled === "true" ||
+      payload.canceled === "true";
 
     console.info(
       "[PayStation][Callback]",
@@ -186,8 +189,7 @@ async function handleCallback(req: NextRequest) {
       // ONLY authoritatively verified failures get payment=failed!
       paymentState = "failed";
     } else if (result.verification.status === "CANCELLED" || hasCancelSignal) {
-      // Customer cancelled/closed checkout session; UI shows checkout cancelled
-      // while database payment status remains safely INITIATED/PENDING (unverified).
+      // Customer cancelled checkout session; marks payment attempt CANCELLED while keeping order PENDING.
       paymentState = "cancelled";
     } else {
       // Unverified, processing, pending, or retryable timeout -> pending!

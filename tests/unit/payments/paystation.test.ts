@@ -405,7 +405,7 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       expect(result.error).toContain("HTTP 400");
     });
 
-    test("handles explicit cancellation callback with isUnverified=true and status=CANCELLED", async () => {
+    test("handles explicit cancellation callback with isUnverified=false and status=CANCELLED", async () => {
       const result = await provider.verifyPayment({
         invoice_number: "PS-INV-CANCEL",
         status: "cancel",
@@ -413,12 +413,12 @@ describe("PayStation Payment Gateway Unit Tests", () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe("CANCELLED");
-      expect(result.isUnverified).toBe(true);
+      expect(result.isUnverified).toBe(false);
       expect(result.error).toContain("Customer cancelled payment");
       expect(global.fetch).not.toHaveBeenCalled();
     });
 
-    test("handles explicit cancelled status in callbackPayload with isUnverified=true", async () => {
+    test("handles explicit cancelled status in callbackPayload with isUnverified=false", async () => {
       const result = await provider.verifyPayment({
         invoice_number: "PS-INV-CANCEL",
         trx_status: "cancelled",
@@ -426,7 +426,23 @@ describe("PayStation Payment Gateway Unit Tests", () => {
 
       expect(result.success).toBe(false);
       expect(result.status).toBe("CANCELLED");
-      expect(result.isUnverified).toBe(true);
+      expect(result.isUnverified).toBe(false);
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("recognizes all cancellation variants: cancel, canceled, cancelled, aborted", async () => {
+      const variants = ["cancel", "canceled", "cancelled", "aborted", "Canceled", "Cancelled"];
+      for (const variant of variants) {
+        const result = await provider.verifyPayment({
+          invoice_number: "PS-INV-CANCEL-VAR",
+          status: variant,
+        });
+
+        expect(result.success).toBe(false);
+        expect(result.status).toBe("CANCELLED");
+        expect(result.isUnverified).toBe(false);
+        expect(result.error).toContain("Customer cancelled payment");
+      }
       expect(global.fetch).not.toHaveBeenCalled();
     });
   });

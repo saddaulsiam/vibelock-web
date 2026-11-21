@@ -12,6 +12,7 @@ interface RetryPaymentButtonProps {
   className?: string;
   variant?: "primary" | "brand" | "outline" | "secondary";
   size?: "default" | "sm" | "lg" | "xs";
+  label?: string;
 }
 
 export function RetryPaymentButton({
@@ -20,6 +21,7 @@ export function RetryPaymentButton({
   className,
   variant = "brand",
   size = "sm",
+  label = "Try Again",
 }: RetryPaymentButtonProps) {
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -57,7 +59,7 @@ export function RetryPaymentButton({
       ) : (
         <>
           <RefreshCw className="mr-1.5 size-3.5" />
-          <span>Try Again</span>
+          <span>{label}</span>
         </>
       )}
     </Button>

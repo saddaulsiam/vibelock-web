@@ -12,6 +12,7 @@ interface CancelOrderButtonProps {
   className?: string;
   variant?: "destructive" | "outline" | "secondary" | "danger";
   size?: "default" | "sm" | "lg" | "xs";
+  label?: string;
 }
 
 export function CancelOrderButton({
@@ -19,6 +20,7 @@ export function CancelOrderButton({
   className,
   variant = "destructive",
   size = "sm",
+  label = "Cancel Order",
 }: CancelOrderButtonProps) {
   const router = useRouter();
   const [isCancelling, setIsCancelling] = useState(false);
@@ -61,7 +63,7 @@ export function CancelOrderButton({
           Cancelling...
         </>
       ) : (
-        "Cancel Order"
+        label
       )}
     </Button>
   );

@@ -183,7 +183,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     : isPaymentFailed
                       ? `Payment for order #${order.orderNumber} was not successful. Your items remain reserved temporarily if you wish to retry.`
                       : isPaystationCancelled
-                        ? "You closed or exited the PayStation checkout before payment was confirmed. The payment provider has not yet returned a final transaction status. Your order is temporarily awaiting confirmation."
+                        ? "You closed or exited the PayStation checkout before payment was completed. Your reserved items remain safe if you wish to try payment again or close the order."
                         : isRedirectUnfinished
                           ? `Order #${order.orderNumber} is pending payment confirmation. Your reserved items remain safe while awaiting gateway confirmation.`
                           : `Order #${order.orderNumber} is confirmed. A receipt has been sent to ${
@@ -233,7 +233,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                         </h4>
                         <p className="mt-0.5 text-xs leading-relaxed text-amber-700">
                           {isPaystationCancelled
-                            ? "You closed or exited the PayStation checkout before payment was confirmed. The payment provider has not yet returned a final transaction status. Your order is temporarily awaiting confirmation."
+                            ? "You closed or exited the PayStation checkout before payment was completed. Your items remain safely reserved if you wish to try payment again or close the order."
                             : "The checkout window was closed or incomplete before payment confirmation was received. Your items remain safely reserved while awaiting gateway confirmation."}
                         </p>
                         {order.hasUnresolvedOnlinePayment ? (
@@ -269,6 +269,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             gateway={order.paymentGateway ?? undefined}
                             variant="brand"
                             size="sm"
+                            label="Try Payment Again"
                           />
                         )}
                         {order.canCancelOrder && (
@@ -276,6 +277,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             orderNumber={order.orderNumber}
                             variant="outline"
                             size="sm"
+                            label="Close Order"
                           />
                         )}
                       </div>
@@ -319,6 +321,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             gateway={order.paymentGateway ?? undefined}
                             variant="brand"
                             size="sm"
+                            label="Try Payment Again"
                           />
                         )}
                         {order.canCancelOrder && (
@@ -326,6 +329,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             orderNumber={order.orderNumber}
                             variant="outline"
                             size="sm"
+                            label="Close Order"
                           />
                         )}
                       </div>
