@@ -67,6 +67,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
     isAwaitingPayment &&
     (paymentQuery === "cancelled" || paymentQuery === "failed" || paymentQuery === "pending");
 
+  const displayOrderStatus = isCancelled
+    ? "CANCELLED"
+    : (isPaid || isCod) && order.status === "PENDING"
+      ? "CONFIRMED"
+      : order.status;
+
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);
   const totalItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -187,7 +193,7 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   cardType={order.cardType}
                   cardBrand={order.cardBrand}
                 />
-                <OrderStatusBadge status={order.status} />
+                <OrderStatusBadge status={displayOrderStatus} />
               </div>
             </div>
 

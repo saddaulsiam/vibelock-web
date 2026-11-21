@@ -199,6 +199,24 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     expect(html).toContain("Order #VL-20261115-ABC is confirmed");
   });
 
+  test("renders Confirmed order status badge when payment is SUCCESS even if database status is PENDING", async () => {
+    const paidOrderWithPendingStatus = {
+      ...samplePendingOrder,
+      status: "PENDING",
+      paymentStatus: "SUCCESS",
+    };
+    mockGetCustomerOrderConfirmation.mockResolvedValueOnce(paidOrderWithPendingStatus);
+
+    const jsx = await OrderSuccessPage({
+      params: Promise.resolve({ orderNumber: "VL-20261115-ABC" }),
+      searchParams: Promise.resolve({ payment: "success" }),
+    });
+
+    const html = renderToStaticMarkup(jsx);
+    expect(html).toContain("Thank you, Siam!");
+    expect(html).toContain("CONFIRMED");
+  });
+
   test("redirects unauthenticated user to login", async () => {
     mockAuth.mockResolvedValueOnce(null);
 
