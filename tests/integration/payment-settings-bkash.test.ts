@@ -1,6 +1,17 @@
 import { describe, test, expect, beforeEach, vi } from "vitest";
 import { z } from "zod";
 
+interface MockSession {
+  user?: {
+    id?: string;
+    role?: string;
+    name?: string;
+    email?: string;
+  };
+}
+
+let mockSession: MockSession | null = null;
+
 const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
     NODE_ENV: "test",
@@ -31,7 +42,7 @@ const { mockPrisma } = vi.hoisted(() => {
     create: vi.fn(),
   };
   const user = {
-    findUnique: vi.fn(async (args: any) => {
+    findUnique: vi.fn(async (args?: { where?: { id?: string } }) => {
       if (mockSession?.user?.id && args?.where?.id === mockSession.user.id) {
         return {
           id: mockSession.user.id,
@@ -55,8 +66,6 @@ const { mockPrisma } = vi.hoisted(() => {
 vi.mock("@/lib/prisma/client", () => ({
   default: mockPrisma,
 }));
-
-let mockSession: any = null;
 
 vi.mock("../../src/auth", () => ({
   auth: vi.fn(async () => mockSession),
