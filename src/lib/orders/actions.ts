@@ -225,7 +225,7 @@ export async function retryOrderPaymentAction(
   let gateway: string | undefined = requestedGateway;
   if (gateway) {
     const normalized = gateway.toUpperCase();
-    if (!["SSLCOMMERZ", "BKASH", "NAGAD"].includes(normalized)) {
+    if (!["SSLCOMMERZ", "BKASH", "NAGAD", "PAYSTATION"].includes(normalized)) {
       return { success: false, error: "Unsupported payment gateway selected." };
     }
     gateway = normalized;

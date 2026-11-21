@@ -23,10 +23,25 @@ const { mockPrisma } = vi.hoisted(() => {
   };
   const auditLog = {
     create: vi.fn(),
+    findFirst: vi.fn(async () => null),
+  };
+  const user = {
+    findUnique: vi.fn(async (args: any) => {
+      if (mockSession?.user?.id && args?.where?.id === mockSession.user.id) {
+        return {
+          id: mockSession.user.id,
+          role: mockSession.user.role || "CUSTOMER",
+          name: "Test User",
+          email: "test@example.com",
+        };
+      }
+      return null;
+    }),
   };
   const mockPrisma = {
     paymentMethodSetting,
     auditLog,
+    user,
     $transaction: vi.fn(),
   };
   return { mockPrisma };
@@ -36,7 +51,7 @@ vi.mock("@/lib/prisma/client", () => ({
   default: mockPrisma,
 }));
 
-let mockSession: unknown = null;
+let mockSession: any = null;
 
 vi.mock("../../src/auth", () => ({
   auth: vi.fn(async () => mockSession),

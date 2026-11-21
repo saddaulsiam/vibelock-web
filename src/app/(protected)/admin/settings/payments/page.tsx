@@ -26,6 +26,7 @@ function getMethodIcon(code: PaymentMethodStatus["code"]) {
     case "COD":
       return Banknote;
     case "SSLCOMMERZ":
+    case "PAYSTATION":
       return CreditCard;
     case "BKASH":
     case "NAGAD":
@@ -47,7 +48,10 @@ function getStatusBadge(method: PaymentMethodStatus) {
   }
 
   if (
-    (method.code === "SSLCOMMERZ" || method.code === "BKASH" || method.code === "NAGAD") &&
+    (method.code === "SSLCOMMERZ" ||
+      method.code === "BKASH" ||
+      method.code === "NAGAD" ||
+      method.code === "PAYSTATION") &&
     !method.isConfigured
   ) {
     return (
@@ -127,7 +131,8 @@ export default async function AdminPaymentSettingsPage() {
             method.code === "COD" ||
             method.code === "SSLCOMMERZ" ||
             method.code === "BKASH" ||
-            method.code === "NAGAD";
+            method.code === "NAGAD" ||
+            method.code === "PAYSTATION";
 
           return (
             <Card
@@ -200,7 +205,7 @@ export default async function AdminPaymentSettingsPage() {
                     <span className="text-muted-foreground font-medium">Admin Control:</span>
                     {canToggle ? (
                       <TogglePaymentMethodForm
-                        code={method.code as "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD"}
+                        code={method.code as "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD" | "PAYSTATION"}
                         isEnabled={method.isEnabled}
                         isConfigured={method.isConfigured}
                       />

@@ -93,6 +93,20 @@ const envSchema = z.object({
   NAGAD_APP_MERCHANTID: z.string().optional(),
   NAGAD_APP_TIMEZONE: z.string().optional(),
 
+  // PayStation configuration (Hosted Checkout & Transaction Status v1)
+  PAYSTATION_MERCHANT_ID: z.string().optional(),
+  PAYSTATION_PASSWORD: z.string().optional(),
+  PAYSTATION_SANDBOX: z.preprocess((val) => {
+    if (typeof val === "string") {
+      const trimmed = val.trim().toLowerCase();
+      if (trimmed === "false" || trimmed === "0" || trimmed === "no") return false;
+      if (trimmed === "true" || trimmed === "1" || trimmed === "yes") return true;
+      if (trimmed === "") return undefined;
+    }
+    if (typeof val === "boolean") return val;
+    return undefined;
+  }, z.boolean().default(true)),
+
   // Shipping
   COURIER_WEBHOOK_SECRET: z.string().optional(),
   SHIPPING_PROVIDER: z.enum(["mock", "steadfast"]).optional(),
