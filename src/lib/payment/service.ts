@@ -680,6 +680,23 @@ export class PaymentService {
         select: { orderNumber: true },
       });
       if (!order) throw new Error("Order not found");
+
+      if (isPaystationGateway(gateway)) {
+        console.info(
+          "[PayStation][StatusUpdate]",
+          JSON.stringify({
+            event: "status_preserved",
+            orderNumber: order.orderNumber,
+            invoiceNumber: merchantReferenceId,
+            gateway: "PAYSTATION",
+            paymentStatus: payment.status,
+            orderStatus: "PENDING",
+            decision: "PRESERVED",
+            reason: verification.error || "unverified_callback",
+          })
+        );
+      }
+
       return {
         orderNumber: order.orderNumber,
         verification: {
@@ -908,6 +925,23 @@ export class PaymentService {
             gatewayTransactionId: verification.providerTransactionId,
           },
         });
+
+        if (isPaystationGateway(gateway) && updateResult.count > 0) {
+          console.info(
+            "[PayStation][StatusUpdate]",
+            JSON.stringify({
+              event: "status_updated",
+              orderNumber: currentOrder.orderNumber,
+              invoiceNumber: merchantReferenceId,
+              gateway: "PAYSTATION",
+              oldPaymentStatus: currentPayment.status,
+              newPaymentStatus: verification.status,
+              oldOrderStatus: currentOrder.status,
+              newOrderStatus: currentOrder.status,
+              decision: verification.status === "SUCCESS" ? "SETTLED" : "FAILED",
+            })
+          );
+        }
 
         // If no records updated, payment was already transitioned to terminal status by another process
         if (updateResult.count === 0) {
@@ -1655,13 +1689,14 @@ export class PaymentService {
         }
 
         // Requirement 8: Check if an active, unexpired inventory reservation exists for the order
-        const activeReservations = await tx.inventoryReservation.findMany({
-          where: {
-            orderId: payment.orderId,
-            status: "RESERVED",
-            expiresAt: { gt: new Date() },
-          },
-        });
+        const activeReservations =
+          (await tx.inventoryReservation.findMany({
+            where: {
+              orderId: payment.orderId,
+              status: "RESERVED",
+              expiresAt: { gt: new Date() },
+            },
+          })) ?? [];
 
         const hasActiveReservation =
           activeReservations.length > 0 && currentOrder.status !== "CANCELLED";

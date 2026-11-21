@@ -96,8 +96,13 @@ vi.mock("@/lib/inventory/service", () => ({
   InventoryService: {
     consumeReservation: vi.fn(),
     releaseReservation: vi.fn(),
+    cancelOrderInventory: vi.fn(),
     calculateAvailableQuantity: vi.fn(() => 10),
   },
+}));
+
+vi.mock("@/lib/checkout/coupons", () => ({
+  releaseOrderCoupon: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({
@@ -158,6 +163,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     mockPrisma.payment.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.order.updateMany.mockResolvedValue({ count: 1 });
     mockPrisma.orderHistory.create.mockResolvedValue({});
+    mockPrisma.inventoryReservation.findMany.mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -392,7 +398,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
     });
 
-    test("redirects to order-success with payment=cancelled when customer exits and PayStation status query returns Processing", async () => {
+    test("redirects to order-success with payment=pending when customer exits and PayStation status query returns Processing", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -414,13 +420,13 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=pending"
       );
       // Zero-trust: DB payment remains INITIATED
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
     });
 
-    test("safely recovers correlation from session if PayStation stripped query parameters on cancel redirect", async () => {
+    test("safely recovers correlation from session if PayStation stripped query parameters on redirect", async () => {
       mockAuth.mockResolvedValueOnce({
         user: { id: "user-ps-123" },
       });
@@ -450,7 +456,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=pending"
       );
       expect(mockPrisma.payment.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -463,7 +469,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       );
     });
 
-    test("safely redirects correlated order to payment=failed if upstream PayStation status query times out", async () => {
+    test("safely redirects correlated order to payment=pending if upstream PayStation status query times out", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
         new Error("The operation was aborted due to timeout")
       );
@@ -476,13 +482,13 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=failed"
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=pending"
       );
       // Zero-trust: DB payment remains INITIATED
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
     });
 
-    test("safely redirects correlated order to payment=cancelled if an unexpected exception occurs during verification", async () => {
+    test("safely redirects correlated order to payment=pending if an unexpected exception occurs during verification", async () => {
       mockPrisma.payment.findUnique.mockRejectedValueOnce(
         new Error("Database connection pool saturated")
       );
@@ -495,10 +501,49 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=pending"
       );
       // Ensure zero-trust: payment in DB must NOT be marked FAILED or CANCELLED, preserving INITIATED
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("redirects to order-success with payment=failed and updates DB when PayStation status query authoritatively returns Failed", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "PS_TRX_FAILED_999",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=failed"
+      );
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            id: "pay-paystation-101",
+            status: "INITIATED",
+          }),
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayTransactionId: "PS_TRX_FAILED_999",
+          }),
+        })
+      );
     });
 
     test("redirects to generic cart error when request cannot be correlated to any order", async () => {

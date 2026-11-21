@@ -114,6 +114,29 @@ async function handleCallback(req: NextRequest) {
 
     correlatedOrderNumber = orderNumber;
 
+    const rawCallbackStatus =
+      (typeof payload.status === "string" && payload.status.trim().toLowerCase()) ||
+      (typeof payload.trx_status === "string" && payload.trx_status.trim().toLowerCase()) ||
+      "";
+    const hasCancelSignal =
+      rawCallbackStatus === "cancel" ||
+      rawCallbackStatus === "cancelled" ||
+      rawCallbackStatus === "aborted" ||
+      payload.cancel === "true";
+
+    console.info(
+      "[PayStation][Callback]",
+      JSON.stringify({
+        event: "callback_received",
+        method: req.method,
+        orderNumber: correlatedOrderNumber,
+        invoiceNumber,
+        gateway: "PAYSTATION",
+        hasCancelSignal,
+        hasPayload: Object.keys(payload).length > 0,
+      })
+    );
+
     // If invoice_number is missing and cannot be correlated, we cannot verify via PaymentService
     if (!invoiceNumber) {
       if (correlatedOrderNumber) {
@@ -145,14 +168,17 @@ async function handleCallback(req: NextRequest) {
       });
     }
 
-    let paymentState: string;
-    if (result.verification.status === "SUCCESS") {
+    let paymentState: "success" | "failed" | "cancelled" | "pending";
+    if (result.verification.success && result.verification.status === "SUCCESS") {
       paymentState = "success";
-    } else if (result.verification.status === "FAILED") {
+    } else if (result.verification.status === "FAILED" && !result.verification.isUnverified) {
+      // ONLY authoritatively verified failures get payment=failed!
       paymentState = "failed";
-    } else {
-      // CANCELLED or PENDING (customer returned while transaction uncompleted / in-flight)
+    } else if (result.verification.status === "CANCELLED") {
       paymentState = "cancelled";
+    } else {
+      // Unverified, processing, pending, or retryable timeout -> pending!
+      paymentState = "pending";
     }
 
     const redirectUrl = new URL(
@@ -160,6 +186,22 @@ async function handleCallback(req: NextRequest) {
       publicEnv.NEXT_PUBLIC_APP_URL
     );
     redirectUrl.searchParams.set("payment", paymentState);
+
+    console.info(
+      "[PayStation][Decision]",
+      JSON.stringify({
+        event: "callback_decision",
+        orderNumber: correlatedOrderNumber,
+        invoiceNumber,
+        gateway: "PAYSTATION",
+        verificationStatus: result.verification.status,
+        isUnverified: result.verification.isUnverified ?? false,
+        isRetryable: result.verification.isRetryable ?? false,
+        paymentState,
+        redirectDestination: redirectUrl.pathname + redirectUrl.search,
+      })
+    );
+
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: unknown) {
     const error = err as Error;
@@ -171,9 +213,10 @@ async function handleCallback(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            status: "CANCELLED",
+            status: "PENDING",
             orderNumber: correlatedOrderNumber,
             isUnverified: true,
+            isRetryable: true,
             error: error?.message || "Payment verification failed",
           },
           { status: 200 }
@@ -185,13 +228,26 @@ async function handleCallback(req: NextRequest) {
       );
     }
 
-    // Correlated order is safely redirected to order confirmation with cancelled state
+    // Correlated order is safely redirected to order confirmation with pending state
     if (correlatedOrderNumber) {
       const redirectUrl = new URL(
         `/order-success/${encodeURIComponent(correlatedOrderNumber)}`,
         publicEnv.NEXT_PUBLIC_APP_URL
       );
-      redirectUrl.searchParams.set("payment", "cancelled");
+      redirectUrl.searchParams.set("payment", "pending");
+
+      console.warn(
+        "[PayStation][Decision]",
+        JSON.stringify({
+          event: "error_decision",
+          orderNumber: correlatedOrderNumber,
+          gateway: "PAYSTATION",
+          error: error?.message,
+          paymentState: "pending",
+          redirectDestination: redirectUrl.pathname + redirectUrl.search,
+        })
+      );
+
       return NextResponse.redirect(redirectUrl, 303);
     }
 
