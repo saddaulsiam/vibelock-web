@@ -445,6 +445,106 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       }
       expect(global.fetch).not.toHaveBeenCalled();
     });
+
+    test("normalizes empty string trx_id to undefined", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-INV-EMPTY-TRX",
+            trx_status: "Failed",
+            trx_id: "",
+            payment_amount: 1500,
+          },
+        }),
+      });
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-EMPTY-TRX",
+        trx_id: "",
+      });
+
+      expect(result.status).toBe("FAILED");
+      expect(result.providerTransactionId).toBeUndefined();
+    });
+
+    test("normalizes whitespace-only trx_id to undefined", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-INV-WS-TRX",
+            trx_status: "Failed",
+            trx_id: "    ",
+            payment_amount: 1500,
+          },
+        }),
+      });
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-WS-TRX",
+        trx_id: "   ",
+      });
+
+      expect(result.status).toBe("FAILED");
+      expect(result.providerTransactionId).toBeUndefined();
+    });
+
+    test("does not treat status=Failed with Invalid Security Signature as client-side cancel; queries server-to-server", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-INV-SIG-FAIL",
+            trx_status: "Failed",
+            trx_id: "",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-SIG-FAIL",
+        status: "Failed",
+        message: "Invalid Security Signature",
+        trx_id: "",
+      });
+
+      // Must have queried transaction-status
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe("FAILED");
+      expect(result.isUnverified).toBe(false);
+      expect(result.providerTransactionId).toBeUndefined();
+    });
+
+    test("preserves safe unverified PENDING state when transaction-status rejects with error for invalid signature", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "1004",
+          status: "failed",
+          message: "Invalid Security Signature",
+        }),
+      });
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-SIG-REJECT",
+        status: "Failed",
+        message: "Invalid Security Signature",
+        trx_id: "",
+      });
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(result.status).toBe("PENDING");
+      expect(result.isUnverified).toBe(true);
+      expect(result.providerTransactionId).toBeUndefined();
+    });
   });
 
   describe("4. Constants & Gateway Normalization", () => {

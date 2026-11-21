@@ -205,6 +205,28 @@ function buildUpdatedGatewayPayload(
   return result;
 }
 
+/**
+ * Safely resolves and sanitizes a provider transaction ID for persistence.
+ * - Never returns an empty string or whitespace-only string (returns null instead).
+ * - Never overwrites an existing non-empty transaction ID with null or empty value.
+ */
+function resolveSafeGatewayTransactionId(
+  incomingId?: string | null,
+  existingId?: string | null
+): string | null {
+  const sanitizedIncoming =
+    typeof incomingId === "string" && incomingId.trim().length > 0 ? incomingId.trim() : null;
+
+  if (sanitizedIncoming) {
+    return sanitizedIncoming;
+  }
+
+  const sanitizedExisting =
+    typeof existingId === "string" && existingId.trim().length > 0 ? existingId.trim() : null;
+
+  return sanitizedExisting ?? null;
+}
+
 export class PaymentService {
   private getProvider(gateway: string): PaymentProvider {
     if (isSSLCommerzGateway(gateway)) {
@@ -821,7 +843,10 @@ export class PaymentService {
             data: {
               status: "FAILED",
               gatewayPayload: safePayload as Prisma.InputJsonValue,
-              gatewayTransactionId: verification.providerTransactionId,
+              gatewayTransactionId: resolveSafeGatewayTransactionId(
+                verification.providerTransactionId,
+                payment.gatewayTransactionId
+              ),
             },
           });
           throw new Error("Payment verification failed: Amount Mismatch");
@@ -917,14 +942,72 @@ export class PaymentService {
                 }
               : { id: currentPayment.id, status: PaymentStatus.INITIATED };
 
-        const updateResult = await tx.payment.updateMany({
-          where: whereCondition,
-          data: {
-            status: verification.status as PaymentStatus,
-            gatewayPayload: safePayload as Prisma.InputJsonValue,
-            gatewayTransactionId: verification.providerTransactionId,
-          },
-        });
+        const targetTrxId = resolveSafeGatewayTransactionId(
+          verification.providerTransactionId,
+          currentPayment.gatewayTransactionId
+        );
+
+        let finalTrxIdToSet: string | null = targetTrxId;
+
+        // Verify if targetTrxId is already claimed by another payment to prevent collisions
+        if (targetTrxId) {
+          const conflictingPayment = await tx.payment.findFirst({
+            where: {
+              gatewayTransactionId: targetTrxId,
+              id: { not: currentPayment.id },
+            },
+            select: { id: true },
+          });
+
+          if (conflictingPayment) {
+            console.warn(
+              `[PaymentService] Duplicate gatewayTransactionId detected. ` +
+                `Transaction ID is already bound to payment ${conflictingPayment.id}. ` +
+                `Omitting gatewayTransactionId for payment ${currentPayment.id} to avoid collision.`
+            );
+            logSecurityAlert("PAYMENT_DUPLICATE_CAPTURE_ATTEMPT", {
+              endpoint: "verifyCallback",
+              gateway: gateway.toLowerCase(),
+              reason: "duplicate_transaction_id_collision",
+              referenceHash: hashSecurityIdentifier(targetTrxId),
+            });
+            finalTrxIdToSet = currentPayment.gatewayTransactionId
+              ? resolveSafeGatewayTransactionId(currentPayment.gatewayTransactionId)
+              : null;
+          }
+        }
+
+        let updateResult;
+        try {
+          updateResult = await tx.payment.updateMany({
+            where: whereCondition,
+            data: {
+              status: verification.status as PaymentStatus,
+              gatewayPayload: safePayload as Prisma.InputJsonValue,
+              gatewayTransactionId: finalTrxIdToSet,
+            },
+          });
+        } catch (err: unknown) {
+          const isUniqueConstraint =
+            (err as { code?: string })?.code === "P2002" ||
+            String(err).includes("Unique constraint failed");
+          if (isUniqueConstraint) {
+            console.warn(
+              `[PaymentService] Unique constraint on gatewayTransactionId caught during update. ` +
+                `Falling back to null gatewayTransactionId for payment ${currentPayment.id}.`
+            );
+            updateResult = await tx.payment.updateMany({
+              where: whereCondition,
+              data: {
+                status: verification.status as PaymentStatus,
+                gatewayPayload: safePayload as Prisma.InputJsonValue,
+                gatewayTransactionId: null,
+              },
+            });
+          } else {
+            throw err;
+          }
+        }
 
         if (isPaystationGateway(gateway) && updateResult.count > 0) {
           console.info(
@@ -1315,12 +1398,17 @@ export class PaymentService {
           }
         }
 
+        const targetBankTranId = resolveSafeGatewayTransactionId(
+          primaryCaptureBankTranId ?? verification.providerTransactionId,
+          payment.gatewayTransactionId
+        );
+
         // Update payment with primary transaction ID and updated gateway payload
         if (typeof tx.payment.update === "function") {
           await tx.payment.update({
             where: { id: payment.id },
             data: {
-              gatewayTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
+              gatewayTransactionId: targetBankTranId,
               gatewayPayload: safePayload as Prisma.InputJsonValue,
             },
           });
@@ -1328,7 +1416,7 @@ export class PaymentService {
           await tx.payment.updateMany({
             where: { id: payment.id },
             data: {
-              gatewayTransactionId: primaryCaptureBankTranId ?? verification.providerTransactionId,
+              gatewayTransactionId: targetBankTranId,
               gatewayPayload: safePayload as Prisma.InputJsonValue,
             },
           });
