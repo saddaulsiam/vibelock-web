@@ -175,6 +175,8 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     const html = renderToStaticMarkup(jsx);
     expect(html).toContain("Order Cancelled");
     expect(html).toContain("Items Returned to Stock");
+    expect(html).toContain("CANCELLED");
+    expect(html).toContain("Order was cancelled and payment was not completed.");
   });
 
   test("renders standard confirmation when payment is success", async () => {

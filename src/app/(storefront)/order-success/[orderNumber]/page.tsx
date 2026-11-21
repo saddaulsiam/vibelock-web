@@ -520,12 +520,24 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                         isPaid
                           ? "bg-emerald-100 text-emerald-800"
-                          : isCod
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-amber-100 text-amber-800"
+                          : isCancelled
+                            ? "bg-rose-100 text-rose-800"
+                            : isPaymentFailed
+                              ? "bg-rose-100 text-rose-800"
+                              : isCod
+                                ? "bg-blue-100 text-blue-800"
+                                : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {isPaid ? "PAID" : isCod ? "CASH ON DELIVERY" : "PENDING"}
+                      {isPaid
+                        ? "PAID"
+                        : isCancelled
+                          ? "CANCELLED"
+                          : isPaymentFailed
+                            ? "FAILED"
+                            : isCod
+                              ? "CASH ON DELIVERY"
+                              : "PENDING"}
                     </span>
                   </div>
                   {order.transactionId && (
@@ -539,13 +551,15 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                   <p className="pt-1 text-[11px] text-neutral-500">
                     {isPaid
                       ? "Payment settled and verified."
-                      : isCod
-                        ? "Please have exact cash ready for courier."
-                        : isRedirectUnfinished
-                          ? "Payment session incomplete. Awaiting trusted confirmation."
-                          : isPaymentFailed
-                            ? "Payment attempt declined or failed."
-                            : "Payment status is being verified. Please check again shortly."}
+                      : isCancelled
+                        ? "Order was cancelled and payment was not completed."
+                        : isCod
+                          ? "Please have exact cash ready for courier."
+                          : isRedirectUnfinished
+                            ? "Payment session incomplete. Awaiting trusted confirmation."
+                            : isPaymentFailed
+                              ? "Payment attempt declined or failed."
+                              : "Payment status is being verified. Please check again shortly."}
                   </p>
                 </div>
               </div>
