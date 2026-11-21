@@ -282,6 +282,7 @@ export class PaystationProvider implements PaymentProvider {
         success: false,
         status: "CANCELLED",
         isUnverified: false,
+        providerTransactionId: undefined,
         verifiedMerchantReferenceId: invoiceNumber,
         error: "Customer cancelled payment on PayStation checkout",
         rawPayload: callbackPayload,
@@ -385,8 +386,13 @@ export class PaystationProvider implements PaymentProvider {
         typeof data.invoice_number === "string" && data.invoice_number.trim()
           ? data.invoice_number.trim()
           : invoiceNumber;
-      const trxId =
-        data.trx_id !== undefined && data.trx_id !== null ? String(data.trx_id).trim() : undefined;
+      const candidateTrxId =
+        data.trx_id !== undefined && data.trx_id !== null
+          ? String(data.trx_id).trim()
+          : typeof callbackPayload.trx_id === "string" || typeof callbackPayload.trx_id === "number"
+            ? String(callbackPayload.trx_id).trim()
+            : undefined;
+      const trxId = candidateTrxId && candidateTrxId.length > 0 ? candidateTrxId : undefined;
 
       const amountVal =
         data.payment_amount !== undefined

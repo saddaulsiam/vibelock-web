@@ -64,10 +64,16 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isCod = order.paymentMethod === "COD";
   const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
   const isPaystation = order.paymentGateway === "PAYSTATION";
-  const isPaystationCancelled = isAwaitingPayment && isPaystation && paymentQuery === "cancelled";
+  const isPaystationCancelled =
+    isAwaitingPayment &&
+    isPaystation &&
+    (paymentQuery === "cancelled" || order.latestPaymentStatus === "CANCELLED");
   const isRedirectUnfinished =
     isAwaitingPayment &&
-    (paymentQuery === "cancelled" || paymentQuery === "failed" || paymentQuery === "pending");
+    (paymentQuery === "cancelled" ||
+      paymentQuery === "failed" ||
+      paymentQuery === "pending" ||
+      order.latestPaymentStatus === "CANCELLED");
 
   const displayOrderStatus = isCancelled
     ? "CANCELLED"

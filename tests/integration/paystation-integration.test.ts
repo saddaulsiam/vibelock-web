@@ -1184,4 +1184,235 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
     });
   });
+
+  describe("6. Empty trx_id, Duplicate gatewayTransactionId & Security Robustness", () => {
+    test("handles empty string trx_id in failed callback and saves gatewayTransactionId as null without unique constraint error", async () => {
+      mockPrisma.inventoryReservation.findMany.mockResolvedValue([
+        { id: "res-101", status: "RESERVED", expiresAt: new Date(Date.now() + 600000) },
+      ]);
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const verifyResult = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        trx_id: "",
+      });
+
+      expect(verifyResult.verification.status).toBe("FAILED");
+      expect(verifyResult.verification.isUnverified).toBe(false);
+
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayTransactionId: null,
+          }),
+        })
+      );
+
+      // Order remains PENDING with active reservations preserved
+      expect(mockPrisma.order.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "PENDING",
+            paymentStatus: "FAILED",
+          }),
+        })
+      );
+    });
+
+    test("handles whitespace-only trx_id in failed callback and saves gatewayTransactionId as null", async () => {
+      mockPrisma.inventoryReservation.findMany.mockResolvedValue([
+        { id: "res-101", status: "RESERVED", expiresAt: new Date(Date.now() + 600000) },
+      ]);
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "    ",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const verifyResult = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        trx_id: "   ",
+      });
+
+      expect(verifyResult.verification.status).toBe("FAILED");
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayTransactionId: null,
+          }),
+        })
+      );
+    });
+
+    test("never overwrites existing valid gatewayTransactionId when subsequent callback provides empty trx_id", async () => {
+      mockPrisma.payment.findUnique.mockResolvedValue({
+        ...mockPayment,
+        gatewayTransactionId: "ORIGINAL_VALID_TRX_888",
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        trx_id: "",
+      });
+
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            gatewayTransactionId: "ORIGINAL_VALID_TRX_888",
+          }),
+        })
+      );
+    });
+
+    test("detects conflicting duplicate gatewayTransactionId and omits it without crashing", async () => {
+      mockPrisma.payment.findFirst.mockResolvedValueOnce({
+        id: "conflicting-payment-999",
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Success",
+            trx_id: "DUPLICATE_TRX_COLLISION",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+        trx_id: "DUPLICATE_TRX_COLLISION",
+      });
+
+      expect(result.verification.status).toBe("SUCCESS");
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "SUCCESS",
+            gatewayTransactionId: null,
+          }),
+        })
+      );
+    });
+
+    test("falls back safely to null gatewayTransactionId when P2002 unique constraint is thrown by Prisma", async () => {
+      const p2002Error: any = new Error("Unique constraint failed on the fields: (`gatewayTransactionId`)");
+      p2002Error.code = "P2002";
+
+      mockPrisma.payment.updateMany
+        .mockRejectedValueOnce(p2002Error)
+        .mockResolvedValueOnce({ count: 1 });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "RACE_CONDITION_TRX",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-VL-20261121-PS01-123456",
+      });
+
+      expect(result.verification.status).toBe("FAILED");
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledTimes(2);
+      expect(mockPrisma.payment.updateMany).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayTransactionId: null,
+          }),
+        })
+      );
+    });
+
+    test("handles browser callback with status=Failed and Invalid Security Signature cleanly without crashing", async () => {
+      mockPrisma.inventoryReservation.findMany.mockResolvedValue([
+        { id: "res-101", status: "RESERVED", expiresAt: new Date(Date.now() + 600000) },
+      ]);
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Failed",
+            trx_id: "",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const { GET } = await import("@/app/api/payments/paystation/callback/route");
+      const req = new NextRequest(
+        "http://localhost:3000/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=Failed&trx_id=&message=Invalid%20Security%20Signature"
+      );
+
+      const response = await GET(req);
+      expect(response.status).toBe(303);
+      const location = response.headers.get("location");
+      expect(location).toContain("/order-success/VL-20261121-PS01");
+      expect(location).toContain("payment=failed");
+
+      expect(mockPrisma.payment.updateMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            status: "FAILED",
+            gatewayTransactionId: null,
+          }),
+        })
+      );
+    });
+  });
 });
