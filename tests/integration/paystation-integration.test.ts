@@ -398,7 +398,7 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       expect(json.status).toBe("SUCCESS");
     });
 
-    test("returns 400 when IPN payload cannot be verified server-to-server", async () => {
+    test("returns 503 retryable status when IPN is received while transaction is still Processing", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -409,6 +409,46 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
             trx_status: "Processing",
           },
         }),
+      });
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(503);
+      const json = await res.json();
+      expect(json.error).toContain("temporarily unavailable");
+    });
+
+    test("returns 503 retryable status when upstream PayStation status query fails with HTTP 500", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+      });
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoice_number: "PS-VL-20261121-PS01-123456",
+        }),
+      });
+
+      const res = await paystationIpnPost(req);
+      expect(res.status).toBe(503);
+      const json = await res.json();
+      expect(json.error).toContain("temporarily unavailable");
+    });
+
+    test("returns 400 when IPN payload is genuinely unverified / rejected by PayStation", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
       });
 
       const req = new NextRequest("https://vibelock.bd/api/payments/paystation/ipn", {

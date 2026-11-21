@@ -11,6 +11,7 @@ const {
   mockRevalidatePath,
   mockGetIp,
   mockCheckPaymentInitiationRateLimit,
+  mockIsPaymentMethodEnabled,
 } = vi.hoisted(() => {
   const mockP: any = {
     order: {
@@ -50,6 +51,7 @@ const {
     mockRevalidatePath: vi.fn(),
     mockGetIp: vi.fn(async () => "103.1.2.3"),
     mockCheckPaymentInitiationRateLimit: vi.fn(async () => {}),
+    mockIsPaymentMethodEnabled: vi.fn(async () => true),
   };
 });
 
@@ -87,6 +89,10 @@ vi.mock("@/lib/inventory/service", () => ({
 
 vi.mock("@/lib/checkout/coupons", () => ({
   releaseOrderCoupon: mockReleaseOrderCoupon,
+}));
+
+vi.mock("@/lib/settings/payment-settings", () => ({
+  isPaymentMethodEnabled: mockIsPaymentMethodEnabled,
 }));
 
 vi.mock("next/cache", () => ({
@@ -311,6 +317,28 @@ describe("Order Payment Retry & Cancellation Financial Safeguards", () => {
       );
       expect(mockRevalidatePath).toHaveBeenCalledWith(`/order-success/${sampleOrderNumber}`);
       expect(mockRevalidatePath).toHaveBeenCalledWith(`/account/orders/${sampleOrderNumber}`);
+    });
+
+    it("blocks retry when target payment gateway is disabled in settings", async () => {
+      mockPrisma.order.findUnique
+        .mockResolvedValueOnce({ id: "ord-1" })
+        .mockResolvedValueOnce({
+          id: "ord-1",
+          orderNumber: sampleOrderNumber,
+          userId: sampleUserId,
+          status: "PENDING",
+          paymentStatus: "FAILED",
+          paymentMethod: "ONLINE",
+          inventoryReservations: [{ id: "res-1", status: "RESERVED", expiresAt: new Date(Date.now() + 600000) }],
+          payments: [{ id: "pay-1", status: "FAILED", gateway: "PAYSTATION" }],
+        });
+
+      mockIsPaymentMethodEnabled.mockResolvedValueOnce(false);
+
+      const res = await retryOrderPaymentAction(sampleOrderNumber, "PAYSTATION");
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("PayStation payment is currently unavailable");
+      expect(mockInitiatePayment).not.toHaveBeenCalled();
     });
   });
 

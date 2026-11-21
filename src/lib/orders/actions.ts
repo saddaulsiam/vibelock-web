@@ -353,6 +353,24 @@ export async function retryOrderPaymentAction(
       return { success: false, error: verification.error };
     }
 
+    // Step 1.5: Server-side payment method enablement check (consistent across SSLCOMMERZ, BKASH, NAGAD, PAYSTATION)
+    const { isPaymentMethodEnabled } = await import("@/lib/settings/payment-settings");
+    const isGatewayEnabled = await isPaymentMethodEnabled(verification.gateway);
+    if (!isGatewayEnabled) {
+      const gatewayName =
+        verification.gateway === "SSLCOMMERZ"
+          ? "SSLCOMMERZ"
+          : verification.gateway === "BKASH"
+            ? "bKash"
+            : verification.gateway === "NAGAD"
+              ? "Nagad"
+              : "PayStation";
+      return {
+        success: false,
+        error: `${gatewayName} payment is currently unavailable. Please select another payment method.`,
+      };
+    }
+
     // Step 2: Delegate initiation to PaymentService (which safely enforces initiation locks and calls provider outside tx)
     const { PaymentService } = await import("@/lib/payment/service");
     const paymentService = new PaymentService();

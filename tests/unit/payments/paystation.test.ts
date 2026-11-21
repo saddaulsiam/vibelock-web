@@ -353,9 +353,10 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       expect(result.success).toBe(false);
       expect(result.status).toBe("PENDING");
       expect(result.isUnverified).toBe(true);
+      expect(result.isRetryable).toBe(true);
     });
 
-    test("handles transaction status network error with fail-safe isUnverified", async () => {
+    test("handles transaction status 500 error with isUnverified and isRetryable=true without tampering alert", async () => {
       (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
         ok: false,
         status: 500,
@@ -367,7 +368,39 @@ describe("PayStation Payment Gateway Unit Tests", () => {
 
       expect(result.success).toBe(false);
       expect(result.isUnverified).toBe(true);
+      expect(result.isRetryable).toBe(true);
       expect(result.error).toContain("HTTP 500");
+    });
+
+    test("handles transaction status timeout network error with isRetryable=true", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("The operation was aborted due to timeout")
+      );
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-TIMEOUT",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.isUnverified).toBe(true);
+      expect(result.isRetryable).toBe(true);
+      expect(result.error).toContain("timeout");
+    });
+
+    test("handles transaction status 400 client error with isRetryable=false", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+      });
+
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-400",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.isUnverified).toBe(true);
+      expect(result.isRetryable).toBe(false);
+      expect(result.error).toContain("HTTP 400");
     });
   });
 

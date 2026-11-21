@@ -241,20 +241,25 @@ export class PaystationProvider implements PaymentProvider {
       });
 
       if (!response.ok) {
-        const { logSecurityAlert, hashSecurityIdentifier } = await import(
-          "@/lib/monitoring/security-logger"
-        );
-        logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
-          endpoint: "paystation/verifyPayment",
-          gateway: "paystation",
-          reason: "gateway_status_query_failed",
-          referenceHash: hashSecurityIdentifier(invoiceNumber),
-        });
+        const isUpstreamUnavailable = response.status >= 500 || response.status === 429;
+
+        if (!isUpstreamUnavailable) {
+          const { logSecurityAlert, hashSecurityIdentifier } = await import(
+            "@/lib/monitoring/security-logger"
+          );
+          logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
+            endpoint: "paystation/verifyPayment",
+            gateway: "paystation",
+            reason: "gateway_status_query_failed",
+            referenceHash: hashSecurityIdentifier(invoiceNumber),
+          });
+        }
 
         return {
           success: false,
           status: "FAILED",
           isUnverified: true,
+          isRetryable: isUpstreamUnavailable,
           verifiedMerchantReferenceId: invoiceNumber,
           error: `PayStation transaction-status query returned HTTP ${response.status}`,
           rawPayload: callbackPayload,
@@ -334,6 +339,7 @@ export class PaystationProvider implements PaymentProvider {
           success: false,
           status: "PENDING" as PaymentStatus,
           isUnverified: true,
+          isRetryable: true,
           providerTransactionId: trxId,
           verifiedMerchantReferenceId: verifiedInvoice,
           verifiedAmount: amountVal,
@@ -347,6 +353,7 @@ export class PaystationProvider implements PaymentProvider {
         success: false,
         status: "FAILED" as PaymentStatus,
         isUnverified: true,
+        isRetryable: false,
         providerTransactionId: trxId,
         verifiedMerchantReferenceId: verifiedInvoice,
         error: `Unrecognized PayStation transaction status: ${data.trx_status}`,
@@ -358,10 +365,23 @@ export class PaystationProvider implements PaymentProvider {
         `[PayStation Provider] Server-to-server transaction status query failed for ${invoiceNumber}:`,
         error?.message
       );
+      const isRetryableError =
+        error?.name === "TimeoutError" ||
+        error?.name === "AbortError" ||
+        Boolean(
+          error?.message &&
+            (error.message.toLowerCase().includes("timeout") ||
+              error.message.toLowerCase().includes("econnreset") ||
+              error.message.toLowerCase().includes("etimedout") ||
+              error.message.toLowerCase().includes("fetch failed") ||
+              error.message.toLowerCase().includes("network"))
+        );
+
       return {
         success: false,
         status: "FAILED",
         isUnverified: true,
+        isRetryable: isRetryableError,
         verifiedMerchantReferenceId: invoiceNumber,
         error: error?.message || "Internal error during PayStation transaction status verification",
         rawPayload: callbackPayload,

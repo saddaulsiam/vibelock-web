@@ -39,6 +39,13 @@ export async function POST(req: NextRequest) {
     const result = await paymentService.verifyCallback("PAYSTATION", payload);
 
     if (result.verification.isUnverified) {
+      if (result.verification.isRetryable) {
+        return NextResponse.json(
+          { error: "Upstream gateway temporarily unavailable" },
+          { status: 503 }
+        );
+      }
+
       const { logSecurityAlert } = await import("@/lib/monitoring/security-logger");
       logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
         endpoint: "paystation/ipn",
@@ -63,13 +70,19 @@ export async function POST(req: NextRequest) {
 
     // Differentiate retryable infrastructure/DB errors vs client errors
     const isRetryable =
-      error?.message?.includes("P2028") ||
-      error?.message?.includes("P1001") ||
-      error?.message?.includes("P1002") ||
-      error?.message?.includes("P1008") ||
-      error?.message?.includes("timeout") ||
-      error?.message?.includes("ECONNRESET") ||
-      error?.message?.includes("ETIMEDOUT");
+      error?.name === "TimeoutError" ||
+      error?.name === "AbortError" ||
+      Boolean(
+        error?.message &&
+          (error.message.includes("P2028") ||
+            error.message.includes("P1001") ||
+            error.message.includes("P1002") ||
+            error.message.includes("P1008") ||
+            error.message.toLowerCase().includes("timeout") ||
+            error.message.toLowerCase().includes("econnreset") ||
+            error.message.toLowerCase().includes("etimedout") ||
+            error.message.toLowerCase().includes("fetch failed"))
+      );
 
     return NextResponse.json(
       { error: isRetryable ? "Service temporarily unavailable" : "Bad Request" },

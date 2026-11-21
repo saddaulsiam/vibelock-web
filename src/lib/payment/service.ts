@@ -678,6 +678,7 @@ export class PaymentService {
           success: false,
           status: verification.status,
           isUnverified: true,
+          isRetryable: verification.isRetryable,
           verifiedMerchantReferenceId: merchantReferenceId,
           rawPayload: payload,
         },
