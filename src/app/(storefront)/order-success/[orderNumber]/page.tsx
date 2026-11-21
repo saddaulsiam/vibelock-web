@@ -64,7 +64,8 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isCod = order.paymentMethod === "COD";
   const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
   const isRedirectUnfinished =
-    isAwaitingPayment && (paymentQuery === "cancelled" || paymentQuery === "failed");
+    isAwaitingPayment &&
+    (paymentQuery === "cancelled" || paymentQuery === "failed" || paymentQuery === "pending");
 
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);

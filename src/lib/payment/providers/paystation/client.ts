@@ -69,7 +69,9 @@ export class PaystationProvider implements PaymentProvider {
 
     const invoiceNumber = `PS-${request.orderNumber}-${Date.now()}`;
     const appUrl = publicEnv.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    const callbackUrl = `${appUrl}/api/payments/paystation/callback`;
+    const callbackUrl = new URL("/api/payments/paystation/callback", appUrl);
+    callbackUrl.searchParams.set("invoice_number", invoiceNumber);
+    callbackUrl.searchParams.set("order_number", request.orderNumber);
 
     const body = new URLSearchParams();
     body.append("merchantId", this.merchantId);
@@ -81,7 +83,7 @@ export class PaystationProvider implements PaymentProvider {
     body.append("cust_name", request.customerName);
     body.append("cust_phone", request.customerPhone);
     body.append("cust_email", request.customerEmail);
-    body.append("callback_url", callbackUrl);
+    body.append("callback_url", callbackUrl.toString());
 
     if (request.shippingStreet) {
       const addressParts = [request.shippingStreet, request.shippingCity].filter(Boolean);
@@ -208,6 +210,30 @@ export class PaystationProvider implements PaymentProvider {
       (typeof callbackPayload.invoiceNumber === "string" && callbackPayload.invoiceNumber.trim()
         ? callbackPayload.invoiceNumber.trim()
         : undefined);
+
+    const rawCallbackStatus =
+      (typeof callbackPayload.status === "string" && callbackPayload.status.trim().toLowerCase()) ||
+      (typeof callbackPayload.trx_status === "string" && callbackPayload.trx_status.trim().toLowerCase()) ||
+      (typeof callbackPayload.payment_status === "string" && callbackPayload.payment_status.trim().toLowerCase()) ||
+      "";
+
+    const isExplicitCancel =
+      rawCallbackStatus === "cancel" ||
+      rawCallbackStatus === "cancelled" ||
+      rawCallbackStatus === "aborted" ||
+      callbackPayload.cancel === "true" ||
+      callbackPayload.cancelled === "true";
+
+    if (isExplicitCancel) {
+      return {
+        success: false,
+        status: "CANCELLED",
+        isUnverified: true,
+        verifiedMerchantReferenceId: invoiceNumber,
+        error: "Customer cancelled payment on PayStation checkout",
+        rawPayload: callbackPayload,
+      };
+    }
 
     if (!invoiceNumber) {
       return {

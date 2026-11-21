@@ -26,6 +26,14 @@ vi.mock("@/lib/config/public-env", () => ({
   },
 }));
 
+const { mockAuth } = vi.hoisted(() => ({
+  mockAuth: vi.fn(async () => null as any),
+}));
+
+vi.mock("@/auth", () => ({
+  auth: mockAuth,
+}));
+
 // Mock Prisma
 const { mockPrisma } = vi.hoisted(() => {
   const mock: any = {
@@ -367,6 +375,163 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
       const json = await res.json();
       expect(json.success).toBe(true);
       expect(json.orderNumber).toBe("VL-20261121-PS01");
+    });
+
+    test("redirects to order-success with payment=cancelled when customer cancels with explicit status=cancel", async () => {
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=cancel",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+      );
+      // Ensure zero-trust: payment in DB must NOT be marked FAILED or CANCELLED, preserving INITIATED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("redirects to order-success with payment=cancelled when customer exits and PayStation status query returns Processing", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+      );
+      // Zero-trust: DB payment remains INITIATED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("safely recovers correlation from session if PayStation stripped query parameters on cancel redirect", async () => {
+      mockAuth.mockResolvedValueOnce({
+        user: { id: "user-ps-123" },
+      });
+      mockPrisma.payment.findFirst.mockResolvedValueOnce({
+        ...mockPayment,
+        order: { orderNumber: "VL-20261121-PS01" },
+      });
+
+      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          status_code: "200",
+          status: "success",
+          data: {
+            invoice_number: "PS-VL-20261121-PS01-123456",
+            trx_status: "Processing",
+            payment_amount: 2500,
+          },
+        }),
+      });
+
+      // Browser redirected to callback URL with no search params at all
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
+        method: "GET",
+      });
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+      );
+      expect(mockPrisma.payment.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            gateway: "PAYSTATION",
+            status: "INITIATED",
+            order: { userId: "user-ps-123" },
+          }),
+        })
+      );
+    });
+
+    test("safely redirects correlated order to payment=failed if upstream PayStation status query times out", async () => {
+      (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
+        new Error("The operation was aborted due to timeout")
+      );
+
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=failed"
+      );
+      // Zero-trust: DB payment remains INITIATED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("safely redirects correlated order to payment=cancelled if an unexpected exception occurs during verification", async () => {
+      mockPrisma.payment.findUnique.mockRejectedValueOnce(
+        new Error("Database connection pool saturated")
+      );
+
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01",
+        { method: "GET" }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/order-success/VL-20261121-PS01?payment=cancelled"
+      );
+      // Ensure zero-trust: payment in DB must NOT be marked FAILED or CANCELLED, preserving INITIATED
+      expect(mockPrisma.payment.updateMany).not.toHaveBeenCalled();
+    });
+
+    test("redirects to generic cart error when request cannot be correlated to any order", async () => {
+      mockAuth.mockResolvedValueOnce(null);
+      mockPrisma.payment.findFirst.mockResolvedValueOnce(null);
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
+        method: "GET",
+      });
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(303);
+      expect(res.headers.get("location")).toBe(
+        "https://vibelock.bd/cart?error=payment_verification_failed"
+      );
+    });
+
+    test("returns JSON response with status CANCELLED when JSON client reports explicit cancel", async () => {
+      const req = new NextRequest(
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-20261121-PS01-123456&order_number=VL-20261121-PS01&status=cancel",
+        {
+          method: "GET",
+          headers: { accept: "application/json" },
+        }
+      );
+
+      const res = await paystationCallbackGet(req);
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(false);
+      expect(json.status).toBe("CANCELLED");
+      expect(json.orderNumber).toBe("VL-20261121-PS01");
+      expect(json.isUnverified).toBe(true);
     });
   });
 

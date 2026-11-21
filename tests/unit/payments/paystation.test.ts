@@ -108,7 +108,9 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       expect(params.get("cust_name")).toBe("Siam Sadman");
       expect(params.get("cust_phone")).toBe("01711223344");
       expect(params.get("cust_email")).toBe("siam@vibelock.com");
-      expect(params.get("callback_url")).toBe("https://vibelock.bd/api/payments/paystation/callback");
+      expect(params.get("callback_url")).toMatch(
+        /^https:\/\/vibelock\.bd\/api\/payments\/paystation\/callback\?invoice_number=PS-VL-20261121-001-\d+&order_number=VL-20261121-001$/
+      );
       expect(params.get("reference")).toBe("VL-20261121-001");
     });
 
@@ -401,6 +403,31 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       expect(result.isUnverified).toBe(true);
       expect(result.isRetryable).toBe(false);
       expect(result.error).toContain("HTTP 400");
+    });
+
+    test("handles explicit cancellation callback with isUnverified=true and status=CANCELLED", async () => {
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-CANCEL",
+        status: "cancel",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.status).toBe("CANCELLED");
+      expect(result.isUnverified).toBe(true);
+      expect(result.error).toContain("Customer cancelled payment");
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    test("handles explicit cancelled status in callbackPayload with isUnverified=true", async () => {
+      const result = await provider.verifyPayment({
+        invoice_number: "PS-INV-CANCEL",
+        trx_status: "cancelled",
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.status).toBe("CANCELLED");
+      expect(result.isUnverified).toBe(true);
+      expect(global.fetch).not.toHaveBeenCalled();
     });
   });
 
