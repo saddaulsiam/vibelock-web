@@ -4,9 +4,8 @@ import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
 import { revalidatePath } from "next/cache";
 import type { PaymentMethodSetting } from "@prisma/client";
-import { validateRsaKeyMaterial } from "@/lib/payment/providers/nagad/crypto";
 
-export type PaymentMethodCode = "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD" | "PAYSTATION";
+export type PaymentMethodCode = "COD" | "BKASH" | "PAYSTATION";
 
 export interface PaymentMethodStatus {
   code: PaymentMethodCode;
@@ -29,7 +28,7 @@ export interface PaymentSettingsOverview {
 }
 
 export interface StorefrontPaymentOption {
-  value: "COD" | "ONLINE" | "BKASH" | "NAGAD" | "PAYSTATION";
+  value: "COD" | "ONLINE" | "BKASH" | "PAYSTATION";
   title: string;
   detail: string;
 }
@@ -47,41 +46,10 @@ export function isBkashCredentialConfigured(): boolean {
 }
 
 /**
- * Checks whether all four required Nagad credentials are present and non-empty after trimming,
- * and confirms that both the PG public key and merchant private key are valid 2048-bit RSA keys.
- * Fails closed if keys are malformed, truncated, or non-RSA-2048.
- */
-export function isNagadCredentialConfigured(): boolean {
-  if (
-    !env.NAGAD_MERCHANT_ID?.trim() ||
-    !env.NAGAD_MERCHANT_NUMBER?.trim() ||
-    !env.NAGAD_PG_PUBLIC_KEY?.trim() ||
-    !env.NAGAD_MERCHANT_PRIVATE_KEY?.trim()
-  ) {
-    return false;
-  }
-
-  const pubValidation = validateRsaKeyMaterial(env.NAGAD_PG_PUBLIC_KEY, "PUBLIC", 2048);
-  if (!pubValidation.isValid || pubValidation.modulusLength !== 2048) {
-    return false;
-  }
-
-  const privValidation = validateRsaKeyMaterial(env.NAGAD_MERCHANT_PRIVATE_KEY, "PRIVATE", 2048);
-  if (!privValidation.isValid || privValidation.modulusLength !== 2048) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
  * Checks whether required PayStation credentials are present and non-empty after trimming.
  */
 export function isPaystationCredentialConfigured(): boolean {
-  return Boolean(
-    env.PAYSTATION_MERCHANT_ID?.trim() &&
-    env.PAYSTATION_PASSWORD?.trim()
-  );
+  return Boolean(env.PAYSTATION_MERCHANT_ID?.trim() && env.PAYSTATION_PASSWORD?.trim());
 }
 
 /**
@@ -102,23 +70,19 @@ function isTableMissingError(err: unknown): boolean {
  * Safe Missing-Row vs Database-Failure Rules:
  * - Missing row: If the table exists and the query succeeds with null, Strategy A bootstrap matrix applies.
  *   - COD defaults to true.
- *   - SSLCOMMERZ defaults to true ONLY if environment credentials exist.
- *   - BKASH and NAGAD default to false.
+ *   - PAYSTATION and BKASH default to false unless configured and enabled.
  * - Database access failure: If database connection fails, times out, or errors (non-P2021),
  *   it must NOT silently assume enabled! It throws to fail closed and prevent unauthorized checkout.
  * - Credential gating: An existing row with isEnabled: true will NEVER be enabled if required credentials are missing.
  */
 export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
   const normalized = code.trim().toUpperCase();
-  const isSslcommerzConfigured = Boolean(
-    env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
-  );
 
   let record: PaymentMethodSetting | null = null;
 
   try {
     record = await prisma.paymentMethodSetting.findUnique({
-      where: { code: normalized === "ONLINE" ? "SSLCOMMERZ" : normalized },
+      where: { code: normalized === "ONLINE" ? "PAYSTATION" : normalized },
     });
   } catch (err: unknown) {
     if (isTableMissingError(err)) {
@@ -137,28 +101,15 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
     return record ? record.isEnabled : true;
   }
 
-  if (normalized === "ONLINE" || normalized === "SSLCOMMERZ") {
-    // Credential gating: Cannot be enabled under any circumstances if credentials are missing
-    if (!isSslcommerzConfigured) return false;
-    // If database row exists, respect explicit admin decision. Otherwise default to enabled if configured.
-    return record ? record.isEnabled : true;
+  if (normalized === "ONLINE" || normalized === "PAYSTATION") {
+    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
+    if (!isPaystationCredentialConfigured()) return false;
+    return record ? record.isEnabled : false;
   }
 
   if (normalized === "BKASH") {
     // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
     if (!isBkashCredentialConfigured()) return false;
-    return record ? record.isEnabled : false;
-  }
-
-  if (normalized === "NAGAD") {
-    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
-    if (!isNagadCredentialConfigured()) return false;
-    return record ? record.isEnabled : false;
-  }
-
-  if (normalized === "PAYSTATION") {
-    // Fail-closed credential gating: Cannot be enabled under any circumstances if credentials are missing
-    if (!isPaystationCredentialConfigured()) return false;
     return record ? record.isEnabled : false;
   }
 
@@ -170,12 +121,10 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
  * Returns available payment methods formatted for the customer checkout UI.
  */
 export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOption[]> {
-  const [codActive, onlineActive, bkashActive, nagadActive, paystationActive] = await Promise.all([
+  const [codActive, paystationActive, bkashActive] = await Promise.all([
     isPaymentMethodEnabled("COD"),
-    isPaymentMethodEnabled("ONLINE"),
-    isPaymentMethodEnabled("BKASH"),
-    isPaymentMethodEnabled("NAGAD"),
     isPaymentMethodEnabled("PAYSTATION"),
+    isPaymentMethodEnabled("BKASH"),
   ]);
 
   const options: StorefrontPaymentOption[] = [];
@@ -188,11 +137,11 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
     });
   }
 
-  if (onlineActive) {
+  if (paystationActive) {
     options.push({
-      value: "ONLINE",
-      title: "SSLCOMMERZ",
-      detail: "Pay securely via cards, internet banking, or mobile banking.",
+      value: "PAYSTATION",
+      title: "Payment Online",
+      detail: "Instant payment via Cards, bKash, and Mobile Banking via PayStation.",
     });
   }
 
@@ -204,22 +153,6 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
     });
   }
 
-  if (nagadActive) {
-    options.push({
-      value: "NAGAD",
-      title: "Nagad",
-      detail: "Pay directly with your Nagad account.",
-    });
-  }
-
-  if (paystationActive) {
-    options.push({
-      value: "PAYSTATION",
-      title: "PayStation",
-      detail: "Pay securely via cards, mobile banking, or internet banking via PayStation.",
-    });
-  }
-
   return options;
 }
 
@@ -227,11 +160,7 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
  * Returns the administrative settings overview.
  */
 export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverview> {
-  const isSslcommerzConfigured = Boolean(
-    env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
-  );
   const isBkashConfigured = isBkashCredentialConfigured();
-  const isNagadConfigured = isNagadCredentialConfigured();
   const isPaystationConfigured = isPaystationCredentialConfigured();
 
   let dbRecords: PaymentMethodSetting[] = [];
@@ -255,17 +184,12 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
   }
 
   const codRecord = dbRecords.find((r) => r.code === "COD");
-  const sslRecord = dbRecords.find((r) => r.code === "SSLCOMMERZ");
   const bkashRecord = dbRecords.find((r) => r.code === "BKASH");
-  const nagadRecord = dbRecords.find((r) => r.code === "NAGAD");
   const paystationRecord = dbRecords.find((r) => r.code === "PAYSTATION");
 
   // Determine effective status using Strategy A bootstrap rules
   const codEnabled = codRecord ? codRecord.isEnabled : true;
-  const sslEnabled =
-    (sslRecord ? sslRecord.isEnabled : isSslcommerzConfigured) && isSslcommerzConfigured;
   const bkashEnabled = (bkashRecord ? bkashRecord.isEnabled : false) && isBkashConfigured;
-  const nagadEnabled = (nagadRecord ? nagadRecord.isEnabled : false) && isNagadConfigured;
   const paystationEnabled =
     (paystationRecord ? paystationRecord.isEnabled : false) && isPaystationConfigured;
 
@@ -285,15 +209,16 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
         "Orders are created in PENDING status. Inventory reservations are consumed immediately into SALE ledger entries upon checkout completion.",
     },
     {
-      code: "SSLCOMMERZ",
-      name: "SSLCOMMERZ Gateway",
-      description: "Accept cards, mobile banking, and net banking via SSLCOMMERZ hosted checkout.",
+      code: "PAYSTATION",
+      name: "PayStation Gateway",
+      description:
+        "Accept cards, mobile banking, and internet banking via PayStation hosted checkout.",
       type: "ONLINE_GATEWAY",
-      isEnabled: sslEnabled,
-      isConfigured: isSslcommerzConfigured,
-      isPersisted: isTableMigrated && Boolean(sslRecord),
-      environmentMode: isSslcommerzConfigured
-        ? env.SSLCOMMERZ_SANDBOX
+      isEnabled: paystationEnabled,
+      isConfigured: isPaystationConfigured,
+      isPersisted: isTableMigrated && Boolean(paystationRecord),
+      environmentMode: isPaystationConfigured
+        ? env.PAYSTATION_SANDBOX
           ? "sandbox"
           : "production"
         : "unconfigured",
@@ -301,7 +226,7 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
         ? undefined
         : "Database migration pending approval.",
       checkoutImpact:
-        "Customer is redirected to SSLCOMMERZ gateway. Inventory reservations are held until verified callback/IPN settles the transaction.",
+        "Customer is redirected to PayStation hosted checkout. Inventory reservations are held until verified callback/IPN settles the transaction.",
     },
     {
       code: "BKASH",
@@ -321,44 +246,6 @@ export async function getPaymentSettingsOverview(): Promise<PaymentSettingsOverv
         : "Database migration pending approval.",
       checkoutImpact:
         "When active, allows seamless 1-click or PIN/OTP wallet payments without third-party redirection.",
-    },
-    {
-      code: "NAGAD",
-      name: "Nagad Gateway",
-      description: "Accept direct payments from Nagad mobile banking accounts via DFS PGW API.",
-      type: "MFS_DIRECT",
-      isEnabled: nagadEnabled,
-      isConfigured: isNagadConfigured,
-      isPersisted: isTableMigrated && Boolean(nagadRecord),
-      environmentMode: isNagadConfigured
-        ? env.NAGAD_SANDBOX
-          ? "sandbox"
-          : "production"
-        : "unconfigured",
-      persistenceBlockerReason: isTableMigrated
-        ? undefined
-        : "Database migration pending approval.",
-      checkoutImpact:
-        "When active, redirects customer to Nagad payment portal to complete payment via OTP and PIN.",
-    },
-    {
-      code: "PAYSTATION",
-      name: "PayStation Gateway",
-      description: "Accept cards, mobile banking, and internet banking via PayStation hosted checkout.",
-      type: "ONLINE_GATEWAY",
-      isEnabled: paystationEnabled,
-      isConfigured: isPaystationConfigured,
-      isPersisted: isTableMigrated && Boolean(paystationRecord),
-      environmentMode: isPaystationConfigured
-        ? env.PAYSTATION_SANDBOX
-          ? "sandbox"
-          : "production"
-        : "unconfigured",
-      persistenceBlockerReason: isTableMigrated
-        ? undefined
-        : "Database migration pending approval.",
-      checkoutImpact:
-        "Customer is redirected to PayStation hosted checkout. Inventory reservations are held until verified callback/IPN settles the transaction.",
     },
   ];
 
@@ -383,13 +270,7 @@ export async function updatePaymentMethodSetting(
   actorId?: string
 ): Promise<{ success: boolean; error?: string }> {
   // Validate allowed codes
-  if (
-    code !== "COD" &&
-    code !== "SSLCOMMERZ" &&
-    code !== "BKASH" &&
-    code !== "NAGAD" &&
-    code !== "PAYSTATION"
-  ) {
+  if (code !== "COD" && code !== "BKASH" && code !== "PAYSTATION") {
     return {
       success: false,
       error: `Payment method ${code} cannot be toggled at this stage.`,
@@ -397,32 +278,11 @@ export async function updatePaymentMethodSetting(
   }
 
   // Credential guard
-  if (code === "SSLCOMMERZ" && isEnabled) {
-    const isSslcommerzConfigured = Boolean(
-      env.SSLCOMMERZ_STORE_ID?.trim() && env.SSLCOMMERZ_STORE_PASSWORD?.trim()
-    );
-    if (!isSslcommerzConfigured) {
-      return {
-        success: false,
-        error: "Cannot enable SSLCOMMERZ without configured store credentials in environment.",
-      };
-    }
-  }
-
   if (code === "BKASH" && isEnabled) {
     if (!isBkashCredentialConfigured()) {
       return {
         success: false,
         error: "Cannot enable bKash without configured credentials in environment.",
-      };
-    }
-  }
-
-  if (code === "NAGAD" && isEnabled) {
-    if (!isNagadCredentialConfigured()) {
-      return {
-        success: false,
-        error: "Cannot enable Nagad without configured credentials in environment.",
       };
     }
   }
@@ -448,13 +308,9 @@ export async function updatePaymentMethodSetting(
           name:
             code === "COD"
               ? "Cash on Delivery"
-              : code === "SSLCOMMERZ"
-                ? "SSLCOMMERZ Gateway"
-                : code === "BKASH"
-                  ? "Direct bKash Checkout"
-                  : code === "NAGAD"
-                    ? "Nagad Gateway"
-                    : "PayStation Gateway",
+              : code === "BKASH"
+                ? "Direct bKash Checkout"
+                : "PayStation Gateway",
           isEnabled,
         },
       });

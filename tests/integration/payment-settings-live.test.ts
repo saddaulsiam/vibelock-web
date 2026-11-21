@@ -74,7 +74,7 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     }
 
     await prisma.paymentMethodSetting.deleteMany({
-      where: { code: { in: ["COD", "SSLCOMMERZ"] } },
+      where: { code: { in: ["COD", "PAYSTATION"] } },
     });
 
     // Recheck exact baseline match
@@ -189,27 +189,27 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     }
   });
 
-  test("4. Live write: persist SSLCOMMERZ=false and verify AuditLog", async () => {
-    const updateResult = await updatePaymentMethodSetting("SSLCOMMERZ", false);
+  test("4. Live write: persist PAYSTATION=false and verify AuditLog", async () => {
+    const updateResult = await updatePaymentMethodSetting("PAYSTATION", false);
     expect(updateResult.success).toBe(true);
 
-    const sslRow = await prisma.paymentMethodSetting.findUnique({
-      where: { code: "SSLCOMMERZ" },
+    const psRow = await prisma.paymentMethodSetting.findUnique({
+      where: { code: "PAYSTATION" },
     });
-    expect(sslRow).not.toBeNull();
-    expect(sslRow?.code).toBe("SSLCOMMERZ");
-    expect(sslRow?.name).toBe("SSLCOMMERZ Gateway");
-    expect(sslRow?.isEnabled).toBe(false);
+    expect(psRow).not.toBeNull();
+    expect(psRow?.code).toBe("PAYSTATION");
+    expect(psRow?.name).toBe("PayStation Gateway");
+    expect(psRow?.isEnabled).toBe(false);
 
-    // Total rows in PaymentMethodSetting is exactly 2 (COD and SSLCOMMERZ)
+    // Total rows in PaymentMethodSetting is exactly 2 (COD and PAYSTATION)
     const totalPms = await prisma.paymentMethodSetting.count();
     expect(totalPms).toBe(2);
 
-    // Verify AuditLog for SSLCOMMERZ
+    // Verify AuditLog for PAYSTATION
     const auditRecord = await prisma.auditLog.findFirst({
       where: {
         entityType: "PaymentMethodSetting",
-        entityId: sslRow?.id,
+        entityId: psRow?.id,
       },
       orderBy: { createdAt: "desc" },
     });
@@ -221,7 +221,7 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
       previousState: unknown;
       newState: unknown;
     };
-    expect(metadata.code).toBe("SSLCOMMERZ");
+    expect(metadata.code).toBe("PAYSTATION");
     expect(metadata.previousState).toBe("UNINITIALIZED");
     expect(metadata.newState).toBe(false);
 
@@ -239,8 +239,8 @@ describe("VibeLock Stage 3 — Live Database Persistence Verification on localho
     expect(codStatus?.isPersisted).toBe(true);
     expect(codStatus?.isEnabled).toBe(true);
 
-    const sslStatus = overview.methods.find((m) => m.code === "SSLCOMMERZ");
-    expect(sslStatus?.isPersisted).toBe(true);
-    expect(sslStatus?.isEnabled).toBe(false);
+    const psStatus = overview.methods.find((m) => m.code === "PAYSTATION");
+    expect(psStatus?.isPersisted).toBe(true);
+    expect(psStatus?.isEnabled).toBe(false);
   });
 });

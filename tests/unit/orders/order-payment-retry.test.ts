@@ -298,21 +298,21 @@ describe("Order Payment Retry & Cancellation Financial Safeguards", () => {
           paymentStatus: "FAILED", // verified terminal failure
           paymentMethod: "ONLINE",
           inventoryReservations: [{ id: "res-1", status: "RESERVED", expiresAt: new Date(Date.now() + 600000) }],
-          payments: [{ id: "pay-1", status: "FAILED", gateway: "SSLCOMMERZ" }],
+          payments: [{ id: "pay-1", status: "FAILED", gateway: "PAYSTATION" }],
         });
 
       mockInitiatePayment.mockResolvedValueOnce({
         success: true,
-        redirectUrl: "https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=test-session-token",
-        merchantReferenceId: "SSLC-RETRY-123",
+        redirectUrl: "https://sandbox.paystation.com.bd/checkout/test-session-token",
+        merchantReferenceId: "PS-RETRY-123",
       });
 
       const res = await retryOrderPaymentAction(sampleOrderNumber);
       expect(res.success).toBe(true);
-      expect(res.redirectUrl).toBe("https://sandbox.sslcommerz.com/gwprocess/v4/gw.php?Q=test-session-token");
+      expect(res.redirectUrl).toBe("https://sandbox.paystation.com.bd/checkout/test-session-token");
       expect(mockInitiatePayment).toHaveBeenCalledWith(
         expect.objectContaining({ orderNumber: sampleOrderNumber }),
-        "SSLCOMMERZ",
+        "PAYSTATION",
         expect.objectContaining({ skipRateLimit: true, clientIp: "103.1.2.3" })
       );
       expect(mockRevalidatePath).toHaveBeenCalledWith(`/order-success/${sampleOrderNumber}`);

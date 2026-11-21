@@ -35,7 +35,7 @@ export function proxy(request: NextRequest) {
     "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://*.googleusercontent.com",
     "font-src 'self'",
     "connect-src 'self' https://vitals.vercel-insights.com",
-    "form-action 'self' https://sandbox.sslcommerz.com https://securepay.sslcommerz.com",
+    "form-action 'self' https://sandbox.paystation.com.bd https://api.paystation.com.bd https://paystation.com.bd",
     "base-uri 'self'",
     "object-src 'none'",
     "frame-ancestors 'none'",

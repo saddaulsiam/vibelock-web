@@ -244,9 +244,9 @@ describe("VibeLock Stage 5 — Checkout Payment Availability Regression Tests", 
         })
       );
 
-      // Falls back to standard COD and Online options
+      // Falls back to standard COD and Online (PayStation) options
       expect(html).toContain('value="COD"');
-      expect(html).toContain('value="ONLINE"');
+      expect(html).toContain('value="PAYSTATION"');
       expect(html).not.toContain(
         "Checkout is currently unavailable as no payment methods are active"
       );

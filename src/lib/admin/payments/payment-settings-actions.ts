@@ -23,9 +23,7 @@ export async function togglePaymentMethodAction(
   if (
     !rawCode ||
     (rawCode !== "COD" &&
-      rawCode !== "SSLCOMMERZ" &&
       rawCode !== "BKASH" &&
-      rawCode !== "NAGAD" &&
       rawCode !== "PAYSTATION")
   ) {
     return { error: "Invalid payment method code." };

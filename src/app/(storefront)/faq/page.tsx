@@ -60,7 +60,7 @@ const FAQ_CATEGORIES = [
     items: [
       {
         q: "What payment methods do you accept?",
-        a: "We support nationwide Cash on Delivery (COD), alongside instant digital payments via bKash, Nagad, Visa, Mastercard, and SSLCOMMERZ.",
+        a: "We support nationwide Cash on Delivery (COD), alongside instant digital payments via PayStation (Cards/MFS) and Direct bKash.",
       },
       {
         q: "Is it safe to pay online on VibeLock?",
@@ -77,7 +77,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: "How long does a refund take if I return an item?",
-        a: "Once inspected at our hub (within 24 hours of arrival), store credits are issued instantly. Mobile financial refunds (bKash/Nagad) take 3 to 5 business days, and card refunds take 5 to 10 business days depending on your bank.",
+        a: "Once inspected at our hub (within 24 hours of arrival), store credits are issued instantly. Mobile financial refunds (bKash) take 3 to 5 business days, and card refunds take 5 to 10 business days depending on your bank.",
       },
     ],
   },

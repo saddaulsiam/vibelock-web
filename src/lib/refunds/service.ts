@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma/client";
 import { Prisma, Refund } from "@prisma/client";
-import { isSSLCommerzGateway } from "@/lib/payment/constants";
 import { recordAuditLog } from "@/lib/audit";
 
 export class RefundService {
@@ -240,58 +239,17 @@ export class RefundService {
       return { success: false, error: "Refund is already being processed" };
     }
 
-    // 2. Determine provider and call external API
-    // Gateways without automated refund APIs (e.g. bKash, Nagad, COD) must NOT be marked FAILED.
-    // They require manual processing and must remain PENDING so admins can record the manual refund.
-    if (!isSSLCommerzGateway(refund.payment.gateway)) {
-      await prisma.refund.updateMany({
-        where: { id: refundId, status: "PROCESSING" },
-        data: { status: "PENDING" },
-      });
-      return {
-        success: false,
-        requiresManualProcessing: true,
-        error: `Automated refund is unsupported for gateway '${refund.payment.gateway}'. Please issue the refund manually via the provider portal and record manual refund completion with the transaction reference.`,
-      };
-    }
-
-    let providerRes: {
-      success: boolean;
-      gatewayRefundRef?: string;
-      error?: string;
-      unknownResult?: boolean;
-    } = {
-      success: false,
-      error: "Unsupported gateway",
-    };
-
-    // Import dynamically or inject provider to avoid circular dependencies
-    const { SSLCommerzProvider } = await import("@/lib/payment/providers/sslcommerz/client");
-    const provider = new SSLCommerzProvider();
-
-    if (!refund.payment.gatewayTransactionId) {
-      throw new Error("Missing gatewayTransactionId to refund");
-    }
-
-    providerRes = await provider.refundPayment({
-      refundId: refund.id,
-      paymentId: refund.paymentId,
-      gatewayTransactionId: refund.payment.gatewayTransactionId,
-      amount: Number(refund.amount),
-      reason: refund.reason || "Return/Refund",
+    // 2. All supported gateways (PayStation, Direct bKash, COD) require manual refund processing via provider portal.
+    // They must NOT be marked FAILED; they remain PENDING so admins can record manual refund completion.
+    await prisma.refund.updateMany({
+      where: { id: refundId, status: "PROCESSING" },
+      data: { status: "PENDING" },
     });
-
-    // 3. Atomically finalize SUCCESS/FAILED based on provider result
-    if (providerRes.success) {
-      await this.markRefundSuccess(refund.id, providerRes.gatewayRefundRef || refund.id);
-      return { success: true };
-    } else {
-      if (providerRes.unknownResult) {
-        return { success: false, error: "Refund result is unknown and requires reconciliation" };
-      }
-      await this.markRefundFailed(refund.id);
-      return { success: false, error: "Refund provider rejected the request" };
-    }
+    return {
+      success: false,
+      requiresManualProcessing: true,
+      error: `Automated refund is unsupported for gateway '${refund.payment.gateway}'. Please issue the refund manually via the provider portal and record manual refund completion with the transaction reference.`,
+    };
   }
 
   /**

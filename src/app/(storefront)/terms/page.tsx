@@ -126,7 +126,7 @@ export default function TermsPage() {
                 <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     We offer Cash on Delivery (COD) across Bangladesh, as well as secure online
-                    payments via bKash, Nagad, Visa, Mastercard, and SSLCOMMERZ. Online transactions
+                    payments via PayStation (Cards/MFS) and Direct bKash. Online transactions
                     are processed through encrypted gateways; VibeLock does not store raw credit
                     card numbers or banking PINs.
                   </p>

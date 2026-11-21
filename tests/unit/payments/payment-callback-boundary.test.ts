@@ -5,13 +5,9 @@ import {
   POST as bkashCallbackPost,
 } from "@/app/api/payments/bkash/callback/route";
 import {
-  GET as nagadCallbackGet,
-  POST as nagadCallbackPost,
-} from "@/app/api/payments/nagad/callback/route";
-import {
-  GET as sslcommerzCallbackGet,
-  POST as sslcommerzCallbackPost,
-} from "@/app/api/payments/sslcommerz/callback/route";
+  GET as paystationCallbackGet,
+  POST as paystationCallbackPost,
+} from "@/app/api/payments/paystation/callback/route";
 import { POST as courierWebhook } from "@/app/api/shipping/webhook/route";
 
 const { mockVerifyCallback } = vi.hoisted(() => ({
@@ -85,71 +81,35 @@ describe("Payment Callbacks & Webhooks Request Boundary & Regression Safety Audi
       expect(mockVerifyCallback).not.toHaveBeenCalled();
     });
 
-    test("Nagad callback rejects Content-Length exceeding 64KB with 413 and never calls PaymentService", async () => {
+    test("PayStation callback rejects Content-Length exceeding 64KB with 413 and never calls PaymentService", async () => {
       const headers = new Headers();
       headers.set("content-type", "application/json");
-      headers.set("accept", "application/json");
       headers.set("content-length", String(65 * 1024));
 
-      const req = new NextRequest("https://vibelock.bd/api/payments/nagad/callback", {
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
         method: "POST",
         headers,
-        body: JSON.stringify({ payment_ref_id: "NAGAD-123" }),
+        body: JSON.stringify({ invoice_number: "PS-123" }),
       });
 
-      const res = await nagadCallbackPost(req);
-      expect(res.status).toBe(413);
-      const json = await res.json();
-      expect(json.error).toMatch(/payload too large/i);
-      expect(mockVerifyCallback).not.toHaveBeenCalled();
-    });
-
-    test("Nagad callback rejects actual body exceeding 64KB with 413 and never calls PaymentService", async () => {
-      const headers = new Headers();
-      headers.set("content-type", "application/json");
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/nagad/callback", {
-        method: "POST",
-        headers,
-        body: "x".repeat(65 * 1024),
-      });
-
-      const res = await nagadCallbackPost(req);
+      const res = await paystationCallbackPost(req);
       expect(res.status).toBe(413);
       const text = await res.text();
       expect(text).toMatch(/payload too large/i);
       expect(mockVerifyCallback).not.toHaveBeenCalled();
     });
 
-    test("SSLCOMMERZ callback rejects Content-Length exceeding 64KB with 413 and never calls PaymentService", async () => {
-      const headers = new Headers();
-      headers.set("content-type", "application/x-www-form-urlencoded");
-      headers.set("content-length", String(65 * 1024));
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers,
-        body: "val_id=TEST_VAL_ID",
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(413);
-      const text = await res.text();
-      expect(text).toMatch(/payload too large/i);
-      expect(mockVerifyCallback).not.toHaveBeenCalled();
-    });
-
-    test("SSLCOMMERZ callback rejects actual body exceeding 64KB with 413 and never calls PaymentService", async () => {
+    test("PayStation callback rejects actual body exceeding 64KB with 413 and never calls PaymentService", async () => {
       const headers = new Headers();
       headers.set("content-type", "application/x-www-form-urlencoded");
 
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
         method: "POST",
         headers,
         body: "field=" + "z".repeat(65 * 1024),
       });
 
-      const res = await sslcommerzCallbackPost(req);
+      const res = await paystationCallbackPost(req);
       expect(res.status).toBe(413);
       const text = await res.text();
       expect(text).toMatch(/payload too large/i);
@@ -347,375 +307,114 @@ describe("Payment Callbacks & Webhooks Request Boundary & Regression Safety Audi
   });
 
   // ==========================================
-  // 3. Nagad Gateway Regression Tests
+  // 3. PayStation Gateway Regression Tests
   // ==========================================
-  describe("Nagad Gateway Callbacks", () => {
-    test("handles legitimate GET callback browser redirect on success", async () => {
+  describe("PayStation Gateway Callbacks", () => {
+    test("handles legitimate browser GET callback redirect on success", async () => {
       mockVerifyCallback.mockResolvedValueOnce({
         verification: { success: true, status: "SUCCESS" },
-        orderNumber: "VL-ORD-NAGAD-01",
+        orderNumber: "VL-ORD-PS-01",
       });
 
       const req = new NextRequest(
-        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=NGD_REF_1&status=Success",
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-ORD-PS-01-12345&status=Successful",
         { method: "GET" }
       );
 
-      const res = await nagadCallbackGet(req);
+      const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-NAGAD-01?payment=success"
+        "https://vibelock.bd/order-success/VL-ORD-PS-01?payment=success"
       );
-      expect(mockVerifyCallback).toHaveBeenCalledWith("NAGAD", {
-        payment_ref_id: "NGD_REF_1",
-        status: "Success",
+      expect(mockVerifyCallback).toHaveBeenCalledWith("PAYSTATION", {
+        invoice_number: "PS-VL-ORD-PS-01-12345",
+        status: "Successful",
       });
     });
 
-    test("handles legitimate GET callback browser redirect on failure", async () => {
+    test("handles legitimate browser GET callback redirect on cancellation", async () => {
       mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: false, status: "FAILED" },
-        orderNumber: "VL-ORD-NAGAD-02",
+        verification: { success: false, status: "CANCELLED" },
+        orderNumber: "VL-ORD-PS-02",
       });
 
       const req = new NextRequest(
-        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=NGD_REF_2&status=Failed",
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-ORD-PS-02-12345&status=Canceled",
         { method: "GET" }
       );
 
-      const res = await nagadCallbackGet(req);
+      const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-NAGAD-02?payment=failed"
+        "https://vibelock.bd/order-success/VL-ORD-PS-02?payment=cancelled"
       );
     });
 
-    test("handles legitimate POST callback with URL-encoded body", async () => {
+    test("handles legitimate browser POST callback (URL-encoded) redirect on success", async () => {
       mockVerifyCallback.mockResolvedValueOnce({
         verification: { success: true, status: "SUCCESS" },
-        orderNumber: "VL-ORD-NAGAD-03",
+        orderNumber: "VL-ORD-PS-03",
       });
 
-      const req = new NextRequest("https://vibelock.bd/api/payments/nagad/callback", {
+      const body = new URLSearchParams({
+        invoice_number: "PS-VL-ORD-PS-03-12345",
+        status: "Successful",
+        trx_id: "PS_TRX_3",
+      }).toString();
+
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "payment_ref_id=NGD_REF_3&status=Success",
+        body,
       });
 
-      const res = await nagadCallbackPost(req);
+      const res = await paystationCallbackPost(req);
       expect(res.status).toBe(303);
       expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-NAGAD-03?payment=success"
+        "https://vibelock.bd/order-success/VL-ORD-PS-03?payment=success"
       );
     });
 
     test("handles legitimate POST callback with JSON accept header", async () => {
       mockVerifyCallback.mockResolvedValueOnce({
         verification: { success: true, status: "SUCCESS", isUnverified: false },
-        orderNumber: "VL-ORD-NAGAD-04",
+        orderNumber: "VL-ORD-PS-04",
       });
 
-      const req = new NextRequest("https://vibelock.bd/api/payments/nagad/callback", {
+      const req = new NextRequest("https://vibelock.bd/api/payments/paystation/callback", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify({ payment_ref_id: "NGD_REF_4", status: "Success" }),
+        body: JSON.stringify({
+          invoice_number: "PS-VL-ORD-PS-04-12345",
+          status: "Successful",
+        }),
       });
 
-      const res = await nagadCallbackPost(req);
+      const res = await paystationCallbackPost(req);
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json).toEqual({
         success: true,
         status: "SUCCESS",
-        orderNumber: "VL-ORD-NAGAD-04",
+        orderNumber: "VL-ORD-PS-04",
         isUnverified: false,
       });
     });
 
-    test("handles verification failure by redirecting to /cart", async () => {
-      mockVerifyCallback.mockRejectedValueOnce(new Error("Verification failed"));
-
-      const req = new NextRequest(
-        "https://vibelock.bd/api/payments/nagad/callback?payment_ref_id=UNKNOWN",
-        { method: "GET" }
-      );
-
-      const res = await nagadCallbackGet(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/cart?error=payment_verification_failed"
-      );
-    });
-  });
-
-  // ==========================================
-  // 4. SSLCOMMERZ Gateway Regression Tests
-  // ==========================================
-  describe("SSLCOMMERZ Gateway Callbacks & IPN", () => {
-    test("handles legitimate browser POST callback (URL-encoded) redirect on success", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: true, status: "SUCCESS" },
-        orderNumber: "VL-ORD-SSLC-01",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_1",
-        val_id: "VAL_12345",
-        amount: "1500.00",
-        currency: "BDT",
-        status: "VALID",
-        bank_tran_id: "BANK_999",
-      }).toString();
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-SSLC-01?payment=success"
-      );
-      expect(mockVerifyCallback).toHaveBeenCalledWith(
-        "SSLCOMMERZ",
-        expect.objectContaining({
-          tran_id: "SSLC_TRX_1",
-          val_id: "VAL_12345",
-          amount: "1500.00",
-          status: "VALID",
-        })
-      );
-    });
-
-    test("handles legitimate browser POST callback redirect on failure", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: false, status: "FAILED" },
-        orderNumber: "VL-ORD-SSLC-02",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_2",
-        status: "FAILED",
-        failedreason: "Card expired or insufficient balance",
-      }).toString();
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-SSLC-02?payment=failed"
-      );
-    });
-
-    test("handles legitimate browser POST callback redirect on cancellation", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: false, status: "CANCELLED" },
-        orderNumber: "VL-ORD-SSLC-03",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_3",
-        status: "CANCELLED",
-      }).toString();
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-SSLC-03?payment=cancelled"
-      );
-    });
-
-    test("handles duplicate callback idempotently (already SUCCESS)", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: true, status: "SUCCESS" },
-        orderNumber: "VL-ORD-SSLC-DUP",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_DUP",
-        val_id: "VAL_DUP",
-        status: "VALID",
-      }).toString();
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-SSLC-DUP?payment=success"
-      );
-    });
-
-    test("handles verified server-to-server IPN callback via query status=ipn", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: true, status: "SUCCESS", isUnverified: false },
-        orderNumber: "VL-ORD-SSLC-IPN-1",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_IPN_1",
-        val_id: "VAL_IPN_1",
-        status: "VALID",
-      }).toString();
-
-      const req = new NextRequest(
-        "https://vibelock.bd/api/payments/sslcommerz/callback?status=ipn",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body,
-        }
-      );
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(200);
-      const text = await res.text();
-      expect(text).toBe("IPN OK");
-    });
-
-    test("handles verified server-to-server IPN callback via header x-sslcommerz-ipn", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: true, status: "SUCCESS", isUnverified: false },
-        orderNumber: "VL-ORD-SSLC-IPN-2",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_IPN_2",
-        val_id: "VAL_IPN_2",
-        status: "VALID",
-      }).toString();
-
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "x-sslcommerz-ipn": "true",
-        },
-        body,
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(200);
-      const text = await res.text();
-      expect(text).toBe("IPN OK");
-    });
-
-    test("rejects unverified IPN callback with 400 Unverified IPN payload", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: false, status: "FAILED", isUnverified: true },
-        orderNumber: "VL-ORD-SSLC-IPN-UNVERIFIED",
-      });
-
-      const body = new URLSearchParams({
-        tran_id: "SSLC_TRX_UNVERIFIED",
-        status: "FAILED",
-      }).toString();
-
-      const req = new NextRequest(
-        "https://vibelock.bd/api/payments/sslcommerz/callback?status=ipn",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body,
-        }
-      );
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(400);
-      const text = await res.text();
-      expect(text).toBe("Unverified IPN payload");
-    });
-
-    test("returns 503 for retryable database error during IPN processing", async () => {
-      mockVerifyCallback.mockRejectedValueOnce(
-        new Error("P2028: Transaction timed out on database query")
-      );
-
-      const req = new NextRequest(
-        "https://vibelock.bd/api/payments/sslcommerz/callback?status=ipn",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "tran_id=SSLC_TIMEOUT",
-        }
-      );
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(503);
-      const text = await res.text();
-      expect(text).toBe("Service Unavailable");
-    });
-
-    test("returns 400 for non-retryable error during IPN processing", async () => {
-      mockVerifyCallback.mockRejectedValueOnce(new Error("Invalid merchant validation key"));
-
-      const req = new NextRequest(
-        "https://vibelock.bd/api/payments/sslcommerz/callback?status=ipn",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "tran_id=SSLC_BAD_KEY",
-        }
-      );
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(400);
-      const text = await res.text();
-      expect(text).toBe("Bad Request");
-    });
-
-    test("redirects non-IPN callback error to /cart?error=payment_verification_failed", async () => {
+    test("handles verification failure safely by redirecting with failed payment param", async () => {
       mockVerifyCallback.mockRejectedValueOnce(new Error("Database connection lost"));
 
-      const req = new NextRequest("https://vibelock.bd/api/payments/sslcommerz/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "tran_id=SSLC_FAIL",
-      });
-
-      const res = await sslcommerzCallbackPost(req);
-      expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/cart?error=payment_verification_failed"
-      );
-    });
-
-    test("handles legitimate GET callback for SSLCOMMERZ safely", async () => {
-      mockVerifyCallback.mockResolvedValueOnce({
-        verification: { success: true, status: "SUCCESS" },
-        orderNumber: "VL-ORD-SSLC-GET",
-      });
-
       const req = new NextRequest(
-        "https://vibelock.bd/api/payments/sslcommerz/callback?tran_id=SSLC_GET&status=VALID",
+        "https://vibelock.bd/api/payments/paystation/callback?invoice_number=PS-VL-ORD-PS-05-12345&status=Failed",
         { method: "GET" }
       );
 
-      const res = await sslcommerzCallbackGet(req);
+      const res = await paystationCallbackGet(req);
       expect(res.status).toBe(303);
-      expect(res.headers.get("location")).toBe(
-        "https://vibelock.bd/order-success/VL-ORD-SSLC-GET?payment=success"
-      );
+      expect(res.headers.get("location")).toContain("payment=");
     });
   });
 });

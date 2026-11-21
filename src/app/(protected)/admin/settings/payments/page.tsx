@@ -25,11 +25,9 @@ function getMethodIcon(code: PaymentMethodStatus["code"]) {
   switch (code) {
     case "COD":
       return Banknote;
-    case "SSLCOMMERZ":
     case "PAYSTATION":
       return CreditCard;
     case "BKASH":
-    case "NAGAD":
       return Smartphone;
   }
 }
@@ -48,10 +46,7 @@ function getStatusBadge(method: PaymentMethodStatus) {
   }
 
   if (
-    (method.code === "SSLCOMMERZ" ||
-      method.code === "BKASH" ||
-      method.code === "NAGAD" ||
-      method.code === "PAYSTATION") &&
+    (method.code === "BKASH" || method.code === "PAYSTATION") &&
     !method.isConfigured
   ) {
     return (
@@ -113,7 +108,7 @@ export default async function AdminPaymentSettingsPage() {
               {overview.hasPersistenceStore
                 ? "Payment settings are actively loaded and saved to the PaymentMethodSetting database table with AuditLog records."
                 : overview.persistenceBlocker ||
-                  "Settings are safeguarded by the Strategy A bootstrap matrix. COD defaults to enabled, and SSLCOMMERZ respects environment credentials."}
+                  "Settings are safeguarded by the Strategy A bootstrap matrix. COD defaults to enabled, and PayStation/bKash respect environment credentials."}
             </p>
             <p className="text-xs opacity-80">
               Authoritative server-side enforcement is active in createOrderAction. Toggling methods
@@ -129,9 +124,7 @@ export default async function AdminPaymentSettingsPage() {
           const Icon = getMethodIcon(method.code);
           const canToggle =
             method.code === "COD" ||
-            method.code === "SSLCOMMERZ" ||
             method.code === "BKASH" ||
-            method.code === "NAGAD" ||
             method.code === "PAYSTATION";
 
           return (
@@ -205,7 +198,7 @@ export default async function AdminPaymentSettingsPage() {
                     <span className="text-muted-foreground font-medium">Admin Control:</span>
                     {canToggle ? (
                       <TogglePaymentMethodForm
-                        code={method.code as "COD" | "SSLCOMMERZ" | "BKASH" | "NAGAD" | "PAYSTATION"}
+                        code={method.code as "COD" | "BKASH" | "PAYSTATION"}
                         isEnabled={method.isEnabled}
                         isConfigured={method.isConfigured}
                       />

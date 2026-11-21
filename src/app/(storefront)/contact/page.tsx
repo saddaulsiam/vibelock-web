@@ -43,7 +43,7 @@ const FAQS = [
   },
   {
     q: "What payment methods are supported?",
-    a: "We support Cash on Delivery (COD) nationwide, alongside instant digital payments via bKash, Nagad, Visa, Mastercard, and SSLCOMMERZ.",
+    a: "We support Cash on Delivery (COD) nationwide, alongside instant digital payments via PayStation (Cards/MFS) and Direct bKash.",
   },
 ];
 

@@ -275,7 +275,7 @@ export default async function AdminReconciliationPage({
               </p>
               <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                 {summary.gateway.capturedOnlineTransactionsCount} successful transactions recorded
-                by SSLCommerz. Subject to gateway batch payout to bank.
+                by online gateway (PayStation / bKash). Subject to gateway batch payout to bank.
               </p>
             </CardContent>
           </Card>
@@ -416,7 +416,7 @@ export default async function AdminReconciliationPage({
           bank transfers.
         </p>
         <p className="leading-relaxed">
-          <strong>Gateway MDR &amp; Operating Expenses:</strong> SSLCommerz card/MFS processing fees
+          <strong>Gateway MDR &amp; Operating Expenses:</strong> Online gateway card/MFS processing fees
           (2%–2.5%) and business operating expenses are unavailable in the current schema. Operating
           profit and net bank payout cannot be calculated authoritatively.
         </p>

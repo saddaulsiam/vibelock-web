@@ -381,7 +381,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
 
     it("emits PAYMENT_TAMPERING_DETECTED when callback payload is missing transaction reference", async () => {
       await expect(
-        paymentService.verifyCallback("NAGAD", {
+        paymentService.verifyCallback("BKASH", {
           status: "success",
         })
       ).rejects.toThrow("Missing transaction reference");
@@ -392,7 +392,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
           contexts: expect.objectContaining({
             security: expect.objectContaining({
               endpoint: "verifyCallback",
-              gateway: "nagad",
+              gateway: "bkash",
               reason: "missing_transaction_reference",
             }),
           }),
@@ -404,8 +404,8 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       const longRef = "a".repeat(129);
 
       await expect(
-        paymentService.verifyCallback("SSLCOMMERZ", {
-          tran_id: longRef,
+        paymentService.verifyCallback("PAYSTATION", {
+          invoice_number: longRef,
         })
       ).rejects.toThrow("Invalid transaction reference");
 
@@ -415,7 +415,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
           contexts: expect.objectContaining({
             security: expect.objectContaining({
               endpoint: "verifyCallback",
-              gateway: "sslcommerz",
+              gateway: "paystation",
               reason: "invalid_transaction_reference_length",
             }),
           }),
@@ -455,7 +455,11 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       mockPrisma.order.findUnique
         .mockResolvedValueOnce(existingOrder) // under lock in tx
         .mockResolvedValueOnce(existingOrder); // final lookup
-      mockPrisma.payment.findFirst.mockResolvedValueOnce(priorPayment);
+      mockPrisma.payment.findFirst.mockImplementation(async (args: any) => {
+        if (args?.where?.gatewayTransactionId) return null;
+        if (args?.where?.orderId) return priorPayment;
+        return null;
+      });
 
       const mockProvider = {
         verifyPayment: vi.fn(async () => ({
@@ -718,7 +722,11 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       mockPrisma.order.findUnique
         .mockResolvedValueOnce(existingOrder) // under lock in tx
         .mockResolvedValueOnce(existingOrder); // final lookup
-      mockPrisma.payment.findFirst.mockResolvedValueOnce(priorPayment);
+      mockPrisma.payment.findFirst.mockImplementation(async (args: any) => {
+        if (args?.where?.gatewayTransactionId) return null;
+        if (args?.where?.orderId) return priorPayment;
+        return null;
+      });
 
       const mockProvider = {
         verifyPayment: vi.fn(async () => ({
@@ -893,7 +901,7 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       );
     });
 
-    it("allows customer to switch payment methods (ONLINE -> BKASH -> NAGAD) within quota without premature blockage", async () => {
+    it("allows customer to switch payment methods (ONLINE -> BKASH) within quota without premature blockage", async () => {
       const customerUserId = "cust-switch-method-user";
 
       // Attempt 1: ONLINE
@@ -902,11 +910,6 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       ).resolves.not.toThrow();
 
       // Attempt 2: BKASH
-      await expect(
-        checkPaymentInitiationRateLimit(customerUserId, "103.1.2.3")
-      ).resolves.not.toThrow();
-
-      // Attempt 3: NAGAD
       await expect(
         checkPaymentInitiationRateLimit(customerUserId, "103.1.2.3")
       ).resolves.not.toThrow();
@@ -941,14 +944,14 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       const mockProvider = {
         initiatePayment: vi.fn(async () => ({
           success: true,
-          redirectUrl: "https://sandbox.sslcommerz.com/test",
-          merchantReferenceId: "SSLC-TEST-123",
+          redirectUrl: "https://sandbox.paystation.com.bd/checkout/test",
+          merchantReferenceId: "PS-TEST-123",
         })),
         verifyPayment: vi.fn(),
       };
       vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
 
-      const response = await paymentService.initiatePayment(testOrder, "SSLCOMMERZ", {
+      const response = await paymentService.initiatePayment(testOrder, "PAYSTATION", {
         skipRateLimit: true,
         clientIp: "103.1.2.3",
       });
@@ -972,11 +975,11 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       mockPrisma.payment.findFirst
         .mockResolvedValueOnce(null) // activePending (< 30s)
         .mockResolvedValueOnce({
-          id: "pay-existing-sslc",
+          id: "pay-existing-ps",
           orderId: "ord-switch-gate-inflight",
-          gateway: "SSLCOMMERZ",
+          gateway: "PAYSTATION",
           status: "INITIATED",
-          merchantReferenceId: "SSLC-REF-INFLIGHT",
+          merchantReferenceId: "PS-REF-INFLIGHT",
           createdAt: new Date(Date.now() - 25 * 60 * 1000), // even 25 mins old is unresolved!
           gatewayPayload: {},
         });
@@ -1004,16 +1007,16 @@ describe("Phase 12.2: Payment Abuse & Tampering Alerts (SEC-12-02)", () => {
       mockPrisma.payment.findFirst
         .mockResolvedValueOnce(null) // activePending (< 30s)
         .mockResolvedValueOnce({
-          id: "pay-existing-sslc-nourl",
+          id: "pay-existing-ps-nourl",
           orderId: "ord-same-gate-no-url",
-          gateway: "SSLCOMMERZ",
+          gateway: "PAYSTATION",
           status: "INITIATED",
-          merchantReferenceId: "SSLC-REF-NOURL",
+          merchantReferenceId: "PS-REF-NOURL",
           createdAt: new Date(Date.now() - 5 * 60 * 1000),
           gatewayPayload: {}, // No redirectUrl cached
         });
 
-      const response = await paymentService.initiatePayment(testOrder, "SSLCOMMERZ", {
+      const response = await paymentService.initiatePayment(testOrder, "PAYSTATION", {
         skipRateLimit: true,
       });
 

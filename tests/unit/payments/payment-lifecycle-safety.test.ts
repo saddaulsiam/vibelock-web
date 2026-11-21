@@ -215,7 +215,7 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
 
       mockPrisma.order.findUnique.mockResolvedValueOnce(paidOrder);
 
-      const response = await paymentService.initiatePayment(paidOrder, "SSLCOMMERZ");
+      const response = await paymentService.initiatePayment(paidOrder, "PAYSTATION");
       expect(response.success).toBe(false);
       expect(response.error).toContain("already paid");
     });
@@ -232,7 +232,7 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
 
       mockPrisma.order.findUnique.mockResolvedValueOnce(cancelledOrder);
 
-      const response = await paymentService.initiatePayment(cancelledOrder, "SSLCOMMERZ");
+      const response = await paymentService.initiatePayment(cancelledOrder, "PAYSTATION");
       expect(response.success).toBe(false);
       expect(response.error).toContain("cancelled order");
     });
@@ -254,9 +254,9 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
           // existingInitiated (15m)
           id: "pay-existing-active",
           status: "INITIATED",
-          gateway: "SSLCOMMERZ",
-          merchantReferenceId: "SSLC-ACTIVE-REF-1",
-          gatewayPayload: { redirectUrl: "https://sandbox.sslcommerz.com/gwprocess/active-session" },
+          gateway: "PAYSTATION",
+          merchantReferenceId: "PS-ACTIVE-REF-1",
+          gatewayPayload: { redirectUrl: "https://sandbox.paystation.com.bd/checkout/active-session" },
           createdAt: new Date(),
         });
 
@@ -265,17 +265,17 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
       };
       vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
 
-      const response = await paymentService.initiatePayment(pendingOrder, "SSLCOMMERZ");
+      const response = await paymentService.initiatePayment(pendingOrder, "PAYSTATION");
       expect(response.success).toBe(true);
       expect(response.redirectUrl).toBe(
-        "https://sandbox.sslcommerz.com/gwprocess/active-session"
+        "https://sandbox.paystation.com.bd/checkout/active-session"
       );
-      expect(response.merchantReferenceId).toBe("SSLC-ACTIVE-REF-1");
+      expect(response.merchantReferenceId).toBe("PS-ACTIVE-REF-1");
       // External provider call was skipped because active session was reused!
       expect(mockProvider.initiatePayment).not.toHaveBeenCalled();
     });
 
-    test("blocks concurrent cross-gateway payment initiation for the same order (e.g. BKASH in-flight blocks SSLCOMMERZ)", async () => {
+    test("blocks concurrent cross-gateway payment initiation for the same order (e.g. BKASH in-flight blocks PAYSTATION)", async () => {
       const paymentService = new PaymentService();
       const pendingOrder: any = {
         id: "ord-concurrent-cross",
@@ -295,18 +295,18 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
         createdAt: new Date(Date.now() - 5 * 1000),
       });
 
-      const mockSslProvider = {
+      const mockProvider = {
         initiatePayment: vi.fn(),
       };
-      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockSslProvider as any);
+      vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
 
-      // Concurrent request attempts SSLCOMMERZ for the same order
-      const response = await paymentService.initiatePayment(pendingOrder, "SSLCOMMERZ");
+      // Concurrent request attempts PAYSTATION for the same order
+      const response = await paymentService.initiatePayment(pendingOrder, "PAYSTATION");
 
       expect(response.success).toBe(false);
       expect(response.error).toContain("A payment initiation is already in progress for this order");
       // Network call must NOT be made!
-      expect(mockSslProvider.initiatePayment).not.toHaveBeenCalled();
+      expect(mockProvider.initiatePayment).not.toHaveBeenCalled();
     });
 
     test("safely cleans up stale PENDING placeholders exceeding 30 seconds and proceeds with new initiation", async () => {
@@ -386,8 +386,8 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
         orderId: "ord-duplicate-test",
         amount: new Prisma.Decimal("2000.00"),
         status: "INITIATED",
-        merchantReferenceId: "SSLC-DUP-REF-2",
-        gateway: "SSLCOMMERZ",
+        merchantReferenceId: "PS-DUP-REF-2",
+        gateway: "PAYSTATION",
       };
 
       const existingOrder = {
@@ -412,25 +412,29 @@ describe("Phase 5B-3 — Payment Lifecycle Security Unit Tests", () => {
         .mockResolvedValueOnce(existingOrder); // final lookup
 
       // Return the prior successful payment to trigger duplicate-payment branch
-      mockPrisma.payment.findFirst.mockResolvedValueOnce(priorPayment);
+      mockPrisma.payment.findFirst.mockImplementation(async (args: any) => {
+        if (args?.where?.gatewayTransactionId) return null;
+        if (args?.where?.orderId) return priorPayment;
+        return null;
+      });
 
       const mockProvider = {
         verifyPayment: vi.fn(async () => ({
           success: true,
           status: "SUCCESS",
-          verifiedMerchantReferenceId: "SSLC-DUP-REF-2",
+          verifiedMerchantReferenceId: "PS-DUP-REF-2",
           verifiedAmount: 2000.0,
           verifiedCurrency: "BDT",
           providerTransactionId: "BANK-DUP-222",
-          rawPayload: { tran_id: "SSLC-DUP-REF-2", status: "VALID" },
+          rawPayload: { invoice_number: "PS-DUP-REF-2", status: "Successful" },
         })),
         initiatePayment: vi.fn(),
       };
       vi.spyOn(paymentService as any, "getProvider").mockReturnValue(mockProvider as any);
 
-      const result = await paymentService.verifyCallback("SSLCOMMERZ", {
-        tran_id: "SSLC-DUP-REF-2",
-        status: "VALID",
+      const result = await paymentService.verifyCallback("PAYSTATION", {
+        invoice_number: "PS-DUP-REF-2",
+        status: "Successful",
       });
 
       expect(result.verification.status).toBe("SUCCESS");

@@ -138,6 +138,14 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
 
   const getGatewayBadge = (gateway: string) => {
     const gw = gateway.toUpperCase();
+    if (gw === "PAYSTATION") {
+      return (
+        <Badge className="gap-1 border border-purple-200 bg-purple-50 text-xs font-semibold text-purple-800 hover:bg-purple-100">
+          <CreditCard className="size-3" />
+          PayStation
+        </Badge>
+      );
+    }
     if (gw === "BKASH") {
       return (
         <Badge className="gap-1 border border-pink-200 bg-pink-50 text-xs font-semibold text-pink-700 hover:bg-pink-100">
@@ -313,10 +321,11 @@ export function AdminPaymentsTable({ initialPayments }: AdminPaymentsTableProps)
             onChange={setGatewayFilter}
             options={[
               { value: "ALL", label: "All Gateways" },
+              { value: "PAYSTATION", label: "PayStation" },
               { value: "BKASH", label: "bKash" },
-              { value: "NAGAD", label: "Nagad" },
-              { value: "SSLCOMMERZ", label: "SSLCommerz / Cards" },
               { value: "COD", label: "Cash on Delivery (COD)" },
+              { value: "SSLCOMMERZ", label: "SSLCommerz (Legacy)" },
+              { value: "NAGAD", label: "Nagad (Legacy)" },
             ]}
             icon={CreditCard}
           />

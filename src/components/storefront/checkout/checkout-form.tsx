@@ -15,6 +15,7 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import {
+  Banknote,
   Check,
   CreditCard,
   ImageOff,
@@ -35,7 +36,7 @@ interface CheckoutFormProps {
   defaultName: string;
   defaultPhone?: string;
   availablePaymentMethods?: Array<{
-    value: "COD" | "ONLINE" | "BKASH" | "NAGAD" | "PAYSTATION";
+    value: "COD" | "ONLINE" | "BKASH" | "PAYSTATION";
     title: string;
     detail: string;
   }>;
@@ -70,18 +71,12 @@ function getSafeCheckoutError(error: string | undefined) {
   }
   if (
     error.toLowerCase().includes("online payment is currently unavailable") ||
-    error.toLowerCase().includes("sslcommerz payment is currently unavailable")
+    error.toLowerCase().includes("paystation payment is currently unavailable")
   ) {
-    return "SSLCOMMERZ payment is currently unavailable. Please choose cash on delivery.";
+    return "Online payment is currently unavailable. Please choose cash on delivery.";
   }
   if (error.toLowerCase().includes("bkash payment is currently unavailable")) {
     return "bKash payment is currently unavailable. Please choose another payment method.";
-  }
-  if (error.toLowerCase().includes("nagad payment is currently unavailable")) {
-    return "Nagad payment is currently unavailable. Please choose another payment method.";
-  }
-  if (error.toLowerCase().includes("paystation payment is currently unavailable")) {
-    return "PayStation payment is currently unavailable. Please choose another payment method.";
   }
   if (
     error.toLowerCase().includes("shipping") ||
@@ -173,12 +168,17 @@ export function CheckoutForm({
           {
             value: "COD",
             title: "Cash on delivery",
-            detail: "Pay in cash when you receive your drop at your doorstep.",
+            detail: "Pay when your order arrives.",
           },
           {
-            value: "ONLINE",
-            title: "SSLCOMMERZ",
-            detail: "Instant payment via bKash, Nagad, debit/credit cards.",
+            value: "PAYSTATION",
+            title: "Payment Online",
+            detail: "Instant payment via Cards, bKash, and Mobile Banking via PayStation.",
+          },
+          {
+            value: "BKASH",
+            title: "bKash",
+            detail: "Pay directly with your bKash wallet.",
           },
         ] as const);
 
@@ -360,7 +360,7 @@ export function CheckoutForm({
       shippingCity: shippingCity.trim(),
       shippingCountry: "Bangladesh",
       deliveryNote: orderNote.trim() || undefined,
-      paymentMethod: paymentMethod as "COD" | "ONLINE" | "BKASH" | "NAGAD",
+      paymentMethod: paymentMethod as "COD" | "ONLINE" | "BKASH" | "PAYSTATION",
       shippingMethodId: selectedShippingMethodId,
       couponCode: appliedCoupon?.code || undefined,
     };
@@ -831,17 +831,6 @@ export function CheckoutForm({
                               />
                             </div>
                           )}
-                          {method.value === "ONLINE" && (
-                            <div className="flex h-6 shrink-0 items-center justify-center">
-                              <Image
-                                src="/icons/sslcommerz.png"
-                                alt="SSLCOMMERZ"
-                                width={130}
-                                height={30}
-                                className="h-auto w-20 object-contain"
-                              />
-                            </div>
-                          )}
                           {method.value === "BKASH" && (
                             <div className="flex h-6 w-6 shrink-0 items-center justify-center">
                               <span className="bg-gateway-bkash flex size-6 shrink-0 items-center justify-center rounded-xs text-white shadow-xs">
@@ -855,29 +844,22 @@ export function CheckoutForm({
                               </span>
                             </div>
                           )}
-                          {method.value === "NAGAD" && (
-                            <div className="flex h-6 w-6 shrink-0 items-center justify-center">
-                              <span className="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-xs bg-[#e31018] p-0.5 text-white shadow-xs">
-                                <Image
-                                  src="/icons/nagad.svg"
-                                  alt="Nagad"
-                                  width={20}
-                                  height={12}
-                                  className="h-3.5 w-auto object-contain"
-                                />
-                              </span>
+                          {method.value === "PAYSTATION" && (
+                            <div className="flex h-6 w-8 shrink-0 items-center justify-center">
+                              <Image
+                                src="/icons/paystation.png"
+                                alt="cod"
+                                width={130}
+                                height={30}
+                                className="h-auto w-7 object-contain"
+                              />
                             </div>
+                            // <div className="flex h-7 w-7 shrink-0 items-center justify-center">
+                            //   <span className="bg-vl-dark-900/5 text-vl-dark-900 flex size-7 shrink-0 items-center justify-center rounded-xs">
+                            //     <CreditCard className="size-4" aria-hidden="true" />
+                            //   </span>
+                            // </div>
                           )}
-                          {method.value !== "COD" &&
-                            method.value !== "ONLINE" &&
-                            method.value !== "BKASH" &&
-                            method.value !== "NAGAD" && (
-                              <div className="flex h-6 w-6 shrink-0 items-center justify-center">
-                                <span className="bg-vl-dark-900/5 text-vl-dark-900 flex size-6 shrink-0 items-center justify-center rounded-xs">
-                                  <CreditCard className="size-4" aria-hidden="true" />
-                                </span>
-                              </div>
-                            )}
                           <span className="text-vl-black text-sm leading-none font-bold">
                             {method.title}
                           </span>
@@ -894,11 +876,19 @@ export function CheckoutForm({
                             Popular in BD
                           </Badge>
                         )}
-                        {method.value === "ONLINE" && (
+                        {method.value === "BKASH" && (
+                          <Badge variant="secondary" size="sm" className="font-semibold">
+                            Direct bKash
+                          </Badge>
+                        )}
+                        {method.value === "PAYSTATION" && (
                           <div
                             className="flex flex-wrap items-center gap-1.5"
                             aria-label="Supported payment methods"
                           >
+                            <span className="inline-flex h-5 items-center justify-center rounded-xs border border-purple-300 bg-purple-50 px-1.5 font-sans text-[9px] font-bold tracking-wider text-purple-700 shadow-xs">
+                              MFS
+                            </span>
                             <span className="border-border inline-flex h-5 items-center justify-center rounded-xs border bg-white px-1.5 font-sans text-[9px] font-black tracking-wider text-[#1a1f71] italic shadow-xs">
                               VISA
                             </span>
@@ -907,21 +897,6 @@ export function CheckoutForm({
                               <span className="-ml-1 size-2.5 rounded-full bg-[#f79e1b] opacity-90" />
                             </span>
                           </div>
-                        )}
-                        {method.value === "BKASH" && (
-                          <Badge variant="secondary" size="sm" className="font-semibold">
-                            Direct bKash
-                          </Badge>
-                        )}
-                        {method.value === "NAGAD" && (
-                          <span className="inline-flex h-5 items-center justify-center rounded-xs bg-[#e31018] px-1.5 text-[9px] font-bold text-white shadow-xs">
-                            Direct Wallet
-                          </span>
-                        )}
-                        {method.value === "PAYSTATION" && (
-                          <Badge variant="outline" size="sm" className="border-purple-300 bg-purple-50 font-semibold text-purple-900">
-                            Cards / MFS
-                          </Badge>
                         )}
                       </div>
                     </SelectableCard>
@@ -1113,8 +1088,8 @@ export function CheckoutForm({
                   ? "Select District"
                   : paymentMethod === "COD"
                     ? "Place Order (Cash on Delivery)"
-                    : paymentMethod === "ONLINE"
-                      ? "Pay with SSLCOMMERZ"
+                    : paymentMethod === "ONLINE" || paymentMethod === "PAYSTATION"
+                      ? "Pay with (PayStation)"
                       : paymentMethod === "BKASH"
                         ? "Pay with bKash"
                         : "Pay Now"}

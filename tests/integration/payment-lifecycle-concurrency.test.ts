@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
-import path from "path";
+import { OrderStatus, Prisma, PrismaClient, ProductVariant, User } from "@prisma/client";
 import fs from "fs";
-import { PrismaClient, Prisma, User, ProductVariant, OrderStatus } from "@prisma/client";
+import path from "path";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 
 // Resolve and validate dedicated isolated test database URL
 let testDbUrl = process.env.DATABASE_URL || "";
@@ -15,7 +15,10 @@ if (!testDbUrl) {
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("DATABASE_URL=")) {
-      testDbUrl = trimmed.slice("DATABASE_URL=".length).trim().replace(/^['"]|['"]$/g, "");
+      testDbUrl = trimmed
+        .slice("DATABASE_URL=".length)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       break;
     }
   }
@@ -33,7 +36,11 @@ try {
 }
 
 const rawHost = parsedUrl.hostname.toLowerCase().replace(/^\[|\]$/g, "");
-const isLocalHost = rawHost === "localhost" || rawHost === "127.0.0.1" || rawHost === "::1" || rawHost === "0:0:0:0:0:0:0:1";
+const isLocalHost =
+  rawHost === "localhost" ||
+  rawHost === "127.0.0.1" ||
+  rawHost === "::1" ||
+  rawHost === "0:0:0:0:0:0:0:1";
 if (!isLocalHost) {
   throw new Error(`SAFETY HALT: Non-local database host '${parsedUrl.hostname}' rejected.`);
 }
@@ -60,11 +67,12 @@ const isolatedPrisma = new PrismaClient({ datasources: { db: { url: concurrencyD
 (globalThis as unknown as { prismaGlobal: PrismaClient }).prismaGlobal = isolatedPrisma;
 
 // Import application services after setting DATABASE_URL and globalThis.prismaGlobal
-import prisma from "@/lib/prisma/client";
-import { PaymentService } from "@/lib/payment/service";
-import { RefundService } from "@/lib/refunds/service";
 import { BkashProvider } from "@/lib/payment/providers/bkash/client";
-import { SSLCommerzProvider } from "@/lib/payment/providers/sslcommerz/client";
+import { PaystationProvider } from "@/lib/payment/providers/paystation/client";
+import { PaymentService } from "@/lib/payment/service";
+import { PaymentInitiationRequest } from "@/lib/payment/types";
+import prisma from "@/lib/prisma/client";
+import { RefundService } from "@/lib/refunds/service";
 
 describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
   let testUser: User;
@@ -195,7 +203,9 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
   afterAll(async () => {
     // Guaranteed cleanup for shared catalog and user records
     try {
-      await isolatedPrisma.auditLog.deleteMany({ where: { entityType: { in: ["Order", "Payment", "Refund"] } } });
+      await isolatedPrisma.auditLog.deleteMany({
+        where: { entityType: { in: ["Order", "Payment", "Refund"] } },
+      });
       await isolatedPrisma.refund.deleteMany();
       await isolatedPrisma.payment.deleteMany();
       await isolatedPrisma.inventoryReservation.deleteMany();
@@ -229,7 +239,9 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
 
     vi.spyOn(BkashProvider.prototype, "verifyPayment").mockImplementation(async (payload) => {
       const merchantRef = (payload.paymentID || payload.paymentId || payload.tran_id) as string;
-      const payment = await isolatedPrisma.payment.findUnique({ where: { merchantReferenceId: merchantRef } });
+      const payment = await isolatedPrisma.payment.findUnique({
+        where: { merchantReferenceId: merchantRef },
+      });
       return {
         success: true,
         status: "SUCCESS" as const,
@@ -241,25 +253,33 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
       };
     });
 
-    vi.spyOn(SSLCommerzProvider.prototype, "initiatePayment").mockImplementation(async (orderData) => ({
-      success: true,
-      redirectUrl: `https://mock.sslcommerz.com/checkout?order=${orderData.orderNumber}`,
-      merchantReferenceId: `SSL-REF-${Date.now()}`,
-    }));
-
-    vi.spyOn(SSLCommerzProvider.prototype, "verifyPayment").mockImplementation(async (payload) => {
-      const merchantRef = (payload.tran_id || payload.paymentID) as string;
-      const payment = await isolatedPrisma.payment.findUnique({ where: { merchantReferenceId: merchantRef } });
-      return {
+    vi.spyOn(PaystationProvider.prototype, "initiatePayment").mockImplementation(
+      async (orderData: PaymentInitiationRequest) => ({
         success: true,
-        status: "SUCCESS" as const,
-        providerTransactionId: `BANK-SSL-${Date.now()}`,
-        verifiedMerchantReferenceId: merchantRef,
-        verifiedCurrency: "BDT",
-        verifiedAmount: payment ? Number(payment.amount) : 1060,
-        rawPayload: payload,
-      };
-    });
+        redirectUrl: `https://mock.paystation.com.bd/checkout?order=${orderData.orderNumber}`,
+        merchantReferenceId: `PS-REF-${Date.now()}`,
+      })
+    );
+
+    vi.spyOn(PaystationProvider.prototype, "verifyPayment").mockImplementation(
+      async (payload: Record<string, unknown>) => {
+        const merchantRef = (payload.invoice_number ||
+          payload.tran_id ||
+          payload.paymentID) as string;
+        const payment = await isolatedPrisma.payment.findUnique({
+          where: { merchantReferenceId: merchantRef },
+        });
+        return {
+          success: true,
+          status: "SUCCESS" as const,
+          providerTransactionId: `BANK-PS-${Date.now()}`,
+          verifiedMerchantReferenceId: merchantRef,
+          verifiedCurrency: "BDT",
+          verifiedAmount: payment ? Number(payment.amount) : 1060,
+          rawPayload: payload,
+        };
+      }
+    );
   });
 
   afterEach(async () => {
@@ -279,7 +299,9 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
             ],
           },
         });
-        await isolatedPrisma.inventoryTransaction.deleteMany({ where: { referenceId: { in: ids } } });
+        await isolatedPrisma.inventoryTransaction.deleteMany({
+          where: { referenceId: { in: ids } },
+        });
         await isolatedPrisma.inventoryReservation.deleteMany({ where: { orderId: { in: ids } } });
         await isolatedPrisma.refund.deleteMany({ where: { payment: { orderId: { in: ids } } } });
         await isolatedPrisma.payment.deleteMany({ where: { orderId: { in: ids } } });
@@ -301,7 +323,7 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
 
     // Synchronization barrier proving actual lock contention in PostgreSQL:
     // Conn 1 acquires SELECT ... FOR UPDATE on the Order row inside an open transaction.
-    // Conn 2 invokes initiatePayment for SSLCommerz on the same order.
+    // Conn 2 invokes initiatePayment for PayStation on the same order.
     // Conn 2 is blocked by PostgreSQL until Conn 1 commits.
     let conn1HoldingLock = true;
     let conn2FinishedBeforeRelease = false;
@@ -314,7 +336,7 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
         // Launch concurrent initiatePayment on Conn 2 while Conn 1 holds the lock
         (async () => {
           const service = new PaymentService();
-          const res = await service.initiatePayment(order, "SSLCOMMERZ");
+          const res = await service.initiatePayment(order, "PAYSTATION");
           if (conn1HoldingLock) {
             conn2FinishedBeforeRelease = true;
           }
@@ -345,7 +367,7 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
     // After Conn 1 commits, Conn 2 unblocks, queries the order under its own lock,
     // finds the newly committed PENDING placeholder, and returns IN_FLIGHT rejection.
     const service = new PaymentService();
-    const conn2Result = await service.initiatePayment(order, "SSLCOMMERZ");
+    const conn2Result = await service.initiatePayment(order, "PAYSTATION");
 
     expect(conn2Result.success).toBe(false);
     expect(conn2Result.error).toContain("A payment initiation is already in progress");
@@ -401,7 +423,9 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
     expect(orderAfter.paymentStatus).toBe("SUCCESS");
     expect(["PENDING", "CONFIRMED", "PROCESSING"]).toContain(orderAfter.status);
 
-    const paymentAfter = await isolatedPrisma.payment.findUniqueOrThrow({ where: { id: payment.id } });
+    const paymentAfter = await isolatedPrisma.payment.findUniqueOrThrow({
+      where: { id: payment.id },
+    });
     expect(paymentAfter.status).toBe("SUCCESS");
 
     // 2. Inventory SALE transaction must be created EXACTLY ONCE
@@ -441,7 +465,7 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
         merchantReferenceId: `TRX-C2-${ts}`,
         amount: 1060,
         status: "INITIATED",
-        gateway: "SSLCOMMERZ",
+        gateway: "PAYSTATION",
       },
     });
 
@@ -463,8 +487,8 @@ describe("Phase 5B-3 Real PostgreSQL Concurrency Verification", () => {
     });
 
     // 2. Process second successful payment callback for the same order
-    await service.verifyCallback("SSLCOMMERZ", {
-      tran_id: payment2.merchantReferenceId,
+    await service.verifyCallback("PAYSTATION", {
+      invoice_number: payment2.merchantReferenceId,
     });
 
     // 3. Verify both payments captured as SUCCESS
