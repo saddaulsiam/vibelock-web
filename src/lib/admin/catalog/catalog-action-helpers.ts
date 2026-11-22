@@ -13,13 +13,19 @@ export const nameField = z
   .max(120, "Name must be 120 characters or fewer.");
 
 export function slugify(value: string): string {
-  return value
+  const sanitized = value
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+  if (!sanitized && value.trim()) {
+    // Unicode / Bengali title fallback: produce clean, URL-safe slug
+    return `item-${Date.now().toString(36)}`;
+  }
+  return sanitized;
 }
 
 export function slugFromForm(formData: FormData, name: string) {

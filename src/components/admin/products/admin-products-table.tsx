@@ -525,6 +525,18 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                     </div>
                                   ))}
                                 </div>
+
+                                <div className="border-vl-dark-900/10 mt-2.5 flex items-center justify-between border-t pt-2 text-xs">
+                                  <span className="text-muted-foreground text-[10px]">
+                                    {product.totalStock} units total
+                                  </span>
+                                  <Link
+                                    href={`/admin/products/${product.id}/edit#variants`}
+                                    className="text-vl-dark-900 hover:text-vl-cyan inline-flex items-center gap-1 text-[11px] font-semibold transition-colors hover:underline"
+                                  >
+                                    <Pencil className="size-3" /> Quick Edit Variants
+                                  </Link>
+                                </div>
                               </div>
                             )}
                           </div>

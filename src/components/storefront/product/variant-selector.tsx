@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy, MessageSquare, Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
@@ -17,6 +18,7 @@ interface VariantSelectorProps {
   productSlug: string;
   productName: string;
   description: string | null;
+  specifications?: unknown | null;
 }
 
 function formatPrice(amount: number) {
@@ -51,6 +53,7 @@ export function VariantSelector({
   productSlug,
   productName,
   description,
+  specifications,
 }: VariantSelectorProps) {
   const sizes = useMemo(
     () => Array.from(new Set(variants.flatMap((variant) => (variant.size ? [variant.size] : [])))),
@@ -64,7 +67,8 @@ export function VariantSelector({
   const initialVariant = variants.find((variant) => variant.available) ?? variants[0] ?? null;
   const [selectedSize, setSelectedSize] = useState<string | null>(initialVariant?.size ?? null);
   const [selectedColor, setSelectedColor] = useState<string | null>(initialVariant?.color ?? null);
-  const quantity = 1;
+  const [quantity, setQuantity] = useState(1);
+  const [copiedSku, setCopiedSku] = useState(false);
 
   const findVariant = (size: string | null, color: string | null) =>
     variants.find(
@@ -82,6 +86,21 @@ export function VariantSelector({
 
   const matchingVariant = findVariant(selectedSize, selectedColor);
   const isAvailable = Boolean(matchingVariant?.available);
+  const stockCount = matchingVariant?.stock;
+  const isLowStock = isAvailable && stockCount !== undefined && stockCount > 0 && stockCount <= 3;
+  const maxQuantity = stockCount !== undefined ? Math.max(1, Math.min(10, stockCount)) : 10;
+
+  // Stock and effective quantity calculations
+  const effectiveQuantity = Math.max(1, Math.min(quantity, maxQuantity));
+
+  // Sync gallery with initial selected color
+  useEffect(() => {
+    if (initialVariant?.color && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("vl:color-selected", { detail: { color: initialVariant.color } })
+      );
+    }
+  }, [initialVariant?.color]);
 
   const hasAvailableVariant = (size: string | null, color: string | null) =>
     variants.some(
@@ -97,11 +116,19 @@ export function VariantSelector({
     const availableVariant = variants.find((variant) => variant.available && variant.size === size);
     if (colors.length > 0 && !selectedColorAvailable && availableVariant) {
       setSelectedColor(availableVariant.color);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("vl:color-selected", { detail: { color: availableVariant.color } })
+        );
+      }
     }
   };
 
   const selectColor = (color: string) => {
     setSelectedColor(color);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("vl:color-selected", { detail: { color } }));
+    }
     const selectedSizeAvailable = hasAvailableVariant(selectedSize, color);
     const availableVariant = variants.find(
       (variant) => variant.available && variant.color === color
@@ -109,6 +136,36 @@ export function VariantSelector({
     if (sizes.length > 0 && !selectedSizeAvailable && availableVariant) {
       setSelectedSize(availableVariant.size);
     }
+  };
+
+  const handleCopySku = () => {
+    if (!matchingVariant?.sku) return;
+    navigator.clipboard.writeText(matchingVariant.sku);
+    setCopiedSku(true);
+    setTimeout(() => setCopiedSku(false), 2000);
+  };
+
+  const handleWhatsAppOrder = () => {
+    if (!matchingVariant) return;
+    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "8801700000000";
+    const cleanNumber = waNumber.replace(/[^0-9]/g, "");
+    const effectivePrice = matchingVariant.effectivePrice ?? matchingVariant.sellingPrice;
+    const totalPrice = effectivePrice * quantity;
+    const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
+    const lines = [
+      `Hello VibeLock, I would like to order:`,
+      `• Product: ${productName}`,
+      matchingVariant.sku ? `• SKU: ${matchingVariant.sku}` : null,
+      selectedColor ? `• Color: ${selectedColor}` : null,
+      selectedSize ? `• Size: ${selectedSize}` : null,
+      `• Quantity: ${quantity}`,
+      `• Total Price: ৳${totalPrice.toLocaleString("en-BD")}`,
+      currentUrl ? `• Link: ${currentUrl}` : null,
+    ].filter(Boolean);
+
+    const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(lines.join("\n"))}`;
+    window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 
   const discount =
@@ -121,7 +178,7 @@ export function VariantSelector({
   return (
     <div className="space-y-5.5 sm:space-y-7">
       {/* ── 1. Price Block & Stock Status ── */}
-      <div aria-live="polite" className="space-y-1">
+      <div aria-live="polite" className="space-y-2">
         {matchingVariant ? (
           <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 sm:gap-x-3">
             <span className="font-heading text-vl-dark-900 text-2xl font-black tracking-tight md:text-3xl lg:text-4xl">
@@ -146,21 +203,58 @@ export function VariantSelector({
           <p className="text-vl-dark-900/50 text-sm font-medium sm:text-base">Price unavailable</p>
         )}
 
-        {/* Live Stock Signal */}
-        <div className="flex items-center gap-2">
-          {isAvailable ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 sm:text-xs">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+        {/* Live Stock Signal & SKU Row */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Stock Signal with Scarcity/FOMO */}
+          <div className="flex items-center gap-2">
+            {isAvailable ? (
+              isLowStock ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 sm:text-xs">
+                  <span className="relative flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
+                  </span>
+                  🔥 Only {stockCount} left in {selectedSize || "stock"} — Selling Fast!
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 sm:text-xs">
+                  <span className="relative flex size-2">
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                  </span>
+                  In Stock (Ready for Dispatch)
+                </span>
+              )
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 sm:text-xs">
+                <span className="size-2 rounded-full bg-rose-500" />
+                {productAvailable ? "Selected variant out of stock" : "Currently Unavailable"}
               </span>
-              In Stock (Ready for Dispatch)
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 sm:text-xs">
-              <span className="size-2 rounded-full bg-rose-500" />
-              {productAvailable ? "Selected variant out of stock" : "Currently Unavailable"}
-            </span>
+            )}
+          </div>
+
+          {/* Active Variant SKU with 1-Click Copy */}
+          {matchingVariant?.sku && (
+            <div className="flex items-center gap-1 font-mono text-[11px] text-vl-dark-900/60">
+              <span className="text-[10px] tracking-wider text-vl-dark-900/40 uppercase">SKU:</span>
+              <span className="font-semibold text-vl-dark-900">{matchingVariant.sku}</span>
+              <button
+                type="button"
+                onClick={handleCopySku}
+                className="text-vl-dark-900/40 hover:text-vl-dark-900 rounded p-0.5 transition-colors focus-visible:outline-none"
+                title="Copy SKU for customer support or order inquiry"
+                aria-label="Copy SKU"
+              >
+                {copiedSku ? (
+                  <Check className="size-3 text-emerald-600" />
+                ) : (
+                  <Copy className="size-3" />
+                )}
+              </button>
+              {copiedSku && (
+                <span className="font-sans text-[10px] font-bold text-emerald-600">Copied!</span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -222,7 +316,7 @@ export function VariantSelector({
               <span className="text-vl-dark-900/30">•</span>
               <span className="text-vl-cyan-dark">{selectedSize || "Select"}</span>
             </legend>
-            <SizeGuideModal />
+            {!sizes.every((s) => /one size|free size/i.test(s)) && <SizeGuideModal />}
           </div>
 
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
@@ -255,14 +349,51 @@ export function VariantSelector({
         </fieldset>
       )}
 
-      {/* ── 4. Action Buttons ── */}
+      {/* ── 4. Quantity Selector ── */}
+      <div className="border-vl-dark-900/10 flex items-center justify-between border-t pt-3">
+        <span className="text-vl-dark-900 text-[11px] font-bold tracking-wider uppercase sm:text-xs">
+          Quantity
+        </span>
+        <div className="flex items-center gap-2">
+          <div className="border-vl-dark-900/15 flex h-8 items-center rounded-xs border bg-white shadow-2xs">
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              disabled={!isAvailable || quantity <= 1}
+              aria-label="Decrease quantity"
+              className="text-vl-dark-900 hover:bg-vl-white-300 disabled:text-vl-dark-900/30 flex size-8 items-center justify-center transition-colors disabled:cursor-not-allowed"
+            >
+              <Minus className="size-3.5" />
+            </button>
+            <span className="text-vl-dark-900 flex min-w-8 items-center justify-center font-mono text-xs font-bold">
+              {effectiveQuantity}
+            </span>
+            <button
+              type="button"
+              onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+              disabled={!isAvailable || effectiveQuantity >= maxQuantity}
+              aria-label="Increase quantity"
+              className="text-vl-dark-900 hover:bg-vl-white-300 disabled:text-vl-dark-900/30 flex size-8 items-center justify-center transition-colors disabled:cursor-not-allowed"
+            >
+              <Plus className="size-3.5" />
+            </button>
+          </div>
+          {maxQuantity < 10 && isAvailable && (
+            <span className="text-muted-foreground text-[10px] font-medium">
+              (Max {maxQuantity} available)
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── 5. Action Buttons ── */}
       <div className="border-vl-dark-900/10 space-y-2 border-t pt-3 sm:space-y-2.5 sm:pt-3.5">
         {/* Action Button Row 1: Add to Cart + Wishlist + Share */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div className="min-w-0 flex-1">
             <AddToCartButton
               variantId={matchingVariant?.id ?? null}
-              quantity={quantity}
+              quantity={effectiveQuantity}
               isAvailable={isAvailable}
               productName={productName}
               unitPrice={matchingVariant?.effectivePrice ?? matchingVariant?.sellingPrice}
@@ -275,18 +406,33 @@ export function VariantSelector({
         {/* Action Button Row 2: Instant Buy Now */}
         <BuyNowButton
           variantId={matchingVariant?.id ?? null}
-          quantity={quantity}
+          quantity={effectiveQuantity}
           isAvailable={isAvailable}
           productName={productName}
           unitPrice={matchingVariant?.effectivePrice ?? matchingVariant?.sellingPrice}
         />
+
+        {/* Action Button Row 3: Direct WhatsApp Order */}
+        <button
+          type="button"
+          onClick={handleWhatsAppOrder}
+          disabled={!isAvailable}
+          className="focus-visible:ring-vl-cyan border-emerald-600/30 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-100/90 hover:border-emerald-600/50 disabled:border-vl-dark-900/10 disabled:bg-vl-white-300/40 disabled:text-vl-dark-900/35 flex h-9.5 w-full items-center justify-center gap-2 rounded-xs border text-xs font-bold tracking-wide uppercase transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed sm:h-10"
+        >
+          <MessageSquare className="size-3.5 fill-emerald-600/20 text-emerald-700" />
+          <span>Order via WhatsApp</span>
+        </button>
       </div>
 
       {/* ── 5. Trust Badges ── */}
       <ProductTrustBadges />
 
       {/* ── 6. Product Story & Specifications Accordion ── */}
-      <ProductInfoAccordion description={description} productName={productName} />
+      <ProductInfoAccordion
+        description={description}
+        productName={productName}
+        specifications={specifications}
+      />
     </div>
   );
 }

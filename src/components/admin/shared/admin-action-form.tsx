@@ -39,15 +39,19 @@ export function AdminSaveForm({
   children,
   submitLabel,
   secondaryAction,
+  id,
+  hideBottomBar = false,
 }: {
   action: (state: AdminActionState, formData: FormData) => Promise<AdminActionState>;
   children: React.ReactNode;
-  submitLabel: string;
+  submitLabel?: string;
   secondaryAction?: React.ReactNode;
+  id?: string;
+  hideBottomBar?: boolean;
 }) {
   const [state, formAction] = useActionState(action, initialState);
   return (
-    <form action={formAction} className="space-y-5">
+    <form id={id} action={formAction} className="space-y-5">
       {children}
       {state.error ? (
         <p role="alert" className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
@@ -62,10 +66,12 @@ export function AdminSaveForm({
           {state.message}
         </p>
       ) : null}
-      <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-        {secondaryAction ?? <div />}
-        <SubmitButton label={submitLabel} />
-      </div>
+      {!hideBottomBar && (
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+          {secondaryAction ?? <div />}
+          {submitLabel && <SubmitButton label={submitLabel} />}
+        </div>
+      )}
     </form>
   );
 }

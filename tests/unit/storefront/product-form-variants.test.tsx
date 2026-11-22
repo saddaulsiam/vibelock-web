@@ -110,5 +110,14 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
     // Section 5: Publication status
     expect(html).toContain("Publishing Status");
     expect(html).toContain("Draft — Hidden from store");
+
+    // Productivity & Velocity enhancements
+    expect(html).toContain("1-Click Drop Presets:");
+    expect(html).toContain("Heavyweight Tee");
+    expect(html).toContain("Winter Hoodie");
+    expect(html).toContain("Save &amp; Add Another");
+    expect(html).toContain("Matrix Stock Grid");
+    expect(html).toContain("Detailed Cards");
+    expect(html).toContain('id="variants"');
   });
 });

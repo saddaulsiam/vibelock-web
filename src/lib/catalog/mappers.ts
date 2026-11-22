@@ -51,6 +51,7 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
   const effectivePrice = discountPrice !== null ? discountPrice : sellingPrice;
 
   let available = true; // Default to true if inventory info is missing
+  let stock: number | undefined;
 
   if (variant.inventoryTransactions && variant.inventoryReservations) {
     const totalStock = variant.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
@@ -64,7 +65,8 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
       return sum;
     }, 0);
 
-    available = totalStock - reserved > 0;
+    stock = Math.max(0, totalStock - reserved);
+    available = stock > 0;
   }
 
   return {
@@ -76,6 +78,7 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
     discountPrice,
     effectivePrice,
     available,
+    stock,
   };
 }
 
@@ -114,6 +117,10 @@ export function mapProductDetail(product: PrismaProductWithIncludes): ProductDet
 
   return {
     ...summary,
+    specifications:
+      "specifications" in product && product.specifications
+        ? (product.specifications as unknown as ProductDetail["specifications"])
+        : null,
     images: product.images.map(mapImage),
     variants: product.variants.map(mapVariant),
   };

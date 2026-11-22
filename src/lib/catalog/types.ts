@@ -26,6 +26,7 @@ export interface ProductVariantSummary {
   discountPrice: number | null;
   effectivePrice: number;
   available: boolean;
+  stock?: number;
 }
 
 export interface ProductSummary {
@@ -46,6 +47,7 @@ export interface ProductSummary {
 }
 
 export interface ProductDetail extends ProductSummary {
+  specifications?: unknown | null;
   images: ProductImageSummary[];
   variants: ProductVariantSummary[];
 }
