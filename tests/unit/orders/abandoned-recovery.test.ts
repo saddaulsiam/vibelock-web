@@ -734,6 +734,40 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       vi.useRealTimers();
     });
 
+    it("defers order without recording idempotency when only phone exists and quiet hours are active", async () => {
+      // 03:00 AM BST (21:00 UTC)
+      vi.setSystemTime(new Date("2026-11-22T21:00:00Z"));
+
+      const mockOrder = {
+        id: "ord-phoneonly-night",
+        orderNumber: "VL-20261122-DEFER",
+        customerName: "Sakib",
+        customerPhone: "01711223344",
+        customerEmail: null, // No email!
+        paymentMethod: "ONLINE",
+        paymentStatus: "PENDING",
+        status: "PENDING",
+        subtotal: 1900,
+        total: 2020,
+        createdAt: new Date("2026-11-22T20:50:00Z"),
+        items: [],
+      };
+
+      mockPrisma.order.findMany.mockResolvedValue([mockOrder]);
+      mockPrisma.cart.findMany.mockResolvedValue([]);
+
+      const result = await processAbandonedReminders({ olderThanMinutes: 8 });
+
+      expect(result.scannedOrders).toBe(1);
+      expect(result.remindedOrders).toBe(0); // Not marked as completed
+      expect(mockSendSmsNotification).not.toHaveBeenCalled();
+      expect(mockSendAbandonedCartEmail).not.toHaveBeenCalled();
+      // Must NOT create OrderHistory, so morning cron can pick it up at 8 AM!
+      expect(mockPrisma.orderHistory.create).not.toHaveBeenCalled();
+
+      vi.useRealTimers();
+    });
+
     it("skips SMS in manual reminder during quiet hours unless ignoreQuietHours is passed", async () => {
       vi.setSystemTime(new Date("2026-11-22T20:00:00Z")); // 2 AM BST
 

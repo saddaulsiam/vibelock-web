@@ -197,21 +197,22 @@ export async function processAbandonedReminders(
         }
 
         // If customer placed a subsequent non-cancelled order, skip reminding about older dropped checkout
-        if (order.userId) {
-          const subsequentOrder = await prisma.order.findFirst({
-            where: {
-              userId: order.userId,
-              id: { not: order.id },
-              createdAt: { gte: order.createdAt },
-              status: { not: "CANCELLED" },
-            },
-            select: { id: true },
-          });
+        const subsequentOrder = await prisma.order.findFirst({
+          where: {
+            OR: [
+              ...(order.userId ? [{ userId: order.userId }] : []),
+              ...(order.customerPhone ? [{ customerPhone: order.customerPhone }] : []),
+            ],
+            id: { not: order.id },
+            createdAt: { gte: order.createdAt },
+            status: { not: "CANCELLED" },
+          },
+          select: { id: true },
+        });
 
-          if (subsequentOrder) {
-            result.skipped += 1;
-            continue;
-          }
+        if (subsequentOrder) {
+          result.skipped += 1;
+          continue;
         }
 
         const firstName = getCleanCustomerName(order.customerName);
@@ -264,22 +265,34 @@ export async function processAbandonedReminders(
           }
 
           // C. Record Idempotency Entry in OrderHistory
-          const smsStatus = smsSent
-            ? "OK"
-            : smsSkipReason
-              ? `SKIP_${smsSkipReason}`
-              : "SKIP";
+          // If neither SMS nor Email could be sent strictly due to Quiet Hours, defer recording so daytime cron can deliver
+          const wasDelivered = smsSent || emailSent;
+          const isDeferredDueToQuietHours = !wasDelivered && smsSkipReason === "BTRC_QUIET_HOURS";
 
-          await prisma.orderHistory.create({
-            data: {
-              orderId: order.id,
-              status: order.status,
-              notes: `ABANDONED_REMINDER_SENT: SMS=${smsStatus}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
-            },
-          });
+          if (isDeferredDueToQuietHours) {
+            console.info(
+              `[processAbandonedReminders] Order #${order.orderNumber} deferred for daytime dispatch (BTRC Quiet Hours active and no email sent).`
+            );
+          } else {
+            const smsStatus = smsSent
+              ? "OK"
+              : smsSkipReason
+                ? `SKIP_${smsSkipReason}`
+                : "SKIP";
+
+            await prisma.orderHistory.create({
+              data: {
+                orderId: order.id,
+                status: order.status,
+                notes: `ABANDONED_REMINDER_SENT: SMS=${smsStatus}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
+              },
+            });
+
+            result.remindedOrders += 1;
+          }
+        } else {
+          result.remindedOrders += 1;
         }
-
-        result.remindedOrders += 1;
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(
@@ -343,10 +356,13 @@ export async function processAbandonedReminders(
       try {
         const userId = cart.user.id;
 
-        // Check if user already placed a confirmed order in the last 24 hours
+        // Check if user already placed a confirmed order in the last 24 hours (by userId or phone)
         const recentOrder = await prisma.order.findFirst({
           where: {
-            userId,
+            OR: [
+              { userId },
+              ...(cart.user.phone ? [{ customerPhone: cart.user.phone }] : []),
+            ],
             createdAt: { gte: oldestCutoffTime },
             status: { not: "CANCELLED" },
           },
@@ -435,25 +451,37 @@ export async function processAbandonedReminders(
           }
 
           // Record AuditLog for rate limiting and deduplication (Indexed via actorId)
-          await prisma.auditLog.create({
-            data: {
-              actorId: userId,
-              action: "ABANDONED_CART_REMINDER",
-              entityType: "CART",
-              entityId: cart.id,
-              metadata: {
-                userId,
-                cartId: cart.id,
-                itemCount: cart.items.length,
-                smsSent,
-                smsSkipReason: smsSkipReason || null,
-                emailSent,
-              },
-            },
-          });
-        }
+          // If neither SMS nor Email could be sent strictly due to Quiet Hours, defer recording so daytime cron can deliver
+          const wasDelivered = smsSent || emailSent;
+          const isDeferredDueToQuietHours = !wasDelivered && smsSkipReason === "BTRC_QUIET_HOURS";
 
-        result.remindedCarts += 1;
+          if (isDeferredDueToQuietHours) {
+            console.info(
+              `[processAbandonedReminders] Cart for user ${userId} deferred for daytime dispatch (BTRC Quiet Hours active and no email sent).`
+            );
+          } else {
+            await prisma.auditLog.create({
+              data: {
+                actorId: userId,
+                action: "ABANDONED_CART_REMINDER",
+                entityType: "CART",
+                entityId: cart.id,
+                metadata: {
+                  userId,
+                  cartId: cart.id,
+                  itemCount: cart.items.length,
+                  smsSent,
+                  smsSkipReason: smsSkipReason || null,
+                  emailSent,
+                },
+              },
+            });
+
+            result.remindedCarts += 1;
+          }
+        } else {
+          result.remindedCarts += 1;
+        }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(
@@ -525,7 +553,7 @@ export async function sendManualAbandonedOrderReminder(
         `[sendManualAbandonedOrderReminder] BTRC Quiet Hours active. SMS skipped for order #${order.orderNumber}.`
       );
     } else {
-      const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারটি পেন্ডিং রয়েছে। স্টক শেষ হওয়ার আগেই অর্ডার সম্পন্ন করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+      const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
       smsSent = await sendSmsNotification({
         phone: targetPhone,
         message: smsBody,
