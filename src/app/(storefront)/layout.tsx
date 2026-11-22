@@ -1,10 +1,15 @@
+import { headers } from "next/headers";
 import { Header } from "@/components/storefront/layout/header";
 import { Footer } from "@/components/storefront/layout/footer";
 import { WhatsAppFloatingButton } from "@/components/storefront/layout/whatsapp-floating-button";
+import { MetaPixelProvider } from "@/components/storefront/analytics/meta-pixel-provider";
 
-export default function StorefrontLayout({ children }: { children: React.ReactNode }) {
+export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   return (
     <div className="relative flex min-h-screen min-w-0 flex-col">
+      <MetaPixelProvider nonce={nonce} />
       <div
         className="pointer-events-none fixed inset-0 z-0 opacity-70"
         style={{

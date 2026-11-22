@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
+import { MetaInitiateCheckout } from "@/components/storefront/analytics/meta-initiate-checkout";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 
@@ -42,6 +43,17 @@ export default async function CheckoutPage() {
 
   return (
     <Section className="relative z-10 min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32">
+      <MetaInitiateCheckout
+        cartId={cart.id}
+        totalQuantity={cart.totalQuantity}
+        subtotal={cart.subtotal}
+        items={cart.items.map((item) => ({
+          id: item.variant.id,
+          quantity: item.quantity,
+          price: item.variant.effectivePrice,
+          name: item.productName,
+        }))}
+      />
       <Container className="max-w-6xl">
         {/* ── Clean & Minimal Top Bar (Matching Cart Page) ── */}
         <div className="border-border/50 mb-6 flex items-baseline justify-between border-b pb-4 sm:mb-8">

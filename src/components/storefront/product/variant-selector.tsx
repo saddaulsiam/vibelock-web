@@ -264,6 +264,8 @@ export function VariantSelector({
               variantId={matchingVariant?.id ?? null}
               quantity={quantity}
               isAvailable={isAvailable}
+              productName={productName}
+              unitPrice={matchingVariant?.effectivePrice ?? matchingVariant?.sellingPrice}
             />
           </div>
           <ProductWishlistButton productSlug={productSlug} productName={productName} />
@@ -275,6 +277,8 @@ export function VariantSelector({
           variantId={matchingVariant?.id ?? null}
           quantity={quantity}
           isAvailable={isAvailable}
+          productName={productName}
+          unitPrice={matchingVariant?.effectivePrice ?? matchingVariant?.sellingPrice}
         />
       </div>
 

@@ -29,12 +29,12 @@ export function proxy(request: NextRequest) {
   const nonce = randomBytes(18).toString("base64");
   const policy = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com https://connect.facebook.net`,
     "style-src 'self' 'unsafe-inline'",
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://*.googleusercontent.com",
+    "img-src 'self' data: blob: https://res.cloudinary.com https://lh3.googleusercontent.com https://*.googleusercontent.com https://www.facebook.com",
     "font-src 'self'",
-    "connect-src 'self' https://vitals.vercel-insights.com",
+    "connect-src 'self' https://vitals.vercel-insights.com https://connect.facebook.net https://www.facebook.com",
     "form-action 'self' https://sandbox.paystation.com.bd https://api.paystation.com.bd https://paystation.com.bd",
     "base-uri 'self'",
     "object-src 'none'",

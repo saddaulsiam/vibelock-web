@@ -61,6 +61,11 @@ vi.mock("@/components/shared/payment-gateway-badge", () => ({
     React.createElement("span", { "data-testid": "payment-gateway-badge" }, `${gateway || paymentMethod}`),
 }));
 
+vi.mock("@/components/storefront/analytics/meta-purchase-tracker", () => ({
+  MetaPurchaseTracker: ({ orderNumber }: any) =>
+    React.createElement("div", { "data-testid": "meta-purchase-tracker", "data-order": orderNumber }),
+}));
+
 import OrderSuccessPage from "@/app/(storefront)/order-success/[orderNumber]/page";
 
 describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Safety", () => {
@@ -118,6 +123,7 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     expect(html).toContain("VL-20261115-ABC");
     expect(html).toContain("Payment Incomplete");
     expect(html).toContain("Payment Not Confirmed");
+    expect(html).not.toContain('data-testid="meta-purchase-tracker"');
     expect(html).toContain("pending payment confirmation");
   });
 
@@ -133,6 +139,7 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     expect(html).toContain("VL-20261115-ABC");
     expect(html).toContain("Payment Incomplete");
     expect(html).toContain("Payment Not Confirmed");
+    expect(html).not.toContain('data-testid="meta-purchase-tracker"');
   });
 
   test("forged URL: ?payment=cancelled on a paid order does NOT cancel the order and renders confirmation", async () => {
@@ -178,6 +185,7 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     expect(html).toContain("Items Returned to Stock");
     expect(html).toContain("CANCELLED");
     expect(html).toContain("Order was cancelled and payment was not completed.");
+    expect(html).not.toContain('data-testid="meta-purchase-tracker"');
   });
 
   test("renders standard confirmation when payment is success", async () => {
@@ -198,6 +206,7 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     const html = renderToStaticMarkup(jsx);
     expect(html).toContain("Thank you, Siam!");
     expect(html).toContain("Order #VL-20261115-ABC is confirmed");
+    expect(html).toContain('data-testid="meta-purchase-tracker"');
   });
 
   test("renders Confirmed order status badge when payment is SUCCESS even if database status is PENDING", async () => {
@@ -240,6 +249,7 @@ describe("Phase 5B-1 (PAY-5B-01) — Order Success Untrusted Browser Redirect Sa
     expect(html).toContain("Checkout Cancelled");
     expect(html).toContain("Try Payment Again");
     expect(html).toContain("Close Order");
+    expect(html).not.toContain('data-testid="meta-purchase-tracker"');
   });
 
   test("redirects unauthenticated user to login", async () => {
