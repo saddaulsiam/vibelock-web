@@ -71,6 +71,10 @@ async function parseParams(req: NextRequest) {
   }
 
   const rawOlderThan = body.olderThanMinutes ?? searchParams.get("olderThanMinutes");
+  const rawCheckoutOlderThan =
+    body.checkoutOlderThanMinutes ?? searchParams.get("checkoutOlderThanMinutes");
+  const rawCartOlderThan =
+    body.cartOlderThanMinutes ?? searchParams.get("cartOlderThanMinutes");
   const rawBatchSize =
     body.maxBatchSize ??
     body.batchSize ??
@@ -83,6 +87,18 @@ async function parseParams(req: NextRequest) {
       : rawOlderThan
         ? parseInt(String(rawOlderThan), 10)
         : undefined;
+  const checkoutOlderThanMinutes =
+    typeof rawCheckoutOlderThan === "number"
+      ? rawCheckoutOlderThan
+      : rawCheckoutOlderThan
+        ? parseInt(String(rawCheckoutOlderThan), 10)
+        : undefined;
+  const cartOlderThanMinutes =
+    typeof rawCartOlderThan === "number"
+      ? rawCartOlderThan
+      : rawCartOlderThan
+        ? parseInt(String(rawCartOlderThan), 10)
+        : undefined;
   const maxBatchSize =
     typeof rawBatchSize === "number"
       ? rawBatchSize
@@ -94,6 +110,14 @@ async function parseParams(req: NextRequest) {
     olderThanMinutes:
       typeof olderThanMinutes === "number" && !isNaN(olderThanMinutes)
         ? olderThanMinutes
+        : undefined,
+    checkoutOlderThanMinutes:
+      typeof checkoutOlderThanMinutes === "number" && !isNaN(checkoutOlderThanMinutes)
+        ? checkoutOlderThanMinutes
+        : undefined,
+    cartOlderThanMinutes:
+      typeof cartOlderThanMinutes === "number" && !isNaN(cartOlderThanMinutes)
+        ? cartOlderThanMinutes
         : undefined,
     maxBatchSize:
       typeof maxBatchSize === "number" && !isNaN(maxBatchSize)

@@ -5,12 +5,16 @@ import { sendSmsNotification } from "@/lib/sms/client";
 import { sendAbandonedCartEmail } from "@/lib/email/abandoned-cart-email";
 import { SITE_URL } from "@/lib/seo/site";
 
-export const DEFAULT_ABANDONED_REMINDER_MINUTES = 30;
+export const DEFAULT_CHECKOUT_REMINDER_MINUTES = 8; // Prior to 15m stock reservation expiry
+export const DEFAULT_CART_REMINDER_MINUTES = 30; // Unlocked active cart items
+export const DEFAULT_ABANDONED_REMINDER_MINUTES = 8;
 export const MAX_REMINDER_LOOKBACK_HOURS = 24;
 export const DEFAULT_REMINDER_BATCH_SIZE = 50;
 
 export interface AbandonedReminderOptions {
   olderThanMinutes?: number;
+  checkoutOlderThanMinutes?: number;
+  cartOlderThanMinutes?: number;
   maxBatchSize?: number;
   dryRun?: boolean;
 }
@@ -89,9 +93,17 @@ function getCleanCustomerName(name?: string | null): string {
 export async function processAbandonedReminders(
   options?: AbandonedReminderOptions
 ): Promise<AbandonedReminderResult> {
-  const olderThanMinutes = Math.max(
+  const checkoutOlderThanMinutes = Math.max(
     5,
-    options?.olderThanMinutes ?? DEFAULT_ABANDONED_REMINDER_MINUTES
+    options?.checkoutOlderThanMinutes ??
+      options?.olderThanMinutes ??
+      DEFAULT_CHECKOUT_REMINDER_MINUTES
+  );
+  const cartOlderThanMinutes = Math.max(
+    5,
+    options?.cartOlderThanMinutes ??
+      options?.olderThanMinutes ??
+      DEFAULT_CART_REMINDER_MINUTES
   );
   const batchSize = Math.min(
     100,
@@ -100,7 +112,12 @@ export async function processAbandonedReminders(
   const dryRun = Boolean(options?.dryRun);
 
   const now = new Date();
-  const cutoffTime = new Date(now.getTime() - olderThanMinutes * 60 * 1000);
+  const orderCutoffTime = new Date(
+    now.getTime() - checkoutOlderThanMinutes * 60 * 1000
+  );
+  const cartCutoffTime = new Date(
+    now.getTime() - cartOlderThanMinutes * 60 * 1000
+  );
   const oldestCutoffTime = new Date(
     now.getTime() - MAX_REMINDER_LOOKBACK_HOURS * 60 * 60 * 1000
   );
@@ -124,7 +141,7 @@ export async function processAbandonedReminders(
         status: "PENDING",
         paymentStatus: { in: ["PENDING", "INITIATED", "FAILED"] },
         createdAt: {
-          lte: cutoffTime,
+          lte: orderCutoffTime,
           gte: oldestCutoffTime,
         },
         // Never remind orders that were already reminded (Idempotency Guard)
@@ -257,7 +274,7 @@ export async function processAbandonedReminders(
       where: {
         userId: { not: null },
         updatedAt: {
-          lte: cutoffTime,
+          lte: cartCutoffTime,
           gte: oldestCutoffTime,
         },
         items: {

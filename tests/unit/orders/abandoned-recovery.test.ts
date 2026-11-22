@@ -318,6 +318,44 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       expect(result.skipped).toBe(1);
       expect(mockSendSmsNotification).not.toHaveBeenCalled();
     });
+
+    it("applies golden hybrid timing: 8-min checkout threshold and 30-min cart threshold by default", async () => {
+      mockPrisma.order.findMany.mockResolvedValue([]);
+      mockPrisma.cart.findMany.mockResolvedValue([]);
+
+      const beforeRun = Date.now();
+      await processAbandonedReminders(); // No options passed -> defaults applied
+
+      // Order query should use ~8 minutes cutoff
+      expect(mockPrisma.order.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            createdAt: expect.objectContaining({
+              lte: expect.any(Date),
+            }),
+          }),
+        })
+      );
+      const orderCallArgs = mockPrisma.order.findMany.mock.calls[0][0];
+      const orderCutoff = orderCallArgs.where.createdAt.lte.getTime();
+      const orderDiffMinutes = Math.round((beforeRun - orderCutoff) / (60 * 1000));
+      expect(orderDiffMinutes).toBe(8);
+
+      // Cart query should use ~30 minutes cutoff
+      expect(mockPrisma.cart.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            updatedAt: expect.objectContaining({
+              lte: expect.any(Date),
+            }),
+          }),
+        })
+      );
+      const cartCallArgs = mockPrisma.cart.findMany.mock.calls[0][0];
+      const cartCutoff = cartCallArgs.where.updatedAt.lte.getTime();
+      const cartDiffMinutes = Math.round((beforeRun - cartCutoff) / (60 * 1000));
+      expect(cartDiffMinutes).toBe(30);
+    });
   });
 
   describe("processAbandonedReminders - Carts", () => {
