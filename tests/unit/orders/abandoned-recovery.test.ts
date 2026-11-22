@@ -66,6 +66,7 @@ vi.mock("@/lib/prisma/client", () => ({
 
 vi.mock("@/lib/sms/client", () => ({
   sendSmsNotification: mockSendSmsNotification,
+  maskPhoneNumber: vi.fn((phone: string) => `****${phone?.slice(-4) || ""}`),
 }));
 
 vi.mock("@/lib/email/abandoned-cart-email", () => ({
@@ -79,6 +80,7 @@ vi.mock("@/lib/monitoring/security-logger", () => ({
 import {
   processAbandonedReminders,
   sendManualAbandonedOrderReminder,
+  isBtrcQuietHours,
 } from "@/lib/orders/abandoned-recovery";
 import { GET, POST } from "@/app/api/cron/abandoned-reminders/route";
 import { NextRequest } from "next/server";
@@ -87,6 +89,9 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     delete process.env.CRON_SECRET;
+    mockPrisma.orderHistory.findFirst.mockResolvedValue(null);
+    mockPrisma.order.findFirst.mockResolvedValue(null);
+    mockPrisma.auditLog.findFirst.mockResolvedValue(null);
   });
 
   describe("processAbandonedReminders - Orders", () => {
@@ -122,6 +127,7 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       const result = await processAbandonedReminders({
         olderThanMinutes: 30,
         dryRun: false,
+        ignoreQuietHours: true,
       });
 
       expect(result.scannedOrders).toBe(1);
@@ -191,7 +197,10 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       // Customer subsequently placed another successful order
       mockPrisma.order.findFirst.mockResolvedValue({ id: "ord-new-confirmed" });
 
-      const result = await processAbandonedReminders({ olderThanMinutes: 30 });
+      const result = await processAbandonedReminders({
+        olderThanMinutes: 30,
+        ignoreQuietHours: true,
+      });
 
       expect(result.scannedOrders).toBe(1);
       expect(result.remindedOrders).toBe(0);
@@ -250,7 +259,7 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       mockPrisma.order.findMany.mockResolvedValue([mockOrder]);
       mockPrisma.cart.findMany.mockResolvedValue([]);
 
-      await processAbandonedReminders({ olderThanMinutes: 30 });
+      await processAbandonedReminders({ olderThanMinutes: 30, ignoreQuietHours: true });
 
       expect(mockSendSmsNotification).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -280,7 +289,7 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       mockPrisma.order.findMany.mockResolvedValue([mockOrder]);
       mockPrisma.cart.findMany.mockResolvedValue([]);
 
-      await processAbandonedReminders({ olderThanMinutes: 30 });
+      await processAbandonedReminders({ olderThanMinutes: 30, ignoreQuietHours: true });
 
       expect(mockSendSmsNotification).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -311,7 +320,10 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       // Double check in loop discovers a reminder was written by another thread
       mockPrisma.orderHistory.findFirst.mockResolvedValue({ id: "hist-existing" });
 
-      const result = await processAbandonedReminders({ olderThanMinutes: 30 });
+      const result = await processAbandonedReminders({
+        olderThanMinutes: 30,
+        ignoreQuietHours: true,
+      });
 
       expect(result.scannedOrders).toBe(1);
       expect(result.remindedOrders).toBe(0);
@@ -392,7 +404,10 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       mockPrisma.order.findFirst.mockResolvedValue(null); // No recent order placed
       mockPrisma.auditLog.findFirst.mockResolvedValue(null); // No prior reminder sent
 
-      const result = await processAbandonedReminders({ olderThanMinutes: 30 });
+      const result = await processAbandonedReminders({
+        olderThanMinutes: 30,
+        ignoreQuietHours: true,
+      });
 
       expect(result.scannedCarts).toBe(1);
       expect(result.remindedCarts).toBe(1);
@@ -526,7 +541,9 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
         ],
       });
 
-      const res = await sendManualAbandonedOrderReminder("VL-20261122-MANUAL");
+      const res = await sendManualAbandonedOrderReminder("VL-20261122-MANUAL", {
+        ignoreQuietHours: true,
+      });
 
       expect(res.success).toBe(true);
       expect(res.smsSent).toBe(true);
@@ -655,6 +672,99 @@ describe("Automated Abandoned Cart & Checkout Recovery", () => {
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.success).toBe(true);
+    });
+  });
+
+  describe("BTRC Regulation & Quiet Hours Enforcement", () => {
+    it("correctly identifies BTRC Quiet Hours (10:00 PM to 8:00 AM BST)", () => {
+      // 10:00 PM BST = 16:00 UTC
+      expect(isBtrcQuietHours(new Date("2026-11-22T16:00:00Z"))).toBe(true);
+      // 02:00 AM BST = 20:00 UTC
+      expect(isBtrcQuietHours(new Date("2026-11-22T20:00:00Z"))).toBe(true);
+      // 07:59 AM BST = 01:59 UTC
+      expect(isBtrcQuietHours(new Date("2026-11-22T01:59:00Z"))).toBe(true);
+      // 08:00 AM BST = 02:00 UTC (Daytime begins)
+      expect(isBtrcQuietHours(new Date("2026-11-22T02:00:00Z"))).toBe(false);
+      // 02:00 PM BST = 08:00 UTC
+      expect(isBtrcQuietHours(new Date("2026-11-22T08:00:00Z"))).toBe(false);
+      // 09:59 PM BST = 15:59 UTC (Still permitted)
+      expect(isBtrcQuietHours(new Date("2026-11-22T15:59:00Z"))).toBe(false);
+    });
+
+    it("skips SMS during quiet hours but still dispatches Email recovery", async () => {
+      // Mock system time to 11:30 PM BST (17:30 UTC)
+      vi.setSystemTime(new Date("2026-11-22T17:30:00Z"));
+
+      const mockOrder = {
+        id: "ord-midnight-01",
+        orderNumber: "VL-20261122-NIGHT",
+        customerName: "Tahmid",
+        customerPhone: "01712345678",
+        customerEmail: "tahmid@test.com",
+        paymentMethod: "ONLINE",
+        paymentStatus: "PENDING",
+        status: "PENDING",
+        subtotal: 2200,
+        total: 2320,
+        createdAt: new Date("2026-11-22T17:20:00Z"), // 10 min ago
+        items: [],
+      };
+
+      mockPrisma.order.findMany.mockResolvedValue([mockOrder]);
+      mockPrisma.cart.findMany.mockResolvedValue([]);
+
+      const result = await processAbandonedReminders({ olderThanMinutes: 8 });
+
+      expect(result.scannedOrders).toBe(1);
+      expect(result.remindedOrders).toBe(1);
+
+      // SMS must be strictly SKIPPED due to BTRC quiet hours
+      expect(mockSendSmsNotification).not.toHaveBeenCalled();
+
+      // Email must be dispatched normally
+      expect(mockSendAbandonedCartEmail).toHaveBeenCalledTimes(1);
+
+      // History must record SKIP_BTRC_QUIET_HOURS
+      expect(mockPrisma.orderHistory.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          notes: expect.stringContaining("SMS=SKIP_BTRC_QUIET_HOURS"),
+        }),
+      });
+
+      vi.useRealTimers();
+    });
+
+    it("skips SMS in manual reminder during quiet hours unless ignoreQuietHours is passed", async () => {
+      vi.setSystemTime(new Date("2026-11-22T20:00:00Z")); // 2 AM BST
+
+      mockPrisma.order.findUnique.mockResolvedValue({
+        id: "ord-manual-quiet",
+        orderNumber: "VL-20261122-QUIET",
+        customerName: "Fahim",
+        customerPhone: "01811223344",
+        customerEmail: "fahim@test.com",
+        paymentStatus: "PENDING",
+        status: "PENDING",
+        subtotal: 1500,
+        total: 1620,
+        items: [],
+      });
+
+      // Default call without override: SMS skipped
+      const res = await sendManualAbandonedOrderReminder("VL-20261122-QUIET");
+      expect(res.smsSent).toBe(false);
+      expect(res.smsSkippedDueToQuietHours).toBe(true);
+      expect(res.emailSent).toBe(true);
+      expect(mockSendSmsNotification).not.toHaveBeenCalled();
+
+      // Explicit override call: SMS allowed
+      const resOverride = await sendManualAbandonedOrderReminder("VL-20261122-QUIET", {
+        ignoreQuietHours: true,
+      });
+      expect(resOverride.smsSent).toBe(true);
+      expect(mockSendSmsNotification).toHaveBeenCalledTimes(1);
+
+      vi.useRealTimers();
     });
   });
 });

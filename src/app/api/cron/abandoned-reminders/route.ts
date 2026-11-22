@@ -80,6 +80,8 @@ async function parseParams(req: NextRequest) {
     body.batchSize ??
     (searchParams.get("maxBatchSize") || searchParams.get("batchSize"));
   const dryRun = body.dryRun === true || searchParams.get("dryRun") === "true";
+  const ignoreQuietHours =
+    body.ignoreQuietHours === true || searchParams.get("ignoreQuietHours") === "true";
 
   const olderThanMinutes =
     typeof rawOlderThan === "number"
@@ -124,6 +126,7 @@ async function parseParams(req: NextRequest) {
         ? maxBatchSize
         : undefined,
     dryRun,
+    ignoreQuietHours,
   };
 }
 

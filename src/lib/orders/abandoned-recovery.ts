@@ -1,7 +1,7 @@
 import "server-only";
 
 import prisma from "@/lib/prisma/client";
-import { sendSmsNotification } from "@/lib/sms/client";
+import { sendSmsNotification, maskPhoneNumber } from "@/lib/sms/client";
 import { sendAbandonedCartEmail } from "@/lib/email/abandoned-cart-email";
 import { SITE_URL } from "@/lib/seo/site";
 
@@ -17,6 +17,18 @@ export interface AbandonedReminderOptions {
   cartOlderThanMinutes?: number;
   maxBatchSize?: number;
   dryRun?: boolean;
+  ignoreQuietHours?: boolean; // Overrides BTRC Quiet Hours for testing or emergency overrides
+}
+
+/**
+ * Determines whether the current time in Bangladesh (BST: UTC+6) falls within
+ * BTRC Quiet Hours (10:00 PM to 8:00 AM). Commercial & promotional SMS dispatch
+ * is strictly restricted during this window to protect customer peace and comply with telecom regulations.
+ */
+export function isBtrcQuietHours(date = new Date()): boolean {
+  const utcHours = date.getUTCHours();
+  const bstHours = (utcHours + 6) % 24;
+  return bstHours >= 22 || bstHours < 8;
 }
 
 export interface AbandonedReminderResult {
@@ -112,6 +124,8 @@ export async function processAbandonedReminders(
   const dryRun = Boolean(options?.dryRun);
 
   const now = new Date();
+  const quietHoursActive = !options?.ignoreQuietHours && isBtrcQuietHours(now);
+
   const orderCutoffTime = new Date(
     now.getTime() - checkoutOlderThanMinutes * 60 * 1000
   );
@@ -208,19 +222,28 @@ export async function processAbandonedReminders(
         let emailSent = false;
 
         if (!dryRun) {
-          // A. Send SMS Notification
+          // A. Send SMS Notification (BTRC Quiet Hours Guarded)
           const targetPhone = cleanPhone(order.customerPhone);
-          if (targetPhone) {
-            const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারটি পেন্ডিং রয়েছে। স্টক শেষ হওয়ার আগেই অর্ডার সম্পন্ন করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+          let smsSkipReason = "";
 
-            smsSent = await sendSmsNotification({
-              phone: targetPhone,
-              message: smsBody,
-              purpose: "abandoned_cart_recovery",
-            });
+          if (targetPhone) {
+            if (quietHoursActive) {
+              smsSkipReason = "BTRC_QUIET_HOURS";
+              console.info(
+                `[processAbandonedReminders] BTRC Quiet Hours active (10 PM - 8 AM BST). SMS skipped for order #${order.orderNumber} (${maskPhoneNumber(targetPhone)}).`
+              );
+            } else {
+              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+
+              smsSent = await sendSmsNotification({
+                phone: targetPhone,
+                message: smsBody,
+                purpose: "abandoned_cart_recovery",
+              });
+            }
           }
 
-          // B. Send Email Notification
+          // B. Send Email Notification (Emails are always permitted)
           if (order.customerEmail && order.customerEmail.includes("@")) {
             emailSent = await sendAbandonedCartEmail({
               customerName: order.customerName,
@@ -241,11 +264,17 @@ export async function processAbandonedReminders(
           }
 
           // C. Record Idempotency Entry in OrderHistory
+          const smsStatus = smsSent
+            ? "OK"
+            : smsSkipReason
+              ? `SKIP_${smsSkipReason}`
+              : "SKIP";
+
           await prisma.orderHistory.create({
             data: {
               orderId: order.id,
               status: order.status,
-              notes: `ABANDONED_REMINDER_SENT: SMS=${smsSent ? "OK" : "SKIP"}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
+              notes: `ABANDONED_REMINDER_SENT: SMS=${smsStatus}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
             },
           });
         }
@@ -360,18 +389,27 @@ export async function processAbandonedReminders(
         }, 0);
 
         if (!dryRun) {
-          // Send SMS if user has phone
+          // Send SMS if user has phone (BTRC Quiet Hours Guarded)
           const targetPhone = cleanPhone(cart.user.phone);
+          let smsSkipReason = "";
+
           if (targetPhone) {
-            const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার ব্যাগপ্যাকের আইটেমগুলো অপেক্ষা করছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
-            smsSent = await sendSmsNotification({
-              phone: targetPhone,
-              message: smsBody,
-              purpose: "abandoned_cart_recovery",
-            });
+            if (quietHoursActive) {
+              smsSkipReason = "BTRC_QUIET_HOURS";
+              console.info(
+                `[processAbandonedReminders] BTRC Quiet Hours active (10 PM - 8 AM BST). SMS skipped for user cart (${maskPhoneNumber(targetPhone)}).`
+              );
+            } else {
+              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার ব্যাগপ্যাকের আইটেমগুলো অপেক্ষা করছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+              smsSent = await sendSmsNotification({
+                phone: targetPhone,
+                message: smsBody,
+                purpose: "abandoned_cart_recovery",
+              });
+            }
           }
 
-          // Send Email if user has email
+          // Send Email if user has email (Always permitted)
           if (cart.user.email && cart.user.email.includes("@")) {
             emailSent = await sendAbandonedCartEmail({
               customerName: cart.user.name,
@@ -408,6 +446,7 @@ export async function processAbandonedReminders(
                 cartId: cart.id,
                 itemCount: cart.items.length,
                 smsSent,
+                smsSkipReason: smsSkipReason || null,
                 emailSent,
               },
             },
@@ -437,10 +476,14 @@ export async function processAbandonedReminders(
  * Manually dispatches an abandoned reminder for a specific order.
  * Can be triggered from admin order details page.
  */
-export async function sendManualAbandonedOrderReminder(orderNumber: string): Promise<{
+export async function sendManualAbandonedOrderReminder(
+  orderNumber: string,
+  options?: { ignoreQuietHours?: boolean }
+): Promise<{
   success: boolean;
   smsSent: boolean;
   emailSent: boolean;
+  smsSkippedDueToQuietHours?: boolean;
   error?: string;
 }> {
   const order = await prisma.order.findUnique({
@@ -470,15 +513,25 @@ export async function sendManualAbandonedOrderReminder(orderNumber: string): Pro
 
   let smsSent = false;
   let emailSent = false;
+  let smsSkippedDueToQuietHours = false;
+
+  const isQuiet = !options?.ignoreQuietHours && isBtrcQuietHours(new Date());
 
   const targetPhone = cleanPhone(order.customerPhone);
   if (targetPhone) {
-    const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারটি পেন্ডিং রয়েছে। স্টক শেষ হওয়ার আগেই অর্ডার সম্পন্ন করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
-    smsSent = await sendSmsNotification({
-      phone: targetPhone,
-      message: smsBody,
-      purpose: "abandoned_cart_recovery",
-    });
+    if (isQuiet) {
+      smsSkippedDueToQuietHours = true;
+      console.info(
+        `[sendManualAbandonedOrderReminder] BTRC Quiet Hours active. SMS skipped for order #${order.orderNumber}.`
+      );
+    } else {
+      const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারটি পেন্ডিং রয়েছে। স্টক শেষ হওয়ার আগেই অর্ডার সম্পন্ন করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+      smsSent = await sendSmsNotification({
+        phone: targetPhone,
+        message: smsBody,
+        purpose: "abandoned_cart_recovery",
+      });
+    }
   }
 
   if (order.customerEmail && order.customerEmail.includes("@")) {
@@ -500,13 +553,19 @@ export async function sendManualAbandonedOrderReminder(orderNumber: string): Pro
     });
   }
 
+  const smsStatus = smsSent
+    ? "OK"
+    : smsSkippedDueToQuietHours
+      ? "SKIP_BTRC_QUIET_HOURS"
+      : "SKIP";
+
   await prisma.orderHistory.create({
     data: {
       orderId: order.id,
       status: order.status,
-      notes: `MANUAL_ABANDONED_REMINDER_SENT: SMS=${smsSent ? "OK" : "SKIP"}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
+      notes: `MANUAL_ABANDONED_REMINDER_SENT: SMS=${smsStatus}, Email=${emailSent ? "OK" : "SKIP"} at ${new Date().toISOString()}`,
     },
   });
 
-  return { success: true, smsSent, emailSent };
+  return { success: true, smsSent, emailSent, smsSkippedDueToQuietHours };
 }
