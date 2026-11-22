@@ -1,5 +1,6 @@
 import { Header } from "@/components/storefront/layout/header";
 import { Footer } from "@/components/storefront/layout/footer";
+import { WhatsAppFloatingButton } from "@/components/storefront/layout/whatsapp-floating-button";
 
 export default function StorefrontLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +17,7 @@ export default function StorefrontLayout({ children }: { children: React.ReactNo
       <Header />
       <main className="relative z-10 flex min-w-0 flex-1 flex-col">{children}</main>
       <Footer />
+      <WhatsAppFloatingButton />
     </div>
   );
 }

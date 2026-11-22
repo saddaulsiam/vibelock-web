@@ -15,9 +15,7 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import {
-  Banknote,
   Check,
-  CreditCard,
   ImageOff,
   LoaderCircle,
   MessageSquare,
