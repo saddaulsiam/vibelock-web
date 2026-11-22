@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect, useRef } from "react";
 import { Check, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { addVariantToCartAction } from "@/lib/cart/actions";
+import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +12,17 @@ interface AddToCartButtonProps {
   variantId: string | null;
   quantity: number;
   isAvailable: boolean;
+  productName?: string;
+  unitPrice?: number;
 }
 
-export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartButtonProps) {
+export function AddToCartButton({
+  variantId,
+  quantity,
+  isAvailable,
+  productName,
+  unitPrice,
+}: AddToCartButtonProps) {
   const [isPending, startTransition] = useTransition();
   const [isSuccess, setIsSuccess] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -33,6 +42,22 @@ export function AddToCartButton({ variantId, quantity, isAvailable }: AddToCartB
         if (result.success) {
           setIsSuccess(true);
           toast.success("Added to your cart");
+
+          // Track Meta Pixel AddToCart
+          trackMetaPixelEvent(
+            "AddToCart",
+            {
+              content_ids: [variantId],
+              content_name: productName,
+              content_type: "product",
+              value: (unitPrice || 0) * quantity,
+              currency: "BDT",
+              num_items: quantity,
+            },
+            {
+              eventID: `cart_${variantId}_${Date.now()}`,
+            }
+          );
 
           if (timerRef.current) clearTimeout(timerRef.current);
           timerRef.current = setTimeout(() => {

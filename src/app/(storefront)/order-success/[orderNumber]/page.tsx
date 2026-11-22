@@ -26,6 +26,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { MetaPurchaseTracker } from "@/components/storefront/analytics/meta-purchase-tracker";
 
 export const metadata: Metadata = {
   title: "Order Confirmation",
@@ -81,6 +82,15 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
       ? "CONFIRMED"
       : order.status;
 
+  const isOrderConfirmed =
+    (isPaid || isCod) &&
+    !isCancelled &&
+    !isPaymentFailed &&
+    !isPaystationCancelled &&
+    !isRedirectUnfinished &&
+    paymentQuery !== "cancelled" &&
+    paymentQuery !== "failed";
+
   const firstName = order.customerName ? order.customerName.trim().split(" ")[0] : null;
   const discountTotal = Math.max(0, order.discount);
   const totalItemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -133,6 +143,18 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
 
   return (
     <div className="relative min-h-screen bg-white">
+      {isOrderConfirmed && (
+        <MetaPurchaseTracker
+          orderNumber={order.orderNumber}
+          total={order.total}
+          items={order.items.map((item) => ({
+            id: item.sku,
+            quantity: item.quantity,
+            price: item.unitPrice,
+            name: item.productName,
+          }))}
+        />
+      )}
       {/* ── Architectural Dot Matrix Background (VibeLock Technical Grid) ── */}
       <div
         className="pointer-events-none absolute inset-0 z-0 opacity-70"

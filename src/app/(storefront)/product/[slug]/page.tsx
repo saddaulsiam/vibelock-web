@@ -19,6 +19,7 @@ import {
   serializeJsonLd,
 } from "@/lib/seo/json-ld";
 import { notFound } from "next/navigation";
+import { MetaViewContent } from "@/components/storefront/analytics/meta-view-content";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
@@ -65,6 +66,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const mainCategory = product.categories[0];
+  const basePrice =
+    product.variants[0]?.effectivePrice ?? product.variants[0]?.sellingPrice ?? 0;
 
   const productJsonLd = getProductJsonLd(product, summary);
   const breadcrumbJsonLd = getProductBreadcrumbJsonLd({
@@ -75,6 +78,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   return (
     <Section className="min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16">
+      <MetaViewContent
+        productId={product.id}
+        productName={product.name}
+        price={basePrice}
+        categoryName={mainCategory?.name}
+      />
       <script
         nonce={nonce}
         type="application/ld+json"
