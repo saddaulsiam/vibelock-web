@@ -1,19 +1,51 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, FileText, Shirt, Truck, RotateCcw } from "lucide-react";
+import { ChevronDown, FileText, Shirt, Truck, RotateCcw, Sparkles } from "lucide-react";
+import {
+  parseProductSpecifications,
+  type ProductSpecifications,
+} from "@/lib/catalog/specifications";
 
 interface ProductInfoAccordionProps {
   description: string | null;
   productName: string;
+  specifications?: unknown | null;
 }
 
-export function ProductInfoAccordion({ description, productName }: ProductInfoAccordionProps) {
+export function ProductInfoAccordion({
+  description,
+  productName,
+  specifications,
+}: ProductInfoAccordionProps) {
   const [openSection, setOpenSection] = useState<string | null>("description");
 
   const toggle = (section: string) => {
     setOpenSection((current) => (current === section ? null : section));
   };
+
+  const parsedSpecs = parseProductSpecifications(specifications);
+
+  // Dynamic section title and icon depending on lifestyle preset
+  const getSpecsTitle = (specs: ProductSpecifications | null) => {
+    if (!specs || !specs.categoryPreset) return "Fabric & Specifications";
+    switch (specs.categoryPreset) {
+      case "leather":
+        return "Materials & Craftsmanship";
+      case "headwear":
+        return "Structure & Specifications";
+      case "accessories":
+        return "Materials & Specifications";
+      case "apparel":
+      default:
+        return "Fabric & Specifications";
+    }
+  };
+
+  const SpecsIcon =
+    parsedSpecs?.categoryPreset === "leather" || parsedSpecs?.categoryPreset === "accessories"
+      ? Sparkles
+      : Shirt;
 
   const renderDescription = (text: string | null) => {
     if (!text) {
@@ -50,6 +82,81 @@ export function ProductInfoAccordion({ description, productName }: ProductInfoAc
     );
   };
 
+  const renderSpecifications = () => {
+    if (parsedSpecs && parsedSpecs.attributes.length > 0) {
+      return (
+        <div className="text-vl-dark-900/80 space-y-2 text-xs sm:space-y-2.5 sm:text-sm">
+          <div className="bg-vl-white-300/40 border-vl-dark-900/5 grid grid-cols-2 gap-1.5 rounded-xs border p-2 sm:gap-2 sm:p-2.5">
+            {parsedSpecs.attributes.map((attr, idx) => (
+              <div key={idx}>
+                <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+                  {attr.label}
+                </span>
+                <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
+                  {attr.value}
+                </span>
+              </div>
+            ))}
+          </div>
+          {parsedSpecs.careInstructions.length > 0 && (
+            <div className="text-vl-dark-900/70 space-y-0.5 pt-1 text-[11px] sm:space-y-1 sm:text-xs">
+              <p className="text-vl-dark-900 font-bold">Care Instructions:</p>
+              {parsedSpecs.careInstructions.map((instruction, idx) => (
+                <p key={idx}>• {instruction}</p>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Default fallback specs for legacy products without custom specs in database
+    return (
+      <div className="text-vl-dark-900/80 space-y-2 text-xs sm:space-y-2.5 sm:text-sm">
+        <div className="bg-vl-white-300/40 border-vl-dark-900/5 grid grid-cols-2 gap-1.5 rounded-xs border p-2 sm:gap-2 sm:p-2.5">
+          <div>
+            <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+              Fabric
+            </span>
+            <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
+              100% Combed Cotton
+            </span>
+          </div>
+          <div>
+            <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+              Weight
+            </span>
+            <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
+              220 - 240+ GSM
+            </span>
+          </div>
+          <div>
+            <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+              Fit Type
+            </span>
+            <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
+              Streetwear Boxy
+            </span>
+          </div>
+          <div>
+            <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
+              Origin
+            </span>
+            <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
+              Crafted in Dhaka
+            </span>
+          </div>
+        </div>
+        <div className="text-vl-dark-900/70 space-y-0.5 pt-1 text-[11px] sm:space-y-1 sm:text-xs">
+          <p className="text-vl-dark-900 font-bold">Care Instructions:</p>
+          <p>• Machine wash cold inside out with similar colors.</p>
+          <p>• Do not tumble dry. Hang dry in shade to preserve screenprints.</p>
+          <p>• Iron inside-out on low heat; avoid direct iron on print details.</p>
+        </div>
+      </div>
+    );
+  };
+
   const sections = [
     {
       id: "description",
@@ -59,52 +166,9 @@ export function ProductInfoAccordion({ description, productName }: ProductInfoAc
     },
     {
       id: "specs",
-      title: "Fabric & Specifications",
-      icon: Shirt,
-      content: (
-        <div className="text-vl-dark-900/80 space-y-2 text-xs sm:space-y-2.5 sm:text-sm">
-          <div className="bg-vl-white-300/40 border-vl-dark-900/5 grid grid-cols-2 gap-1.5 rounded-xs border p-2 sm:gap-2 sm:p-2.5">
-            <div>
-              <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
-                Fabric
-              </span>
-              <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
-                100% Combed Cotton
-              </span>
-            </div>
-            <div>
-              <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
-                Weight
-              </span>
-              <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
-                220 - 240+ GSM
-              </span>
-            </div>
-            <div>
-              <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
-                Fit Type
-              </span>
-              <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
-                Streetwear Boxy
-              </span>
-            </div>
-            <div>
-              <span className="text-vl-dark-900/50 block text-[9px] font-bold tracking-wider uppercase sm:text-[10px]">
-                Origin
-              </span>
-              <span className="text-vl-dark-900 text-[11px] font-semibold sm:text-xs">
-                Crafted in Dhaka
-              </span>
-            </div>
-          </div>
-          <div className="text-vl-dark-900/70 space-y-0.5 pt-1 text-[11px] sm:space-y-1 sm:text-xs">
-            <p className="text-vl-dark-900 font-bold">Care Instructions:</p>
-            <p>• Machine wash cold inside out with similar colors.</p>
-            <p>• Do not tumble dry. Hang dry in shade to preserve screenprints.</p>
-            <p>• Iron inside-out on low heat; avoid direct iron on print details.</p>
-          </div>
-        </div>
-      ),
+      title: getSpecsTitle(parsedSpecs),
+      icon: SpecsIcon,
+      content: renderSpecifications(),
     },
     {
       id: "shipping",

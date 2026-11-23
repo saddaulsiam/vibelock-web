@@ -1,7 +1,4 @@
-import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { ProductForm } from "@/components/admin/products";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAdminProductFormData } from "@/lib/admin/catalog";
 
 export default async function NewAdminProductPage({
@@ -29,34 +26,13 @@ export default async function NewAdminProductPage({
     : null;
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6">
-      <header className="space-y-1.5">
-        <Link
-          href="/admin/products"
-          className="text-muted-foreground hover:text-vl-dark-900 inline-flex items-center gap-1.5 text-xs font-semibold tracking-wide transition-colors"
-        >
-          <ArrowLeft className="size-3.5" /> Back to products
-        </Link>
-        <h2 className="text-vl-dark-900 text-2xl font-semibold tracking-tight sm:text-3xl">
-          {initialProduct ? "Duplicate product" : "Create product"}
-        </h2>
-        {initialProduct && (
-          <p className="text-muted-foreground mt-1 text-xs">
-            Cloned from <strong>{sourceProduct?.name}</strong>. Adjust details and save to create a
-            new product.
-          </p>
-        )}
-      </header>
-      <Card className="border-vl-dark-900/10 overflow-visible rounded-sm bg-white shadow-none">
-        <CardHeader className="border-vl-dark-900/10 border-b px-4 py-4 sm:px-6">
-          <CardTitle className="text-vl-dark-900 text-base">
-            {initialProduct ? "Cloned product details" : "Product details"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-6">
-          <ProductForm product={initialProduct} categories={categories} />
-        </CardContent>
-      </Card>
+    <div className="mx-auto w-full max-w-[100rem]">
+      <ProductForm
+        product={initialProduct}
+        categories={categories}
+        isDuplicate={Boolean(sourceProduct)}
+        duplicateFromName={sourceProduct?.name}
+      />
     </div>
   );
 }

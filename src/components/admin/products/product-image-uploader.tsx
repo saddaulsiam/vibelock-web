@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Globe, ImagePlus, Star, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Globe, ImagePlus, Star, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ export type ProductImageItem = {
   url: string;
   file?: File;
   isExisting?: boolean;
+  isLandscape?: boolean;
 };
 
 interface ProductImageUploaderProps {
@@ -22,6 +23,79 @@ interface ProductImageUploaderProps {
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/avif"];
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 const MAX_IMAGES = 12;
+
+// Client-side image pre-compression for large images (>1MB) to prevent Vercel upload timeouts
+async function compressImageFile(file: File): Promise<File> {
+  if (file.size <= 1024 * 1024 || file.type === "image/svg+xml" || file.type === "image/gif") {
+    return file;
+  }
+  if (typeof window === "undefined" || !window.document) {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const maxDim = 2000;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) {
+            resolve(file);
+            return;
+          }
+          const originalName = file.name.replace(/\.[^.]+$/, "");
+          const compressed = new File([blob], `${originalName}.webp`, {
+            type: "image/webp",
+            lastModified: Date.now(),
+          });
+          resolve(compressed);
+        },
+        "image/webp",
+        0.85
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+    img.src = objectUrl;
+  });
+}
+
+function checkImageOrientation(url: string): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.onload = () => {
+      resolve(img.naturalWidth > img.naturalHeight * 1.25);
+    };
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+}
 
 export function ProductImageUploader({
   initialImages = [],
@@ -66,7 +140,7 @@ export function ProductImageUploader({
     }
   }, []);
 
-  const handleFiles = (fileList: FileList | File[]) => {
+  const handleFiles = async (fileList: FileList | File[]) => {
     const filesArray = Array.from(fileList);
     if (!filesArray.length) return;
 
@@ -91,11 +165,30 @@ export function ProductImageUploader({
         continue;
       }
 
-      const objectUrl = URL.createObjectURL(file);
+      let processedFile = file;
+      if (file.size > 1024 * 1024) {
+        try {
+          const compressed = await compressImageFile(file);
+          if (compressed.size < file.size) {
+            const savedPct = Math.round((1 - compressed.size / file.size) * 100);
+            toast.info(
+              `"${file.name}" optimized (-${savedPct}% size reduction for faster upload).`
+            );
+            processedFile = compressed;
+          }
+        } catch {
+          // Keep original file on error
+        }
+      }
+
+      const objectUrl = URL.createObjectURL(processedFile);
+      const isLandscape = await checkImageOrientation(objectUrl);
+
       newItems.push({
         id: `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         url: objectUrl,
-        file,
+        file: processedFile,
+        isLandscape,
       });
     }
 
@@ -138,7 +231,7 @@ export function ProductImageUploader({
     }
   };
 
-  const handleAddExternalUrls = () => {
+  const handleAddExternalUrls = async () => {
     const lines = externalUrlText
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -165,10 +258,15 @@ export function ProductImageUploader({
     const availableSlots = Math.max(0, MAX_IMAGES - images.length);
     const urlsToAdd = validUrls.slice(0, availableSlots);
 
-    const newEntries: ProductImageItem[] = urlsToAdd.map((url) => ({
-      id: `url-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      url,
-    }));
+    const newEntries: ProductImageItem[] = [];
+    for (const url of urlsToAdd) {
+      const isLandscape = await checkImageOrientation(url);
+      newEntries.push({
+        id: `url-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        url,
+        isLandscape,
+      });
+    }
 
     if (newEntries.length > 0) {
       const updated = [...images, ...newEntries];
@@ -198,6 +296,9 @@ export function ProductImageUploader({
     syncFileInput(updated);
   };
 
+  const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+
   const handleMakePrimary = (index: number) => {
     if (index === 0) return;
     const target = images[index];
@@ -205,6 +306,54 @@ export function ProductImageUploader({
     const updated = [target, ...rest];
     setImages(updated);
     syncFileInput(updated);
+    toast.success("Set as primary lookbook cover!");
+  };
+
+  const handleMoveImage = (index: number, direction: "left" | "right") => {
+    const targetIndex = direction === "left" ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= images.length) return;
+    const next = [...images];
+    const temp = next[index];
+    next[index] = next[targetIndex];
+    next[targetIndex] = temp;
+    setImages(next);
+    syncFileInput(next);
+  };
+
+  const handleTileDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(index));
+  };
+
+  const handleTileDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleTileDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    const next = [...images];
+    const [moved] = next.splice(draggedIndex, 1);
+    next.splice(dropIndex, 0, moved);
+    setImages(next);
+    syncFileInput(next);
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+    toast.success("Images reordered!");
+  };
+
+  const handleTileDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
   // Generate image manifest for server-side reconstruction
@@ -225,7 +374,7 @@ export function ProductImageUploader({
   }, [images]);
 
   return (
-    <fieldset className="border-vl-dark-900/15 bg-vl-white-200 space-y-4 border p-4 sm:p-5">
+    <fieldset className="border-vl-dark-900/10 space-y-5 rounded-sm border bg-white p-5 shadow-xs sm:p-6">
       {/* Hidden inputs to feed formData */}
       <input
         ref={fileInputRef}
@@ -241,20 +390,26 @@ export function ProductImageUploader({
       <input type="hidden" name="imageManifest" value={JSON.stringify(imageManifest)} />
 
       {/* Header with Title and Mode Toggle */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <legend className="text-vl-dark-900 px-1 text-sm font-semibold">Product images</legend>
-          <p className="text-muted-foreground px-1 text-xs">
-            Upload product gallery and thumbnail images. The first image is used as the primary
-            display.
-          </p>
+      <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
+        <div className="flex items-center gap-2.5">
+          <span className="bg-vl-dark-900 flex size-6.5 items-center justify-center rounded-sm font-mono text-[11px] font-bold text-white shadow-2xs">
+            02
+          </span>
+          <div>
+            <legend className="text-vl-dark-900 font-heading text-base font-bold tracking-tight">
+              Media &amp; Lookbook Gallery
+            </legend>
+            <p className="text-muted-foreground text-xs">
+              Upload product gallery and thumbnail images. First image is used as primary lookbook
+              cover.
+            </p>
+          </div>
         </div>
         <Button
           type="button"
           variant="ghost"
-          size="xs"
+          size="2xs"
           onClick={() => setUseUrlInput((prev) => !prev)}
-          className="text-muted-foreground hover:text-vl-dark-900 inline-flex items-center gap-1.5 text-xs font-semibold"
         >
           {useUrlInput ? (
             <>
@@ -262,7 +417,7 @@ export function ProductImageUploader({
             </>
           ) : (
             <>
-              <Globe className="size-3.5" /> Or use external image URLs
+              <Globe className="size-3.5" /> Use external image URLs
             </>
           )}
         </Button>
@@ -276,17 +431,19 @@ export function ProductImageUploader({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`flex cursor-pointer flex-col items-center justify-center rounded border-2 border-dashed p-6 text-center transition-all ${
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-sm border-2 border-dashed p-7 text-center transition-all ${
               isDragging
                 ? "border-vl-cyan bg-vl-cyan-50 scale-[1.01]"
-                : "border-vl-dark-900/20 hover:border-vl-cyan bg-white/50 hover:bg-white/70"
+                : "border-vl-dark-900/20 hover:border-vl-cyan bg-vl-white-100/60 hover:bg-vl-white-200/60"
             }`}
           >
-            <div className="bg-vl-dark-900/5 text-vl-dark-900 flex size-12 items-center justify-center rounded-full">
+            <div className="border-vl-dark-900/10 text-vl-dark-900 flex size-12 items-center justify-center rounded-full bg-white shadow-2xs">
               <ImagePlus className="text-vl-dark-900/70 size-6" />
             </div>
-            <span className="text-vl-dark-900 mt-3 text-sm font-semibold">
-              {images.length > 0 ? "Add more product images" : "Click or drag to upload images"}
+            <span className="text-vl-dark-900 font-heading mt-3 text-sm font-bold tracking-tight">
+              {images.length > 0
+                ? "Add more product images"
+                : "Click or drag to upload lookbook photos"}
             </span>
             <span className="text-muted-foreground mt-1 text-xs">
               Uploads directly to Cloudinary CDN • Supports JPG, PNG, WebP, GIF, or AVIF (Max 5MB
@@ -321,7 +478,8 @@ export function ProductImageUploader({
         <div className="space-y-2.5 pt-2">
           <div className="text-muted-foreground flex items-center justify-between text-xs">
             <span>
-              Gallery preview ({images.length} of {MAX_IMAGES} images)
+              Gallery preview ({images.length} of {MAX_IMAGES} images) •{" "}
+              <span className="text-vl-dark-900 font-medium">Drag &amp; drop to reorder</span>
             </span>
             <span className="text-[11px]">First image is Primary</span>
           </div>
@@ -329,11 +487,23 @@ export function ProductImageUploader({
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {images.map((item, index) => {
               const isPrimary = index === 0;
+              const isBeingDragged = draggedIndex === index;
+              const isDragOver = dragOverIndex === index;
+
               return (
                 <div
                   key={item.id}
-                  className={`group bg-vl-white-300 relative aspect-square overflow-hidden rounded border shadow-xs transition-all ${
+                  draggable={true}
+                  onDragStart={(e) => handleTileDragStart(e, index)}
+                  onDragOver={(e) => handleTileDragOver(e, index)}
+                  onDrop={(e) => handleTileDrop(e, index)}
+                  onDragEnd={handleTileDragEnd}
+                  className={`group bg-vl-white-300 relative aspect-square cursor-grab overflow-hidden rounded border shadow-xs transition-all active:cursor-grabbing ${
                     isPrimary ? "border-vl-dark-900 ring-vl-cyan ring-2" : "border-vl-dark-900/20"
+                  } ${isBeingDragged ? "scale-95 opacity-30" : ""} ${
+                    isDragOver
+                      ? "ring-vl-cyan border-vl-cyan scale-[1.02] ring-2 ring-offset-2"
+                      : ""
                   }`}
                 >
                   <Image
@@ -347,23 +517,58 @@ export function ProductImageUploader({
                   {/* Gradient overlays */}
                   <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/60 via-transparent to-black/70" />
 
-                  {/* Top Badge */}
+                  {/* Top Badge & Reorder Arrows */}
                   <div className="absolute top-2 right-2 left-2 flex items-center justify-between">
-                    {isPrimary ? (
-                      <span className="bg-vl-dark-900 text-vl-cyan inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-xs backdrop-blur-sm">
-                        <Star className="fill-vl-cyan size-3" /> Primary
-                      </span>
-                    ) : (
-                      <span className="rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
-                        #{index + 1}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {isPrimary ? (
+                        <span className="bg-vl-dark-900 text-vl-cyan inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase shadow-xs backdrop-blur-sm">
+                          <Star className="fill-vl-cyan size-3" /> Primary
+                        </span>
+                      ) : (
+                        <span className="rounded bg-black/60 px-2 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+                          #{index + 1}
+                        </span>
+                      )}
 
-                    {item.file && (
-                      <span className="rounded bg-blue-600/90 px-1.5 py-0.5 text-[9px] font-medium text-white backdrop-blur-sm">
-                        New
-                      </span>
-                    )}
+                      {item.file && (
+                        <span className="rounded bg-blue-600/90 px-1.5 py-0.5 text-[9px] font-medium text-white backdrop-blur-sm">
+                          New
+                        </span>
+                      )}
+
+                      {item.isLandscape && (
+                        <span
+                          title="Landscape image detected. 4:5 portrait or 1:1 square is recommended for streetwear lookbooks."
+                          className="inline-flex items-center gap-0.5 rounded bg-amber-600/90 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs backdrop-blur-sm"
+                        >
+                          ⚠️ Landscape
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Order adjustment buttons */}
+                    <div className="flex items-center gap-1">
+                      {index > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleMoveImage(index, "left")}
+                          title="Move image earlier"
+                          className="flex size-6 items-center justify-center rounded bg-black/75 text-white shadow-xs backdrop-blur-sm transition-colors hover:bg-black"
+                        >
+                          <ChevronLeft className="size-3.5" />
+                        </button>
+                      )}
+                      {index < images.length - 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleMoveImage(index, "right")}
+                          title="Move image later"
+                          className="flex size-6 items-center justify-center rounded bg-black/75 text-white shadow-xs backdrop-blur-sm transition-colors hover:bg-black"
+                        >
+                          <ChevronRight className="size-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Bottom Action Bar */}

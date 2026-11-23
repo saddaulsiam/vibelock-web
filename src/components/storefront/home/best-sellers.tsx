@@ -24,11 +24,7 @@ export function BestSellers({ products }: BestSellersProps) {
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
           {displayed.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              badge={product.hasDiscount ? undefined : { label: "HOT", variant: "sale" }}
-            />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </Container>

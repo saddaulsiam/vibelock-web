@@ -26,8 +26,12 @@ const productSchema = z.object({
   id: z.string().uuid().optional(),
   name: nameField,
   description: z.string().trim().max(5000).optional(),
+  specifications: z.unknown().optional(),
   categoryIds: z.array(z.string().uuid()).max(30),
   status: z.nativeEnum(ProductStatus),
+  isFeatured: z.boolean().optional().default(false),
+  badgeLabel: z.string().trim().max(40).optional().nullable(),
+  badgeVariant: z.string().trim().max(30).optional().nullable(),
 });
 
 const variantInputSchema = z.object({
@@ -37,10 +41,13 @@ const variantInputSchema = z.object({
   color: z.string().trim().max(60).optional().default(""),
   costPrice: z
     .string()
-    .regex(
-      /^\d{1,10}(?:\.\d{1,2})?$/,
-      "Cost price must be a non-negative amount with up to two decimals."
-    ),
+    .optional()
+    .default("0.00")
+    .transform((val) => {
+      const trimmed = (val ?? "").trim();
+      if (!trimmed) return "0.00";
+      return /^\d{1,10}(?:\.\d{1,2})?$/.test(trimmed) ? trimmed : "0.00";
+    }),
   sellingPrice: z
     .string()
     .regex(
@@ -58,8 +65,12 @@ export type ProductValues = {
   id?: string;
   name: string;
   description?: string;
+  specifications?: unknown | null;
   categoryIds: string[];
   status: ProductStatus;
+  isFeatured: boolean;
+  badgeLabel?: string | null;
+  badgeVariant?: string | null;
   slug: string;
   variants: ProductVariantInput[];
   imageUrls: string[];
@@ -71,12 +82,20 @@ async function parseProduct(formData: FormData) {
   if (rawCategoryIds.length > 30) {
     return { error: "A product can have at most 30 categories." } as const;
   }
+  const rawIsFeatured = formData.get("isFeatured");
+  const isFeatured =
+    rawIsFeatured === "true" || rawIsFeatured === "on" || rawIsFeatured === "1";
+  const rawBadgeLabel = String(formData.get("badgeLabel") ?? "").trim() || null;
+  const rawBadgeVariant = String(formData.get("badgeVariant") ?? "").trim() || null;
   const parsed = productSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
     name: rawName,
     description: String(formData.get("description") ?? "") || undefined,
     categoryIds: rawCategoryIds,
     status: String(formData.get("status") ?? ""),
+    isFeatured,
+    badgeLabel: rawBadgeLabel,
+    badgeVariant: rawBadgeVariant,
   });
   const slug = slugFromForm(formData, rawName);
 
@@ -221,6 +240,20 @@ async function parseProduct(formData: FormData) {
     } as const;
   }
 
+  if (parsed.data.status === ProductStatus.PUBLISHED) {
+    if (finalImageUrls.length === 0) {
+      return {
+        error: "A product must have at least one image before being published to the storefront.",
+      } as const;
+    }
+    if (parsed.data.categoryIds.length === 0) {
+      return {
+        error:
+          "A product must belong to at least one category before being published to the storefront.",
+      } as const;
+    }
+  }
+
   const variants = variantsParsed.data.map((variant) => ({
     ...variant,
     sku: variant.sku.trim(),
@@ -258,10 +291,21 @@ async function parseProduct(formData: FormData) {
     }
   }
 
+  const rawSpecifications = String(formData.get("specifications") ?? "").trim();
+  let parsedSpecifications: unknown = undefined;
+  if (rawSpecifications) {
+    try {
+      parsedSpecifications = JSON.parse(rawSpecifications);
+    } catch {
+      parsedSpecifications = null;
+    }
+  }
+
   return {
     data: {
       ...parsed.data,
       slug: slug.data,
+      specifications: parsedSpecifications,
       variants,
       imageUrls: finalImageUrls,
     } satisfies ProductValues,
@@ -310,7 +354,17 @@ export async function saveProductAction(
             name: product.name,
             slug: product.slug,
             description: product.description || null,
+            ...(product.specifications !== undefined
+              ? {
+                  specifications: product.specifications
+                    ? (product.specifications as unknown as Prisma.InputJsonValue)
+                    : Prisma.JsonNull,
+                }
+              : {}),
             status: product.status,
+            isFeatured: product.isFeatured,
+            badgeLabel: product.badgeLabel || null,
+            badgeVariant: product.badgeVariant || null,
             categories: { set: product.categoryIds.map((id) => ({ id })) },
           },
         });
@@ -353,7 +407,13 @@ export async function saveProductAction(
             name: product.name,
             slug: product.slug,
             description: product.description || null,
+            specifications: product.specifications
+              ? (product.specifications as unknown as Prisma.InputJsonValue)
+              : Prisma.JsonNull,
             status: product.status,
+            isFeatured: product.isFeatured,
+            badgeLabel: product.badgeLabel || null,
+            badgeVariant: product.badgeVariant || null,
             categories: { connect: product.categoryIds.map((id) => ({ id })) },
           },
           select: { id: true },

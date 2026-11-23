@@ -6,6 +6,7 @@ import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
 import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
 import { YouMayAlsoLike } from "@/components/storefront/product/you-may-also-like";
 import { StarRating } from "@/components/storefront/product/reviews/star-rating";
@@ -13,11 +14,7 @@ import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/queries";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
 import { SITE_URL } from "@/lib/seo/site";
-import {
-  getProductJsonLd,
-  getProductBreadcrumbJsonLd,
-  serializeJsonLd,
-} from "@/lib/seo/json-ld";
+import { getProductJsonLd, getProductBreadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { notFound } from "next/navigation";
 import { MetaViewContent } from "@/components/storefront/analytics/meta-view-content";
 
@@ -66,8 +63,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
   const nonce = (await headers()).get("x-nonce") ?? undefined;
   const mainCategory = product.categories[0];
-  const basePrice =
-    product.variants[0]?.effectivePrice ?? product.variants[0]?.sellingPrice ?? 0;
+  const basePrice = product.variants[0]?.effectivePrice ?? product.variants[0]?.sellingPrice ?? 0;
 
   const productJsonLd = getProductJsonLd(product, summary);
   const breadcrumbJsonLd = getProductBreadcrumbJsonLd({
@@ -95,46 +91,46 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbJsonLd) }}
       />
       <Container className="max-w-6xl">
-        <nav
-          aria-label="Breadcrumb"
-          className="text-muted-foreground mb-2.5 flex flex-wrap items-center gap-1.5 text-xs sm:mb-6 sm:gap-2 sm:text-sm"
-        >
-          <Link
-            href="/"
-            className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
-          >
-            Home
-          </Link>
-          <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
-          <Link
-            href="/shop"
-            className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
-          >
-            Shop
-          </Link>
-          {mainCategory && (
-            <>
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] sm:gap-8 lg:gap-12 xl:gap-16">
+          <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+            <nav
+              aria-label="Breadcrumb"
+              className="text-muted-foreground mb-2.5 flex flex-wrap items-center gap-1.5 text-xs sm:mb-4 sm:gap-2 sm:text-sm"
+            >
+              <Link
+                href="/"
+                className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              >
+                Home
+              </Link>
               <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
               <Link
-                href={`/category/${mainCategory.slug}`}
-                className="hover:text-foreground focus-visible:ring-vl-cyan max-w-30 truncate rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:max-w-none"
+                href="/shop"
+                className="hover:text-foreground focus-visible:ring-vl-cyan rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
               >
-                {mainCategory.name}
+                Shop
               </Link>
-            </>
-          )}
-          <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
-          <span
-            className="text-foreground max-w-35 truncate font-medium sm:max-w-70 md:max-w-none"
-            aria-current="page"
-            title={product.name}
-          >
-            {product.name}
-          </span>
-        </nav>
+              {mainCategory && (
+                <>
+                  <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+                  <Link
+                    href={`/category/${mainCategory.slug}`}
+                    className="hover:text-foreground focus-visible:ring-vl-cyan max-w-30 truncate rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none sm:max-w-none"
+                  >
+                    {mainCategory.name}
+                  </Link>
+                </>
+              )}
+              <ChevronRight className="size-3.5 shrink-0 sm:size-4" aria-hidden="true" />
+              <span
+                className="text-foreground max-w-35 truncate font-medium sm:max-w-70 md:max-w-none"
+                aria-current="page"
+                title={product.name}
+              >
+                {product.name}
+              </span>
+            </nav>
 
-        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)] sm:gap-8 lg:gap-12 xl:gap-16">
-          <div className="min-w-0">
             <ImageGallery images={product.images} productName={product.name} />
           </div>
 
@@ -149,11 +145,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     {mainCategory.name}
                   </Link>
                 )}
-                {product.variants[0]?.sku && (
-                  <span className="text-vl-dark-900/40 font-mono text-[9px] font-semibold tracking-wider sm:text-[10px]">
-                    SKU: {product.variants[0].sku}
-                  </span>
-                )}
+                <ProductSkuBadge initialSku={product.variants[0]?.sku} />
               </div>
 
               <h1 className="font-heading text-vl-dark-900 text-2xl leading-tight font-black tracking-tight wrap-break-word md:text-3xl lg:text-4xl">
@@ -190,6 +182,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               productSlug={product.slug}
               productName={product.name}
               description={product.description}
+              specifications={product.specifications}
             />
 
             {mainCategory && (

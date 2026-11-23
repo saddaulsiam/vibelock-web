@@ -1,10 +1,16 @@
+import { HomeAllProducts } from "@/components/storefront/home/all-products";
 import { BestSellers } from "@/components/storefront/home/best-sellers";
 import { CollectionBanner } from "@/components/storefront/home/collection-banner";
-import { FeaturedProducts } from "@/components/storefront/home/featured-products";
+import FeaturedProducts from "@/components/storefront/home/featured-products";
 import { HeroSection } from "@/components/storefront/home/hero-section";
 import { NewArrivals } from "@/components/storefront/home/new-arrivals";
 import { TrustBenefits } from "@/components/storefront/home/trust-benefits";
-import { getBestSellingProducts, getCategories, getPublishedProducts } from "@/lib/catalog/queries";
+import {
+  getBestSellingProducts,
+  getCategories,
+  getFeaturedProducts,
+  getPublishedProducts,
+} from "@/lib/catalog/queries";
 import { SITE_URL } from "@/lib/seo/site";
 import type { Metadata } from "next";
 
@@ -21,10 +27,11 @@ export const metadata: Metadata = {
 };
 
 export default async function StorefrontHomePage() {
-  const [categories, publishedProducts, bestSellingProducts] = await Promise.all([
+  const [categories, publishedProducts, bestSellingProducts, featuredProducts] = await Promise.all([
     getCategories(),
     getPublishedProducts({ take: 50 }),
     getBestSellingProducts({ take: 10 }),
+    getFeaturedProducts({ take: 10 }),
   ]);
 
   return (
@@ -38,14 +45,17 @@ export default async function StorefrontHomePage() {
       {/* ── 3. New Arrivals ───────────────────────────────── */}
       <NewArrivals products={publishedProducts} />
 
-      {/* ── 4. Best Sellers ─────────────────────────────── */}
+      {/* ── 4. Featured Products ────────────────────────── */}
+      <FeaturedProducts products={featuredProducts} />
+
+      {/* ── 5. Best Sellers ─────────────────────────────── */}
       <BestSellers products={bestSellingProducts} />
 
       {/* ── 6. Collection Banner (BUILT FOR REAL ONES) ─────────── */}
       <CollectionBanner />
 
-      {/* ── 5. Explore Our Catalog (filtered grid) ──────── */}
-      <FeaturedProducts products={publishedProducts} categories={categories} />
+      {/* ── 7. Explore Our Catalog (filtered grid) ──────── */}
+      <HomeAllProducts products={publishedProducts} categories={categories} />
     </>
   );
 }

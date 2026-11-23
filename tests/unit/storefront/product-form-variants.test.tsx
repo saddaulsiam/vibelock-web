@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ProductForm } from "@/components/admin/products";
+import { ProductForm, ProductFormPreview } from "@/components/admin/products";
 
 // Mock next/navigation & next/image
 vi.mock("next/navigation", () => ({
@@ -88,8 +88,9 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
       <ProductForm product={null} categories={[{ id: "cat-1", name: "Hoodies" }]} />
     );
 
-    // Live storefront preview
-    expect(html).toContain("Live Storefront Card Preview");
+    // Live storefront preview toggle
+    expect(html).toContain("Storefront Card");
+    expect(html).toContain("Show preview");
 
     // Section 1: Basic info with live slug preview and streetwear presets
     expect(html).toContain("Basic Information");
@@ -110,5 +111,65 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
     // Section 5: Publication status
     expect(html).toContain("Publishing Status");
     expect(html).toContain("Draft — Hidden from store");
+
+    // Productivity & Velocity enhancements
+    expect(html).toContain("1-Click Drop Presets:");
+    expect(html).toContain("Heavyweight Tee");
+    expect(html).toContain("Winter Hoodie");
+    expect(html).toContain("Save &amp; Add Another");
+    expect(html).toContain("Matrix Stock Grid");
+    expect(html).toContain("Detailed Cards");
+    expect(html).toContain('id="variants"');
+  });
+
+  it("renders ProductFormPreview directly with 3:4 aspect ratio canvas and custom badge", () => {
+    const html = renderToStaticMarkup(
+      <ProductFormPreview
+        name="Vibe Heavyweight Boxy Tee"
+        primaryImageUrl="https://res.cloudinary.com/demo/tee.jpg"
+        secondaryImageUrl={undefined}
+        previewSelling="1250"
+        previewDiscount="990"
+        hasDiscount={true}
+        discountPercent={21}
+        totalStockCount={15}
+        selectedSizes={["M", "L", "XL"]}
+        selectedColors={["Black", "White"]}
+        categoryName="Apparel"
+        customBadgeLabel="DROP 01"
+        customBadgeVariant="new"
+      />
+    );
+
+    expect(html).toContain("Live Storefront Card Preview");
+    expect(html).toContain("3 / 4");
+    expect(html).toContain("Vibe Heavyweight Boxy Tee");
+    expect(html).toContain("DROP 01");
+  });
+
+  it("renders promotional badge controls in ProductForm publishing status sidebar", () => {
+    const html = renderToStaticMarkup(
+      <ProductForm
+        product={{
+          id: "prod-badge-1",
+          name: "Vibe Tech Cyber Hoodie",
+          slug: "vibe-tech-cyber-hoodie",
+          description: "Brutalist cyber streetwear hoodie",
+          status: "PUBLISHED",
+          badgeLabel: "LIMITED HYPE",
+          badgeVariant: "hot",
+          categoryIds: ["cat-1"],
+          variants: [],
+          images: [],
+        }}
+        categories={[{ id: "cat-1", name: "Hoodies" }]}
+      />
+    );
+
+    expect(html).toContain("Promotional Badge");
+    expect(html).toContain('name="badgeVariant"');
+    expect(html).toContain('name="badgeLabel"');
+    expect(html).toContain('value="LIMITED HYPE"');
+    expect(html).toContain("Hot (Flame Amber)");
   });
 });

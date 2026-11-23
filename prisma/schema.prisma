@@ -252,11 +252,14 @@ model Category {
 
 model Product {
   id          String        @id @default(uuid())
-  name        String
-  slug        String        @unique
-  description String?
-  status      ProductStatus @default(DRAFT)
+  name           String
+  slug           String        @unique
+  description    String?
+  specifications Json?         @db.JsonB
+  status         ProductStatus @default(DRAFT)
   isFeatured  Boolean       @default(false)
+  badgeLabel     String?
+  badgeVariant   String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

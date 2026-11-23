@@ -409,7 +409,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         {/* Hover preview card */}
                         {product.primaryImage && (
                           <div className="border-vl-dark-900/20 pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border bg-white p-2 shadow-2xl group-hover/thumb:block">
-                            <div className="bg-vl-white-300 relative aspect-[2/3] w-full overflow-hidden rounded-xs">
+                            <div className="bg-vl-white-300 relative aspect-3/4 w-full overflow-hidden rounded-xs">
                               <Image
                                 src={product.primaryImage}
                                 alt={product.name}
@@ -524,6 +524,18 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                                       </div>
                                     </div>
                                   ))}
+                                </div>
+
+                                <div className="border-vl-dark-900/10 mt-2.5 flex items-center justify-between border-t pt-2 text-xs">
+                                  <span className="text-muted-foreground text-[10px]">
+                                    {product.totalStock} units total
+                                  </span>
+                                  <Link
+                                    href={`/admin/products/${product.id}/edit#variants`}
+                                    className="text-vl-dark-900 hover:text-vl-cyan inline-flex items-center gap-1 text-[11px] font-semibold transition-colors hover:underline"
+                                  >
+                                    <Pencil className="size-3" /> Quick Edit Variants
+                                  </Link>
                                 </div>
                               </div>
                             )}

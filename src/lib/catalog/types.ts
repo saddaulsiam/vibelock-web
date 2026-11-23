@@ -26,6 +26,7 @@ export interface ProductVariantSummary {
   discountPrice: number | null;
   effectivePrice: number;
   available: boolean;
+  stock?: number;
 }
 
 export interface ProductSummary {
@@ -40,12 +41,20 @@ export interface ProductSummary {
   images?: ProductImageSummary[];
   minPrice: number; // Lowest effective price among variants
   maxPrice: number;
+  originalPrice?: number;
   hasDiscount: boolean;
   categories: CategorySummary[];
   available: boolean;
+  badgeLabel?: string | null;
+  badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null;
+  badge?: {
+    label: string;
+    variant: "default" | "sale" | "new" | "featured" | "hot";
+  };
 }
 
 export interface ProductDetail extends ProductSummary {
+  specifications?: unknown | null;
   images: ProductImageSummary[];
   variants: ProductVariantSummary[];
 }

@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma/client";
 import { sendSmsNotification, maskPhoneNumber } from "@/lib/sms/client";
 import { sendAbandonedCartEmail } from "@/lib/email/abandoned-cart-email";
 import { SITE_URL } from "@/lib/seo/site";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 
 export const DEFAULT_CHECKOUT_REMINDER_MINUTES = 8; // Prior to 15m stock reservation expiry
 export const DEFAULT_CART_REMINDER_MINUTES = 30; // Unlocked active cart items
@@ -234,7 +235,7 @@ export async function processAbandonedReminders(
                 `[processAbandonedReminders] BTRC Quiet Hours active (10 PM - 8 AM BST). SMS skipped for order #${order.orderNumber} (${maskPhoneNumber(targetPhone)}).`
               );
             } else {
-              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: ${getDisplayPhoneNumber("local")})`;
 
               smsSent = await sendSmsNotification({
                 phone: targetPhone,
@@ -416,7 +417,7 @@ export async function processAbandonedReminders(
                 `[processAbandonedReminders] BTRC Quiet Hours active (10 PM - 8 AM BST). SMS skipped for user cart (${maskPhoneNumber(targetPhone)}).`
               );
             } else {
-              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার ব্যাগপ্যাকের আইটেমগুলো অপেক্ষা করছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+              const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার ব্যাগপ্যাকের আইটেমগুলো অপেক্ষা করছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: ${getDisplayPhoneNumber("local")})`;
               smsSent = await sendSmsNotification({
                 phone: targetPhone,
                 message: smsBody,
@@ -553,7 +554,7 @@ export async function sendManualAbandonedOrderReminder(
         `[sendManualAbandonedOrderReminder] BTRC Quiet Hours active. SMS skipped for order #${order.orderNumber}.`
       );
     } else {
-      const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: 01311333277)`;
+      const smsBody = `আসসালামু আলাইকুম ${nameGreeting}! VibeLock-এ আপনার #${order.orderNumber} অর্ডারের আইটেমগুলো সাময়িকভাবে সংরক্ষিত আছে। স্টক শেষ হওয়ার আগেই অর্ডার কনফার্ম করতে ভিজিট করুন: ${recoveryUrl} (হেল্পলাইন: ${getDisplayPhoneNumber("local")})`;
       smsSent = await sendSmsNotification({
         phone: targetPhone,
         message: smsBody,

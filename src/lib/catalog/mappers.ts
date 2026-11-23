@@ -51,6 +51,7 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
   const effectivePrice = discountPrice !== null ? discountPrice : sellingPrice;
 
   let available = true; // Default to true if inventory info is missing
+  let stock: number | undefined;
 
   if (variant.inventoryTransactions && variant.inventoryReservations) {
     const totalStock = variant.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
@@ -64,7 +65,8 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
       return sum;
     }, 0);
 
-    available = totalStock - reserved > 0;
+    stock = Math.max(0, totalStock - reserved);
+    available = stock > 0;
   }
 
   return {
@@ -76,6 +78,7 @@ export function mapVariant(variant: PrismaVariantWithInventory): ProductVariantS
     discountPrice,
     effectivePrice,
     available,
+    stock,
   };
 }
 
@@ -84,12 +87,26 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
   const minPrice = Math.min(...mappedVariants.map((v) => v.effectivePrice));
   const maxPrice = Math.max(...mappedVariants.map((v) => v.effectivePrice));
   const hasDiscount = mappedVariants.some((v) => v.discountPrice !== null);
+  const originalPrice = hasDiscount
+    ? Math.max(...mappedVariants.map((v) => v.sellingPrice))
+    : undefined;
   const available = mappedVariants.some((v) => v.available);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0] || null;
   const secondaryImage =
     product.images.find((img) => !img.isPrimary && img.url !== primaryImage?.url) ||
     (product.images.length > 1 && product.images[1] ? product.images[1] : null);
+
+  const badgeLabel = (product as unknown as { badgeLabel?: string | null }).badgeLabel ?? null;
+  const badgeVariant =
+    (product as unknown as { badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null })
+      .badgeVariant ?? null;
+  const badge = badgeLabel
+    ? {
+        label: badgeLabel,
+        variant: badgeVariant || "default",
+      }
+    : undefined;
 
   return {
     id: product.id,
@@ -98,11 +115,15 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     description: product.description,
     status: product.status,
     isFeatured: Boolean((product as unknown as { isFeatured?: boolean }).isFeatured),
+    badgeLabel,
+    badgeVariant,
+    badge,
     primaryImage: primaryImage ? mapImage(primaryImage) : null,
     secondaryImage: secondaryImage ? mapImage(secondaryImage) : null,
     images: product.images.map(mapImage),
     minPrice: mappedVariants.length > 0 ? minPrice : 0,
     maxPrice: mappedVariants.length > 0 ? maxPrice : 0,
+    originalPrice,
     hasDiscount,
     categories: product.categories.map(mapCategory),
     available,
@@ -114,6 +135,10 @@ export function mapProductDetail(product: PrismaProductWithIncludes): ProductDet
 
   return {
     ...summary,
+    specifications:
+      "specifications" in product && product.specifications
+        ? (product.specifications as unknown as ProductDetail["specifications"])
+        : null,
     images: product.images.map(mapImage),
     variants: product.variants.map(mapVariant),
   };

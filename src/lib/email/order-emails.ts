@@ -2,6 +2,7 @@ import "server-only";
 
 import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 import { Resend } from "resend";
 import { maskEmail } from "@/lib/email/client";
 import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
@@ -55,7 +56,7 @@ const EMAIL_WRAPPER_HEADER = `
 const EMAIL_WRAPPER_FOOTER = `
       <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); line-height: 1.6;">
         <p style="margin: 0;">VibeLock Bangladesh &bull; Official Order Confirmation</p>
-        <p style="margin: 4px 0 0 0;">Customer Support: support@vibelock.bd &bull; WhatsApp: +8801311333277</p>
+        <p style="margin: 4px 0 0 0;">Customer Support: support@vibelock.bd &bull; WhatsApp: ${getDisplayPhoneNumber("international")}</p>
         <p style="margin: 4px 0 0 0;">Khondokar Market, Star More, Chatmohar, Pabna, Bangladesh</p>
       </div>
     </div>

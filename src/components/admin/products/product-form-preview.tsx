@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Eye, Heart, ImageOff } from "lucide-react";
+import { ProductBadge, type ProductBadgeProps } from "@/components/storefront/catalog/product-badge";
 
 export const COLOR_HEX: Record<string, string> = {
   black: "#101114",
@@ -35,6 +36,8 @@ export interface ProductFormPreviewProps {
   selectedSizes: string[];
   selectedColors: string[];
   categoryName?: string;
+  customBadgeLabel?: string;
+  customBadgeVariant?: string;
 }
 
 export function ProductFormPreview({
@@ -49,6 +52,8 @@ export function ProductFormPreview({
   selectedSizes,
   selectedColors,
   categoryName = "STREETWEAR",
+  customBadgeLabel,
+  customBadgeVariant,
 }: ProductFormPreviewProps) {
   return (
     <div className="border-vl-dark-900/15 overflow-hidden rounded-md border bg-white shadow-xs">
@@ -58,19 +63,19 @@ export function ProductFormPreview({
           <span className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase">
             Live Storefront Card Preview
           </span>
+          <span className="text-muted-foreground text-[11px]">
+            3:4 portrait aspect ratio (matches storefront catalog)
+          </span>
         </div>
-        <span className="text-muted-foreground text-[11px]">
-          2:3 portrait aspect ratio (matches storefront catalog)
-        </span>
       </div>
 
       <div className="bg-vl-white-100 flex justify-center p-4 sm:p-6">
         {/* ── Product Card Canvas matching product-card.tsx ── */}
         <div className="group border-vl-dark-900/15 relative flex w-full max-w-67.5 flex-col overflow-hidden rounded-sm border bg-white p-3 shadow-xs transition-all hover:shadow-md">
-          {/* ── Image Canvas with 2:3 Aspect Ratio ── */}
+          {/* ── Image Canvas with 3:4 Aspect Ratio ── */}
           <div
             className="bg-vl-white-300 relative block w-full overflow-hidden"
-            style={{ aspectRatio: "2 / 3" }}
+            style={{ aspectRatio: "3 / 4" }}
           >
             {primaryImageUrl ? (
               <>
@@ -96,26 +101,37 @@ export function ProductFormPreview({
                 )}
               </>
             ) : (
-              <span className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <ImageOff className="text-vl-dark-900/20 size-8" aria-hidden="true" />
-                <span className="text-vl-dark-900/40 text-[11px] font-medium">
-                  No image uploaded
-                </span>
-              </span>
+              <div className="from-vl-white-200 via-vl-white-200 to-vl-white-300 absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gradient-to-b p-4 text-center">
+                <div className="border-vl-dark-900/10 flex size-11 items-center justify-center rounded-full border bg-white shadow-2xs">
+                  <ImageOff className="text-vl-dark-900/35 size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <span className="text-vl-dark-900/60 block font-mono text-[11px] font-bold tracking-wider uppercase">
+                    Awaiting Media
+                  </span>
+                  <span className="text-vl-dark-900/40 mt-0.5 block text-[10px] leading-tight">
+                    Add photos to view live storefront card lookbook
+                  </span>
+                </div>
+              </div>
             )}
 
             {/* ── Badge (Top-Left) ── */}
             <div className="pointer-events-none absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
-              {hasDiscount && (
-                <span className="rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold text-white shadow-xs">
-                  -{discountPercent}%
-                </span>
+              {customBadgeLabel ? (
+                <ProductBadge
+                  label={customBadgeLabel}
+                  variant={(customBadgeVariant as ProductBadgeProps["variant"]) || "default"}
+                />
+              ) : null}
+              {hasDiscount && discountPercent > 0 && (
+                <ProductBadge label={`-${discountPercent}%`} variant="sale" />
               )}
             </div>
 
-            {/* ── Wishlist Button Replica (Top-Right) ── */}
-            <div className="text-vl-dark-900/50 absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/80 shadow-xs backdrop-blur-xs">
-              <Heart className="size-4" />
+            {/* ── Wishlist Button Replica (Top-Right: Compact Frosted Glass Pill) ── */}
+            <div className="border-black/10 bg-white/85 text-vl-dark-900/75 absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 shadow-2xs backdrop-blur-md">
+              <Heart className="size-3.5 stroke-[2.2]" />
             </div>
           </div>
 

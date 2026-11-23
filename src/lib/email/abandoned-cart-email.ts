@@ -3,6 +3,7 @@ import "server-only";
 import { env } from "@/lib/config/env";
 import { Resend } from "resend";
 import { maskEmail } from "@/lib/email/client";
+import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
 
 let resendClient: Resend | null = null;
 if (env.RESEND_API_KEY) {
@@ -147,14 +148,14 @@ export async function sendAbandonedCartEmail(
           </div>
 
           <p style="text-align: center; font-size: 11px; color: rgba(255,255,255,0.4); margin: 0;">
-            সাইজ বা ফিটিং নিয়ে প্রশ্ন থাকলে সরাসরি হোয়াটসঅ্যাপে মেসেজ দিন: <a href="https://wa.me/8801311333277" style="color: #00D9FF; text-decoration: none;">+8801311333277</a>
+            সাইজ বা ফিটিং নিয়ে প্রশ্ন থাকলে সরাসরি হোয়াটসঅ্যাপে মেসেজ দিন: <a href="${getWhatsAppUrl()}" style="color: #00D9FF; text-decoration: none;">${getDisplayPhoneNumber("international")}</a>
           </p>
         </div>
 
         <!-- Footer -->
         <div style="background-color: #050608; padding: 20px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center; font-size: 10px; color: rgba(255,255,255,0.4); line-height: 1.6;">
           <p style="margin: 0;">VibeLock Bangladesh &bull; Official Automated Recovery Dispatch</p>
-          <p style="margin: 4px 0 0 0;">Dhaka, Bangladesh &bull; Helpline: +8801311333277</p>
+          <p style="margin: 4px 0 0 0;">Dhaka, Bangladesh &bull; Helpline: ${getDisplayPhoneNumber("international")}</p>
         </div>
 
       </div>

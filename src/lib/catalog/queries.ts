@@ -253,6 +253,57 @@ export const getBestSellingProducts = async (options?: {
 };
 
 /**
+ * Get featured products (marked isFeatured=true by admin).
+ * Supplements with the latest published products if fewer than `take` are featured.
+ */
+export const getFeaturedProducts = async (options?: {
+  take?: number;
+}): Promise<ProductSummary[]> => {
+  const take = options?.take ?? 10;
+  const cacheKey = ["featured-products-v1", take.toString()];
+
+  const queryFn = unstable_cache(
+    async () => {
+      // 1. Fetch products where isFeatured is true
+      let products = await prisma.product.findMany({
+        where: {
+          status: ProductStatus.PUBLISHED,
+          isFeatured: true,
+        },
+        include: PUBLIC_PRODUCT_INCLUDES,
+        orderBy: { updatedAt: "desc" },
+        take,
+      });
+
+      // 2. If fewer than `take`, backfill with published products
+      if (products.length < take) {
+        const existingIds = products.map((p) => p.id);
+        const additional = await prisma.product.findMany({
+          where: {
+            status: ProductStatus.PUBLISHED,
+            id: { notIn: existingIds },
+          },
+          include: PUBLIC_PRODUCT_INCLUDES,
+          orderBy: { createdAt: "desc" },
+          take: take - products.length,
+        });
+        products = [...products, ...additional];
+      }
+
+      return products.map(mapProductSummary);
+    },
+    cacheKey,
+    { tags: ["products"], revalidate: 120 }
+  );
+
+  try {
+    return await queryFn();
+  } catch {
+    return [];
+  }
+};
+
+/**
  * Get related products for "You May Also Like"
  * Prioritizes published products in the same category, excluding the current product.
  * If fewer than `take` exist, supplements with other published products.
@@ -305,5 +356,9 @@ export const getRelatedProducts = async (options: {
     { tags: ["products"], revalidate: 120 }
   );
 
-  return queryFn();
+  try {
+    return await queryFn();
+  } catch {
+    return [];
+  }
 };

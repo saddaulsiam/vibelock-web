@@ -305,7 +305,11 @@ export async function getAdminProductFormData(id?: string) {
             name: true,
             slug: true,
             description: true,
+            specifications: true,
             status: true,
+            isFeatured: true,
+            badgeLabel: true,
+            badgeVariant: true,
             categories: { select: { id: true } },
             variants: {
               orderBy: [{ createdAt: "asc" }, { sku: "asc" }],
@@ -320,6 +324,13 @@ export async function getAdminProductFormData(id?: string) {
                 weight: true,
                 inventoryTransactions: {
                   select: { quantity: true },
+                },
+                _count: {
+                  select: {
+                    inventoryTransactions: true,
+                    inventoryReservations: true,
+                    cartItems: true,
+                  },
                 },
               },
             },
@@ -348,9 +359,18 @@ export async function getAdminProductFormData(id?: string) {
             sellingPrice: variant.sellingPrice.toFixed(2),
             discountPrice: variant.discountPrice?.toFixed(2) ?? "",
             stock: String(variant.inventoryTransactions.reduce((acc, t) => acc + t.quantity, 0)),
+            hasHistory: Boolean(
+              variant._count.inventoryTransactions > 0 ||
+                variant._count.inventoryReservations > 0 ||
+                variant._count.cartItems > 0
+            ),
           })),
           images: product.images,
+          specifications: product.specifications,
           status: product.status as ProductStatus,
+          isFeatured: product.isFeatured,
+          badgeLabel: product.badgeLabel ?? null,
+          badgeVariant: product.badgeVariant ?? null,
         }
       : null,
     categories,

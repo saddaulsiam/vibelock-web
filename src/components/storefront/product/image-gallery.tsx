@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import Image from "next/image";
 import { ImageOff } from "lucide-react";
 import type { ProductImageSummary } from "@/lib/catalog/types";
@@ -50,6 +50,28 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
       });
     }
   };
+
+  // Synchronize gallery when a variant color swatch is selected
+  useEffect(() => {
+    const handleColorSelected = (e: Event) => {
+      const customEvent = e as CustomEvent<{ color: string }>;
+      const color = customEvent.detail?.color?.toLowerCase().trim();
+      if (!color) return;
+
+      const targetIndex = sortedImages.findIndex((img) => {
+        const alt = (img.alt || "").toLowerCase();
+        const url = img.url.toLowerCase();
+        return alt.includes(color) || url.includes(color);
+      });
+
+      if (targetIndex !== -1) {
+        scrollToSlide(targetIndex);
+      }
+    };
+
+    window.addEventListener("vl:color-selected", handleColorSelected);
+    return () => window.removeEventListener("vl:color-selected", handleColorSelected);
+  }, [sortedImages]);
 
   if (!sortedImages.length) {
     return (

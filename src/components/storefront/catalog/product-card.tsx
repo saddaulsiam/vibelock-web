@@ -14,7 +14,6 @@ import Link from "next/link";
 import * as React from "react";
 import { motion, type HTMLMotionProps } from "framer-motion";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Price } from "./price";
 import { ProductBadge } from "./product-badge";
 
@@ -29,10 +28,11 @@ export interface CustomProductCardItem {
   category?: string;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new" | "featured";
+    variant: "default" | "sale" | "new" | "featured" | "hot";
   };
   rating?: number;
   reviewCount?: number;
+  available?: boolean;
 }
 
 export type ProductCardItem = ProductSummary | CustomProductCardItem;
@@ -41,13 +41,13 @@ export interface ProductCardProps extends HTMLMotionProps<"div"> {
   product: ProductCardItem;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new" | "featured";
+    variant: "default" | "sale" | "new" | "featured" | "hot";
   };
 }
 
 export function toCardProduct(
   product: ProductCardItem,
-  overrideBadge?: { label: string; variant: "default" | "sale" | "new" | "featured" }
+  overrideBadge?: { label: string; variant: "default" | "sale" | "new" | "featured" | "hot" }
 ): CustomProductCardItem {
   if ("minPrice" in product) {
     const primaryCategory = product.categories?.[0]?.name
@@ -68,17 +68,18 @@ export function toCardProduct(
       name: product.name,
       slug: product.slug,
       price: product.minPrice,
-      originalPrice: product.hasDiscount ? product.maxPrice : undefined,
+      originalPrice:
+        product.originalPrice ?? (product.hasDiscount ? product.maxPrice : undefined),
       image: product.primaryImage?.url ?? "",
       secondaryImage,
       category: primaryCategory,
+      available: "available" in product ? product.available : true,
       badge:
         overrideBadge ??
+        product.badge ??
         (product.hasDiscount
           ? { label: "Sale", variant: "sale" as const }
-          : product.isFeatured
-            ? { label: "Featured", variant: "featured" as const }
-            : undefined),
+          : undefined),
     };
   }
 
@@ -90,6 +91,7 @@ export function toCardProduct(
 
 export function ProductCard({ product, badge, className, ...props }: ProductCardProps) {
   const item = React.useMemo(() => toCardProduct(product, badge), [product, badge]);
+  const isAvailable = item.available !== false;
 
   const [failedImage, setFailedImage] = React.useState<string | null>(null);
   const hasImage = Boolean(item.image) && failedImage !== item.image;
@@ -140,8 +142,11 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
-        style={{ aspectRatio: "2 / 3" }}
+        className={cn(
+          "focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset",
+          !isAvailable && "opacity-80"
+        )}
+        style={{ aspectRatio: "3 / 4" }}
       >
         {hasImage ? (
           <>
@@ -173,36 +178,61 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           </span>
         )}
 
-        {/* ── Badge (Top-Left) ── */}
-        <div className="pointer-events-none absolute top-0 left-0 z-10 flex flex-col items-start gap-1">
-          {item.badge && <ProductBadge label={item.badge.label} variant={item.badge.variant} />}
-          {discountPercent !== null && discountPercent > 0 && item.badge?.variant !== "sale" && (
-            <ProductBadge label={`-${discountPercent}%`} variant="sale" />
+        {/* ── Badge (Top-Left, Option A: Represent Brutalist Architectural Box) ── */}
+        <div className="pointer-events-none absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+          {!isAvailable ? (
+            <ProductBadge
+              label="SOLD OUT"
+              variant="default"
+              className="border-white/10 bg-vl-dark-900/90 text-vl-white-400 backdrop-blur-xs"
+            />
+          ) : (
+            <>
+              {item.badge && (
+                <ProductBadge
+                  label={
+                    item.badge.variant === "sale" &&
+                    item.badge.label.toLowerCase() === "sale" &&
+                    discountPercent !== null &&
+                    discountPercent > 0
+                      ? `-${discountPercent}%`
+                      : item.badge.label
+                  }
+                  variant={item.badge.variant}
+                />
+              )}
+              {discountPercent !== null &&
+                discountPercent > 0 &&
+                item.badge?.variant !== "sale" &&
+                !(item.badge && item.badge.label.toLowerCase().includes("sale")) && (
+                  <ProductBadge label={`-${discountPercent}%`} variant="sale" />
+                )}
+            </>
           )}
         </div>
 
-        {/* ── Wishlist Button (Top-Right) ── */}
-        <Button
+        {/* ── Wishlist Button (Top-Right: Compact Frosted Glass Pill) ── */}
+        <button
           type="button"
-          variant="ghost"
-          size="icon-sm"
           aria-label={
             isWishlisted ? `Remove ${item.name} from wishlist` : `Add ${item.name} to wishlist`
           }
           onClick={handleWishlistToggle}
           className={cn(
-            "absolute top-2 right-2 z-10 rounded-full transition-transform duration-150 hover:bg-white/80 active:scale-75",
-            isWishlisted ? "text-rose-500" : "text-vl-dark-900/40 hover:text-rose-500"
+            "absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan active:scale-90",
+            isWishlisted
+              ? "border-rose-200 bg-white text-rose-500 shadow-2xs"
+              : "border-black/10 bg-white/85 text-vl-dark-900/75 shadow-2xs backdrop-blur-md hover:border-black/20 hover:bg-white hover:text-rose-500 hover:shadow-xs"
           )}
         >
           <Heart
             className={cn(
-              "size-4 transition-all duration-200",
-              isWishlisted && "fill-rose-500 text-rose-500"
+              "size-3.5 transition-all duration-200",
+              isWishlisted ? "fill-rose-500 text-rose-500 scale-105" : "stroke-[2.2]"
             )}
             aria-hidden="true"
           />
-        </Button>
+        </button>
       </Link>
 
       {/* ── Product Info ── */}

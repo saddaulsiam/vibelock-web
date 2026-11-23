@@ -13,8 +13,7 @@ import {
   ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
-
-const SUPPORT_PHONE = "8801311333277";
+import { getWhatsAppNumber } from "@/lib/config/contact";
 
 interface QuickPrompt {
   id: string;
@@ -102,7 +101,7 @@ export function WhatsAppFloatingButton() {
       }
     }
 
-    return `https://wa.me/${SUPPORT_PHONE}?text=${encodeURIComponent(baseText)}`;
+    return `https://wa.me/${getWhatsAppNumber()}?text=${encodeURIComponent(baseText)}`;
   };
 
   return (

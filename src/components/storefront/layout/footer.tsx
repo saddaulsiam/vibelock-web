@@ -2,6 +2,7 @@ import { Container } from "@/components/shared/container";
 import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
 import { Newsletter } from "../home/newsletter";
 import { FooterWatermark } from "./footer-watermark";
 
@@ -17,7 +18,7 @@ const RETAIL_LOCATION: RetailLocation = {
   city: "PABNA",
   badge: "CHATMOHAR",
   address: "Khondokar Market, Star More, Chatmohar, Pabna, Bangladesh",
-  phone: "01311-333277",
+  phone: getDisplayPhoneNumber("local"),
   mapUrl: "https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6",
 };
 
@@ -251,7 +252,7 @@ export function Footer() {
             </a>
             {/* Whatsapp */}
             <a
-              href="https://wa.me/8801311333277"
+              href={getWhatsAppUrl()}
               target="_blank"
               rel="noreferrer"
               className="border-vl-border text-vl-white/90 bg-vl-dark-900 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all hover:border-green-500/60 hover:bg-green-500/10"

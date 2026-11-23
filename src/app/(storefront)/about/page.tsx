@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Zap, MapPin } from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 
 export const metadata: Metadata = {
   title: "About Us — The Modern Streetwear Manifesto",
@@ -261,7 +262,7 @@ export default function AboutPage() {
                 </p>
                 <div className="text-vl-white-300/90 mt-5 flex flex-col gap-1 text-xs font-medium">
                   <p>Khondokar Market, Star More, Chatmohar, Pabna, Bangladesh</p>
-                  <p className="text-vl-cyan">Direct Hotline: 01311-333277</p>
+                  <p className="text-vl-cyan">Direct Hotline: {getDisplayPhoneNumber("local")}</p>
                 </div>
               </div>
 
