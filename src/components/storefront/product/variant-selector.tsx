@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquare, Minus, Plus } from "lucide-react";
+import Image from "next/image";
+import { Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
@@ -12,6 +13,7 @@ import { SizeGuideModal } from "./size-guide-modal";
 import { ProductTrustBadges } from "./product-trust-badges";
 import { ProductInfoAccordion } from "./product-info-accordion";
 import { getWhatsAppUrl } from "@/lib/config/contact";
+import { Button } from "@/components/ui/button";
 
 interface VariantSelectorProps {
   variants: ProductVariantSummary[];
@@ -396,15 +398,23 @@ export function VariantSelector({
         />
 
         {/* Action Button Row 3: Direct WhatsApp Order */}
-        <button
+        <Button
+          size="default"
           type="button"
+          variant="outline"
           onClick={handleWhatsAppOrder}
           disabled={!isAvailable}
-          className="focus-visible:ring-vl-cyan disabled:border-vl-dark-900/10 disabled:bg-vl-white-300/40 disabled:text-vl-dark-900/35 flex h-9.5 w-full items-center justify-center gap-2 rounded-xs border border-emerald-600/30 bg-emerald-50/70 text-xs font-bold tracking-wide text-emerald-800 uppercase transition-all duration-150 hover:border-emerald-600/50 hover:bg-emerald-100/90 focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed sm:h-10"
+          className="flex w-full items-center justify-center border-emerald-600/30 bg-emerald-50/70 text-emerald-600 transition-all duration-150 hover:border-emerald-600/50 hover:bg-emerald-100/90"
         >
-          <MessageSquare className="size-3.5 fill-emerald-600/20 text-emerald-700" />
+          <Image
+            src="/icons/whatsapp.svg"
+            alt="WhatsApp"
+            width={20}
+            height={20}
+            className="size-5 shrink-0"
+          />
           <span>Order via WhatsApp</span>
-        </button>
+        </Button>
       </div>
 
       {/* ── 5. Trust Badges ── */}

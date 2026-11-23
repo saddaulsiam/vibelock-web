@@ -108,6 +108,7 @@ describe("Storefront PDP VariantSelector Enhancements", () => {
     );
 
     expect(html).toContain("Order via WhatsApp");
+    expect(html).toContain("/icons/whatsapp.svg");
   });
 
   it("displays scarcity / FOMO stock warning when stock is low (<=3)", () => {

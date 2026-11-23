@@ -255,10 +255,10 @@ export function SizeGuideModal({
 
       <DialogContent
         variant="brand"
-        className="max-h-[90vh] max-w-xl scrollbar-none overflow-y-auto p-5 [-ms-overflow-style:none] sm:max-w-2xl sm:p-7 [&::-webkit-scrollbar]:hidden"
+        className="max-h-[90vh] max-w-xl [scrollbar-width:none] overflow-y-auto p-5 [-ms-overflow-style:none] sm:max-w-2xl sm:p-6 [&::-webkit-scrollbar]:hidden"
       >
         {/* ── 1. ARCHITECTURAL HEADER ── */}
-        <DialogHeader className="mt-4 space-y-1 text-left">
+        <DialogHeader className="mt-1 space-y-1 text-left sm:mt-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="bg-vl-cyan size-2 rounded-full" />
@@ -406,7 +406,7 @@ export function SizeGuideModal({
 
         {/* ── 3. DATA VIEW: TABLE OR FIT FINDER ── */}
         {viewMode === "table" ? (
-          <div className="border-vl-dark-900/10 relative scrollbar-none overflow-x-auto rounded-xs border [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="border-vl-dark-900/10 relative [scrollbar-width:none] overflow-x-auto rounded-xs border [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <table className="w-full text-left text-xs whitespace-nowrap sm:text-sm">
               <thead>
                 <tr className="border-vl-dark-900/10 bg-vl-white-200/70 text-vl-dark-900/70 font-mono text-[11px] font-bold tracking-widest uppercase">
