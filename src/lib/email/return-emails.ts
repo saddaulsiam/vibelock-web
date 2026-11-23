@@ -2,6 +2,7 @@ import "server-only";
 
 import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 import { Resend } from "resend";
 import { sendSmsNotification } from "@/lib/sms/client";
 
@@ -26,7 +27,7 @@ const EMAIL_WRAPPER_HEADER = `
 const EMAIL_WRAPPER_FOOTER = `
       <p style="margin: 28px 0 0 0; font-size: 11px; color: rgba(255,255,255,0.4); text-align: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; line-height: 1.5;">
         VibeLock Bangladesh &bull; Official Customer Returns Department<br/>
-        Dhaka, Bangladesh &bull; Hotline: 01700-000000
+        Dhaka, Bangladesh &bull; Hotline / WhatsApp: ${getDisplayPhoneNumber("international")}
       </p>
     </div>
   </div>

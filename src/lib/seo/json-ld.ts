@@ -1,4 +1,5 @@
 import { SITE_URL } from "./site";
+import { getDisplayPhoneNumber, getWhatsAppNumber } from "@/lib/config/contact";
 import type { ProductDetail } from "@/lib/catalog/types";
 
 /**
@@ -36,14 +37,14 @@ export function getOrganizationJsonLd() {
     sameAs: [
       "https://facebook.com/vibelock.bd",
       "https://instagram.com/vibelock.bd",
-      "https://wa.me/+8801311333277",
+      `https://wa.me/+${getWhatsAppNumber()}`,
       "https://tiktok.com/@vibelock.bd",
       "https://youtube.com/@vibelock.bd",
     ],
     contactPoint: [
       {
         "@type": "ContactPoint",
-        telephone: "+8801311333277",
+        telephone: getDisplayPhoneNumber("international"),
         contactType: "customer service",
         email: "support@vibelock.bd",
         areaServed: "BD",
@@ -67,7 +68,7 @@ export function getLocalBusinessJsonLd() {
     name: "VibeLock Flagship Outlet",
     description: "Official physical retail flagship outlet of VibeLock in Pabna, Bangladesh.",
     url: `${SITE_URL}/contact`,
-    telephone: "+8801311333277",
+    telephone: getDisplayPhoneNumber("international"),
     hasMap: "https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6",
     address: {
       "@type": "PostalAddress",

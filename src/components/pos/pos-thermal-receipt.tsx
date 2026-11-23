@@ -4,6 +4,7 @@ import { Printer, CheckCircle, RotateCcw } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { printThermalSlip } from "@/lib/pos/pos-print-utils";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 import type { PosReceiptData } from "@/lib/pos/pos-types";
 
 interface PosThermalReceiptProps {
@@ -48,7 +49,7 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
             <h2 className="text-base font-black tracking-wider uppercase">VIBELOCK</h2>
             <p className="text-[10px] text-slate-600">Streetwear & Modern Apparel</p>
             <p className="text-[10px] text-slate-500">Outlet 01, Dhaka, Bangladesh</p>
-            <p className="text-[10px] text-slate-500">Hotline: +880 1700-000000</p>
+            <p className="text-[10px] text-slate-500">Hotline: {getDisplayPhoneNumber("international")}</p>
           </div>
 
           {/* Meta Info */}

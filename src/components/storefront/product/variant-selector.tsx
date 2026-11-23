@@ -11,6 +11,7 @@ import { ProductShareButton } from "./product-share-button";
 import { SizeGuideModal } from "./size-guide-modal";
 import { ProductTrustBadges } from "./product-trust-badges";
 import { ProductInfoAccordion } from "./product-info-accordion";
+import { getWhatsAppUrl } from "@/lib/config/contact";
 
 interface VariantSelectorProps {
   variants: ProductVariantSummary[];
@@ -148,8 +149,6 @@ export function VariantSelector({
 
   const handleWhatsAppOrder = () => {
     if (!matchingVariant) return;
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "8801700000000";
-    const cleanNumber = waNumber.replace(/[^0-9]/g, "");
     const effectivePrice = matchingVariant.effectivePrice ?? matchingVariant.sellingPrice;
     const totalPrice = effectivePrice * quantity;
     const currentUrl = typeof window !== "undefined" ? window.location.href : "";
@@ -165,7 +164,7 @@ export function VariantSelector({
       currentUrl ? `• Link: ${currentUrl}` : null,
     ].filter(Boolean);
 
-    const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(lines.join("\n"))}`;
+    const waUrl = getWhatsAppUrl(lines.join("\n"));
     window.open(waUrl, "_blank", "noopener,noreferrer");
   };
 

@@ -14,6 +14,7 @@ import { Container } from "@/components/shared/container";
 import { ContactForm } from "@/components/storefront/contact/contact-form";
 import { SITE_URL } from "@/lib/seo/site";
 import { getLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { getDisplayPhoneNumber } from "@/lib/config/contact";
 
 export const metadata: Metadata = {
   title: "Contact Us — Flagship Outlet & Support",
@@ -108,7 +109,7 @@ export default function ContactPage() {
                       <Phone className="text-vl-cyan-700 size-4" />
                     </div>
                     <div>
-                      <p className="text-vl-dark-900 font-bold">01311-333277</p>
+                      <p className="text-vl-dark-900 font-bold">{getDisplayPhoneNumber("local")}</p>
                       <p className="text-vl-dark-900/60 text-[11px]">
                         Everyday: 10:00 AM – 10:00 PM
                       </p>

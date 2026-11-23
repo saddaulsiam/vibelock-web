@@ -26,6 +26,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
 import { MetaPurchaseTracker } from "@/components/storefront/analytics/meta-purchase-tracker";
 
 export const metadata: Metadata = {
@@ -271,12 +272,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             transaction is confirmed by the gateway. If you completed payment,
                             please wait a few moments or contact support on WhatsApp (
                             <a
-                              href="https://wa.me/8801311333277"
+                              href={getWhatsAppUrl()}
                               target="_blank"
                               rel="noreferrer"
                               className="font-semibold underline hover:text-amber-950"
                             >
-                              +8801311333277
+                              {getDisplayPhoneNumber("international")}
                             </a>
                             ).
                           </p>
@@ -629,12 +630,12 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                     <div className="flex items-center gap-1.5 text-[11px] text-neutral-700">
                       <Phone className="size-3.5 text-neutral-500" />
                       <a
-                        href="https://wa.me/8801311333277"
+                        href={getWhatsAppUrl()}
                         target="_blank"
                         rel="noreferrer"
                         className="hover:underline"
                       >
-                        WhatsApp Support: +8801311333277
+                        WhatsApp Support: {getDisplayPhoneNumber("international")}
                       </a>
                     </div>
                   </div>
