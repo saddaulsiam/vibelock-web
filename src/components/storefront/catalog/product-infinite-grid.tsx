@@ -156,7 +156,7 @@ export function ProductInfiniteGrid({
             <div key={`loading-skeleton-${index}`} className="space-y-3">
               <Skeleton
                 className="bg-vl-white-300 w-full rounded-none"
-                style={{ aspectRatio: "2 / 3" }}
+                style={{ aspectRatio: "3 / 4" }}
               />
               <Skeleton className="bg-vl-dark-100 h-3.5 w-3/4 rounded-none" />
               <Skeleton className="bg-vl-dark-100 h-3.5 w-1/3 rounded-none" />

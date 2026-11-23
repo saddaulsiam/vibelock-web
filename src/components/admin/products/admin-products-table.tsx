@@ -409,7 +409,7 @@ export function AdminProductsTable({ initialData, currentFilters }: AdminProduct
                         {/* Hover preview card */}
                         {product.primaryImage && (
                           <div className="border-vl-dark-900/20 pointer-events-none absolute top-0 left-14 z-50 hidden w-48 rounded-sm border bg-white p-2 shadow-2xl group-hover/thumb:block">
-                            <div className="bg-vl-white-300 relative aspect-[2/3] w-full overflow-hidden rounded-xs">
+                            <div className="bg-vl-white-300 relative aspect-3/4 w-full overflow-hidden rounded-xs">
                               <Image
                                 src={product.primaryImage}
                                 alt={product.name}

@@ -121,7 +121,7 @@ describe("Storefront PDP VariantSelector Enhancements", () => {
       />
     );
 
-    expect(html).toContain("Only 2 left in M — Selling Fast!");
+    expect(html).toContain("Only 2 left in size M. Grab yours quickly!");
   });
 
   it("displays standard in-stock status when stock is plentiful (>3)", () => {

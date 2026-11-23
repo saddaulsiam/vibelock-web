@@ -36,8 +36,8 @@ describe("ProductCard Secondary Image Hover Effect", () => {
 
     const html = renderToStaticMarkup(<ProductCard product={product} />);
 
-    // 2:3 aspect ratio
-    expect(html).toContain("aspect-ratio:2 / 3");
+    // 3:4 aspect ratio
+    expect(html).toContain("aspect-ratio:3 / 4");
 
     // Both images rendered
     expect(html).toContain("hoodie-front.webp");

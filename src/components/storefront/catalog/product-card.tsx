@@ -141,7 +141,7 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
         className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
-        style={{ aspectRatio: "2 / 3" }}
+        style={{ aspectRatio: "3 / 4" }}
       >
         {hasImage ? (
           <>
