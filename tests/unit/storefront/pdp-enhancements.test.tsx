@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
 import { mapVariant } from "@/lib/catalog/mappers";
 import { Prisma } from "@prisma/client";
 
@@ -87,15 +88,7 @@ describe("Storefront PDP VariantSelector Enhancements", () => {
   });
 
   it("renders active variant SKU with 1-click copy trigger", () => {
-    const html = renderToStaticMarkup(
-      <VariantSelector
-        variants={sampleVariants}
-        productAvailable={true}
-        productSlug="vibe-heavy-tee"
-        productName="Vibe Heavyweight Tee"
-        description="Premium tee"
-      />
-    );
+    const html = renderToStaticMarkup(<ProductSkuBadge initialSku="VL-TEE-BLK-M" />);
 
     // SKU display & copy button
     expect(html).toContain("SKU:");

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Copy, MessageSquare, Minus, Plus } from "lucide-react";
+import { MessageSquare, Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
 import { AddToCartButton } from "./add-to-cart-button";
@@ -68,7 +68,6 @@ export function VariantSelector({
   const [selectedSize, setSelectedSize] = useState<string | null>(initialVariant?.size ?? null);
   const [selectedColor, setSelectedColor] = useState<string | null>(initialVariant?.color ?? null);
   const [quantity, setQuantity] = useState(1);
-  const [copiedSku, setCopiedSku] = useState(false);
 
   const findVariant = (size: string | null, color: string | null) =>
     variants.find(
@@ -101,6 +100,15 @@ export function VariantSelector({
       );
     }
   }, [initialVariant?.color]);
+
+  // Sync top SKU badge with active variant SKU
+  useEffect(() => {
+    if (matchingVariant?.sku && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("vl:sku-selected", { detail: { sku: matchingVariant.sku } })
+      );
+    }
+  }, [matchingVariant?.sku]);
 
   const hasAvailableVariant = (size: string | null, color: string | null) =>
     variants.some(
@@ -136,13 +144,6 @@ export function VariantSelector({
     if (sizes.length > 0 && !selectedSizeAvailable && availableVariant) {
       setSelectedSize(availableVariant.size);
     }
-  };
-
-  const handleCopySku = () => {
-    if (!matchingVariant?.sku) return;
-    navigator.clipboard.writeText(matchingVariant.sku);
-    setCopiedSku(true);
-    setTimeout(() => setCopiedSku(false), 2000);
   };
 
   const handleWhatsAppOrder = () => {
@@ -203,58 +204,31 @@ export function VariantSelector({
           <p className="text-vl-dark-900/50 text-sm font-medium sm:text-base">Price unavailable</p>
         )}
 
-        {/* Live Stock Signal & SKU Row */}
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          {/* Stock Signal with Scarcity/FOMO */}
-          <div className="flex items-center gap-2">
-            {isAvailable ? (
-              isLowStock ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 sm:text-xs">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
-                  </span>
-                  🔥 Only {stockCount} left in {selectedSize || "stock"} — Selling Fast!
+        {/* Live Stock Signal */}
+        <div className="flex items-center gap-2">
+          {isAvailable ? (
+            isLowStock ? (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 sm:text-xs">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-amber-500" />
                 </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 sm:text-xs">
-                  <span className="relative flex size-2">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-                  </span>
-                  In Stock (Ready for Dispatch)
-                </span>
-              )
-            ) : (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 sm:text-xs">
-                <span className="size-2 rounded-full bg-rose-500" />
-                {productAvailable ? "Selected variant out of stock" : "Currently Unavailable"}
+                Only {stockCount} left in size {selectedSize || "stock"}. Grab yours quickly!
               </span>
-            )}
-          </div>
-
-          {/* Active Variant SKU with 1-Click Copy */}
-          {matchingVariant?.sku && (
-            <div className="flex items-center gap-1 font-mono text-[11px] text-vl-dark-900/60">
-              <span className="text-[10px] tracking-wider text-vl-dark-900/40 uppercase">SKU:</span>
-              <span className="font-semibold text-vl-dark-900">{matchingVariant.sku}</span>
-              <button
-                type="button"
-                onClick={handleCopySku}
-                className="text-vl-dark-900/40 hover:text-vl-dark-900 rounded p-0.5 transition-colors focus-visible:outline-none"
-                title="Copy SKU for customer support or order inquiry"
-                aria-label="Copy SKU"
-              >
-                {copiedSku ? (
-                  <Check className="size-3 text-emerald-600" />
-                ) : (
-                  <Copy className="size-3" />
-                )}
-              </button>
-              {copiedSku && (
-                <span className="font-sans text-[10px] font-bold text-emerald-600">Copied!</span>
-              )}
-            </div>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 sm:text-xs">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                </span>
+                In Stock (Ready for Dispatch)
+              </span>
+            )
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-rose-600 sm:text-xs">
+              <span className="size-2 rounded-full bg-rose-500" />
+              {productAvailable ? "Selected variant out of stock" : "Currently Unavailable"}
+            </span>
           )}
         </div>
       </div>
@@ -417,7 +391,7 @@ export function VariantSelector({
           type="button"
           onClick={handleWhatsAppOrder}
           disabled={!isAvailable}
-          className="focus-visible:ring-vl-cyan border-emerald-600/30 bg-emerald-50/70 text-emerald-800 hover:bg-emerald-100/90 hover:border-emerald-600/50 disabled:border-vl-dark-900/10 disabled:bg-vl-white-300/40 disabled:text-vl-dark-900/35 flex h-9.5 w-full items-center justify-center gap-2 rounded-xs border text-xs font-bold tracking-wide uppercase transition-all duration-150 focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed sm:h-10"
+          className="focus-visible:ring-vl-cyan disabled:border-vl-dark-900/10 disabled:bg-vl-white-300/40 disabled:text-vl-dark-900/35 flex h-9.5 w-full items-center justify-center gap-2 rounded-xs border border-emerald-600/30 bg-emerald-50/70 text-xs font-bold tracking-wide text-emerald-800 uppercase transition-all duration-150 hover:border-emerald-600/50 hover:bg-emerald-100/90 focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed sm:h-10"
         >
           <MessageSquare className="size-3.5 fill-emerald-600/20 text-emerald-700" />
           <span>Order via WhatsApp</span>

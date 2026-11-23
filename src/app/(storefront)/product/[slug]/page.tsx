@@ -6,6 +6,7 @@ import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
 import { ImageGallery } from "@/components/storefront/product/image-gallery";
 import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
 import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
 import { YouMayAlsoLike } from "@/components/storefront/product/you-may-also-like";
 import { StarRating } from "@/components/storefront/product/reviews/star-rating";
@@ -144,11 +145,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     {mainCategory.name}
                   </Link>
                 )}
-                {product.variants[0]?.sku && (
-                  <span className="text-vl-dark-900/40 font-mono text-[9px] font-semibold tracking-wider sm:text-[10px]">
-                    SKU: {product.variants[0].sku}
-                  </span>
-                )}
+                <ProductSkuBadge initialSku={product.variants[0]?.sku} />
               </div>
 
               <h1 className="font-heading text-vl-dark-900 text-2xl leading-tight font-black tracking-tight wrap-break-word md:text-3xl lg:text-4xl">
