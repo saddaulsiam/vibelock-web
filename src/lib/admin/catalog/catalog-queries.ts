@@ -308,6 +308,8 @@ export async function getAdminProductFormData(id?: string) {
             specifications: true,
             status: true,
             isFeatured: true,
+            badgeLabel: true,
+            badgeVariant: true,
             categories: { select: { id: true } },
             variants: {
               orderBy: [{ createdAt: "asc" }, { sku: "asc" }],
@@ -367,6 +369,8 @@ export async function getAdminProductFormData(id?: string) {
           specifications: product.specifications,
           status: product.status as ProductStatus,
           isFeatured: product.isFeatured,
+          badgeLabel: product.badgeLabel ?? null,
+          badgeVariant: product.badgeVariant ?? null,
         }
       : null,
     categories,

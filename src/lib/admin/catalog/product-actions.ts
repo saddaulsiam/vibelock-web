@@ -30,6 +30,8 @@ const productSchema = z.object({
   categoryIds: z.array(z.string().uuid()).max(30),
   status: z.nativeEnum(ProductStatus),
   isFeatured: z.boolean().optional().default(false),
+  badgeLabel: z.string().trim().max(40).optional().nullable(),
+  badgeVariant: z.string().trim().max(30).optional().nullable(),
 });
 
 const variantInputSchema = z.object({
@@ -67,6 +69,8 @@ export type ProductValues = {
   categoryIds: string[];
   status: ProductStatus;
   isFeatured: boolean;
+  badgeLabel?: string | null;
+  badgeVariant?: string | null;
   slug: string;
   variants: ProductVariantInput[];
   imageUrls: string[];
@@ -81,6 +85,8 @@ async function parseProduct(formData: FormData) {
   const rawIsFeatured = formData.get("isFeatured");
   const isFeatured =
     rawIsFeatured === "true" || rawIsFeatured === "on" || rawIsFeatured === "1";
+  const rawBadgeLabel = String(formData.get("badgeLabel") ?? "").trim() || null;
+  const rawBadgeVariant = String(formData.get("badgeVariant") ?? "").trim() || null;
   const parsed = productSchema.safeParse({
     id: String(formData.get("id") ?? "") || undefined,
     name: rawName,
@@ -88,6 +94,8 @@ async function parseProduct(formData: FormData) {
     categoryIds: rawCategoryIds,
     status: String(formData.get("status") ?? ""),
     isFeatured,
+    badgeLabel: rawBadgeLabel,
+    badgeVariant: rawBadgeVariant,
   });
   const slug = slugFromForm(formData, rawName);
 
@@ -355,6 +363,8 @@ export async function saveProductAction(
               : {}),
             status: product.status,
             isFeatured: product.isFeatured,
+            badgeLabel: product.badgeLabel || null,
+            badgeVariant: product.badgeVariant || null,
             categories: { set: product.categoryIds.map((id) => ({ id })) },
           },
         });
@@ -402,6 +412,8 @@ export async function saveProductAction(
               : Prisma.JsonNull,
             status: product.status,
             isFeatured: product.isFeatured,
+            badgeLabel: product.badgeLabel || null,
+            badgeVariant: product.badgeVariant || null,
             categories: { connect: product.categoryIds.map((id) => ({ id })) },
           },
           select: { id: true },

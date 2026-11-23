@@ -258,6 +258,8 @@ model Product {
   specifications Json?         @db.JsonB
   status         ProductStatus @default(DRAFT)
   isFeatured  Boolean       @default(false)
+  badgeLabel     String?
+  badgeVariant   String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 

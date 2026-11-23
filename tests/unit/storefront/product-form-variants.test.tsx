@@ -122,7 +122,7 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
     expect(html).toContain('id="variants"');
   });
 
-  it("renders ProductFormPreview directly with 3:4 aspect ratio canvas", () => {
+  it("renders ProductFormPreview directly with 3:4 aspect ratio canvas and custom badge", () => {
     const html = renderToStaticMarkup(
       <ProductFormPreview
         name="Vibe Heavyweight Boxy Tee"
@@ -136,11 +136,40 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
         selectedSizes={["M", "L", "XL"]}
         selectedColors={["Black", "White"]}
         categoryName="Apparel"
+        customBadgeLabel="DROP 01"
+        customBadgeVariant="new"
       />
     );
 
     expect(html).toContain("Live Storefront Card Preview");
     expect(html).toContain("3 / 4");
     expect(html).toContain("Vibe Heavyweight Boxy Tee");
+    expect(html).toContain("DROP 01");
+  });
+
+  it("renders promotional badge controls in ProductForm publishing status sidebar", () => {
+    const html = renderToStaticMarkup(
+      <ProductForm
+        product={{
+          id: "prod-badge-1",
+          name: "Vibe Tech Cyber Hoodie",
+          slug: "vibe-tech-cyber-hoodie",
+          description: "Brutalist cyber streetwear hoodie",
+          status: "PUBLISHED",
+          badgeLabel: "LIMITED HYPE",
+          badgeVariant: "hot",
+          categoryIds: ["cat-1"],
+          variants: [],
+          images: [],
+        }}
+        categories={[{ id: "cat-1", name: "Hoodies" }]}
+      />
+    );
+
+    expect(html).toContain("Promotional Badge");
+    expect(html).toContain('name="badgeVariant"');
+    expect(html).toContain('name="badgeLabel"');
+    expect(html).toContain('value="LIMITED HYPE"');
+    expect(html).toContain("Hot (Flame Amber)");
   });
 });

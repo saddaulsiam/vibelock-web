@@ -10,7 +10,12 @@ interface NewArrivalsProps {
 
 export function NewArrivals({ products, newArrivals }: NewArrivalsProps) {
   // Use explicit newArrivals or take the latest products from published catalog
-  const items = newArrivals ?? (products ?? []).slice(0, 10);
+  const allProducts = newArrivals ?? products ?? [];
+
+  // Prioritize in-stock fresh drops while preserving newest-first order
+  const inStockItems = allProducts.filter((p) => p.available !== false);
+  const outOfStockItems = allProducts.filter((p) => p.available === false);
+  const items = [...inStockItems, ...outOfStockItems].slice(0, 10);
 
   if (!items.length) return null;
 
@@ -25,17 +30,27 @@ export function NewArrivals({ products, newArrivals }: NewArrivalsProps) {
         />
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-6 sm:grid-cols-3 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
-          {items.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              badge={
-                product.hasDiscount
-                  ? { label: "SALE", variant: "sale" }
-                  : { label: "NEW", variant: "new" }
+          {items.map((product) => {
+            // Respect custom admin badge or featured tag before fallback
+            const customBadge = (
+              product as {
+                badge?: {
+                  label: string;
+                  variant: "default" | "sale" | "new" | "featured" | "hot";
+                };
               }
-            />
-          ))}
+            ).badge;
+
+            const badge =
+              customBadge ??
+              (product.hasDiscount
+                ? { label: "SALE", variant: "sale" as const }
+                : product.isFeatured
+                  ? { label: "FEATURED", variant: "featured" as const }
+                  : { label: "NEW", variant: "new" as const });
+
+            return <ProductCard key={product.id} product={product} badge={badge} />;
+          })}
         </div>
       </Container>
     </section>

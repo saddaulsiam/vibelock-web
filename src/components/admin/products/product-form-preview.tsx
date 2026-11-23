@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { Eye, Heart, ImageOff } from "lucide-react";
+import { ProductBadge, type ProductBadgeProps } from "@/components/storefront/catalog/product-badge";
 
 export const COLOR_HEX: Record<string, string> = {
   black: "#101114",
@@ -35,6 +36,8 @@ export interface ProductFormPreviewProps {
   selectedSizes: string[];
   selectedColors: string[];
   categoryName?: string;
+  customBadgeLabel?: string;
+  customBadgeVariant?: string;
 }
 
 export function ProductFormPreview({
@@ -49,6 +52,8 @@ export function ProductFormPreview({
   selectedSizes,
   selectedColors,
   categoryName = "STREETWEAR",
+  customBadgeLabel,
+  customBadgeVariant,
 }: ProductFormPreviewProps) {
   return (
     <div className="border-vl-dark-900/15 overflow-hidden rounded-md border bg-white shadow-xs">
@@ -113,10 +118,14 @@ export function ProductFormPreview({
 
             {/* ── Badge (Top-Left) ── */}
             <div className="pointer-events-none absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
-              {hasDiscount && (
-                <span className="bg-vl-cyan text-vl-dark-900 font-heading rounded-xs px-2 py-0.5 text-[10px] font-black tracking-wider uppercase shadow-xs">
-                  Save {discountPercent}%
-                </span>
+              {customBadgeLabel ? (
+                <ProductBadge
+                  label={customBadgeLabel}
+                  variant={(customBadgeVariant as ProductBadgeProps["variant"]) || "default"}
+                />
+              ) : null}
+              {hasDiscount && discountPercent > 0 && (
+                <ProductBadge label={`-${discountPercent}%`} variant="sale" />
               )}
             </div>
 

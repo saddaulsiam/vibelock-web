@@ -2,7 +2,9 @@
 
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { AdminSaveForm } from "@/components/admin/shared";
+import { ProductBadge, type ProductBadgeProps } from "@/components/storefront/catalog/product-badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
 import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 import {
@@ -40,6 +42,8 @@ export type ProductFormValues = {
   specifications?: unknown | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   isFeatured?: boolean;
+  badgeLabel?: string | null;
+  badgeVariant?: string | null;
   categoryIds: string[];
   variants: VariantFormValue[];
   images: { url: string; alt: string | null; isPrimary: boolean }[];
@@ -92,6 +96,8 @@ export function ProductForm({
     product?.status ?? "DRAFT"
   );
   const [isFeatured, setIsFeatured] = useState<boolean>(Boolean(product?.isFeatured));
+  const [badgeLabel, setBadgeLabel] = useState<string>(product?.badgeLabel ?? "");
+  const [badgeVariant, setBadgeVariant] = useState<string>(product?.badgeVariant ?? "");
 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(
     () => product?.categoryIds ?? []
@@ -597,6 +603,8 @@ export function ProductForm({
                 selectedSizes={selectedSizes}
                 selectedColors={selectedColors}
                 categoryName={categories[0]?.name}
+                customBadgeLabel={badgeLabel}
+                customBadgeVariant={badgeVariant}
               />
             )}
           </div>
@@ -684,6 +692,77 @@ export function ProductForm({
                     </span>
                   </div>
                 </label>
+              </div>
+
+              {/* PROMOTIONAL BADGE CONTROLS */}
+              <div className="border-vl-dark-900/10 space-y-2.5 border-t pt-3.5">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="product-badge-variant"
+                    className="text-vl-dark-900 block text-xs font-bold tracking-wider uppercase"
+                  >
+                    Promotional Badge
+                  </label>
+                  {badgeLabel.trim() ? (
+                    <ProductBadge
+                      label={badgeLabel.trim()}
+                      variant={(badgeVariant as ProductBadgeProps["variant"]) || "default"}
+                    />
+                  ) : null}
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label
+                      htmlFor="product-badge-variant"
+                      className="text-muted-foreground block text-[11px] font-medium"
+                    >
+                      Color Theme
+                    </label>
+                    <NativeSelect
+                      id="product-badge-variant"
+                      name="badgeVariant"
+                      value={badgeVariant}
+                      onChange={(e) => {
+                        setBadgeVariant(e.target.value);
+                        setIsDirty(true);
+                      }}
+                      size="sm"
+                      className="mt-1 text-xs font-medium"
+                    >
+                      <option value="">Auto / Semantic</option>
+                      <option value="sale">Sale (Red Box)</option>
+                      <option value="new">New (Cyber Cyan)</option>
+                      <option value="hot">Hot (Flame Amber)</option>
+                      <option value="featured">Featured (Gold &amp; Dark)</option>
+                      <option value="default">Default (Dark Box)</option>
+                    </NativeSelect>
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="product-badge-label"
+                      className="text-muted-foreground block text-[11px] font-medium"
+                    >
+                      Badge Text
+                    </label>
+                    <Input
+                      id="product-badge-label"
+                      name="badgeLabel"
+                      size="sm"
+                      value={badgeLabel}
+                      placeholder="e.g. DROP 01, HYPE"
+                      maxLength={25}
+                      onChange={(e) => {
+                        setBadgeLabel(e.target.value);
+                        setIsDirty(true);
+                      }}
+                      className="mt-1 text-xs uppercase"
+                    />
+                  </div>
+                </div>
+                <p className="text-muted-foreground text-[11px] leading-tight">
+                  Custom badge displays on product cards across the storefront. Leave empty to use
+                  automatic badges (e.g. -20% Sale, New Drop).
+                </p>
               </div>
 
               {status === "PUBLISHED" &&

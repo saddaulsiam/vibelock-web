@@ -44,6 +44,12 @@ export interface ProductSummary {
   hasDiscount: boolean;
   categories: CategorySummary[];
   available: boolean;
+  badgeLabel?: string | null;
+  badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null;
+  badge?: {
+    label: string;
+    variant: "default" | "sale" | "new" | "featured" | "hot";
+  };
 }
 
 export interface ProductDetail extends ProductSummary {

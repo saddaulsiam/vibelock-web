@@ -27,7 +27,7 @@ export function BestSellers({ products }: BestSellersProps) {
             <ProductCard
               key={product.id}
               product={product}
-              badge={product.hasDiscount ? undefined : { label: "HOT", variant: "sale" }}
+              badge={product.hasDiscount ? undefined : { label: "HOT", variant: "hot" }}
             />
           ))}
         </div>

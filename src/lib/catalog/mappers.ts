@@ -94,6 +94,17 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     product.images.find((img) => !img.isPrimary && img.url !== primaryImage?.url) ||
     (product.images.length > 1 && product.images[1] ? product.images[1] : null);
 
+  const badgeLabel = (product as unknown as { badgeLabel?: string | null }).badgeLabel ?? null;
+  const badgeVariant =
+    (product as unknown as { badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null })
+      .badgeVariant ?? null;
+  const badge = badgeLabel
+    ? {
+        label: badgeLabel,
+        variant: badgeVariant || "default",
+      }
+    : undefined;
+
   return {
     id: product.id,
     name: product.name,
@@ -101,6 +112,9 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     description: product.description,
     status: product.status,
     isFeatured: Boolean((product as unknown as { isFeatured?: boolean }).isFeatured),
+    badgeLabel,
+    badgeVariant,
+    badge,
     primaryImage: primaryImage ? mapImage(primaryImage) : null,
     secondaryImage: secondaryImage ? mapImage(secondaryImage) : null,
     images: product.images.map(mapImage),

@@ -29,10 +29,11 @@ export interface CustomProductCardItem {
   category?: string;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new" | "featured";
+    variant: "default" | "sale" | "new" | "featured" | "hot";
   };
   rating?: number;
   reviewCount?: number;
+  available?: boolean;
 }
 
 export type ProductCardItem = ProductSummary | CustomProductCardItem;
@@ -41,13 +42,13 @@ export interface ProductCardProps extends HTMLMotionProps<"div"> {
   product: ProductCardItem;
   badge?: {
     label: string;
-    variant: "default" | "sale" | "new" | "featured";
+    variant: "default" | "sale" | "new" | "featured" | "hot";
   };
 }
 
 export function toCardProduct(
   product: ProductCardItem,
-  overrideBadge?: { label: string; variant: "default" | "sale" | "new" | "featured" }
+  overrideBadge?: { label: string; variant: "default" | "sale" | "new" | "featured" | "hot" }
 ): CustomProductCardItem {
   if ("minPrice" in product) {
     const primaryCategory = product.categories?.[0]?.name
@@ -72,6 +73,7 @@ export function toCardProduct(
       image: product.primaryImage?.url ?? "",
       secondaryImage,
       category: primaryCategory,
+      available: "available" in product ? product.available : true,
       badge:
         overrideBadge ??
         (product.hasDiscount
@@ -90,6 +92,7 @@ export function toCardProduct(
 
 export function ProductCard({ product, badge, className, ...props }: ProductCardProps) {
   const item = React.useMemo(() => toCardProduct(product, badge), [product, badge]);
+  const isAvailable = item.available !== false;
 
   const [failedImage, setFailedImage] = React.useState<string | null>(null);
   const hasImage = Boolean(item.image) && failedImage !== item.image;
@@ -140,7 +143,10 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
       <Link
         href={`/product/${item.slug}`}
         aria-label={`View ${item.name}`}
-        className="focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+        className={cn(
+          "focus-visible:ring-vl-cyan bg-vl-white-300 relative block overflow-hidden rounded-xs transition-shadow duration-300 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.06)] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset",
+          !isAvailable && "opacity-80"
+        )}
         style={{ aspectRatio: "3 / 4" }}
       >
         {hasImage ? (
@@ -173,11 +179,36 @@ export function ProductCard({ product, badge, className, ...props }: ProductCard
           </span>
         )}
 
-        {/* ── Badge (Top-Left) ── */}
-        <div className="pointer-events-none absolute top-0 left-0 z-10 flex flex-col items-start gap-1">
-          {item.badge && <ProductBadge label={item.badge.label} variant={item.badge.variant} />}
-          {discountPercent !== null && discountPercent > 0 && item.badge?.variant !== "sale" && (
-            <ProductBadge label={`-${discountPercent}%`} variant="sale" />
+        {/* ── Badge (Top-Left, Option A: Represent Brutalist Architectural Box) ── */}
+        <div className="pointer-events-none absolute top-2 left-2 z-10 flex flex-col items-start gap-1">
+          {!isAvailable ? (
+            <ProductBadge
+              label="SOLD OUT"
+              variant="default"
+              className="border-white/10 bg-vl-dark-900/90 text-vl-white-400 backdrop-blur-xs"
+            />
+          ) : (
+            <>
+              {item.badge && (
+                <ProductBadge
+                  label={
+                    item.badge.variant === "sale" &&
+                    item.badge.label.toLowerCase() === "sale" &&
+                    discountPercent !== null &&
+                    discountPercent > 0
+                      ? `-${discountPercent}%`
+                      : item.badge.label
+                  }
+                  variant={item.badge.variant}
+                />
+              )}
+              {discountPercent !== null &&
+                discountPercent > 0 &&
+                item.badge?.variant !== "sale" &&
+                !(item.badge && item.badge.label.toLowerCase().includes("sale")) && (
+                  <ProductBadge label={`-${discountPercent}%`} variant="sale" />
+                )}
+            </>
           )}
         </div>
 
