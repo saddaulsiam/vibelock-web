@@ -84,6 +84,28 @@ describe("Option A (Elevated): Streetwear Brutalist ProductBadge with Distinct C
     expect(html).toContain("bg-status-sale");
   });
 
+  it("renders exact percentage badge when single-price discounted product uses originalPrice", () => {
+    const product = {
+      id: "prod-single-discount",
+      name: "Cyber Heavyweight Hoodie",
+      slug: "cyber-heavyweight-hoodie",
+      description: "Streetwear hoodie with 20% discount",
+      status: ProductStatus.PUBLISHED,
+      primaryImage: null,
+      minPrice: 1200,
+      maxPrice: 1200, // minPrice === maxPrice for single variant
+      originalPrice: 1500, // original selling price before discount
+      hasDiscount: true,
+      categories: [],
+      available: true,
+    };
+
+    const html = renderToStaticMarkup(<ProductCard product={product} />);
+    // Correctly calculates (1500 - 1200) / 1500 = 20%
+    expect(html).toContain("-20%");
+    expect(html).not.toContain(">Sale<");
+  });
+
   it("renders SOLD OUT badge when product is unavailable", () => {
     const product = {
       id: "prod-sold-out",
@@ -142,5 +164,30 @@ describe("Option A (Elevated): Streetwear Brutalist ProductBadge with Distinct C
     // In-stock item with custom LIMITED badge is rendered
     expect(html).toContain("LIMITED");
     expect(html).toContain("SOLD OUT");
+    // Does NOT render forced "NEW" badge on products (bg-vl-cyan)
+    expect(html).not.toContain("bg-vl-cyan");
+  });
+
+  it("renders no badge for regular in-stock products with no discount or custom badge", () => {
+    const cleanProduct = {
+      id: "prod-clean",
+      name: "Standard Heavyweight Tee",
+      slug: "standard-heavyweight-tee",
+      description: "Clean luxury look",
+      status: ProductStatus.PUBLISHED,
+      primaryImage: null,
+      minPrice: 900,
+      maxPrice: 900,
+      hasDiscount: false,
+      categories: [],
+      available: true,
+    };
+
+    const html = renderToStaticMarkup(<ProductCard product={cleanProduct} />);
+    expect(html).not.toContain("SOLD OUT");
+    expect(html).not.toContain("SALE");
+    expect(html).not.toContain("FEATURED");
+    expect(html).not.toContain("NEW");
+    expect(html).not.toContain("HOT");
   });
 });

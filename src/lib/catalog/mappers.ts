@@ -87,6 +87,9 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
   const minPrice = Math.min(...mappedVariants.map((v) => v.effectivePrice));
   const maxPrice = Math.max(...mappedVariants.map((v) => v.effectivePrice));
   const hasDiscount = mappedVariants.some((v) => v.discountPrice !== null);
+  const originalPrice = hasDiscount
+    ? Math.max(...mappedVariants.map((v) => v.sellingPrice))
+    : undefined;
   const available = mappedVariants.some((v) => v.available);
 
   const primaryImage = product.images.find((img) => img.isPrimary) || product.images[0] || null;
@@ -120,6 +123,7 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
     images: product.images.map(mapImage),
     minPrice: mappedVariants.length > 0 ? minPrice : 0,
     maxPrice: mappedVariants.length > 0 ? maxPrice : 0,
+    originalPrice,
     hasDiscount,
     categories: product.categories.map(mapCategory),
     available,

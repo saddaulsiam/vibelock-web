@@ -104,15 +104,7 @@ export function HomeAllProducts({ products, bestSellers, categories = [] }: Home
         {displayedProducts.length > 0 ? (
           <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-6 sm:mt-12 sm:grid-cols-3 sm:gap-4 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 lg:grid-cols-5">
             {displayedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                badge={
-                  product.hasDiscount
-                    ? { label: "SALE", variant: "sale" }
-                    : { label: "NEW", variant: "new" }
-                }
-              />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (

@@ -129,9 +129,9 @@ export function ProductFormPreview({
               )}
             </div>
 
-            {/* ── Wishlist Button Replica (Top-Right) ── */}
-            <div className="text-vl-dark-900/50 absolute top-2 right-2 z-10 flex size-7 items-center justify-center rounded-full bg-white/80 shadow-xs backdrop-blur-xs">
-              <Heart className="size-4" />
+            {/* ── Wishlist Button Replica (Top-Right: Compact Frosted Glass Pill) ── */}
+            <div className="border-black/10 bg-white/85 text-vl-dark-900/75 absolute top-2 right-2 z-10 flex size-6.5 items-center justify-center rounded-full border p-0 shadow-2xs backdrop-blur-md">
+              <Heart className="size-3.5 stroke-[2.2]" />
             </div>
           </div>
 

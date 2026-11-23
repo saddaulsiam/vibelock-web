@@ -47,4 +47,32 @@ describe("ProductCard Secondary Image Hover Effect", () => {
     expect(html).toContain("group-hover:opacity-0");
     expect(html).toContain("group-hover:opacity-100");
   });
+
+  it("renders wishlist button with frosted glass backdrop for high contrast against dark media", () => {
+    const product = {
+      id: "prod-dark",
+      name: "Pitch Black Obsidian Hoodie",
+      slug: "pitch-black-obsidian-hoodie",
+      description: "Stealth black heavyweight hoodie",
+      status: ProductStatus.PUBLISHED,
+      primaryImage: {
+        url: "/uploads/black-hoodie.webp",
+        alt: "Dark view",
+        isPrimary: true,
+      },
+      minPrice: 2400,
+      maxPrice: 2400,
+      hasDiscount: false,
+      categories: [],
+      available: true,
+    };
+
+    const html = renderToStaticMarkup(<ProductCard product={product} />);
+
+    // Frosted glass contrast surface classes
+    expect(html).toContain("bg-white/85");
+    expect(html).toContain("backdrop-blur-md");
+    expect(html).toContain("border-black/10");
+    expect(html).toContain("aria-label=\"Add Pitch Black Obsidian Hoodie to wishlist\"");
+  });
 });

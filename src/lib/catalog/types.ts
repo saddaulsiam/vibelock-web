@@ -41,6 +41,7 @@ export interface ProductSummary {
   images?: ProductImageSummary[];
   minPrice: number; // Lowest effective price among variants
   maxPrice: number;
+  originalPrice?: number;
   hasDiscount: boolean;
   categories: CategorySummary[];
   available: boolean;
