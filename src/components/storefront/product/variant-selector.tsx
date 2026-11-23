@@ -289,7 +289,17 @@ export function VariantSelector({
               <span className="text-vl-dark-900/30">•</span>
               <span className="text-vl-cyan-dark">{selectedSize || "Select"}</span>
             </legend>
-            {!sizes.every((s) => /one size|free size/i.test(s)) && <SizeGuideModal />}
+            {!sizes.every((s) => /one size|free size/i.test(s)) && (
+              <SizeGuideModal
+                selectedSize={selectedSize}
+                productName={productName}
+                categoryPreset={
+                  (specifications as { categoryPreset?: string } | null)?.categoryPreset
+                }
+                availableSizes={sizes}
+                onSelectSize={selectSize}
+              />
+            )}
           </div>
 
           <div className="flex flex-wrap gap-1.5 sm:gap-2">
