@@ -49,7 +49,7 @@ const buttonVariants = cva(
          * link — Transparent, borderless, text-based appearance.
          * Inline actions and navigation links.
          */
-        link: "text-primary underline-offset-4 hover:underline border-transparent bg-transparent shadow-none font-normal normal-case tracking-normal",
+        link: "text-vl-dark underline hover:opacity-80 underline-offset-2 hover:underline hover:underline-cyan border-transparent bg-transparent shadow-none font-normal normal-case tracking-normal",
         /**
          * danger — Solid red background, white text.
          * High-contrast permanent deletion and critical actions.
@@ -59,6 +59,8 @@ const buttonVariants = cva(
       },
       size: {
         /** xs — 28px compact actions */
+        "2xs":
+          "h-6 gap-1 px-2 py-0.5 text-2xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-2",
         xs: "h-7 gap-1 px-2 text-2xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3",
         /** sm — 32px small controls (filters, table actions, small pills) */
         sm: "h-8 gap-1.5 px-3 text-xs in-data-[slot=button-group]:rounded-brand [&_svg:not([class*='size-'])]:size-3.5",

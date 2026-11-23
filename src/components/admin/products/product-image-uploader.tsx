@@ -407,10 +407,9 @@ export function ProductImageUploader({
         </div>
         <Button
           type="button"
-          variant="outline"
-          size="xs"
+          variant="ghost"
+          size="2xs"
           onClick={() => setUseUrlInput((prev) => !prev)}
-          className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-200 inline-flex h-7 items-center gap-1.5 text-xs font-semibold"
         >
           {useUrlInput ? (
             <>
@@ -418,7 +417,7 @@ export function ProductImageUploader({
             </>
           ) : (
             <>
-              <Globe className="size-3.5" /> Or use external image URLs
+              <Globe className="size-3.5" /> Use external image URLs
             </>
           )}
         </Button>

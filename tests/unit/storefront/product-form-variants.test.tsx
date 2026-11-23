@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { ProductForm } from "@/components/admin/products";
+import { ProductForm, ProductFormPreview } from "@/components/admin/products";
 
 // Mock next/navigation & next/image
 vi.mock("next/navigation", () => ({
@@ -88,8 +88,9 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
       <ProductForm product={null} categories={[{ id: "cat-1", name: "Hoodies" }]} />
     );
 
-    // Live storefront preview
-    expect(html).toContain("Live Storefront Card Preview");
+    // Live storefront preview toggle
+    expect(html).toContain("Storefront Card");
+    expect(html).toContain("Show preview");
 
     // Section 1: Basic info with live slug preview and streetwear presets
     expect(html).toContain("Basic Information");
@@ -119,5 +120,27 @@ describe("ProductForm Variant Generator & Initial Stock", () => {
     expect(html).toContain("Matrix Stock Grid");
     expect(html).toContain("Detailed Cards");
     expect(html).toContain('id="variants"');
+  });
+
+  it("renders ProductFormPreview directly with 3:4 aspect ratio canvas", () => {
+    const html = renderToStaticMarkup(
+      <ProductFormPreview
+        name="Vibe Heavyweight Boxy Tee"
+        primaryImageUrl="https://res.cloudinary.com/demo/tee.jpg"
+        secondaryImageUrl={undefined}
+        previewSelling="1250"
+        previewDiscount="990"
+        hasDiscount={true}
+        discountPercent={21}
+        totalStockCount={15}
+        selectedSizes={["M", "L", "XL"]}
+        selectedColors={["Black", "White"]}
+        categoryName="Apparel"
+      />
+    );
+
+    expect(html).toContain("Live Storefront Card Preview");
+    expect(html).toContain("3 / 4");
+    expect(html).toContain("Vibe Heavyweight Boxy Tee");
   });
 });

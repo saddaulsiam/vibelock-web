@@ -58,19 +58,19 @@ export function ProductFormPreview({
           <span className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase">
             Live Storefront Card Preview
           </span>
+          <span className="text-muted-foreground text-[11px]">
+            3:4 portrait aspect ratio (matches storefront catalog)
+          </span>
         </div>
-        <span className="text-muted-foreground text-[11px]">
-          2:3 portrait aspect ratio (matches storefront catalog)
-        </span>
       </div>
 
       <div className="bg-vl-white-100 flex justify-center p-4 sm:p-6">
         {/* ── Product Card Canvas matching product-card.tsx ── */}
         <div className="group border-vl-dark-900/15 relative flex w-full max-w-67.5 flex-col overflow-hidden rounded-sm border bg-white p-3 shadow-xs transition-all hover:shadow-md">
-          {/* ── Image Canvas with 2:3 Aspect Ratio ── */}
+          {/* ── Image Canvas with 3:4 Aspect Ratio ── */}
           <div
             className="bg-vl-white-300 relative block w-full overflow-hidden"
-            style={{ aspectRatio: "2 / 3" }}
+            style={{ aspectRatio: "3 / 4" }}
           >
             {primaryImageUrl ? (
               <>

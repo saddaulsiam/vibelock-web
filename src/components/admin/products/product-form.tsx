@@ -6,30 +6,20 @@ import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select-native";
 import { saveProductAction } from "@/lib/admin/catalog/catalog-actions";
 import {
-  ArrowLeft,
-  Copy,
-  ExternalLink,
-  Eye,
-  EyeOff,
-  Plus,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
-import {
-  ProductBasicInfoSection,
-  ProductSpecificationsSection,
-  slugify,
-} from "./product-basic-info-section";
-import { ProductFormPreview } from "./product-form-preview";
-import { ProductImageUploader } from "./product-image-uploader";
-import {
   LIFESTYLE_PRESETS,
   parseProductSpecifications,
   type LifestyleCategoryPreset,
   type ProductSpecifications,
 } from "@/lib/catalog/specifications";
+import { ArrowLeft, Copy, ExternalLink, Eye, EyeOff, Plus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { ProductBasicInfoSection, slugify } from "./product-basic-info-section";
+import { ProductFormPreview } from "./product-form-preview";
+import { ProductImageUploader } from "./product-image-uploader";
+import { ProductSpecificationsSection } from "./product-specifications-section";
 import {
   LIFESTYLE_SIZE_GROUPS,
   ProductVariantGenerator,
@@ -108,7 +98,7 @@ export function ProductForm({
   );
 
   const router = useRouter();
-  const [showLivePreview, setShowLivePreview] = useState(true);
+  const [showLivePreview, setShowLivePreview] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [submitIntent, setSubmitIntent] = useState<"save" | "save_and_add_another">("save");
 
@@ -136,7 +126,9 @@ export function ProductForm({
     if (/headwear|cap|hat|beanie|bucket/i.test(text)) return "headwear";
     if (/accessories|accessory|jewelry|necklace|bracelet|eyewear|sunglasses|living/i.test(text))
       return "accessories";
-    if (/shirt|tee|t-shirt|hoodie|sweatshirt|jacket|outerwear|denim|pant|trouser|apparel/i.test(text))
+    if (
+      /shirt|tee|t-shirt|hoodie|sweatshirt|jacket|outerwear|denim|pant|trouser|apparel/i.test(text)
+    )
       return "apparel";
     return null;
   }, [categories, selectedCategoryIds]);
@@ -360,7 +352,9 @@ export function ProductForm({
         const currentStatus = String(formData.get("status") ?? status);
         if (currentStatus === "PUBLISHED") {
           if (uploadedImages.length === 0) {
-            toast.error("Please add at least one product image before publishing live to the storefront.");
+            toast.error(
+              "Please add at least one product image before publishing live to the storefront."
+            );
             return { error: "Please add at least one product image before publishing live." };
           }
           if (selectedCategoryIds.length === 0) {
@@ -377,7 +371,9 @@ export function ProductForm({
             router.push("/admin/products/new");
             router.refresh();
           } else {
-            toast.success(product ? "Product updated successfully!" : "Product created successfully!");
+            toast.success(
+              product ? "Product updated successfully!" : "Product created successfully!"
+            );
             router.push("/admin/products");
             router.refresh();
           }
@@ -425,9 +421,7 @@ export function ProductForm({
             </p>
           )}
           {product?.id && (
-            <p className="text-muted-foreground font-mono text-xs">
-              Slug: /{product.slug}
-            </p>
+            <p className="text-muted-foreground font-mono text-xs">Slug: /{product.slug}</p>
           )}
         </div>
 
@@ -518,10 +512,21 @@ export function ProductForm({
         <div className="space-y-6 lg:sticky lg:top-6">
           {/* STICKY PRIMARY ACTIONS CARD (ABOVE PUBLISHING STATUS) */}
           <div className="border-vl-dark-900/10 space-y-2.5 rounded-sm border bg-white p-4 shadow-xs">
+            {isDirty && (
+              <div className="flex items-center justify-between pb-0.5 text-[11px]">
+                <span className="flex items-center gap-1.5 font-semibold text-amber-700">
+                  <span className="size-2 animate-pulse rounded-full bg-amber-500" />
+                  Unsaved changes
+                </span>
+                <span className="text-muted-foreground font-mono text-[10px] tracking-wide">
+                  Ctrl+S to save
+                </span>
+              </div>
+            )}
             <Button
               type="submit"
               variant="primary"
-              className="w-full min-h-11 text-xs font-bold uppercase tracking-wider shadow-xs"
+              className="min-h-11 w-full text-xs font-bold tracking-wider uppercase shadow-xs"
             >
               {product?.id ? "Save product" : "Create product"}
             </Button>
@@ -535,7 +540,7 @@ export function ProductForm({
                   onClick={() => setSubmitIntent("save_and_add_another")}
                   className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 min-h-9 flex-1 text-xs font-semibold"
                 >
-                  <Plus className="size-3.5 mr-1" /> Save &amp; Add Another
+                  <Plus className="mr-1 size-3.5" /> Save &amp; Add Another
                 </Button>
               )}
               <Link
@@ -543,146 +548,22 @@ export function ProductForm({
                 onClick={(e) => {
                   if (
                     isDirty &&
-                    !window.confirm("You have unsaved product changes. Are you sure you want to cancel?")
+                    !window.confirm(
+                      "You have unsaved product changes. Are you sure you want to cancel?"
+                    )
                   ) {
                     e.preventDefault();
                   }
                 }}
-                className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex min-h-9 flex-1 items-center justify-center border bg-white px-3 text-xs font-semibold transition-colors rounded-sm"
+                className="border-vl-dark-900/20 text-vl-dark-900 hover:bg-vl-white-300 inline-flex min-h-9 flex-1 items-center justify-center rounded-sm border bg-white px-3 text-xs font-semibold transition-colors"
               >
                 Cancel
               </Link>
             </div>
           </div>
 
-          {/* SIDEBAR CARD 1: PUBLICATION & VISIBILITY */}
-          <div className="border-vl-dark-900/10 space-y-4 rounded-sm border bg-white p-5 shadow-xs">
-            <div className="border-vl-dark-900/10 flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-tight">
-                  Publishing Status
-                </h3>
-                <p className="text-muted-foreground mt-0.5 text-xs">
-                  Storefront visibility and discovery.
-                </p>
-              </div>
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
-                  status === "PUBLISHED"
-                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    : status === "DRAFT"
-                      ? "bg-amber-50 text-amber-800 border border-amber-200"
-                      : "bg-vl-white-300 text-vl-dark-900 border border-vl-dark-900/15"
-                }`}
-              >
-                <span
-                  className={`size-1.5 rounded-full ${
-                    status === "PUBLISHED"
-                      ? "bg-emerald-500"
-                      : status === "DRAFT"
-                        ? "bg-amber-500"
-                        : "bg-vl-dark-900"
-                  }`}
-                />
-                {status}
-              </span>
-            </div>
-
-            <div className="space-y-3.5">
-              <div>
-                <label htmlFor="product-status" className="text-vl-dark-900 block text-xs font-bold uppercase tracking-wider">
-                  Storefront State
-                </label>
-                <div className="mt-1.5">
-                  <NativeSelect
-                    id="product-status"
-                    name="status"
-                    value={status}
-                    onChange={(e) => {
-                      setStatus(e.target.value as "DRAFT" | "PUBLISHED" | "ARCHIVED");
-                      setIsDirty(true);
-                    }}
-                    size="sm"
-                    className="font-medium text-xs"
-                  >
-                    <option value="DRAFT">Draft — Hidden from store, save for later</option>
-                    <option value="PUBLISHED">Published — Live and purchasable in store</option>
-                    <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
-                  </NativeSelect>
-                </div>
-              </div>
-
-              {/* FEATURED PRODUCT TOGGLE */}
-              <div className="border-vl-dark-900/10 border-t pt-3.5">
-                <label className="flex cursor-pointer items-start gap-2.5 select-none">
-                  <input
-                    type="checkbox"
-                    name="isFeatured"
-                    value="true"
-                    checked={isFeatured}
-                    onChange={(e) => {
-                      setIsFeatured(e.target.checked);
-                      setIsDirty(true);
-                    }}
-                    className="mt-0.5 size-4 rounded border-vl-dark-900/30 text-vl-dark-900 focus:ring-vl-cyan"
-                  />
-                  <div>
-                    <span className="text-vl-dark-900 flex items-center gap-1 text-xs font-bold">
-                      ⭐ Feature on Storefront
-                    </span>
-                    <span className="text-muted-foreground block text-[11px] leading-tight">
-                      Highlight prominently on homepage hero and featured collection sliders.
-                    </span>
-                  </div>
-                </label>
-              </div>
-
-              {status === "PUBLISHED" &&
-                (uploadedImages.length === 0 || selectedCategoryIds.length === 0) && (
-                  <div className="rounded border border-amber-200/90 bg-amber-50 p-2.5 text-xs text-amber-800">
-                    <p className="font-semibold">⚠️ Live Quality Gate Alert:</p>
-                    <ul className="mt-1 list-inside list-disc space-y-0.5 text-[11px]">
-                      {uploadedImages.length === 0 && (
-                        <li>At least 1 product image must be added before going live.</li>
-                      )}
-                      {selectedCategoryIds.length === 0 && (
-                        <li>At least 1 category must be selected before going live.</li>
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-
-            </div>
-          </div>
-
-          {/* SIDEBAR CARD 2: CATEGORIES */}
-          <div className="border-vl-dark-900/10 space-y-3.5 rounded-sm border bg-white p-5 shadow-xs">
-            <div className="border-vl-dark-900/10 flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-tight">
-                  Product Categories
-                </h3>
-                <p className="text-muted-foreground mt-0.5 text-xs">
-                  Collections for store navigation.
-                </p>
-              </div>
-              <span className="bg-vl-white-200 text-vl-dark-900 rounded border border-vl-dark-900/10 px-2 py-0.5 font-mono text-[10px] font-bold">
-                {selectedCategoryIds.length} selected
-              </span>
-            </div>
-            <CategoryMultiSelect
-              categories={categories}
-              initialSelectedIds={product?.categoryIds ?? []}
-              onChange={(ids) => {
-                setSelectedCategoryIds(ids);
-                setIsDirty(true);
-              }}
-            />
-          </div>
-
-          {/* SIDEBAR CARD 3: LIVE STOREFRONT CARD PREVIEW */}
-          <div className="space-y-2">
+          {/* SIDEBAR CARD 1: LIVE STOREFRONT CARD PREVIEW */}
+          <div className="space-y-1">
             <div className="flex items-center justify-between px-1">
               <span className="text-muted-foreground text-xs font-semibold">Storefront Card</span>
               <Button
@@ -719,45 +600,135 @@ export function ProductForm({
               />
             )}
           </div>
+
+          {/* SIDEBAR CARD 2: PUBLICATION & VISIBILITY */}
+          <div className="border-vl-dark-900/10 space-y-4 rounded-sm border bg-white p-5 shadow-xs">
+            <div className="border-vl-dark-900/10 flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-tight">
+                  Publishing Status
+                </h3>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  Storefront visibility and discovery.
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ${
+                  status === "PUBLISHED"
+                    ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
+                    : status === "DRAFT"
+                      ? "border border-amber-200 bg-amber-50 text-amber-800"
+                      : "bg-vl-white-300 text-vl-dark-900 border-vl-dark-900/15 border"
+                }`}
+              >
+                <span
+                  className={`size-1.5 rounded-full ${
+                    status === "PUBLISHED"
+                      ? "bg-emerald-500"
+                      : status === "DRAFT"
+                        ? "bg-amber-500"
+                        : "bg-vl-dark-900"
+                  }`}
+                />
+                {status}
+              </span>
+            </div>
+
+            <div className="space-y-3.5">
+              <div>
+                <label
+                  htmlFor="product-status"
+                  className="text-vl-dark-900 block text-xs font-bold tracking-wider uppercase"
+                >
+                  Storefront State
+                </label>
+                <div className="mt-1.5">
+                  <NativeSelect
+                    id="product-status"
+                    name="status"
+                    value={status}
+                    onChange={(e) => {
+                      setStatus(e.target.value as "DRAFT" | "PUBLISHED" | "ARCHIVED");
+                      setIsDirty(true);
+                    }}
+                    size="sm"
+                    className="text-xs font-medium"
+                  >
+                    <option value="DRAFT">Draft — Hidden from store, save for later</option>
+                    <option value="PUBLISHED">Published — Live and purchasable in store</option>
+                    <option value="ARCHIVED">Archived — Hidden from store and discontinued</option>
+                  </NativeSelect>
+                </div>
+              </div>
+
+              {/* FEATURED PRODUCT TOGGLE */}
+              <div className="border-vl-dark-900/10 border-t pt-3.5">
+                <label className="flex cursor-pointer items-start gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    name="isFeatured"
+                    value="true"
+                    checked={isFeatured}
+                    onChange={(e) => {
+                      setIsFeatured(e.target.checked);
+                      setIsDirty(true);
+                    }}
+                    className="border-vl-dark-900/30 text-vl-dark-900 focus:ring-vl-cyan mt-0.5 size-4 rounded"
+                  />
+                  <div>
+                    <span className="text-vl-dark-900 flex items-center gap-1 text-xs font-bold">
+                      ⭐ Feature on Storefront
+                    </span>
+                    <span className="text-muted-foreground block text-[11px] leading-tight">
+                      Highlight prominently on homepage hero and featured collection sliders.
+                    </span>
+                  </div>
+                </label>
+              </div>
+
+              {status === "PUBLISHED" &&
+                (uploadedImages.length === 0 || selectedCategoryIds.length === 0) && (
+                  <div className="rounded border border-amber-200/90 bg-amber-50 p-2.5 text-xs text-amber-800">
+                    <p className="font-semibold">⚠️ Live Quality Gate Alert:</p>
+                    <ul className="mt-1 list-inside list-disc space-y-0.5 text-[11px]">
+                      {uploadedImages.length === 0 && (
+                        <li>At least 1 product image must be added before going live.</li>
+                      )}
+                      {selectedCategoryIds.length === 0 && (
+                        <li>At least 1 category must be selected before going live.</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+            </div>
+          </div>
+
+          {/* SIDEBAR CARD 3: CATEGORIES */}
+          <div className="border-vl-dark-900/10 space-y-3.5 rounded-sm border bg-white p-5 shadow-xs">
+            <div className="border-vl-dark-900/10 flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-tight">
+                  Product Categories
+                </h3>
+                <p className="text-muted-foreground mt-0.5 text-xs">
+                  Collections for store navigation.
+                </p>
+              </div>
+              <span className="bg-vl-white-200 text-vl-dark-900 border-vl-dark-900/10 rounded border px-2 py-0.5 font-mono text-[10px] font-bold">
+                {selectedCategoryIds.length} selected
+              </span>
+            </div>
+            <CategoryMultiSelect
+              categories={categories}
+              initialSelectedIds={product?.categoryIds ?? []}
+              onChange={(ids) => {
+                setSelectedCategoryIds(ids);
+                setIsDirty(true);
+              }}
+            />
+          </div>
         </div>
       </div>
-
-      {/* FLOATING CONTEXT SAVE BAR (SLIDES UP ONLY WHEN UNSAVED CHANGES EXIST) */}
-      {isDirty && (
-        <div className="animate-in slide-in-from-bottom-5 fade-in duration-200 border-vl-dark-900/20 bg-vl-dark-900 fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3.5 rounded-full border px-5 py-2.5 text-white shadow-2xl backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-amber-400 animate-pulse" />
-            <span className="text-xs font-semibold tracking-tight">Unsaved changes</span>
-          </div>
-          <div className="h-3.5 w-px bg-white/20" />
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm("Discard all unsaved product changes and reload?")) {
-                  window.location.reload();
-                }
-              }}
-              className="text-[11px] font-medium text-white/70 hover:text-white transition-colors"
-            >
-              Discard
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const form = document.getElementById("product-form") as HTMLFormElement | null;
-                form?.requestSubmit();
-              }}
-              className="bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan/90 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-xs font-bold shadow-xs transition-colors"
-            >
-              <span>Save</span>
-              <kbd className="bg-vl-dark-900/15 hidden rounded px-1 py-0.2 font-mono text-[10px] sm:inline">
-                Ctrl+S
-              </kbd>
-            </button>
-          </div>
-        </div>
-      )}
     </AdminSaveForm>
   );
 }

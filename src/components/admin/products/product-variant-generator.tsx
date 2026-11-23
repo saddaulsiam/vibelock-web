@@ -1,18 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import {
-  AlertTriangle,
-  LayoutGrid,
-  List,
-  Lock,
-  RefreshCw,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertTriangle, LayoutGrid, List, Lock, Sparkles, TrendingUp } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import { COLOR_HEX } from "./product-form-preview";
 
 export type VariantFormValue = {
@@ -110,7 +103,7 @@ export const LIFESTYLE_SIZE_GROUPS = {
   bottoms: {
     id: "bottoms",
     label: "Bottoms (Pants/Denim)",
-    sizes: ["28", "30", "32", "34", "36", "38"],
+    sizes: ["28", "29", "30", "31", "32", "33", "34", "35", "36", "37", "38", "39", "40"],
   },
   footwear: {
     id: "footwear",
@@ -392,7 +385,10 @@ export function ProductVariantGenerator({
   };
 
   return (
-    <div id="variants" className="border-vl-dark-900/10 space-y-5 rounded-sm border bg-white p-5 shadow-xs sm:p-6 scroll-mt-20">
+    <div
+      id="variants"
+      className="border-vl-dark-900/10 scroll-mt-20 space-y-5 rounded-sm border bg-white p-5 shadow-xs sm:p-6"
+    >
       <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b pb-4">
         <div className="flex items-center gap-2.5">
           <span className="bg-vl-dark-900 flex size-6.5 items-center justify-center rounded-sm font-mono text-[11px] font-bold text-white shadow-2xs">
@@ -409,10 +405,10 @@ export function ProductVariantGenerator({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="border-vl-dark-900/15 bg-vl-white-100 text-vl-dark-900 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold">
-            <span className="bg-vl-dark-900 size-2 rounded-full" />
+          <Badge size="sm" variant="info" dot="pulse">
+            {/* <span className="bg-vl-dark-900 size-2 rounded-full" /> */}
             {variants.length} {variants.length === 1 ? "Variant" : "Variants"}
-          </span>
+          </Badge>
         </div>
       </div>
 
@@ -423,23 +419,11 @@ export function ProductVariantGenerator({
             1. Select Sizes
           </label>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Button
-              type="button"
-              variant="link"
-              size="xs"
-              onClick={selectAllSizes}
-              className="text-vl-dark-900 h-auto p-0 font-medium underline underline-offset-2 hover:opacity-70"
-            >
+            <Button type="button" variant="link" size="xs" onClick={selectAllSizes} className="">
               + Add all {LIFESTYLE_SIZE_GROUPS[activeSizeGroup].label.split(" ")[0]}
             </Button>
             <span className="text-vl-dark-900/30">·</span>
-            <Button
-              type="button"
-              variant="link"
-              size="xs"
-              onClick={setOnlyOneSize}
-              className="text-vl-dark-900 h-auto p-0 font-medium underline underline-offset-2 hover:opacity-70"
-            >
+            <Button type="button" variant="link" size="xs" onClick={setOnlyOneSize}>
               Set One Size
             </Button>
             {selectedSizes.length > 0 && (
@@ -450,7 +434,7 @@ export function ProductVariantGenerator({
                   variant="link"
                   size="xs"
                   onClick={clearSizes}
-                  className="text-muted-foreground h-auto p-0 hover:text-red-600"
+                  className="text-red-600"
                 >
                   Clear sizes
                 </Button>
@@ -463,18 +447,15 @@ export function ProductVariantGenerator({
         <div className="border-vl-dark-900/10 flex flex-wrap items-center gap-1.5 border-b pb-2">
           <span className="text-muted-foreground mr-1 text-[11px] font-medium">Category:</span>
           {(Object.keys(LIFESTYLE_SIZE_GROUPS) as LifestyleSizeGroupId[]).map((groupId) => (
-            <button
+            <Button
               key={groupId}
               type="button"
+              size="2xs"
               onClick={() => setActiveSizeGroup(groupId)}
-              className={`rounded px-2.5 py-1 text-xs font-semibold transition-colors ${
-                activeSizeGroup === groupId
-                  ? "bg-vl-dark-900 text-white shadow-2xs"
-                  : "bg-vl-white-200 text-vl-dark-900 hover:bg-vl-white-300 border-vl-dark-900/10 border"
-              }`}
+              variant={activeSizeGroup === groupId ? "primary" : "outline"}
             >
               {LIFESTYLE_SIZE_GROUPS[groupId].label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -488,11 +469,6 @@ export function ProductVariantGenerator({
                 variant={isSelected ? "primary" : "outline"}
                 size="sm"
                 onClick={() => toggleSize(size)}
-                className={`min-h-9 px-3 text-xs font-semibold ${
-                  isSelected
-                    ? "bg-vl-dark-900 text-white shadow-xs"
-                    : "text-vl-dark-900 hover:bg-vl-white-100 bg-white"
-                }`}
               >
                 {size}
               </Button>
@@ -501,7 +477,7 @@ export function ProductVariantGenerator({
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
           <Input
-            size="default"
+            size="sm"
             className="w-full text-xs"
             value={customSize}
             onChange={(e) => setCustomSize(e.target.value)}
@@ -516,7 +492,7 @@ export function ProductVariantGenerator({
           <Button
             type="button"
             variant="outline"
-            size="default"
+            size="sm"
             onClick={addCustomSize}
             className="shrink-0"
           >
@@ -558,11 +534,11 @@ export function ProductVariantGenerator({
                 variant={isSelected ? "primary" : "outline"}
                 size="sm"
                 onClick={() => toggleColor(color)}
-                className={`min-h-9 gap-2 px-3 text-xs font-semibold ${
-                  isSelected
-                    ? "bg-vl-dark-900 text-white shadow-xs"
-                    : "text-vl-dark-900 hover:bg-vl-white-100 bg-white"
-                }`}
+                // className={`min-h-9 gap-2 px-3 text-xs font-semibold ${
+                //   isSelected
+                //     ? "bg-vl-dark-900 text-white shadow-xs"
+                //     : "text-vl-dark-900 hover:bg-vl-white-100 bg-white"
+                // }`}
               >
                 <span
                   className={`size-3 shrink-0 rounded-full ${isLight ? "border border-black/20" : ""}`}
@@ -575,7 +551,7 @@ export function ProductVariantGenerator({
         </div>
         <div className="flex max-w-sm items-center gap-2 pt-1">
           <Input
-            size="default"
+            size="sm"
             className="w-full text-xs"
             value={customColor}
             onChange={(e) => setCustomColor(e.target.value)}
@@ -590,7 +566,7 @@ export function ProductVariantGenerator({
           <Button
             type="button"
             variant="outline"
-            size="default"
+            size="sm"
             onClick={addCustomColor}
             className="shrink-0"
           >
@@ -614,7 +590,7 @@ export function ProductVariantGenerator({
               <select
                 value={bulkTarget}
                 onChange={(e) => setBulkTarget(e.target.value)}
-                className="border-vl-dark-900/15 text-vl-dark-900 shadow-2xs focus:border-vl-cyan h-7 rounded border bg-white px-2 text-xs font-semibold"
+                className="border-vl-dark-900/15 text-vl-dark-900 focus:border-vl-cyan h-7 rounded border bg-white px-2 text-xs font-semibold shadow-2xs"
               >
                 <option value="ALL">All {variants.length} Variants</option>
                 {selectedColors.length > 0 && (
@@ -639,14 +615,8 @@ export function ProductVariantGenerator({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="link"
-              size="xs"
-              onClick={handleRegenerateAllSkus}
-              className="text-muted-foreground hover:text-vl-dark-900 h-auto p-0 text-xs font-medium underline underline-offset-2"
-            >
-              <RefreshCw className="text-vl-dark-900/60 size-3" />
+            <Button type="button" variant="ghost" size="2xs" onClick={handleRegenerateAllSkus}>
+              <Sparkles className="text-vl-cyan size-3.5" />
               Regenerate all SKUs
             </Button>
           </div>
@@ -748,46 +718,50 @@ export function ProductVariantGenerator({
         {/* 1-CLICK COURIER SHIPPING WEIGHT PRESETS */}
         <div className="border-vl-dark-900/10 flex flex-wrap items-center gap-1.5 border-t pt-2.5 text-[11px]">
           <span className="text-vl-dark-900 font-semibold">⚡ Courier Weight Presets:</span>
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="2xs"
             onClick={() => {
               setBulkWeight("0.25");
               toast.info("Set bulk weight to 0.25 kg (T-Shirt)");
             }}
-            className="border-vl-dark-900/15 text-vl-dark-900 hover:bg-vl-dark-900 rounded border bg-white px-2 py-0.5 font-medium transition-colors hover:text-white"
           >
             👕 Tee (0.25 kg)
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="2xs"
             onClick={() => {
               setBulkWeight("0.75");
               toast.info("Set bulk weight to 0.75 kg (Hoodie/Sweatshirt)");
             }}
-            className="border-vl-dark-900/15 text-vl-dark-900 hover:bg-vl-dark-900 rounded border bg-white px-2 py-0.5 font-medium transition-colors hover:text-white"
           >
             🧥 Hoodie (0.75 kg)
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="2xs"
             onClick={() => {
               setBulkWeight("1.10");
               toast.info("Set bulk weight to 1.10 kg (Denim/Jacket)");
             }}
-            className="border-vl-dark-900/15 text-vl-dark-900 hover:bg-vl-dark-900 rounded border bg-white px-2 py-0.5 font-medium transition-colors hover:text-white"
           >
             👖 Denim/Jacket (1.10 kg)
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="2xs"
             onClick={() => {
               setBulkWeight("0.15");
               toast.info("Set bulk weight to 0.15 kg (Cap/Wallet/Jewelry)");
             }}
-            className="border-vl-dark-900/15 text-vl-dark-900 hover:bg-vl-dark-900 rounded border bg-white px-2 py-0.5 font-medium transition-colors hover:text-white"
           >
             🧢 Cap/Wallet (0.15 kg)
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -796,16 +770,16 @@ export function ProductVariantGenerator({
 
       {/* GENERATED VARIANTS LIST WITH LIVE PROFIT MARGIN & WEIGHT */}
       <div className="space-y-3 pt-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-vl-dark-900/10 pb-3">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-2 border-b pb-3">
           <div className="flex flex-wrap items-center gap-3">
             <h4 className="text-vl-dark-900 text-xs font-bold tracking-wider uppercase">
               Variant Details ({variants.length})
             </h4>
-            <div className="flex items-center gap-1 rounded-sm border border-vl-dark-900/10 bg-vl-white-200 p-0.5 text-xs font-semibold">
+            <div className="border-vl-dark-900/10 bg-vl-white-200 flex items-center gap-1 rounded-sm border p-0.5 text-xs font-semibold">
               <button
                 type="button"
                 onClick={() => setVariantViewMode("matrix")}
-                className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
                   variantViewMode === "matrix"
                     ? "bg-vl-dark-900 text-white shadow-2xs"
                     : "text-vl-dark-900/70 hover:text-vl-dark-900"
@@ -817,7 +791,7 @@ export function ProductVariantGenerator({
               <button
                 type="button"
                 onClick={() => setVariantViewMode("cards")}
-                className={`inline-flex items-center gap-1.5 rounded-xs px-2.5 py-1 text-xs font-semibold transition-colors ${
+                className={`inline-flex cursor-pointer items-center gap-1.5 rounded-xs px-1.5 py-0.5 text-xs font-semibold transition-colors ${
                   variantViewMode === "cards"
                     ? "bg-vl-dark-900 text-white shadow-2xs"
                     : "text-vl-dark-900/70 hover:text-vl-dark-900"
@@ -835,172 +809,195 @@ export function ProductVariantGenerator({
 
         {variantViewMode === "matrix" ? (
           <div className="space-y-3">
-            <div className="overflow-x-auto rounded-sm border border-vl-dark-900/15 bg-white shadow-xs">
+            <div className="border-vl-dark-900/15 overflow-x-auto rounded-sm border bg-white shadow-xs">
               <table className="w-full border-collapse text-left text-xs">
                 <thead>
-                  <tr className="border-b border-vl-dark-900/10 bg-vl-white-100 text-vl-dark-900">
-                    <th className="p-3 font-bold uppercase tracking-wider">Colorway</th>
+                  <tr className="border-vl-dark-900/10 bg-vl-white-100 text-vl-dark-900 border-b">
+                    <th className="p-3 font-bold tracking-wider uppercase">Colorway</th>
                     {(selectedSizes.length > 0 ? selectedSizes : ["Default Size"]).map((size) => (
-                      <th key={size} className="p-3 text-center font-bold uppercase tracking-wider">
+                      <th key={size} className="p-3 text-center font-bold tracking-wider uppercase">
                         {size}
                       </th>
                     ))}
-                    <th className="p-3 text-center font-bold uppercase tracking-wider">Color Total</th>
-                    <th className="p-3 text-right font-bold uppercase tracking-wider">Row Selling (৳)</th>
-                    <th className="p-3 text-right font-bold uppercase tracking-wider">Row Discount (৳)</th>
+                    <th className="p-3 text-center font-bold tracking-wider uppercase">
+                      Color Total
+                    </th>
+                    <th className="p-3 text-right font-bold tracking-wider uppercase">
+                      Row Selling (৳)
+                    </th>
+                    <th className="p-3 text-right font-bold tracking-wider uppercase">
+                      Row Discount (৳)
+                    </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-vl-dark-900/10">
-                  {(selectedColors.length > 0 ? selectedColors : ["Default Color"]).map((colorName) => {
-                    const actualColor = colorName === "Default Color" ? "" : colorName;
-                    const hex = COLOR_HEX[actualColor.toLowerCase()] ?? "#9CA3AF";
-                    const isLight =
-                      hex.toLowerCase() === "#ffffff" ||
-                      hex.toLowerCase() === "#f5f5dc" ||
-                      hex.toLowerCase() === "#eab308";
+                <tbody className="divide-vl-dark-900/10 divide-y">
+                  {(selectedColors.length > 0 ? selectedColors : ["Default Color"]).map(
+                    (colorName) => {
+                      const actualColor = colorName === "Default Color" ? "" : colorName;
+                      const hex = COLOR_HEX[actualColor.toLowerCase()] ?? "#9CA3AF";
+                      const isLight =
+                        hex.toLowerCase() === "#ffffff" ||
+                        hex.toLowerCase() === "#f5f5dc" ||
+                        hex.toLowerCase() === "#eab308";
 
-                    const colorVariants = variants.filter(
-                      (v) => (v.color || "").trim().toLowerCase() === actualColor.trim().toLowerCase()
-                    );
-                    const colorStockSum = colorVariants.reduce(
-                      (acc, v) => acc + (parseInt(v.stock, 10) > 0 ? parseInt(v.stock, 10) : 0),
-                      0
-                    );
-                    const firstVariant = colorVariants[0];
+                      const colorVariants = variants.filter(
+                        (v) =>
+                          (v.color || "").trim().toLowerCase() === actualColor.trim().toLowerCase()
+                      );
+                      const colorStockSum = colorVariants.reduce(
+                        (acc, v) => acc + (parseInt(v.stock, 10) > 0 ? parseInt(v.stock, 10) : 0),
+                        0
+                      );
+                      const firstVariant = colorVariants[0];
 
-                    return (
-                      <tr key={colorName} className="hover:bg-vl-white-100/50 transition-colors">
-                        <td className="p-3 font-semibold text-vl-dark-900 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            {actualColor ? (
-                              <span
-                                className={`size-3 shrink-0 rounded-full ${isLight ? "border border-black/20" : ""}`}
-                                style={{ backgroundColor: hex }}
-                              />
-                            ) : null}
-                            <span>{colorName}</span>
-                          </div>
-                        </td>
+                      return (
+                        <tr key={colorName} className="hover:bg-vl-white-100/50 transition-colors">
+                          <td className="text-vl-dark-900 p-3 font-semibold whitespace-nowrap">
+                            <div className="flex items-center gap-2">
+                              {actualColor ? (
+                                <span
+                                  className={`size-3 shrink-0 rounded-full ${isLight ? "border border-black/20" : ""}`}
+                                  style={{ backgroundColor: hex }}
+                                />
+                              ) : null}
+                              <span>{colorName}</span>
+                            </div>
+                          </td>
 
-                        {(selectedSizes.length > 0 ? selectedSizes : [""]).map((sizeName) => {
-                          const actualSize = sizeName === "Default Size" ? "" : sizeName;
-                          const variantIndex = variants.findIndex(
-                            (v) =>
-                              (v.size || "").trim().toLowerCase() === actualSize.trim().toLowerCase() &&
-                              (v.color || "").trim().toLowerCase() === actualColor.trim().toLowerCase()
-                          );
-                          const v = variants[variantIndex];
-                          if (!v) {
+                          {(selectedSizes.length > 0 ? selectedSizes : [""]).map((sizeName) => {
+                            const actualSize = sizeName === "Default Size" ? "" : sizeName;
+                            const variantIndex = variants.findIndex(
+                              (v) =>
+                                (v.size || "").trim().toLowerCase() ===
+                                  actualSize.trim().toLowerCase() &&
+                                (v.color || "").trim().toLowerCase() ===
+                                  actualColor.trim().toLowerCase()
+                            );
+                            const v = variants[variantIndex];
+                            if (!v) {
+                              return (
+                                <td
+                                  key={sizeName}
+                                  className="text-muted-foreground p-2 text-center"
+                                >
+                                  —
+                                </td>
+                              );
+                            }
+                            const stockInt = parseInt(v.stock || "0", 10);
+                            const isZero = isNaN(stockInt) || stockInt <= 0;
+                            const isLow = !isZero && stockInt <= 5;
+
                             return (
-                              <td key={sizeName} className="p-2 text-center text-muted-foreground">
-                                —
+                              <td key={sizeName} className="p-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  value={v.stock}
+                                  onChange={(e) =>
+                                    updateVariant(variantIndex, "stock", e.target.value)
+                                  }
+                                  className={`focus:border-vl-cyan focus:ring-vl-cyan w-16 rounded border py-1 text-center font-mono text-xs font-bold transition-all focus:ring-1 focus:outline-none ${
+                                    isZero
+                                      ? "border-neutral-300 bg-neutral-50 text-neutral-500"
+                                      : isLow
+                                        ? "border-amber-300 bg-amber-50 text-amber-900"
+                                        : "border-vl-dark-900/20 text-vl-dark-900 bg-white"
+                                  }`}
+                                  title={`Stock for ${colorName} - ${sizeName || "Default"}`}
+                                />
                               </td>
                             );
-                          }
-                          const stockInt = parseInt(v.stock || "0", 10);
-                          const isZero = isNaN(stockInt) || stockInt <= 0;
-                          const isLow = !isZero && stockInt <= 5;
+                          })}
 
-                          return (
-                            <td key={sizeName} className="p-2 text-center">
-                              <input
-                                type="number"
-                                min="0"
-                                step="1"
-                                value={v.stock}
-                                onChange={(e) => updateVariant(variantIndex, "stock", e.target.value)}
-                                className={`w-16 rounded border py-1 text-center font-mono text-xs font-bold transition-all focus:border-vl-cyan focus:ring-1 focus:ring-vl-cyan focus:outline-none ${
-                                  isZero
-                                    ? "border-neutral-300 bg-neutral-50 text-neutral-500"
-                                    : isLow
-                                      ? "border-amber-300 bg-amber-50 text-amber-900"
-                                      : "border-vl-dark-900/20 bg-white text-vl-dark-900"
-                                }`}
-                                title={`Stock for ${colorName} - ${sizeName || "Default"}`}
-                              />
-                            </td>
-                          );
-                        })}
+                          <td className="text-vl-dark-900 p-3 text-center font-mono font-bold whitespace-nowrap">
+                            <span
+                              className={`inline-flex rounded px-2 py-0.5 text-xs ${
+                                colorStockSum > 0
+                                  ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
+                                  : "bg-neutral-100 text-neutral-600"
+                              }`}
+                            >
+                              {colorStockSum} pcs
+                            </span>
+                          </td>
 
-                        <td className="p-3 text-center font-mono font-bold text-vl-dark-900 whitespace-nowrap">
-                          <span
-                            className={`inline-flex rounded px-2 py-0.5 text-xs ${
-                              colorStockSum > 0
-                                ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
-                                : "bg-neutral-100 text-neutral-600"
-                            }`}
-                          >
-                            {colorStockSum} pcs
-                          </span>
-                        </td>
-
-                        <td className="p-2 text-right">
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder="Row Price"
-                            value={firstVariant?.sellingPrice ?? ""}
-                            onChange={(e) => {
-                              const newPrice = e.target.value;
-                              setIsDirty(true);
-                              setVariants((curr) =>
-                                curr.map((v) =>
-                                  (v.color || "").trim().toLowerCase() === actualColor.trim().toLowerCase()
-                                    ? { ...v, sellingPrice: newPrice }
-                                    : v
-                                )
-                              );
-                            }}
-                            className="w-24 rounded border border-vl-dark-900/20 bg-white px-2 py-1 text-right font-mono text-xs focus:border-vl-cyan focus:ring-1 focus:ring-vl-cyan focus:outline-none"
-                            title={`Update selling price across all sizes in ${colorName}`}
-                          />
-                        </td>
-                        <td className="p-2 text-right">
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            placeholder="Optional"
-                            value={firstVariant?.discountPrice ?? ""}
-                            onChange={(e) => {
-                              const newDiscount = e.target.value;
-                              setIsDirty(true);
-                              setVariants((curr) =>
-                                curr.map((v) =>
-                                  (v.color || "").trim().toLowerCase() === actualColor.trim().toLowerCase()
-                                    ? { ...v, discountPrice: newDiscount }
-                                    : v
-                                )
-                              );
-                            }}
-                            className="w-24 rounded border border-vl-dark-900/20 bg-white px-2 py-1 text-right font-mono text-xs focus:border-vl-cyan focus:ring-1 focus:ring-vl-cyan focus:outline-none"
-                            title={`Update discount price across all sizes in ${colorName}`}
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          <td className="p-2 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="Row Price"
+                              value={firstVariant?.sellingPrice ?? ""}
+                              onChange={(e) => {
+                                const newPrice = e.target.value;
+                                setIsDirty(true);
+                                setVariants((curr) =>
+                                  curr.map((v) =>
+                                    (v.color || "").trim().toLowerCase() ===
+                                    actualColor.trim().toLowerCase()
+                                      ? { ...v, sellingPrice: newPrice }
+                                      : v
+                                  )
+                                );
+                              }}
+                              className="border-vl-dark-900/20 focus:border-vl-cyan focus:ring-vl-cyan w-24 rounded border bg-white px-2 py-1 text-right font-mono text-xs focus:ring-1 focus:outline-none"
+                              title={`Update selling price across all sizes in ${colorName}`}
+                            />
+                          </td>
+                          <td className="p-2 text-right">
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              placeholder="Optional"
+                              value={firstVariant?.discountPrice ?? ""}
+                              onChange={(e) => {
+                                const newDiscount = e.target.value;
+                                setIsDirty(true);
+                                setVariants((curr) =>
+                                  curr.map((v) =>
+                                    (v.color || "").trim().toLowerCase() ===
+                                    actualColor.trim().toLowerCase()
+                                      ? { ...v, discountPrice: newDiscount }
+                                      : v
+                                  )
+                                );
+                              }}
+                              className="border-vl-dark-900/20 focus:border-vl-cyan focus:ring-vl-cyan w-24 rounded border bg-white px-2 py-1 text-right font-mono text-xs focus:ring-1 focus:outline-none"
+                              title={`Update discount price across all sizes in ${colorName}`}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-vl-dark-900/20 bg-vl-white-200 font-bold text-vl-dark-900">
+                  <tr className="border-vl-dark-900/20 bg-vl-white-200 text-vl-dark-900 border-t-2 font-bold">
                     <td className="p-3">Size Totals:</td>
-                    {(selectedSizes.length > 0 ? selectedSizes : ["Default Size"]).map((sizeName) => {
-                      const actualSize = sizeName === "Default Size" ? "" : sizeName;
-                      const sizeTotal = variants
-                        .filter(
-                          (v) => (v.size || "").trim().toLowerCase() === actualSize.trim().toLowerCase()
-                        )
-                        .reduce(
-                          (acc, v) => acc + (parseInt(v.stock, 10) > 0 ? parseInt(v.stock, 10) : 0),
-                          0
+                    {(selectedSizes.length > 0 ? selectedSizes : ["Default Size"]).map(
+                      (sizeName) => {
+                        const actualSize = sizeName === "Default Size" ? "" : sizeName;
+                        const sizeTotal = variants
+                          .filter(
+                            (v) =>
+                              (v.size || "").trim().toLowerCase() ===
+                              actualSize.trim().toLowerCase()
+                          )
+                          .reduce(
+                            (acc, v) =>
+                              acc + (parseInt(v.stock, 10) > 0 ? parseInt(v.stock, 10) : 0),
+                            0
+                          );
+                        return (
+                          <td key={sizeName} className="p-3 text-center font-mono text-xs">
+                            {sizeTotal}
+                          </td>
                         );
-                      return (
-                        <td key={sizeName} className="p-3 text-center font-mono text-xs">
-                          {sizeTotal}
-                        </td>
-                      );
-                    })}
+                      }
+                    )}
                     <td className="p-3 text-center font-mono text-xs font-bold text-emerald-800">
                       {variants.reduce(
                         (acc, v) => acc + (parseInt(v.stock, 10) > 0 ? parseInt(v.stock, 10) : 0),
@@ -1008,16 +1005,24 @@ export function ProductVariantGenerator({
                       )}{" "}
                       Total
                     </td>
-                    <td colSpan={2} className="p-3 text-right text-[11px] font-normal text-muted-foreground">
+                    <td
+                      colSpan={2}
+                      className="text-muted-foreground p-3 text-right text-[11px] font-normal"
+                    >
                       Press Tab to jump between stock inputs
                     </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
               <p>
-                💡 <strong>Speed Tip:</strong> Press <kbd className="rounded border bg-vl-white-200 px-1 py-0.5 font-mono text-[10px]">Tab</kbd> to rapidly enter stock across sizes. Row price fields update all sizes for that color simultaneously.
+                💡 <strong>Speed Tip:</strong> Press{" "}
+                <kbd className="bg-vl-white-200 rounded border px-1 py-0.5 font-mono text-[10px]">
+                  Tab
+                </kbd>{" "}
+                to rapidly enter stock across sizes. Row price fields update all sizes for that
+                color simultaneously.
               </p>
               <Button
                 type="button"
@@ -1055,9 +1060,9 @@ export function ProductVariantGenerator({
 
               const isDuplicateSku = Boolean(
                 variant.sku.trim() &&
-                  variants.filter(
-                    (v) => v.sku.trim().toLowerCase() === variant.sku.trim().toLowerCase()
-                  ).length > 1
+                variants.filter(
+                  (v) => v.sku.trim().toLowerCase() === variant.sku.trim().toLowerCase()
+                ).length > 1
               );
 
               const stockNum = parseInt(variant.stock || "0", 10);
@@ -1114,7 +1119,8 @@ export function ProductVariantGenerator({
                       {isDiscountInvalid && (
                         <span className="inline-flex items-center gap-1 rounded border border-red-300 bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-800">
                           <AlertTriangle className="size-3" />
-                          Discount (৳{variant.discountPrice}) must be less than Selling (৳{variant.sellingPrice})
+                          Discount (৳{variant.discountPrice}) must be less than Selling (৳
+                          {variant.sellingPrice})
                         </span>
                       )}
                       {isDuplicateSku && (
@@ -1139,8 +1145,8 @@ export function ProductVariantGenerator({
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
                             <TrendingUp className="size-3 text-emerald-600" />
-                            Profit: +৳{profitData.profit.toFixed(2)} ({profitData.margin.toFixed(1)}%
-                            margin)
+                            Profit: +৳{profitData.profit.toFixed(2)} ({profitData.margin.toFixed(1)}
+                            % margin)
                           </span>
                         )
                       ) : null}
@@ -1170,7 +1176,9 @@ export function ProductVariantGenerator({
                   <div className="mt-3 grid gap-3 sm:grid-cols-2 md:grid-cols-6">
                     <div>
                       <div className="flex items-center justify-between">
-                        <label className="text-muted-foreground block text-xs font-medium">SKU</label>
+                        <label className="text-muted-foreground block text-xs font-medium">
+                          SKU
+                        </label>
                         <Button
                           type="button"
                           variant="link"
@@ -1192,7 +1200,11 @@ export function ProductVariantGenerator({
                           maxLength={100}
                           placeholder={generateSku(productIdentifier, variant.size, variant.color)}
                           size="default"
-                          className={isDuplicateSku ? "border-amber-500 bg-amber-50/50 focus-visible:ring-amber-500" : ""}
+                          className={
+                            isDuplicateSku
+                              ? "border-amber-500 bg-amber-50/50 focus-visible:ring-amber-500"
+                              : ""
+                          }
                         />
                       </div>
                     </div>
@@ -1207,7 +1219,9 @@ export function ProductVariantGenerator({
                           step="0.01"
                           placeholder="0.00"
                           value={variant.costPrice}
-                          onChange={(event) => updateVariant(index, "costPrice", event.target.value)}
+                          onChange={(event) =>
+                            updateVariant(index, "costPrice", event.target.value)
+                          }
                           size="default"
                         />
                       </div>
@@ -1245,7 +1259,11 @@ export function ProductVariantGenerator({
                             updateVariant(index, "discountPrice", event.target.value)
                           }
                           size="default"
-                          className={isDiscountInvalid ? "border-red-500 bg-red-50/50 focus-visible:ring-red-500" : ""}
+                          className={
+                            isDiscountInvalid
+                              ? "border-red-500 bg-red-50/50 focus-visible:ring-red-500"
+                              : ""
+                          }
                         />
                       </div>
                     </div>
