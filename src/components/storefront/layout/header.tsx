@@ -30,7 +30,7 @@ export async function Header() {
             {/* Circular Black Badge with White Logo Emblem */}
             <div className="border-vl-cyan bg-vl-black relative flex size-8.5 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
               <Image
-                src="/logo/icon/vl_icon_white_transparent.svg"
+                src="/logo/icon/vibelock_icon_dark.svg"
                 alt="VibeLock"
                 width={20}
                 height={20}

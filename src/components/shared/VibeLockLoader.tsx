@@ -271,38 +271,38 @@ export default function VibeLockLoader({
           {/* Animated Glow Halo */}
           <div
             aria-hidden="true"
-            className="vl-glow border-vl-cyan-200/80 bg-vl-cyan-50 absolute -inset-2.5 rounded-full border shadow-[0_0_24px_rgba(0,217,255,0.25)]"
+            className="vl-glow border-vl-cyan-200/80 bg-vl-cyan-50 absolute -inset-3 sm:-inset-3.5 rounded-full border shadow-[0_0_28px_rgba(0,217,255,0.28)]"
           />
 
           {/* Precision Badge Container */}
-          <div className="border-vl-cyan-500 bg-vl-dark-900 relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_24px_rgba(0,217,255,0.35)]">
+          <div className="border-vl-cyan-500 bg-vl-dark-900 relative flex size-20 sm:size-24 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_28px_rgba(0,217,255,0.4)]">
             <Image
-              src="/logo/icon/vl_icon_white_transparent.svg"
+              src="/logo/icon/vibelock_icon_dark.svg"
               alt="VibeLock"
-              width={36}
-              height={36}
+              width={56}
+              height={56}
               priority
-              className="vl-breathe size-9 object-contain"
+              className="vl-breathe size-12 sm:size-14 object-contain"
             />
           </div>
         </div>
 
         {/* Brand Name Typography */}
-        <div className="mt-5 flex flex-col items-center text-center">
+        <div className="mt-6 flex flex-col items-center text-center">
           <Image
             src="/logo/workmark/vibelock_wordmark_black_transparent.svg"
             alt="VibeLock"
-            width={160}
-            height={64}
+            width={220}
+            height={88}
             priority
-            className="h-11 w-auto object-contain sm:h-12"
+            className="h-13 w-auto object-contain sm:h-16"
           />
-          <div className="mt-1.5 flex items-center gap-2">
-            <span className="bg-vl-dark-900/20 h-px w-3" />
+          <div className="mt-2 flex items-center gap-2">
+            <span className="bg-vl-dark-900/20 h-px w-3.5" />
             <span className="text-vl-cyan-700 tracking-streetwear text-2xs font-extrabold uppercase">
               {subLabel}
             </span>
-            <span className="bg-vl-dark-900/20 h-px w-3" />
+            <span className="bg-vl-dark-900/20 h-px w-3.5" />
           </div>
         </div>
 
