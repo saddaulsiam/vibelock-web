@@ -327,7 +327,7 @@ export function HomeAllProducts({ products, bestSellers, categories = [] }: Home
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUpOrLeave}
               onMouseLeave={handleMouseUpOrLeave}
-              className={`flex scrollbar-none items-center gap-2 overflow-x-auto overscroll-x-contain px-2 py-1.5 [&::-webkit-scrollbar]:hidden ${
+              className={`flex items-center gap-2 overflow-x-auto px-2 py-1.5 scrollbar-none [scrollbar-width:none] overscroll-x-contain [&::-webkit-scrollbar]:hidden ${
                 isDragging ? "cursor-grabbing select-none" : "cursor-grab"
               }`}
             >
