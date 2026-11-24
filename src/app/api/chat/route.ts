@@ -6,6 +6,8 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { checkRateLimit, getIp } from "@/lib/security/rate-limit";
 import { getWhatsAppUrl } from "@/lib/config/contact";
+import { recommendSize } from "@/lib/catalog/sizing";
+import { getEligibleShippingMethods, isDhakaCity } from "@/lib/shipping/pricing";
 
 export const maxDuration = 30;
 
@@ -16,7 +18,10 @@ interface OrderAttempt {
 }
 const orderFailuresStore = new Map<string, OrderAttempt>();
 
-function checkAndRecordOrderFailure(orderNumber: string): { locked: boolean; remainingMinutes?: number } {
+function checkAndRecordOrderFailure(orderNumber: string): {
+  locked: boolean;
+  remainingMinutes?: number;
+} {
   const normalizedKey = orderNumber.trim().toUpperCase();
   const now = Date.now();
   const record = orderFailuresStore.get(normalizedKey) || { failures: 0 };
@@ -124,7 +129,7 @@ export async function POST(req: NextRequest) {
   try {
     const { messages }: { messages: UIMessage[] } = await req.json();
 
-    // Feature 3: Safe Sliding window - Keep only recent messages without breaking tool invocations
+    // Safe Sliding window - Keep only recent messages without breaking tool invocations
     const recentMessages = getSafeRecentMessages(messages, 8);
 
     const result = streamText({
@@ -132,10 +137,13 @@ export async function POST(req: NextRequest) {
       instructions: `
         You are VibeLock AI Assistant, an intelligent, helpful, and courteous support assistant for VibeLock (a premier premium streetwear & apparel fashion brand in Bangladesh).
         
-        Brand Name & Bengali Spelling Rule (CRITICAL):
-        - The brand name is VibeLock.
-        - When writing or referring to the brand name in Bengali, ALWAYS write "ভাইবলক" (or "VibeLock (ভাইবলক)").
-        - NEVER write "ভিবলক", "ভাইব লক", or any other variation. The only correct Bengali spelling is strictly "ভাইবলক".
+        Brand Name & Natural Conversation Style (CRITICAL):
+        - Brand name format: Always write the brand name cleanly in English as "VibeLock" (e.g. "VibeLock", "VibeLock-এর").
+        - NEVER write Bengali transliterations like "ভাইবলক", "ভাইবলক (VibeLock)", "ভিবলক", or "ভাইব লক".
+        - NATURAL CONVERSATIONAL TONE (NO ROBOTIC PREFIXING):
+          * DO NOT robotically start every single answer or paragraph with "VibeLock-এর..." or "VibeLock (ভাইবলক)-এর...".
+          * Answer directly, naturally, and warmly like an expert store assistant (e.g. "আমাদের কালেকশনে...", "আপনার উচ্চতা ও ওজনের জন্য...", "মিরপুর ১০ নম্বরে ডেলিভারি পেতে...").
+          * Only mention "VibeLock" when genuinely necessary or relevant (e.g. "VibeLock ওয়েবসাইট", "VibeLock আউটলেট").
         
         Official VibeLock Store & Brand Information:
         - Physical Retail Store Location:
@@ -154,18 +162,32 @@ export async function POST(req: NextRequest) {
           * Premium shirts, drop-shoulder t-shirts, graphic tees, denim & cargo pants, and shorts.
 
         Key response guidelines:
-        1. Language & Brand Identity: Answer in friendly, polite Bengali (or in English if the user asks in English). In Bengali, always write the brand name as "ভাইবলক".
+        1. Language & Brand Identity: Answer in friendly, polite Bengali (or in English if the user asks in English). Always write the brand name cleanly in English as "VibeLock" (never transliterated into Bengali). Speak naturally without repetitively announcing the brand name at the start of sentences.
         2. Store Location Queries: When asked about our physical shop, showroom, or store location, always clearly mention our retail store in Chatmohar, Pabna with the Google Maps link.
         3. Product Queries (Tool: searchProducts):
            - When asked about clothes, shirts, t-shirts, pants, colors, sizes, or pricing, ALWAYS call the searchProducts tool.
-           - Present products clearly with Markdown links: [Product Name](url) along with their price, available sizes, and stock status (e.g. "স্টকে রয়েছে" or "স্টক আউট").
+           - Present products clearly with clickable Markdown links: [Product Name](/product/slug) (always use relative URLs starting with /product/), along with their price, available sizes, and stock status (e.g. "স্টকে রয়েছে" or "স্টক আউট").
+        Customer Authentication Status:
+        ${userId ? `- The customer is currently LOGGED IN (User ID: "${userId}").` : `- The customer is currently NOT LOGGED IN.`}
+
         4. Order Tracking (Tool: getOrderStatus):
-           - If the user is logged in, query using orderNumber.
-           - If the user is not logged in (Guest), ask for both the order number and the last 4 digits of their phone number (e.g. phoneLast4: "5678").
+           - In VibeLock, EVERY order requires a registered customer account (there is NO guest checkout on VibeLock).
+           ${
+             userId
+               ? `- The customer is already LOGGED IN. When they ask to track an order, simply ask for their orderNumber (e.g. "আপনার অর্ডার নম্বরটি জানান, যেমন: VL-2026xxxxxx"). Do NOT ask for phone digits or mention login instructions.`
+               : `- The customer is currently NOT LOGGED IN. Tell them they can [সাইন ইন](/login) to view their orders, OR they can provide their order number and the last 4 digits of the phone number used in their account/order (e.g. phoneLast4: "5678").`
+           }
            - Never fabricate order details or delivery dates.
-        5. Human Support Escalation (Tool: requestHumanSupport):
+        5. Sizing & Fit Advice (Tool: recommendSize):
+           - When a customer asks what size to buy, how clothes fit, or gives their height or weight, ALWAYS call the recommendSize tool.
+           - State recommended sizes clearly in English letters/numbers (e.g. Size 32, Size 34, S, M, L, XL, XXL) so customers can order easily.
+           - Explain the recommended size, measurements, and fit silhouette in friendly Bengali.
+        6. Shipping & Delivery Estimation (Tool: getShippingEstimate):
+           - When asked about delivery fee, shipping charge, or delivery timeline for any area/district/city, ALWAYS call getShippingEstimate.
+           - Mention standard timelines, charges, COD availability, and note free store pickup in Chatmohar, Pabna.
+        7. Human Support Escalation (Tool: requestHumanSupport):
            - If a customer is dissatisfied, has a return/refund dispute, or explicitly requests to speak with a human agent, call requestHumanSupport and give them the clickable WhatsApp link.
-        6. Tone: Confident, helpful, concise, and respectful.
+        8. Tone: Confident, helpful, concise, and respectful.
       `,
       messages: await convertToModelMessages(recentMessages),
       stopWhen: isStepCount(5),
@@ -260,15 +282,19 @@ export async function POST(req: NextRequest) {
 
             const filtered = products
               .map((p) => {
-                const prices = p.variants.map((v) =>
-                  Number(v.discountPrice ?? v.sellingPrice)
-                );
+                const prices = p.variants.map((v) => Number(v.discountPrice ?? v.sellingPrice));
                 const minPrice = prices.length > 0 ? Math.min(...prices) : null;
 
                 // Calculate available stock per variant: totalStock - reservedStock
                 const inStockVariants = p.variants.filter((v) => {
-                  const totalStock = v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
-                  const reservedStock = v.inventoryReservations.reduce((sum, r) => sum + r.quantity, 0);
+                  const totalStock = v.inventoryTransactions.reduce(
+                    (sum, tx) => sum + tx.quantity,
+                    0
+                  );
+                  const reservedStock = v.inventoryReservations.reduce(
+                    (sum, r) => sum + r.quantity,
+                    0
+                  );
                   return totalStock - reservedStock > 0;
                 });
 
@@ -299,10 +325,10 @@ export async function POST(req: NextRequest) {
           },
         }),
 
-        // Feature 2: Secure Order Tracking (Hardened with Per-Order Lockout & Guest Fallback)
+        // Feature 2: Secure Order Tracking (Hardened with Per-Order Lockout & Phone Verification)
         getOrderStatus: tool({
           description:
-            "Look up real-time status and details of an order using its order number. For guest users without login, requires phoneLast4.",
+            "Look up real-time status and details of an order using its order number. When user is not signed in on browser, requires phoneLast4.",
           inputSchema: z.object({
             orderNumber: z
               .string()
@@ -315,7 +341,7 @@ export async function POST(req: NextRequest) {
               .trim()
               .max(20)
               .optional()
-              .describe("For guest users: the last 4 digits of the phone number used in the order"),
+              .describe("When not signed in: the last 4 digits of the phone number used in the account/order"),
           }),
           execute: async ({ orderNumber, phoneLast4 }) => {
             const normalizedOrderNo = orderNumber.trim();
@@ -331,11 +357,11 @@ export async function POST(req: NextRequest) {
               };
             }
 
-            // Guard: Guest users must supply at least 4 digits of the phone number
+            // Guard: If not signed in, customer must supply at least 4 digits of their account's phone number
             if (!userId && cleanPhone.length < 4) {
               return {
                 error:
-                  "লগইন ছাড়া গেস্ট হিসেবে অর্ডার ট্র্যাক করতে আপনার অর্ডারে ব্যবহৃত ফোন নম্বরের শেষ ৪টি ডিজিট প্রয়োজন (যেমন: phoneLast4: '5678')। অথবা আপনার অ্যাকাউন্টে সাইন ইন করুন।",
+                  "আপনার অ্যাকাউন্টে সাইন ইন করা না থাকলে অর্ডার স্ট্যাটাস দেখতে আপনার অর্ডার নম্বর এবং অর্ডারে ব্যবহৃত ফোন নম্বরের শেষ ৪টি ডিজিট প্রয়োজন (যেমন: phoneLast4: '5678')। অথবা আপনার অ্যাকাউন্টে [সাইন ইন](/login) করুন।",
               };
             }
 
@@ -375,7 +401,7 @@ export async function POST(req: NextRequest) {
               });
             }
 
-            // Step 2: Fallback for guest orders or logged-in users checking past guest orders with phone verification
+            // Step 2: Fallback when user is not signed in on this session or phone verification is provided
             if (!order && cleanPhone.length >= 4) {
               order = await prisma.order.findFirst({
                 where: {
@@ -459,6 +485,134 @@ export async function POST(req: NextRequest) {
           },
         }),
 
+        // Feature 5: Smart Size Recommendation Assistant
+        recommendSize: tool({
+          description:
+            "Recommend the best clothing size for VibeLock tops (t-shirts, drop shoulder, shirts), bottoms (cargo, denim, pants), or panjabi based on customer height, weight, and preferred fit.",
+          inputSchema: z.object({
+            category: z
+              .enum(["tops", "bottoms", "panjabi"])
+              .default("tops")
+              .describe(
+                "Clothing category: 'tops' (t-shirt, drop shoulder, shirt), 'bottoms' (cargo, jeans, pants), or 'panjabi'"
+              ),
+            height: z
+              .string()
+              .trim()
+              .max(30)
+              .describe("Customer height (e.g. '5 feet 8 inch', '5\\'9\"', '175 cm')"),
+            weight: z
+              .number()
+              .positive()
+              .max(250)
+              .optional()
+              .describe("Customer weight in kilograms (kg), e.g. 68"),
+            preferredFit: z
+              .enum(["regular", "slim", "oversized"])
+              .default("regular")
+              .describe(
+                "Fit preference: 'regular', 'slim' (fitted), or 'oversized' (baggy streetwear)"
+              ),
+          }),
+          execute: async ({ category, height, weight, preferredFit }) => {
+            const recommendation = recommendSize({
+              category,
+              height,
+              weight,
+              preferredFit,
+            });
+
+            return {
+              category: recommendation.category,
+              recommendedSize: recommendation.recommendedSize,
+              measurements: {
+                chestOrWaist: recommendation.chestOrWaist,
+                length: recommendation.length,
+              },
+              fitNote: recommendation.fitNote,
+              tip: "VibeLock-এর ড্রপ-শোল্ডার টি-শার্টগুলো মূলত ট্রেন্ডি বক্সি স্ট্রিটওয়্যার কাট। তাই পারফেক্ট ড্রপ ফিটের জন্য আপনার স্বাভাবিক সাইজই সিলেক্ট করুন।",
+            };
+          },
+        }),
+
+        // Feature 6: Real-time Delivery Charge & Timeline Calculator
+        getShippingEstimate: tool({
+          description:
+            "Calculate exact delivery charge and estimated delivery time based on customer destination district or city in Bangladesh.",
+          inputSchema: z.object({
+            cityOrDistrict: z
+              .string()
+              .trim()
+              .min(2)
+              .max(60)
+              .describe(
+                "District, city, or area in Bangladesh (e.g. 'Dhaka', 'Chattogram', 'Pabna', 'Sylhet', 'Rajshahi')"
+              ),
+          }),
+          execute: async ({ cityOrDistrict }) => {
+            const cleanCity = cityOrDistrict.trim();
+            const insideDhaka = isDhakaCity(cleanCity);
+
+            const norm = cleanCity.toLowerCase();
+            const isPabnaOrChatmohar =
+              norm.includes("pabna") ||
+              norm.includes("chatmohar") ||
+              norm.includes("পাবনা") ||
+              norm.includes("চাটমোহর");
+
+            let dbMethods: Awaited<ReturnType<typeof getEligibleShippingMethods>> = [];
+            try {
+              dbMethods = await getEligibleShippingMethods({
+                country: "BD",
+                city: cleanCity,
+              });
+            } catch {
+              // Graceful fallback to standard defaults
+            }
+
+            if (insideDhaka) {
+              const fee = dbMethods[0]?.cost ? `৳${dbMethods[0].cost}` : "৳60";
+              return {
+                area: "ঢাকার ভেতরে (Inside Dhaka)",
+                city: cleanCity,
+                deliveryFee: fee,
+                rawFee: Number(dbMethods[0]?.cost ?? 60),
+                estimatedTimeline: "২৪ থেকে ৪৮ ঘণ্টা (১ – ২ কার্যদিবস)",
+                courier: "Steadfast / Pathao Express",
+                codAvailable: true,
+                note: "ঢাকার ভেতরে ক্যাশ অন ডেলিভারি (COD) ও অনলাইন পেমেন্ট উভয় মাধ্যমেই অর্ডার করা যাবে।",
+              };
+            }
+
+            if (isPabnaOrChatmohar) {
+              return {
+                area: "পাবনা / চাটমোহর (Retail Outlet & Home Delivery)",
+                city: cleanCity,
+                deliveryFee: "৳120 (হোম ডেলিভারি) / ৳0 (শোরুম পিকআপ)",
+                rawFee: 120,
+                estimatedTimeline:
+                  "হোম ডেলিভারি: ২ – ৩ কার্যদিবস | শোরুম পিকআপ: ইনস্ট্যান্ট / একই দিন",
+                courier: "Steadfast Courier / VibeLock Retail Outlet",
+                codAvailable: true,
+                note: "পাবনা জেলায় হোম ডেলিভারি ছাড়াও আমাদের চাটমোহর শোরুম (খন্দকার মার্কেট, স্টার মোড়) থেকে সম্পূর্ণ বিনামূল্যে (৳০) পিকআপ করার সুবিধা রয়েছে!",
+              };
+            }
+
+            // Outside Dhaka / Nationwide
+            const fee = dbMethods[0]?.cost ? `৳${dbMethods[0].cost}` : "৳120";
+            return {
+              area: "ঢাকার বাইরে (Outside Dhaka - Nationwide)",
+              city: cleanCity,
+              deliveryFee: fee,
+              rawFee: Number(dbMethods[0]?.cost ?? 120),
+              estimatedTimeline: "৩ থেকে ৫ কার্যদিবস",
+              courier: "Steadfast Courier (সারাদেশের ৬৪ জেলায় ডোরস্টেপ ডেলিভারি)",
+              codAvailable: true,
+              note: "সারাদেশের যেকোনো প্রান্তে ক্যাশ অন ডেলিভারি (COD) সুবিধায় হোম ডেলিভারি পাওয়া যাবে।",
+            };
+          },
+        }),
+
         // Feature 4: 1-Click WhatsApp Human Support Handoff (Hardened against Social Engineering)
         requestHumanSupport: tool({
           description:
@@ -469,13 +623,20 @@ export async function POST(req: NextRequest) {
               .trim()
               .max(100)
               .optional()
-              .describe("Short topic summary of customer concern (e.g. 'অর্ডার ডেলিভারি বিলম্ব', 'রিটার্ন সহায়তা')"),
+              .describe(
+                "Short topic summary of customer concern (e.g. 'অর্ডার ডেলিভারি বিলম্ব', 'রিটার্ন সহায়তা')"
+              ),
           }),
           execute: async ({ topic }) => {
-            const cleanTopic = topic ? topic.replace(/[\r\n]+/g, " ").trim().slice(0, 80) : "";
+            const cleanTopic = topic
+              ? topic
+                  .replace(/[\r\n]+/g, " ")
+                  .trim()
+                  .slice(0, 80)
+              : "";
             const message = cleanTopic
-              ? `[ওয়েবসাইট চ্যাটবট ইনকোয়ারি]\nআসসালামু আলাইকুম, আমি ভাইবলক ওয়েবসাইট চ্যাটবট থেকে এসেছি। আমার "${cleanTopic}" নিয়ে সহায়তা প্রয়োজন।`
-              : `[ওয়েবসাইট চ্যাটবট ইনকোয়ারি]\nআসসালামু আলাইকুম, আমি ভাইবলক কাস্টমার সাপোর্ট টিমের সাথে সরাসরি কথা বলতে চাই।`;
+              ? `[ওয়েবসাইট চ্যাটবট ইনকোয়ারি]\nআসসালামু আলাইকুম, আমি VibeLock ওয়েবসাইট চ্যাটবট থেকে এসেছি। আমার "${cleanTopic}" নিয়ে সহায়তা প্রয়োজন।`
+              : `[ওয়েবসাইট চ্যাটবট ইনকোয়ারি]\nআসসালামু আলাইকুম, আমি VibeLock কাস্টমার সাপোর্ট টিমের সাথে সরাসরি কথা বলতে চাই।`;
 
             const waLink = getWhatsAppUrl(message);
 
@@ -483,7 +644,8 @@ export async function POST(req: NextRequest) {
               channel: "WhatsApp",
               phone: "01311-333277",
               link: waLink,
-              instruction: "নিচের হোয়াটসঅ্যাপ লিংকে ক্লিক করে সরাসরি আমাদের কাস্টমার রিপ্রেজেন্টেটিভের সাথে কথা বলুন।",
+              instruction:
+                "নিচের হোয়াটসঅ্যাপ লিংকে ক্লিক করে সরাসরি আমাদের কাস্টমার রিপ্রেজেন্টেটিভের সাথে কথা বলুন।",
             };
           },
         }),

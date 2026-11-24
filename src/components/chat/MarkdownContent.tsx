@@ -20,7 +20,7 @@ type Block =
   | { type: "p"; text: string };
 
 const INLINE_REGEX =
-  /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(https?:\/\/[^\s<]+)|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
+  /(\[([^\]]+)\]\(([^)\s]+)\))|(https?:\/\/[^\s<]+)|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)/g;
 
 function parseInlineTokens(text: string): InlineToken[] {
   const tokens: InlineToken[] = [];
@@ -87,21 +87,30 @@ function renderInline(text: string): React.ReactNode[] {
           </code>
         );
       case "link": {
-        // Sanitize protocol
-        const safeUrl =
-          token.url.startsWith("https://") || token.url.startsWith("http://")
-            ? token.url
-            : "#";
+        // Security sanitization: Allow safe internal relative URLs (/...) or safe external HTTPS/HTTP URLs.
+        // Blocks javascript:, data:, vbscript:, etc.
+        const trimmedUrl = token.url.trim();
+        const isInternal = trimmedUrl.startsWith("/") && !trimmedUrl.startsWith("//");
+        const isSafeExternal = trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://");
+
+        if (!isInternal && !isSafeExternal) {
+          return <React.Fragment key={i}>{token.label}</React.Fragment>;
+        }
+
+        const isExternal = isSafeExternal;
+
         return (
           <a
             key={i}
-            href={safeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-0.5 font-medium text-vl-cyan-400 underline decoration-vl-cyan-400/40 underline-offset-2 transition-colors hover:text-vl-cyan-300 hover:decoration-vl-cyan-300 break-all"
+            href={trimmedUrl}
+            target={isExternal ? "_blank" : undefined}
+            rel={isExternal ? "noopener noreferrer" : undefined}
+            className="inline-flex items-center gap-0.5 font-semibold text-vl-cyan-400 underline decoration-vl-cyan-400/50 underline-offset-2 transition-colors hover:text-vl-cyan-300 hover:decoration-vl-cyan-300 break-all cursor-pointer"
           >
             <span>{token.label}</span>
-            <ExternalLink className="size-2.5 shrink-0 inline opacity-70" aria-hidden="true" />
+            {isExternal && (
+              <ExternalLink className="size-2.5 shrink-0 inline opacity-70" aria-hidden="true" />
+            )}
           </a>
         );
       }
@@ -113,7 +122,8 @@ function renderInline(text: string): React.ReactNode[] {
 }
 
 function parseBlocks(rawText: string): Block[] {
-  const lines = rawText.split(/\r?\n/);
+  const normalized = rawText.replace(/\\n/g, "\n");
+  const lines = normalized.split(/\r?\n/);
   const blocks: Block[] = [];
   let currentList: Block | null = null;
 

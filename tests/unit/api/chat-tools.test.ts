@@ -27,6 +27,21 @@ interface ToolExecutionResult {
   channel?: string;
   phone?: string;
   link?: string;
+  category?: string;
+  recommendedSize?: string;
+  measurements?: {
+    chestOrWaist?: string;
+    length?: string;
+  };
+  fitNote?: string;
+  area?: string;
+  city?: string;
+  deliveryFee?: string;
+  rawFee?: number;
+  estimatedTimeline?: string;
+  courier?: string;
+  codAvailable?: boolean;
+  note?: string;
 }
 
 let capturedTools: Record<
@@ -70,6 +85,14 @@ vi.mock("@/lib/config/env", () => ({
     AUTH_SECRET: "mock-secret-for-testing-at-least-32-chars-long",
   },
 }));
+
+vi.mock("@/lib/shipping/pricing", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/shipping/pricing")>();
+  return {
+    ...actual,
+    getEligibleShippingMethods: vi.fn().mockResolvedValue([]),
+  };
+});
 
 describe("Chat Route Tools & Enhancements", () => {
   beforeEach(() => {
@@ -133,13 +156,13 @@ describe("Chat Route Tools & Enhancements", () => {
   });
 
   describe("2. getOrderStatus security & lockout defense", () => {
-    it("rejects guest tracking without at least 4 phone digits", async () => {
+    it("rejects tracking without at least 4 phone digits when not signed in", async () => {
       await triggerRoute();
       const result = await capturedTools.getOrderStatus.execute({ orderNumber: "VL-1001" });
       expect(result.error).toContain("ফোন নম্বরের শেষ ৪টি ডিজিট প্রয়োজন");
     });
 
-    it("allows guest tracking when valid last 4 digits are supplied", async () => {
+    it("allows tracking when valid last 4 phone digits are supplied without session", async () => {
       await triggerRoute();
 
       mockFindFirstOrder.mockResolvedValue({
@@ -231,6 +254,92 @@ describe("Chat Route Tools & Enhancements", () => {
       expect(result.phone).toBe("01311-333277");
       expect(result.link).toContain("https://wa.me/8801311333277");
       expect(decodeURIComponent(result.link || "")).toContain("[ওয়েবসাইট চ্যাটবট ইনকোয়ারি]");
+    });
+  });
+
+  describe("5. recommendSize tool", () => {
+    it("accurately recommends standard size based on height and weight", async () => {
+      await triggerRoute();
+      expect(capturedTools.recommendSize).toBeDefined();
+
+      const result = await capturedTools.recommendSize.execute({
+        category: "tops",
+        height: "5'8\"",
+        weight: 65,
+        preferredFit: "regular",
+      });
+
+      expect(result.recommendedSize).toBe("M");
+      expect(result.measurements?.chestOrWaist).toBe("40 – 42 ইঞ্চি");
+      expect(result.fitNote).toContain("সিগনেচার VibeLock");
+    });
+
+    it("adjusts size for oversized preference", async () => {
+      await triggerRoute();
+
+      const result = await capturedTools.recommendSize.execute({
+        category: "tops",
+        height: "5'8\"",
+        weight: 65,
+        preferredFit: "oversized",
+      });
+
+      // Regular M bumps to L for oversized fit
+      expect(result.recommendedSize).toBe("L");
+    });
+
+    it("recommends bottoms waist size accurately", async () => {
+      await triggerRoute();
+
+      const result = await capturedTools.recommendSize.execute({
+        category: "bottoms",
+        height: "5'10\"",
+        weight: 75,
+        preferredFit: "regular",
+      });
+
+      expect(result.recommendedSize).toBe("33 – 34");
+    });
+  });
+
+  describe("6. getShippingEstimate tool", () => {
+    it("returns correct timeline and ৳60 fee for Inside Dhaka", async () => {
+      await triggerRoute();
+      expect(capturedTools.getShippingEstimate).toBeDefined();
+
+      const result = await capturedTools.getShippingEstimate.execute({
+        cityOrDistrict: "Mirpur, Dhaka",
+      });
+
+      expect(result.area).toContain("Inside Dhaka");
+      expect(result.deliveryFee).toBe("৳60");
+      expect(result.estimatedTimeline).toContain("২৪ থেকে ৪৮ ঘণ্টা");
+      expect(result.codAvailable).toBe(true);
+    });
+
+    it("highlights free retail pickup for Pabna / Chatmohar", async () => {
+      await triggerRoute();
+
+      const result = await capturedTools.getShippingEstimate.execute({
+        cityOrDistrict: "Chatmohar, Pabna",
+      });
+
+      expect(result.area).toContain("Retail Outlet");
+      expect(result.deliveryFee).toContain("৳0 (শোরুম পিকআপ)");
+      expect(result.note).toContain("চাটমোহর শোরুম");
+    });
+
+    it("returns standard ৳120 fee and 3-5 days for other districts", async () => {
+      await triggerRoute();
+
+      const result = await capturedTools.getShippingEstimate.execute({
+        cityOrDistrict: "Sylhet",
+      });
+
+      expect(result.area).toContain("Outside Dhaka");
+      expect(result.deliveryFee).toBe("৳120");
+      expect(result.estimatedTimeline).toBe("৩ থেকে ৫ কার্যদিবস");
+      expect(result.codAvailable).toBe(true);
     });
   });
 });
