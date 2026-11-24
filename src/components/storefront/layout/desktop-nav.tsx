@@ -116,7 +116,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
       <Link
         href="/shop"
         className={`group relative flex items-center py-2 transition-colors ${
-          isShopActive ? "text-vl-cyan" : "text-white/75 hover:text-white"
+          isShopActive ? "text-vl-cyan" : "hover:text-vl-cyan text-white/75"
         }`}
       >
         <span>SHOP</span>
@@ -142,7 +142,7 @@ export function DesktopNav({ categories = [], isAuthenticated = false }: Desktop
               href={`/category/${cat.slug}`}
               onClick={handleClose}
               className={`group relative flex items-center py-2 transition-colors ${
-                isActive || isHovered ? "text-vl-cyan" : "text-white/75 hover:text-white"
+                isActive || isHovered ? "text-vl-cyan" : "hover:text-vl-cyan text-white/75"
               }`}
             >
               <span>{cat.label}</span>

@@ -76,10 +76,10 @@ export function CategoriesDrawer({
         <SheetTrigger
           id="categories-drawer-trigger"
           onClick={() => setOpen(true)}
-          className="flex cursor-pointer items-center gap-1.5 text-white/75 transition-colors hover:text-white focus-visible:outline-none"
+          className="hover:text-vl-cyan flex cursor-pointer items-center gap-1.5 text-white/75 transition-colors focus-visible:outline-none"
           aria-label="Open categories menu"
         >
-          <Menu className="size-3.5 text-white/75 hover:text-white" />
+          <Menu className="size-3.5" />
           <span>CATEGORIES</span>
         </SheetTrigger>
       )}
