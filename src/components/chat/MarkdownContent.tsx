@@ -67,13 +67,13 @@ function renderInline(text: string): React.ReactNode[] {
     switch (token.type) {
       case "bold":
         return (
-          <strong key={i} className="font-bold text-vl-white-50">
+          <strong key={i} className="text-vl-white-50 font-bold">
             {token.value}
           </strong>
         );
       case "italic":
         return (
-          <em key={i} className="italic text-vl-white-200">
+          <em key={i} className="text-vl-white-200 italic">
             {token.value}
           </em>
         );
@@ -81,7 +81,7 @@ function renderInline(text: string): React.ReactNode[] {
         return (
           <code
             key={i}
-            className="rounded-xs border border-vl-dark-700 bg-vl-dark-950 px-1 py-0.5 font-mono text-3xs text-vl-cyan-300"
+            className="border-vl-dark-700 bg-vl-dark-950 text-vl-cyan-300 rounded-xs border px-1.5 py-0.5 font-mono text-xs"
           >
             {token.value}
           </code>
@@ -91,7 +91,8 @@ function renderInline(text: string): React.ReactNode[] {
         // Blocks javascript:, data:, vbscript:, etc.
         const trimmedUrl = token.url.trim();
         const isInternal = trimmedUrl.startsWith("/") && !trimmedUrl.startsWith("//");
-        const isSafeExternal = trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://");
+        const isSafeExternal =
+          trimmedUrl.startsWith("https://") || trimmedUrl.startsWith("http://");
 
         if (!isInternal && !isSafeExternal) {
           return <React.Fragment key={i}>{token.label}</React.Fragment>;
@@ -105,11 +106,11 @@ function renderInline(text: string): React.ReactNode[] {
             href={trimmedUrl}
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noopener noreferrer" : undefined}
-            className="inline-flex items-center gap-0.5 font-semibold text-vl-cyan-400 underline decoration-vl-cyan-400/50 underline-offset-2 transition-colors hover:text-vl-cyan-300 hover:decoration-vl-cyan-300 break-all cursor-pointer"
+            className="text-vl-cyan-400 decoration-vl-cyan-400/50 hover:text-vl-cyan-300 hover:decoration-vl-cyan-300 inline-flex cursor-pointer items-center gap-1 font-semibold break-all underline underline-offset-2 transition-colors"
           >
             <span>{token.label}</span>
             {isExternal && (
-              <ExternalLink className="size-2.5 shrink-0 inline opacity-70" aria-hidden="true" />
+              <ExternalLink className="inline size-3.5 shrink-0 opacity-70" aria-hidden="true" />
             )}
           </a>
         );
@@ -194,18 +195,18 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
   const blocks = parseBlocks(content);
 
   return (
-    <div className={`space-y-1.5 text-xs leading-relaxed ${className}`}>
+    <div className={`space-y-2 text-sm leading-relaxed ${className}`}>
       {blocks.map((block, idx) => {
         switch (block.type) {
           case "heading":
             return (
-              <h4 key={idx} className="mt-1.5 mb-0.5 font-bold text-vl-white-100 text-xs">
+              <h4 key={idx} className="text-vl-white-100 mt-2 mb-1 text-sm font-bold">
                 {renderInline(block.text)}
               </h4>
             );
           case "ul":
             return (
-              <ul key={idx} className="my-1 space-y-0.5 pl-4 list-disc marker:text-vl-cyan-400">
+              <ul key={idx} className="marker:text-vl-cyan-400 my-1.5 list-disc space-y-1 pl-4">
                 {block.items.map((item, itemIdx) => (
                   <li key={itemIdx}>{renderInline(item)}</li>
                 ))}
@@ -215,7 +216,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
             return (
               <ol
                 key={idx}
-                className="my-1 space-y-0.5 pl-4 list-decimal marker:text-vl-cyan-400 font-medium"
+                className="marker:text-vl-cyan-400 my-1.5 list-decimal space-y-1 pl-4 font-medium"
               >
                 {block.items.map((item, itemIdx) => (
                   <li key={itemIdx} className="font-normal">
@@ -227,7 +228,7 @@ export function MarkdownContent({ content, className = "" }: MarkdownContentProp
           case "p":
           default:
             return (
-              <p key={idx} className="break-words">
+              <p key={idx} className="wrap-break-word">
                 {renderInline(block.text)}
               </p>
             );

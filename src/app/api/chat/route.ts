@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
           * Google Maps Link: https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6
           * Note: Customers are warmly welcome to visit our retail outlet in Chatmohar, Pabna!
         - Contact & Helpline:
-          * Phone / WhatsApp: 01311-333277 (+8801311333277)
+          * Phone / WhatsApp: 01311-333277
           * Customer support is available online via website chat and WhatsApp.
         - Online Shopping & Delivery:
           * Website: Customers can directly order anytime from our official website (vibelock.bd).
@@ -341,7 +341,9 @@ export async function POST(req: NextRequest) {
               .trim()
               .max(20)
               .optional()
-              .describe("When not signed in: the last 4 digits of the phone number used in the account/order"),
+              .describe(
+                "When not signed in: the last 4 digits of the phone number used in the account/order"
+              ),
           }),
           execute: async ({ orderNumber, phoneLast4 }) => {
             const normalizedOrderNo = orderNumber.trim();

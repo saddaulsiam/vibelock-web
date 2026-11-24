@@ -14,6 +14,9 @@ import {
   Ruler,
   Truck,
   MapPin,
+  BotMessageSquare,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { MarkdownContent } from "./MarkdownContent";
 
@@ -100,7 +103,7 @@ function getSuggestedPrompts(isLoggedIn: boolean): SuggestedPrompt[] {
 📍 **VibeLock Outlet**
 - **ঠিকানা:** খন্দকার মার্কেট, স্টার মোড়, চাটমোহর, পাবনা, বাংলাদেশ।
 - 🗺️ **গুগল ম্যাপস লিংক:** [Google Maps-এ লোকেশন দেখুন](https://maps.app.goo.gl/HDGLvX8VBsM4v5iF6)
-- 📞 **ফোন / হোয়াটসঅ্যাপ:** 01311-333277 (+8801311333277)
+- 📞 **ফোন / হোয়াটসঅ্যাপ:** 01311-333277
 
 আপনি চাইলে সরাসরি আমাদের শোরুমে এসে ট্রায়াল দিয়ে পছন্দের পোশাক সংগ্রহ করতে পারেন!`,
     },
@@ -111,11 +114,47 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [currentUser, setCurrentUser] = useState<ChatWidgetUser | null>(initialUser ?? null);
+  const [showBadge, setShowBadge] = useState(false);
+  const [badgeVisible, setBadgeVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, setMessages, status, error, regenerate } = useChat();
 
   const isGenerating = status === "submitted" || status === "streaming";
+
+  // Smooth entrance for teaser callout badge if not previously dismissed
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem("vl_chat_badge_dismissed") === "1") {
+        return;
+      }
+    } catch {}
+
+    const timer = setTimeout(() => {
+      setShowBadge(true);
+      requestAnimationFrame(() => {
+        setBadgeVisible(true);
+      });
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleOpenChat = () => {
+    setIsOpen(true);
+    setBadgeVisible(false);
+    setShowBadge(false);
+  };
+
+  const handleDismissBadge = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBadgeVisible(false);
+    setTimeout(() => setShowBadge(false), 300);
+    try {
+      sessionStorage.setItem("vl_chat_badge_dismissed", "1");
+    } catch {}
+  };
 
   // Re-synchronize session if needed
   useEffect(() => {
@@ -172,22 +211,72 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
       className="fixed right-4 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-40 sm:right-6 sm:bottom-[max(1.5rem,env(safe-area-inset-bottom))]"
       aria-label="VibeLock AI Assistant"
     >
-      {/* ── 1. Floating Trigger Button ── */}
+      {/* ── 1. Floating Trigger Button & Animated Dismissible Badge ── */}
       {!isOpen && (
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="group rounded-brand bg-vl-dark-900 text-vl-white-50 border-vl-dark-700 hover:border-vl-cyan-500/50 hover:bg-vl-dark-800 focus-visible:ring-vl-cyan-500 flex size-12 cursor-pointer items-center justify-center border shadow-xl transition-all duration-200 focus-visible:ring-2 focus-visible:outline-none sm:size-14"
-          aria-label="Open VibeLock AI Chat Assistant"
-        >
-          <div className="relative">
-            <Sparkles className="text-vl-cyan-400 size-5 transition-transform duration-200 group-hover:scale-110 sm:size-6" />
-            <span className="absolute -top-1 -right-1 flex size-2">
-              <span className="bg-vl-cyan-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 motion-reduce:animate-none" />
-              <span className="bg-vl-cyan-500 relative inline-flex size-2 rounded-full" />
-            </span>
-          </div>
-        </button>
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Animated Dismissible Callout Badge */}
+          {showBadge && (
+            <div
+              role="status"
+              onClick={handleOpenChat}
+              className={`group/badge rounded-card border-vl-dark-700 bg-vl-dark-900/95 hover:border-vl-cyan-500/50 hover:shadow-cyan-glow-sm relative flex max-w-[210px] cursor-pointer items-start gap-2 border p-2.5 shadow-2xl backdrop-blur-md transition-all duration-300 sm:p-3 ${
+                badgeVisible
+                  ? "translate-x-0 scale-100 opacity-100"
+                  : "pointer-events-none translate-x-3 scale-95 opacity-0"
+              }`}
+            >
+              <div className="bg-vl-cyan-500/10 text-vl-cyan-400 border-vl-cyan-500/30 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border">
+                <Sparkles className="size-3.5" />
+              </div>
+              <div className="flex-1 pr-3">
+                <div className="flex items-center gap-1.5 leading-none">
+                  <span className="text-vl-white-100 group-hover/badge:text-vl-cyan-300 text-xs font-bold transition-colors">
+                    AI Support
+                  </span>
+                  <span className="bg-vl-cyan-500/15 text-vl-cyan-400 border-vl-cyan-500/30 text-3xs rounded-xs border px-1 py-0.5 font-mono font-semibold uppercase">
+                    24/7
+                  </span>
+                </div>
+                <p className="text-vl-dark-300 text-2xs mt-1 leading-snug">
+                  অর্ডার ট্র্যাকিং ও সাইজ গাইড নিয়ে যেকোনো প্রশ্ন করুন!
+                </p>
+              </div>
+
+              {/* Close Button (Kete debar button) */}
+              <button
+                type="button"
+                onClick={handleDismissBadge}
+                className="text-vl-dark-400 hover:text-vl-white-100 hover:bg-vl-dark-800 absolute top-1.5 right-1.5 cursor-pointer rounded-xs p-1 transition-colors"
+                aria-label="বার্তাটি বন্ধ করুন"
+              >
+                <X className="size-3" />
+              </button>
+
+              {/* Speech bubble pointer pointing right towards the FAB */}
+              <div
+                className="border-vl-dark-700 bg-vl-dark-900 group-hover/badge:border-vl-cyan-500/50 absolute top-1/2 -right-1.5 size-2.5 -translate-y-1/2 rotate-45 border-t border-r transition-colors"
+                aria-hidden="true"
+              />
+            </div>
+          )}
+
+          {/* Compact Circular Floating Action Button */}
+          <button
+            type="button"
+            onClick={handleOpenChat}
+            className="group border-vl-dark-700 bg-vl-dark-900/95 text-vl-white-50 hover:border-vl-cyan-500/60 hover:bg-vl-dark-800 hover:shadow-cyan-glow-sm focus-visible:ring-vl-cyan-500 relative flex size-12 cursor-pointer items-center justify-center rounded-full border shadow-2xl backdrop-blur-md transition-all duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:outline-none active:scale-95 sm:size-14"
+            aria-label="Open VibeLock AI Chat Assistant"
+          >
+            <div className="relative flex items-center justify-center">
+              <BotMessageSquare className="text-vl-cyan-400 size-5 transition-transform duration-200 group-hover:scale-110 sm:size-6" />
+              {/* Live Status Ping */}
+              <span className="absolute -top-1 -right-1 flex size-2.5">
+                <span className="bg-vl-cyan-400 absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 motion-reduce:animate-none" />
+                <span className="bg-vl-cyan-400 border-vl-dark-900 relative inline-flex size-2.5 rounded-full border-2" />
+              </span>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* ── 2. Expanded Chat Window ── */}
@@ -196,50 +285,73 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
           role="dialog"
           aria-modal="false"
           aria-label="VibeLock AI Assistant Dialog"
-          className="rounded-brand border-vl-dark-700 bg-vl-dark-900 text-vl-white-100 flex h-[500px] w-[calc(100vw-2rem)] max-w-sm flex-col border shadow-2xl transition-all duration-200 sm:w-88"
+          className={`rounded-brand border-vl-dark-700 bg-vl-dark-900 text-vl-white-100 flex flex-col border shadow-2xl transition-all duration-300 ease-in-out ${
+            isExpanded
+              ? "h-[calc(100dvh-2.5rem)] max-h-[92vh] w-[calc(100vw-2rem)] sm:h-[680px] sm:max-h-[88vh] sm:w-[640px] sm:max-w-2xl"
+              : "h-135 max-h-[82vh] w-[calc(100vw-2rem)] max-w-sm sm:w-96 sm:max-w-md"
+          }`}
         >
           {/* Header */}
           <div className="border-vl-dark-800 bg-vl-dark-950 rounded-t-brand flex items-center justify-between border-b px-4 py-3">
-            <div className="flex items-center gap-2">
-              <div className="rounded-brand bg-vl-cyan-500/10 text-vl-cyan-400 border-vl-cyan-500/20 flex size-7 items-center justify-center border">
-                <Bot className="size-4" aria-hidden="true" />
+            <div className="flex items-center gap-2.5">
+              <div className="rounded-brand bg-vl-cyan-500/10 text-vl-cyan-400 border-vl-cyan-500/20 flex size-8 items-center justify-center border">
+                <Bot className="size-4.5" aria-hidden="true" />
               </div>
               <div>
-                <h3 className="text-vl-white-100 flex items-center gap-1.5 text-xs font-bold">
+                <h3 className="text-vl-white-100 flex items-center gap-1.5 text-sm font-bold">
                   VibeLock Assistant
                   <span className="bg-vl-cyan-500/10 text-3xs text-vl-cyan-400 border-vl-cyan-500/30 inline-flex items-center rounded-xs border px-1 py-0.5 font-semibold">
                     AI
                   </span>
                 </h3>
-                <p className="text-3xs text-vl-dark-400">অনলাইন সহায়তা ও অর্ডার ট্র্যাকিং</p>
+                <p className="text-vl-dark-400 text-2xs">অনলাইন সহায়তা ও অর্ডার ট্র্যাকিং</p>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="rounded-brand text-vl-dark-400 hover:bg-vl-dark-800 hover:text-vl-white-100 focus-visible:ring-vl-cyan-500 flex size-8 cursor-pointer items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
-              aria-label="Close Chat Assistant"
-            >
-              <X className="size-4" aria-hidden="true" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setIsExpanded((prev) => !prev)}
+                className="rounded-brand text-vl-dark-400 hover:bg-vl-dark-800 hover:text-vl-white-100 focus-visible:ring-vl-cyan-500 flex size-8 cursor-pointer items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                aria-label={
+                  isExpanded ? "চ্যাটবক্স ছোট করুন (Minimize)" : "চ্যাটবক্স বড় করুন (Maximize)"
+                }
+                title={isExpanded ? "ছোট করুন" : "বড় করুন"}
+              >
+                {isExpanded ? (
+                  <Minimize2 className="size-4" aria-hidden="true" />
+                ) : (
+                  <Maximize2 className="size-4" aria-hidden="true" />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-brand text-vl-dark-400 hover:bg-vl-dark-800 hover:text-vl-white-100 focus-visible:ring-vl-cyan-500 flex size-8 cursor-pointer items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                aria-label="Close Chat Assistant"
+              >
+                <X className="size-4" aria-hidden="true" />
+              </button>
+            </div>
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 space-y-3 overflow-y-auto p-3.5 text-xs">
+          <div className="flex-1 space-y-3.5 overflow-y-auto p-4 text-sm">
             {messages.length === 0 && (
-              <div className="space-y-3.5 py-1">
+              <div className="space-y-4 py-1">
                 {/* Greeting Header */}
-                <div className="space-y-1.5 text-center">
-                  <div className="bg-vl-cyan-500/10 text-vl-cyan-400 border-vl-cyan-500/20 mx-auto flex size-9 items-center justify-center rounded-full border">
-                    <Sparkles className="size-4" />
+                <div className="space-y-2 text-center">
+                  <div className="bg-vl-cyan-500/10 text-vl-cyan-400 border-vl-cyan-500/20 mx-auto flex size-10 items-center justify-center rounded-full border">
+                    <Sparkles className="size-5" />
                   </div>
-                  <div className="space-y-0.5">
-                    <p className="text-vl-white-100 font-semibold text-xs">
-                      {currentUser?.name
-                        ? `স্বাগতম ${currentUser.name}!`
-                        : "স্বাগতম VibeLock-এ!"}
+                  <div className="space-y-1">
+                    <p className="text-vl-white-100 text-sm font-bold sm:text-base">
+                      {currentUser?.name ? `স্বাগতম ${currentUser.name}!` : "স্বাগতম VibeLock-এ!"}
                     </p>
-                    <p className="text-3xs text-vl-dark-400 mx-auto max-w-[240px] leading-relaxed">
+                    <p
+                      className={`text-vl-dark-300 mx-auto text-xs leading-relaxed ${
+                        isExpanded ? "max-w-md" : "max-w-70"
+                      }`}
+                    >
                       {currentUser
                         ? "আপনার অ্যাকাউন্টের অর্ডার ট্র্যাকিং, সাইজ গাইড বা যেকোনো তথ্যের জন্য নিচের অপশন সিলেক্ট করুন অথবা সরাসরি প্রশ্ন লিখুন।"
                         : "অর্ডার ট্র্যাকিং, সাইজ গাইড বা যেকোনো তথ্যের জন্য নিচের অপশন সিলেক্ট করুন অথবা সরাসরি প্রশ্ন লিখুন।"}
@@ -248,11 +360,15 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                 </div>
 
                 {/* Suggested Prompts Section */}
-                <div className="space-y-1.5 pt-1">
-                  <p className="text-3xs font-semibold text-vl-dark-400 uppercase tracking-wider px-0.5">
+                <div className="space-y-2 pt-1">
+                  <p className="text-vl-dark-300 px-0.5 text-xs font-semibold tracking-wider uppercase">
                     সচরাচর জিজ্ঞাসিত প্রশ্ন:
                   </p>
-                  <div className="flex flex-col gap-1.5">
+                  <div
+                    className={
+                      isExpanded ? "grid grid-cols-1 gap-2 sm:grid-cols-2" : "flex flex-col gap-2"
+                    }
+                  >
                     {suggestedPrompts.map((item, idx) => {
                       const Icon = item.icon;
                       return (
@@ -261,17 +377,17 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                           type="button"
                           onClick={() => handleQuickPrompt(item.prompt, item.instantAnswer)}
                           disabled={isGenerating}
-                          className="group border-vl-dark-800 bg-vl-dark-950/80 hover:border-vl-cyan-500/40 hover:bg-vl-dark-800/90 rounded-brand flex items-center justify-between px-2.5 py-2 text-left transition-all duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed border shadow-xs"
+                          className="group border-vl-dark-800 bg-vl-dark-950/80 hover:border-vl-cyan-500/40 hover:bg-vl-dark-800/90 rounded-brand flex cursor-pointer items-center justify-between border px-3 py-2.5 text-left shadow-xs transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                          <div className="flex items-center gap-2">
-                            <div className="bg-vl-cyan-500/10 text-vl-cyan-400 group-hover:bg-vl-cyan-500/20 border-vl-cyan-500/20 flex size-6 shrink-0 items-center justify-center rounded-xs border transition-colors">
-                              <Icon className="size-3.5" />
+                          <div className="flex items-center gap-2.5">
+                            <div className="bg-vl-cyan-500/10 text-vl-cyan-400 group-hover:bg-vl-cyan-500/20 border-vl-cyan-500/20 flex size-7 shrink-0 items-center justify-center rounded-xs border transition-colors">
+                              <Icon className="size-4" />
                             </div>
-                            <span className="text-3xs text-vl-white-200 group-hover:text-vl-cyan-300 font-medium transition-colors">
+                            <span className="text-vl-white-100 group-hover:text-vl-cyan-300 text-xs font-medium transition-colors">
                               {item.title}
                             </span>
                           </div>
-                          <span className="text-3xs text-vl-dark-500 group-hover:text-vl-cyan-400 transition-colors">
+                          <span className="text-vl-dark-400 group-hover:text-vl-cyan-400 text-xs transition-colors">
                             →
                           </span>
                         </button>
@@ -285,15 +401,17 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {m.role !== "user" && (
-                  <div className="bg-vl-cyan-500/10 text-vl-cyan-400 mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full">
-                    <Bot className="size-3" />
+                  <div className="bg-vl-cyan-500/10 text-vl-cyan-400 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full">
+                    <Bot className="size-3.5" />
                   </div>
                 )}
                 <div
-                  className={`rounded-brand max-w-[85%] px-3 py-2 text-xs leading-relaxed ${
+                  className={`rounded-brand px-3.5 py-2.5 text-sm leading-relaxed ${
+                    isExpanded ? "max-w-[90%] sm:max-w-[80%]" : "max-w-[85%]"
+                  } ${
                     m.role === "user"
                       ? "bg-vl-cyan-500 text-vl-dark-950 font-medium"
                       : "bg-vl-dark-800 text-vl-white-200 border-vl-dark-700 border"
@@ -308,10 +426,10 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                       return (
                         <div
                           key={idx}
-                          className="bg-vl-dark-900/80 text-3xs text-vl-cyan-300 border-vl-cyan-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                          className="bg-vl-dark-900/80 text-vl-cyan-300 border-vl-cyan-500/20 my-2 flex items-center gap-2 rounded-xs border px-2.5 py-1.5 text-xs"
                         >
                           <span
-                            className={`size-1.5 rounded-full ${
+                            className={`size-2 rounded-full ${
                               isComplete ? "bg-vl-cyan-400" : "bg-vl-cyan-400 animate-ping"
                             }`}
                           />
@@ -328,10 +446,10 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                       return (
                         <div
                           key={idx}
-                          className="bg-vl-dark-900/80 text-3xs text-vl-cyan-300 border-vl-cyan-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                          className="bg-vl-dark-900/80 text-vl-cyan-300 border-vl-cyan-500/20 my-2 flex items-center gap-2 rounded-xs border px-2.5 py-1.5 text-xs"
                         >
                           <span
-                            className={`size-1.5 rounded-full ${
+                            className={`size-2 rounded-full ${
                               isComplete ? "bg-vl-cyan-400" : "bg-vl-cyan-400 animate-ping"
                             }`}
                           />
@@ -348,17 +466,15 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                       return (
                         <div
                           key={idx}
-                          className="bg-vl-dark-900/80 text-3xs text-vl-cyan-300 border-vl-cyan-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                          className="bg-vl-dark-900/80 text-vl-cyan-300 border-vl-cyan-500/20 my-2 flex items-center gap-2 rounded-xs border px-2.5 py-1.5 text-xs"
                         >
                           <span
-                            className={`size-1.5 rounded-full ${
+                            className={`size-2 rounded-full ${
                               isComplete ? "bg-vl-cyan-400" : "bg-vl-cyan-400 animate-ping"
                             }`}
                           />
                           <span>
-                            {isComplete
-                              ? "সাইজ গাইড যাচাই সম্পন্ন"
-                              : "সাইজ নির্ধারণ করা হচ্ছে..."}
+                            {isComplete ? "সাইজ গাইড যাচাই সম্পন্ন" : "সাইজ নির্ধারণ করা হচ্ছে..."}
                           </span>
                         </div>
                       );
@@ -368,10 +484,10 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                       return (
                         <div
                           key={idx}
-                          className="bg-vl-dark-900/80 text-3xs text-vl-cyan-300 border-vl-cyan-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                          className="bg-vl-dark-900/80 text-vl-cyan-300 border-vl-cyan-500/20 my-2 flex items-center gap-2 rounded-xs border px-2.5 py-1.5 text-xs"
                         >
                           <span
-                            className={`size-1.5 rounded-full ${
+                            className={`size-2 rounded-full ${
                               isComplete ? "bg-vl-cyan-400" : "bg-vl-cyan-400 animate-ping"
                             }`}
                           />
@@ -388,11 +504,11 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                       return (
                         <div
                           key={idx}
-                          className="bg-vl-dark-900/80 text-3xs text-emerald-400 border-emerald-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                          className="bg-vl-dark-900/80 my-2 flex items-center gap-2 rounded-xs border border-emerald-500/20 px-2.5 py-1.5 text-xs text-emerald-400"
                         >
                           <span
-                            className={`size-1.5 rounded-full ${
-                              isComplete ? "bg-emerald-400" : "bg-emerald-400 animate-ping"
+                            className={`size-2 rounded-full ${
+                              isComplete ? "bg-emerald-400" : "animate-ping bg-emerald-400"
                             }`}
                           />
                           <span>
@@ -410,17 +526,17 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
             ))}
 
             {isGenerating && (
-              <div className="text-3xs text-vl-cyan-400 flex items-center gap-1.5 pt-1">
-                <span className="bg-vl-cyan-400 size-1.5 animate-ping rounded-full" />
+              <div className="text-vl-cyan-400 flex items-center gap-2 pt-1 text-xs font-medium">
+                <span className="bg-vl-cyan-400 size-2 animate-ping rounded-full" />
                 VibeLock Assistant ভাবছে...
               </div>
             )}
 
             {error && (
-              <div className="rounded-brand text-3xs flex flex-col gap-1.5 border border-red-500/30 bg-red-950/30 p-2.5 text-red-300">
-                <div className="flex items-center gap-1.5">
-                  <AlertCircle className="size-3.5 shrink-0" />
-                  <span className="font-semibold break-words">
+              <div className="rounded-brand flex flex-col gap-2 border border-red-500/30 bg-red-950/30 p-3 text-xs text-red-300">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="size-4 shrink-0" />
+                  <span className="font-semibold wrap-break-word">
                     {error.message === "An error occurred." ||
                     error.message?.includes("503") ||
                     error.message?.includes("high demand")
@@ -434,9 +550,9 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
                   <button
                     type="button"
                     onClick={() => regenerate()}
-                    className="border-vl-dark-700 bg-vl-dark-800 text-vl-cyan-300 hover:bg-vl-dark-700 hover:border-vl-cyan-500/40 rounded-xs flex cursor-pointer items-center justify-center gap-1.5 border py-1 font-medium transition-colors"
+                    className="border-vl-dark-700 bg-vl-dark-800 text-vl-cyan-300 hover:bg-vl-dark-700 hover:border-vl-cyan-500/40 flex cursor-pointer items-center justify-center gap-2 rounded-xs border py-1.5 text-xs font-medium transition-colors"
                   >
-                    <RefreshCw className="size-3" />
+                    <RefreshCw className="size-3.5" />
                     <span>আবার চেষ্টা করুন (Retry)</span>
                   </button>
                 )}
@@ -449,7 +565,7 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
           {/* Input Box Footer */}
           <form
             onSubmit={handleSubmit}
-            className="border-vl-dark-800 bg-vl-dark-950 rounded-b-brand flex items-center gap-2 border-t p-3"
+            className="border-vl-dark-800 bg-vl-dark-950 rounded-b-brand flex items-center gap-2 border-t p-3 sm:p-3.5"
           >
             <input
               type="text"
@@ -457,15 +573,15 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
               onChange={(e) => setInput(e.target.value)}
               placeholder="একটি প্রশ্ন বা অর্ডার নম্বর লিখুন..."
               disabled={isGenerating}
-              className="border-vl-dark-700 bg-vl-dark-900 text-vl-white-100 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan-500/50 focus-visible:ring-vl-cyan-500/20 rounded-brand flex-1 border px-3 py-2 text-xs transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:opacity-50"
+              className="border-vl-dark-700 bg-vl-dark-900 text-vl-white-100 placeholder:text-vl-dark-500 focus-visible:border-vl-cyan-500/50 focus-visible:ring-vl-cyan-500/20 rounded-brand flex-1 border px-3.5 py-2.5 text-sm transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={!input.trim() || isGenerating}
-              className="rounded-brand bg-vl-cyan-500 text-vl-dark-950 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan-500 flex size-8 cursor-pointer items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-brand bg-vl-cyan-500 text-vl-dark-950 hover:bg-vl-cyan-400 focus-visible:ring-vl-cyan-500 flex size-9 cursor-pointer items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
               aria-label="Send Message"
             >
-              <Send className="size-3.5" />
+              <Send className="size-4" />
             </button>
           </form>
         </div>
