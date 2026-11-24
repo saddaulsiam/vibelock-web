@@ -73,7 +73,7 @@ export function Footer() {
             <div className="relative flex items-center gap-0">
               <div className="border-vl-cyan bg-vl-black relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-[0_0_16px_rgba(0,217,255,0.25)]">
                 <Image
-                  src="/logo/icon/vl_icon_white_transparent.svg"
+                  src="/logo/icon/vibelock_icon_dark.svg"
                   alt="VibeLock Emblem"
                   width={24}
                   height={24}

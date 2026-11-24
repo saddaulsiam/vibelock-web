@@ -213,7 +213,7 @@ export function SearchModal({ isOpen, onClose, categories = [] }: SearchModalPro
             >
               <div className="border-vl-cyan bg-vl-black relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 shadow-sm">
                 <Image
-                  src="/logo/icon/vl_icon_white_transparent.svg"
+                  src="/logo/icon/vibelock_icon_dark.svg"
                   alt="VibeLock"
                   width={22}
                   height={22}

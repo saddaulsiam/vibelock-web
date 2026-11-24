@@ -31,7 +31,7 @@ export function getOrganizationJsonLd() {
     "@type": "Organization",
     name: "VibeLock",
     url: SITE_URL,
-    logo: `${SITE_URL}/logo/icon/vl_icon_square_dark.png`,
+    logo: `${SITE_URL}/logo/icon/vibelock_icon_dark.png`,
     description:
       "Bangladesh men's streetwear brand for modern Dhaka youth. Minimal, confident, and premium.",
     sameAs: [

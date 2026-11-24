@@ -9,6 +9,7 @@ export interface CategorySummary {
   metaTitle?: string | null;
   metaDescription?: string | null;
   parentId?: string | null;
+  sortOrder?: number;
 }
 
 export interface ProductImageSummary {

@@ -129,8 +129,9 @@ export async function saveCategoryAction(
   }
 
   const sortOrderRaw = formData.get("sortOrder");
-  const sortOrder =
-    sortOrderRaw !== null && !isNaN(Number(sortOrderRaw)) ? Number(sortOrderRaw) : 0;
+  const parsedSortOrder =
+    sortOrderRaw !== null && !isNaN(Number(sortOrderRaw)) ? Number(sortOrderRaw) : 1;
+  const sortOrder = parsedSortOrder >= 1 ? parsedSortOrder : 1;
   const isActive = formData.get("isActive") !== "false";
 
   try {

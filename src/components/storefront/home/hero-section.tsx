@@ -214,22 +214,43 @@ function InfiniteTrack({ categories }: { categories: HeroCategory[] }) {
 
 export function HeroSection({ categories = [], words }: HeroSectionProps) {
   const formattedCategories: HeroCategory[] = React.useMemo(() => {
-    return categories
-      .filter((c) => Boolean(c && c.name))
-      .map((cat, index) => {
-        const cleanName = cat.name
-          .replace(/^\d+[.\s-]+/, "")
-          .trim()
-          .toUpperCase();
-        return {
-          id: cat.id,
-          label:
-            "label" in cat && cat.label ? cat.label : `CAT. ${String(index + 1).padStart(2, "0")}`,
-          name: cleanName,
-          slug: cat.slug,
-          imageUrl: cat.imageUrl || "/images/categories/cat-t-shirts.jpg",
-        };
+    // 1. Filter strictly to root categories (where parentId is null/undefined) and non-test items
+    const rootCats = categories
+      .filter((c) => {
+        if (!c || !c.name) return false;
+        // If it's a CategorySummary with parentId, ensure it's a root category
+        if ("parentId" in c && c.parentId) return false;
+        // Exclude dummy test fixtures
+        if (c.name.startsWith("Cat-") || c.name === "Existing") return false;
+        return true;
+      })
+      // 2. Sort strictly by 1-based priority (1, 2, 3...). Unranked items (<= 0 or null) are placed at the end while preserving order.
+      .sort((a, b) => {
+        const hasOrderA = "sortOrder" in a && typeof a.sortOrder === "number" && a.sortOrder >= 1;
+        const hasOrderB = "sortOrder" in b && typeof b.sortOrder === "number" && b.sortOrder >= 1;
+        if (hasOrderA && hasOrderB) {
+          return a.sortOrder! - b.sortOrder!;
+        }
+        if (hasOrderA) return -1;
+        if (hasOrderB) return 1;
+        return 0;
       });
+
+    // 3. Map to HeroCategory with sequential 01, 02 labels matching priority order
+    return rootCats.map((cat, index) => {
+      const cleanName = cat.name
+        .replace(/^\d+[.\s-]+/, "")
+        .trim()
+        .toUpperCase();
+      return {
+        id: cat.id,
+        label:
+          "label" in cat && cat.label ? cat.label : `CAT. ${String(index + 1).padStart(2, "0")}`,
+        name: cleanName,
+        slug: cat.slug,
+        imageUrl: cat.imageUrl || "/images/collection/collection-banner.png",
+      };
+    });
   }, [categories]);
 
   const activeWords = React.useMemo(() => {

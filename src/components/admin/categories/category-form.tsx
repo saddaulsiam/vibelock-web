@@ -80,7 +80,9 @@ export function CategoryForm({
   const [metaDescription, setMetaDescription] = React.useState(category?.metaDescription ?? "");
   const [parentId, setParentId] = React.useState(category?.parentId ?? "");
   const [isActive, setIsActive] = React.useState(category?.isActive ?? true);
-  const [sortOrder, setSortOrder] = React.useState(category?.sortOrder ?? 0);
+  const [sortOrder, setSortOrder] = React.useState(
+    category?.sortOrder && category.sortOrder >= 1 ? category.sortOrder : 1
+  );
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(Boolean(category?.slug));
   const [isDirty, setIsDirty] = React.useState(false);
 
@@ -529,16 +531,17 @@ export function CategoryForm({
                 name="sortOrder"
                 value={sortOrder}
                 onChange={(e) => {
-                  setSortOrder(Number(e.target.value));
+                  const val = Math.max(1, Number(e.target.value) || 1);
+                  setSortOrder(val);
                   setIsDirty(true);
                 }}
-                min="0"
+                min="1"
                 size="default"
-                placeholder="0"
+                placeholder="1"
               />
             </div>
             <p className="text-muted-foreground mt-1 text-xs">
-              Lower numbers appear first in the navigation menu (0, 1, 2...).
+              Priority starts from 1 (1st, 2nd, 3rd...). Lower numbers appear first in the navigation menu (1, 2, 3...).
             </p>
           </div>
 
