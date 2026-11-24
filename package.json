@@ -27,6 +27,8 @@
     "node": ">=20.0.0"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.125",
+    "@ai-sdk/react": "^4.0.186",
     "@auth/prisma-adapter": "^2.11.3",
     "@base-ui/react": "^1.8.0",
     "@hookform/resolvers": "^5.9.1",
@@ -35,6 +37,7 @@
     "@upstash/ratelimit": "^2.2.0",
     "@upstash/redis": "^1.39.0",
     "@vercel/analytics": "^2.0.1",
+    "ai": "^7.0.181",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",

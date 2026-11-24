@@ -29,6 +29,7 @@ export type RateLimitEndpoint =
   | "sessionManagement"
   | "accountDeletion"
   | "search"
+  | "chat"
   | "newsletter"
   | "profileUpdate"
   | "customerUpload"
@@ -62,6 +63,7 @@ const LIMIT_CONFIGS: Record<RateLimitEndpoint, LimitConfig> = {
   sessionManagement: { max: 10, windowMs: 15 * 60 * 1000 },
   accountDeletion: { max: 3, windowMs: 60 * 60 * 1000 },
   search: { max: 60, windowMs: 60 * 1000 },
+  chat: { max: 15, windowMs: 60 * 1000 },
   newsletter: { max: 5, windowMs: 10 * 60 * 1000 },
   profileUpdate: { max: 10, windowMs: 15 * 60 * 1000 },
   customerUpload: { max: 10, windowMs: 10 * 60 * 1000 },
@@ -163,6 +165,7 @@ function initLimiters() {
   limiters.set("sessionManagement", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
   limiters.set("accountDeletion", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
   limiters.set("search", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true }));
+  limiters.set("chat", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "1 m"), analytics: true }));
   limiters.set("newsletter", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
   limiters.set("profileUpdate", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
   limiters.set("customerUpload", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true }));
