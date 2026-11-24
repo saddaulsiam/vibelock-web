@@ -1,7 +1,6 @@
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getCategories } from "@/lib/catalog/queries";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AccountPopover } from "./account-popover";
@@ -9,6 +8,7 @@ import { CategoriesDrawer } from "./categories-drawer";
 import { DesktopNav } from "./desktop-nav";
 import { HeaderSearch } from "./header-search";
 import { HeaderShell } from "./header-shell";
+import { HeaderWishlist } from "./header-wishlist";
 import { CartDrawer } from "../cart/cart-drawer";
 
 export async function Header() {
@@ -20,7 +20,7 @@ export async function Header() {
 
   return (
     <HeaderShell>
-      <div className="border-vl-white/10 bg-vl-black/60 shadow-floating-nav pointer-events-auto mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-4 backdrop-blur-lg sm:px-6">
+      <div className="border-vl-white/10 bg-vl-dark/75 shadow-floating-nav pointer-events-auto relative mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-3.5 backdrop-blur-lg sm:px-5">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link
             href="/"
@@ -53,19 +53,13 @@ export async function Header() {
         {/* ── Center: Desktop Navigation ── */}
         <DesktopNav categories={categories} isAuthenticated={Boolean(user)} />
 
-        {/* ── Right: Search Pill + Wishlist + Cart + Account Popover ── */}
-        <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
+        {/* ── Right: Search Pill + Wishlist + Cart + Account Popover + Mobile Menu ── */}
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
           {/* Search Trigger (Desktop pill + Mobile icon) & Instant Search Modal */}
           <HeaderSearch categories={categories} />
 
-          {/* Wishlist Link */}
-          <Link
-            href="/wishlist"
-            aria-label="Wishlist"
-            className="hover:text-vl-cyan hover:bg-vl-white/10 text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9"
-          >
-            <Heart className="size-4 sm:size-4.5" aria-hidden="true" />
-          </Link>
+          {/* Wishlist Link with Live Count Badge */}
+          <HeaderWishlist />
 
           {/* Shopping Cart Drawer */}
           <CartDrawer initialCart={cart} />

@@ -133,7 +133,7 @@ export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
       <SheetTrigger
         aria-label={itemCount > 0 ? `Shopping bag, ${itemCount} items` : "Shopping bag"}
         className={cn(
-          "hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9",
+          "hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan relative inline-flex size-9 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none",
           triggerClassName
         )}
       >
@@ -144,12 +144,12 @@ export function CartDrawer({ initialCart, triggerClassName }: CartSheetProps) {
               key={itemCount}
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{
-                scale: [1, 1.4, 0.9, 1.05, 1],
+                scale: [1, 1.3, 0.95, 1],
                 opacity: 1,
               }}
               exit={{ scale: 0, opacity: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="bg-vl-cyan text-vl-black absolute top-0.5 right-0.5 flex size-3.5 items-center justify-center rounded-full text-[8px] font-black shadow-[0_0_10px_rgba(0,217,255,0.7)] sm:top-1 sm:right-1 sm:size-4 sm:text-[9px]"
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="bg-vl-cyan text-vl-black absolute top-1 right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-black shadow-[0_0_8px_rgba(0,217,255,0.7)]"
             >
               {itemCount}
             </motion.span>

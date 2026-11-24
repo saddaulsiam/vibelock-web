@@ -16,8 +16,6 @@ export interface CategoriesDrawerProps {
   children?: React.ReactNode;
 }
 
-const DEFAULT_CATEGORY_IMAGE = "/images/categories/cat-t-shirts.jpg";
-
 export function CategoriesDrawer({
   categories = [],
   isAuthenticated = false,
@@ -43,6 +41,19 @@ export function CategoriesDrawer({
     }
   }, [rawWishlist]);
 
+  // Filter strictly to Root Categories (!c.parentId) sorted by 1-based priority (1, 2, 3...)
+  // Excludes dummy test categories if any exist in the local database
+  const rootCategories = useMemo(() => {
+    return categories
+      .filter((c) => !c.parentId && !c.name.startsWith("Cat-") && c.name !== "Existing")
+      .sort((a, b) => {
+        const orderA = a.sortOrder && a.sortOrder >= 1 ? a.sortOrder : Number.MAX_SAFE_INTEGER;
+        const orderB = b.sortOrder && b.sortOrder >= 1 ? b.sortOrder : Number.MAX_SAFE_INTEGER;
+        if (orderA !== orderB) return orderA - orderB;
+        return a.name.localeCompare(b.name);
+      });
+  }, [categories]);
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       {children ? (
@@ -57,7 +68,7 @@ export function CategoriesDrawer({
           id="mobile-nav-trigger"
           onClick={() => setOpen(true)}
           aria-label="Open navigation menu"
-          className="hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9 xl:hidden"
+          className="hover:text-vl-cyan text-vl-white/75 hover:bg-vl-white/10 focus-visible:ring-vl-cyan inline-flex size-9 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none lg:hidden"
         >
           <Menu className="size-4 sm:size-4.5" aria-hidden="true" />
         </SheetTrigger>
@@ -95,15 +106,15 @@ export function CategoriesDrawer({
 
         {/* ── 2. Scrollable Category Grid with Cyan Scrollbar ── */}
         <div className="[&::-webkit-scrollbar-thumb]:bg-vl-cyan flex-1 overflow-y-auto p-3.5 sm:p-4 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-black/5">
-          {categories.length === 0 ? (
+          {rootCategories.length === 0 ? (
             <div className="flex h-36 items-center justify-center text-center text-xs text-black/40">
               No categories found
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-              {categories.map((cat, idx) => {
+              {rootCategories.map((cat, idx) => {
                 const num = String(idx + 1).padStart(2, "0");
-                const img = cat.imageUrl || DEFAULT_CATEGORY_IMAGE;
+                const img = cat.imageUrl;
                 const cleanName = cat.name.replace(/^\d+[.\s-]+/, "").trim();
 
                 return (
@@ -113,13 +124,21 @@ export function CategoriesDrawer({
                     onClick={closeDrawer}
                     className="group bg-vl-dark-900 relative aspect-square overflow-hidden rounded-xl shadow-sm transition-transform active:scale-95"
                   >
-                    <Image
-                      src={img}
-                      alt={cleanName}
-                      fill
-                      sizes="(max-width: 640px) 45vw, 190px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
+                    {img ? (
+                      <Image
+                        src={img}
+                        alt={cleanName}
+                        fill
+                        sizes="(max-width: 640px) 45vw, 190px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="from-vl-dark-800 to-vl-dark-950 absolute inset-0 flex items-center justify-center bg-linear-to-br">
+                        <div className="border-vl-cyan/20 bg-vl-dark-900 flex size-9 items-center justify-center rounded-full border">
+                          <span className="text-vl-cyan font-heading text-xs font-black">VL</span>
+                        </div>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-black/45 transition-colors group-hover:bg-black/55" />
                     <div className="relative z-10 flex h-full flex-col items-center justify-center p-2 text-center">
                       <span className="text-2xs text-vl-cyan font-mono font-bold tracking-widest">

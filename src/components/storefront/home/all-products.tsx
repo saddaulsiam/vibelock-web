@@ -22,10 +22,15 @@ export function HomeAllProducts({ products, bestSellers, categories = [] }: Home
   const tabs = React.useMemo(() => {
     const list: { slug: string; label: string }[] = [{ slug: "all", label: "ALL" }];
 
-    // If categories are passed in, use them; otherwise extract distinct categories from products
+    // If categories are passed in, sort by Priority starting from 1 (1, 2, 3...)
     const categorySource =
       categories.length > 0
-        ? categories
+        ? [...categories].sort((a, b) => {
+            const orderA = a.sortOrder && a.sortOrder >= 1 ? a.sortOrder : Number.MAX_SAFE_INTEGER;
+            const orderB = b.sortOrder && b.sortOrder >= 1 ? b.sortOrder : Number.MAX_SAFE_INTEGER;
+            if (orderA !== orderB) return orderA - orderB;
+            return a.name.localeCompare(b.name);
+          })
         : Array.from(
             new Map(allProducts.flatMap((p) => p.categories || []).map((c) => [c.slug, c])).values()
           );
@@ -322,7 +327,7 @@ export function HomeAllProducts({ products, bestSellers, categories = [] }: Home
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUpOrLeave}
               onMouseLeave={handleMouseUpOrLeave}
-              className={`flex items-center gap-2 overflow-x-auto px-2 py-1.5 scrollbar-none [scrollbar-width:none] overscroll-x-contain [&::-webkit-scrollbar]:hidden ${
+              className={`flex scrollbar-none items-center gap-2 overflow-x-auto overscroll-x-contain px-2 py-1.5 [&::-webkit-scrollbar]:hidden ${
                 isDragging ? "cursor-grabbing select-none" : "cursor-grab"
               }`}
             >

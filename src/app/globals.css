@@ -63,6 +63,7 @@
   --color-vl-dark-700: #212228; /* Dark Mode Secondary / Table hover */
   --color-vl-dark-800: #16171b; /* Dark Mode Card & Modal Surface */
   --color-vl-dark-900: #101114; /* Core Canonical Obsidian Charcoal Black */
+  --color-vl-dark-950: #08090b; /* Deepest Floating Backdrop Black */
   --color-vl-dark: var(--color-vl-dark-900);
   --color-vl-black: var(--color-vl-dark-900);
   --color-vl-charcoal: var(--color-vl-dark-900);
@@ -139,7 +140,7 @@
   --shadow-cyan-glow: 0 0 24px rgba(0, 217, 255, 0.28); /* Primary button hover glow */
   --shadow-cyan-glow-sm: 0 0 14px rgba(0, 217, 255, 0.2); /* Badge / icon glow */
   --shadow-cyan-glow-lg: 0 0 32px rgba(0, 217, 255, 0.4); /* Hero CTA active glow */
-  --shadow-floating-nav: 0 8px 30px rgba(0, 0, 0, 0.25); /* Floating header backdrop */
+  --shadow-floating-nav: 0 12px 36px -6px rgba(0, 0, 0, 0.45), 0 4px 12px -2px rgba(0, 0, 0, 0.25); /* Floating header elevated backdrop */
 
   /* ══════════════════════════════════════════════════════
      10. BREAKPOINTS & CONTAINER MAX-WIDTHS

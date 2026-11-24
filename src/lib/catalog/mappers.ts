@@ -28,6 +28,7 @@ export function mapCategory(category: Category): CategorySummary {
     metaTitle: category.metaTitle ?? null,
     metaDescription: category.metaDescription ?? null,
     parentId: category.parentId ?? null,
+    sortOrder: category.sortOrder ?? 0,
   };
 }
 

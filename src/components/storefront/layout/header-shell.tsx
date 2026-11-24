@@ -24,16 +24,16 @@ export function HeaderShell({ children }: HeaderShellProps) {
           // Determine if we are scrolled past the initial page top
           setIsScrolled(currentScrollY > 20);
 
-          // Scroll tolerance to prevent tiny jittering
+          // Scroll tolerance to prevent tiny jittering on sensitive touchpads
           const diff = currentScrollY - lastScrollY;
 
           if (currentScrollY <= 60) {
             // At the top of the page: always show
             setIsVisible(true);
-          } else if (diff > 8) {
+          } else if (diff > 18) {
             // Scrolling down: hide header
             setIsVisible(false);
-          } else if (diff < -8) {
+          } else if (diff < -16) {
             // Scrolling up: reveal header
             setIsVisible(true);
           }

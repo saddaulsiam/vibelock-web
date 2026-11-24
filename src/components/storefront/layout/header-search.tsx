@@ -30,14 +30,19 @@ export function HeaderSearch({ categories = [] }: HeaderSearchProps) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        aria-label="Search drops"
-        className="group border-border/10 bg-vl-white/5 text-vl-white/40 hover:border-vl-cyan/50 hover:bg-vl-white/15 relative hidden h-8 w-36 cursor-pointer items-center rounded-full border pr-3.5 pl-9 text-left text-xs transition-all lg:flex xl:w-48"
+        aria-label="Search drops (Press Ctrl+K or Cmd+K to search)"
+        className="group border-vl-white/10 bg-vl-white/5 text-vl-white/60 hover:border-vl-cyan/40 hover:bg-vl-white/10 relative hidden h-8.5 w-40 cursor-pointer items-center justify-between rounded-full border pr-2 pl-8.5 text-left text-xs transition-all lg:flex xl:w-48"
       >
         <Search
-          className="text-vl-white/40 group-hover:text-vl-cyan pointer-events-none absolute left-3.5 size-3.5 transition-colors"
+          className="text-vl-white/50 group-hover:text-vl-cyan pointer-events-none absolute left-3 size-3.5 transition-colors"
           aria-hidden="true"
         />
-        <span className="truncate">Search drops...</span>
+        <span className="text-vl-white/60 group-hover:text-vl-white/85 truncate text-xs transition-colors">
+          Search drops...
+        </span>
+        <kbd className="border-vl-white/15 bg-vl-white/10 text-vl-white/50 group-hover:border-vl-cyan/30 group-hover:text-vl-cyan inline-flex h-4.5 select-none items-center rounded border px-1.5 font-mono text-[10px] font-medium transition-colors">
+          ⌘K
+        </kbd>
       </button>
 
       {/* Mobile Search Trigger Icon */}
@@ -45,7 +50,7 @@ export function HeaderSearch({ categories = [] }: HeaderSearchProps) {
         type="button"
         onClick={() => setIsOpen(true)}
         aria-label="Open search"
-        className="hover:text-vl-cyan hover:bg-vl-white/10 text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-8 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none sm:size-9 lg:hidden"
+        className="hover:text-vl-cyan hover:bg-vl-white/10 text-vl-white/75 focus-visible:ring-vl-cyan inline-flex size-9 cursor-pointer items-center justify-center rounded-full transition-colors focus-visible:ring-2 focus-visible:outline-none lg:hidden"
       >
         <Search className="size-4 sm:size-4.5" />
       </button>
