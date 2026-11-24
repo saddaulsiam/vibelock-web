@@ -144,6 +144,46 @@ export function ChatWidget() {
                         </div>
                       );
                     }
+                    if (part.type === "tool-searchProducts") {
+                      const isComplete = part.state === "output-available";
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-vl-dark-900/80 text-3xs text-vl-cyan-300 border-vl-cyan-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                        >
+                          <span
+                            className={`size-1.5 rounded-full ${
+                              isComplete ? "bg-vl-cyan-400" : "bg-vl-cyan-400 animate-ping"
+                            }`}
+                          />
+                          <span>
+                            {isComplete
+                              ? "প্রোডাক্ট ক্যাটালগ যাচাই সম্পন্ন"
+                              : "পোশাকের ক্যাটালগ খোঁজা হচ্ছে..."}
+                          </span>
+                        </div>
+                      );
+                    }
+                    if (part.type === "tool-requestHumanSupport") {
+                      const isComplete = part.state === "output-available";
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-vl-dark-900/80 text-3xs text-emerald-400 border-emerald-500/20 my-1.5 flex items-center gap-1.5 rounded-xs border px-2 py-1"
+                        >
+                          <span
+                            className={`size-1.5 rounded-full ${
+                              isComplete ? "bg-emerald-400" : "bg-emerald-400 animate-ping"
+                            }`}
+                          />
+                          <span>
+                            {isComplete
+                              ? "হোয়াটসঅ্যাপ সাপোর্ট প্রস্তুত"
+                              : "সাপোর্ট লিংক তৈরি হচ্ছে..."}
+                          </span>
+                        </div>
+                      );
+                    }
                     return null;
                   })}
                 </div>

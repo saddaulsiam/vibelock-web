@@ -31,6 +31,9 @@ vi.mock("@/lib/prisma/client", () => ({
     order: {
       findFirst: vi.fn(),
     },
+    product: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
   },
 }));
 
