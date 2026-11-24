@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { Header } from "@/components/storefront/layout/header";
 import { Footer } from "@/components/storefront/layout/footer";
-import { WhatsAppFloatingButton } from "@/components/storefront/layout/whatsapp-floating-button";
+// import { WhatsAppFloatingButton } from "@/components/storefront/layout/whatsapp-floating-button";
 import { MetaPixelProvider } from "@/components/storefront/analytics/meta-pixel-provider";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
@@ -22,7 +23,8 @@ export default async function StorefrontLayout({ children }: { children: React.R
       <Header />
       <main className="relative z-10 flex min-w-0 flex-1 flex-col">{children}</main>
       <Footer />
-      <WhatsAppFloatingButton />
+      {/* <WhatsAppFloatingButton /> */}
+      <ChatWidget />
     </div>
   );
 }
