@@ -70,8 +70,6 @@ export class PaystationProvider implements PaymentProvider {
     const invoiceNumber = `PS-${request.orderNumber}-${Date.now()}`;
     const appUrl = publicEnv.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const callbackUrl = new URL("/api/payments/paystation/callback", appUrl);
-    callbackUrl.searchParams.set("invoice_number", invoiceNumber);
-    callbackUrl.searchParams.set("order_number", request.orderNumber);
 
     console.log("➡️ [PayStation Initiate: Step 1] Preparing payment request:", {
       orderNumber: request.orderNumber,

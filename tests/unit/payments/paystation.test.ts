@@ -108,8 +108,8 @@ describe("PayStation Payment Gateway Unit Tests", () => {
       expect(params.get("cust_name")).toBe("Siam Sadman");
       expect(params.get("cust_phone")).toBe("01711223344");
       expect(params.get("cust_email")).toBe("siam@vibelock.com");
-      expect(params.get("callback_url")).toMatch(
-        /^https:\/\/vibelock\.bd\/api\/payments\/paystation\/callback\?invoice_number=PS-VL-20261121-001-\d+&order_number=VL-20261121-001$/
+      expect(params.get("callback_url")).toBe(
+        "https://vibelock.bd/api/payments/paystation/callback"
       );
       expect(params.get("reference")).toBe("VL-20261121-001");
     });
