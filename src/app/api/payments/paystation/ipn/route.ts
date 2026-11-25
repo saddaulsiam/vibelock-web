@@ -32,11 +32,24 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    console.log("🌐 [PayStation IPN: Step 1] Received background IPN webhook:", {
+      contentType,
+      payload,
+    });
+
     // IPN payload is unauthenticated. Every field is treated as untrusted.
     // PaymentService.verifyCallback delegates to PaystationProvider.verifyPayment,
     // which calls PayStation POST /transaction-status to authoritatively verify payment.
     const paymentService = new PaymentService();
     const result = await paymentService.verifyCallback("PAYSTATION", payload);
+
+    console.log("📥 [PayStation IPN: Step 2] IPN verification outcome:", {
+      orderNumber: result.orderNumber,
+      status: result.verification.status,
+      success: result.verification.success,
+      isUnverified: result.verification.isUnverified,
+      error: result.verification.error,
+    });
 
     if (result.verification.isUnverified) {
       if (result.verification.isRetryable) {

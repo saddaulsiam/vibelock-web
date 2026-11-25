@@ -60,6 +60,15 @@ async function handleCallback(req: NextRequest) {
     // Combine parameters (search params and body)
     const payload: Record<string, unknown> = { ...searchParamsPayload, ...bodyPayload };
 
+    console.log("🔔 [PayStation Callback: Step 1] Browser redirect callback received:", {
+      method: req.method,
+      contentType: req.headers.get("content-type"),
+      url: req.url,
+      searchParams: searchParamsPayload,
+      bodyPayload,
+      combinedPayload: payload,
+    });
+
     let invoiceNumber =
       (typeof payload.invoice_number === "string" && payload.invoice_number.trim()
         ? payload.invoice_number.trim()
@@ -158,10 +167,20 @@ async function handleCallback(req: NextRequest) {
       throw new Error("Missing transaction reference");
     }
 
+    console.log("🔄 [PayStation Callback: Step 2] Calling PaymentService.verifyCallback for invoice:", invoiceNumber);
     const paymentService = new PaymentService();
     // Server-to-server verification is triggered by verifyCallback -> PaystationProvider.verifyPayment
     const result = await paymentService.verifyCallback("PAYSTATION", payload);
     correlatedOrderNumber = result.orderNumber || correlatedOrderNumber;
+
+    console.log("📥 [PayStation Callback: Step 3] PaymentService verification result:", {
+      orderNumber: correlatedOrderNumber,
+      status: result.verification.status,
+      success: result.verification.success,
+      isUnverified: result.verification.isUnverified,
+      isRetryable: result.verification.isRetryable,
+      error: result.verification.error,
+    });
 
     const isJsonClient = req.headers.get("accept")?.includes("application/json");
     if (isJsonClient) {
@@ -201,6 +220,12 @@ async function handleCallback(req: NextRequest) {
       publicEnv.NEXT_PUBLIC_APP_URL
     );
     redirectUrl.searchParams.set("payment", paymentState);
+
+    console.log("🏁 [PayStation Callback: Step 4] Redirecting customer to order page:", {
+      destination: redirectUrl.pathname + redirectUrl.search,
+      paymentState,
+      orderNumber: correlatedOrderNumber,
+    });
 
     console.info(
       "[PayStation][Decision]",

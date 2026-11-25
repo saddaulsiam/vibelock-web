@@ -73,6 +73,20 @@ export class PaystationProvider implements PaymentProvider {
     callbackUrl.searchParams.set("invoice_number", invoiceNumber);
     callbackUrl.searchParams.set("order_number", request.orderNumber);
 
+    console.log("➡️ [PayStation Initiate: Step 1] Preparing payment request:", {
+      orderNumber: request.orderNumber,
+      amount: request.amount,
+      invoiceNumber,
+      callbackUrl: callbackUrl.toString(),
+      environment: this.isSandbox ? "SANDBOX" : "PRODUCTION",
+      baseUrl: this.baseUrl,
+      customer: {
+        name: request.customerName,
+        phone: request.customerPhone,
+        email: request.customerEmail,
+      },
+    });
+
     const body = new URLSearchParams();
     body.append("merchantId", this.merchantId);
     body.append("password", this.password);
@@ -92,6 +106,19 @@ export class PaystationProvider implements PaymentProvider {
     body.append("reference", request.orderNumber);
 
     try {
+      console.log(`🚀 [PayStation Initiate: Step 2] Sending POST ${this.baseUrl}/initiate-payment:`, {
+        merchantId: this.merchantId,
+        invoice_number: invoiceNumber,
+        currency: "BDT",
+        payment_amount: String(request.amount),
+        pay_with_charge: "0",
+        cust_name: request.customerName,
+        cust_phone: request.customerPhone,
+        cust_email: request.customerEmail,
+        callback_url: callbackUrl.toString(),
+        reference: request.orderNumber,
+      });
+
       const response = await fetch(`${this.baseUrl}/initiate-payment`, {
         method: "POST",
         headers: {
@@ -100,6 +127,8 @@ export class PaystationProvider implements PaymentProvider {
         body: body.toString(),
         signal: AbortSignal.timeout(10000),
       });
+
+      console.log(`📥 [PayStation Initiate: Step 3] Gateway HTTP status: ${response.status} (ok: ${response.ok})`);
 
       if (!response.ok) {
         console.error(
@@ -121,6 +150,7 @@ export class PaystationProvider implements PaymentProvider {
       }
 
       const result = (await response.json()) as PaystationInitiationApiResponse;
+      console.log("📥 [PayStation Initiate: Step 3 Response Body]", result);
 
       const statusCodeStr = String(result?.status_code ?? "");
       const statusStr = String(result?.status ?? "").toLowerCase();
@@ -149,6 +179,7 @@ export class PaystationProvider implements PaymentProvider {
       }
 
       if (!result.payment_url || typeof result.payment_url !== "string") {
+        console.error("❌ [PayStation Initiate: Missing payment_url]", result);
         return {
           success: false,
           error: "PayStation response missing payment_url",
@@ -196,6 +227,11 @@ export class PaystationProvider implements PaymentProvider {
           error: "Invoice number mismatch in PayStation initiation response",
         };
       }
+
+      console.log("🔗 [PayStation Initiate: Step 4] Success! Redirecting customer to PayStation checkout:", {
+        redirectUrl: result.payment_url,
+        invoiceNumber,
+      });
 
       console.info(
         "[PayStation][Initiate]",
@@ -303,8 +339,17 @@ export class PaystationProvider implements PaymentProvider {
     // Header: merchantId: MERCHANT_ID
     // Body: invoice_number: OUR_INVOICE_NUMBER
     try {
+      console.log("🔍 [PayStation Verify: Step 1] Initiating server-to-server verification:", {
+        invoiceNumber,
+        baseUrl: this.baseUrl,
+        rawCallbackStatus,
+        isExplicitCancel,
+      });
+
       const formBody = new URLSearchParams();
       formBody.append("invoice_number", invoiceNumber);
+
+      console.log(`🚀 [PayStation Verify: Step 2] Querying POST ${this.baseUrl}/transaction-status for invoice: ${invoiceNumber}`);
 
       const response = await fetch(`${this.baseUrl}/transaction-status`, {
         method: "POST",
@@ -315,6 +360,8 @@ export class PaystationProvider implements PaymentProvider {
         body: formBody.toString(),
         signal: AbortSignal.timeout(10000),
       });
+
+      console.log(`📥 [PayStation Verify: Step 3] Transaction-status query HTTP status: ${response.status}`);
 
       if (!response.ok) {
         const isUpstreamUnavailable = response.status >= 500 || response.status === 429;
@@ -345,6 +392,7 @@ export class PaystationProvider implements PaymentProvider {
       }
 
       const result = (await response.json()) as PaystationTransactionStatusApiResponse;
+      console.log("📥 [PayStation Verify: Step 3 Response Body]", result);
 
       const statusCodeStr = String(result?.status_code ?? "");
       const statusStr = String(result?.status ?? "").toLowerCase();
@@ -400,6 +448,22 @@ export class PaystationProvider implements PaymentProvider {
           : data.trx_amount !== undefined
             ? Number(data.trx_amount)
             : undefined;
+
+      console.log("⚖️ [PayStation Verify: Step 4] Resolving transaction status:", {
+        invoiceNumber: verifiedInvoice,
+        rawTrxStatus: data.trx_status,
+        mappedStatus:
+          rawTrxStatus === "success" || rawTrxStatus === "successful"
+            ? "SUCCESS"
+            : rawTrxStatus === "processing" || rawTrxStatus === "pending"
+              ? "PENDING"
+              : rawTrxStatus,
+        trxId,
+        paymentAmount: data.payment_amount,
+        trxAmount: data.trx_amount,
+        paymentMethod: data.payment_method,
+        orderDateTime: data.order_date_time,
+      });
 
       // Status resolution
       if (rawTrxStatus === "success" || rawTrxStatus === "successful") {
