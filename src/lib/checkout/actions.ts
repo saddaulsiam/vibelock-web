@@ -19,6 +19,11 @@ import type { DiscountType, Prisma } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
 import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
+import {
+  generateWebsiteOrderNumber,
+  isOrderNumberCollision,
+  MAX_ORDER_NUMBER_COLLISION_RETRIES,
+} from "@/lib/orders/order-number";
 
 export async function validateCouponAction(code: string) {
   const session = await auth();
@@ -394,19 +399,26 @@ export async function createOrderAction(
   // Wait, Prisma doesn't have idempotencyKey natively on Order unless we add it.
   // Let's generate order number and use a transaction to verify stock precisely and create order.
 
-  const orderNumber = `VL-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+  let orderNumber = "";
+  let orderResult: Awaited<ReturnType<typeof prisma.order.create>> | null = null;
+  let capturedOrderItems: Array<{
+    productName: string;
+    size?: string | null;
+    color?: string | null;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+  }> = [];
 
   try {
-    let capturedOrderItems: Array<{
-      productName: string;
-      size?: string | null;
-      color?: string | null;
-      quantity: number;
-      unitPrice: number;
-      lineTotal: number;
-    }> = [];
+    let attempt = 0;
+    while (attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {
+      attempt++;
+      orderNumber = generateWebsiteOrderNumber();
+      capturedOrderItems = [];
 
-    const orderResult = await prisma.$transaction(
+      try {
+        orderResult = await prisma.$transaction(
       async (tx) => {
         // SEC-9-06: 1. Acquire exclusive row lock on the customer User record FIRST.
         // Serializes ALL checkout methods (COD, ONLINE, BKASH, PAYSTATION) against concurrent
@@ -768,6 +780,21 @@ export async function createOrderAction(
         timeout: 15000,
       }
     );
+        break; // Transaction committed successfully
+      } catch (txError) {
+        if (isOrderNumberCollision(txError) && attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {
+          console.warn(
+            `[Checkout] Order number collision on candidate "${orderNumber}". Retrying with fresh candidate (attempt ${attempt}/${MAX_ORDER_NUMBER_COLLISION_RETRIES})...`
+          );
+          continue;
+        }
+        throw txError;
+      }
+    }
+
+    if (!orderResult) {
+      throw new Error("ORDER_CREATION_FAILED");
+    }
 
     const finalOrderNumber = orderResult.orderNumber;
 
