@@ -47,7 +47,7 @@ describe("Telegram Order Notifications", () => {
 
       const message = formatTelegramOrderMessage(payload);
 
-      expect(message).toContain("🚨 <b>NEW ORDER RECEIVED: #VL-20261125-ABCD12</b>");
+      expect(message).toContain("🚨 <b>NEW ORDER RECEIVED:</b> <code>VL-20261125-ABCD12</code>");
       expect(message).toContain("💰 <b>Amount:</b> ৳ 1,250.00");
       expect(message).toContain("💳 <b>Payment:</b> COD [💵 COD]");
       expect(message).toContain("👤 <b>Customer:</b> Siam &lt;Tester&gt; &amp; Co.");
