@@ -244,8 +244,15 @@ export async function getAdminOrders({
 export async function getAdminOrderById(id: string) {
   await requireRole("STAFF");
 
-  const order = await prisma.order.findUnique({
-    where: { id },
+  const normalized = id.trim();
+  const order = await prisma.order.findFirst({
+    where: {
+      OR: [
+        { id: normalized },
+        { orderNumber: normalized },
+        { orderNumber: normalized.toUpperCase() },
+      ],
+    },
     include: {
       items: {
         include: {
