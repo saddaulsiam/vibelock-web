@@ -118,9 +118,10 @@ export async function sendTelegramOrderNotification(
 
   const message = formatTelegramOrderMessage(payload);
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 3500);
+  const timeoutId = setTimeout(() => controller.abort(), 7000);
 
   try {
+    console.log(`[TelegramNotification] Dispatching order alert for #${payload.orderNumber} to Telegram...`);
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: {
@@ -144,11 +145,12 @@ export async function sendTelegramOrderNotification(
       return false;
     }
 
+    console.log(`[TelegramNotification] Successfully delivered order #${payload.orderNumber} to Telegram!`);
     return true;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       console.warn(
-        `[TelegramNotification] Request timed out (3.5s) for order #${payload.orderNumber}`
+        `[TelegramNotification] Request timed out (7s) for order #${payload.orderNumber}`
       );
     } else {
       console.error(
