@@ -71,7 +71,7 @@ export function formatTelegramOrderMessage(payload: TelegramOrderNotificationPay
   }
 
   const lines = [
-    `🚨 <b>NEW ORDER RECEIVED: #${escapeHtml(payload.orderNumber)}</b>`,
+    `🚨 <b>NEW ORDER RECEIVED:</b> <code>${escapeHtml(payload.orderNumber)}</code>`,
     ``,
     `💰 <b>Amount:</b> ৳ ${totalAmount}`,
     `💳 <b>Payment:</b> ${method} [${status}]`,
