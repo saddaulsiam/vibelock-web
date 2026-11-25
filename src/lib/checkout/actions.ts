@@ -889,7 +889,7 @@ export async function createOrderAction(
 
       try {
         const { sendTelegramOrderNotification } = await import("@/lib/notifications/telegram");
-        const telegramPromise = sendTelegramOrderNotification({
+        await sendTelegramOrderNotification({
           orderId: orderResult.id,
           orderNumber: orderResult.orderNumber,
           total: orderResult.total.toString(),
@@ -907,11 +907,6 @@ export async function createOrderAction(
             color: item.color,
           })),
         });
-        if (telegramPromise && typeof telegramPromise.catch === "function") {
-          telegramPromise.catch((err) => {
-            console.error("[Checkout] Non-blocking background telegram alert error:", err);
-          });
-        }
       } catch (telegramErr) {
         console.error("[Checkout] Failed to dispatch telegram notification:", telegramErr);
       }
