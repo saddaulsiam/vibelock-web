@@ -886,6 +886,35 @@ export async function createOrderAction(
       } catch (emailErr) {
         console.error("[Checkout] Failed to load order email module:", emailErr);
       }
+
+      try {
+        const { sendTelegramOrderNotification } = await import("@/lib/notifications/telegram");
+        const telegramPromise = sendTelegramOrderNotification({
+          orderId: orderResult.id,
+          orderNumber: orderResult.orderNumber,
+          total: orderResult.total.toString(),
+          paymentMethod: "COD",
+          paymentStatus: "COD",
+          customerName: orderResult.customerName,
+          customerPhone: orderResult.customerPhone,
+          customerEmail: orderResult.customerEmail,
+          city: orderResult.shippingCity,
+          itemCount: capturedOrderItems.length,
+          items: capturedOrderItems.map((item) => ({
+            productName: item.productName,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+          })),
+        });
+        if (telegramPromise && typeof telegramPromise.catch === "function") {
+          telegramPromise.catch((err) => {
+            console.error("[Checkout] Non-blocking background telegram alert error:", err);
+          });
+        }
+      } catch (telegramErr) {
+        console.error("[Checkout] Failed to dispatch telegram notification:", telegramErr);
+      }
     }
 
     return { success: true, orderNumber: finalOrderNumber };

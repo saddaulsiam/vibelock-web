@@ -68,6 +68,10 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   EMAIL_FROM: z.string().default("VibeLock <noreply@vibelock.bd>"),
 
+  // Telegram Notifications (Admin Ops)
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_CHAT_ID: z.string().optional(),
+
   // Upstash Redis (Rate Limiting)
   UPSTASH_REDIS_REST_URL: z.preprocess((val) => {
     if (typeof val !== "string") return val;
