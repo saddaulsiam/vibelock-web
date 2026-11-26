@@ -125,7 +125,7 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
   const isGenerating = status === "submitted" || status === "streaming";
 
   // Smooth entrance for teaser callout badge if not previously dismissed
-  // Auto-dismisses after 30 seconds if user does not interact with it
+  // Auto-dismisses after 10 seconds if user does not interact with it
   useEffect(() => {
     try {
       if (sessionStorage.getItem("vl_chat_badge_dismissed") === "1") {
@@ -141,7 +141,7 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
         setBadgeVisible(true);
       });
 
-      // Auto-close after 30s if user does not close it manually
+      // Auto-close after 10s if user does not close it manually
       autoCloseTimerRef.current = setTimeout(() => {
         setBadgeVisible(false);
         fadeOutTimer = setTimeout(() => {
@@ -150,7 +150,7 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
         try {
           sessionStorage.setItem("vl_chat_badge_dismissed", "1");
         } catch {}
-      }, 30000);
+      }, 10000);
     }, 600);
 
     return () => {

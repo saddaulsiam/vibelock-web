@@ -40,11 +40,11 @@ describe("ChatWidget Mobile Responsiveness and Badge Lifecycle", () => {
     expect(widgetSource).not.toContain("max-h-[92vh]");
   });
 
-  it("configures 30-second auto-close timeout for the promotional teaser badge", () => {
+  it("configures 10-second auto-close timeout for the promotional teaser badge", () => {
     const widgetSource = fs.readFileSync("src/components/chat/ChatWidget.tsx", "utf8");
 
-    // Must have 30000ms timer for auto dismissal
-    expect(widgetSource).toContain("30000");
+    // Must have 10000ms timer for auto dismissal
+    expect(widgetSource).toContain("10000");
     expect(widgetSource).toContain("autoCloseTimerRef.current");
     expect(widgetSource).toContain("vl_chat_badge_dismissed");
   });
