@@ -8,6 +8,7 @@ import {
   Boxes,
   CreditCard,
   Receipt,
+  Shield,
   ShieldAlert,
   SlidersHorizontal,
   Truck,
@@ -27,7 +28,9 @@ export function SettingsNavTabs() {
             ? "/admin/settings/policies"
             : pathname?.includes("/invoicing")
               ? "/admin/settings/invoicing"
-              : "/admin/settings/general";
+              : pathname?.includes("/security")
+                ? "/admin/settings/security"
+                : "/admin/settings/general";
 
   return (
     <Tabs value={currentTab}>
@@ -85,6 +88,15 @@ export function SettingsNavTabs() {
         >
           <Receipt className="size-4 text-emerald-600" aria-hidden="true" />
           Tax & Invoicing
+        </TabsTrigger>
+        <TabsTrigger
+          value="/admin/settings/security"
+          render={<Link href="/admin/settings/security" />}
+          nativeButton={false}
+          className="gap-2 text-xs font-semibold sm:text-sm"
+        >
+          <Shield className="size-4 text-vl-cyan-600" aria-hidden="true" />
+          Security & Pixels
         </TabsTrigger>
         <TabsTrigger
           value="/admin/settings/payments"
