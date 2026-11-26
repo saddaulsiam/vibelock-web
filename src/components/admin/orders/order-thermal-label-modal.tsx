@@ -73,7 +73,7 @@ export function OrderThermalLabelModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs print:static print:bg-transparent print:p-0">
       <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl print:m-0 print:p-0 print:shadow-none">
         {/* Modal Controls (Hidden when printing) */}
         <div className="mb-4 flex items-center justify-between border-b border-neutral-100 pb-3 print:hidden">

@@ -102,7 +102,7 @@ export function ProductProfitabilityDrilldown({
         {!compactHeader ? (
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 print:hidden">
                 <h2
                   id="product-profitability-heading"
                   className="text-vl-dark-900 text-xl font-semibold tracking-tight"
@@ -120,7 +120,7 @@ export function ProductProfitabilityDrilldown({
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 print:hidden">
               {data.products.length > 0 && (
                 <Button
                   type="button"
@@ -150,7 +150,7 @@ export function ProductProfitabilityDrilldown({
             !compactHeader && "mt-4"
           )}
         >
-          <form className="flex w-full max-w-sm items-center gap-2" method="GET">
+          <form className="flex w-full max-w-sm items-center gap-2 print:hidden" method="GET">
             <label htmlFor={searchInputId} className="sr-only">
               Search by product name or SKU
             </label>
@@ -177,7 +177,7 @@ export function ProductProfitabilityDrilldown({
             </Button>
           </form>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2 text-xs print:hidden">
             <span className="text-muted-foreground">Sort:</span>
             {[
               { key: "revenue", label: "Revenue" },
@@ -222,38 +222,38 @@ export function ProductProfitabilityDrilldown({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-210 text-left text-sm">
-          <thead className="bg-muted/40 text-muted-foreground border-vl-dark-900/10 border-b text-xs font-semibold tracking-wider uppercase">
+      <div className="overflow-x-auto print:overflow-visible">
+        <table className="w-full min-w-210 text-left text-sm print:min-w-0 print:w-full print:text-[9.5px]">
+          <thead className="bg-muted/40 text-muted-foreground border-vl-dark-900/10 border-b text-xs font-semibold tracking-wider uppercase print:text-[8.5px]">
             <tr>
-              <th scope="col" className="p-3.5">
+              <th scope="col" className="p-3.5 print:py-2 print:px-1">
                 Product / Variant SKU
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Sold
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Returns
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Retained
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Return %
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Gross sales
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Net sales
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 COGS
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Gross profit
               </th>
-              <th scope="col" className="p-3.5 text-right">
+              <th scope="col" className="p-3.5 text-right print:py-2 print:px-1">
                 Margin
               </th>
             </tr>
@@ -295,7 +295,7 @@ export function ProductProfitabilityDrilldown({
       </div>
 
       {data.totalPages > 1 && (
-        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t p-4 text-xs">
+        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-t p-4 text-xs print:hidden">
           <p className="text-muted-foreground">
             Showing page <span className="text-vl-dark-900 font-semibold">{data.page}</span> of{" "}
             <span className="text-vl-dark-900 font-semibold">{data.totalPages}</span> (
@@ -346,14 +346,14 @@ function ProductRowGroup({
   return (
     <>
       <tr className="group hover:bg-muted/30 transition-colors">
-        <td className="p-3.5">
+        <td className="p-3.5 print:py-1.5 print:px-1">
           <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="outline"
               size="icon"
               onClick={onToggle}
-              className="size-6 shrink-0"
+              className="size-6 shrink-0 print:hidden"
               aria-expanded={isExpanded}
               aria-label={`${isExpanded ? "Collapse" : "Expand"} variants for ${product.productName}`}
             >
@@ -381,31 +381,31 @@ function ProductRowGroup({
             </div>
           </div>
         </td>
-        <td className="p-3.5 text-right font-medium tabular-nums">
+        <td className="p-3.5 text-right font-medium tabular-nums print:py-1.5 print:px-1">
           {product.soldUnits.toLocaleString("en-BD")}
         </td>
-        <td className="p-3.5 text-right font-medium text-amber-700 tabular-nums">
+        <td className="p-3.5 text-right font-medium text-amber-700 tabular-nums print:py-1.5 print:px-1">
           {product.returnedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums print:py-1.5 print:px-1">
           {product.retainedUnits.toLocaleString("en-BD")}
         </td>
-        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums print:py-1.5 print:px-1">
           {product.returnRate !== null ? `${product.returnRate.toFixed(1)}%` : "—"}
         </td>
-        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums print:py-1.5 print:px-1">
           {formatBdt(product.grossSales)}
         </td>
-        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums print:py-1.5 print:px-1">
           {formatBdt(product.netSales)}
         </td>
-        <td className="text-muted-foreground p-3.5 text-right tabular-nums">
+        <td className="text-muted-foreground p-3.5 text-right tabular-nums print:py-1.5 print:px-1">
           {formatBdt(product.cogs)}
         </td>
-        <td className="p-3.5 text-right font-semibold text-emerald-700 tabular-nums">
+        <td className="p-3.5 text-right font-semibold text-emerald-700 tabular-nums print:py-1.5 print:px-1">
           {formatBdt(product.profit)}
         </td>
-        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
+        <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums print:py-1.5 print:px-1">
           {product.margin !== null && product.margin !== undefined ? `${product.margin.toFixed(1)}%` : "—"}
         </td>
       </tr>
@@ -434,13 +434,13 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
 
   return (
     <tr className="border-vl-dark-900/5 bg-vl-white-100/80 hover:bg-vl-white-100 border-b text-xs transition-colors">
-      <td className="py-2.5 pr-3 pl-11">
+      <td className="py-2.5 pr-3 pl-11 print:py-1 print:px-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-vl-dark-900 font-mono text-[11px] font-medium">{variant.sku}</span>
+          <span className="text-vl-dark-900 font-mono text-[11px] font-medium print:text-[8.5px]">{variant.sku}</span>
           {attributes ? (
-            <span className="text-muted-foreground text-[11px]">({attributes})</span>
+            <span className="text-muted-foreground text-[11px] print:text-[8.5px]">({attributes})</span>
           ) : (
-            <span className="text-muted-foreground text-[11px] italic">(Default variant)</span>
+            <span className="text-muted-foreground text-[11px] italic print:text-[8.5px]">(Default variant)</span>
           )}
           {variant.isAnomaly && (
             <Badge variant="destructive" className="h-3.5 px-1 text-[9px]">
@@ -449,31 +449,31 @@ function VariantSubRow({ variant }: { variant: ProductProfitabilityVariant }) {
           )}
         </div>
       </td>
-      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums print:py-1 print:px-1">
         {variant.soldUnits.toLocaleString("en-BD")}
       </td>
-      <td className="py-2.5 pr-3.5 text-right text-amber-700 tabular-nums">
+      <td className="py-2.5 pr-3.5 text-right text-amber-700 tabular-nums print:py-1 print:px-1">
         {variant.returnedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums print:py-1 print:px-1">
         {variant.retainedUnits.toLocaleString("en-BD")}
       </td>
-      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums print:py-1 print:px-1">
         {variant.returnRate !== null ? `${variant.returnRate.toFixed(1)}%` : "—"}
       </td>
-      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums print:py-1 print:px-1">
         {formatBdt(variant.grossSales)}
       </td>
-      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums print:py-1 print:px-1">
         {formatBdt(variant.netSales)}
       </td>
-      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums">
+      <td className="text-muted-foreground py-2.5 pr-3.5 text-right tabular-nums print:py-1 print:px-1">
         {formatBdt(variant.cogs)}
       </td>
-      <td className="py-2.5 pr-3.5 text-right font-medium text-emerald-700 tabular-nums">
+      <td className="py-2.5 pr-3.5 text-right font-medium text-emerald-700 tabular-nums print:py-1 print:px-1">
         {formatBdt(variant.profit)}
       </td>
-      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums">
+      <td className="text-vl-dark-900 py-2.5 pr-3.5 text-right font-medium tabular-nums print:py-1 print:px-1">
         {variant.margin !== null ? `${variant.margin.toFixed(1)}%` : "—"}
       </td>
     </tr>

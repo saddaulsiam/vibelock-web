@@ -1,6 +1,6 @@
 "use client";
 
-import { Download } from "lucide-react";
+import { Download, Printer } from "lucide-react";
 
 export function ReportExportMenu({ query }: { query: string }) {
   return (
@@ -14,7 +14,7 @@ export function ReportExportMenu({ query }: { query: string }) {
         <span>Export CSV</span>
       </button>
 
-      <div className="invisible absolute right-0 z-20 mt-1.5 w-56 rounded-lg border border-neutral-200 bg-white p-1 opacity-0 shadow-xl transition-all group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+      <div className="invisible absolute right-0 z-20 mt-1.5 w-60 rounded-lg border border-neutral-200 bg-white p-1 opacity-0 shadow-xl transition-all group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
         <span className="block px-2.5 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400">
           Available Datasets
         </span>
@@ -32,6 +32,18 @@ export function ReportExportMenu({ query }: { query: string }) {
             {label}
           </a>
         ))}
+        <div className="border-t border-neutral-100 my-1" />
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="hover:bg-neutral-100 hover:text-neutral-900 text-neutral-700 flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-left text-xs font-semibold transition-colors cursor-pointer"
+        >
+          <span className="flex items-center gap-1.5">
+            <Printer className="size-3.5 text-neutral-500" />
+            Print / Save PDF Report
+          </span>
+          <span className="text-[10px] font-mono text-neutral-400">Ctrl+P</span>
+        </button>
       </div>
     </div>
   );

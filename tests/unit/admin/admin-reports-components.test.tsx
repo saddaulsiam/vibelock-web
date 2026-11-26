@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import type { ProductProfitabilityResult } from "@/lib/admin/reports/report-queries";
 import {
   ReportCharts,
+  ReportExportMenu,
   ReportFinancialHero,
   ReportLedgerWorkspace,
   ReportRangeFilter,
@@ -24,9 +25,15 @@ describe("ReportFinancialHero component", () => {
     returnRate: 16.9,
     averageOrderValue: 759.4,
     shippingCharged: 12500,
+    priorNetSales: 102400,
+    priorGrossProfit: 43900,
+    priorOrders: 135,
+    netSalesDelta: 14.2,
+    grossProfitDelta: 18.4,
+    ordersDelta: 14.1,
   };
 
-  test("renders executive P&L financial hero matrix with formatted currency", () => {
+  test("renders executive P&L financial hero matrix with formatted currency and Shopify Plus delta badges", () => {
     const html = renderToStaticMarkup(
       <ReportFinancialHero summary={summary} rangeLabel="Last 30 days" />
     );
@@ -41,6 +48,16 @@ describe("ReportFinancialHero component", () => {
     expect(html).toContain("Gross GMV");
     expect(html).toContain("Discounts");
     expect(html).toContain("Avg Order Value");
+
+    // Shopify Plus / Stripe Delta badges
+    expect(html).toContain("+14.2% vs prior");
+    expect(html).toContain("+18.4%");
+    expect(html).toContain("+14.1% vol");
+
+    // Contribution Margin Bridge
+    expect(html).toContain("Operational Contribution Bridge");
+    expect(html).toContain("Est. Processing Fees (~2%):");
+    expect(html).toContain("Net Contribution Margin:");
   });
 });
 
@@ -104,10 +121,26 @@ describe("ReportCharts component", () => {
 
     expect(html).toContain("Revenue Trajectory Wave");
     expect(html).toContain("<svg");
+    expect(html).toContain("cursor-crosshair");
+    expect(html).toContain("Wave");
+    expect(html).toContain("Columns");
+    expect(html).toContain("Cumulative");
     expect(html).toContain("Vintage Leather Jacket");
     expect(html).toContain("VL-JKT-01");
     expect(html).toContain("Settlement Channel Mix");
+    expect(html).toContain("Settled");
     expect(html).toContain("Cash on Delivery (COD)");
+    expect(html).toContain("Retained");
+  });
+});
+
+describe("ReportExportMenu component", () => {
+  test("renders CSV export datasets and 1-click Print/PDF option", () => {
+    const html = renderToStaticMarkup(<ReportExportMenu query="range=30d" />);
+    expect(html).toContain("Export CSV");
+    expect(html).toContain("Sales Summary CSV");
+    expect(html).toContain("Product &amp; SKU Report CSV");
+    expect(html).toContain("Print / Save PDF Report");
   });
 });
 

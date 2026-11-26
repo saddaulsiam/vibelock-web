@@ -82,69 +82,120 @@ export default async function AdminReportsPage({
   }).toString();
 
   return (
-    <div className="mx-auto w-full max-w-[100rem] space-y-6">
+    <div className="print-document mx-auto w-full max-w-[100rem] space-y-6 print:space-y-4 print:max-w-none print:w-full print:p-0 print:bg-white">
       {/* ── 1. HARMONIZED ADMIN PAGE HEADER (MATCHING /admin & /admin/orders) ── */}
-      <AdminPageHeader
-        eyebrow="Operations / Analytics"
-        title="Reports &amp; Profitability"
-        badgeLabel="Realized P&amp;L"
-        badgeVariant="emerald"
-        description="Historical gross merchandise sales, returns, cost of goods, and realized profitability."
-      >
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={reconciliationHref}
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
-          >
-            <CreditCard className="size-3.5 text-vl-cyan" />
-            <span>Cash Reconciliation</span>
-          </Link>
+      <div className="print:hidden">
+        <AdminPageHeader
+          eyebrow="Operations / Analytics"
+          title="Reports &amp; Profitability"
+          badgeLabel="Realized P&amp;L"
+          badgeVariant="emerald"
+          description="Historical gross merchandise sales, returns, cost of goods, and realized profitability."
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={reconciliationHref}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
+            >
+              <CreditCard className="size-3.5 text-vl-cyan" />
+              <span>Cash Reconciliation</span>
+            </Link>
 
-          <Link
-            href={buildHref({})}
-            className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
-            title="Refresh current report calculations"
-          >
-            <RefreshCw className="size-3.5" />
-            <span>Refresh</span>
-          </Link>
+            <Link
+              href={buildHref({})}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
+              title="Refresh current report calculations"
+            >
+              <RefreshCw className="size-3.5" />
+              <span>Refresh</span>
+            </Link>
 
-          <ReportExportMenu query={exportQuery} />
-        </div>
-      </AdminPageHeader>
+            <ReportExportMenu query={exportQuery} />
+          </div>
+        </AdminPageHeader>
+      </div>
 
       {/* ── 2. ANIMATED RANGE PRESETS & RESOLVED TIMEFRAME BAR ── */}
-      <ReportRangeFilter
-        currentRange={range}
-        from={from}
-        to={to}
-        startDate={report.start}
-        endDate={report.end}
-        searchParamsRecord={{
-          range,
-          from,
-          to,
-          q: value("q"),
-          sort: value("sort"),
-          view: value("view"),
-        }}
-      />
+      <div className="print:hidden">
+        <ReportRangeFilter
+          currentRange={range}
+          from={from}
+          to={to}
+          startDate={report.start}
+          endDate={report.end}
+          searchParamsRecord={{
+            range,
+            from,
+            to,
+            q: value("q"),
+            sort: value("sort"),
+            view: value("view"),
+          }}
+        />
+      </div>
 
-      {/* ── 3. EXECUTIVE P&L FINANCIAL COCKPIT & OPERATIONS MATRIX ── */}
-      <ReportFinancialHero summary={report.summary} rangeLabel={rangeLabel} />
+      {/* ── SECTION 1: EXECUTIVE AUDIT & FINANCIAL COCKPIT (PAGE 1) ── */}
+      <div className="print-break-after-page space-y-6 print:space-y-4">
+        {/* ── PRINT-ONLY EXECUTIVE AUDIT HEADER ── */}
+        <div className="hidden print:block border-b-2 border-neutral-900 pb-4 mb-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-heading font-black text-xl text-neutral-950 uppercase tracking-tight">VibeLock</span>
+                <span className="h-4 w-px bg-neutral-300" />
+                <span className="font-mono text-xs uppercase tracking-widest text-neutral-500 font-bold">Operations &amp; Analytics</span>
+              </div>
+              <h1 className="text-2xl font-black tracking-tight text-neutral-950 uppercase font-heading mt-1">
+                Executive Financial Statement
+              </h1>
+              <p className="text-xs text-neutral-600 mt-1">
+                Timeframe: <span className="font-bold text-neutral-900">{rangeLabel}</span> ({report.start.toLocaleDateString("en-BD")} to {report.end.toLocaleDateString("en-BD")})
+              </p>
+            </div>
+            <div className="text-right text-xs font-mono text-neutral-500">
+              <p className="font-bold text-neutral-800">Confidential Financial Audit</p>
+              <p>Generated: {new Date().toLocaleDateString("en-BD", { dateStyle: "long" })}</p>
+              <p className="text-[10px] text-neutral-400">Doc ID: VL-P&amp;L-{report.start.getTime().toString(36).toUpperCase()}</p>
+            </div>
+          </div>
+        </div>
 
-      {/* ── 4. VISUAL REVENUE WAVE, COGS BARS & TOP PRODUCTS ── */}
-      <ReportCharts
-        trend={report.trend}
-        products={report.products}
-        payments={report.payments}
-        soldUnits={report.summary.soldUnits}
-        returnedUnits={report.summary.returnedUnits}
-        returnRate={report.summary.returnRate}
-        returnedValue={report.summary.returnedValue}
-      />
+        {/* ── 3. EXECUTIVE P&L FINANCIAL COCKPIT & OPERATIONS MATRIX ── */}
+        <ReportFinancialHero summary={report.summary} rangeLabel={rangeLabel} />
 
-      {/* ── 5. SEGMENTED LEDGER WORKSPACES (PRODUCTS / ORDERS / DAILY / PAYMENTS) ── */}
+        {/* ── PRINT-ONLY EXECUTIVE SIGN-OFF & AUDIT VALIDATION BLOCK (PAGE 1 FOOTER) ── */}
+        <div className="hidden print:grid grid-cols-2 gap-10 pt-10 mt-8 border-t border-neutral-300 text-xs">
+          <div className="space-y-1.5">
+            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Prepared &amp; Verified By:</p>
+            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+              <span>Operations &amp; Finance Automated Controller</span>
+            </div>
+            <p className="text-[10px] text-neutral-500">VibeLock ERP System · Reconciliation: Clean Ledger</p>
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Reviewed &amp; Authorized By:</p>
+            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+              <span>Executive Management / Store Administration</span>
+            </div>
+            <p className="text-[10px] text-neutral-500">Sign-off Date: {new Date().toLocaleDateString("en-BD")}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 2: VISUAL REVENUE WAVE, COGS BARS & TOP PRODUCTS (PAGE 2) ── */}
+      <div className="print-break-after-page space-y-4">
+        <ReportCharts
+          trend={report.trend}
+          products={report.products}
+          payments={report.payments}
+          soldUnits={report.summary.soldUnits}
+          returnedUnits={report.summary.returnedUnits}
+          returnRate={report.summary.returnRate}
+          returnedValue={report.summary.returnedValue}
+        />
+      </div>
+
+      {/* ── SECTION 3: SEGMENTED LEDGER WORKSPACES (PAGE 3+) ── */}
       <ReportLedgerWorkspace
         currentView={currentView}
         productProfitability={productProfitability}

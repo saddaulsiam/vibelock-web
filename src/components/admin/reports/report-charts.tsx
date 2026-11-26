@@ -1,8 +1,17 @@
 "use client";
 
 import * as React from "react";
-import { CreditCard, PackageCheck, Radio, RotateCcw } from "lucide-react";
+import {
+  BarChart2,
+  Layers,
+  PackageCheck,
+  PieChart,
+  Radio,
+  RotateCcw,
+  TrendingUp,
+} from "lucide-react";
 import { NativeSelect } from "@/components/ui/select-native";
+import { cn } from "@/lib/utils";
 
 type TrendPoint = {
   date: Date;
@@ -58,7 +67,10 @@ export function ReportCharts({
   returnedValue: number;
 }) {
   const [productMetric, setProductMetric] = React.useState<"revenue" | "profit" | "units">("revenue");
-  const [hoveredPoint, setHoveredPoint] = React.useState<TrendPoint | null>(null);
+  const [chartMode, setChartMode] = React.useState<"wave" | "bars" | "cumulative">("wave");
+  const [trendMetric, setTrendMetric] = React.useState<"netSales" | "grossProfit" | "orders">("netSales");
+  const [hoveredPoint, setHoveredPoint] = React.useState<(TrendPoint & { x: number; y: number; val: number }) | null>(null);
+  const svgRef = React.useRef<SVGSVGElement | null>(null);
 
   // SVG Coordinates calculation for Revenue Trend Wave (Width: 640, Height: 200)
   const svgWidth = 640;
@@ -68,19 +80,57 @@ export function ReportCharts({
   const usableW = svgWidth - paddingX - 15;
   const usableH = svgHeight - paddingY * 2;
 
-  const trendValues = trend.map((p) => Number(p.netSales) || 0);
-  const maxSales = Math.max(...trendValues, 100);
-  const midSales = maxSales / 2;
+  const getMetricValue = React.useCallback(
+    (p: TrendPoint) => {
+      if (trendMetric === "grossProfit") return Number(p.grossProfit) || 0;
+      if (trendMetric === "orders") return Number(p.orders) || 0;
+      return Number(p.netSales) || 0;
+    },
+    [trendMetric]
+  );
+
+  const cumulativeValues = React.useMemo(() => {
+    return trend.reduce<number[]>((acc, p) => {
+      const last = acc.length > 0 ? acc[acc.length - 1] : 0;
+      return [...acc, last + getMetricValue(p)];
+    }, []);
+  }, [trend, getMetricValue]);
+
+  const activeValues =
+    chartMode === "cumulative" ? cumulativeValues : trend.map((p) => getMetricValue(p));
+  const maxVal = Math.max(...activeValues, 10);
+  const midVal = maxVal / 2;
 
   const isSinglePoint = trend.length === 1;
 
   const coordinates = trend.map((p, idx) => {
+    const val = chartMode === "cumulative" ? cumulativeValues[idx] : getMetricValue(p);
     const x = isSinglePoint
       ? paddingX + usableW / 2
       : paddingX + (idx / Math.max(trend.length - 1, 1)) * usableW;
-    const y = svgHeight - paddingY - ((Number(p.netSales) || 0) / maxSales) * usableH;
-    return { x, y, ...p };
+    const y = svgHeight - paddingY - (val / maxVal) * usableH;
+    return { x, y, val, ...p };
   });
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!svgRef.current || coordinates.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const relativeX = (mouseX / rect.width) * svgWidth;
+
+    let closest = coordinates[0];
+    let minDiff = Math.abs(relativeX - closest.x);
+
+    for (let i = 1; i < coordinates.length; i++) {
+      const diff = Math.abs(relativeX - coordinates[i].x);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = coordinates[i];
+      }
+    }
+
+    setHoveredPoint(closest);
+  };
 
   const pathD = isSinglePoint
     ? ""
@@ -102,58 +152,148 @@ export function ReportCharts({
   );
 
   const paymentTotal = payments.reduce((sum, p) => sum + p.sales, 0);
+  const onlinePayment = payments.find((p) => p.method !== "COD")?.sales ?? 0;
+  const codPayment = payments.find((p) => p.method === "COD")?.sales ?? 0;
+  const onlinePct = paymentTotal > 0 ? (onlinePayment / paymentTotal) * 100 : 0;
+  const codPct = paymentTotal > 0 ? (codPayment / paymentTotal) * 100 : 0;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
-      {/* ── 1. REVENUE VELOCITY WAVE CANVAS ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs">
-        <div className="mb-3 flex items-center justify-between text-xs">
+    <div className="grid gap-6 xl:grid-cols-2 print:grid-cols-2 print:gap-4">
+      {/* ── 1. REVENUE VELOCITY WAVE CANVAS (WITH CHART TYPE SWITCHER) ── */}
+      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+        <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2.5">
           <div className="flex items-center gap-2">
             <Radio className="text-vl-cyan-700 size-3 animate-pulse" />
             <h2 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
-              Revenue Trajectory Wave
+              {chartMode === "bars"
+                ? "Daily Trajectory Columns"
+                : chartMode === "cumulative"
+                ? "Cumulative Revenue Progression"
+                : "Revenue Trajectory Wave"}
             </h2>
           </div>
-          <span className="text-muted-foreground font-mono text-[10px]">Net sales by interval</span>
+
+          <div className="flex flex-wrap items-center gap-2 print:hidden">
+            {/* Chart Mode Toggle: Wave, Columns, Cumulative */}
+            <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100/80 p-0.5 text-[11px] font-semibold">
+              <button
+                type="button"
+                onClick={() => setChartMode("wave")}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  chartMode === "wave"
+                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    : "text-neutral-500 hover:text-neutral-900"
+                )}
+                title="Continuous Area Wave"
+              >
+                <TrendingUp className="size-3" />
+                <span>Wave</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartMode("bars")}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  chartMode === "bars"
+                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    : "text-neutral-500 hover:text-neutral-900"
+                )}
+                title="Discrete Daily Columns"
+              >
+                <BarChart2 className="size-3" />
+                <span>Columns</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setChartMode("cumulative")}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  chartMode === "cumulative"
+                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    : "text-neutral-500 hover:text-neutral-900"
+                )}
+                title="Running Cumulative Total"
+              >
+                <Layers className="size-3" />
+                <span>Cumulative</span>
+              </button>
+            </div>
+
+            {/* Metric Selector */}
+            <NativeSelect
+              value={trendMetric}
+              onChange={(e) => setTrendMetric(e.target.value as typeof trendMetric)}
+              size="sm"
+              className="h-7 w-auto font-mono text-[11px]"
+            >
+              <option value="netSales">Net Sales (৳)</option>
+              <option value="grossProfit">Gross Profit (৳)</option>
+              <option value="orders">Orders (#)</option>
+            </NativeSelect>
+          </div>
         </div>
 
         {trend.length > 0 ? (
           <div className="relative w-full">
-            {/* Dynamic Absolute Hover Tooltip */}
+            {/* Dynamic Absolute Hover Tooltip (Stripe Glassmorphism Card) */}
             {hoveredPoint && (
               <div
-                className="pointer-events-none absolute z-30 transition-all duration-75 ease-out"
+                className="pointer-events-none absolute z-30 transition-all duration-75 ease-out print:hidden"
                 style={{
-                  left: `${
-                    (coordinates.find((c) => c.date === hoveredPoint.date)?.x ?? 0) / svgWidth * 100
-                  }%`,
-                  top: `${
-                    (coordinates.find((c) => c.date === hoveredPoint.date)?.y ?? 0) / svgHeight * 100
-                  }%`,
-                  transform: "translate(-50%, calc(-100% - 12px))",
+                  left: `${(hoveredPoint.x / svgWidth) * 100}%`,
+                  top: `${(hoveredPoint.y / svgHeight) * 100}%`,
+                  transform:
+                    hoveredPoint.x > svgWidth * 0.72
+                      ? "translate(-90%, calc(-100% - 14px))"
+                      : hoveredPoint.x < svgWidth * 0.28
+                      ? "translate(-10%, calc(-100% - 14px))"
+                      : "translate(-50%, calc(-100% - 14px))",
                 }}
               >
-                <div className="border-vl-dark-900 bg-vl-dark-900 rounded-md border px-3 py-2 font-mono text-white shadow-2xl">
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-vl-cyan font-bold">
-                      {new Intl.DateTimeFormat("en-BD", { month: "short", day: "numeric" }).format(
-                        new Date(hoveredPoint.date)
-                      )}
+                <div className="border-vl-dark-900 bg-vl-dark-950/95 backdrop-blur-md rounded-lg border p-3 font-mono text-white shadow-2xl min-w-48">
+                  <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 text-xs">
+                    <span className="font-semibold text-neutral-300">
+                      {new Intl.DateTimeFormat("en-BD", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      }).format(new Date(hoveredPoint.date))}
                     </span>
-                    <span className="text-neutral-500">·</span>
-                    <span className="font-extrabold text-white">{formatBdt(hoveredPoint.netSales)}</span>
+                    <span className="rounded bg-vl-cyan-950 px-1.5 py-0.2 text-[10px] font-bold text-vl-cyan-400">
+                      {hoveredPoint.orders} {hoveredPoint.orders === 1 ? "order" : "orders"}
+                    </span>
                   </div>
-                  <div className="text-neutral-400 mt-0.5 text-[10px]">
-                    {hoveredPoint.orders} orders · COGS: {formatBdt(hoveredPoint.cogs)}
+                  <div className="mt-2 space-y-1 text-xs">
+                    <div className="flex justify-between gap-4">
+                      <span className="text-neutral-400 text-[11px]">Net Sales:</span>
+                      <span className="font-bold text-white">{formatBdt(hoveredPoint.netSales)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span className="text-neutral-400 text-[11px]">COGS:</span>
+                      <span className="font-medium text-amber-300">{formatBdt(hoveredPoint.cogs)}</span>
+                    </div>
+                    <div className="flex justify-between gap-4 border-t border-neutral-800/80 pt-1 font-bold">
+                      <span className="text-emerald-400 text-[11px]">Daily Profit:</span>
+                      <span className="text-emerald-400">+{formatBdt(hoveredPoint.grossProfit)}</span>
+                    </div>
+                    {chartMode === "cumulative" && (
+                      <div className="flex justify-between gap-4 border-t border-neutral-800/60 pt-1 text-[10px] text-cyan-300">
+                        <span>Cumulative:</span>
+                        <span className="font-bold">{formatBdt(hoveredPoint.val)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             )}
 
             <svg
+              ref={svgRef}
               viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-              className="h-44 w-full overflow-visible sm:h-52"
+              className="h-44 w-full overflow-visible sm:h-52 cursor-crosshair"
               aria-label="Revenue and orders trend"
+              onMouseMove={handleMouseMove}
               onMouseLeave={() => setHoveredPoint(null)}
             >
               <defs>
@@ -171,9 +311,9 @@ export function ReportCharts({
               <rect x={paddingX} y={paddingY} width={usableW} height={usableH} fill="url(#reportGridPattern)" />
 
               {/* Grid Lines & Benchmarks */}
-              <g className="font-mono text-[9px] select-none">
-                <text x="4" y={paddingY + 3} fill="#64748b">
-                  {shortBdt(maxSales)}
+              <g className="font-mono text-[9px] select-none" fontSize="9">
+                <text x="4" y={paddingY + 3} fill="#64748b" fontSize="9">
+                  {trendMetric === "orders" ? `${Math.round(maxVal)}` : shortBdt(maxVal)}
                 </text>
                 <line
                   x1={paddingX}
@@ -184,8 +324,8 @@ export function ReportCharts({
                   strokeDasharray="4 4"
                 />
 
-                <text x="4" y={svgHeight / 2 + 3} fill="#64748b">
-                  {shortBdt(midSales)}
+                <text x="4" y={svgHeight / 2 + 3} fill="#64748b" fontSize="9">
+                  {trendMetric === "orders" ? `${Math.round(midVal)}` : shortBdt(midVal)}
                 </text>
                 <line
                   x1={paddingX}
@@ -196,37 +336,109 @@ export function ReportCharts({
                   strokeDasharray="4 4"
                 />
 
-                <text x="16" y={svgHeight - paddingY + 3} fill="#64748b">
-                  ৳0
+                <text x="16" y={svgHeight - paddingY + 3} fill="#64748b" fontSize="9">
+                  0
                 </text>
                 <line x1={paddingX} y1={svgHeight - paddingY} x2={svgWidth - 10} y2={svgHeight - paddingY} stroke="#cbd5e1" />
               </g>
 
-              {/* Area & Line */}
-              {areaD && <path d={areaD} fill="url(#reportWaveGradient)" />}
-              {pathD && (
+              {/* Stripe-style Vertical Crosshair Line */}
+              {hoveredPoint && (
+                <line
+                  x1={hoveredPoint.x}
+                  y1={paddingY}
+                  x2={hoveredPoint.x}
+                  y2={svgHeight - paddingY}
+                  stroke="#0284c7"
+                  strokeWidth="1.5"
+                  strokeDasharray="3 3"
+                  opacity="0.8"
+                />
+              )}
+
+              {/* ── MODE 1 & 3: WAVE / CUMULATIVE AREA & LINE ── */}
+              {chartMode !== "bars" && areaD && <path d={areaD} fill="url(#reportWaveGradient)" />}
+              {chartMode !== "bars" && pathD && (
                 <path
                   d={pathD}
                   fill="none"
-                  stroke="#0284c7"
+                  stroke={chartMode === "cumulative" ? "#0891b2" : "#0284c7"}
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               )}
 
-              {/* Data Coordinates */}
-              {coordinates.map((c, i) => (
-                <circle
-                  key={i}
-                  cx={c.x}
-                  cy={c.y}
-                  r={coordinates.length <= 14 ? 4.5 : 3}
-                  className="fill-white stroke-[#0284c7] hover:r-6 hover:fill-[#0284c7] hover:stroke-white cursor-pointer transition-all"
-                  strokeWidth="2"
-                  onMouseEnter={() => setHoveredPoint(c)}
-                />
-              ))}
+              {/* ── MODE 2: VERTICAL DAILY HISTOGRAM BARS ── */}
+              {chartMode === "bars" &&
+                coordinates.map((c, i) => {
+                  const barWidth = Math.max(Math.min(usableW / trend.length - 3, 24), 4);
+                  const barH = (c.val / maxVal) * usableH;
+                  const barX = c.x - barWidth / 2;
+                  const barY = svgHeight - paddingY - barH;
+                  const isHovered = hoveredPoint?.date === c.date;
+
+                  return (
+                    <g key={i} className="transition-all duration-150">
+                      <rect
+                        x={barX}
+                        y={paddingY}
+                        width={barWidth}
+                        height={usableH}
+                        className="fill-neutral-100/50"
+                        rx="2"
+                      />
+                      <rect
+                        x={barX}
+                        y={barY}
+                        width={barWidth}
+                        height={Math.max(barH, 2)}
+                        rx="2"
+                        className={
+                          isHovered
+                            ? "fill-vl-cyan-500"
+                            : trendMetric === "grossProfit"
+                            ? "fill-emerald-600"
+                            : trendMetric === "orders"
+                            ? "fill-amber-500"
+                            : "fill-[#0284c7]"
+                        }
+                      />
+                    </g>
+                  );
+                })}
+
+              {/* Data Coordinates (Wave Mode) */}
+              {chartMode !== "bars" &&
+                coordinates.map((c, i) => (
+                  <circle
+                    key={i}
+                    cx={c.x}
+                    cy={c.y}
+                    r={coordinates.length <= 14 ? 4 : 2.5}
+                    className="fill-white stroke-[#0284c7] pointer-events-none transition-all"
+                    strokeWidth="2"
+                  />
+                ))}
+
+              {/* Active Stripe Halo Dot */}
+              {hoveredPoint && (
+                <g className="pointer-events-none">
+                  <circle
+                    cx={hoveredPoint.x}
+                    cy={hoveredPoint.y}
+                    r="9"
+                    className="fill-vl-cyan-500/20"
+                  />
+                  <circle
+                    cx={hoveredPoint.x}
+                    cy={hoveredPoint.y}
+                    r="5.5"
+                    className="fill-white stroke-vl-cyan-600"
+                    strokeWidth="2.5"
+                  />
+                </g>
+              )}
             </svg>
 
             {/* X-Axis Interval Labels */}
@@ -253,7 +465,7 @@ export function ReportCharts({
       </div>
 
       {/* ── 2. SALES VS COGS REALIZATION BARS (WITH PROFIT HEADER) ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs">
+      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
@@ -283,33 +495,36 @@ export function ReportCharts({
 
         {trend.length ? (
           <div className="space-y-3">
-            {trend.slice(-7).map((point) => (
-              <div
-                key={new Date(point.date).toISOString()}
-                className="grid grid-cols-[4.5rem_1fr_4.5rem] items-center gap-3 text-xs"
-              >
-                <span className="text-muted-foreground font-mono text-[11px]">
-                  {new Date(point.date).toLocaleDateString("en-BD", { month: "short", day: "numeric" })}
-                </span>
-                <div className="space-y-1">
-                  <div className="h-2 rounded-full bg-neutral-100">
-                    <div
-                      className="h-2 rounded-full bg-cyan-600 transition-all"
-                      style={{ width: `${Math.min((point.netSales / maxSales) * 100, 100)}%` }}
-                    />
+            {trend.slice(-7).map((point) => {
+              const maxTrendSales = Math.max(...trend.map((p) => Number(p.netSales) || 0), 100);
+              return (
+                <div
+                  key={new Date(point.date).toISOString()}
+                  className="grid grid-cols-[4.5rem_1fr_4.5rem] items-center gap-3 text-xs"
+                >
+                  <span className="text-muted-foreground font-mono text-[11px]">
+                    {new Date(point.date).toLocaleDateString("en-BD", { month: "short", day: "numeric" })}
+                  </span>
+                  <div className="space-y-1">
+                    <div className="h-2 rounded-full bg-neutral-100">
+                      <div
+                        className="h-2 rounded-full bg-cyan-600 transition-all"
+                        style={{ width: `${Math.min((point.netSales / maxTrendSales) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <div className="h-2 rounded-full bg-neutral-100">
+                      <div
+                        className="h-2 rounded-full bg-amber-500 transition-all"
+                        style={{ width: `${Math.min((point.cogs / maxTrendSales) * 100, 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 rounded-full bg-neutral-100">
-                    <div
-                      className="h-2 rounded-full bg-amber-500 transition-all"
-                      style={{ width: `${Math.min((point.cogs / maxSales) * 100, 100)}%` }}
-                    />
-                  </div>
+                  <span className="text-right font-mono text-[11px] font-bold text-emerald-800">
+                    +{shortBdt(point.grossProfit)}
+                  </span>
                 </div>
-                <span className="text-right font-mono text-[11px] font-bold text-emerald-800">
-                  +{shortBdt(point.grossProfit)}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-muted-foreground flex h-48 items-center justify-center font-mono text-xs">
@@ -319,7 +534,7 @@ export function ReportCharts({
       </div>
 
       {/* ── 3. TOP PRODUCTS PERFORMANCE (COLUMN 1) ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex flex-col justify-between">
+      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex flex-col justify-between print:shadow-none print:border-neutral-300 print:break-inside-avoid">
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -331,16 +546,18 @@ export function ReportCharts({
               </div>
               <p className="text-muted-foreground mt-0.5 text-xs">Top volume and merchandise contributors</p>
             </div>
-            <NativeSelect
-              value={productMetric}
-              onChange={(event) => setProductMetric(event.target.value as typeof productMetric)}
-              size="sm"
-              className="w-auto font-mono text-xs"
-            >
-              <option value="revenue">Net Revenue</option>
-              <option value="profit">Gross Profit</option>
-              <option value="units">Units Sold</option>
-            </NativeSelect>
+            <div className="print:hidden">
+              <NativeSelect
+                value={productMetric}
+                onChange={(event) => setProductMetric(event.target.value as typeof productMetric)}
+                size="sm"
+                className="w-auto font-mono text-xs"
+              >
+                <option value="revenue">Net Revenue</option>
+                <option value="profit">Gross Profit</option>
+                <option value="units">Units Sold</option>
+              </NativeSelect>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -386,58 +603,120 @@ export function ReportCharts({
 
       {/* ── 4. BALANCED COLUMN 2: SETTLEMENT MIX + MERCHANDISE RETENTION PULSE ── */}
       <div className="flex flex-col gap-6">
-        {/* 4A. PAYMENT CHANNEL MIX */}
-        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs">
-          <div className="mb-3.5">
-            <div className="flex items-center gap-2">
-              <CreditCard className="text-vl-dark-900 size-3.5" />
-              <h2 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
-                Settlement Channel Mix
-              </h2>
+        {/* 4A. PAYMENT CHANNEL MIX (WITH SVG DONUT RING CHART) */}
+        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+          <div className="mb-3.5 flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <PieChart className="text-vl-dark-900 size-3.5" />
+                <h2 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
+                  Settlement Channel Mix
+                </h2>
+              </div>
+              <p className="text-muted-foreground mt-0.5 text-xs">Sales distribution by payment provider</p>
             </div>
-            <p className="text-muted-foreground mt-0.5 text-xs">Sales distribution by payment provider</p>
+            <span className="font-mono text-xs font-bold text-neutral-800">
+              Total {shortBdt(paymentTotal)}
+            </span>
           </div>
 
-          <div className="space-y-3">
-            {payments.length ? (
-              payments.map((payment, index) => {
-                const percentage = paymentTotal > 0 ? (payment.sales / paymentTotal) * 100 : 0;
-                return (
-                  <div
-                    key={payment.method}
-                    className="space-y-1.5 rounded-sm border border-neutral-100 bg-neutral-50/50 p-2.5"
-                  >
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-neutral-900">
-                        {payment.method === "COD" ? "Cash on Delivery (COD)" : payment.method}
-                      </span>
-                      <span className="font-mono font-bold">{percentage.toFixed(1)}%</span>
+          <div className="flex flex-col sm:flex-row items-center gap-5">
+            {/* SVG Donut Ring Chart */}
+            <div className="relative size-28 shrink-0">
+              <svg viewBox="0 0 100 100" className="size-full">
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#f1f5f9" strokeWidth="12" />
+                {onlinePct > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke="#0891b2"
+                    strokeWidth="12"
+                    strokeDasharray={`${(onlinePct / 100) * 226.19} 226.19`}
+                    strokeDashoffset={0}
+                    transform="rotate(-90 50 50)"
+                    className="transition-all duration-500"
+                  />
+                )}
+                {codPct > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke="#059669"
+                    strokeWidth="12"
+                    strokeDasharray={`${(codPct / 100) * 226.19} 226.19`}
+                    strokeDashoffset={`-${(onlinePct / 100) * 226.19}`}
+                    transform="rotate(-90 50 50)"
+                    className="transition-all duration-500"
+                  />
+                )}
+                <text
+                  x="50"
+                  y="47"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="font-mono text-[11px] font-black fill-neutral-900"
+                >
+                  {shortBdt(paymentTotal)}
+                </text>
+                <text
+                  x="50"
+                  y="59"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="font-sans text-[7.5px] font-bold uppercase tracking-wider fill-neutral-400"
+                >
+                  Settled
+                </text>
+              </svg>
+            </div>
+
+            {/* Provider Breakdown Cards */}
+            <div className="flex-1 space-y-2.5 w-full">
+              {payments.length ? (
+                payments.map((payment) => {
+                  const percentage = paymentTotal > 0 ? (payment.sales / paymentTotal) * 100 : 0;
+                  const isOnline = payment.method !== "COD";
+                  return (
+                    <div
+                      key={payment.method}
+                      className="rounded border border-neutral-100 bg-neutral-50/50 p-2.5 space-y-1"
+                    >
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={cn(
+                              "size-2 rounded-full",
+                              isOnline ? "bg-cyan-600" : "bg-emerald-600"
+                            )}
+                          />
+                          <span className="font-semibold text-neutral-900">
+                            {payment.method === "COD" ? "Cash on Delivery (COD)" : payment.method}
+                          </span>
+                        </div>
+                        <span className="font-mono font-bold">{percentage.toFixed(1)}%</span>
+                      </div>
+                      <div className="flex justify-between text-muted-foreground font-mono text-[10px]">
+                        <span>{payment.orders.toLocaleString("en-BD")} orders</span>
+                        <span className="font-bold text-neutral-800">{formatBdt(payment.sales)}</span>
+                      </div>
                     </div>
-                    <div className="h-2 rounded-full bg-neutral-200/80">
-                      <div
-                        className={`h-2 rounded-full transition-all ${
-                          index % 2 === 0 ? "bg-cyan-600" : "bg-emerald-600"
-                        }`}
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                    <div className="text-muted-foreground flex justify-between font-mono text-[10px]">
-                      <span>{payment.orders.toLocaleString("en-BD")} orders</span>
-                      <span className="font-bold text-neutral-800">{formatBdt(payment.sales)}</span>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-muted-foreground py-4 text-center text-xs">
-                No payment transactions in this period.
-              </p>
-            )}
+                  );
+                })
+              ) : (
+                <p className="text-muted-foreground py-4 text-center text-xs">
+                  No payment transactions in this period.
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* 4B. MERCHANDISE RETENTION & RETURN PULSE (ELIMINATES THE STANDALONE FULL-WIDTH CARD) */}
-        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex-1 flex flex-col justify-between">
+        {/* 4B. MERCHANDISE RETENTION PULSE (WITH SVG RADIAL RETENTION RING) */}
+        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex-1 flex flex-col justify-between print:shadow-none print:border-neutral-300 print:break-inside-avoid">
           <div>
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -451,38 +730,94 @@ export function ReportCharts({
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4 font-mono text-xs">
-              <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2.5">
-                <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
-                  Sold Units
-                </span>
-                <p className="text-vl-dark-900 text-base font-bold mt-0.5">
-                  {soldUnits.toLocaleString("en-BD")}
-                </p>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              {/* Radial Arc Gauge */}
+              <div className="relative size-24 shrink-0">
+                <svg viewBox="0 0 100 100" className="size-full">
+                  <circle cx="50" cy="50" r="36" fill="none" stroke="#f1f5f9" strokeWidth="10" />
+                  {/* Retained Portion */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke="#10b981"
+                    strokeWidth="10"
+                    strokeDasharray={`${((Math.max(100 - returnRate, 0)) / 100) * 226.19} 226.19`}
+                    strokeDashoffset={0}
+                    transform="rotate(-90 50 50)"
+                    className="transition-all duration-500"
+                  />
+                  {/* Returned Portion */}
+                  {returnRate > 0 && (
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="36"
+                      fill="none"
+                      stroke="#f59e0b"
+                      strokeWidth="10"
+                      strokeDasharray={`${((Math.min(returnRate, 100)) / 100) * 226.19} 226.19`}
+                      strokeDashoffset={`-${((Math.max(100 - returnRate, 0)) / 100) * 226.19}`}
+                      transform="rotate(-90 50 50)"
+                      className="transition-all duration-500"
+                    />
+                  )}
+                  <text
+                    x="50"
+                    y="47"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="font-mono text-xs font-black fill-emerald-800"
+                  >
+                    {Math.max(100 - returnRate, 0).toFixed(0)}%
+                  </text>
+                  <text
+                    x="50"
+                    y="59"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    className="font-sans text-[7.5px] font-bold uppercase tracking-wider fill-neutral-400"
+                  >
+                    Retained
+                  </text>
+                </svg>
               </div>
-              <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2.5">
-                <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
-                  Returned
-                </span>
-                <p className="text-amber-900 text-base font-bold mt-0.5">
-                  {returnedUnits.toLocaleString("en-BD")}
-                </p>
-              </div>
-              <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2.5">
-                <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
-                  Retained
-                </span>
-                <p className="text-emerald-800 text-base font-bold mt-0.5">
-                  {(soldUnits - returnedUnits).toLocaleString("en-BD")}
-                </p>
-              </div>
-              <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2.5">
-                <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
-                  Ret Value
-                </span>
-                <p className="text-red-800 text-base font-bold mt-0.5">
-                  {formatBdt(returnedValue)}
-                </p>
+
+              {/* 4 Metric Tiles */}
+              <div className="flex-1 grid grid-cols-2 gap-2 font-mono text-xs w-full">
+                <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
+                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                    Sold Units
+                  </span>
+                  <p className="text-vl-dark-900 text-sm font-bold mt-0.5">
+                    {soldUnits.toLocaleString("en-BD")}
+                  </p>
+                </div>
+                <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
+                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                    Returned
+                  </span>
+                  <p className="text-amber-900 text-sm font-bold mt-0.5">
+                    {returnedUnits.toLocaleString("en-BD")}
+                  </p>
+                </div>
+                <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
+                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                    Retained
+                  </span>
+                  <p className="text-emerald-800 text-sm font-bold mt-0.5">
+                    {(soldUnits - returnedUnits).toLocaleString("en-BD")}
+                  </p>
+                </div>
+                <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
+                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                    Ret Value
+                  </span>
+                  <p className="text-red-800 text-sm font-bold mt-0.5">
+                    {formatBdt(returnedValue)}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

@@ -117,7 +117,7 @@ export function ReportLedgerWorkspace({
   ];
 
   return (
-    <section aria-labelledby="ledger-workspace-heading" className="space-y-4">
+    <section aria-labelledby="ledger-workspace-heading" className="space-y-4 print:space-y-3 print:break-inside-avoid">
       {/* ── SEGMENTED LEDGER NAVIGATION TABS ── */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200 pb-2">
         <div>
@@ -131,7 +131,7 @@ export function ReportLedgerWorkspace({
 
         <nav
           aria-label="Report ledger views"
-          className="relative inline-flex flex-wrap items-center gap-1 rounded-xl border border-neutral-200/90 bg-neutral-100/80 p-1 shadow-2xs backdrop-blur-xs"
+          className="relative inline-flex flex-wrap items-center gap-1 rounded-xl border border-neutral-200/90 bg-neutral-100/80 p-1 shadow-2xs backdrop-blur-xs print:hidden"
         >
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
@@ -191,7 +191,7 @@ export function ReportLedgerWorkspace({
 
       {/* ── TAB 2: ORDER UNIT ECONOMICS ── */}
       {activeTab === "orders" && (
-        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs">
+        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
           <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b p-4">
             <div>
               <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-wider uppercase">
@@ -201,7 +201,7 @@ export function ReportLedgerWorkspace({
                 Realized margins per order (cancelled orders excluded).
               </p>
             </div>
-            <form className="flex gap-2">
+            <form className="flex gap-2 print:hidden">
               <Input
                 name="q"
                 defaultValue={reportFilters.search}
@@ -219,20 +219,20 @@ export function ReportLedgerWorkspace({
             </form>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-220 text-xs">
-              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200">
+          <div className="overflow-x-auto print:overflow-visible">
+            <table className="w-full min-w-220 text-xs print:min-w-0 print:w-full print:text-[9.5px]">
+              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200 print:text-[8.5px]">
                 <tr className="text-left">
-                  <th className="p-3">Order Identifier</th>
-                  <th className="p-3">Customer</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-center">Items</th>
-                  <th className="p-3 text-right">Gross</th>
-                  <th className="p-3 text-right">Discount</th>
-                  <th className="p-3 text-right">Refund</th>
-                  <th className="p-3 text-right">COGS</th>
-                  <th className="p-3 text-right">Profit</th>
-                  <th className="p-3 text-center">Action</th>
+                  <th className="p-3 print:py-2 print:px-1.5">Order Identifier</th>
+                  <th className="p-3 print:py-2 print:px-1.5">Customer</th>
+                  <th className="p-3 print:py-2 print:px-1.5">Status</th>
+                  <th className="p-3 text-center print:py-2 print:px-1.5">Items</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Gross</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Discount</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Refund</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">COGS</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Profit</th>
+                  <th className="p-3 text-center print:hidden">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 font-mono">
@@ -285,7 +285,7 @@ export function ReportLedgerWorkspace({
           </div>
 
           {orders.totalPages > 1 && (
-            <div className="border-t border-neutral-100 flex items-center justify-between p-3.5 text-xs font-mono">
+            <div className="border-t border-neutral-100 flex items-center justify-between p-3.5 text-xs font-mono print:hidden">
               <span className="text-muted-foreground">
                 Showing page <strong>{orders.page}</strong> of <strong>{orders.totalPages}</strong>
               </span>
@@ -320,7 +320,7 @@ export function ReportLedgerWorkspace({
 
       {/* ── TAB 3: DAILY SALES VELOCITY ── */}
       {activeTab === "daily" && (
-        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs">
+        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
           <div className="border-vl-dark-900/10 border-b p-4">
             <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-wider uppercase">
               Daily Sales &amp; Cost Journal
@@ -329,32 +329,32 @@ export function ReportLedgerWorkspace({
               Daily transaction aggregation of orders, revenue, COGS and realized profit.
             </p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-190 text-xs">
-              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200">
+          <div className="overflow-x-auto print:overflow-visible">
+            <table className="w-full min-w-190 text-xs print:min-w-0 print:w-full print:text-[10px]">
+              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200 print:text-[9px]">
                 <tr className="text-left">
-                  <th className="p-3">Date</th>
-                  <th className="p-3 text-center">Orders</th>
-                  <th className="p-3 text-right">Gross GMV</th>
-                  <th className="p-3 text-right">Discounts</th>
-                  <th className="p-3 text-right">Net Sales</th>
-                  <th className="p-3 text-right">Refunds</th>
-                  <th className="p-3 text-right">COGS</th>
-                  <th className="p-3 text-right">Gross Profit</th>
+                  <th className="p-3 print:py-2 print:px-1.5">Date</th>
+                  <th className="p-3 text-center print:py-2 print:px-1.5">Orders</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Gross GMV</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Discounts</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Net Sales</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Refunds</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">COGS</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Gross Profit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 font-mono">
                 {trend.length ? (
                   trend.map((row) => (
                     <tr key={new Date(row.date).toISOString()} className="hover:bg-neutral-50/60 transition-colors">
-                      <td className="p-3 font-semibold text-neutral-900">{formatDate(row.date)}</td>
-                      <td className="p-3 text-center">{row.orders}</td>
-                      <td className="p-3 text-right">{formatBdt(row.grossSales)}</td>
-                      <td className="p-3 text-right text-purple-900">{formatBdt(row.discounts)}</td>
-                      <td className="p-3 text-right font-bold text-neutral-950">{formatBdt(row.netSales)}</td>
-                      <td className="p-3 text-right text-red-700">{formatBdt(row.refunds)}</td>
-                      <td className="p-3 text-right text-neutral-600">{formatBdt(row.cogs)}</td>
-                      <td className="p-3 text-right font-bold text-emerald-700">{formatBdt(row.grossProfit)}</td>
+                      <td className="p-3 font-semibold text-neutral-900 print:py-1.5 print:px-1.5">{formatDate(row.date)}</td>
+                      <td className="p-3 text-center print:py-1.5 print:px-1.5">{row.orders}</td>
+                      <td className="p-3 text-right print:py-1.5 print:px-1.5">{formatBdt(row.grossSales)}</td>
+                      <td className="p-3 text-right text-purple-900 print:py-1.5 print:px-1.5">{formatBdt(row.discounts)}</td>
+                      <td className="p-3 text-right font-bold text-neutral-950 print:py-1.5 print:px-1.5">{formatBdt(row.netSales)}</td>
+                      <td className="p-3 text-right text-red-700 print:py-1.5 print:px-1.5">{formatBdt(row.refunds)}</td>
+                      <td className="p-3 text-right text-neutral-600 print:py-1.5 print:px-1.5">{formatBdt(row.cogs)}</td>
+                      <td className="p-3 text-right font-bold text-emerald-700 print:py-1.5 print:px-1.5">{formatBdt(row.grossProfit)}</td>
                     </tr>
                   ))
                 ) : (
@@ -372,7 +372,7 @@ export function ReportLedgerWorkspace({
 
       {/* ── TAB 4: PAYMENT CHANNELS SETTLEMENT ── */}
       {activeTab === "payments" && (
-        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs">
+        <div className="border-vl-dark-900/10 rounded-sm border bg-white shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
           <div className="border-vl-dark-900/10 border-b p-4">
             <h3 className="text-vl-dark-900 font-heading text-sm font-bold tracking-wider uppercase">
               Payment Gateway Settlement Ledgers
@@ -381,15 +381,15 @@ export function ReportLedgerWorkspace({
               Billed transaction amounts across payment gateways and cash-on-delivery couriers.
             </p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200">
+          <div className="overflow-x-auto print:overflow-visible">
+            <table className="w-full text-xs print:w-full print:text-[10px]">
+              <thead className="bg-neutral-50/80 font-mono text-[11px] uppercase tracking-wider text-neutral-600 border-b border-neutral-200 print:text-[9px]">
                 <tr className="text-left">
-                  <th className="p-3">Payment Provider / Method</th>
-                  <th className="p-3 text-center">Orders</th>
-                  <th className="p-3 text-right">Billed Sales</th>
-                  <th className="p-3 text-right">Refunds Deducted</th>
-                  <th className="p-3 text-right">Net Settlement</th>
+                  <th className="p-3 print:py-2 print:px-1.5">Payment Provider / Method</th>
+                  <th className="p-3 text-center print:py-2 print:px-1.5">Orders</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Billed Sales</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Refunds Deducted</th>
+                  <th className="p-3 text-right print:py-2 print:px-1.5">Net Settlement</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100 font-mono">
