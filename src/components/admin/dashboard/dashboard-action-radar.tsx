@@ -11,6 +11,12 @@ import {
 } from "lucide-react";
 import { formatBdt } from "./dashboard-financial-kpis";
 
+function formatShortBdt(val: number) {
+  if (val >= 100000) return `৳${(val / 100000).toFixed(1)}L`;
+  if (val >= 1000) return `৳${(val / 1000).toFixed(1)}K`;
+  return `৳${Math.round(val)}`;
+}
+
 interface PaymentBreakdown {
   method: string;
   orders: number;
@@ -55,7 +61,11 @@ export function DashboardActionRadar({
   paymentStatuses = [],
   isManagerOrAdmin,
 }: DashboardActionRadarProps) {
+  const paymentTotal = paymentsBreakdown.reduce((sum, p) => sum + p.sales, 0);
   const codSales = paymentsBreakdown.find((p) => p.method === "COD")?.sales ?? 0;
+  const onlineSales = Math.max(0, paymentTotal - codSales);
+  const codPct = paymentTotal > 0 ? (codSales / paymentTotal) * 100 : 0;
+  const onlinePct = paymentTotal > 0 ? (onlineSales / paymentTotal) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -179,50 +189,109 @@ export function DashboardActionRadar({
 
       {/* ── CARD 2: PAYMENT GATEWAY BREAKDOWN (MANAGERS ONLY) ── */}
       {isManagerOrAdmin && paymentsBreakdown.length > 0 && (
-        <div className="border-vl-dark-900/10 space-y-3 rounded-sm border bg-white p-5 shadow-xs">
-          <div className="border-b border-neutral-100 pb-2.5">
+        <div className="border-vl-dark-900/10 space-y-3.5 rounded-sm border bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
             <div className="flex items-center gap-2">
               <CreditCard className="text-vl-dark-900 size-4" />
               <h3 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
                 Payment Channel Mix
               </h3>
             </div>
+            <span className="font-mono text-xs font-bold text-neutral-800">
+              Total {formatShortBdt(paymentTotal)}
+            </span>
           </div>
 
-          <div className="space-y-2">
-            {paymentsBreakdown.map((item) => (
-              <div
-                key={item.method}
-                className="flex items-center justify-between rounded border border-neutral-100 bg-neutral-50/60 p-2.5 text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`size-2 rounded-full ${
-                      item.method === "COD"
-                        ? "bg-emerald-600"
-                        : item.method === "BKASH"
-                          ? "bg-pink-600"
-                          : "bg-blue-600"
-                    }`}
+          <div className="flex flex-col items-center gap-4 sm:flex-row">
+            {/* Interactive SVG Donut Ring Chart */}
+            <div className="relative size-24 shrink-0">
+              <svg viewBox="0 0 100 100" className="size-full">
+                <circle cx="50" cy="50" r="36" fill="none" stroke="#f1f5f9" strokeWidth="12" />
+                {onlinePct > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke="#0891b2"
+                    strokeWidth="12"
+                    strokeDasharray={`${(onlinePct / 100) * 226.19} 226.19`}
+                    strokeDashoffset={0}
+                    transform="rotate(-90 50 50)"
+                    className="transition-all duration-500"
                   />
-                  <div>
-                    <span className="font-bold text-neutral-800">
-                      {item.method === "COD"
-                        ? "Cash on Delivery"
-                        : item.method === "BKASH"
-                          ? "bKash MFS"
-                          : item.method}
-                    </span>
-                    <span className="text-muted-foreground block text-[10px]">
-                      {item.orders} orders
-                    </span>
+                )}
+                {codPct > 0 && (
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="36"
+                    fill="none"
+                    stroke="#059669"
+                    strokeWidth="12"
+                    strokeDasharray={`${(codPct / 100) * 226.19} 226.19`}
+                    strokeDashoffset={`-${(onlinePct / 100) * 226.19}`}
+                    transform="rotate(-90 50 50)"
+                    className="transition-all duration-500"
+                  />
+                )}
+                <text
+                  x="50"
+                  y="46"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-neutral-900 font-mono text-[10px] font-black"
+                >
+                  {formatShortBdt(paymentTotal)}
+                </text>
+                <text
+                  x="50"
+                  y="58"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  className="fill-neutral-400 font-sans text-[7px] font-bold tracking-wider uppercase"
+                >
+                  Settled
+                </text>
+              </svg>
+            </div>
+
+            {/* Methods Breakdown */}
+            <div className="w-full flex-1 space-y-2">
+              {paymentsBreakdown.map((item) => (
+                <div
+                  key={item.method}
+                  className="flex items-center justify-between rounded border border-neutral-100 bg-neutral-50/60 p-2 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`size-2 rounded-full ${
+                        item.method === "COD"
+                          ? "bg-emerald-600"
+                          : item.method === "BKASH"
+                            ? "bg-pink-600"
+                            : "bg-cyan-600"
+                      }`}
+                    />
+                    <div>
+                      <span className="font-bold text-neutral-800">
+                        {item.method === "COD"
+                          ? "Cash on Delivery"
+                          : item.method === "BKASH"
+                            ? "bKash MFS"
+                            : item.method}
+                      </span>
+                      <span className="text-muted-foreground block text-[10px]">
+                        {item.orders} orders
+                      </span>
+                    </div>
                   </div>
+                  <span className="text-vl-dark-900 font-mono text-xs font-bold">
+                    {formatBdt(item.sales)}
+                  </span>
                 </div>
-                <span className="text-vl-dark-900 font-mono text-xs font-bold">
-                  {formatBdt(item.sales)}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Settlement Statuses Pills */}

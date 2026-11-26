@@ -10,7 +10,13 @@ import {
   RotateCcw,
   TrendingUp,
 } from "lucide-react";
-import { NativeSelect } from "@/components/ui/select-native";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type TrendPoint = {
@@ -66,10 +72,16 @@ export function ReportCharts({
   returnRate: number;
   returnedValue: number;
 }) {
-  const [productMetric, setProductMetric] = React.useState<"revenue" | "profit" | "units">("revenue");
+  const [productMetric, setProductMetric] = React.useState<"revenue" | "profit" | "units">(
+    "revenue"
+  );
   const [chartMode, setChartMode] = React.useState<"wave" | "bars" | "cumulative">("wave");
-  const [trendMetric, setTrendMetric] = React.useState<"netSales" | "grossProfit" | "orders">("netSales");
-  const [hoveredPoint, setHoveredPoint] = React.useState<(TrendPoint & { x: number; y: number; val: number }) | null>(null);
+  const [trendMetric, setTrendMetric] = React.useState<"netSales" | "grossProfit" | "orders">(
+    "netSales"
+  );
+  const [hoveredPoint, setHoveredPoint] = React.useState<
+    (TrendPoint & { x: number; y: number; val: number }) | null
+  >(null);
   const svgRef = React.useRef<SVGSVGElement | null>(null);
 
   // SVG Coordinates calculation for Revenue Trend Wave (Width: 640, Height: 200)
@@ -160,7 +172,7 @@ export function ReportCharts({
   return (
     <div className="grid gap-6 xl:grid-cols-2 print:grid-cols-2 print:gap-4">
       {/* ── 1. REVENUE VELOCITY WAVE CANVAS (WITH CHART TYPE SWITCHER) ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+      <div className="rounded-sm border border-neutral-200/90 bg-white p-5 shadow-xs print:break-inside-avoid print:border-neutral-300 print:shadow-none">
         <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-2.5">
           <div className="flex items-center gap-2">
             <Radio className="text-vl-cyan-700 size-3 animate-pulse" />
@@ -168,8 +180,8 @@ export function ReportCharts({
               {chartMode === "bars"
                 ? "Daily Trajectory Columns"
                 : chartMode === "cumulative"
-                ? "Cumulative Revenue Progression"
-                : "Revenue Trajectory Wave"}
+                  ? "Cumulative Revenue Progression"
+                  : "Revenue Trajectory Wave"}
             </h2>
           </div>
 
@@ -180,9 +192,9 @@ export function ReportCharts({
                 type="button"
                 onClick={() => setChartMode("wave")}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
                   chartMode === "wave"
-                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
                     : "text-neutral-500 hover:text-neutral-900"
                 )}
                 title="Continuous Area Wave"
@@ -194,9 +206,9 @@ export function ReportCharts({
                 type="button"
                 onClick={() => setChartMode("bars")}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
                   chartMode === "bars"
-                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
                     : "text-neutral-500 hover:text-neutral-900"
                 )}
                 title="Discrete Daily Columns"
@@ -208,9 +220,9 @@ export function ReportCharts({
                 type="button"
                 onClick={() => setChartMode("cumulative")}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-md px-2 py-0.5 transition-all cursor-pointer",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
                   chartMode === "cumulative"
-                    ? "bg-white text-vl-dark-900 shadow-2xs font-bold"
+                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
                     : "text-neutral-500 hover:text-neutral-900"
                 )}
                 title="Running Cumulative Total"
@@ -221,16 +233,24 @@ export function ReportCharts({
             </div>
 
             {/* Metric Selector */}
-            <NativeSelect
+            <Select
               value={trendMetric}
-              onChange={(e) => setTrendMetric(e.target.value as typeof trendMetric)}
-              size="sm"
-              className="h-7 w-auto font-mono text-[11px]"
+              onValueChange={(val) => {
+                if (val) setTrendMetric(val as typeof trendMetric);
+              }}
             >
-              <option value="netSales">Net Sales (৳)</option>
-              <option value="grossProfit">Gross Profit (৳)</option>
-              <option value="orders">Orders (#)</option>
-            </NativeSelect>
+              <SelectTrigger
+                size="sm"
+                className="h-7 w-auto min-w-32.5 bg-white font-mono text-[11px]"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="netSales">Net Sales (৳)</SelectItem>
+                <SelectItem value="grossProfit">Gross Profit (৳)</SelectItem>
+                <SelectItem value="orders">Orders (#)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -247,11 +267,11 @@ export function ReportCharts({
                     hoveredPoint.x > svgWidth * 0.72
                       ? "translate(-90%, calc(-100% - 14px))"
                       : hoveredPoint.x < svgWidth * 0.28
-                      ? "translate(-10%, calc(-100% - 14px))"
-                      : "translate(-50%, calc(-100% - 14px))",
+                        ? "translate(-10%, calc(-100% - 14px))"
+                        : "translate(-50%, calc(-100% - 14px))",
                 }}
               >
-                <div className="border-vl-dark-900 bg-vl-dark-950/95 backdrop-blur-md rounded-lg border p-3 font-mono text-white shadow-2xl min-w-48">
+                <div className="border-vl-dark-900 bg-vl-dark-950/95 min-w-48 rounded-lg border p-3 font-mono text-white shadow-2xl backdrop-blur-md">
                   <div className="flex items-center justify-between border-b border-neutral-800 pb-1.5 text-xs">
                     <span className="font-semibold text-neutral-300">
                       {new Intl.DateTimeFormat("en-BD", {
@@ -260,22 +280,28 @@ export function ReportCharts({
                         day: "numeric",
                       }).format(new Date(hoveredPoint.date))}
                     </span>
-                    <span className="rounded bg-vl-cyan-950 px-1.5 py-0.2 text-[10px] font-bold text-vl-cyan-400">
+                    <span className="bg-vl-cyan-950 py-0.2 text-vl-cyan-400 rounded px-1.5 text-[10px] font-bold">
                       {hoveredPoint.orders} {hoveredPoint.orders === 1 ? "order" : "orders"}
                     </span>
                   </div>
                   <div className="mt-2 space-y-1 text-xs">
                     <div className="flex justify-between gap-4">
-                      <span className="text-neutral-400 text-[11px]">Net Sales:</span>
-                      <span className="font-bold text-white">{formatBdt(hoveredPoint.netSales)}</span>
+                      <span className="text-[11px] text-neutral-400">Net Sales:</span>
+                      <span className="font-bold text-white">
+                        {formatBdt(hoveredPoint.netSales)}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-4">
-                      <span className="text-neutral-400 text-[11px]">COGS:</span>
-                      <span className="font-medium text-amber-300">{formatBdt(hoveredPoint.cogs)}</span>
+                      <span className="text-[11px] text-neutral-400">COGS:</span>
+                      <span className="font-medium text-amber-300">
+                        {formatBdt(hoveredPoint.cogs)}
+                      </span>
                     </div>
                     <div className="flex justify-between gap-4 border-t border-neutral-800/80 pt-1 font-bold">
-                      <span className="text-emerald-400 text-[11px]">Daily Profit:</span>
-                      <span className="text-emerald-400">+{formatBdt(hoveredPoint.grossProfit)}</span>
+                      <span className="text-[11px] text-emerald-400">Daily Profit:</span>
+                      <span className="text-emerald-400">
+                        +{formatBdt(hoveredPoint.grossProfit)}
+                      </span>
                     </div>
                     {chartMode === "cumulative" && (
                       <div className="flex justify-between gap-4 border-t border-neutral-800/60 pt-1 text-[10px] text-cyan-300">
@@ -291,13 +317,18 @@ export function ReportCharts({
             <svg
               ref={svgRef}
               viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-              className="h-44 w-full overflow-visible sm:h-52 cursor-crosshair"
+              className="h-44 w-full cursor-crosshair overflow-visible sm:h-52"
               aria-label="Revenue and orders trend"
               onMouseMove={handleMouseMove}
               onMouseLeave={() => setHoveredPoint(null)}
             >
               <defs>
-                <pattern id="reportGridPattern" width="24" height="24" patternUnits="userSpaceOnUse">
+                <pattern
+                  id="reportGridPattern"
+                  width="24"
+                  height="24"
+                  patternUnits="userSpaceOnUse"
+                >
                   <circle cx="2" cy="2" r="1" fill="#94a3b8" opacity="0.3" />
                 </pattern>
                 <linearGradient id="reportWaveGradient" x1="0" y1="0" x2="0" y2="1">
@@ -308,7 +339,13 @@ export function ReportCharts({
               </defs>
 
               {/* Background Micro-Dot Layer */}
-              <rect x={paddingX} y={paddingY} width={usableW} height={usableH} fill="url(#reportGridPattern)" />
+              <rect
+                x={paddingX}
+                y={paddingY}
+                width={usableW}
+                height={usableH}
+                fill="url(#reportGridPattern)"
+              />
 
               {/* Grid Lines & Benchmarks */}
               <g className="font-mono text-[9px] select-none" fontSize="9">
@@ -339,7 +376,13 @@ export function ReportCharts({
                 <text x="16" y={svgHeight - paddingY + 3} fill="#64748b" fontSize="9">
                   0
                 </text>
-                <line x1={paddingX} y1={svgHeight - paddingY} x2={svgWidth - 10} y2={svgHeight - paddingY} stroke="#cbd5e1" />
+                <line
+                  x1={paddingX}
+                  y1={svgHeight - paddingY}
+                  x2={svgWidth - 10}
+                  y2={svgHeight - paddingY}
+                  stroke="#cbd5e1"
+                />
               </g>
 
               {/* Stripe-style Vertical Crosshair Line */}
@@ -398,10 +441,10 @@ export function ReportCharts({
                           isHovered
                             ? "fill-vl-cyan-500"
                             : trendMetric === "grossProfit"
-                            ? "fill-emerald-600"
-                            : trendMetric === "orders"
-                            ? "fill-amber-500"
-                            : "fill-[#0284c7]"
+                              ? "fill-emerald-600"
+                              : trendMetric === "orders"
+                                ? "fill-amber-500"
+                                : "fill-[#0284c7]"
                         }
                       />
                     </g>
@@ -416,7 +459,7 @@ export function ReportCharts({
                     cx={c.x}
                     cy={c.y}
                     r={coordinates.length <= 14 ? 4 : 2.5}
-                    className="fill-white stroke-[#0284c7] pointer-events-none transition-all"
+                    className="pointer-events-none fill-white stroke-[#0284c7] transition-all"
                     strokeWidth="2"
                   />
                 ))}
@@ -434,7 +477,7 @@ export function ReportCharts({
                     cx={hoveredPoint.x}
                     cy={hoveredPoint.y}
                     r="5.5"
-                    className="fill-white stroke-vl-cyan-600"
+                    className="stroke-vl-cyan-600 fill-white"
                     strokeWidth="2.5"
                   />
                 </g>
@@ -445,7 +488,9 @@ export function ReportCharts({
             <div className="text-muted-foreground flex items-center justify-between px-1 pt-1 font-mono text-[10px]">
               <span>
                 {trend[0]
-                  ? new Intl.DateTimeFormat("en-BD", { month: "short", day: "numeric" }).format(new Date(trend[0].date))
+                  ? new Intl.DateTimeFormat("en-BD", { month: "short", day: "numeric" }).format(
+                      new Date(trend[0].date)
+                    )
                   : ""}
               </span>
               <span>
@@ -465,13 +510,15 @@ export function ReportCharts({
       </div>
 
       {/* ── 2. SALES VS COGS REALIZATION BARS (WITH PROFIT HEADER) ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+      <div className="rounded-sm border border-neutral-200/90 bg-white p-5 shadow-xs print:break-inside-avoid print:border-neutral-300 print:shadow-none">
         <div className="mb-3 flex items-center justify-between">
           <div>
             <h2 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
               Sales vs Cost Realization
             </h2>
-            <p className="text-muted-foreground mt-0.5 text-xs">Net sales vs item acquisition COGS</p>
+            <p className="text-muted-foreground mt-0.5 text-xs">
+              Net sales vs item acquisition COGS
+            </p>
           </div>
           <div className="flex items-center gap-3 font-mono text-[10px]">
             <span className="flex items-center gap-1.5 text-neutral-700">
@@ -480,7 +527,7 @@ export function ReportCharts({
             <span className="flex items-center gap-1.5 text-neutral-700">
               <span className="size-2 rounded-full bg-amber-500" /> COGS
             </span>
-            <span className="flex items-center gap-1.5 text-emerald-800 font-bold">
+            <span className="flex items-center gap-1.5 font-bold text-emerald-800">
               <span className="size-2 rounded-full bg-emerald-600" /> Profit
             </span>
           </div>
@@ -503,13 +550,18 @@ export function ReportCharts({
                   className="grid grid-cols-[4.5rem_1fr_4.5rem] items-center gap-3 text-xs"
                 >
                   <span className="text-muted-foreground font-mono text-[11px]">
-                    {new Date(point.date).toLocaleDateString("en-BD", { month: "short", day: "numeric" })}
+                    {new Date(point.date).toLocaleDateString("en-BD", {
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </span>
                   <div className="space-y-1">
                     <div className="h-2 rounded-full bg-neutral-100">
                       <div
                         className="h-2 rounded-full bg-cyan-600 transition-all"
-                        style={{ width: `${Math.min((point.netSales / maxTrendSales) * 100, 100)}%` }}
+                        style={{
+                          width: `${Math.min((point.netSales / maxTrendSales) * 100, 100)}%`,
+                        }}
                       />
                     </div>
                     <div className="h-2 rounded-full bg-neutral-100">
@@ -534,7 +586,7 @@ export function ReportCharts({
       </div>
 
       {/* ── 3. TOP PRODUCTS PERFORMANCE (COLUMN 1) ── */}
-      <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex flex-col justify-between print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+      <div className="flex flex-col justify-between rounded-sm border border-neutral-200/90 bg-white p-5 shadow-xs print:break-inside-avoid print:border-neutral-300 print:shadow-none">
         <div>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -544,19 +596,29 @@ export function ReportCharts({
                   Top Products Performance
                 </h2>
               </div>
-              <p className="text-muted-foreground mt-0.5 text-xs">Top volume and merchandise contributors</p>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Top volume and merchandise contributors
+              </p>
             </div>
             <div className="print:hidden">
-              <NativeSelect
+              <Select
                 value={productMetric}
-                onChange={(event) => setProductMetric(event.target.value as typeof productMetric)}
-                size="sm"
-                className="w-auto font-mono text-xs"
+                onValueChange={(val) => {
+                  if (val) setProductMetric(val as typeof productMetric);
+                }}
               >
-                <option value="revenue">Net Revenue</option>
-                <option value="profit">Gross Profit</option>
-                <option value="units">Units Sold</option>
-              </NativeSelect>
+                <SelectTrigger
+                  size="sm"
+                  className="h-7 w-auto min-w-31.25 bg-white font-mono text-xs"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="revenue">Net Revenue</SelectItem>
+                  <SelectItem value="profit">Gross Profit</SelectItem>
+                  <SelectItem value="units">Units Sold</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -575,10 +637,15 @@ export function ReportCharts({
                     className="grid grid-cols-[minmax(0,1fr)_minmax(6rem,1.8fr)_auto] items-center gap-3 text-xs"
                   >
                     <div className="min-w-0">
-                      <p className="text-vl-dark-900 truncate font-semibold" title={product.productName}>
+                      <p
+                        className="text-vl-dark-900 truncate font-semibold"
+                        title={product.productName}
+                      >
                         {cleanProductName(product.productName)}
                       </p>
-                      <p className="text-muted-foreground font-mono text-[10px] truncate">{product.sku}</p>
+                      <p className="text-muted-foreground truncate font-mono text-[10px]">
+                        {product.sku}
+                      </p>
                     </div>
                     <div className="h-2 rounded-full bg-neutral-100">
                       <div
@@ -604,7 +671,7 @@ export function ReportCharts({
       {/* ── 4. BALANCED COLUMN 2: SETTLEMENT MIX + MERCHANDISE RETENTION PULSE ── */}
       <div className="flex flex-col gap-6">
         {/* 4A. PAYMENT CHANNEL MIX (WITH SVG DONUT RING CHART) */}
-        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+        <div className="rounded-sm border border-neutral-200/90 bg-white p-5 shadow-xs print:break-inside-avoid print:border-neutral-300 print:shadow-none">
           <div className="mb-3.5 flex items-center justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -613,14 +680,16 @@ export function ReportCharts({
                   Settlement Channel Mix
                 </h2>
               </div>
-              <p className="text-muted-foreground mt-0.5 text-xs">Sales distribution by payment provider</p>
+              <p className="text-muted-foreground mt-0.5 text-xs">
+                Sales distribution by payment provider
+              </p>
             </div>
             <span className="font-mono text-xs font-bold text-neutral-800">
               Total {shortBdt(paymentTotal)}
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-5">
+          <div className="flex flex-col items-center gap-5 sm:flex-row">
             {/* SVG Donut Ring Chart */}
             <div className="relative size-28 shrink-0">
               <svg viewBox="0 0 100 100" className="size-full">
@@ -658,7 +727,7 @@ export function ReportCharts({
                   y="47"
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="font-mono text-[11px] font-black fill-neutral-900"
+                  className="fill-neutral-900 font-mono text-[11px] font-black"
                 >
                   {shortBdt(paymentTotal)}
                 </text>
@@ -667,7 +736,7 @@ export function ReportCharts({
                   y="59"
                   textAnchor="middle"
                   dominantBaseline="central"
-                  className="font-sans text-[7.5px] font-bold uppercase tracking-wider fill-neutral-400"
+                  className="fill-neutral-400 font-sans text-[7.5px] font-bold tracking-wider uppercase"
                 >
                   Settled
                 </text>
@@ -675,7 +744,7 @@ export function ReportCharts({
             </div>
 
             {/* Provider Breakdown Cards */}
-            <div className="flex-1 space-y-2.5 w-full">
+            <div className="w-full flex-1 space-y-2.5">
               {payments.length ? (
                 payments.map((payment) => {
                   const percentage = paymentTotal > 0 ? (payment.sales / paymentTotal) * 100 : 0;
@@ -683,9 +752,9 @@ export function ReportCharts({
                   return (
                     <div
                       key={payment.method}
-                      className="rounded border border-neutral-100 bg-neutral-50/50 p-2.5 space-y-1"
+                      className="space-y-1 rounded border border-neutral-100 bg-neutral-50/50 p-2.5"
                     >
-                      <div className="flex justify-between items-center text-xs">
+                      <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-1.5">
                           <span
                             className={cn(
@@ -699,9 +768,11 @@ export function ReportCharts({
                         </div>
                         <span className="font-mono font-bold">{percentage.toFixed(1)}%</span>
                       </div>
-                      <div className="flex justify-between text-muted-foreground font-mono text-[10px]">
+                      <div className="text-muted-foreground flex justify-between font-mono text-[10px]">
                         <span>{payment.orders.toLocaleString("en-BD")} orders</span>
-                        <span className="font-bold text-neutral-800">{formatBdt(payment.sales)}</span>
+                        <span className="font-bold text-neutral-800">
+                          {formatBdt(payment.sales)}
+                        </span>
                       </div>
                     </div>
                   );
@@ -716,7 +787,7 @@ export function ReportCharts({
         </div>
 
         {/* 4B. MERCHANDISE RETENTION PULSE (WITH SVG RADIAL RETENTION RING) */}
-        <div className="border-neutral-200/90 rounded-sm border bg-white p-5 shadow-xs flex-1 flex flex-col justify-between print:shadow-none print:border-neutral-300 print:break-inside-avoid">
+        <div className="flex flex-1 flex-col justify-between rounded-sm border border-neutral-200/90 bg-white p-5 shadow-xs print:break-inside-avoid print:border-neutral-300 print:shadow-none">
           <div>
             <div className="mb-3.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -725,12 +796,12 @@ export function ReportCharts({
                   Merchandise Retention Pulse
                 </h2>
               </div>
-              <span className="border-amber-300 bg-amber-50 text-amber-950 font-mono text-[10px] font-bold rounded px-2 py-0.5 border">
+              <span className="rounded border border-amber-300 bg-amber-50 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-950">
                 {returnRate.toFixed(1)}% Return Rate
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="flex flex-col items-center gap-4 sm:flex-row">
               {/* Radial Arc Gauge */}
               <div className="relative size-24 shrink-0">
                 <svg viewBox="0 0 100 100" className="size-full">
@@ -743,7 +814,7 @@ export function ReportCharts({
                     fill="none"
                     stroke="#10b981"
                     strokeWidth="10"
-                    strokeDasharray={`${((Math.max(100 - returnRate, 0)) / 100) * 226.19} 226.19`}
+                    strokeDasharray={`${(Math.max(100 - returnRate, 0) / 100) * 226.19} 226.19`}
                     strokeDashoffset={0}
                     transform="rotate(-90 50 50)"
                     className="transition-all duration-500"
@@ -757,8 +828,8 @@ export function ReportCharts({
                       fill="none"
                       stroke="#f59e0b"
                       strokeWidth="10"
-                      strokeDasharray={`${((Math.min(returnRate, 100)) / 100) * 226.19} 226.19`}
-                      strokeDashoffset={`-${((Math.max(100 - returnRate, 0)) / 100) * 226.19}`}
+                      strokeDasharray={`${(Math.min(returnRate, 100) / 100) * 226.19} 226.19`}
+                      strokeDashoffset={`-${(Math.max(100 - returnRate, 0) / 100) * 226.19}`}
                       transform="rotate(-90 50 50)"
                       className="transition-all duration-500"
                     />
@@ -768,7 +839,7 @@ export function ReportCharts({
                     y="47"
                     textAnchor="middle"
                     dominantBaseline="central"
-                    className="font-mono text-xs font-black fill-emerald-800"
+                    className="fill-emerald-800 font-mono text-xs font-black"
                   >
                     {Math.max(100 - returnRate, 0).toFixed(0)}%
                   </text>
@@ -777,7 +848,7 @@ export function ReportCharts({
                     y="59"
                     textAnchor="middle"
                     dominantBaseline="central"
-                    className="font-sans text-[7.5px] font-bold uppercase tracking-wider fill-neutral-400"
+                    className="fill-neutral-400 font-sans text-[7.5px] font-bold tracking-wider uppercase"
                   >
                     Retained
                   </text>
@@ -785,36 +856,36 @@ export function ReportCharts({
               </div>
 
               {/* 4 Metric Tiles */}
-              <div className="flex-1 grid grid-cols-2 gap-2 font-mono text-xs w-full">
+              <div className="grid w-full flex-1 grid-cols-2 gap-2 font-mono text-xs">
                 <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
-                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                  <span className="text-muted-foreground font-sans text-[9px] font-semibold uppercase">
                     Sold Units
                   </span>
-                  <p className="text-vl-dark-900 text-sm font-bold mt-0.5">
+                  <p className="text-vl-dark-900 mt-0.5 text-sm font-bold">
                     {soldUnits.toLocaleString("en-BD")}
                   </p>
                 </div>
                 <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
-                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                  <span className="text-muted-foreground font-sans text-[9px] font-semibold uppercase">
                     Returned
                   </span>
-                  <p className="text-amber-900 text-sm font-bold mt-0.5">
+                  <p className="mt-0.5 text-sm font-bold text-amber-900">
                     {returnedUnits.toLocaleString("en-BD")}
                   </p>
                 </div>
                 <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
-                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                  <span className="text-muted-foreground font-sans text-[9px] font-semibold uppercase">
                     Retained
                   </span>
-                  <p className="text-emerald-800 text-sm font-bold mt-0.5">
+                  <p className="mt-0.5 text-sm font-bold text-emerald-800">
                     {(soldUnits - returnedUnits).toLocaleString("en-BD")}
                   </p>
                 </div>
                 <div className="rounded border border-neutral-100 bg-neutral-50/60 p-2">
-                  <span className="text-muted-foreground text-[9px] uppercase font-sans font-semibold">
+                  <span className="text-muted-foreground font-sans text-[9px] font-semibold uppercase">
                     Ret Value
                   </span>
-                  <p className="text-red-800 text-sm font-bold mt-0.5">
+                  <p className="mt-0.5 text-sm font-bold text-red-800">
                     {formatBdt(returnedValue)}
                   </p>
                 </div>
@@ -824,18 +895,18 @@ export function ReportCharts({
 
           {/* Visual Retention Bar */}
           <div className="mt-4 space-y-1">
-            <div className="flex justify-between text-[10px] font-mono text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between font-mono text-[10px]">
               <span>Retained: {Math.max(100 - returnRate, 0).toFixed(1)}%</span>
               <span>Returned: {returnRate.toFixed(1)}%</span>
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 flex">
+            <div className="flex h-2 w-full overflow-hidden rounded-full bg-neutral-100">
               <div
-                className="bg-emerald-500 h-full transition-all"
+                className="h-full bg-emerald-500 transition-all"
                 style={{ width: `${Math.max(100 - returnRate, 0)}%` }}
                 title="Retained Volume"
               />
               <div
-                className="bg-amber-500 h-full transition-all"
+                className="h-full bg-amber-500 transition-all"
                 style={{ width: `${Math.min(returnRate, 100)}%` }}
                 title="Returned Volume"
               />
