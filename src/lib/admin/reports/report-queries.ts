@@ -17,6 +17,7 @@ export type ReportFilters = {
   search?: string;
   limit?: number;
   summaryOnly?: boolean;
+  summaryWithCharts?: boolean;
 };
 
 const validRanges = new Set<ReportRange>([
@@ -207,7 +208,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
     INNER JOIN eligible_orders o ON o.id = of."orderId"
     LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"`);
 
-  if (filters.summaryOnly) {
+  if (filters.summaryOnly && !filters.summaryWithCharts) {
     const summary = await summaryQuery;
     return {
       range,
@@ -217,6 +218,71 @@ export async function getAdminReport(filters: ReportFilters = {}) {
       trend: [],
       products: [],
       payments: [],
+      returns: { count: 0, units: 0, value: 0 },
+    };
+  }
+
+  if (filters.summaryWithCharts) {
+    const [summary, trend, payments] = await Promise.all([
+      summaryQuery,
+      prisma.$queryRaw<
+        {
+          date: Date;
+          orders: bigint;
+          grossSales: number;
+          discounts: number;
+          netSales: number;
+          refunds: number;
+          cogs: number;
+        }[]
+      >(Prisma.sql`${ctes}
+        SELECT DATE_TRUNC('day', o."createdAt") AS date,
+          COUNT(*)::bigint AS orders,
+          COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
+          COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+          COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+          COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
+          COALESCE(SUM(of.cogs), 0)::float8 AS cogs
+        FROM order_financials of
+        INNER JOIN eligible_orders o ON o.id = of."orderId"
+        LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
+        GROUP BY DATE_TRUNC('day', o."createdAt")
+        ORDER BY date ASC`),
+      prisma.$queryRaw<
+        { method: string; orders: bigint; sales: number; refunds: number }[]
+      >(Prisma.sql`${ctes}
+        SELECT o."paymentMethod"::text AS method, COUNT(*)::bigint AS orders,
+          COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0) + o."shippingCost"), 0)::float8 AS sales,
+          COALESCE(SUM(sr.amount), 0)::float8 AS refunds
+        FROM order_financials of
+        INNER JOIN eligible_orders o ON o.id = of."orderId"
+        LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
+        GROUP BY o."paymentMethod"
+        ORDER BY sales DESC`),
+    ]);
+
+    return {
+      range,
+      start,
+      end,
+      summary: formatReportSummary(summary[0]),
+      trend: trend.map((item) => ({
+        ...item,
+        orders: Number(item.orders),
+        grossSales: money(item.grossSales),
+        discounts: money(item.discounts),
+        netSales: money(item.netSales),
+        refunds: money(item.refunds),
+        cogs: money(item.cogs),
+        grossProfit: money(money(item.netSales) - money(item.cogs)),
+      })),
+      products: [],
+      payments: payments.map((item) => ({
+        ...item,
+        orders: Number(item.orders),
+        sales: money(item.sales),
+        refunds: money(item.refunds),
+      })),
       returns: { count: 0, units: 0, value: 0 },
     };
   }

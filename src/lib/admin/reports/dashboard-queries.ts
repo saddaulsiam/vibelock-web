@@ -39,7 +39,11 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
       take: 6,
       orderBy: [{ createdAt: "desc" }, { orderNumber: "desc" }],
       select: {
+        id: true,
         orderNumber: true,
+        customerName: true,
+        customerEmail: true,
+        shippingCity: true,
         createdAt: true,
         status: true,
         paymentStatus: true,
@@ -74,7 +78,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
       },
       _sum: { quantity: true },
     }),
-    isManagerOrAdmin ? getAdminReport({ range, summaryOnly: true }) : Promise.resolve(null),
+    isManagerOrAdmin ? getAdminReport({ range, summaryWithCharts: true }) : Promise.resolve(null),
   ]);
 
   const transactionQuantityByVariant = new Map(
@@ -158,5 +162,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
           discounts: 0,
           grossSales: 0,
         },
+    trend: report?.trend ?? [],
+    payments: report?.payments ?? [],
   };
 }
