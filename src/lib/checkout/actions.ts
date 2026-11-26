@@ -19,6 +19,8 @@ import type { DiscountType, Prisma } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
 import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
+import { validateOrderCheckoutPolicies } from "@/lib/settings/checkout-settings";
+import { calculateEffectiveShippingFee } from "@/lib/settings/shipping-rules-settings";
 import {
   generateWebsiteOrderNumber,
   isOrderNumberCollision,
@@ -684,8 +686,36 @@ export async function createOrderAction(
           shippingCost = Number(shippingPricing.calculateShippingCharge(shippingCity));
         }
 
+        // Apply dynamic free shipping threshold incentive
+        const freeShippingEval = await calculateEffectiveShippingFee({
+          subtotal: orderSubtotal,
+          city: shippingCity,
+          state: shippingState,
+          standardCost: shippingCost,
+        });
+        if (freeShippingEval.isFree) {
+          shippingCost = 0;
+          shippingMethodName = `${shippingMethodName} (Free Delivery)`;
+        }
+
         const orderDiscount = appliedCoupon?.discount ?? 0;
         const total = Math.max(0, orderSubtotal - orderDiscount) + shippingCost;
+
+        // Authoritative checkout policy enforcement (Min order value & Max COD ceiling)
+        const policyCheck = await validateOrderCheckoutPolicies({
+          total,
+          paymentMethod:
+            paymentMethod === "COD"
+              ? "COD"
+              : paymentMethod === "BKASH"
+                ? "BKASH"
+                : paymentMethod === "PAYSTATION"
+                  ? "PAYSTATION"
+                  : "ONLINE",
+        });
+        if (!policyCheck.valid) {
+          throw new Error(`CHECKOUT_POLICY: ${policyCheck.error}`);
+        }
 
         // Create Order
         const newOrder = await tx.order.create({
@@ -1079,6 +1109,14 @@ export async function createOrderAction(
 
     if (isShippingError) {
       return { success: false, error: (error as Error).message };
+    }
+
+    if (error instanceof Error && error.message.startsWith("CHECKOUT_POLICY:")) {
+      return {
+        success: false,
+        error: error.message.replace("CHECKOUT_POLICY: ", ""),
+        correlationId,
+      };
     }
 
     if (isInsufficientStock) {

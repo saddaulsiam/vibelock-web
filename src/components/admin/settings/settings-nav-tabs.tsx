@@ -3,13 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, SlidersHorizontal } from "lucide-react";
+import { CreditCard, ShieldAlert, SlidersHorizontal, Truck } from "lucide-react";
 
 export function SettingsNavTabs() {
   const pathname = usePathname();
   const currentTab = pathname?.includes("/payments")
     ? "/admin/settings/payments"
-    : "/admin/settings/general";
+    : pathname?.includes("/checkout")
+      ? "/admin/settings/checkout"
+      : pathname?.includes("/shipping")
+        ? "/admin/settings/shipping"
+        : "/admin/settings/general";
 
   return (
     <Tabs value={currentTab}>
@@ -22,6 +26,24 @@ export function SettingsNavTabs() {
         >
           <SlidersHorizontal className="size-4 text-vl-cyan-600" aria-hidden="true" />
           General Settings
+        </TabsTrigger>
+        <TabsTrigger
+          value="/admin/settings/checkout"
+          render={<Link href="/admin/settings/checkout" />}
+          nativeButton={false}
+          className="gap-2 text-xs sm:text-sm font-semibold"
+        >
+          <ShieldAlert className="size-4 text-amber-600" aria-hidden="true" />
+          Checkout & COD Rules
+        </TabsTrigger>
+        <TabsTrigger
+          value="/admin/settings/shipping"
+          render={<Link href="/admin/settings/shipping" />}
+          nativeButton={false}
+          className="gap-2 text-xs sm:text-sm font-semibold"
+        >
+          <Truck className="size-4 text-purple-600" aria-hidden="true" />
+          Shipping & Delivery
         </TabsTrigger>
         <TabsTrigger
           value="/admin/settings/payments"
