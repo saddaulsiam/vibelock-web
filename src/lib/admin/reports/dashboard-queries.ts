@@ -111,7 +111,10 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
     categoryCount,
     customerCount,
     orderCount,
-    recentOrders,
+    recentOrders: recentOrders.map((order) => ({
+      ...order,
+      total: Number(order.total) || 0,
+    })),
     orderStatuses: orderStatusGroups.map(({ status, _count }) => ({
       status: status satisfies OrderStatus,
       count: _count._all,

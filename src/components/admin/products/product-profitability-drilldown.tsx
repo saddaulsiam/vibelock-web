@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, AlertTriangle, Layers, Search } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import type {
   ProductProfitabilityProduct,
   ProductProfitabilityResult,
@@ -22,6 +23,14 @@ function formatBdt(value: number | null | undefined) {
   return `৳${sign}${groupedInteger}.${fractionPart ?? "00"}`;
 }
 
+function cleanProductName(name: string) {
+  if (name.includes("(") && name.includes(")") && name.length > 25) {
+    const cleaned = name.replace(/\([a-f0-9-]{36}\)/i, "").trim();
+    if (cleaned) return cleaned;
+  }
+  return name;
+}
+
 export function ProductProfitabilityDrilldown({
   data,
   currentSort = "revenue",
@@ -30,6 +39,7 @@ export function ProductProfitabilityDrilldown({
   from,
   to,
   page,
+  compactHeader = false,
 }: {
   data: ProductProfitabilityResult;
   currentSort?: string;
@@ -38,6 +48,7 @@ export function ProductProfitabilityDrilldown({
   from?: string;
   to?: string;
   page?: string;
+  compactHeader?: boolean;
 }) {
   const searchInputId = useId();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
@@ -88,46 +99,57 @@ export function ProductProfitabilityDrilldown({
       aria-labelledby="product-profitability-heading"
     >
       <div className="border-vl-dark-900/10 border-b p-4 sm:p-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2
-                id="product-profitability-heading"
-                className="text-vl-dark-900 text-xl font-semibold tracking-tight"
-              >
-                Product &amp; SKU profitability
-              </h2>
-              <Badge variant="outline" className="text-xs font-normal">
-                {data.total.toLocaleString("en-BD")} {data.total === 1 ? "product" : "products"}
-              </Badge>
+        {!compactHeader ? (
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2
+                  id="product-profitability-heading"
+                  className="text-vl-dark-900 text-xl font-semibold tracking-tight"
+                >
+                  Product &amp; SKU profitability
+                </h2>
+                <Badge variant="outline" className="text-xs font-normal">
+                  {data.total.toLocaleString("en-BD")} {data.total === 1 ? "product" : "products"}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+                Product-level rollups with expandable SKU variant drilldown. Net sales reflects
+                retained merchandise value after line discounts and order coupon allocations. Payment
+                refunds are accounted for at the order summary level.
+              </p>
             </div>
-            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
-              Product-level rollups with expandable SKU variant drilldown. Net sales reflects
-              retained merchandise value after line discounts and order coupon allocations. Payment
-              refunds are accounted for at the order summary level.
-            </p>
-          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {data.products.length > 0 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={toggleAll}
-                className="gap-1.5"
-                aria-label={
-                  allExpanded ? "Collapse all product variants" : "Expand all product variants"
-                }
-              >
-                <Layers className="size-3.5" aria-hidden="true" />
-                {allExpanded ? "Collapse all" : "Expand all"}
-              </Button>
-            )}
+            <div className="flex flex-wrap items-center gap-2">
+              {data.products.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleAll}
+                  className="gap-1.5"
+                  aria-label={
+                    allExpanded ? "Collapse all product variants" : "Expand all product variants"
+                  }
+                >
+                  <Layers className="size-3.5" aria-hidden="true" />
+                  {allExpanded ? "Collapse all" : "Expand all"}
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <h2 id="product-profitability-heading" className="sr-only">
+            Product &amp; SKU profitability
+          </h2>
+        )}
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div
+          className={cn(
+            "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+            !compactHeader && "mt-4"
+          )}
+        >
           <form className="flex w-full max-w-sm items-center gap-2" method="GET">
             <label htmlFor={searchInputId} className="sr-only">
               Search by product name or SKU
@@ -180,6 +202,22 @@ export function ProductProfitabilityDrilldown({
                 </Link>
               );
             })}
+
+            {compactHeader && data.products.length > 0 && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={toggleAll}
+                className="ml-2 h-7 gap-1 text-xs"
+                aria-label={
+                  allExpanded ? "Collapse all product variants" : "Expand all product variants"
+                }
+              >
+                <Layers className="size-3" aria-hidden="true" />
+                {allExpanded ? "Collapse" : "Expand"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -327,7 +365,9 @@ function ProductRowGroup({
             </Button>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-vl-dark-900 font-semibold">{product.productName}</span>
+                <span className="text-vl-dark-900 font-semibold" title={product.productName}>
+                  {cleanProductName(product.productName)}
+                </span>
                 <Badge variant="outline" className="text-muted-foreground h-4.5 px-1.5 text-[10px]">
                   {product.variantCount} {product.variantCount === 1 ? "variant" : "variants"}
                 </Badge>
@@ -366,7 +406,7 @@ function ProductRowGroup({
           {formatBdt(product.profit)}
         </td>
         <td className="text-vl-dark-900 p-3.5 text-right font-semibold tabular-nums">
-          {product.margin !== null ? `${product.margin.toFixed(1)}%` : "—"}
+          {product.margin !== null && product.margin !== undefined ? `${product.margin.toFixed(1)}%` : "—"}
         </td>
       </tr>
 
