@@ -85,11 +85,20 @@ export class ReturnService {
       return;
     }
 
+    let defaultGrade: "RESELLABLE" | "DAMAGED" = "RESELLABLE";
+    try {
+      const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+      const { settings } = await getInventoryReturnSettings();
+      defaultGrade = settings.autoRestockCompletedReturns ? "RESELLABLE" : "DAMAGED";
+    } catch {
+      // Default to resellable if settings unmigrated
+    }
+
     for (const item of returnReq.items) {
       const variantId = skuToVariantId.get(item.orderItem.sku);
       if (!variantId) continue;
 
-      const grade = gradingMap?.[item.id] || "RESELLABLE";
+      const grade = gradingMap?.[item.id] || defaultGrade;
 
       if (grade === "RESELLABLE") {
         await tx.inventoryTransaction.create({

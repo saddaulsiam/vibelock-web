@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
 import { RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
+import { getInventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
 
 export const metadata: Metadata = {
   title: "Return & Exchange Policy",
@@ -16,8 +17,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ReturnPolicyPage() {
+export default async function ReturnPolicyPage() {
+  const { settings } = await getInventoryReturnSettings();
   const lastUpdated = "November 1, 2026";
+  const returnWindowDays = settings.returnWindowDays;
+  const nonReturnableList = settings.nonReturnableCategories.length > 0
+    ? settings.nonReturnableCategories.join(", ")
+    : "innerwear, socks, and clearance items";
 
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
@@ -41,13 +47,13 @@ export default function ReturnPolicyPage() {
             Return &amp; Exchange Policy
           </h1>
           <p className="text-vl-white-300/70 mt-3 max-w-xl text-sm leading-relaxed sm:text-base">
-            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our 7-day
+            Streetwear should fit right. If the fit isn&apos;t what you envisioned, our {returnWindowDays}-day
             exchange policy has you covered nationwide.
           </p>
           <div className="text-vl-white-300/50 mt-6 flex items-center gap-4 text-xs">
             <span>Last Updated: {lastUpdated}</span>
             <span>•</span>
-            <span>7-Day Hassle-Free Window</span>
+            <span>{returnWindowDays}-Day Hassle-Free Window</span>
           </div>
         </Container>
       </section>
@@ -64,10 +70,10 @@ export default function ReturnPolicyPage() {
                   <CheckCircle2 className="size-6 shrink-0 text-emerald-700" />
                   <div>
                     <h3 className="font-heading text-base font-bold text-emerald-900 sm:text-lg">
-                      7-Day Exchange Guarantee
+                      {returnWindowDays}-Day Exchange Guarantee
                     </h3>
                     <p className="mt-2 text-sm leading-relaxed text-emerald-800">
-                      You have <strong>7 calendar days</strong> from the delivery timestamp to
+                      You have <strong>{returnWindowDays} calendar days</strong> from the delivery timestamp to
                       initiate a return or size exchange for any unworn, unwashed VibeLock garment
                       with its original tags intact.
                     </p>
@@ -95,9 +101,7 @@ export default function ReturnPolicyPage() {
                   <div className="mt-4 rounded-xs border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900">
                     <p className="font-semibold">⚠️ Non-Returnable Items:</p>
                     <p className="mt-1">
-                      For hygiene reasons, innerwear, socks, and discounted clearance / &quot;Final
-                      Sale&quot; items cannot be returned unless a manufacturing defect is proven
-                      upon unboxing.
+                      For hygiene reasons, {nonReturnableList} cannot be returned unless a manufacturing defect is proven upon unboxing.
                     </p>
                   </div>
                 </div>

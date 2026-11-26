@@ -61,7 +61,18 @@ export const getPublishedProducts = async (options?: {
         throw new EmptyPublishedProductsError();
       }
 
-      return products.map(mapProductSummary);
+      let mapped = products.map(mapProductSummary);
+      try {
+        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { settings } = await getInventoryReturnSettings();
+        if (settings.autoHideOutOfStock) {
+          mapped = mapped.filter((p) => p.available);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+
+      return mapped;
     },
     cacheKey,
     { tags: ["products"], revalidate: 120 }
@@ -290,7 +301,18 @@ export const getFeaturedProducts = async (options?: {
         products = [...products, ...additional];
       }
 
-      return products.map(mapProductSummary);
+      let mapped = products.map(mapProductSummary);
+      try {
+        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { settings } = await getInventoryReturnSettings();
+        if (settings.autoHideOutOfStock) {
+          mapped = mapped.filter((p) => p.available);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+
+      return mapped;
     },
     cacheKey,
     { tags: ["products"], revalidate: 120 }
@@ -350,7 +372,18 @@ export const getRelatedProducts = async (options: {
         products = [...products, ...additional];
       }
 
-      return products.map(mapProductSummary);
+      let mapped = products.map(mapProductSummary);
+      try {
+        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { settings } = await getInventoryReturnSettings();
+        if (settings.autoHideOutOfStock) {
+          mapped = mapped.filter((p) => p.available);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+
+      return mapped;
     },
     cacheKey,
     { tags: ["products"], revalidate: 120 }

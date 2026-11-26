@@ -1014,6 +1014,21 @@ export async function createOrderAction(
       } catch (telegramErr) {
         console.error("[Checkout] Failed to dispatch telegram notification:", telegramErr);
       }
+
+      // Dynamic Auto-Consignment Dispatch if enabled in Shipping Rules
+      try {
+        const { getShippingRulesSettings } = await import("@/lib/settings/shipping-rules-settings");
+        const { settings: shippingRules } = await getShippingRulesSettings();
+        if (shippingRules.autoCreateConsignment) {
+          const { getShippingProvider } = await import("@/lib/shipping/provider");
+          const { ShippingService } = await import("@/lib/shipping/service");
+          const provider = getShippingProvider();
+          const service = new ShippingService(provider);
+          void service.createShipmentForOrder(orderResult.id, null);
+        }
+      } catch (consignmentErr) {
+        console.error("[Checkout] Auto-consignment creation failed:", consignmentErr);
+      }
     }
 
     return { success: true, orderNumber: finalOrderNumber };

@@ -187,6 +187,16 @@ export async function updateReturnStatusAction(
     };
   }
 
+  // Dispatch real-time email & SMS notification when return is approved
+  if (customerToNotify && status === "APPROVED") {
+    await notifyReturnApproved({
+      customerEmail: customerToNotify.email,
+      customerName: customerToNotify.name,
+      customerPhone: customerToNotify.phone,
+      orderNumber: customerToNotify.orderNumber,
+    });
+  }
+
   // Dispatch real-time email & SMS notification when parcel is received at warehouse
   if (customerToNotify && status === "RECEIVED") {
     await notifyReturnReceived({

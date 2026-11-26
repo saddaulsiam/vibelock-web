@@ -133,23 +133,28 @@ export async function getStorefrontPaymentMethods(
 
   if (codActive) {
     let shouldIncludeCod = true;
-    if (cartSubtotal !== undefined) {
-      try {
-        const { getCheckoutSettings } = await import("./checkout-settings");
-        const { settings: checkoutPolicies } = await getCheckoutSettings();
-        if (cartSubtotal > checkoutPolicies.maxCodOrderValue) {
-          shouldIncludeCod = false;
-        }
-      } catch {
-        // Fallback gracefully
+    let codDetail = "Pay when your order arrives.";
+    try {
+      const { getCheckoutSettings } = await import("./checkout-settings");
+      const { settings: checkoutPolicies } = await getCheckoutSettings();
+      if (cartSubtotal !== undefined && cartSubtotal > checkoutPolicies.maxCodOrderValue) {
+        shouldIncludeCod = false;
       }
+      if (checkoutPolicies.codOrderNotice) {
+        codDetail = checkoutPolicies.codOrderNotice;
+      }
+      if (checkoutPolicies.requireCodAdvanceDeliveryCharge) {
+        codDetail += ` (Advance delivery charge: ৳${checkoutPolicies.codAdvanceInsideDhaka} Dhaka / ৳${checkoutPolicies.codAdvanceOutsideDhaka} Outside)`;
+      }
+    } catch {
+      // Fallback gracefully
     }
 
     if (shouldIncludeCod) {
       options.push({
         value: "COD",
         title: "Cash on delivery",
-        detail: "Pay when your order arrives.",
+        detail: codDetail,
       });
     }
   }

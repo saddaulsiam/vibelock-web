@@ -3,7 +3,7 @@ import "server-only";
 import prisma from "@/lib/prisma/client";
 import { appConfig } from "@/lib/config/app";
 import { getWhatsAppNumber } from "@/lib/config/contact";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 
@@ -204,6 +204,13 @@ export async function updateStoreSetting<T>(
     revalidatePath("/admin/settings/general");
     revalidatePath("/admin/settings");
     revalidatePath("/");
+    revalidatePath("/shop");
+    try {
+      updateTag("products");
+      updateTag("discovery");
+    } catch {
+      // Graceful fallback for non-request contexts
+    }
 
     return { success: true, data: validatedData };
   } catch (err: unknown) {

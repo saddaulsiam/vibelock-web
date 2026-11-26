@@ -3,6 +3,7 @@ import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
+import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { Newsletter } from "../home/newsletter";
 import { FooterWatermark } from "./footer-watermark";
 
@@ -38,8 +39,16 @@ const customerLinks = [
   { label: "FAQs & Support", href: "/faq" },
 ] as const;
 
-export function Footer() {
+export async function Footer() {
   const currentYear = new Date().getFullYear();
+  const { settings } = await getGeneralStoreSettings();
+
+  const legalBusiness = settings.legalBusinessName || "VIBELOCKBD";
+  const statutoryBadges = [
+    settings.dbidNumber ? `DBID: ${settings.dbidNumber}` : null,
+    settings.tradeLicenseNumber ? `Trade License: ${settings.tradeLicenseNumber}` : null,
+    settings.binNumber ? `BIN: ${settings.binNumber}` : null,
+  ].filter(Boolean);
 
   return (
     <footer className="border-vl-border bg-vl-black text-vl-white relative z-0 overflow-hidden border-t">
@@ -202,7 +211,7 @@ export function Footer() {
                     {/* Phone */}
                     <div className="text-vl-white/90 mt-3 flex items-center gap-2 text-xs font-medium">
                       <Phone className="text-vl-cyan size-3" />
-                      <span>{RETAIL_LOCATION.phone}</span>
+                      <span>{settings.supportPhone || RETAIL_LOCATION.phone}</span>
                     </div>
                   </div>
 
@@ -288,7 +297,14 @@ export function Footer() {
 
         {/* ── Bottom Footer Bar — sits on top of the watermark ── */}
         <div className="border-vl-border text-vl-white/50 pointer-events-auto relative flex flex-col items-center gap-3 border-t pt-3.5 pb-2 text-xs sm:flex-row sm:items-center sm:justify-between">
-          <p>© {currentYear} VIBELOCKBD. All rights reserved.</p>
+          <div>
+            <p>
+              © {currentYear} {legalBusiness}. All rights reserved.
+            </p>
+            {statutoryBadges.length > 0 && (
+              <p className="text-vl-white/40 mt-0.5 text-[11px]">{statutoryBadges.join(" | ")}</p>
+            )}
+          </div>
 
           <div className="flex items-center gap-5">
             <Link

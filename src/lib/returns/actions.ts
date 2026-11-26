@@ -193,6 +193,19 @@ export async function createReturnRequestAction(
       const returnService = new ReturnService();
       const returnableMap = await returnService.getReturnableQuantities(order.id, tx);
 
+      if (!returnPolicies.allowPartialReturns) {
+        const totalReturnableItems = Object.keys(returnableMap).length;
+        if (items.length < totalReturnableItems) {
+          throw new Error("Partial returns are not allowed by store policy. All eligible items from this order must be returned together.");
+        }
+        for (const item of items) {
+          const available = returnableMap[item.orderItemId] || 0;
+          if (item.quantity < available) {
+            throw new Error("Partial returns are not allowed by store policy. Full quantity of each item must be returned.");
+          }
+        }
+      }
+
       for (const item of items) {
         const available = returnableMap[item.orderItemId] || 0;
         if (item.quantity > available) {
@@ -247,17 +260,24 @@ export async function createReturnRequestAction(
   } catch (error: unknown) {
     console.error("[createReturnRequestAction] Error:", error);
     const message = error instanceof Error ? error.message : "";
+    const allowedKnownErrors = [
+      "Order not found or access denied.",
+      "Only delivered orders can be returned.",
+      "Requested quantity exceeds the remaining returnable quantity.",
+      "Please upload at least one photo showing the defective or wrong item.",
+      "Partial returns are not allowed by store policy. All eligible items from this order must be returned together.",
+      "Partial returns are not allowed by store policy. Full quantity of each item must be returned.",
+    ];
+    const isDynamicPolicyError =
+      message.startsWith("Return window has expired") ||
+      message.startsWith("Returns are currently disabled");
+
     return {
       success: false,
-      error: [
-        "Order not found or access denied.",
-        "Only delivered orders can be returned.",
-        "Requested quantity exceeds the remaining returnable quantity.",
-        "Return window has expired. Returns must be requested within 3 days of delivery.",
-        "Please upload at least one photo showing the defective or wrong item.",
-      ].includes(message)
-        ? message
-        : "Failed to submit the return request. Please try again later.",
+      error:
+        allowedKnownErrors.includes(message) || isDynamicPolicyError
+          ? message
+          : "Failed to submit the return request. Please try again later.",
     };
   } finally {
     revalidatePath(`/account/orders/${orderNumber}`);

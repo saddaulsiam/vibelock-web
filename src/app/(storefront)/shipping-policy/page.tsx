@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Container } from "@/components/shared/container";
 import { SITE_URL } from "@/lib/seo/site";
-import { Truck } from "lucide-react";
+import { Truck, CheckCircle2 } from "lucide-react";
+import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
 
 export const metadata: Metadata = {
   title: "Shipping & Delivery Policy",
@@ -16,8 +17,15 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ShippingPolicyPage() {
+export default async function ShippingPolicyPage() {
+  const { settings } = await getShippingRulesSettings();
   const lastUpdated = "November 1, 2026";
+  const courierName =
+    settings.primaryCourier === "PATHAO"
+      ? "Pathao Courier"
+      : settings.primaryCourier === "MANUAL"
+        ? "Dedicated In-House Logistics"
+        : "Steadfast Courier";
 
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
@@ -58,6 +66,23 @@ export default function ShippingPolicyPage() {
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             {/* Main Content */}
             <div className="space-y-10 lg:col-span-8">
+              {/* Dynamic Free Shipping Banner (if active) */}
+              {settings.enableFreeShipping ? (
+                <div className="border border-cyan-400/40 bg-cyan-50/70 p-6 sm:p-7">
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="size-6 shrink-0 text-cyan-700" />
+                    <div>
+                      <h3 className="font-heading text-base font-bold text-cyan-950 sm:text-lg">
+                        Free Delivery Incentive
+                      </h3>
+                      <p className="mt-1 text-sm leading-relaxed text-cyan-900">
+                        {settings.freeShippingBannerText}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               {/* Delivery Rates Comparison */}
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div className="border-vl-dark-900/15 border bg-white p-6 sm:p-8">
@@ -70,7 +95,7 @@ export default function ShippingPolicyPage() {
                     </span>
                   </div>
                   <h3 className="font-heading text-vl-dark-900 mt-4 text-2xl font-bold">
-                    24 – 48 Hours
+                    {settings.insideDhakaSla || "24 – 48 Hours"}
                   </h3>
                   <p className="text-vl-dark-900/70 mt-1 text-xs">Standard Home Delivery</p>
                   <div className="border-vl-dark-900/10 mt-6 border-t pt-4">
@@ -89,7 +114,7 @@ export default function ShippingPolicyPage() {
                     </span>
                   </div>
                   <h3 className="font-heading text-vl-dark-900 mt-4 text-2xl font-bold">
-                    2 – 4 Days
+                    {settings.outsideDhakaSla || "2 – 4 Days"}
                   </h3>
                   <p className="text-vl-dark-900/70 mt-1 text-xs">Doorstep &amp; Thana Hubs</p>
                   <div className="border-vl-dark-900/10 mt-6 border-t pt-4">
@@ -102,17 +127,16 @@ export default function ShippingPolicyPage() {
               {/* Section 1: Courier Partner */}
               <div className="border-vl-dark-900/10 border bg-white p-6 sm:p-8">
                 <h2 className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight sm:text-xl">
-                  1. Official Courier Partner: Steadfast Courier
+                  1. Official Courier Partner: {courierName}
                 </h2>
                 <div className="text-vl-dark-900/80 mt-4 space-y-3 text-sm leading-relaxed">
                   <p>
                     All domestic VibeLock parcels are dispatched through{" "}
-                    <strong>Steadfast Courier</strong>, one of Bangladesh&apos;s leading logistics
-                    networks.
+                    <strong>{courierName}</strong>, our official logistics network.
                   </p>
                   <p>
                     Once your order is picked up from our warehouse, you will receive an SMS and
-                    email with a direct <strong>Steadfast Tracking Consignment Code</strong> to
+                    email with a direct <strong>Consignment Tracking Code</strong> to
                     monitor your parcel in real time.
                   </p>
                 </div>
