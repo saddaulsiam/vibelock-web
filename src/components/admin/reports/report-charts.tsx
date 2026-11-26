@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 
 type TrendPoint = {
@@ -186,51 +187,29 @@ export function ReportCharts({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 print:hidden">
-            {/* Chart Mode Toggle: Wave, Columns, Cumulative */}
-            <div className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100/80 p-0.5 text-[11px] font-semibold">
-              <button
-                type="button"
-                onClick={() => setChartMode("wave")}
-                className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
-                  chartMode === "wave"
-                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
-                    : "text-neutral-500 hover:text-neutral-900"
-                )}
-                title="Continuous Area Wave"
-              >
-                <TrendingUp className="size-3" />
-                <span>Wave</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartMode("bars")}
-                className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
-                  chartMode === "bars"
-                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
-                    : "text-neutral-500 hover:text-neutral-900"
-                )}
-                title="Discrete Daily Columns"
-              >
-                <BarChart2 className="size-3" />
-                <span>Columns</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setChartMode("cumulative")}
-                className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 transition-all",
-                  chartMode === "cumulative"
-                    ? "text-vl-dark-900 bg-white font-bold shadow-2xs"
-                    : "text-neutral-500 hover:text-neutral-900"
-                )}
-                title="Running Cumulative Total"
-              >
-                <Layers className="size-3" />
-                <span>Cumulative</span>
-              </button>
-            </div>
+            {/* Chart Mode Toggle via design-system Tabs */}
+            <Tabs
+              value={chartMode}
+              size="sm"
+              onValueChange={(val) => {
+                if (val) setChartMode(val as typeof chartMode);
+              }}
+            >
+              <TabsList>
+                <TabsTrigger value="wave" title="Continuous Area Wave">
+                  <TrendingUp className="size-3" />
+                  <span>Wave</span>
+                </TabsTrigger>
+                <TabsTrigger value="bars" title="Discrete Daily Columns">
+                  <BarChart2 className="size-3" />
+                  <span>Columns</span>
+                </TabsTrigger>
+                <TabsTrigger value="cumulative" title="Running Cumulative Total">
+                  <Layers className="size-3" />
+                  <span>Cumulative</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {/* Metric Selector */}
             <Select

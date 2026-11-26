@@ -3,8 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Calendar, Check, SlidersHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -37,7 +36,6 @@ export function ReportRangeFilter({
   endDate,
   searchParamsRecord,
 }: ReportRangeFilterProps) {
-  const [hoveredPreset, setHoveredPreset] = React.useState<string | null>(null);
   const isCustom = currentRange === "custom";
 
   const formatDate = (date: Date) =>
@@ -68,63 +66,22 @@ export function ReportRangeFilter({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-200/80 pb-3">
-        {/* Animated Segmented Tabs */}
-        <nav
-          aria-label="Report date range presets"
-          className="relative inline-flex flex-wrap items-center gap-1 rounded-xl border border-neutral-200/90 bg-neutral-100/80 p-1 shadow-2xs backdrop-blur-xs"
-          onMouseLeave={() => setHoveredPreset(null)}
-        >
-          {REPORT_RANGE_PRESETS.map((preset) => {
-            const isActive = currentRange === preset.key;
-            const isHovered = hoveredPreset === preset.key;
-            const href = buildPresetHref(preset.key);
-
-            return (
-              <Link
+        {/* Animated Segmented Tabs via design-system Tabs */}
+        <Tabs value={currentRange}>
+          <TabsList aria-label="Report date range presets" className="h-auto flex-wrap">
+            {REPORT_RANGE_PRESETS.map((preset) => (
+              <TabsTrigger
                 key={preset.key}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-                onMouseEnter={() => setHoveredPreset(preset.key)}
-                className={cn(
-                  "relative z-10 rounded-lg px-3 py-1.5 text-xs font-semibold tracking-tight transition-colors duration-150 select-none",
-                  "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-vl-dark-900/20",
-                  isActive ? "text-vl-dark-900 font-bold" : "text-neutral-500 hover:text-neutral-900"
-                )}
+                value={preset.key}
+                render={<Link href={buildPresetHref(preset.key)} />}
+                nativeButton={false}
               >
-                {/* Sliding Active Pill with Framer Motion spring */}
-                {isActive && (
-                  <motion.div
-                    layoutId="reportActiveRangePill"
-                    className="absolute inset-0 -z-10 rounded-lg border border-neutral-200/70 bg-white shadow-xs"
-                    transition={{
-                      type: "spring",
-                      stiffness: 450,
-                      damping: 35,
-                    }}
-                  />
-                )}
-
-                {/* Subtle Hover Pill */}
-                {!isActive && isHovered && (
-                  <motion.div
-                    layoutId="reportHoverRangePill"
-                    className="absolute inset-0 -z-10 rounded-lg bg-white/60"
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 40,
-                    }}
-                  />
-                )}
-
-                <span className="relative z-10 flex items-center gap-1.5">
-                  {preset.key === "custom" && <SlidersHorizontal className="size-3" />}
-                  {preset.label}
-                </span>
-              </Link>
-            );
-          })}
-        </nav>
+                {preset.key === "custom" && <SlidersHorizontal className="size-3" />}
+                <span>{preset.label}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
 
         {/* Resolved Window Stamp */}
         <div className="flex items-center gap-2 font-mono text-xs text-neutral-500">
@@ -162,7 +119,7 @@ export function ReportRangeFilter({
               name="from"
               type="date"
               defaultValue={from || ""}
-              className="h-9 w-40 text-xs font-mono"
+              className="h-9 w-40 font-mono text-xs"
               required
             />
           </div>
@@ -179,7 +136,7 @@ export function ReportRangeFilter({
               name="to"
               type="date"
               defaultValue={to || ""}
-              className="h-9 w-40 text-xs font-mono"
+              className="h-9 w-40 font-mono text-xs"
               required
             />
           </div>
