@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
            - In VibeLock, EVERY order requires a registered customer account (there is NO guest checkout on VibeLock).
            ${
              userId
-               ? `- The customer is already LOGGED IN. When they ask to track an order, simply ask for their orderNumber (e.g. "আপনার অর্ডার নম্বরটি জানান, যেমন: VL-2026xxxxxx"). Do NOT ask for phone digits or mention login instructions.`
+               ? `- The customer is already LOGGED IN. When they ask to track an order, simply ask for their orderNumber (e.g. "আপনার অর্ডার নম্বরটি জানান, যেমন: VL-83910275"). Do NOT ask for phone digits or mention login instructions.`
                : `- The customer is currently NOT LOGGED IN. Tell them they can [সাইন ইন](/login) to view their orders, OR they can provide their order number and the last 4 digits of the phone number used in their account/order (e.g. phoneLast4: "5678").`
            }
            - Never fabricate order details or delivery dates.
@@ -335,7 +335,7 @@ export async function POST(req: NextRequest) {
               .trim()
               .min(3)
               .max(50)
-              .describe("The order reference number (e.g. VL-20261121-316C6D)"),
+              .describe("The order reference number (e.g. VL-83910275)"),
             phoneLast4: z
               .string()
               .trim()

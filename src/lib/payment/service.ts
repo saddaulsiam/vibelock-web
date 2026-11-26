@@ -1838,6 +1838,32 @@ export class PaymentService {
         }).catch((err) => {
           console.error("[PaymentService] Non-blocking order email error:", err);
         });
+
+        // Dispatch instant Telegram alert to admin operations channel
+        try {
+          const { sendTelegramOrderNotification } = await import("@/lib/notifications/telegram");
+          await sendTelegramOrderNotification({
+            orderId: payment.orderId,
+            orderNumber: fullOrder.orderNumber,
+            total: fullOrder.total?.toString() ?? "0",
+            paymentMethod: fullOrder.paymentMethod,
+            paymentStatus: "PAID",
+            gatewayTransactionId: verification.providerTransactionId ?? (payment as { gatewayTransactionId?: string | null }).gatewayTransactionId ?? null,
+            customerName: fullOrder.customerName ?? undefined,
+            customerPhone: (order as { customerPhone?: string | null }).customerPhone ?? undefined,
+            customerEmail: fullOrder.customerEmail,
+            city: fullOrder.shippingCity ?? undefined,
+            itemCount: (fullOrder.items || []).length,
+            items: (fullOrder.items || []).map((item) => ({
+              productName: item.productName,
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color,
+            })),
+          });
+        } catch (telegramErr) {
+          console.error("[PaymentService] Non-blocking Telegram notification error:", telegramErr);
+        }
       } catch (emailErr) {
         console.error("[PaymentService] Failed to dispatch order email:", emailErr);
       }

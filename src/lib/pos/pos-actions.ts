@@ -6,6 +6,11 @@ import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { InventoryService } from "@/lib/inventory/service";
 import { revalidatePath } from "next/cache";
+import {
+  generatePosOrderNumber,
+  isOrderNumberCollision,
+  MAX_ORDER_NUMBER_COLLISION_RETRIES,
+} from "@/lib/orders/order-number";
 import type {
   PosActionResult,
   PosCreateOrderInput,
@@ -39,7 +44,14 @@ export async function createPosOrderAction(
       }
     }
 
-    const receipt = await prisma.$transaction(async (tx) => {
+    let attempt = 0;
+    let receipt: PosReceiptData | null = null;
+    let candidateOrderNumber = "";
+
+    while (attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {
+      attempt++;
+      try {
+        receipt = await prisma.$transaction(async (tx) => {
       // 3. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
       const variantIds = Array.from(new Set(input.items.map((i) => i.variantId))).sort();
       if (variantIds.length > 0) {
@@ -190,7 +202,7 @@ export async function createPosOrderAction(
       }
 
       // 8. Generate order identifiers
-      const orderNumber = `VL-POS-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
+      candidateOrderNumber = generatePosOrderNumber();
       const idempotencyKey = `pos-${crypto.randomBytes(12).toString("hex")}`;
 
       const customerName = input.customerName?.trim() || "Walk-in Customer";
@@ -210,7 +222,7 @@ export async function createPosOrderAction(
       const newOrder = await tx.order.create({
         data: {
           checkoutIdempotencyKey: idempotencyKey,
-          orderNumber,
+          orderNumber: candidateOrderNumber,
           userId: cashier.id,
           status: "DELIVERED",
           paymentStatus: "SUCCESS",
@@ -354,6 +366,21 @@ export async function createPosOrderAction(
 
       return receiptData;
     });
+        break; // POS transaction succeeded
+      } catch (txError) {
+        if (isOrderNumberCollision(txError) && attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {
+          console.warn(
+            `[POS] Order number collision on candidate "${candidateOrderNumber}". Retrying with fresh candidate (attempt ${attempt}/${MAX_ORDER_NUMBER_COLLISION_RETRIES})...`
+          );
+          continue;
+        }
+        throw txError;
+      }
+    }
+
+    if (!receipt) {
+      throw new Error("POS order creation failed after retries.");
+    }
 
     // 14. Invalidate related caches
     revalidatePath("/pos");

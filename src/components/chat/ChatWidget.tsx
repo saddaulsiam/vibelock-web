@@ -45,7 +45,7 @@ function getSuggestedPrompts(isLoggedIn: boolean): SuggestedPrompt[] {
       instantAnswer: isLoggedIn
         ? `আপনার অর্ডারের রিয়েল-টাইম স্ট্যাটাস ও ডেলিভারি তথ্য জানতে:
 
-আপনার **অর্ডার নম্বরটি** (যেমন: \`VL-20261121-316C6D\`) নিচে লিখে পাঠিয়ে দিন। আমি সঙ্গে সঙ্গে আপনার অর্ডারের বর্তমান অবস্থা জানিয়ে দেব!`
+আপনার **অর্ডার নম্বরটি** (যেমন: \`VL-83910275\`) নিচে লিখে পাঠিয়ে দিন। আমি সঙ্গে সঙ্গে আপনার অর্ডারের বর্তমান অবস্থা জানিয়ে দেব!`
         : `অর্ডার ট্র্যাকিং ও বিস্তারিত তথ্য জানতে:
 
 আপনি বর্তমানে অ্যাকাউন্টে সাইন ইন অবস্থায় নেই। আপনার অর্ডারের তথ্য দেখতে:
@@ -118,12 +118,14 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
   const [badgeVisible, setBadgeVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { messages, sendMessage, setMessages, status, error, regenerate } = useChat();
 
   const isGenerating = status === "submitted" || status === "streaming";
 
   // Smooth entrance for teaser callout badge if not previously dismissed
+  // Auto-dismisses after 30 seconds if user does not interact with it
   useEffect(() => {
     try {
       if (sessionStorage.getItem("vl_chat_badge_dismissed") === "1") {
@@ -131,17 +133,37 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
       }
     } catch {}
 
-    const timer = setTimeout(() => {
+    let fadeOutTimer: NodeJS.Timeout | null = null;
+
+    const entranceTimer = setTimeout(() => {
       setShowBadge(true);
       requestAnimationFrame(() => {
         setBadgeVisible(true);
       });
+
+      // Auto-close after 30s if user does not close it manually
+      autoCloseTimerRef.current = setTimeout(() => {
+        setBadgeVisible(false);
+        fadeOutTimer = setTimeout(() => {
+          setShowBadge(false);
+        }, 300);
+        try {
+          sessionStorage.setItem("vl_chat_badge_dismissed", "1");
+        } catch {}
+      }, 30000);
     }, 600);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(entranceTimer);
+      if (autoCloseTimerRef.current) clearTimeout(autoCloseTimerRef.current);
+      if (fadeOutTimer) clearTimeout(fadeOutTimer);
+    };
   }, []);
 
   const handleOpenChat = () => {
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+    }
     setIsOpen(true);
     setBadgeVisible(false);
     setShowBadge(false);
@@ -149,6 +171,9 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
 
   const handleDismissBadge = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (autoCloseTimerRef.current) {
+      clearTimeout(autoCloseTimerRef.current);
+    }
     setBadgeVisible(false);
     setTimeout(() => setShowBadge(false), 300);
     try {
@@ -287,8 +312,8 @@ export function ChatWidget({ initialUser }: ChatWidgetProps = {}) {
           aria-label="VibeLock AI Assistant Dialog"
           className={`rounded-brand border-vl-dark-700 bg-vl-dark-900 text-vl-white-100 flex flex-col border shadow-2xl transition-all duration-300 ease-in-out ${
             isExpanded
-              ? "h-[calc(100dvh-2.5rem)] max-h-[92vh] w-[calc(100vw-2rem)] sm:h-[680px] sm:max-h-[88vh] sm:w-[640px] sm:max-w-2xl"
-              : "h-135 max-h-[82vh] w-[calc(100vw-2rem)] max-w-sm sm:w-96 sm:max-w-md"
+              ? "h-[calc(100dvh-6.5rem)] max-h-[calc(100dvh-6.5rem)] w-[calc(100vw-2rem)] sm:h-[680px] sm:max-h-[88vh] sm:w-[640px] sm:max-w-2xl"
+              : "h-135 max-h-[calc(100dvh-6.5rem)] w-[calc(100vw-2rem)] max-w-sm sm:max-h-[82vh] sm:w-96 sm:max-w-md"
           }`}
         >
           {/* Header */}

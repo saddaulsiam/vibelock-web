@@ -2,7 +2,12 @@ import Link from "next/link";
 import { Calculator, ExternalLink, Store } from "lucide-react";
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
-import { AdminMobileNavigation, AdminSidebar, AdminSignOutButton } from "@/components/admin/shared";
+import {
+  AdminMobileNavigation,
+  AdminNotificationBell,
+  AdminSidebar,
+  AdminSignOutButton,
+} from "@/components/admin/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -78,6 +83,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
             {/* Right: Quick Store Link + High-Impact POS Button + Logout */}
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+              {/* Live Order Notifications Bell */}
+              <AdminNotificationBell />
+
               {/* Storefront Link (Desktop) */}
               <Button
                 render={<Link href="/" target="_blank" rel="noopener noreferrer" />}

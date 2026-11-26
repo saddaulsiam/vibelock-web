@@ -3,9 +3,11 @@ import { withSentryConfig } from "@sentry/nextjs/config";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  allowedDevOrigins: ["*.loca.lt", "*.ngrok-free.app", "*.pinggy.link", "*.pinggy.net"],
   experimental: {
     serverActions: {
       bodySizeLimit: "10mb",
+      allowedOrigins: ["*.loca.lt", "*.ngrok-free.app", "*.pinggy.link", "*.pinggy.net"],
     },
   },
   images: {
