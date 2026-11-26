@@ -21,6 +21,7 @@ import { InventoryService } from "@/lib/inventory/service";
 import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
 import { validateOrderCheckoutPolicies } from "@/lib/settings/checkout-settings";
 import { calculateEffectiveShippingFee } from "@/lib/settings/shipping-rules-settings";
+import { calculateEffectiveTax } from "@/lib/settings/tax-invoice-settings";
 import {
   generateWebsiteOrderNumber,
   isOrderNumberCollision,
@@ -699,7 +700,15 @@ export async function createOrderAction(
         }
 
         const orderDiscount = appliedCoupon?.discount ?? 0;
-        const total = Math.max(0, orderSubtotal - orderDiscount) + shippingCost;
+        const discountedSubtotal = Math.max(0, orderSubtotal - orderDiscount);
+
+        // Calculate dynamic tax / VAT according to store policy
+        const taxEval = await calculateEffectiveTax({
+          subtotal: discountedSubtotal,
+          shippingCost,
+        });
+
+        const total = taxEval.finalTotal;
 
         // Authoritative checkout policy enforcement (Min order value & Max COD ceiling)
         const policyCheck = await validateOrderCheckoutPolicies({
@@ -739,29 +748,37 @@ export async function createOrderAction(
             shippingMethodName: shippingMethodName,
             shippingMethodId: resolvedShippingMethodId,
             subtotal: orderSubtotal,
-            taxRate: 0,
-            taxIncluded: false,
+            taxRate: taxEval.taxRate,
+            taxIncluded: taxEval.taxIncluded,
             shippingCost: shippingCost,
-            taxAmount: 0,
+            taxAmount: taxEval.taxAmount,
             discount: orderDiscount,
             total: total,
             items: {
-              create: orderItemsToCreate.map((item) => ({
-                productName: item.productName,
-                sku: item.sku,
-                size: item.size,
-                color: item.color,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                costPrice: item.costPrice,
-                appliedDiscount: item.appliedDiscount,
-                taxRate: item.taxRate,
-                taxIncluded: item.taxIncluded,
-                lineSubtotal: item.lineSubtotal,
-                discountAmount: item.discountAmount,
-                taxAmount: item.taxAmount,
-                lineTotal: item.lineTotal,
-              })),
+              create: orderItemsToCreate.map((item) => {
+                let itemTaxAmount = 0;
+                if (taxEval.taxRate > 0) {
+                  itemTaxAmount = taxEval.taxIncluded
+                    ? Math.round((item.lineTotal - item.lineTotal / (1 + taxEval.taxRate / 100)) * 100) / 100
+                    : Math.round((item.lineTotal * (taxEval.taxRate / 100)) * 100) / 100;
+                }
+                return {
+                  productName: item.productName,
+                  sku: item.sku,
+                  size: item.size,
+                  color: item.color,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  costPrice: item.costPrice,
+                  appliedDiscount: item.appliedDiscount,
+                  taxRate: taxEval.taxRate,
+                  taxIncluded: taxEval.taxIncluded,
+                  lineSubtotal: item.lineSubtotal,
+                  discountAmount: item.discountAmount,
+                  taxAmount: itemTaxAmount,
+                  lineTotal: item.lineTotal,
+                };
+              }),
             },
           },
         });
