@@ -845,6 +845,36 @@ export async function createOrderAction(
 
     const finalOrderNumber = orderResult.orderNumber;
 
+    // Dispatch customer SMS and store manager alerts asynchronously
+    try {
+      const { sendSmsNotification } = await import("@/lib/sms/client");
+      const { getNotificationSettings } = await import("@/lib/settings/notification-settings");
+      const { settings: notifSettings } = await getNotificationSettings();
+
+      const customerTel = orderResult.customerPhone;
+      if (customerTel) {
+        void sendSmsNotification({
+          phone: customerTel,
+          message: `[VibeLock] Hi ${orderResult.customerName}, your order #${finalOrderNumber} for ৳${Number(orderResult.total).toLocaleString("en-BD")} has been received! We will notify you once dispatched.`,
+          purpose: "order_placed",
+        });
+      }
+
+      if (
+        notifSettings.adminAlertsEnabled &&
+        notifSettings.adminAlertRecipientPhone &&
+        Number(orderResult.total) >= notifSettings.adminAlertHighValueThreshold
+      ) {
+        void sendSmsNotification({
+          phone: notifSettings.adminAlertRecipientPhone,
+          message: `[VibeLock ALERT] High-value order #${finalOrderNumber} placed for ৳${Number(orderResult.total).toLocaleString("en-BD")} by ${orderResult.customerName} (${customerTel || orderResult.customerEmail}).`,
+          purpose: "transactional",
+        });
+      }
+    } catch (notifErr) {
+      console.warn("[Checkout] Failed to trigger order placement SMS notification:", notifErr);
+    }
+
     revalidatePath("/cart");
     revalidatePath("/shop");
     revalidatePath("/admin/orders");

@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
+import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
 import { MetaInitiateCheckout } from "@/components/storefront/analytics/meta-initiate-checkout";
 import { Container } from "@/components/shared/container";
@@ -41,6 +42,13 @@ export default async function CheckoutPage() {
     redirect("/cart?error=unavailable-items");
   }
 
+  const [paymentMethods, { settings: checkoutPolicies }] = await Promise.all([
+    getStorefrontPaymentMethods(cart.subtotal),
+    getCheckoutSettings(),
+  ]);
+
+  const isBelowMinimum = cart.subtotal < checkoutPolicies.minOrderValue;
+
   return (
     <Section className="relative z-10 min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32">
       <MetaInitiateCheckout
@@ -55,6 +63,18 @@ export default async function CheckoutPage() {
         }))}
       />
       <Container className="max-w-6xl">
+        {/* ── Minimum Order Value Policy Banner ── */}
+        {isBelowMinimum && (
+          <div className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-900 dark:text-amber-200">
+            <p className="text-sm font-semibold">Minimum Order Value Not Met</p>
+            <p className="mt-1 text-xs">
+              Store policy requires a minimum order subtotal of ৳
+              {checkoutPolicies.minOrderValue.toLocaleString("en-BD")}. Your current cart subtotal is ৳
+              {cart.subtotal.toLocaleString("en-BD")}. Please add more items to your cart before placing an order.
+            </p>
+          </div>
+        )}
+
         {/* ── Clean & Minimal Top Bar (Matching Cart Page) ── */}
         <div className="border-border/50 mb-6 flex items-baseline justify-between border-b pb-4 sm:mb-8">
           <div className="flex items-baseline gap-2.5">
@@ -82,7 +102,7 @@ export default async function CheckoutPage() {
           defaultEmail={user.email || ""}
           defaultName={user.name || ""}
           defaultPhone={user.phone || ""}
-          availablePaymentMethods={await getStorefrontPaymentMethods()}
+          availablePaymentMethods={paymentMethods}
         />
       </Container>
     </Section>

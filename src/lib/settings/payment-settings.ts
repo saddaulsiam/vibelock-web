@@ -120,7 +120,9 @@ export async function isPaymentMethodEnabled(code: string): Promise<boolean> {
 /**
  * Returns available payment methods formatted for the customer checkout UI.
  */
-export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOption[]> {
+export async function getStorefrontPaymentMethods(
+  cartSubtotal?: number
+): Promise<StorefrontPaymentOption[]> {
   const [codActive, paystationActive, bkashActive] = await Promise.all([
     isPaymentMethodEnabled("COD"),
     isPaymentMethodEnabled("PAYSTATION"),
@@ -130,11 +132,26 @@ export async function getStorefrontPaymentMethods(): Promise<StorefrontPaymentOp
   const options: StorefrontPaymentOption[] = [];
 
   if (codActive) {
-    options.push({
-      value: "COD",
-      title: "Cash on delivery",
-      detail: "Pay when your order arrives.",
-    });
+    let shouldIncludeCod = true;
+    if (cartSubtotal !== undefined) {
+      try {
+        const { getCheckoutSettings } = await import("./checkout-settings");
+        const { settings: checkoutPolicies } = await getCheckoutSettings();
+        if (cartSubtotal > checkoutPolicies.maxCodOrderValue) {
+          shouldIncludeCod = false;
+        }
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
+    if (shouldIncludeCod) {
+      options.push({
+        value: "COD",
+        title: "Cash on delivery",
+        detail: "Pay when your order arrives.",
+      });
+    }
   }
 
   if (paystationActive) {

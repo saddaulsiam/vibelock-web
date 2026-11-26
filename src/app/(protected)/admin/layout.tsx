@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Calculator, ExternalLink, Store } from "lucide-react";
+import { headers } from "next/headers";
+import { Calculator, ExternalLink, ShieldAlert, Store } from "lucide-react";
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
 import {
@@ -10,10 +11,32 @@ import {
 } from "@/components/admin/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getSecurityPixelSettings, isIpAllowedForAdmin } from "@/lib/settings/security-pixel-settings";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Enforce at least STAFF role (STAFF, MANAGER, ADMIN are permitted to access operations dashboard)
   const user = await requireRole("STAFF");
+
+  // Enforce IP allowlist perimeter if configured
+  const { settings: secSettings } = await getSecurityPixelSettings();
+  if (secSettings.adminIpAllowlist.length > 0) {
+    const reqHeaders = await headers();
+    const forwardedFor = reqHeaders.get("x-forwarded-for");
+    const realIp = reqHeaders.get("x-real-ip");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : realIp?.trim() || "";
+
+    if (!isIpAllowedForAdmin(clientIp, secSettings)) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-vl-dark-950 text-vl-white">
+          <ShieldAlert className="size-12 text-red-500 mb-4" />
+          <h1 className="text-xl font-bold">Admin Access Blocked</h1>
+          <p className="mt-2 text-sm text-vl-dark-400 max-w-md">
+            Your network IP address ({clientIp || "Unknown"}) is not on the authorized perimeter allowlist for this store.
+          </p>
+        </div>
+      );
+    }
+  }
 
   const displayName = user.name || user.email?.split("@")[0] || "Staff Member";
   const initials = (user.name || user.email || "VL").slice(0, 2).toUpperCase();

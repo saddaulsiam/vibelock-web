@@ -149,6 +149,22 @@ export async function sendSmsNotification({
     return false;
   }
 
+  // Check milestone event switches from notification settings
+  try {
+    const { isSmsEventEnabled } = await import("@/lib/settings/notification-settings");
+    if (
+      (purpose === "order_placed" ||
+        purpose === "order_dispatched" ||
+        purpose === "out_for_delivery" ||
+        purpose === "return_approved") &&
+      !(await isSmsEventEnabled(purpose))
+    ) {
+      return false;
+    }
+  } catch {
+    // Continue if notification settings module unavailable
+  }
+
   const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
 
   // Safe developer / audit logging (masks phone and OTP digits)

@@ -5,8 +5,7 @@ import prisma from "@/lib/prisma/client";
 import { getAdminReport } from "./report-queries";
 import { requireRole } from "@/lib/auth/authorization";
 import { hasRequiredRole } from "@/lib/auth/roles";
-
-const LOW_STOCK_THRESHOLD = 5;
+import { getEffectiveLowStockThreshold } from "@/lib/settings/inventory-return-settings";
 
 export type DashboardFilters = {
   range?: string;
@@ -17,6 +16,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
   const isManagerOrAdmin = hasRequiredRole(currentUser.role, "MANAGER");
   const range = filters.range ?? "30d";
   const now = new Date();
+  const lowStockThreshold = await getEffectiveLowStockThreshold();
 
   const [
     publishedProductCount,
@@ -100,7 +100,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
     if (availableQuantity <= 0) {
       outOfStockVariantCount += 1;
       productsOutOfStock.add(variant.productId);
-    } else if (availableQuantity <= LOW_STOCK_THRESHOLD) {
+    } else if (availableQuantity <= lowStockThreshold) {
       lowStockVariantCount += 1;
       productsWithLowStock.add(variant.productId);
     }
@@ -128,7 +128,7 @@ export async function getAdminDashboardData(filters: DashboardFilters = {}) {
       outOfStockVariantCount,
       productsWithLowStockCount: productsWithLowStock.size,
       productsOutOfStockCount: productsOutOfStock.size,
-      lowStockThreshold: LOW_STOCK_THRESHOLD,
+      lowStockThreshold: lowStockThreshold,
     },
     financials: report
       ? {
