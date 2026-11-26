@@ -11,12 +11,48 @@ interface DashboardFulfillmentRibbonProps {
 }
 
 const STAGES = [
-  { key: "PENDING", label: "Pending Intake", icon: Clock, color: "text-amber-600 bg-amber-500", border: "border-amber-200" },
-  { key: "CONFIRMED", label: "Confirmed", icon: CheckCircle2, color: "text-purple-600 bg-purple-500", border: "border-purple-200" },
-  { key: "PROCESSING", label: "Packing Queue", icon: PackageCheck, color: "text-blue-600 bg-blue-500", border: "border-blue-200" },
-  { key: "SHIPPED", label: "In Courier Transit", icon: Truck, color: "text-cyan-600 bg-cyan-500", border: "border-cyan-200" },
-  { key: "DELIVERED", label: "Delivered", icon: CheckCircle2, color: "text-emerald-600 bg-emerald-500", border: "border-emerald-200" },
-  { key: "CANCELLED", label: "Cancelled", icon: XCircle, color: "text-neutral-500 bg-neutral-400", border: "border-neutral-200" },
+  {
+    key: "PENDING",
+    label: "Pending Intake",
+    icon: Clock,
+    color: "text-amber-600 bg-amber-500",
+    border: "border-amber-200",
+  },
+  {
+    key: "CONFIRMED",
+    label: "Confirmed",
+    icon: CheckCircle2,
+    color: "text-purple-600 bg-purple-500",
+    border: "border-purple-200",
+  },
+  {
+    key: "PROCESSING",
+    label: "Packing Queue",
+    icon: PackageCheck,
+    color: "text-blue-600 bg-blue-500",
+    border: "border-blue-200",
+  },
+  {
+    key: "SHIPPED",
+    label: "In Courier Transit",
+    icon: Truck,
+    color: "text-cyan-600 bg-cyan-500",
+    border: "border-cyan-200",
+  },
+  {
+    key: "DELIVERED",
+    label: "Delivered",
+    icon: CheckCircle2,
+    color: "text-emerald-600 bg-emerald-500",
+    border: "border-emerald-200",
+  },
+  {
+    key: "CANCELLED",
+    label: "Cancelled",
+    icon: XCircle,
+    color: "text-neutral-500 bg-neutral-400",
+    border: "border-neutral-200",
+  },
 ];
 
 export function DashboardFulfillmentRibbon({ orderStatuses }: DashboardFulfillmentRibbonProps) {
@@ -71,8 +107,8 @@ export function DashboardFulfillmentRibbon({ orderStatuses }: DashboardFulfillme
               href={`/admin/orders?status=${st.key}`}
               className={`group flex flex-col justify-between rounded border p-2.5 transition-all ${
                 isPendingAlert
-                  ? "border-amber-300 bg-amber-50/70 hover:border-amber-500 hover:bg-amber-100/50 shadow-2xs ring-1 ring-amber-300/40"
-                  : "border-vl-dark-900/10 bg-neutral-50/50 hover:border-vl-dark-900/40 hover:bg-vl-white-200"
+                  ? "border-amber-300 bg-amber-50/70 shadow-2xs ring-1 ring-amber-300/40 hover:border-amber-500 hover:bg-amber-100/50"
+                  : "border-vl-dark-900/10 hover:border-vl-dark-900/40 hover:bg-vl-white-200 bg-neutral-50/50"
               }`}
             >
               <div className="flex items-center justify-between gap-1 text-[11px]">
@@ -81,7 +117,7 @@ export function DashboardFulfillmentRibbon({ orderStatuses }: DashboardFulfillme
                   <span className="truncate">{st.label}</span>
                 </span>
                 {isPendingAlert ? (
-                  <span className="border-amber-300 bg-amber-100 text-amber-800 rounded px-1 font-mono text-[9px] font-bold">
+                  <span className="rounded border-amber-300 bg-amber-100 px-1 font-mono text-[9px] font-bold text-amber-800">
                     Action
                   </span>
                 ) : (
@@ -96,7 +132,7 @@ export function DashboardFulfillmentRibbon({ orderStatuses }: DashboardFulfillme
                 >
                   {count.toLocaleString("en-BD")}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-mono">
+                <span className="text-muted-foreground font-mono text-[10px]">
                   {isPendingAlert ? `${pct}% total` : ""}
                 </span>
                 <ArrowRight className="text-muted-foreground size-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
