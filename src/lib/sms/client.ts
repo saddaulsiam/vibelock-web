@@ -164,9 +164,21 @@ export async function sendSmsNotification({
   }
 
   try {
-    const smsApiKey = process.env.SMS_API_KEY;
-    const smsApiUrl = process.env.SMS_API_URL;
-    const smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
+    let smsApiKey = process.env.SMS_API_KEY;
+    let smsApiUrl = process.env.SMS_API_URL;
+    let smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
+
+    try {
+      const { resolveEffectiveSmsCredentials } = await import("@/lib/settings/notification-settings");
+      const resolved = await resolveEffectiveSmsCredentials();
+      if (resolved.isConfigured) {
+        smsApiKey = resolved.apiKey;
+        smsApiUrl = resolved.apiUrl;
+        smsSenderId = resolved.senderId;
+      }
+    } catch {
+      // Graceful fallback to env vars
+    }
 
     if (!smsApiKey || !smsApiUrl) {
       console.warn(
