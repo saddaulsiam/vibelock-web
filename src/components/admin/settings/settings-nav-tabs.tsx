@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BellRing, CreditCard, ShieldAlert, SlidersHorizontal, Truck } from "lucide-react";
+import { BellRing, Boxes, CreditCard, ShieldAlert, SlidersHorizontal, Truck } from "lucide-react";
 
 export function SettingsNavTabs() {
   const pathname = usePathname();
@@ -15,7 +15,9 @@ export function SettingsNavTabs() {
         ? "/admin/settings/shipping"
         : pathname?.includes("/notifications")
           ? "/admin/settings/notifications"
-          : "/admin/settings/general";
+          : pathname?.includes("/policies")
+            ? "/admin/settings/policies"
+            : "/admin/settings/general";
 
   return (
     <Tabs value={currentTab}>
@@ -55,6 +57,15 @@ export function SettingsNavTabs() {
         >
           <BellRing className="size-4 text-emerald-600" aria-hidden="true" />
           Notifications & SMS
+        </TabsTrigger>
+        <TabsTrigger
+          value="/admin/settings/policies"
+          render={<Link href="/admin/settings/policies" />}
+          nativeButton={false}
+          className="gap-2 text-xs sm:text-sm font-semibold"
+        >
+          <Boxes className="size-4 text-amber-600" aria-hidden="true" />
+          Inventory & Returns
         </TabsTrigger>
         <TabsTrigger
           value="/admin/settings/payments"

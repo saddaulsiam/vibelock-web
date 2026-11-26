@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
 import { ReturnService } from "./service";
+import { getInventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
 import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
 import { validateImageFile } from "@/lib/media/validation";
 import { serializeReturnReason } from "./utils";
@@ -153,7 +154,14 @@ export async function createReturnRequestAction(
         throw new Error("Only delivered orders can be returned.");
       }
 
-      // Check 3-day return window from delivery date
+      // Check configured return window from delivery date
+      const { settings: returnPolicies } = await getInventoryReturnSettings();
+      const returnWindowDays = returnPolicies.returnWindowDays;
+
+      if (returnWindowDays <= 0) {
+        throw new Error("Returns are currently disabled for this store.");
+      }
+
       const deliveredHistory = await tx.orderHistory.findFirst({
         where: { orderId: order.id, status: "DELIVERED" },
         orderBy: { createdAt: "desc" },
@@ -166,14 +174,18 @@ export async function createReturnRequestAction(
       const daysSinceDelivery =
         (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
 
-      if (daysSinceDelivery > 3) {
+      if (daysSinceDelivery > returnWindowDays) {
         throw new Error(
-          "Return window has expired. Returns must be requested within 3 days of delivery."
+          `Return window has expired. Returns must be requested within ${returnWindowDays} day${returnWindowDays === 1 ? "" : "s"} of delivery.`
         );
       }
 
-      // Mandatory photo proof check for Defective or Wrong Item
-      if ((reason === "DEFECTIVE" || reason === "WRONG_ITEM") && (!images || images.length === 0)) {
+      // Photo proof check for Defective or Wrong Item based on store policy
+      if (
+        returnPolicies.requirePhotoProofOnDefect &&
+        (reason === "DEFECTIVE" || reason === "WRONG_ITEM") &&
+        (!images || images.length === 0)
+      ) {
         throw new Error("Please upload at least one photo showing the defective or wrong item.");
       }
 
