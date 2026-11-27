@@ -9,6 +9,7 @@ import {
 import type { ShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -103,30 +104,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
               </div>
 
               {/* Modern Switch */}
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="enableFreeShipping"
-                  value={freeShippingEnabled ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={freeShippingEnabled}
-                  onClick={() => setFreeShippingEnabled(!freeShippingEnabled)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    freeShippingEnabled ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      freeShippingEnabled ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enableFreeShipping"
+                checked={freeShippingEnabled}
+                onCheckedChange={setFreeShippingEnabled}
+                activeColor="emerald"
+                aria-label="Free Shipping Promotion"
+              />
             </div>
           </CardHeader>
 
@@ -284,30 +268,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                   Automatically book tracking numbers with the courier upon order confirmation
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="autoCreateConsignment"
-                  value={autoConsign ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={autoConsign}
-                  onClick={() => setAutoConsign(!autoConsign)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    autoConsign ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      autoConsign ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="autoCreateConsignment"
+                checked={autoConsign}
+                onCheckedChange={setAutoConsign}
+                activeColor="cyan"
+                aria-label="Auto-Create Consignment on Order"
+              />
             </div>
           </CardContent>
 

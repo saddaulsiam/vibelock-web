@@ -9,6 +9,7 @@ import {
 } from "@/lib/admin/settings/tax-invoice-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -101,26 +102,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               </div>
 
               {/* Modern Switch */}
-              <div className="flex items-center">
-                <input type="hidden" name="enableTax" value={enableTax ? "true" : "false"} />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={enableTax}
-                  onClick={() => setEnableTax(!enableTax)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    enableTax ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      enableTax ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enableTax"
+                checked={enableTax}
+                onCheckedChange={setEnableTax}
+                activeColor="emerald"
+                aria-label="Enable VAT & Tax Calculation"
+              />
             </div>
           </CardHeader>
 
@@ -185,32 +173,14 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                   Calculate VAT on shipping fees in addition to product subtotal
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="applyTaxToShipping"
-                  value={applyShippingTax ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  disabled={!enableTax}
-                  aria-checked={applyShippingTax}
-                  onClick={() => setApplyShippingTax(!applyShippingTax)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    applyShippingTax ? "bg-emerald-600" : "bg-neutral-300",
-                    !enableTax && "cursor-not-allowed opacity-50"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      applyShippingTax ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="applyTaxToShipping"
+                checked={applyShippingTax}
+                onCheckedChange={setApplyShippingTax}
+                disabled={!enableTax}
+                activeColor="emerald"
+                aria-label="Apply VAT to Courier Delivery Charges"
+              />
             </div>
           </CardContent>
 
@@ -373,30 +343,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                   Generates official tax invoice format with itemized subtotal and VAT rate
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="enableMushak63Format"
-                  value={mushak63 ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={mushak63}
-                  onClick={() => setMushak63(!mushak63)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    mushak63 ? "bg-purple-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      mushak63 ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enableMushak63Format"
+                checked={mushak63}
+                onCheckedChange={setMushak63}
+                activeColor="purple"
+                aria-label="Mushak 6.3 Compliance Format"
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -446,26 +399,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                   Renders a digital verification seal on printed customer PDF invoices
                 </p>
               </div>
-              <div className="flex items-center">
-                <input type="hidden" name="showDigitalSeal" value={digitalSeal ? "true" : "false"} />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={digitalSeal}
-                  onClick={() => setDigitalSeal(!digitalSeal)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    digitalSeal ? "bg-purple-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      digitalSeal ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="showDigitalSeal"
+                checked={digitalSeal}
+                onCheckedChange={setDigitalSeal}
+                activeColor="purple"
+                aria-label="Display Verified Digital Stamp / Seal"
+              />
             </div>
 
             <div className="space-y-1">

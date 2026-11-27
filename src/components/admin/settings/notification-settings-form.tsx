@@ -9,6 +9,7 @@ import {
 import type { NotificationSettings } from "@/lib/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -234,30 +235,13 @@ export function NotificationSettingsForm({
             {/* Trigger 1: Order Placed */}
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="notifyOnOrderPlaced"
-                  value={onOrderPlaced ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={onOrderPlaced}
-                  onClick={() => setOnOrderPlaced(!onOrderPlaced)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    onOrderPlaced ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      onOrderPlaced ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="notifyOnOrderPlaced"
+                checked={onOrderPlaced}
+                onCheckedChange={setOnOrderPlaced}
+                activeColor="cyan"
+                aria-label="Order Placed Confirmation"
+              />
             </div>
 
             {/* Trigger 2: Order Dispatched with Tracking */}
@@ -265,88 +249,37 @@ export function NotificationSettingsForm({
               <span className="text-xs font-semibold text-neutral-900">
                 Courier Dispatch & Tracking Link
               </span>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="notifyOnOrderDispatched"
-                  value={onDispatched ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={onDispatched}
-                  onClick={() => setOnDispatched(!onDispatched)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    onDispatched ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      onDispatched ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="notifyOnOrderDispatched"
+                checked={onDispatched}
+                onCheckedChange={setOnDispatched}
+                activeColor="cyan"
+                aria-label="Courier Dispatch & Tracking Link"
+              />
             </div>
 
             {/* Trigger 3: Out for Delivery */}
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <span className="text-xs font-semibold text-neutral-900">Out for Delivery Alert</span>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="notifyOnOutForDelivery"
-                  value={onOutDelivery ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={onOutDelivery}
-                  onClick={() => setOnOutDelivery(!onOutDelivery)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    onOutDelivery ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      onOutDelivery ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="notifyOnOutForDelivery"
+                checked={onOutDelivery}
+                onCheckedChange={setOnOutDelivery}
+                activeColor="cyan"
+                aria-label="Out for Delivery Alert"
+              />
             </div>
 
             {/* Trigger 4: Return Approved */}
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="notifyOnReturnApproved"
-                  value={onReturnApproved ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={onReturnApproved}
-                  onClick={() => setOnReturnApproved(!onReturnApproved)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    onReturnApproved ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      onReturnApproved ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="notifyOnReturnApproved"
+                checked={onReturnApproved}
+                onCheckedChange={setOnReturnApproved}
+                activeColor="cyan"
+                aria-label="Return / Refund Approved"
+              />
             </div>
           </CardContent>
 
@@ -379,30 +312,13 @@ export function NotificationSettingsForm({
               </div>
 
               {/* Modern Switch */}
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="adminAlertsEnabled"
-                  value={adminAlerts ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={adminAlerts}
-                  onClick={() => setAdminAlerts(!adminAlerts)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    adminAlerts ? "bg-amber-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      adminAlerts ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="adminAlertsEnabled"
+                checked={adminAlerts}
+                onCheckedChange={setAdminAlerts}
+                activeColor="amber"
+                aria-label="Manager SMS Alerts"
+              />
             </div>
           </CardHeader>
 
@@ -459,30 +375,13 @@ export function NotificationSettingsForm({
                   Alerts manager when provider credit balance drops below 100 SMS
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="adminAlertLowSmsBalanceWarning"
-                  value={lowBalanceWarn ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={lowBalanceWarn}
-                  onClick={() => setLowBalanceWarn(!lowBalanceWarn)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    lowBalanceWarn ? "bg-amber-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      lowBalanceWarn ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="adminAlertLowSmsBalanceWarning"
+                checked={lowBalanceWarn}
+                onCheckedChange={setLowBalanceWarn}
+                activeColor="amber"
+                aria-label="SMS Gateway Low-Credit Balance Alert"
+              />
             </div>
           </CardContent>
 
@@ -563,30 +462,13 @@ export function NotificationSettingsForm({
                 </span>
                 <p className="text-[11px] text-neutral-500">Send HTML receipt to customer</p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="enableCustomerOrderEmail"
-                  value={customerEmail ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={customerEmail}
-                  onClick={() => setCustomerEmail(!customerEmail)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    customerEmail ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      customerEmail ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enableCustomerOrderEmail"
+                checked={customerEmail}
+                onCheckedChange={setCustomerEmail}
+                activeColor="emerald"
+                aria-label="Customer Order Confirmation Email"
+              />
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
@@ -594,30 +476,13 @@ export function NotificationSettingsForm({
                 <span className="text-xs font-semibold text-neutral-800">Manager Order Alert Email</span>
                 <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders</p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="enableAdminOrderAlertEmail"
-                  value={adminEmail ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={adminEmail}
-                  onClick={() => setAdminEmail(!adminEmail)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    adminEmail ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      adminEmail ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enableAdminOrderAlertEmail"
+                checked={adminEmail}
+                onCheckedChange={setAdminEmail}
+                activeColor="emerald"
+                aria-label="Manager Order Alert Email"
+              />
             </div>
           </CardContent>
 

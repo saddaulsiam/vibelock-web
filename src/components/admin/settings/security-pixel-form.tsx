@@ -9,6 +9,7 @@ import {
 } from "@/lib/admin/settings/security-pixel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Activity,
@@ -260,30 +261,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                   Capture ViewContent, AddToCart, and Purchase events across active tracking containers
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="trackEcommerceEvents"
-                  value={trackEcommerce ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={trackEcommerce}
-                  onClick={() => setTrackEcommerce(!trackEcommerce)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    trackEcommerce ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      trackEcommerce ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="trackEcommerceEvents"
+                checked={trackEcommerce}
+                onCheckedChange={setTrackEcommerce}
+                activeColor="cyan"
+                aria-label="Track Enhanced E-Commerce Milestones"
+              />
             </div>
           </CardContent>
 
@@ -380,26 +364,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                   Require OTP verification for staff accounts with admin access
                 </p>
               </div>
-              <div className="flex items-center">
-                <input type="hidden" name="enforceAdmin2FA" value={enforce2FA ? "true" : "false"} />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={enforce2FA}
-                  onClick={() => setEnforce2FA(!enforce2FA)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    enforce2FA ? "bg-purple-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      enforce2FA ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enforceAdmin2FA"
+                checked={enforce2FA}
+                onCheckedChange={setEnforce2FA}
+                activeColor="purple"
+                aria-label="Enforce Mandatory Two-Factor"
+              />
             </div>
 
             <div className="space-y-1">
@@ -425,30 +396,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                   Notify on Consecutive Failed Admin Login Attempts
                 </span>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="notifyFailedAdminLogin"
-                  value={notifyFailedLogin ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={notifyFailedLogin}
-                  onClick={() => setNotifyFailedLogin(!notifyFailedLogin)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    notifyFailedLogin ? "bg-amber-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      notifyFailedLogin ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="notifyFailedAdminLogin"
+                checked={notifyFailedLogin}
+                onCheckedChange={setNotifyFailedLogin}
+                activeColor="amber"
+                aria-label="Notify on Consecutive Failed Admin Login Attempts"
+              />
             </div>
           </CardContent>
 

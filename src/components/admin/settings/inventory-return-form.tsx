@@ -9,6 +9,7 @@ import {
 } from "@/lib/admin/settings/inventory-return-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
@@ -182,30 +183,13 @@ export function InventoryReturnForm({
                     Dispatches an email alert whenever variant inventory breaches threshold
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="hidden"
-                    name="notifyLowStockEmail"
-                    value={notifyLowStock ? "true" : "false"}
-                  />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={notifyLowStock}
-                    onClick={() => setNotifyLowStock(!notifyLowStock)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      notifyLowStock ? "bg-amber-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        notifyLowStock ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="notifyLowStockEmail"
+                  checked={notifyLowStock}
+                  onCheckedChange={setNotifyLowStock}
+                  activeColor="amber"
+                  aria-label="Automated Restock Email Alert"
+                />
               </div>
 
               {notifyLowStock && (
@@ -238,26 +222,13 @@ export function InventoryReturnForm({
                     Allow purchases even when inventory reaches zero
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <input type="hidden" name="allowBackorders" value={backorders ? "true" : "false"} />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={backorders}
-                    onClick={() => setBackorders(!backorders)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      backorders ? "bg-vl-cyan-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        backorders ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="allowBackorders"
+                  checked={backorders}
+                  onCheckedChange={setBackorders}
+                  activeColor="cyan"
+                  aria-label="Allow Backorders"
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
@@ -269,30 +240,13 @@ export function InventoryReturnForm({
                     Hide out-of-stock products from catalog browsing
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="hidden"
-                    name="autoHideOutOfStock"
-                    value={autoHide ? "true" : "false"}
-                  />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={autoHide}
-                    onClick={() => setAutoHide(!autoHide)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      autoHide ? "bg-vl-cyan-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        autoHide ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="autoHideOutOfStock"
+                  checked={autoHide}
+                  onCheckedChange={setAutoHide}
+                  activeColor="cyan"
+                  aria-label="Auto-Hide Sold-Out Items"
+                />
               </div>
             </div>
           </CardContent>
@@ -361,30 +315,13 @@ export function InventoryReturnForm({
                     Require customer photo upload for return requests
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="hidden"
-                    name="requirePhotoProofOnDefect"
-                    value={requirePhoto ? "true" : "false"}
-                  />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={requirePhoto}
-                    onClick={() => setRequirePhoto(!requirePhoto)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      requirePhoto ? "bg-purple-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        requirePhoto ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="requirePhotoProofOnDefect"
+                  checked={requirePhoto}
+                  onCheckedChange={setRequirePhoto}
+                  activeColor="purple"
+                  aria-label="Require Photo Proof"
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
@@ -396,30 +333,13 @@ export function InventoryReturnForm({
                     Allow returning single items from multi-item orders
                   </p>
                 </div>
-                <div className="flex items-center">
-                  <input
-                    type="hidden"
-                    name="allowPartialReturns"
-                    value={partialReturns ? "true" : "false"}
-                  />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={partialReturns}
-                    onClick={() => setPartialReturns(!partialReturns)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      partialReturns ? "bg-purple-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        partialReturns ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="allowPartialReturns"
+                  checked={partialReturns}
+                  onCheckedChange={setPartialReturns}
+                  activeColor="purple"
+                  aria-label="Allow Partial Order Returns"
+                />
               </div>
             </div>
 
@@ -483,30 +403,13 @@ export function InventoryReturnForm({
                   Subtract outbound courier shipping charge from final customer refund
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="deductShippingFeeFromRefund"
-                  value={deductShipping ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={deductShipping}
-                  onClick={() => setDeductShipping(!deductShipping)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    deductShipping ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      deductShipping ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="deductShippingFeeFromRefund"
+                checked={deductShipping}
+                onCheckedChange={setDeductShipping}
+                activeColor="emerald"
+                aria-label="Deduct Courier Delivery Fee From Refund"
+              />
             </div>
 
             <div className="space-y-1">
@@ -562,30 +465,13 @@ export function InventoryReturnForm({
                   Automatically restore returned items into active inventory without manual QC
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="autoRestockCompletedReturns"
-                  value={autoRestock ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={autoRestock}
-                  onClick={() => setAutoRestock(!autoRestock)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    autoRestock ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      autoRestock ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="autoRestockCompletedReturns"
+                checked={autoRestock}
+                onCheckedChange={setAutoRestock}
+                activeColor="emerald"
+                aria-label="Auto-Restock Returned Items"
+              />
             </div>
           </CardContent>
 

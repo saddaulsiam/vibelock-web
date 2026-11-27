@@ -9,6 +9,7 @@ import {
 import type { GeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -344,29 +345,14 @@ export function GeneralSettingsForm({
 
               {/* Modern Switch */}
               <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="maintenanceMode_enabled"
-                  value={maintenanceEnabled ? "true" : "false"}
-                />
                 <input type="hidden" name="maintenanceMode_allowAdminBypass" value="true" />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={maintenanceEnabled}
-                  onClick={() => setMaintenanceEnabled(!maintenanceEnabled)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    maintenanceEnabled ? "bg-amber-500" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      maintenanceEnabled ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
+                <Switch
+                  name="maintenanceMode_enabled"
+                  checked={maintenanceEnabled}
+                  onCheckedChange={setMaintenanceEnabled}
+                  activeColor="amber"
+                  aria-label="Maintenance Mode"
+                />
               </div>
             </div>
           </CardHeader>
@@ -439,30 +425,13 @@ export function GeneralSettingsForm({
               </div>
 
               {/* Modern Switch */}
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="holidayMode_enabled"
-                  value={holidayEnabled ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={holidayEnabled}
-                  onClick={() => setHolidayEnabled(!holidayEnabled)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    holidayEnabled ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      holidayEnabled ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="holidayMode_enabled"
+                checked={holidayEnabled}
+                onCheckedChange={setHolidayEnabled}
+                activeColor="cyan"
+                aria-label="Holiday Notice Mode"
+              />
             </div>
           </CardHeader>
 

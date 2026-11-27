@@ -9,6 +9,7 @@ import {
 import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -144,30 +145,12 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   Requires shoppers without delivery history to verify via SMS OTP
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="enforceFirstTimeCodOtp"
-                  value={enforceOtp ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={enforceOtp}
-                  onClick={() => setEnforceOtp(!enforceOtp)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    enforceOtp ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      enforceOtp ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="enforceFirstTimeCodOtp"
+                checked={enforceOtp}
+                onCheckedChange={setEnforceOtp}
+                aria-label="Verify First-Time Buyers via Phone OTP"
+              />
             </div>
 
             {/* Upfront Delivery Charge for COD Orders */}
@@ -188,30 +171,13 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   </div>
                 </div>
 
-                <div className="flex items-center">
-                  <input
-                    type="hidden"
-                    name="requireCodAdvanceDeliveryCharge"
-                    value={requireAdvance ? "true" : "false"}
-                  />
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={requireAdvance}
-                    onClick={() => setRequireAdvance(!requireAdvance)}
-                    className={cn(
-                      "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                      requireAdvance ? "bg-emerald-600" : "bg-neutral-300"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                        requireAdvance ? "translate-x-5" : "translate-x-0"
-                      )}
-                    />
-                  </button>
-                </div>
+                <Switch
+                  name="requireCodAdvanceDeliveryCharge"
+                  checked={requireAdvance}
+                  onCheckedChange={setRequireAdvance}
+                  activeColor="emerald"
+                  aria-label="Require Upfront Delivery Fee for COD"
+                />
               </div>
 
               {requireAdvance && (
@@ -321,30 +287,13 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   Allow customers to place orders without creating an account
                 </p>
               </div>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="allowGuestCheckout"
-                  value={allowGuest ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={allowGuest}
-                  onClick={() => setAllowGuest(!allowGuest)}
-                  className={cn(
-                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
-                    allowGuest ? "bg-emerald-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      allowGuest ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              <Switch
+                name="allowGuestCheckout"
+                checked={allowGuest}
+                onCheckedChange={setAllowGuest}
+                activeColor="emerald"
+                aria-label="Allow Guest Checkout"
+              />
             </div>
           </CardContent>
 
