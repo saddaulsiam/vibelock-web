@@ -103,6 +103,7 @@ export default async function CheckoutPage() {
           defaultName={user.name || ""}
           defaultPhone={user.phone || ""}
           availablePaymentMethods={paymentMethods}
+          checkoutPolicies={checkoutPolicies}
         />
       </Container>
     </Section>

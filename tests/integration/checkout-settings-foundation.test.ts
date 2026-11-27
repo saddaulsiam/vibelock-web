@@ -165,6 +165,8 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
       expect(res.settings.maxCodOrderValue).toBe(10000);
       expect(res.settings.minOrderValue).toBe(0);
       expect(res.settings.onlineReservationTtlMinutes).toBe(15);
+      expect(res.settings.codAdvanceCollectionMode).toBe("MANUAL_VERIFICATION");
+      expect(res.settings.codAdvancePaymentNumber).toBe("01311333277");
       expect(res.isPersisted).toBe(false);
       expect(res.hasStore).toBe(true);
     });
@@ -294,6 +296,9 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
         requireCodAdvanceDeliveryCharge: true,
         codAdvanceInsideDhaka: 120,
         codAdvanceOutsideDhaka: 180,
+        codAdvanceCollectionMode: "AUTOMATED_GATEWAY",
+        codAdvancePaymentNumber: "01711223344",
+        codAdvanceInstructions: "Pay advance online via bKash.",
         onlineReservationTtlMinutes: 10,
       };
 

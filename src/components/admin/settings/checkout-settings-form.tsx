@@ -28,6 +28,7 @@ import {
   ShieldAlert,
   ShoppingBag,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const initialState: CheckoutSettingsActionState = { error: null };
 
@@ -85,6 +86,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
   // Local state for switches
   const [requireAdvance, setRequireAdvance] = useState(
     initialSettings.requireCodAdvanceDeliveryCharge
+  );
+  const [advanceMode, setAdvanceMode] = useState<"MANUAL_VERIFICATION" | "AUTOMATED_GATEWAY">(
+    initialSettings.codAdvanceCollectionMode ?? "MANUAL_VERIFICATION"
   );
   const [enforceOtp, setEnforceOtp] = useState(initialSettings.enforceFirstTimeCodOtp);
   const [allowGuest, setAllowGuest] = useState(initialSettings.allowGuestCheckout);
@@ -180,33 +184,121 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
               </div>
 
               {requireAdvance && (
-                <div className="animate-in fade-in grid gap-3 border-t border-neutral-200/60 pt-2.5 sm:grid-cols-2">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-700">
-                      Advance Fee Inside Dhaka (৳)
-                    </label>
-                    <Input
-                      type="number"
-                      name="codAdvanceInsideDhaka"
-                      defaultValue={initialSettings.codAdvanceInsideDhaka}
-                      min={0}
-                      step={10}
-                      className="bg-white font-mono"
-                    />
+                <div className="animate-in fade-in space-y-3.5 border-t border-neutral-200/60 pt-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-neutral-700">
+                        Advance Fee Inside Dhaka (৳)
+                      </label>
+                      <Input
+                        type="number"
+                        name="codAdvanceInsideDhaka"
+                        defaultValue={initialSettings.codAdvanceInsideDhaka}
+                        min={0}
+                        step={10}
+                        className="bg-white font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-neutral-700">
+                        Advance Fee Outside Dhaka (৳)
+                      </label>
+                      <Input
+                        type="number"
+                        name="codAdvanceOutsideDhaka"
+                        defaultValue={initialSettings.codAdvanceOutsideDhaka}
+                        min={0}
+                        step={10}
+                        className="bg-white font-mono"
+                      />
+                    </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-neutral-700">
-                      Advance Fee Outside Dhaka (৳)
+                  {/* Advance Collection Mode (পদ্ধতি ১ বনাম পদ্ধতি ২) */}
+                  <div className="space-y-2 rounded-lg border border-neutral-200/80 bg-white p-3">
+                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-900">
+                      Advance Collection Mode
                     </label>
-                    <Input
-                      type="number"
-                      name="codAdvanceOutsideDhaka"
-                      defaultValue={initialSettings.codAdvanceOutsideDhaka}
-                      min={0}
-                      step={10}
-                      className="bg-white font-mono"
-                    />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <label
+                        className={cn(
+                          "flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-all text-xs",
+                          advanceMode === "MANUAL_VERIFICATION"
+                            ? "border-vl-cyan-500 bg-vl-cyan-50/20 font-semibold text-neutral-950"
+                            : "border-neutral-200 bg-neutral-50/50 text-neutral-700 hover:bg-neutral-50"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="codAdvanceCollectionMode"
+                          value="MANUAL_VERIFICATION"
+                          checked={advanceMode === "MANUAL_VERIFICATION"}
+                          onChange={() => setAdvanceMode("MANUAL_VERIFICATION")}
+                          className="mt-0.5 text-vl-cyan-600 focus:ring-vl-cyan-500"
+                        />
+                        <div>
+                          <p className="font-semibold text-neutral-900">পদ্ধতি ১: Manual Call / SMS Verification</p>
+                          <p className="text-[11px] font-normal text-neutral-500 mt-0.5">
+                            Order is placed as COD. Customer receives your bKash number on success page and SMS. Team confirms order over phone.
+                          </p>
+                        </div>
+                      </label>
+
+                      <label
+                        className={cn(
+                          "flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-all text-xs",
+                          advanceMode === "AUTOMATED_GATEWAY"
+                            ? "border-vl-cyan-500 bg-vl-cyan-50/20 font-semibold text-neutral-950"
+                            : "border-neutral-200 bg-neutral-50/50 text-neutral-700 hover:bg-neutral-50"
+                        )}
+                      >
+                        <input
+                          type="radio"
+                          name="codAdvanceCollectionMode"
+                          value="AUTOMATED_GATEWAY"
+                          checked={advanceMode === "AUTOMATED_GATEWAY"}
+                          onChange={() => setAdvanceMode("AUTOMATED_GATEWAY")}
+                          className="mt-0.5 text-vl-cyan-600 focus:ring-vl-cyan-500"
+                        />
+                        <div>
+                          <p className="font-semibold text-neutral-900">পদ্ধতি ২: Automated Gateway Payment</p>
+                          <p className="text-[11px] font-normal text-neutral-500 mt-0.5">
+                            Checkout redirects to bKash/PayStation to collect the ৳100/৳150 advance immediately before confirming order.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* MFS Payment Number & Customer Instructions */}
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-neutral-700">
+                        bKash / Nagad Number for Advance (Method 1)
+                      </label>
+                      <Input
+                        name="codAdvancePaymentNumber"
+                        defaultValue={initialSettings.codAdvancePaymentNumber || "01311333277"}
+                        placeholder="e.g. 01311333277"
+                        className="bg-white font-mono text-xs"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-neutral-700">
+                        Custom Advance Instruction for Shoppers
+                      </label>
+                      <Input
+                        name="codAdvanceInstructions"
+                        defaultValue={
+                          initialSettings.codAdvanceInstructions ||
+                          "Send courier advance via bKash/Nagad to confirm order dispatch. Our representative will also call you."
+                        }
+                        placeholder="Instruction displayed on Order Success page and SMS"
+                        className="bg-white text-xs"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

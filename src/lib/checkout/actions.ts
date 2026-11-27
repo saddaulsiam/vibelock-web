@@ -849,13 +849,34 @@ export async function createOrderAction(
     try {
       const { sendSmsNotification } = await import("@/lib/sms/client");
       const { getNotificationSettings } = await import("@/lib/settings/notification-settings");
-      const { settings: notifSettings } = await getNotificationSettings();
+      const { getCheckoutSettings } = await import("@/lib/settings/checkout-settings");
+      const { isDhakaCity } = await import("@/lib/shipping/pricing");
+      const [{ settings: notifSettings }, { settings: checkoutPolicies }] = await Promise.all([
+        getNotificationSettings(),
+        getCheckoutSettings(),
+      ]);
 
       const customerTel = orderResult.customerPhone;
       if (customerTel) {
+        let smsText = `[VibeLock] Hi ${orderResult.customerName}, your order #${finalOrderNumber} for ৳${Number(orderResult.total).toLocaleString("en-BD")} has been received! We will notify you once dispatched.`;
+
+        if (
+          orderResult.paymentMethod === "COD" &&
+          checkoutPolicies.requireCodAdvanceDeliveryCharge &&
+          checkoutPolicies.codAdvanceCollectionMode === "MANUAL_VERIFICATION"
+        ) {
+          const isDhaka = isDhakaCity(orderResult.shippingCity, orderResult.shippingState);
+          const advanceFee = isDhaka
+            ? checkoutPolicies.codAdvanceInsideDhaka
+            : checkoutPolicies.codAdvanceOutsideDhaka;
+          const mfsNum = checkoutPolicies.codAdvancePaymentNumber?.trim() || "our official hotline";
+
+          smsText = `[VibeLock] Hi ${orderResult.customerName}, order #${finalOrderNumber} placed! To confirm dispatch, please send ৳${advanceFee} courier advance to bKash: ${mfsNum}. Our team will also call you.`;
+        }
+
         void sendSmsNotification({
           phone: customerTel,
-          message: `[VibeLock] Hi ${orderResult.customerName}, your order #${finalOrderNumber} for ৳${Number(orderResult.total).toLocaleString("en-BD")} has been received! We will notify you once dispatched.`,
+          message: smsText,
           purpose: "order_placed",
         });
       }
@@ -881,6 +902,47 @@ export async function createOrderAction(
     revalidatePath("/admin/inventory");
     if (couponCode) {
       revalidatePath("/admin/coupons");
+    }
+
+    if (paymentMethod === "COD") {
+      const { getCheckoutSettings } = await import("@/lib/settings/checkout-settings");
+      const { settings: checkoutPolicies } = await getCheckoutSettings();
+
+      if (
+        checkoutPolicies.requireCodAdvanceDeliveryCharge &&
+        checkoutPolicies.codAdvanceCollectionMode === "AUTOMATED_GATEWAY"
+      ) {
+        const orderRecord = await prisma.order.findUnique({
+          where: { orderNumber: finalOrderNumber },
+        });
+        if (orderRecord) {
+          const { isDhakaCity } = await import("@/lib/shipping/pricing");
+          const isDhaka = isDhakaCity(orderRecord.shippingCity, orderRecord.shippingState);
+          const advanceFee = isDhaka
+            ? checkoutPolicies.codAdvanceInsideDhaka
+            : checkoutPolicies.codAdvanceOutsideDhaka;
+
+          // Select active gateway for advance collection: default to PAYSTATION, else fallback to BKASH
+          const { isPaymentMethodEnabled } = await import("@/lib/settings/payment-settings");
+          const paystationEnabled = await isPaymentMethodEnabled("PAYSTATION");
+          const gatewayToUse = paystationEnabled ? "PAYSTATION" : "BKASH";
+
+          const paymentService = (await import("@/lib/payment/service")).PaymentService;
+          const service = new paymentService();
+
+          const initiation = await service.initiatePayment(orderRecord, gatewayToUse, {
+            customAmount: advanceFee,
+          });
+
+          if (initiation.success && initiation.redirectUrl) {
+            return {
+              success: true,
+              orderNumber: finalOrderNumber,
+              redirectUrl: initiation.redirectUrl,
+            };
+          }
+        }
+      }
     }
 
     if (paymentMethod === "ONLINE") {

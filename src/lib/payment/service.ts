@@ -237,7 +237,7 @@ export class PaymentService {
   async initiatePayment(
     order: Order,
     gateway: string,
-    options?: { skipRateLimit?: boolean; clientIp?: string }
+    options?: { skipRateLimit?: boolean; clientIp?: string; customAmount?: number }
   ): Promise<PaymentInitiationResponse> {
     if (!options?.skipRateLimit && order.userId) {
       try {
@@ -360,7 +360,10 @@ export class PaymentService {
       const placeholder = await tx.payment.create({
         data: {
           orderId: currentOrder.id,
-          amount: Number(currentOrder.total),
+          amount:
+            options?.customAmount !== undefined
+              ? options.customAmount
+              : Number(currentOrder.total),
           status: "PENDING",
           gateway: normalizedGateway,
         },
@@ -372,7 +375,10 @@ export class PaymentService {
         orderData: {
           orderId: currentOrder.id,
           orderNumber: currentOrder.orderNumber,
-          amount: Number(currentOrder.total),
+          amount:
+            options?.customAmount !== undefined
+              ? options.customAmount
+              : Number(currentOrder.total),
           customerName: currentOrder.customerName || "Customer",
           customerEmail: currentOrder.customerEmail,
           customerPhone: currentOrder.customerPhone || "00000000000",

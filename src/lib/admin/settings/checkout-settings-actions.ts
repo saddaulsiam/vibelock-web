@@ -33,6 +33,15 @@ export async function updateCheckoutSettingsAction(
     codAdvanceOutsideDhaka: formData.has("codAdvanceOutsideDhaka")
       ? formData.get("codAdvanceOutsideDhaka")
       : current.codAdvanceOutsideDhaka,
+    codAdvanceCollectionMode: formData.has("codAdvanceCollectionMode")
+      ? (formData.get("codAdvanceCollectionMode") as "MANUAL_VERIFICATION" | "AUTOMATED_GATEWAY")
+      : current.codAdvanceCollectionMode,
+    codAdvancePaymentNumber: formData.has("codAdvancePaymentNumber")
+      ? formData.get("codAdvancePaymentNumber")?.toString()?.trim() || ""
+      : current.codAdvancePaymentNumber,
+    codAdvanceInstructions: formData.has("codAdvanceInstructions")
+      ? formData.get("codAdvanceInstructions")?.toString()?.trim() || ""
+      : current.codAdvanceInstructions,
     onlineReservationTtlMinutes: formData.has("onlineReservationTtlMinutes")
       ? formData.get("onlineReservationTtlMinutes")
       : current.onlineReservationTtlMinutes,

@@ -10,6 +10,15 @@ export const CheckoutSettingsSchema = z.object({
   requireCodAdvanceDeliveryCharge: z.boolean().default(false),
   codAdvanceInsideDhaka: z.coerce.number().min(0, "Inside Dhaka advance fee cannot be negative").default(100),
   codAdvanceOutsideDhaka: z.coerce.number().min(0, "Outside Dhaka advance fee cannot be negative").default(150),
+  codAdvanceCollectionMode: z
+    .enum(["MANUAL_VERIFICATION", "AUTOMATED_GATEWAY"])
+    .default("MANUAL_VERIFICATION"),
+  codAdvancePaymentNumber: z.string().default("01311333277"),
+  codAdvanceInstructions: z
+    .string()
+    .default(
+      "Send courier advance via bKash/Nagad to confirm order dispatch. Our representative will also call you."
+    ),
   onlineReservationTtlMinutes: z.coerce
     .number()
     .min(5, "Reservation TTL must be at least 5 minutes")
@@ -34,6 +43,10 @@ export function getDefaultCheckoutSettings(): CheckoutSettings {
     requireCodAdvanceDeliveryCharge: false,
     codAdvanceInsideDhaka: 100,
     codAdvanceOutsideDhaka: 150,
+    codAdvanceCollectionMode: "MANUAL_VERIFICATION",
+    codAdvancePaymentNumber: "01311333277",
+    codAdvanceInstructions:
+      "Send courier advance via bKash/Nagad to confirm order dispatch. Our representative will also call you.",
     onlineReservationTtlMinutes: Math.round((env.INVENTORY_RESERVATION_TTL_SECONDS || 900) / 60),
     enforceFirstTimeCodOtp: false,
     allowGuestCheckout: true,
