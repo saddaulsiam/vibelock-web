@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import {
   InventoryReturnSettingsSchema,
   updateInventoryReturnSettings,
+  getInventoryReturnSettings,
 } from "@/lib/settings/inventory-return-settings";
 import { revalidatePath } from "next/cache";
 
@@ -18,29 +19,55 @@ export async function updateInventoryReturnSettingsAction(
   formData: FormData
 ): Promise<InventoryReturnActionState> {
   const admin = await requireRole("ADMIN", { throw: true });
+  const { settings: current } = await getInventoryReturnSettings();
 
-  const rawCategories = formData.get("nonReturnableCategories")?.toString()?.trim() || "";
+  const rawCategories = formData.has("nonReturnableCategories")
+    ? (formData.get("nonReturnableCategories")?.toString()?.trim() || "")
+    : current.nonReturnableCategories.join(", ");
   const categoriesList = rawCategories
     .split(",")
     .map((c) => c.trim())
     .filter(Boolean);
 
   const raw = {
-    lowStockThreshold: formData.get("lowStockThreshold"),
-    criticalStockThreshold: formData.get("criticalStockThreshold"),
-    allowBackorders: formData.get("allowBackorders") === "true",
-    autoHideOutOfStock: formData.get("autoHideOutOfStock") === "true",
-    notifyLowStockEmail: formData.get("notifyLowStockEmail") === "true",
-    lowStockNotificationEmail:
-      formData.get("lowStockNotificationEmail")?.toString()?.trim() || "inventory@vibelock.com",
-    returnWindowDays: formData.get("returnWindowDays"),
-    requirePhotoProofOnDefect: formData.get("requirePhotoProofOnDefect") === "true",
-    allowPartialReturns: formData.get("allowPartialReturns") === "true",
+    lowStockThreshold: formData.has("lowStockThreshold") ? formData.get("lowStockThreshold") : current.lowStockThreshold,
+    criticalStockThreshold: formData.has("criticalStockThreshold")
+      ? formData.get("criticalStockThreshold")
+      : current.criticalStockThreshold,
+    allowBackorders: formData.has("allowBackorders")
+      ? formData.get("allowBackorders") === "true"
+      : current.allowBackorders,
+    autoHideOutOfStock: formData.has("autoHideOutOfStock")
+      ? formData.get("autoHideOutOfStock") === "true"
+      : current.autoHideOutOfStock,
+    notifyLowStockEmail: formData.has("notifyLowStockEmail")
+      ? formData.get("notifyLowStockEmail") === "true"
+      : current.notifyLowStockEmail,
+    lowStockNotificationEmail: formData.has("lowStockNotificationEmail")
+      ? formData.get("lowStockNotificationEmail")?.toString()?.trim() || "inventory@vibelock.com"
+      : current.lowStockNotificationEmail,
+    returnWindowDays: formData.has("returnWindowDays")
+      ? formData.get("returnWindowDays")
+      : current.returnWindowDays,
+    requirePhotoProofOnDefect: formData.has("requirePhotoProofOnDefect")
+      ? formData.get("requirePhotoProofOnDefect") === "true"
+      : current.requirePhotoProofOnDefect,
+    allowPartialReturns: formData.has("allowPartialReturns")
+      ? formData.get("allowPartialReturns") === "true"
+      : current.allowPartialReturns,
     nonReturnableCategories: categoriesList,
-    deductShippingFeeFromRefund: formData.get("deductShippingFeeFromRefund") === "true",
-    returnProcessingFee: formData.get("returnProcessingFee"),
-    autoRestockCompletedReturns: formData.get("autoRestockCompletedReturns") === "true",
-    restockLocation: formData.get("restockLocation")?.toString()?.trim() || "Uttara Central Warehouse",
+    deductShippingFeeFromRefund: formData.has("deductShippingFeeFromRefund")
+      ? formData.get("deductShippingFeeFromRefund") === "true"
+      : current.deductShippingFeeFromRefund,
+    returnProcessingFee: formData.has("returnProcessingFee")
+      ? formData.get("returnProcessingFee")
+      : current.returnProcessingFee,
+    autoRestockCompletedReturns: formData.has("autoRestockCompletedReturns")
+      ? formData.get("autoRestockCompletedReturns") === "true"
+      : current.autoRestockCompletedReturns,
+    restockLocation: formData.has("restockLocation")
+      ? formData.get("restockLocation")?.toString()?.trim() || "Uttara Central Warehouse"
+      : current.restockLocation,
   };
 
   const parsed = InventoryReturnSettingsSchema.safeParse(raw);

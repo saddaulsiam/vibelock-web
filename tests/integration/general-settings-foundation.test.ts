@@ -289,5 +289,46 @@ describe("Phase 1: VibeLock General Store Settings & Foundation", () => {
       expect(res.error).toBeNull();
       expect(res.message).toContain("Store identity, legal compliance, and emergency settings updated");
     });
+
+    test("successfully processes partial section update from isolated card form without overwriting other cards", async () => {
+      mockSession = {
+        user: { id: "admin-1", email: "admin@vibelock.com", role: "ADMIN" },
+      };
+
+      const existingSettings = getDefaultGeneralStoreSettings();
+      mockPrisma.storeSetting.findUnique.mockResolvedValue({
+        id: "setting-1",
+        key: STORE_SETTING_KEYS.GENERAL,
+        value: {
+          ...existingSettings,
+          storeName: "Original Store Name",
+          supportPhone: "01700000000",
+        },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Card 1 submits ONLY identity fields
+      const formData = new FormData();
+      formData.set("storeName", "Updated Store Name");
+      formData.set("legalBusinessName", "Updated Legal Business Name");
+
+      const res = await updateGeneralSettingsAction({ error: null }, formData);
+      expect(res.error).toBeNull();
+      expect(res.message).toBeDefined();
+
+      // Verifies unsubmitted supportPhone was preserved from existing settings
+      expect(mockPrisma.storeSetting.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          update: expect.objectContaining({
+            value: expect.objectContaining({
+              storeName: "Updated Store Name",
+              legalBusinessName: "Updated Legal Business Name",
+              supportPhone: "01700000000",
+            }),
+          }),
+        })
+      );
+    });
   });
 });

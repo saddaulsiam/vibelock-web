@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import {
   CheckoutSettingsSchema,
   updateCheckoutSettings,
+  getCheckoutSettings,
 } from "@/lib/settings/checkout-settings";
 import { revalidatePath } from "next/cache";
 
@@ -18,17 +19,32 @@ export async function updateCheckoutSettingsAction(
   formData: FormData
 ): Promise<CheckoutSettingsActionState> {
   const admin = await requireRole("ADMIN", { throw: true });
+  const { settings: current } = await getCheckoutSettings();
 
   const raw = {
-    minOrderValue: formData.get("minOrderValue"),
-    maxCodOrderValue: formData.get("maxCodOrderValue"),
-    requireCodAdvanceDeliveryCharge: formData.get("requireCodAdvanceDeliveryCharge") === "true",
-    codAdvanceInsideDhaka: formData.get("codAdvanceInsideDhaka"),
-    codAdvanceOutsideDhaka: formData.get("codAdvanceOutsideDhaka"),
-    onlineReservationTtlMinutes: formData.get("onlineReservationTtlMinutes"),
-    enforceFirstTimeCodOtp: formData.get("enforceFirstTimeCodOtp") === "true",
-    allowGuestCheckout: formData.get("allowGuestCheckout") === "true",
-    codOrderNotice: formData.get("codOrderNotice")?.toString()?.trim() || "",
+    minOrderValue: formData.has("minOrderValue") ? formData.get("minOrderValue") : current.minOrderValue,
+    maxCodOrderValue: formData.has("maxCodOrderValue") ? formData.get("maxCodOrderValue") : current.maxCodOrderValue,
+    requireCodAdvanceDeliveryCharge: formData.has("requireCodAdvanceDeliveryCharge")
+      ? formData.get("requireCodAdvanceDeliveryCharge") === "true"
+      : current.requireCodAdvanceDeliveryCharge,
+    codAdvanceInsideDhaka: formData.has("codAdvanceInsideDhaka")
+      ? formData.get("codAdvanceInsideDhaka")
+      : current.codAdvanceInsideDhaka,
+    codAdvanceOutsideDhaka: formData.has("codAdvanceOutsideDhaka")
+      ? formData.get("codAdvanceOutsideDhaka")
+      : current.codAdvanceOutsideDhaka,
+    onlineReservationTtlMinutes: formData.has("onlineReservationTtlMinutes")
+      ? formData.get("onlineReservationTtlMinutes")
+      : current.onlineReservationTtlMinutes,
+    enforceFirstTimeCodOtp: formData.has("enforceFirstTimeCodOtp")
+      ? formData.get("enforceFirstTimeCodOtp") === "true"
+      : current.enforceFirstTimeCodOtp,
+    allowGuestCheckout: formData.has("allowGuestCheckout")
+      ? formData.get("allowGuestCheckout") === "true"
+      : current.allowGuestCheckout,
+    codOrderNotice: formData.has("codOrderNotice")
+      ? formData.get("codOrderNotice")?.toString()?.trim() || ""
+      : current.codOrderNotice,
   };
 
   const parsed = CheckoutSettingsSchema.safeParse(raw);

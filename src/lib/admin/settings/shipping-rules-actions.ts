@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import {
   ShippingRulesSettingsSchema,
   updateShippingRulesSettings,
+  getShippingRulesSettings,
 } from "@/lib/settings/shipping-rules-settings";
 import { revalidatePath } from "next/cache";
 
@@ -18,21 +19,48 @@ export async function updateShippingRulesAction(
   formData: FormData
 ): Promise<ShippingRulesActionState> {
   const admin = await requireRole("ADMIN", { throw: true });
+  const { settings: current } = await getShippingRulesSettings();
 
   const raw = {
-    enableFreeShipping: formData.get("enableFreeShipping") === "true",
-    freeShippingThreshold: formData.get("freeShippingThreshold"),
-    freeShippingScope: formData.get("freeShippingScope")?.toString()?.trim() || "NATIONWIDE",
-    freeShippingBannerText: formData.get("freeShippingBannerText")?.toString()?.trim() || "",
-    pickupHubName: formData.get("pickupHubName")?.toString()?.trim() || "",
-    pickupAddress: formData.get("pickupAddress")?.toString()?.trim() || "",
-    contactPerson: formData.get("contactPerson")?.toString()?.trim() || "",
-    contactPhone: formData.get("contactPhone")?.toString()?.trim() || "",
-    insideDhakaSla: formData.get("insideDhakaSla")?.toString()?.trim() || "24–48 Hours",
-    outsideDhakaSla: formData.get("outsideDhakaSla")?.toString()?.trim() || "3–5 Business Days",
-    expressDhakaSla: formData.get("expressDhakaSla")?.toString()?.trim() || "Same-Day / 24 Hours",
-    primaryCourier: formData.get("primaryCourier")?.toString()?.trim() || "STEADFAST",
-    autoCreateConsignment: formData.get("autoCreateConsignment") === "true",
+    enableFreeShipping: formData.has("enableFreeShipping")
+      ? formData.get("enableFreeShipping") === "true"
+      : current.enableFreeShipping,
+    freeShippingThreshold: formData.has("freeShippingThreshold")
+      ? formData.get("freeShippingThreshold")
+      : current.freeShippingThreshold,
+    freeShippingScope: formData.has("freeShippingScope")
+      ? formData.get("freeShippingScope")?.toString()?.trim() || "NATIONWIDE"
+      : current.freeShippingScope,
+    freeShippingBannerText: formData.has("freeShippingBannerText")
+      ? formData.get("freeShippingBannerText")?.toString()?.trim() || ""
+      : current.freeShippingBannerText,
+    pickupHubName: formData.has("pickupHubName")
+      ? formData.get("pickupHubName")?.toString()?.trim() || ""
+      : current.pickupHubName,
+    pickupAddress: formData.has("pickupAddress")
+      ? formData.get("pickupAddress")?.toString()?.trim() || ""
+      : current.pickupAddress,
+    contactPerson: formData.has("contactPerson")
+      ? formData.get("contactPerson")?.toString()?.trim() || ""
+      : current.contactPerson,
+    contactPhone: formData.has("contactPhone")
+      ? formData.get("contactPhone")?.toString()?.trim() || ""
+      : current.contactPhone,
+    insideDhakaSla: formData.has("insideDhakaSla")
+      ? formData.get("insideDhakaSla")?.toString()?.trim() || "24–48 Hours"
+      : current.insideDhakaSla,
+    outsideDhakaSla: formData.has("outsideDhakaSla")
+      ? formData.get("outsideDhakaSla")?.toString()?.trim() || "3–5 Business Days"
+      : current.outsideDhakaSla,
+    expressDhakaSla: formData.has("expressDhakaSla")
+      ? formData.get("expressDhakaSla")?.toString()?.trim() || "Same-Day / 24 Hours"
+      : current.expressDhakaSla,
+    primaryCourier: formData.has("primaryCourier")
+      ? formData.get("primaryCourier")?.toString()?.trim() || "STEADFAST"
+      : current.primaryCourier,
+    autoCreateConsignment: formData.has("autoCreateConsignment")
+      ? formData.get("autoCreateConsignment") === "true"
+      : current.autoCreateConsignment,
   };
 
   const parsed = ShippingRulesSettingsSchema.safeParse(raw);

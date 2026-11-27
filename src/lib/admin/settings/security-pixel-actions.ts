@@ -19,35 +19,56 @@ export async function updateSecurityPixelSettingsAction(
   formData: FormData
 ): Promise<SecurityPixelActionState> {
   const admin = await requireRole("ADMIN", { throw: true });
+  const { settings: current } = await getSecurityPixelSettings();
 
-  const rawIps = formData.get("adminIpAllowlist")?.toString()?.trim() || "";
+  const rawIps = formData.has("adminIpAllowlist")
+    ? (formData.get("adminIpAllowlist")?.toString()?.trim() || "")
+    : current.adminIpAllowlist.join(", ");
   const ipList = rawIps
     .split(",")
     .map((ip) => ip.trim())
     .filter(Boolean);
 
-  let metaCapiToken = formData.get("metaCapiAccessToken")?.toString()?.trim() || "";
+  let metaCapiToken = formData.has("metaCapiAccessToken")
+    ? (formData.get("metaCapiAccessToken")?.toString()?.trim() || "")
+    : current.metaCapiAccessToken;
 
   // If masked placeholder was submitted, retain previously stored token
   if (metaCapiToken.includes("••••••••")) {
-    const { settings: current } = await getSecurityPixelSettings();
     metaCapiToken = current.metaCapiAccessToken;
   }
 
   const raw = {
-    metaPixelId: formData.get("metaPixelId")?.toString()?.trim() || "",
+    metaPixelId: formData.has("metaPixelId") ? formData.get("metaPixelId")?.toString()?.trim() || "" : current.metaPixelId,
     metaCapiAccessToken: metaCapiToken,
-    metaTestEventCode: formData.get("metaTestEventCode")?.toString()?.trim() || "",
-    googleTagManagerId: formData.get("googleTagManagerId")?.toString()?.trim() || "",
-    googleAnalyticsId: formData.get("googleAnalyticsId")?.toString()?.trim() || "",
-    tiktokPixelId: formData.get("tiktokPixelId")?.toString()?.trim() || "",
-    trackEcommerceEvents: formData.get("trackEcommerceEvents") === "true",
-    adminSessionTimeoutMinutes: formData.get("adminSessionTimeoutMinutes"),
-    enforceAdmin2FA: formData.get("enforceAdmin2FA") === "true",
+    metaTestEventCode: formData.has("metaTestEventCode")
+      ? formData.get("metaTestEventCode")?.toString()?.trim() || ""
+      : current.metaTestEventCode,
+    googleTagManagerId: formData.has("googleTagManagerId")
+      ? formData.get("googleTagManagerId")?.toString()?.trim() || ""
+      : current.googleTagManagerId,
+    googleAnalyticsId: formData.has("googleAnalyticsId")
+      ? formData.get("googleAnalyticsId")?.toString()?.trim() || ""
+      : current.googleAnalyticsId,
+    tiktokPixelId: formData.has("tiktokPixelId")
+      ? formData.get("tiktokPixelId")?.toString()?.trim() || ""
+      : current.tiktokPixelId,
+    trackEcommerceEvents: formData.has("trackEcommerceEvents")
+      ? formData.get("trackEcommerceEvents") === "true"
+      : current.trackEcommerceEvents,
+    adminSessionTimeoutMinutes: formData.has("adminSessionTimeoutMinutes")
+      ? formData.get("adminSessionTimeoutMinutes")
+      : current.adminSessionTimeoutMinutes,
+    enforceAdmin2FA: formData.has("enforceAdmin2FA")
+      ? formData.get("enforceAdmin2FA") === "true"
+      : current.enforceAdmin2FA,
     adminIpAllowlist: ipList,
-    notifyFailedAdminLogin: formData.get("notifyFailedAdminLogin") === "true",
-    securityContactEmail:
-      formData.get("securityContactEmail")?.toString()?.trim() || "security@vibelock.com",
+    notifyFailedAdminLogin: formData.has("notifyFailedAdminLogin")
+      ? formData.get("notifyFailedAdminLogin") === "true"
+      : current.notifyFailedAdminLogin,
+    securityContactEmail: formData.has("securityContactEmail")
+      ? formData.get("securityContactEmail")?.toString()?.trim() || "security@vibelock.com"
+      : current.securityContactEmail,
   };
 
   const parsed = SecurityPixelSettingsSchema.safeParse(raw);

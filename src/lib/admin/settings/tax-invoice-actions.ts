@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth/authorization";
 import {
   TaxInvoiceSettingsSchema,
   updateTaxInvoiceSettings,
+  getTaxInvoiceSettings,
 } from "@/lib/settings/tax-invoice-settings";
 import { revalidatePath } from "next/cache";
 
@@ -18,22 +19,41 @@ export async function updateTaxInvoiceSettingsAction(
   formData: FormData
 ): Promise<TaxInvoiceActionState> {
   const admin = await requireRole("ADMIN", { throw: true });
+  const { settings: current } = await getTaxInvoiceSettings();
 
   const raw = {
-    enableTax: formData.get("enableTax") === "true",
-    vatRatePercent: formData.get("vatRatePercent"),
-    taxCalculationMode: formData.get("taxCalculationMode")?.toString()?.trim() || "INCLUSIVE",
-    applyTaxToShipping: formData.get("applyTaxToShipping") === "true",
-    binNumber: formData.get("binNumber")?.toString()?.trim() || "",
-    taxCircle: formData.get("taxCircle")?.toString()?.trim() || "",
-    taxZone: formData.get("taxZone")?.toString()?.trim() || "",
-    registeredBusinessName: formData.get("registeredBusinessName")?.toString()?.trim() || "VibeLock Apparel Ltd.",
-    registeredOfficeAddress: formData.get("registeredOfficeAddress")?.toString()?.trim() || "",
-    enableMushak63Format: formData.get("enableMushak63Format") === "true",
-    invoicePrefix: formData.get("invoicePrefix")?.toString()?.trim() || "VL-INV-",
-    invoiceFooterNote: formData.get("invoiceFooterNote")?.toString()?.trim() || "",
-    customerCareContact: formData.get("customerCareContact")?.toString()?.trim() || "",
-    showDigitalSeal: formData.get("showDigitalSeal") === "true",
+    enableTax: formData.has("enableTax") ? formData.get("enableTax") === "true" : current.enableTax,
+    vatRatePercent: formData.has("vatRatePercent") ? formData.get("vatRatePercent") : current.vatRatePercent,
+    taxCalculationMode: formData.has("taxCalculationMode")
+      ? formData.get("taxCalculationMode")?.toString()?.trim() || "INCLUSIVE"
+      : current.taxCalculationMode,
+    applyTaxToShipping: formData.has("applyTaxToShipping")
+      ? formData.get("applyTaxToShipping") === "true"
+      : current.applyTaxToShipping,
+    binNumber: formData.has("binNumber") ? formData.get("binNumber")?.toString()?.trim() || "" : current.binNumber,
+    taxCircle: formData.has("taxCircle") ? formData.get("taxCircle")?.toString()?.trim() || "" : current.taxCircle,
+    taxZone: formData.has("taxZone") ? formData.get("taxZone")?.toString()?.trim() || "" : current.taxZone,
+    registeredBusinessName: formData.has("registeredBusinessName")
+      ? formData.get("registeredBusinessName")?.toString()?.trim() || "VibeLock Apparel Ltd."
+      : current.registeredBusinessName,
+    registeredOfficeAddress: formData.has("registeredOfficeAddress")
+      ? formData.get("registeredOfficeAddress")?.toString()?.trim() || ""
+      : current.registeredOfficeAddress,
+    enableMushak63Format: formData.has("enableMushak63Format")
+      ? formData.get("enableMushak63Format") === "true"
+      : current.enableMushak63Format,
+    invoicePrefix: formData.has("invoicePrefix")
+      ? formData.get("invoicePrefix")?.toString()?.trim() || "VL-INV-"
+      : current.invoicePrefix,
+    invoiceFooterNote: formData.has("invoiceFooterNote")
+      ? formData.get("invoiceFooterNote")?.toString()?.trim() || ""
+      : current.invoiceFooterNote,
+    customerCareContact: formData.has("customerCareContact")
+      ? formData.get("customerCareContact")?.toString()?.trim() || ""
+      : current.customerCareContact,
+    showDigitalSeal: formData.has("showDigitalSeal")
+      ? formData.get("showDigitalSeal") === "true"
+      : current.showDigitalSeal,
   };
 
   const parsed = TaxInvoiceSettingsSchema.safeParse(raw);

@@ -57,12 +57,35 @@ function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   );
 }
 
+function SectionAlert({ error, message }: { error?: string | null; message?: string | null }) {
+  if (error) {
+    return (
+      <div className="mx-5 mt-3 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50/90 p-3 text-xs text-rose-900 shadow-2xs">
+        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-rose-600" />
+        <span className="font-medium">{error}</span>
+      </div>
+    );
+  }
+  if (message) {
+    return (
+      <div className="mx-5 mt-3 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50/90 p-3 text-xs text-emerald-900 shadow-2xs">
+        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+        <span className="font-medium">{message}</span>
+      </div>
+    );
+  }
+  return null;
+}
+
 export function GeneralSettingsForm({
   initialSettings,
 }: {
   initialSettings: GeneralStoreSettings;
 }) {
-  const [state, action] = useActionState(updateGeneralSettingsAction, initialState);
+  const [identityState, identityAction] = useActionState(updateGeneralSettingsAction, initialState);
+  const [supportState, supportAction] = useActionState(updateGeneralSettingsAction, initialState);
+  const [maintenanceState, maintenanceAction] = useActionState(updateGeneralSettingsAction, initialState);
+  const [holidayState, holidayAction] = useActionState(updateGeneralSettingsAction, initialState);
 
   // Local state for interactive killswitch toggles
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(
@@ -71,30 +94,10 @@ export function GeneralSettingsForm({
   const [holidayEnabled, setHolidayEnabled] = useState(initialSettings.holidayMode.enabled);
 
   return (
-    <form action={action} className="space-y-4">
-      {/* ── ALERTS (ERROR & SUCCESS) ── */}
-      {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
-          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
-          <div>
-            <h4 className="font-bold">Failed to update settings</h4>
-            <p className="mt-0.5 text-xs text-rose-700">{state.error}</p>
-          </div>
-        </div>
-      )}
-
-      {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
-          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
-          <div>
-            <h4 className="font-bold">Configuration updated</h4>
-            <p className="mt-0.5 text-xs text-emerald-700">{state.message}</p>
-          </div>
-        </div>
-      )}
-
+    <div className="space-y-4">
       {/* ── SECTION 1: STORE IDENTITY & LEGAL REGISTRATION ── */}
-      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+      <form action={identityAction}>
+        <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
@@ -111,6 +114,8 @@ export function GeneralSettingsForm({
           </div>
         </CardHeader>
 
+        <SectionAlert error={identityState.error} message={identityState.message} />
+
         <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Store Name */}
           <div className="space-y-1">
@@ -123,9 +128,9 @@ export function GeneralSettingsForm({
               placeholder="Store name"
               className="bg-white"
             />
-            {state.fieldErrors?.storeName && (
+            {identityState.fieldErrors?.storeName && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.storeName[0]}
+                {identityState.fieldErrors.storeName[0]}
               </p>
             )}
           </div>
@@ -141,9 +146,9 @@ export function GeneralSettingsForm({
               placeholder="Registered legal company name"
               className="bg-white"
             />
-            {state.fieldErrors?.legalBusinessName && (
+            {identityState.fieldErrors?.legalBusinessName && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.legalBusinessName[0]}
+                {identityState.fieldErrors.legalBusinessName[0]}
               </p>
             )}
           </div>
@@ -195,8 +200,10 @@ export function GeneralSettingsForm({
           <SectionSubmitButton label="Save Identity" />
         </CardFooter>
       </Card>
+    </form>
 
-      {/* ── SECTION 2: CUSTOMER SUPPORT & LOGISTICS CONTACT ── */}
+    {/* ── SECTION 2: CUSTOMER SUPPORT & LOGISTICS CONTACT ── */}
+    <form action={supportAction}>
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
@@ -214,6 +221,8 @@ export function GeneralSettingsForm({
           </div>
         </CardHeader>
 
+        <SectionAlert error={supportState.error} message={supportState.message} />
+
         <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Support Phone */}
           <div className="space-y-1">
@@ -226,9 +235,9 @@ export function GeneralSettingsForm({
               placeholder="01XXXXXXXXX"
               className="bg-white font-mono"
             />
-            {state.fieldErrors?.supportPhone && (
+            {supportState.fieldErrors?.supportPhone && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.supportPhone[0]}
+                {supportState.fieldErrors.supportPhone[0]}
               </p>
             )}
           </div>
@@ -244,9 +253,9 @@ export function GeneralSettingsForm({
               placeholder="8801XXXXXXXXX"
               className="bg-white font-mono"
             />
-            {state.fieldErrors?.whatsappNumber && (
+            {supportState.fieldErrors?.whatsappNumber && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.whatsappNumber[0]}
+                {supportState.fieldErrors.whatsappNumber[0]}
               </p>
             )}
           </div>
@@ -263,9 +272,9 @@ export function GeneralSettingsForm({
               placeholder="support@domain.com"
               className="bg-white font-mono"
             />
-            {state.fieldErrors?.supportEmail && (
+            {supportState.fieldErrors?.supportEmail && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.supportEmail[0]}
+                {supportState.fieldErrors.supportEmail[0]}
               </p>
             )}
           </div>
@@ -281,9 +290,9 @@ export function GeneralSettingsForm({
               placeholder="Warehouse address for rider pickups and returns"
               className="bg-white"
             />
-            {state.fieldErrors?.warehouseAddress && (
+            {supportState.fieldErrors?.warehouseAddress && (
               <p className="text-[11px] font-semibold text-rose-600">
-                {state.fieldErrors.warehouseAddress[0]}
+                {supportState.fieldErrors.warehouseAddress[0]}
               </p>
             )}
           </div>
@@ -296,10 +305,12 @@ export function GeneralSettingsForm({
           <SectionSubmitButton label="Save Contact Details" />
         </CardFooter>
       </Card>
+    </form>
 
-      {/* ── SECTION 3: STORE OPERATIONAL MODES & SCHEDULES ── */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Maintenance Mode Card */}
+    {/* ── SECTION 3: STORE OPERATIONAL MODES & SCHEDULES ── */}
+    <div className="grid gap-4 md:grid-cols-2">
+      {/* Maintenance Mode Card */}
+      <form action={maintenanceAction}>
         <Card
           className={cn(
             "overflow-hidden rounded-xl border transition-all duration-200",
@@ -360,6 +371,8 @@ export function GeneralSettingsForm({
             </div>
           </CardHeader>
 
+          <SectionAlert error={maintenanceState.error} message={maintenanceState.message} />
+
           <CardContent className="space-y-3 p-4 text-xs">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
@@ -390,8 +403,10 @@ export function GeneralSettingsForm({
             <SectionSubmitButton label="Save Mode" />
           </CardFooter>
         </Card>
+      </form>
 
-        {/* Holiday / Vacation Mode Card */}
+      {/* Holiday / Vacation Mode Card */}
+      <form action={holidayAction}>
         <Card
           className={cn(
             "overflow-hidden rounded-xl border transition-all duration-200",
@@ -451,6 +466,8 @@ export function GeneralSettingsForm({
             </div>
           </CardHeader>
 
+          <SectionAlert error={holidayState.error} message={holidayState.message} />
+
           <CardContent className="space-y-3 p-4 text-xs">
             <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
@@ -481,26 +498,27 @@ export function GeneralSettingsForm({
             <SectionSubmitButton label="Save Notice" />
           </CardFooter>
         </Card>
-      </div>
+      </form>
+    </div>
 
-      {/* ── SECTION 4: PLATFORM STANDARDS ── */}
-      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardContent className="grid gap-3 p-3.5 text-xs sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
-            <span className="font-semibold text-neutral-800">Platform Currency</span>
-            <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
-              BDT (৳)
-            </code>
-          </div>
+    {/* ── SECTION 4: PLATFORM STANDARDS ── */}
+    <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+      <CardContent className="grid gap-3 p-3.5 text-xs sm:grid-cols-2">
+        <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
+          <span className="font-semibold text-neutral-800">Platform Currency</span>
+          <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
+            BDT (৳)
+          </code>
+        </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
-            <span className="font-semibold text-neutral-800">Platform Timezone</span>
-            <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
-              Asia/Dhaka (UTC+6)
-            </code>
-          </div>
-        </CardContent>
-      </Card>
-    </form>
-  );
+        <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
+          <span className="font-semibold text-neutral-800">Platform Timezone</span>
+          <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
+            Asia/Dhaka (UTC+6)
+          </code>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
 }
