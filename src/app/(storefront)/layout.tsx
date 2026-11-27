@@ -45,6 +45,12 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const isBypassingMaintenance =
     generalSettings.maintenanceMode.enabled && generalSettings.maintenanceMode.allowAdminBypass;
 
+  const hasAnnouncement = Boolean(
+    isBypassingMaintenance ||
+      (generalSettings.holidayMode.enabled && generalSettings.holidayMode.bannerText) ||
+      (shippingSettings.enableFreeShipping && shippingSettings.freeShippingBannerText)
+  );
+
   return (
     <div className="relative flex min-h-screen min-w-0 flex-col">
       <MetaPixelProvider
@@ -67,7 +73,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
         shippingBanner={shippingSettings.enableFreeShipping ? shippingSettings.freeShippingBannerText : null}
       />
 
-      <Header />
+      <Header hasAnnouncement={hasAnnouncement} />
       <main className="relative z-10 flex min-w-0 flex-1 flex-col">{children}</main>
       <Footer />
       {/* <WhatsAppFloatingButton /> */}

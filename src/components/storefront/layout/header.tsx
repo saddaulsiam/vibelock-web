@@ -11,7 +11,11 @@ import { HeaderShell } from "./header-shell";
 import { HeaderWishlist } from "./header-wishlist";
 import { CartDrawer } from "../cart/cart-drawer";
 
-export async function Header() {
+export async function Header({
+  hasAnnouncement = false,
+}: {
+  hasAnnouncement?: boolean;
+} = {}) {
   const [user, cart, categories] = await Promise.all([
     getCurrentUser(),
     getCart(),
@@ -19,7 +23,7 @@ export async function Header() {
   ]);
 
   return (
-    <HeaderShell>
+    <HeaderShell hasAnnouncement={hasAnnouncement}>
       <div className="border-vl-white/10 bg-vl-dark/75 shadow-floating-nav pointer-events-auto relative mx-auto flex h-13 w-full max-w-6xl items-center justify-between rounded-full border px-3.5 backdrop-blur-lg sm:px-5">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3.5">
           <Link

@@ -22,7 +22,6 @@ import {
   Save,
   Shield,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const initialState: SecurityPixelActionState = { error: null };
 
