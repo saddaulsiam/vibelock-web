@@ -21,8 +21,24 @@ const returnIds: string[] = [];
 const productIds: string[] = [];
 
 describe("admin reports", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mockSession = null;
+    const orphanedOrders = await prisma.order.findMany({
+      where: { createdAt: { gte: new Date("2099-01-01T00:00:00.000Z") } },
+      select: { id: true, payments: { select: { id: true } } },
+    });
+    if (orphanedOrders.length > 0) {
+      const orderIdsToClean = orphanedOrders.map((o) => o.id);
+      const paymentIdsToClean = orphanedOrders.flatMap((o) => o.payments.map((p) => p.id));
+      await prisma.$transaction(async (tx) => {
+        await tx.returnRequest.deleteMany({ where: { orderId: { in: orderIdsToClean } } });
+        if (paymentIdsToClean.length > 0) {
+          await tx.refund.deleteMany({ where: { paymentId: { in: paymentIdsToClean } } });
+          await tx.payment.deleteMany({ where: { id: { in: paymentIdsToClean } } });
+        }
+        await tx.order.deleteMany({ where: { id: { in: orderIdsToClean } } });
+      });
+    }
   });
 
   afterEach(async () => {

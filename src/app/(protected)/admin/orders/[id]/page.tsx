@@ -39,6 +39,7 @@ import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
 import { getAdminOrderById } from "@/lib/admin/orders";
 import { getCustomerRiskProfile } from "@/lib/admin/customers";
 import { extractCardMetadata } from "@/lib/payment/format";
+import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);
@@ -63,7 +64,10 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
-  const order = await getAdminOrderById(id);
+  const [order, { settings: taxInvoiceSettings }] = await Promise.all([
+    getAdminOrderById(id),
+    getTaxInvoiceSettings(),
+  ]);
 
   if (!order) {
     notFound();
@@ -107,8 +111,17 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
       <div className="hidden border-b-2 border-black pb-4 print:block">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight">VIBELOCK APPAREL</h1>
-            <p className="text-xs text-neutral-600">Official Packing Slip &amp; Order Invoice</p>
+            <h1 className="text-2xl font-black tracking-tight">{taxInvoiceSettings.registeredBusinessName}</h1>
+            <p className="text-xs text-neutral-600">
+              {taxInvoiceSettings.enableMushak63Format
+                ? "NBR Mushak 6.3 Tax Invoice / Packing Slip"
+                : "Official Packing Slip & Order Invoice"}
+            </p>
+            {taxInvoiceSettings.binNumber ? (
+              <p className="mt-0.5 text-[11px] font-mono text-neutral-600">
+                BIN: {taxInvoiceSettings.binNumber} &middot; {taxInvoiceSettings.taxCircle} &middot; {taxInvoiceSettings.taxZone}
+              </p>
+            ) : null}
           </div>
           <div className="text-right">
             <p className="font-mono text-sm font-bold">{order.orderNumber}</p>
@@ -799,6 +812,14 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
             )}
           </div>
         </div>
+      </div>
+
+      {/* ── Print-only Invoice Footer & Mushak Declaration ── */}
+      <div className="hidden border-t-2 border-neutral-300 pt-4 text-xs text-neutral-600 print:block">
+        <p className="leading-relaxed">{taxInvoiceSettings.invoiceFooterNote}</p>
+        <p className="mt-1 text-[10px] text-neutral-500">
+          Customer Care: {taxInvoiceSettings.customerCareContact} &middot; Registered Office: {taxInvoiceSettings.registeredOfficeAddress}
+        </p>
       </div>
 
       {/* ── Mobile/Tablet Sticky Floating Bottom Action Bar (Fixed Thumb Zone) ── */}

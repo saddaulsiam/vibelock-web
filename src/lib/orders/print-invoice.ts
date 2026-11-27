@@ -36,6 +36,16 @@ export interface PrintableOrder {
   shippingCountry?: string | null;
   shippingMethodName?: string | null;
   items: PrintableOrderItem[];
+  taxInvoiceConfig?: {
+    registeredBusinessName?: string;
+    binNumber?: string;
+    taxCircle?: string;
+    taxZone?: string;
+    invoiceFooterNote?: string;
+    enableMushak63Format?: boolean;
+    customerCareContact?: string;
+    registeredOfficeAddress?: string;
+  };
 }
 
 function escapeHtml(str: string | null | undefined): string {
@@ -514,13 +524,21 @@ export function printCustomerInvoice(order: PrintableOrder): void {
                 <span class="brand-logo-text">VIBELOCK</span>
               </div>
               <div>
-                <h1 class="brand-name">VIBELOCK BD</h1>
-                <p class="brand-tagline">Premium Streetwear &middot; Bangladesh</p>
+                <h1 class="brand-name">${escapeHtml(order.taxInvoiceConfig?.registeredBusinessName || "VIBELOCK BD")}</h1>
+                <p class="brand-tagline">${escapeHtml(
+                  order.taxInvoiceConfig?.binNumber
+                    ? `BIN: ${order.taxInvoiceConfig.binNumber}${order.taxInvoiceConfig.taxCircle ? ` · ${order.taxInvoiceConfig.taxCircle}` : ""}`
+                    : "Premium Streetwear · Bangladesh"
+                )}</p>
               </div>
             </div>
 
             <div class="header-right">
-              <div class="receipt-pill-title">ORDER RECEIPT</div>
+              <div class="receipt-pill-title">${escapeHtml(
+                order.taxInvoiceConfig?.enableMushak63Format
+                  ? "TAX INVOICE (MUSHAK 6.3)"
+                  : "ORDER RECEIPT"
+              )}</div>
               <div class="order-number">#${escapeHtml(order.orderNumber)}</div>
               <div class="order-timestamp">${escapeHtml(formattedOrderDate)}</div>
             </div>
@@ -636,9 +654,10 @@ export function printCustomerInvoice(order: PrintableOrder): void {
 
           <!-- 8. Generation Timestamp Note -->
           <div class="generation-note">
-            Thank you for shopping with VibeLock. Computer-generated receipt for order #${escapeHtml(
-              order.orderNumber
-            )} &mdash; generated ${escapeHtml(currentTimestamp)}.
+            ${escapeHtml(
+              order.taxInvoiceConfig?.invoiceFooterNote ||
+                `Thank you for shopping with VibeLock. Computer-generated receipt for order #${order.orderNumber} — generated ${currentTimestamp}.`
+            )}
           </div>
         </div>
       </body>

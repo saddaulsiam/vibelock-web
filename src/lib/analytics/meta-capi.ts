@@ -15,11 +15,30 @@ const META_GRAPH_API_VERSION = "v21.0";
 export async function sendMetaCapiEvent(
   event: MetaCapiEvent
 ): Promise<MetaCapiResponse | null> {
-  const pixelId =
+  let pixelId =
     process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.META_PIXEL_ID;
-  const accessToken =
+  let accessToken =
     process.env.META_CONVERSIONS_API_ACCESS_TOKEN ||
     process.env.META_ACCESS_TOKEN;
+  let testEventCode = process.env.META_TEST_EVENT_CODE?.trim();
+
+  try {
+    const { getSecurityPixelSettings } = await import(
+      "@/lib/settings/security-pixel-settings"
+    );
+    const { settings: secSettings } = await getSecurityPixelSettings();
+    if (secSettings.metaPixelId?.trim()) {
+      pixelId = secSettings.metaPixelId.trim();
+    }
+    if (secSettings.metaCapiAccessToken?.trim()) {
+      accessToken = secSettings.metaCapiAccessToken.trim();
+    }
+    if (secSettings.metaTestEventCode?.trim()) {
+      testEventCode = secSettings.metaTestEventCode.trim();
+    }
+  } catch {
+    // Graceful fallback to env vars
+  }
 
   // Gracefully skip if credentials are not configured (e.g. in local/test environments)
   if (!pixelId || !accessToken) {
@@ -30,8 +49,6 @@ export async function sendMetaCapiEvent(
     }
     return null;
   }
-
-  const testEventCode = process.env.META_TEST_EVENT_CODE?.trim();
 
   const payload: MetaCapiPayload = {
     data: [

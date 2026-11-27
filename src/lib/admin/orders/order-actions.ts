@@ -233,6 +233,26 @@ export async function updateOrderStatusAction(
     };
   }
 
+  // Fire-and-forget customer SMS dispatch upon shipment
+  if (status === "SHIPPED") {
+    try {
+      const orderData = await prisma.order.findUnique({
+        where: { id },
+        select: { customerPhone: true, customerName: true, orderNumber: true },
+      });
+      if (orderData?.customerPhone) {
+        const { sendSmsNotification } = await import("@/lib/sms/client");
+        void sendSmsNotification({
+          phone: orderData.customerPhone,
+          message: `[VibeLock] Great news, ${orderData.customerName}! Your order #${orderData.orderNumber} has been dispatched with our courier partner. You will receive it soon!`,
+          purpose: "order_dispatched",
+        });
+      }
+    } catch {
+      // Non-blocking milestone dispatch
+    }
+  }
+
   refreshOrders();
   return ok;
 }

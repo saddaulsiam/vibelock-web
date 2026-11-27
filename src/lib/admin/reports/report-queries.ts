@@ -17,6 +17,7 @@ export type ReportFilters = {
   search?: string;
   limit?: number;
   summaryOnly?: boolean;
+  summaryWithCharts?: boolean;
 };
 
 const validRanges = new Set<ReportRange>([
@@ -81,6 +82,20 @@ export function resolveReportRange(filters: ReportFilters) {
   return { range: range satisfies ReportRange, start, end };
 }
 
+export function resolvePriorPeriod(start: Date, end: Date) {
+  const durationMs = Math.max(end.getTime() - start.getTime(), 86400000);
+  const priorEnd = new Date(start.getTime());
+  const priorStart = new Date(start.getTime() - durationMs);
+  return { priorStart, priorEnd };
+}
+
+function computeDelta(current: number, prior: number): number | null {
+  if (prior === 0) {
+    return current > 0 ? 100 : current < 0 ? -100 : 0;
+  }
+  return Number((((current - prior) / Math.abs(prior)) * 100).toFixed(1));
+}
+
 function money(value: unknown) {
   const num = Number(value ?? 0);
   return Number.isFinite(num) ? Math.round((num + Number.EPSILON) * 100) / 100 : 0;
@@ -100,7 +115,7 @@ type SummaryRow = {
   shippingCharged: number;
 };
 
-function formatReportSummary(row: SummaryRow | undefined) {
+function formatReportSummary(row: SummaryRow | undefined, priorRow?: SummaryRow | undefined) {
   const grossSales = money(row?.grossSales);
   const discounts = money(row?.discounts);
   const refunds = money(row?.refunds);
@@ -109,6 +124,23 @@ function formatReportSummary(row: SummaryRow | undefined) {
   const soldUnits = Number(row?.soldUnits ?? 0);
   const returnedUnits = Number(row?.returnedUnits ?? 0);
   const orders = Number(row?.orders ?? 0);
+  const grossProfit = money(netSales - cogs);
+  const returnRate = soldUnits > 0 ? Number(((returnedUnits / soldUnits) * 100).toFixed(2)) : 0;
+
+  const priorNetSales = priorRow ? money(priorRow.netSales) : null;
+  const priorCogs = priorRow ? money(priorRow.cogs) : null;
+  const priorGrossProfit =
+    priorNetSales !== null && priorCogs !== null ? money(priorNetSales - priorCogs) : null;
+  const priorOrders = priorRow ? Number(priorRow.orders ?? 0) : null;
+  const priorSoldUnits = priorRow ? Number(priorRow.soldUnits ?? 0) : 0;
+  const priorReturnedUnits = priorRow ? Number(priorRow.returnedUnits ?? 0) : 0;
+  const priorReturnRate =
+    priorSoldUnits > 0 ? Number(((priorReturnedUnits / priorSoldUnits) * 100).toFixed(2)) : 0;
+
+  const netSalesDelta = priorNetSales !== null ? computeDelta(netSales, priorNetSales) : null;
+  const grossProfitDelta = priorGrossProfit !== null ? computeDelta(grossProfit, priorGrossProfit) : null;
+  const ordersDelta = priorOrders !== null ? computeDelta(orders, priorOrders) : null;
+  const returnRateDelta = priorRow ? Number((returnRate - priorReturnRate).toFixed(1)) : null;
 
   return {
     orders,
@@ -117,20 +149,28 @@ function formatReportSummary(row: SummaryRow | undefined) {
     netSales,
     refunds,
     cogs,
-    grossProfit: money(netSales - cogs),
+    grossProfit,
     grossMargin: netSales > 0 ? Number((((netSales - cogs) / netSales) * 100).toFixed(2)) : null,
     averageOrderValue: orders > 0 ? money(netSales / orders) : 0,
     soldUnits,
     returnedUnits,
     returnedValue: money(row?.returnedValue),
     returnCount: Number(row?.returnCount ?? 0),
-    returnRate: soldUnits > 0 ? Number(((returnedUnits / soldUnits) * 100).toFixed(2)) : 0,
+    returnRate,
     shippingCharged: money(row?.shippingCharged),
     shippingExpense: null,
     paymentFees: null,
     operatingExpense: null,
     netProfit: null,
     netMargin: null,
+    priorNetSales,
+    priorGrossProfit,
+    priorOrders,
+    priorReturnRate,
+    netSalesDelta,
+    grossProfitDelta,
+    ordersDelta,
+    returnRateDelta,
   };
 }
 
@@ -188,35 +228,107 @@ const financialCtes = (start: Date, end: Date) => Prisma.sql`
 export async function getAdminReport(filters: ReportFilters = {}) {
   await requireRole("MANAGER");
   const { start, end, range } = resolveReportRange(filters);
+  const { priorStart, priorEnd } = resolvePriorPeriod(start, end);
   const ctes = financialCtes(start, end);
+  const priorCtes = financialCtes(priorStart, priorEnd);
 
-  const summaryQuery = prisma.$queryRaw<[SummaryRow]>(Prisma.sql`${ctes}
-    SELECT
-      COUNT(DISTINCT of."orderId")::bigint AS orders,
-      COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
-      COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
-      COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
-      COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
-      COALESCE(SUM(of.cogs), 0)::float8 AS cogs,
-      COALESCE(SUM(of."soldUnits"), 0)::bigint AS "soldUnits",
-      COALESCE(SUM(of."returnedUnits"), 0)::bigint AS "returnedUnits",
-      COALESCE(SUM(of."returnedValue"), 0)::float8 AS "returnedValue",
-      COUNT(DISTINCT CASE WHEN of."returnedUnits" > 0 THEN of."orderId" END)::bigint AS "returnCount",
-      COALESCE(SUM(o."shippingCost"), 0)::float8 AS "shippingCharged"
-    FROM order_financials of
-    INNER JOIN eligible_orders o ON o.id = of."orderId"
-    LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"`);
+  const createSummaryQuery = (c: ReturnType<typeof financialCtes>) =>
+    prisma.$queryRaw<[SummaryRow]>(Prisma.sql`${c}
+      SELECT
+        COUNT(DISTINCT of."orderId")::bigint AS orders,
+        COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
+        COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+        COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+        COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
+        COALESCE(SUM(of.cogs), 0)::float8 AS cogs,
+        COALESCE(SUM(of."soldUnits"), 0)::bigint AS "soldUnits",
+        COALESCE(SUM(of."returnedUnits"), 0)::bigint AS "returnedUnits",
+        COALESCE(SUM(of."returnedValue"), 0)::float8 AS "returnedValue",
+        COUNT(DISTINCT CASE WHEN of."returnedUnits" > 0 THEN of."orderId" END)::bigint AS "returnCount",
+        COALESCE(SUM(o."shippingCost"), 0)::float8 AS "shippingCharged"
+      FROM order_financials of
+      INNER JOIN eligible_orders o ON o.id = of."orderId"
+      LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"`);
 
-  if (filters.summaryOnly) {
-    const summary = await summaryQuery;
+  const summaryQuery = createSummaryQuery(ctes);
+  const priorSummaryQuery = createSummaryQuery(priorCtes);
+
+  if (filters.summaryOnly && !filters.summaryWithCharts) {
+    const [summary, priorSummary] = await Promise.all([summaryQuery, priorSummaryQuery]);
     return {
       range,
       start,
       end,
-      summary: formatReportSummary(summary[0]),
+      summary: formatReportSummary(summary[0], priorSummary[0]),
       trend: [],
       products: [],
       payments: [],
+      returns: { count: 0, units: 0, value: 0 },
+    };
+  }
+
+  if (filters.summaryWithCharts) {
+    const [summary, priorSummary, trend, payments] = await Promise.all([
+      summaryQuery,
+      priorSummaryQuery,
+      prisma.$queryRaw<
+        {
+          date: Date;
+          orders: bigint;
+          grossSales: number;
+          discounts: number;
+          netSales: number;
+          refunds: number;
+          cogs: number;
+        }[]
+      >(Prisma.sql`${ctes}
+        SELECT DATE_TRUNC('day', o."createdAt") AS date,
+          COUNT(*)::bigint AS orders,
+          COALESCE(SUM(of."grossSales"), 0)::float8 AS "grossSales",
+          COALESCE(SUM(of.discounts + COALESCE(o.discount, 0)), 0)::float8 AS discounts,
+          COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0)), 0)::float8 - COALESCE(SUM(sr.amount), 0)::float8 AS "netSales",
+          COALESCE(SUM(sr.amount), 0)::float8 AS refunds,
+          COALESCE(SUM(of.cogs), 0)::float8 AS cogs
+        FROM order_financials of
+        INNER JOIN eligible_orders o ON o.id = of."orderId"
+        LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
+        GROUP BY DATE_TRUNC('day', o."createdAt")
+        ORDER BY date ASC`),
+      prisma.$queryRaw<
+        { method: string; orders: bigint; sales: number; refunds: number }[]
+      >(Prisma.sql`${ctes}
+        SELECT o."paymentMethod"::text AS method, COUNT(*)::bigint AS orders,
+          COALESCE(SUM(of."lineTotal" - COALESCE(o.discount, 0) + o."shippingCost"), 0)::float8 AS sales,
+          COALESCE(SUM(sr.amount), 0)::float8 AS refunds
+        FROM order_financials of
+        INNER JOIN eligible_orders o ON o.id = of."orderId"
+        LEFT JOIN successful_refunds sr ON sr."orderId" = of."orderId"
+        GROUP BY o."paymentMethod"
+        ORDER BY sales DESC`),
+    ]);
+
+    return {
+      range,
+      start,
+      end,
+      summary: formatReportSummary(summary[0], priorSummary[0]),
+      trend: trend.map((item) => ({
+        ...item,
+        orders: Number(item.orders),
+        grossSales: money(item.grossSales),
+        discounts: money(item.discounts),
+        netSales: money(item.netSales),
+        refunds: money(item.refunds),
+        cogs: money(item.cogs),
+        grossProfit: money(money(item.netSales) - money(item.cogs)),
+      })),
+      products: [],
+      payments: payments.map((item) => ({
+        ...item,
+        orders: Number(item.orders),
+        sales: money(item.sales),
+        refunds: money(item.refunds),
+      })),
       returns: { count: 0, units: 0, value: 0 },
     };
   }
@@ -241,8 +353,9 @@ export async function getAdminReport(filters: ReportFilters = {}) {
   const productLimit =
     filters.limit && Number.isInteger(filters.limit) && filters.limit > 0 ? filters.limit : 100;
 
-  const [summary, trend, products, payments, returns] = await Promise.all([
+  const [summary, priorSummary, trend, products, payments, returns] = await Promise.all([
     summaryQuery,
+    priorSummaryQuery,
     prisma.$queryRaw<
       {
         date: Date;
@@ -323,7 +436,7 @@ export async function getAdminReport(filters: ReportFilters = {}) {
     range,
     start,
     end,
-    summary: formatReportSummary(summary[0]),
+    summary: formatReportSummary(summary[0], priorSummary[0]),
     trend: trend.map((item) => ({
       ...item,
       orders: Number(item.orders),

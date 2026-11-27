@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma/client";
 import { Prisma, SalesChannel } from "@prisma/client";
-import { env } from "@/lib/config/env";
+import { getEffectiveReservationTtlSeconds } from "@/lib/settings/checkout-settings";
 
 export class InsufficientInventoryError extends Error {
   constructor(message: string) {
@@ -53,10 +53,10 @@ export class InventoryService {
     orderId: string,
     customTx?: Prisma.TransactionClient
   ): Promise<void> {
-    const ttlSeconds = env.INVENTORY_RESERVATION_TTL_SECONDS;
-    const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
-
     const run = async (tx: Prisma.TransactionClient) => {
+      const ttlSeconds = await getEffectiveReservationTtlSeconds();
+      const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
+
       // 1. Load the order and items
       const order = await tx.order.findUnique({
         where: { id: orderId },

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Calculator, ExternalLink, Store } from "lucide-react";
+import { headers } from "next/headers";
+import { Calculator, ExternalLink, ShieldAlert, Store } from "lucide-react";
 import { requireRole } from "@/lib/auth/authorization";
 import { logoutAction } from "@/app/actions/auth";
 import {
@@ -10,20 +11,42 @@ import {
 } from "@/components/admin/shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { getSecurityPixelSettings, isIpAllowedForAdmin } from "@/lib/settings/security-pixel-settings";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Enforce at least STAFF role (STAFF, MANAGER, ADMIN are permitted to access operations dashboard)
   const user = await requireRole("STAFF");
 
+  // Enforce IP allowlist perimeter if configured
+  const { settings: secSettings } = await getSecurityPixelSettings();
+  if (secSettings.adminIpAllowlist.length > 0) {
+    const reqHeaders = await headers();
+    const forwardedFor = reqHeaders.get("x-forwarded-for");
+    const realIp = reqHeaders.get("x-real-ip");
+    const clientIp = forwardedFor ? forwardedFor.split(",")[0].trim() : realIp?.trim() || "";
+
+    if (!isIpAllowedForAdmin(clientIp, secSettings)) {
+      return (
+        <div className="flex min-h-screen flex-col items-center justify-center p-6 text-center bg-vl-dark-950 text-vl-white">
+          <ShieldAlert className="size-12 text-red-500 mb-4" />
+          <h1 className="text-xl font-bold">Admin Access Blocked</h1>
+          <p className="mt-2 text-sm text-vl-dark-400 max-w-md">
+            Your network IP address ({clientIp || "Unknown"}) is not on the authorized perimeter allowlist for this store.
+          </p>
+        </div>
+      );
+    }
+  }
+
   const displayName = user.name || user.email?.split("@")[0] || "Staff Member";
   const initials = (user.name || user.email || "VL").slice(0, 2).toUpperCase();
 
   return (
-    <div className="bg-vl-white-300 text-vl-dark-900 fixed inset-0 flex overflow-hidden">
+    <div className="bg-vl-white-300 text-vl-dark-900 fixed inset-0 flex overflow-hidden print:static print:h-auto print:overflow-visible print:block print:bg-white">
       <AdminSidebar userRole={user.role} />
-      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex h-full min-w-0 flex-1 flex-col overflow-hidden print:static print:h-auto print:overflow-visible print:block">
         {/* ── Top Dashboard Header ── */}
-        <header className="border-vl-dark-900/10 z-30 shrink-0 border-b bg-white/95 shadow-xs backdrop-blur-md">
+        <header className="border-vl-dark-900/10 z-30 shrink-0 border-b bg-white/95 shadow-xs backdrop-blur-md print:hidden">
           <div className="flex min-h-16 items-center justify-between gap-3 px-3.5 py-2.5 sm:px-6 sm:py-3 lg:px-8">
             {/* Left: Mobile Nav Toggle & Brand on Mobile, User Profile on Desktop */}
             <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
@@ -121,7 +144,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </header>
 
         {/* ── Main Content Area ── */}
-        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{children}</main>
+        <main className="min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 print:static print:h-auto print:overflow-visible print:block print:p-0 print:m-0 print:bg-white print:text-black">{children}</main>
       </div>
     </div>
   );

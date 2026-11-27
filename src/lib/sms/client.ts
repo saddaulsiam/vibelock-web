@@ -149,6 +149,22 @@ export async function sendSmsNotification({
     return false;
   }
 
+  // Check milestone event switches from notification settings
+  try {
+    const { isSmsEventEnabled } = await import("@/lib/settings/notification-settings");
+    if (
+      (purpose === "order_placed" ||
+        purpose === "order_dispatched" ||
+        purpose === "out_for_delivery" ||
+        purpose === "return_approved") &&
+      !(await isSmsEventEnabled(purpose))
+    ) {
+      return false;
+    }
+  } catch {
+    // Continue if notification settings module unavailable
+  }
+
   const cleanPhone = phone.trim().replace(/[^\d+]/g, "");
 
   // Safe developer / audit logging (masks phone and OTP digits)
@@ -164,9 +180,21 @@ export async function sendSmsNotification({
   }
 
   try {
-    const smsApiKey = process.env.SMS_API_KEY;
-    const smsApiUrl = process.env.SMS_API_URL;
-    const smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
+    let smsApiKey = process.env.SMS_API_KEY;
+    let smsApiUrl = process.env.SMS_API_URL;
+    let smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
+
+    try {
+      const { resolveEffectiveSmsCredentials } = await import("@/lib/settings/notification-settings");
+      const resolved = await resolveEffectiveSmsCredentials();
+      if (resolved.isConfigured) {
+        smsApiKey = resolved.apiKey;
+        smsApiUrl = resolved.apiUrl;
+        smsSenderId = resolved.senderId;
+      }
+    } catch {
+      // Graceful fallback to env vars
+    }
 
     if (!smsApiKey || !smsApiUrl) {
       console.warn(

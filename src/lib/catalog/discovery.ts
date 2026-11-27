@@ -197,6 +197,15 @@ export const getDiscoveredProducts = async (
       ]);
 
       let mappedProducts = products.map(mapProductSummary);
+      try {
+        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { settings } = await getInventoryReturnSettings();
+        if (settings.autoHideOutOfStock) {
+          mappedProducts = mappedProducts.filter((p) => p.available);
+        }
+      } catch {
+        // Fallback gracefully
+      }
       if (params.sort === "price-asc") {
         mappedProducts = [...mappedProducts].sort((a, b) => a.minPrice - b.minPrice);
       } else if (params.sort === "price-desc") {

@@ -47,15 +47,16 @@ export async function notifyReturnApproved({
   customerName?: string | null;
   customerPhone?: string | null;
   orderNumber: string;
-  trackingCode: string;
+  trackingCode?: string | null;
 }) {
   const name = customerName || "Valued Customer";
+  const displayTracking = trackingCode?.trim() || "Assigned upon pickup";
 
   // Send SMS
   if (customerPhone) {
     await sendSmsNotification({
       phone: customerPhone,
-      message: `[VibeLock] Hi ${name}, your return request for Order #${orderNumber} has been approved! Steadfast rider will collect the parcel. Tracking: ${trackingCode}. Keep items packed.`,
+      message: `[VibeLock] Hi ${name}, your return request for Order #${orderNumber} has been approved! Steadfast rider will collect the parcel. Tracking: ${displayTracking}. Keep items packed.`,
       purpose: "return_approved",
     });
   }
@@ -81,17 +82,21 @@ export async function notifyReturnApproved({
             Reverse Courier Pickup
           </p>
           <p style="margin: 6px 0 0 0; font-size: 16px; font-weight: 900; color: #FFFFFF; font-family: monospace;">
-            Steadfast Tracking: ${trackingCode}
+            Courier Tracking: ${displayTracking}
           </p>
           <p style="margin: 8px 0 0 0; font-size: 12px; color: rgba(243,240,232,0.7); line-height: 1.5;">
-            A Steadfast courier rider will visit your address to collect the parcel. Please keep the product securely inside the poly bag with tags attached.
+            A courier rider will visit your address to collect the parcel. Please keep the product securely inside the poly bag with tags attached.
           </p>
         </div>
-        <div style="text-align: center; margin: 24px 0 10px 0;">
+        ${
+          trackingCode
+            ? `<div style="text-align: center; margin: 24px 0 10px 0;">
           <a href="https://steadfast.com.bd/t/${trackingCode}" target="_blank" style="display: inline-block; padding: 11px 24px; background-color: #00D9FF; color: #0A0D10; font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; text-decoration: none; border-radius: 8px;">
             Track Courier Pickup
           </a>
-        </div>
+        </div>`
+            : ""
+        }
         ${EMAIL_WRAPPER_FOOTER}
       `,
     });

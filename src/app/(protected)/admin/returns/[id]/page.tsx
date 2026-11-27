@@ -37,6 +37,10 @@ import {
 } from "@/components/admin/returns";
 import { OrderCopyButton, generateWhatsAppUrl } from "@/components/admin/orders";
 import type { ReturnRequestStatus } from "@prisma/client";
+import {
+  getInventoryReturnSettings,
+  calculateReturnRefundAmount,
+} from "@/lib/settings/inventory-return-settings";
 
 const nextStatuses: Record<string, string[]> = {
   PENDING: ["APPROVED", "REJECTED"],
@@ -115,8 +119,17 @@ export default async function AdminReturnDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const request = await getAdminReturnById(id);
+  const [request, { settings: returnPolicies }] = await Promise.all([
+    getAdminReturnById(id),
+    getInventoryReturnSettings(),
+  ]);
   if (!request) notFound();
+
+  const refundBreakdown = calculateReturnRefundAmount({
+    itemTotal: request.requestedAmount,
+    originalShippingCost: Number(request.order.shippingCost || 0),
+    settings: returnPolicies,
+  });
 
   const refunds = request.order.payments.flatMap((payment) =>
     payment.refunds.map((refund) => ({
@@ -751,7 +764,14 @@ export default async function AdminReturnDetailPage({
                           Issue Refund / 105% Store Credit
                         </h3>
                         <p className="text-[10px] text-emerald-700">
-                          Eligible requested: {formatBdt(request.requestedAmount)} (1-Time limit)
+                          Eligible items: {formatBdt(request.requestedAmount)}
+                          {refundBreakdown.deductedShippingFee > 0
+                            ? ` · Less shipping (-${formatBdt(refundBreakdown.deductedShippingFee)})`
+                            : ""}
+                          {refundBreakdown.deductedProcessingFee > 0
+                            ? ` · Processing fee (-${formatBdt(refundBreakdown.deductedProcessingFee)})`
+                            : ""}
+                          {" "}· Net recommended: {formatBdt(refundBreakdown.netRefundAmount)}
                         </p>
                       </div>
                     </div>
@@ -759,7 +779,7 @@ export default async function AdminReturnDetailPage({
 
                   <StoreCreditRefundForm
                     returnId={request.id}
-                    maxRequestedAmount={request.requestedAmount}
+                    maxRequestedAmount={refundBreakdown.netRefundAmount}
                     creditAction={issueStoreCreditRefundAction}
                     cashAction={initiateReturnRefundAction}
                   />

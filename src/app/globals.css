@@ -433,11 +433,18 @@ input:-webkit-autofill:active {
   }
 }
 
-/* POS Thermal Receipt & Cash Memo Print Styles (Fallback for Ctrl+P / window.print) */
+/* POS Thermal Receipt & Unified A4 Executive Document Print Styles */
 @media print {
   @page {
-    margin: 0;
+    margin: 10mm;
     size: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   html,
@@ -447,36 +454,94 @@ input:-webkit-autofill:active {
     background: #ffffff !important;
     color: #000000 !important;
     overflow: visible !important;
+    height: auto !important;
   }
 
-  /* When printing, hide all non-print elements */
+  /* When printing, hide all navigation, chrome, dialog headers/footers, and interactive controls */
   header,
   nav,
-  main,
-  footer,
   aside,
+  footer,
   [data-sonner-toaster],
-  [data-slot="dialog-overlay"],
-  [data-slot="dialog-header"],
-  [data-slot="dialog-close"],
-  [data-slot="dialog-footer"],
   .print\:hidden {
     display: none !important;
   }
 
-  /* Hide everything inside body by default */
-  body * {
-    visibility: hidden;
+  /* Default Document Printing: standard layout and main element are fully visible */
+  main {
+    display: block !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Only make .print-area and its descendants visible */
-  .print-area,
-  .print-area * {
+  .print-document,
+  .print-document * {
     visibility: visible !important;
   }
 
-  /* Reset the dialog container so it does not center or shadow */
-  [data-slot="dialog-content"] {
+  .print-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .print-break-before,
+  .print-break-before-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .print-break-after,
+  .print-break-after-page {
+    break-after: page !important;
+    page-break-after: always !important;
+  }
+
+  /* Table Pagination & Margin Guards for Multi-page Reports */
+  table {
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* POS Thermal Receipt & Cash Memo Print Isolation (Active only when .print-area is present in DOM) */
+  body:has(.print-area) {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body:has(.print-area) main {
+    display: none !important;
+  }
+
+  body:has(.print-area) [data-slot="dialog-overlay"],
+  body:has(.print-area) [data-slot="dialog-header"],
+  body:has(.print-area) [data-slot="dialog-close"],
+  body:has(.print-area) [data-slot="dialog-footer"] {
+    display: none !important;
+  }
+
+  body:has(.print-area) * {
+    visibility: hidden;
+  }
+
+  body:has(.print-area) .print-area,
+  body:has(.print-area) .print-area * {
+    visibility: visible !important;
+  }
+
+  /* Reset the dialog container so it does not center or shadow for POS receipts */
+  body:has(.print-area) [data-slot="dialog-content"] {
     position: static !important;
     transform: none !important;
     width: 100% !important;

@@ -675,6 +675,18 @@ model PaymentMethodSetting {
   updatedAt DateTime @updatedAt
 }
 
+model StoreSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       Json
+  description String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+}
+
 model NewsletterSubscriber {
   id        String   @id @default(uuid())
   email     String   @unique

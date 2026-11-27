@@ -19,6 +19,9 @@ import type { DiscountType, Prisma } from "@prisma/client";
 import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
 import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
+import { validateOrderCheckoutPolicies } from "@/lib/settings/checkout-settings";
+import { calculateEffectiveShippingFee } from "@/lib/settings/shipping-rules-settings";
+import { calculateEffectiveTax } from "@/lib/settings/tax-invoice-settings";
 import {
   generateWebsiteOrderNumber,
   isOrderNumberCollision,
@@ -684,8 +687,44 @@ export async function createOrderAction(
           shippingCost = Number(shippingPricing.calculateShippingCharge(shippingCity));
         }
 
+        // Apply dynamic free shipping threshold incentive
+        const freeShippingEval = await calculateEffectiveShippingFee({
+          subtotal: orderSubtotal,
+          city: shippingCity,
+          state: shippingState,
+          standardCost: shippingCost,
+        });
+        if (freeShippingEval.isFree) {
+          shippingCost = 0;
+          shippingMethodName = `${shippingMethodName} (Free Delivery)`;
+        }
+
         const orderDiscount = appliedCoupon?.discount ?? 0;
-        const total = Math.max(0, orderSubtotal - orderDiscount) + shippingCost;
+        const discountedSubtotal = Math.max(0, orderSubtotal - orderDiscount);
+
+        // Calculate dynamic tax / VAT according to store policy
+        const taxEval = await calculateEffectiveTax({
+          subtotal: discountedSubtotal,
+          shippingCost,
+        });
+
+        const total = taxEval.finalTotal;
+
+        // Authoritative checkout policy enforcement (Min order value & Max COD ceiling)
+        const policyCheck = await validateOrderCheckoutPolicies({
+          total,
+          paymentMethod:
+            paymentMethod === "COD"
+              ? "COD"
+              : paymentMethod === "BKASH"
+                ? "BKASH"
+                : paymentMethod === "PAYSTATION"
+                  ? "PAYSTATION"
+                  : "ONLINE",
+        });
+        if (!policyCheck.valid) {
+          throw new Error(`CHECKOUT_POLICY: ${policyCheck.error}`);
+        }
 
         // Create Order
         const newOrder = await tx.order.create({
@@ -709,29 +748,37 @@ export async function createOrderAction(
             shippingMethodName: shippingMethodName,
             shippingMethodId: resolvedShippingMethodId,
             subtotal: orderSubtotal,
-            taxRate: 0,
-            taxIncluded: false,
+            taxRate: taxEval.taxRate,
+            taxIncluded: taxEval.taxIncluded,
             shippingCost: shippingCost,
-            taxAmount: 0,
+            taxAmount: taxEval.taxAmount,
             discount: orderDiscount,
             total: total,
             items: {
-              create: orderItemsToCreate.map((item) => ({
-                productName: item.productName,
-                sku: item.sku,
-                size: item.size,
-                color: item.color,
-                quantity: item.quantity,
-                unitPrice: item.unitPrice,
-                costPrice: item.costPrice,
-                appliedDiscount: item.appliedDiscount,
-                taxRate: item.taxRate,
-                taxIncluded: item.taxIncluded,
-                lineSubtotal: item.lineSubtotal,
-                discountAmount: item.discountAmount,
-                taxAmount: item.taxAmount,
-                lineTotal: item.lineTotal,
-              })),
+              create: orderItemsToCreate.map((item) => {
+                let itemTaxAmount = 0;
+                if (taxEval.taxRate > 0) {
+                  itemTaxAmount = taxEval.taxIncluded
+                    ? Math.round((item.lineTotal - item.lineTotal / (1 + taxEval.taxRate / 100)) * 100) / 100
+                    : Math.round((item.lineTotal * (taxEval.taxRate / 100)) * 100) / 100;
+                }
+                return {
+                  productName: item.productName,
+                  sku: item.sku,
+                  size: item.size,
+                  color: item.color,
+                  quantity: item.quantity,
+                  unitPrice: item.unitPrice,
+                  costPrice: item.costPrice,
+                  appliedDiscount: item.appliedDiscount,
+                  taxRate: taxEval.taxRate,
+                  taxIncluded: taxEval.taxIncluded,
+                  lineSubtotal: item.lineSubtotal,
+                  discountAmount: item.discountAmount,
+                  taxAmount: itemTaxAmount,
+                  lineTotal: item.lineTotal,
+                };
+              }),
             },
           },
         });
@@ -798,12 +845,104 @@ export async function createOrderAction(
 
     const finalOrderNumber = orderResult.orderNumber;
 
+    // Dispatch customer SMS and store manager alerts asynchronously
+    try {
+      const { sendSmsNotification } = await import("@/lib/sms/client");
+      const { getNotificationSettings } = await import("@/lib/settings/notification-settings");
+      const { getCheckoutSettings } = await import("@/lib/settings/checkout-settings");
+      const { isDhakaCity } = await import("@/lib/shipping/pricing");
+      const [{ settings: notifSettings }, { settings: checkoutPolicies }] = await Promise.all([
+        getNotificationSettings(),
+        getCheckoutSettings(),
+      ]);
+
+      const customerTel = orderResult.customerPhone;
+      if (customerTel) {
+        let smsText = `[VibeLock] Hi ${orderResult.customerName}, your order #${finalOrderNumber} for ৳${Number(orderResult.total).toLocaleString("en-BD")} has been received! We will notify you once dispatched.`;
+
+        if (
+          orderResult.paymentMethod === "COD" &&
+          checkoutPolicies.requireCodAdvanceDeliveryCharge &&
+          checkoutPolicies.codAdvanceCollectionMode === "MANUAL_VERIFICATION"
+        ) {
+          const isDhaka = isDhakaCity(orderResult.shippingCity, orderResult.shippingState);
+          const advanceFee = isDhaka
+            ? checkoutPolicies.codAdvanceInsideDhaka
+            : checkoutPolicies.codAdvanceOutsideDhaka;
+          const mfsNum = checkoutPolicies.codAdvancePaymentNumber?.trim() || "our official hotline";
+
+          smsText = `[VibeLock] Hi ${orderResult.customerName}, order #${finalOrderNumber} placed! To confirm dispatch, please send ৳${advanceFee} courier advance to bKash: ${mfsNum}. Our team will also call you.`;
+        }
+
+        void sendSmsNotification({
+          phone: customerTel,
+          message: smsText,
+          purpose: "order_placed",
+        });
+      }
+
+      if (
+        notifSettings.adminAlertsEnabled &&
+        notifSettings.adminAlertRecipientPhone &&
+        Number(orderResult.total) >= notifSettings.adminAlertHighValueThreshold
+      ) {
+        void sendSmsNotification({
+          phone: notifSettings.adminAlertRecipientPhone,
+          message: `[VibeLock ALERT] High-value order #${finalOrderNumber} placed for ৳${Number(orderResult.total).toLocaleString("en-BD")} by ${orderResult.customerName} (${customerTel || orderResult.customerEmail}).`,
+          purpose: "transactional",
+        });
+      }
+    } catch (notifErr) {
+      console.warn("[Checkout] Failed to trigger order placement SMS notification:", notifErr);
+    }
+
     revalidatePath("/cart");
     revalidatePath("/shop");
     revalidatePath("/admin/orders");
     revalidatePath("/admin/inventory");
     if (couponCode) {
       revalidatePath("/admin/coupons");
+    }
+
+    if (paymentMethod === "COD") {
+      const { getCheckoutSettings } = await import("@/lib/settings/checkout-settings");
+      const { settings: checkoutPolicies } = await getCheckoutSettings();
+
+      if (
+        checkoutPolicies.requireCodAdvanceDeliveryCharge &&
+        checkoutPolicies.codAdvanceCollectionMode === "AUTOMATED_GATEWAY"
+      ) {
+        const orderRecord = await prisma.order.findUnique({
+          where: { orderNumber: finalOrderNumber },
+        });
+        if (orderRecord) {
+          const { isDhakaCity } = await import("@/lib/shipping/pricing");
+          const isDhaka = isDhakaCity(orderRecord.shippingCity, orderRecord.shippingState);
+          const advanceFee = isDhaka
+            ? checkoutPolicies.codAdvanceInsideDhaka
+            : checkoutPolicies.codAdvanceOutsideDhaka;
+
+          // Select active gateway for advance collection: default to PAYSTATION, else fallback to BKASH
+          const { isPaymentMethodEnabled } = await import("@/lib/settings/payment-settings");
+          const paystationEnabled = await isPaymentMethodEnabled("PAYSTATION");
+          const gatewayToUse = paystationEnabled ? "PAYSTATION" : "BKASH";
+
+          const paymentService = (await import("@/lib/payment/service")).PaymentService;
+          const service = new paymentService();
+
+          const initiation = await service.initiatePayment(orderRecord, gatewayToUse, {
+            customAmount: advanceFee,
+          });
+
+          if (initiation.success && initiation.redirectUrl) {
+            return {
+              success: true,
+              orderNumber: finalOrderNumber,
+              redirectUrl: initiation.redirectUrl,
+            };
+          }
+        }
+      }
     }
 
     if (paymentMethod === "ONLINE") {
@@ -936,6 +1075,21 @@ export async function createOrderAction(
         });
       } catch (telegramErr) {
         console.error("[Checkout] Failed to dispatch telegram notification:", telegramErr);
+      }
+
+      // Dynamic Auto-Consignment Dispatch if enabled in Shipping Rules
+      try {
+        const { getShippingRulesSettings } = await import("@/lib/settings/shipping-rules-settings");
+        const { settings: shippingRules } = await getShippingRulesSettings();
+        if (shippingRules.autoCreateConsignment) {
+          const { getShippingProvider } = await import("@/lib/shipping/provider");
+          const { ShippingService } = await import("@/lib/shipping/service");
+          const provider = getShippingProvider();
+          const service = new ShippingService(provider);
+          void service.createShipmentForOrder(orderResult.id, null);
+        }
+      } catch (consignmentErr) {
+        console.error("[Checkout] Auto-consignment creation failed:", consignmentErr);
       }
     }
 
@@ -1079,6 +1233,14 @@ export async function createOrderAction(
 
     if (isShippingError) {
       return { success: false, error: (error as Error).message };
+    }
+
+    if (error instanceof Error && error.message.startsWith("CHECKOUT_POLICY:")) {
+      return {
+        success: false,
+        error: error.message.replace("CHECKOUT_POLICY: ", ""),
+        correlationId,
+      };
     }
 
     if (isInsufficientStock) {

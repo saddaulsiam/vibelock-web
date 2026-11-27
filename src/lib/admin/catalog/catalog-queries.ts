@@ -3,6 +3,7 @@ import "server-only";
 import { BannerPlacement, ProductStatus } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { getEffectiveLowStockThreshold } from "@/lib/settings/inventory-return-settings";
 
 export type AdminProductsQueryOptions = {
   search?: string;
@@ -125,7 +126,7 @@ export async function getAdminProducts(
   const page = Math.max(1, Number(options?.page) || 1);
   const pageSize = Math.max(5, Math.min(100, Number(options?.pageSize) || 20));
 
-  const [allCategories, rawProducts] = await Promise.all([
+  const [allCategories, rawProducts, lowStockThreshold] = await Promise.all([
     prisma.category.findMany({
       orderBy: { name: "asc" },
       select: { id: true, name: true, slug: true },
@@ -164,6 +165,7 @@ export async function getAdminProducts(
         },
       },
     }),
+    getEffectiveLowStockThreshold(),
   ]);
 
   const allMappedProducts: AdminProductItem[] = rawProducts.map((p) => {
@@ -215,7 +217,7 @@ export async function getAdminProducts(
     draft: allMappedProducts.filter((p) => p.status === "DRAFT").length,
     archived: allMappedProducts.filter((p) => p.status === "ARCHIVED").length,
     inStock: allMappedProducts.filter((p) => p.totalStock > 0).length,
-    lowStock: allMappedProducts.filter((p) => p.totalStock > 0 && p.totalStock <= 5).length,
+    lowStock: allMappedProducts.filter((p) => p.totalStock > 0 && p.totalStock <= lowStockThreshold).length,
     outOfStock: allMappedProducts.filter((p) => p.totalStock <= 0).length,
   };
 
@@ -247,7 +249,7 @@ export async function getAdminProducts(
     if (sf === "in-stock") {
       filtered = filtered.filter((p) => p.totalStock > 0);
     } else if (sf === "low-stock") {
-      filtered = filtered.filter((p) => p.totalStock > 0 && p.totalStock <= 5);
+      filtered = filtered.filter((p) => p.totalStock > 0 && p.totalStock <= lowStockThreshold);
     } else if (sf === "out-of-stock") {
       filtered = filtered.filter((p) => p.totalStock <= 0);
     }

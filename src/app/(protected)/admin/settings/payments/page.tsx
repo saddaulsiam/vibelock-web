@@ -9,26 +9,40 @@ import { TogglePaymentMethodForm } from "@/components/admin/payments";
 import {
   AlertCircle,
   Banknote,
-  CheckCircle2,
   Clock,
   CreditCard,
-  Lock,
-  ShieldCheck,
-  ShieldAlert,
   Smartphone,
-  Info,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-function getMethodIcon(code: PaymentMethodStatus["code"]) {
+function getMethodVisualConfig(code: PaymentMethodStatus["code"]) {
   switch (code) {
     case "COD":
-      return Banknote;
+      return {
+        icon: Banknote,
+        avatarBg: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        railLabel: "Offline Logistics Rail",
+        protocol: "National Courier Settlement",
+        accentBorder: "border-emerald-500",
+      };
     case "PAYSTATION":
-      return CreditCard;
+      return {
+        icon: CreditCard,
+        avatarBg: "bg-vl-cyan-50 text-vl-cyan-700 border-vl-cyan-200",
+        railLabel: "Multi-Gateway Rail",
+        protocol: "Hosted Checkout (Cards & MFS)",
+        accentBorder: "border-vl-cyan-500",
+      };
     case "BKASH":
-      return Smartphone;
+      return {
+        icon: Smartphone,
+        avatarBg: "bg-pink-50 text-pink-600 border-pink-200",
+        railLabel: "MFS Direct Rail",
+        protocol: "Tokenized API v1.2.0 (1-Click)",
+        accentBorder: "border-pink-500",
+      };
   }
 }
 
@@ -37,20 +51,20 @@ function getStatusBadge(method: PaymentMethodStatus) {
     return (
       <Badge
         variant="outline"
-        className="border-emerald-400 bg-emerald-50 font-semibold text-emerald-800"
+        className="border-emerald-300 bg-emerald-50 px-2.5 py-1 text-[11px] font-bold tracking-wide text-emerald-800"
       >
-        <CheckCircle2 className="mr-1 size-3 text-emerald-600" />
+        <span className="mr-1.5 size-1.5 animate-pulse rounded-full bg-emerald-600" />
         ACTIVE
       </Badge>
     );
   }
 
-  if (
-    (method.code === "BKASH" || method.code === "PAYSTATION") &&
-    !method.isConfigured
-  ) {
+  if ((method.code === "BKASH" || method.code === "PAYSTATION") && !method.isConfigured) {
     return (
-      <Badge variant="outline" className="border-amber-400 bg-amber-50 font-medium text-amber-800">
+      <Badge
+        variant="outline"
+        className="border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-800"
+      >
         <AlertCircle className="mr-1 size-3 text-amber-600" />
         CREDENTIALS MISSING
       </Badge>
@@ -58,8 +72,11 @@ function getStatusBadge(method: PaymentMethodStatus) {
   }
 
   return (
-    <Badge variant="outline" className="border-zinc-300 bg-zinc-100 font-medium text-zinc-600">
-      <Clock className="mr-1 size-3 text-zinc-500" />
+    <Badge
+      variant="outline"
+      className="border-neutral-200 bg-neutral-100 px-2.5 py-1 text-[11px] font-semibold text-neutral-600"
+    >
+      <Clock className="mr-1 size-3 text-neutral-500" />
       INACTIVE
     </Badge>
   );
@@ -72,184 +89,89 @@ export default async function AdminPaymentSettingsPage() {
   const overview = await getPaymentSettingsOverview();
 
   return (
-    <div className="space-y-8">
-      {/* Header Description */}
-      <div>
-        <h2 className="text-vl-dark-900 text-xl font-semibold tracking-tight">
-          Payment Gateways & Checkout Controls
-        </h2>
-        <p className="text-muted-foreground mt-1 text-sm">
-          View operational payment channels, server-side enforcement status, and checkout lifecycle
-          rules.
-        </p>
-      </div>
-
-      {/* Persistence & Strategy A Status Notice */}
-      <div
-        className={`rounded-lg border p-4 text-sm ${
-          overview.hasPersistenceStore
-            ? "border-emerald-300 bg-emerald-50/70 text-emerald-900"
-            : "border-amber-300 bg-amber-50/70 text-amber-900"
-        }`}
-      >
-        <div className="flex items-start gap-3">
-          {overview.hasPersistenceStore ? (
-            <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-700" />
-          ) : (
-            <ShieldAlert className="mt-0.5 size-5 shrink-0 text-amber-700" />
-          )}
-          <div className="space-y-1">
-            <p className="font-semibold">
-              {overview.hasPersistenceStore
-                ? "Database Persistence Active"
-                : "Phase 2B Safe Runtime Foundation (Strategy A Fallback)"}
-            </p>
-            <p className="leading-relaxed opacity-90">
-              {overview.hasPersistenceStore
-                ? "Payment settings are actively loaded and saved to the PaymentMethodSetting database table with AuditLog records."
-                : overview.persistenceBlocker ||
-                  "Settings are safeguarded by the Strategy A bootstrap matrix. COD defaults to enabled, and PayStation/bKash respect environment credentials."}
-            </p>
-            <p className="text-xs opacity-80">
-              Authoritative server-side enforcement is active in createOrderAction. Toggling methods
-              updates checkout availability instantly.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Method Cards Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+    <div className="space-y-4">
+      {/* ── PAYMENT METHOD CARDS (3-COLUMN RESPONSIVE GRID) ── */}
+      <div className="grid gap-4 lg:grid-cols-3">
         {overview.methods.map((method) => {
-          const Icon = getMethodIcon(method.code);
+          const visual = getMethodVisualConfig(method.code);
+          const Icon = visual.icon;
           const canToggle =
-            method.code === "COD" ||
-            method.code === "BKASH" ||
-            method.code === "PAYSTATION";
+            method.code === "COD" || method.code === "BKASH" || method.code === "PAYSTATION";
 
           return (
             <Card
               key={method.code}
-              className="border-vl-dark-900/10 flex flex-col justify-between bg-white shadow-sm"
+              className="border-neutral-200/80 bg-white shadow-2xs rounded-xl flex flex-col justify-between overflow-hidden transition-all duration-200 hover:shadow-md"
             >
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="border-vl-dark-900/10 bg-vl-white-300 flex size-10 shrink-0 items-center justify-center rounded-md border">
-                      <Icon className="text-vl-dark-900 size-5" />
+              <div>
+                <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div
+                        className={cn(
+                          "flex size-9 shrink-0 items-center justify-center rounded-lg border shadow-2xs",
+                          visual.avatarBg
+                        )}
+                      >
+                        <Icon className="size-4.5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-sm font-bold tracking-tight text-neutral-900">
+                          {method.name}
+                        </CardTitle>
+                        <CardDescription className="flex items-center gap-1.5 text-xs text-neutral-500">
+                          <span>{visual.railLabel}</span>
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                      <CardTitle className="text-vl-dark-900 text-base font-semibold">
-                        {method.name}
-                      </CardTitle>
-                      <CardDescription className="text-muted-foreground text-xs">
-                        {method.type.replace("_", " ")} · Code:{" "}
-                        <code className="text-vl-dark-900 font-mono">{method.code}</code>
-                      </CardDescription>
-                    </div>
+                    {getStatusBadge(method)}
                   </div>
-                  {getStatusBadge(method)}
-                </div>
-              </CardHeader>
+                </CardHeader>
 
-              <CardContent className="space-y-4 text-sm">
-                <p className="text-muted-foreground leading-relaxed">{method.description}</p>
-
-                {/* Environment & Configuration Details */}
-                <div className="border-vl-dark-900/5 bg-vl-white-300/40 space-y-1.5 rounded-md border p-3 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-medium">Runtime State:</span>
-                    <span className="text-vl-dark-900 font-semibold">
-                      {method.isEnabled ? "Available in Checkout" : "Unavailable / Disabled"}
-                    </span>
-                  </div>
+                <CardContent className="space-y-3 p-4 text-sm">
+                  <p className="text-xs leading-relaxed text-neutral-600">
+                    {method.description}
+                  </p>
 
                   {method.environmentMode && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground font-medium">Environment:</span>
-                      <span className="text-vl-dark-900 font-mono uppercase">
+                    <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 px-3 py-1.5 text-xs">
+                      <span className="font-medium text-neutral-500">Environment</span>
+                      <span
+                        className={cn(
+                          "rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase",
+                          method.environmentMode === "production"
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                            : "border-amber-300 bg-amber-50 text-amber-800"
+                        )}
+                      >
                         {method.environmentMode}
                       </span>
                     </div>
                   )}
+                </CardContent>
+              </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground font-medium">Credentials Security:</span>
-                    <span className="inline-flex items-center gap-1 font-medium text-emerald-700">
-                      <Lock className="size-3" />
-                      Server-only (Never exposed)
+              {/* Card Action Control Footer */}
+              <div className="border-t border-neutral-200/80 bg-neutral-50/50 p-3.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-neutral-700">Checkout Status</span>
+                  {canToggle ? (
+                    <TogglePaymentMethodForm
+                      code={method.code as "COD" | "BKASH" | "PAYSTATION"}
+                      isEnabled={method.isEnabled}
+                      isConfigured={method.isConfigured}
+                    />
+                  ) : (
+                    <span className="rounded bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+                      Planned in Future Release
                     </span>
-                  </div>
+                  )}
                 </div>
-
-                {/* Checkout Impact */}
-                <div className="space-y-1">
-                  <p className="text-muted-foreground flex items-center gap-1 text-xs font-semibold tracking-wider uppercase">
-                    <Info className="size-3" /> Checkout Impact
-                  </p>
-                  <p className="border-vl-dark-900/5 bg-vl-dark-900/2 text-vl-dark-900/80 rounded border p-2.5 text-xs leading-relaxed">
-                    {method.checkoutImpact}
-                  </p>
-                </div>
-
-                {/* Admin Toggle Control */}
-                <div className="border-vl-dark-900/10 border-t pt-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground font-medium">Admin Control:</span>
-                    {canToggle ? (
-                      <TogglePaymentMethodForm
-                        code={method.code as "COD" | "BKASH" | "PAYSTATION"}
-                        isEnabled={method.isEnabled}
-                        isConfigured={method.isConfigured}
-                      />
-                    ) : (
-                      <span className="rounded bg-zinc-100 px-2 py-0.5 font-medium text-zinc-500">
-                        Planned in Phase 2 / Future
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
+              </div>
             </Card>
           );
         })}
       </div>
-
-      {/* Security & Enforcement Summary */}
-      <Card className="border-vl-dark-900/10 bg-vl-dark-900 text-white">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base font-semibold">
-            <Lock className="text-vl-cyan size-4" />
-            Server-Side Enforcement Guarantees
-          </CardTitle>
-          <CardDescription className="text-xs text-white/70">
-            Payment channel authorization and security policies in VibeLock
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2 text-xs leading-relaxed text-white/80">
-          <ul className="list-inside list-disc space-y-1">
-            <li>
-              <strong>Server-Authoritative:</strong> Checkout methods are enforced by{" "}
-              <code className="text-vl-cyan">createOrderAction</code>. Bypassing client UI forms
-              will not allow unconfigured or disabled payment methods.
-            </li>
-            <li>
-              <strong>Credential Gating:</strong> Enabling an online gateway in the database
-              requires active credentials in environment variables; missing keys prevent enablement.
-            </li>
-            <li>
-              <strong>In-Flight Safety:</strong> Disabling an online provider prevents new checkout
-              sessions, but callbacks and IPN reconciliation for already-created orders remain
-              active.
-            </li>
-            <li>
-              <strong>Auditability:</strong> All payment setting modifications generate atomic
-              records in the <code className="text-vl-cyan">AuditLog</code> table with actor ID and
-              state transitions.
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -11,10 +11,12 @@ import {
   AlertCircle,
   ArrowLeft,
   ArrowRight,
+  Banknote,
   Check,
   Clock,
   CreditCard,
   MapPin,
+  MessageCircle,
   Package,
   Phone,
   RotateCcw,
@@ -28,6 +30,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
 import { MetaPurchaseTracker } from "@/components/storefront/analytics/meta-purchase-tracker";
+import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
+import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
+import { isDhakaCity } from "@/lib/shipping/pricing";
 
 export const metadata: Metadata = {
   title: "Order Confirmation",
@@ -55,7 +60,11 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const paymentQuery = resolvedSearchParams.payment?.toLowerCase();
 
-  const order = await getCustomerOrderConfirmation(orderNumber);
+  const [order, { settings: checkoutPolicies }, { settings: generalSettings }] = await Promise.all([
+    getCustomerOrderConfirmation(orderNumber),
+    getCheckoutSettings(),
+    getGeneralStoreSettings(),
+  ]);
   if (!order) notFound();
 
   const isOrderCancelled = order.status === "CANCELLED";
@@ -64,6 +73,26 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
   const isPaymentFailed = order.paymentStatus === "FAILED";
   const isPaid = order.paymentStatus === "SUCCESS";
   const isCod = order.paymentMethod === "COD";
+
+  const isDhaka = isDhakaCity(order.shippingCity, order.shippingState);
+  const isAdvanceRequired =
+    isCod &&
+    checkoutPolicies.requireCodAdvanceDeliveryCharge &&
+    checkoutPolicies.codAdvanceCollectionMode === "MANUAL_VERIFICATION";
+  const advanceAmount = isDhaka
+    ? checkoutPolicies.codAdvanceInsideDhaka
+    : checkoutPolicies.codAdvanceOutsideDhaka;
+  const balanceDueOnDelivery = Math.max(0, order.total - advanceAmount);
+  const mfsNumber =
+    checkoutPolicies.codAdvancePaymentNumber?.trim() ||
+    generalSettings.whatsappNumber?.trim() ||
+    generalSettings.supportPhone?.trim() ||
+    "01311333277";
+  const cleanMfsWhatsApp = mfsNumber.replace(/\D/g, "");
+  const hotline = generalSettings.supportPhone || "01311333277";
+  const instructions =
+    checkoutPolicies.codAdvanceInstructions ||
+    "Send courier advance via bKash/Nagad to confirm order dispatch. Our representative will also call you.";
   const isAwaitingPayment = !isPaid && !isCod && !isCancelled && !isPaymentFailed;
   const isPaystation = order.paymentGateway === "PAYSTATION";
   const isPaystationCancelled =
@@ -113,9 +142,15 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
     },
     {
       id: "payment",
-      label: isCod ? "COD Confirmed" : "Payment Verified",
+      label: isCod
+        ? isAdvanceRequired
+          ? "Advance Required"
+          : "COD Confirmed"
+        : "Payment Verified",
       sublabel: isCod
-        ? "Pay on delivery"
+        ? isAdvanceRequired
+          ? `৳${advanceAmount} Courier Fee Due`
+          : "Pay on delivery"
         : isPaid
           ? "Settled via " + gatewayLabel
           : isRedirectUnfinished
@@ -250,6 +285,87 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
               </div>
             ) : (
               <>
+                {/* ── COD Advance Verification Card (Method 1) ── */}
+                {isAdvanceRequired && !isCancelled && (
+                  <div className="mt-6 overflow-hidden rounded-xl border border-amber-300 bg-amber-50/80 p-5 shadow-2xs">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-amber-300/80 bg-amber-100 text-amber-800 shadow-2xs">
+                        <Banknote className="size-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <h4 className="text-xs font-bold tracking-wider text-amber-950 uppercase sm:text-sm">
+                            COD ডেলিভারি চার্জ এডভান্স ভেরিফিকেশন
+                          </h4>
+                          <span className="rounded-full border border-amber-300 bg-amber-100/90 px-2.5 py-0.5 text-[11px] font-bold text-amber-900">
+                            Action Needed
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-amber-900/80">
+                          আপনার পার্সেলটি দ্রুত কুরিয়ারে বুক করার জন্য ডেলিভারি চার্জ অগ্রিম পরিশোধ করতে হবে। ডেলিভারির সময় কুরিয়ারকে বাকি মূল্য ক্যাশ পরিশোধ করবেন।
+                        </p>
+
+                        {/* Amount breakdown boxes */}
+                        <div className="mt-3 grid gap-2.5 rounded-lg border border-amber-200/90 bg-white/90 p-3 sm:grid-cols-2">
+                          <div>
+                            <span className="text-[11px] font-medium text-neutral-500">
+                              অগ্রিম কুরিয়ার ফি ({isDhaka ? "ঢাকার ভেতরে" : "ঢাকার বাইরে"}):
+                            </span>
+                            <p className="mt-0.5 font-mono text-base font-black text-amber-700">
+                              ৳{advanceAmount.toLocaleString("en-BD")}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-[11px] font-medium text-neutral-500">
+                              ডেলিভারির সময় প্রদেয় বাকি ক্যাশ:
+                            </span>
+                            <p className="mt-0.5 font-mono text-base font-black text-neutral-900">
+                              ৳{balanceDueOnDelivery.toLocaleString("en-BD")}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* bKash / Nagad payment number card */}
+                        <div className="mt-3 rounded-lg border border-amber-200 bg-amber-100/60 p-3 text-xs text-amber-950">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-semibold text-neutral-700">
+                              বিকাশ / নগদ পার্সোনাল/মার্চেন্ট নম্বর:
+                            </span>
+                            <code className="rounded border border-amber-300 bg-white px-2.5 py-1 font-mono text-sm font-bold text-amber-950 select-all">
+                              {mfsNumber}
+                            </code>
+                          </div>
+                          <p className="mt-2 text-[11px] leading-relaxed text-amber-900">
+                            {instructions}
+                          </p>
+                        </div>
+
+                        {/* Quick Contact Action Buttons */}
+                        <div className="mt-4 flex flex-wrap items-center gap-2.5">
+                          <a
+                            href={`https://wa.me/${cleanMfsWhatsApp}?text=${encodeURIComponent(
+                              `আসসালামু আলাইকুম! আমার অর্ডার #${order.orderNumber} এর জন্য কুরিয়ার চার্জ ৳${advanceAmount} বিকাশ করেছি/করতে চাই।`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-2xs transition-all hover:bg-emerald-700"
+                          >
+                            <MessageCircle className="size-3.5" />
+                            <span>WhatsApp-এ TrxID পাঠান</span>
+                          </a>
+                          <a
+                            href={`tel:${hotline}`}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-all hover:bg-neutral-50"
+                          >
+                            <Phone className="size-3.5 text-neutral-600" />
+                            <span>হেল্পলাইনে কল করুন ({hotline})</span>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {isRedirectUnfinished && (
                   <div className="mt-6 flex flex-col gap-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
                     <div className="flex items-start gap-3.5">
@@ -570,7 +686,9 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                             : isPaymentFailed
                               ? "bg-rose-100 text-rose-800"
                               : isCod
-                                ? "bg-blue-100 text-blue-800"
+                                ? isAdvanceRequired
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-blue-100 text-blue-800"
                                 : "bg-amber-100 text-amber-800"
                       }`}
                     >
@@ -581,7 +699,9 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                           : isPaymentFailed
                             ? "FAILED"
                             : isCod
-                              ? "CASH ON DELIVERY"
+                              ? isAdvanceRequired
+                                ? "COD (ADVANCE REQUIRED)"
+                                : "CASH ON DELIVERY"
                               : "PENDING"}
                     </span>
                   </div>
@@ -599,7 +719,9 @@ export default async function OrderSuccessPage({ params, searchParams }: OrderSu
                       : isCancelled
                         ? "Order was cancelled and payment was not completed."
                         : isCod
-                          ? "Please have exact cash ready for courier."
+                          ? isAdvanceRequired
+                            ? `Please send ৳${advanceAmount} delivery advance to confirm order. Remaining ৳${balanceDueOnDelivery.toLocaleString("en-BD")} is due on delivery.`
+                            : "Please have exact cash ready for courier."
                           : isRedirectUnfinished
                             ? "Payment session incomplete. Awaiting trusted confirmation."
                             : isPaymentFailed

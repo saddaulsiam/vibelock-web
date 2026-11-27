@@ -22,6 +22,7 @@ import { OrderPrintAction } from "@/components/storefront/orders/order-print-act
 import { Button } from "@/components/ui/button";
 import { getCustomerOrder } from "@/lib/orders/queries";
 import { formatOrderDateTime, calculateDeliveryEstimate } from "@/lib/format";
+import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
@@ -38,7 +39,10 @@ const formatDate = formatOrderDateTime;
 
 export default async function OrderDetailPage(props: { params: Promise<{ orderNumber: string }> }) {
   const { orderNumber } = await props.params;
-  const order = await getCustomerOrder(orderNumber);
+  const [order, { settings: taxSettings }] = await Promise.all([
+    getCustomerOrder(orderNumber),
+    getTaxInvoiceSettings(),
+  ]);
   if (!order) notFound();
 
   const canCancel =
@@ -96,7 +100,21 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
 
         {/* Action Controls */}
         <div className="flex flex-wrap items-center gap-2">
-          <OrderPrintAction order={order} />
+          <OrderPrintAction
+            order={{
+              ...order,
+              taxInvoiceConfig: {
+                registeredBusinessName: taxSettings.registeredBusinessName,
+                binNumber: taxSettings.binNumber,
+                taxCircle: taxSettings.taxCircle,
+                taxZone: taxSettings.taxZone,
+                invoiceFooterNote: taxSettings.invoiceFooterNote,
+                enableMushak63Format: taxSettings.enableMushak63Format,
+                customerCareContact: taxSettings.customerCareContact,
+                registeredOfficeAddress: taxSettings.registeredOfficeAddress,
+              },
+            }}
+          />
 
           {/* Buy Again / Reorder for Delivered Orders */}
           {order.status === "DELIVERED" && <ReorderButton orderNumber={order.orderNumber} />}

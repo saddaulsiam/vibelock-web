@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface HeaderShellProps {
   children: React.ReactNode;
+  announcement?: React.ReactNode;
 }
 
-export function HeaderShell({ children }: HeaderShellProps) {
+export function HeaderShell({ children, announcement }: HeaderShellProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
   const lastScrollYRef = useRef(0);
 
   useEffect(() => {
@@ -20,9 +20,6 @@ export function HeaderShell({ children }: HeaderShellProps) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const lastScrollY = lastScrollYRef.current;
-
-          // Determine if we are scrolled past the initial page top
-          setIsScrolled(currentScrollY > 20);
 
           // Scroll tolerance to prevent tiny jittering on sensitive touchpads
           const diff = currentScrollY - lastScrollY;
@@ -52,12 +49,14 @@ export function HeaderShell({ children }: HeaderShellProps) {
   return (
     <header
       className={cn(
-        "pointer-events-none fixed right-0 left-0 z-50 w-full px-2.5 transition-all duration-300 ease-out sm:px-6 lg:px-8",
-        isScrolled ? "top-1.5 sm:top-2" : "top-2 sm:top-3",
-        isVisible ? "translate-y-0 opacity-100" : "-translate-y-16 opacity-0 sm:-translate-y-20"
+        "pointer-events-none fixed inset-x-0 top-0 z-50 w-full transition-transform duration-300 ease-out",
+        isVisible ? "translate-y-0" : "-translate-y-full"
       )}
     >
-      {children}
+      {announcement && <div className="pointer-events-auto w-full">{announcement}</div>}
+      <div className="w-full px-2.5 pt-2 sm:px-6 sm:pt-2.5 lg:px-8">
+        {children}
+      </div>
     </header>
   );
 }

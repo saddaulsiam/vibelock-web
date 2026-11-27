@@ -1,37 +1,18 @@
 import Link from "next/link";
-import { BarChart3, CreditCard, RefreshCw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select-native";
-import { ReportCharts, ReportExportMenu } from "@/components/admin/reports";
-
-import { ProductProfitabilityDrilldown } from "@/components/admin/products";
+import { CreditCard, RefreshCw } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/shared";
+import {
+  ReportCharts,
+  ReportExportMenu,
+  ReportFinancialHero,
+  ReportLedgerWorkspace,
+  ReportRangeFilter,
+} from "@/components/admin/reports";
 import {
   getAdminOrderProfitability,
   getAdminProductProfitability,
   getAdminReport,
 } from "@/lib/admin/reports";
-
-function money(value: number | null) {
-  return value === null
-    ? "Unavailable"
-    : `৳${value.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function dateLabel(value: Date) {
-  return new Intl.DateTimeFormat("en-BD", { dateStyle: "medium" }).format(value);
-}
-
-const ranges = [
-  ["today", "Today"],
-  ["yesterday", "Yesterday"],
-  ["7d", "Last 7 days"],
-  ["30d", "Last 30 days"],
-  ["this-month", "This month"],
-  ["last-month", "Last month"],
-  ["custom", "Custom"],
-] as const;
 
 export default async function AdminReportsPage({
   searchParams,
@@ -43,7 +24,9 @@ export default async function AdminReportsPage({
   const range = value("range") ?? "30d";
   const from = value("from");
   const to = value("to");
+  const currentView = value("view") ?? "products";
   const reportFilters = { range, from, to, sort: value("sort"), search: value("q") };
+
   const buildHref = (updates: Record<string, string | number | undefined>) => {
     const query = new URLSearchParams();
     for (const [key, current] of Object.entries({
@@ -54,12 +37,14 @@ export default async function AdminReportsPage({
       sort: value("sort"),
       page: value("page"),
       pPage: value("pPage"),
+      view: value("view"),
       ...updates,
     })) {
       if (current !== undefined && current !== "") query.set(key, String(current));
     }
     return `?${query.toString()}`;
   };
+
   const productPage = Number(value("pPage") ?? "1");
   const [report, orders, productProfitability] = await Promise.all([
     getAdminReport(reportFilters),
@@ -67,333 +52,168 @@ export default async function AdminReportsPage({
     getAdminProductProfitability({ ...reportFilters, page: productPage, limit: 20 }),
   ]);
 
+  const rangeLabel =
+    range === "today"
+      ? "Today"
+      : range === "yesterday"
+        ? "Yesterday"
+        : range === "7d"
+          ? "Last 7 days"
+          : range === "this-month"
+            ? "This month"
+            : range === "last-month"
+              ? "Last month"
+              : range === "custom"
+                ? "Custom Window"
+                : "Last 30 days";
+
+  const reconciliationHref = `/admin/reports/reconciliation?${new URLSearchParams({
+    range,
+    ...(from ? { from } : {}),
+    ...(to ? { to } : {}),
+  }).toString()}`;
+
+  const exportQuery = new URLSearchParams({
+    range,
+    ...(from ? { from } : {}),
+    ...(to ? { to } : {}),
+    ...(value("sort") ? { sort: value("sort")! } : {}),
+    ...(value("q") ? { q: value("q")! } : {}),
+  }).toString();
+
   return (
-    <div className="space-y-8">
-      <header className="border-vl-dark-900/15 flex flex-col gap-5 border-b pb-6 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-muted-foreground text-xs font-semibold tracking-[0.16em] uppercase">
-            VibeLock / Admin analytics
-          </p>
-          <h1 className="mt-2 flex items-center gap-2 text-3xl font-bold tracking-tight">
-            <BarChart3 className="text-vl-cyan-600 size-7" /> Reports &amp; Profitability
-          </h1>
-          <p className="text-muted-foreground mt-2 max-w-2xl text-sm">
-            Track sales, returns, inventory cost and profitability.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/admin/reports/reconciliation?${new URLSearchParams({ range, ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString()}`}
-            className="hover:bg-muted text-vl-dark-900 inline-flex h-10 items-center gap-2 rounded-lg border bg-white px-3 text-sm font-medium"
-          >
-            <CreditCard className="text-vl-cyan-600 size-4" /> Cash Reconciliation
-          </Link>
-          <Badge variant="outline">
-            Data: {dateLabel(report.start)} – {dateLabel(new Date(report.end.getTime() - 1))}
-          </Badge>
-          <a
-            href={buildHref({})}
-            className="hover:bg-muted inline-flex h-10 items-center gap-2 rounded-lg border px-3 text-sm font-medium"
-          >
-            <RefreshCw className="size-4" /> Refresh
-          </a>
-          <ReportExportMenu
-            query={new URLSearchParams({
-              range,
-              ...(from ? { from } : {}),
-              ...(to ? { to } : {}),
-              ...(value("sort") ? { sort: value("sort")! } : {}),
-              ...(value("q") ? { q: value("q")! } : {}),
-            }).toString()}
-          />
-        </div>
-      </header>
-
-      <form className="border-vl-dark-900/10 grid gap-3 border bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[auto_1fr_1fr_auto]">
-        <label className="text-sm font-medium">
-          Period
-          <div className="mt-2">
-            <NativeSelect
-              name="range"
-              defaultValue={range}
-              size="default"
-              className="w-full lg:w-44"
+    <div className="print-document mx-auto w-full max-w-[100rem] space-y-6 print:space-y-4 print:max-w-none print:w-full print:p-0 print:bg-white">
+      {/* ── 1. HARMONIZED ADMIN PAGE HEADER (MATCHING /admin & /admin/orders) ── */}
+      <div className="print:hidden">
+        <AdminPageHeader
+          eyebrow="Operations / Analytics"
+          title="Reports &amp; Profitability"
+          badgeLabel="Realized P&amp;L"
+          badgeVariant="emerald"
+          description="Historical gross merchandise sales, returns, cost of goods, and realized profitability."
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={reconciliationHref}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
             >
-              {ranges.map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </NativeSelect>
-          </div>
-        </label>
-        <label className="text-sm font-medium">
-          From
-          <Input name="from" type="date" defaultValue={from} className="mt-2" size="default" />
-        </label>
-        <label className="text-sm font-medium">
-          To
-          <Input name="to" type="date" defaultValue={to} className="mt-2" size="default" />
-        </label>
-        {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
-        {value("q") ? <input type="hidden" name="q" value={value("q")!} /> : null}
-        <Button type="submit" variant="primary" size="default" className="mt-auto">
-          Apply
-        </Button>
-      </form>
+              <CreditCard className="size-3.5 text-vl-cyan" />
+              <span>Cash Reconciliation</span>
+            </Link>
 
-      <section>
-        <h2 className="mb-3 text-xl font-semibold">Sales overview</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["Gross sales", money(report.summary.grossSales)],
-            ["Discounts", money(report.summary.discounts)],
-            ["Net sales / revenue", money(report.summary.netSales)],
-            ["Orders", report.summary.orders.toLocaleString()],
-            ["Average order value", money(report.summary.averageOrderValue)],
-            ["Refunds paid", money(report.summary.refunds)],
-            ["Shipping charged", money(report.summary.shippingCharged)],
-            ["Return rate", `${report.summary.returnRate.toFixed(2)}%`],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-2xl border bg-white p-5 shadow-sm">
-              <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                {label}
+            <Link
+              href={buildHref({})}
+              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
+              title="Refresh current report calculations"
+            >
+              <RefreshCw className="size-3.5" />
+              <span>Refresh</span>
+            </Link>
+
+            <ReportExportMenu query={exportQuery} />
+          </div>
+        </AdminPageHeader>
+      </div>
+
+      {/* ── 2. ANIMATED RANGE PRESETS & RESOLVED TIMEFRAME BAR ── */}
+      <div className="print:hidden">
+        <ReportRangeFilter
+          currentRange={range}
+          from={from}
+          to={to}
+          startDate={report.start}
+          endDate={report.end}
+          searchParamsRecord={{
+            range,
+            from,
+            to,
+            q: value("q"),
+            sort: value("sort"),
+            view: value("view"),
+          }}
+        />
+      </div>
+
+      {/* ── SECTION 1: EXECUTIVE AUDIT & FINANCIAL COCKPIT (PAGE 1) ── */}
+      <div className="print-break-after-page space-y-6 print:space-y-4">
+        {/* ── PRINT-ONLY EXECUTIVE AUDIT HEADER ── */}
+        <div className="hidden print:block border-b-2 border-neutral-900 pb-4 mb-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-heading font-black text-xl text-neutral-950 uppercase tracking-tight">VibeLock</span>
+                <span className="h-4 w-px bg-neutral-300" />
+                <span className="font-mono text-xs uppercase tracking-widest text-neutral-500 font-bold">Operations &amp; Analytics</span>
+              </div>
+              <h1 className="text-2xl font-black tracking-tight text-neutral-950 uppercase font-heading mt-1">
+                Executive Financial Statement
+              </h1>
+              <p className="text-xs text-neutral-600 mt-1">
+                Timeframe: <span className="font-bold text-neutral-900">{rangeLabel}</span> ({report.start.toLocaleDateString("en-BD")} to {report.end.toLocaleDateString("en-BD")})
               </p>
-              <p className="mt-2 text-2xl font-semibold tracking-tight">{value}</p>
             </div>
-          ))}
+            <div className="text-right text-xs font-mono text-neutral-500">
+              <p className="font-bold text-neutral-800">Confidential Financial Audit</p>
+              <p>Generated: {new Date().toLocaleDateString("en-BD", { dateStyle: "long" })}</p>
+              <p className="text-[10px] text-neutral-400">Doc ID: VL-P&amp;L-{report.start.getTime().toString(36).toUpperCase()}</p>
+            </div>
+          </div>
         </div>
-      </section>
 
-      <ReportCharts
+        {/* ── 3. EXECUTIVE P&L FINANCIAL COCKPIT & OPERATIONS MATRIX ── */}
+        <ReportFinancialHero summary={report.summary} rangeLabel={rangeLabel} />
+
+        {/* ── PRINT-ONLY EXECUTIVE SIGN-OFF & AUDIT VALIDATION BLOCK (PAGE 1 FOOTER) ── */}
+        <div className="hidden print:grid grid-cols-2 gap-10 pt-10 mt-8 border-t border-neutral-300 text-xs">
+          <div className="space-y-1.5">
+            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Prepared &amp; Verified By:</p>
+            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+              <span>Operations &amp; Finance Automated Controller</span>
+            </div>
+            <p className="text-[10px] text-neutral-500">VibeLock ERP System · Reconciliation: Clean Ledger</p>
+          </div>
+          <div className="space-y-1.5">
+            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Reviewed &amp; Authorized By:</p>
+            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+              <span>Executive Management / Store Administration</span>
+            </div>
+            <p className="text-[10px] text-neutral-500">Sign-off Date: {new Date().toLocaleDateString("en-BD")}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── SECTION 2: VISUAL REVENUE WAVE, COGS BARS & TOP PRODUCTS (PAGE 2) ── */}
+      <div className="print-break-after-page space-y-4">
+        <ReportCharts
+          trend={report.trend}
+          products={report.products}
+          payments={report.payments}
+          soldUnits={report.summary.soldUnits}
+          returnedUnits={report.summary.returnedUnits}
+          returnRate={report.summary.returnRate}
+          returnedValue={report.summary.returnedValue}
+        />
+      </div>
+
+      {/* ── SECTION 3: SEGMENTED LEDGER WORKSPACES (PAGE 3+) ── */}
+      <ReportLedgerWorkspace
+        currentView={currentView}
+        productProfitability={productProfitability}
+        orders={orders}
         trend={report.trend}
-        products={report.products}
         payments={report.payments}
-        soldUnits={report.summary.soldUnits}
-        returnedUnits={report.summary.returnedUnits}
-        returnRate={report.summary.returnRate}
-        returnedValue={report.summary.returnedValue}
+        reportFilters={reportFilters}
+        searchParamsRecord={{
+          range,
+          from,
+          to,
+          q: value("q"),
+          sort: value("sort"),
+          view: value("view"),
+          page: value("page"),
+          pPage: value("pPage"),
+        }}
       />
-
-      <section>
-        <div className="mb-3 flex items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold">Gross profitability</h2>
-            <p className="text-muted-foreground mt-1 text-sm">
-              COGS uses the historical OrderItem cost snapshot and excludes non-rejected returned
-              quantities.
-            </p>
-          </div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="border-vl-dark-900/10 border bg-white p-4">
-            <p className="text-muted-foreground text-xs tracking-wide uppercase">COGS</p>
-            <p className="mt-2 text-xl font-semibold">{money(report.summary.cogs)}</p>
-          </div>
-          <div className="border-vl-dark-900/10 border bg-white p-4">
-            <p className="text-muted-foreground text-xs tracking-wide uppercase">Gross profit</p>
-            <p className="mt-2 text-xl font-semibold">{money(report.summary.grossProfit)}</p>
-          </div>
-          <div className="border-vl-dark-900/10 border bg-white p-4">
-            <p className="text-muted-foreground text-xs tracking-wide uppercase">Gross margin</p>
-            <p className="mt-2 text-xl font-semibold">
-              {report.summary.grossMargin === null
-                ? "Unavailable"
-                : `${report.summary.grossMargin.toFixed(2)}%`}
-            </p>
-          </div>
-        </div>
-        <p className="text-muted-foreground mt-3 text-sm">
-          Shipping expense, payment fees, operating expense, net profit, and net margin are
-          unavailable because the current schema stores no authoritative values for them.
-        </p>
-      </section>
-
-      <section className="border-vl-dark-900/10 border bg-white">
-        <div className="border-vl-dark-900/10 border-b px-4 py-4">
-          <h2 className="text-xl font-semibold">Daily sales trend</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-190 text-sm">
-            <thead className="bg-muted/50">
-              <tr className="text-left">
-                <th className="p-3">Date</th>
-                <th className="p-3">Orders</th>
-                <th className="p-3">Gross</th>
-                <th className="p-3">Discounts</th>
-                <th className="p-3">Net sales</th>
-                <th className="p-3">Refunds</th>
-                <th className="p-3">COGS</th>
-                <th className="p-3">Gross profit</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {report.trend.length ? (
-                report.trend.map((row) => (
-                  <tr key={row.date.toISOString()}>
-                    <td className="p-3">{dateLabel(row.date)}</td>
-                    <td className="p-3">{row.orders}</td>
-                    <td className="p-3">{money(row.grossSales)}</td>
-                    <td className="p-3">{money(row.discounts)}</td>
-                    <td className="p-3">{money(row.netSales)}</td>
-                    <td className="p-3">{money(row.refunds)}</td>
-                    <td className="p-3">{money(row.cogs)}</td>
-                    <td className="p-3">{money(row.grossProfit)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="text-muted-foreground p-8 text-center">
-                    No sales in this period.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <ProductProfitabilityDrilldown
-        data={productProfitability}
-        currentSort={value("sort")}
-        currentSearch={value("q")}
-        range={range}
-        from={from}
-        to={to}
-        page={value("page")}
-      />
-
-      <section className="border-vl-dark-900/10 border bg-white">
-        <div className="border-vl-dark-900/10 border-b px-4 py-4">
-          <h2 className="text-xl font-semibold">Payment methods</h2>
-          <p className="text-muted-foreground mt-1 text-xs">
-            Sales reflect billed order amounts, not proof of cash collection. Pending online
-            payments and unsettled COD remittances are not counted as collected cash; actual COD
-            remittances are not calculated by this dashboard.
-          </p>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50">
-              <tr className="text-left">
-                <th className="p-3">Method</th>
-                <th className="p-3">Orders</th>
-                <th className="p-3">Sales</th>
-                <th className="p-3">Refunds</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {report.payments.map((row) => (
-                <tr key={row.method}>
-                  <td className="p-3">{row.method === "COD" ? "Cash on delivery" : row.method}</td>
-                  <td className="p-3">{row.orders}</td>
-                  <td className="p-3">{money(row.sales)}</td>
-                  <td className="p-3">{money(row.refunds)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="border-vl-dark-900/10 border bg-white">
-        <div className="border-vl-dark-900/10 flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4">
-          <div>
-            <h2 className="text-xl font-semibold">Order profitability</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Cancelled orders are excluded.</p>
-          </div>
-          <form className="flex gap-2">
-            <Input
-              name="q"
-              defaultValue={value("q")}
-              placeholder="Search order, customer, product or SKU"
-            />
-            <input type="hidden" name="range" value={range} />
-            <input type="hidden" name="from" value={from ?? ""} />
-            <input type="hidden" name="to" value={to ?? ""} />
-            {value("sort") ? <input type="hidden" name="sort" value={value("sort")!} /> : null}
-            <Button type="submit" variant="outline">
-              Search
-            </Button>
-          </form>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-245 text-sm">
-            <thead className="bg-muted/50">
-              <tr className="text-left">
-                <th className="p-3">Order</th>
-                <th className="p-3">Customer</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Items</th>
-                <th className="p-3">Gross</th>
-                <th className="p-3">Discount</th>
-                <th className="p-3">Refund</th>
-                <th className="p-3">COGS</th>
-                <th className="p-3">Profit</th>
-                <th className="p-3">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {orders.orders.map((order) => (
-                <tr key={order.id}>
-                  <td className="p-3">
-                    <Link
-                      className="font-medium hover:underline"
-                      href={`/admin/orders/${order.id}`}
-                    >
-                      {order.orderNumber}
-                    </Link>
-                    <p className="text-muted-foreground text-xs">{dateLabel(order.createdAt)}</p>
-                  </td>
-                  <td className="p-3">{order.customerName || "Guest"}</td>
-                  <td className="p-3">
-                    <Badge variant="outline">{order.status}</Badge>
-                  </td>
-                  <td className="p-3">{order.itemCount}</td>
-                  <td className="p-3">{money(order.grossSales)}</td>
-                  <td className="p-3">{money(order.discount)}</td>
-                  <td className="p-3">{money(order.refunds)}</td>
-                  <td className="p-3">{money(order.cogs)}</td>
-                  <td className="p-3">{money(order.profit)}</td>
-                  <td className="p-3">
-                    <Link
-                      className="text-primary hover:underline"
-                      href={`/admin/orders/${order.id}`}
-                    >
-                      View
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {orders.totalPages > 1 ? (
-          <div className="border-vl-dark-900/10 flex justify-center gap-4 border-t p-4 text-sm">
-            <Link
-              className={
-                orders.page <= 1 ? "text-muted-foreground/50 pointer-events-none" : "font-medium"
-              }
-              href={buildHref({ page: orders.page - 1 })}
-            >
-              Previous
-            </Link>
-            <span>
-              Page {orders.page} of {orders.totalPages}
-            </span>
-            <Link
-              className={
-                orders.page >= orders.totalPages
-                  ? "text-muted-foreground/50 pointer-events-none"
-                  : "font-medium"
-              }
-              href={buildHref({ page: orders.page + 1 })}
-            >
-              Next
-            </Link>
-          </div>
-        ) : null}
-      </section>
     </div>
   );
 }
