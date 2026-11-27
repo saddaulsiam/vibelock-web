@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { SecurityPixelSettings } from "@/lib/settings/security-pixel-settings";
 import {
@@ -18,11 +18,11 @@ import {
   Clock,
   Globe,
   Loader2,
-  Lock,
   Mail,
   Save,
   Shield,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const initialState: SecurityPixelActionState = { error: null };
 
@@ -39,8 +39,8 @@ function SubmitButton() {
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          <span>Saving Security Controls...</span>
+          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
+          <span>Saving Controls...</span>
         </>
       ) : (
         <>
@@ -55,51 +55,74 @@ function SubmitButton() {
 export function SecurityPixelForm({ initialSettings }: { initialSettings: SecurityPixelSettings }) {
   const [state, formAction] = useActionState(updateSecurityPixelSettingsAction, initialState);
 
+  const [trackEcommerce, setTrackEcommerce] = useState(initialSettings.trackEcommerceEvents);
+  const [enforce2FA, setEnforce2FA] = useState(initialSettings.enforceAdmin2FA);
+  const [notifyFailedLogin, setNotifyFailedLogin] = useState(
+    initialSettings.notifyFailedAdminLogin
+  );
+
   const maskedToken = initialSettings.metaCapiAccessToken
     ? `••••••••••••••••••••••••••••••••${initialSettings.metaCapiAccessToken.slice(-6)}`
     : "";
 
   return (
-    <form action={formAction} className="space-y-8">
-      {/* Status Alerts */}
+    <form action={formAction} className="space-y-6">
+      {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/90 p-4 text-red-900 shadow-sm dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-          <AlertTriangle className="size-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.error}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
+          <div>
+            <h4 className="font-bold">Failed to update security settings</h4>
+            <p className="mt-0.5 text-xs text-rose-700">{state.error}</p>
           </div>
         </div>
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-emerald-900 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
-          <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.message}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+          <div>
+            <h4 className="font-bold">Configuration updated</h4>
+            <p className="mt-0.5 text-xs text-emerald-700">{state.message}</p>
           </div>
         </div>
       )}
 
-      {/* Grid: 2 columns */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* CARD 1: META (FACEBOOK) PIXEL & CAPI */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
-                <Globe className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Meta Pixel & Conversions API (CAPI)</CardTitle>
-                <CardDescription className="text-xs">
-                  Server-side and browser tracking for Facebook & Instagram ad attribution.
-                </CardDescription>
-              </div>
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          Security Controls & Tracking Pixels
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Ad attribution pixels (Meta, GA4, TikTok), admin session timeouts, and IP perimeters
+        </p>
+      </div>
+
+      {/* ── SECTION 1: META (FACEBOOK) PIXEL & CONVERSIONS API (CAPI) ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Globe className="size-4.5 text-blue-600" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="metaPixelId" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Meta Pixel & Conversions API (CAPI)
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Server-side and browser tracking for Facebook & Instagram ad attribution
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-5 p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="metaPixelId"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
                 Meta Pixel ID
               </label>
               <Input
@@ -108,30 +131,18 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 type="text"
                 defaultValue={initialSettings.metaPixelId}
                 placeholder="e.g. 123456789012345"
+                className="bg-white font-mono"
               />
-              <p className="text-[11px] text-vl-dark-500">
+              <p className="text-[11px] text-neutral-500">
                 Injected into storefront layout for standard browser event capture.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="metaCapiAccessToken" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Conversions API (CAPI) Server Token
-              </label>
-              <Input
-                id="metaCapiAccessToken"
-                name="metaCapiAccessToken"
-                type="password"
-                defaultValue={maskedToken}
-                placeholder="EAAB..."
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Authorizes direct server-to-server purchase event tracking (leaves unchanged if masked).
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="metaTestEventCode" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="metaTestEventCode"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
                 Meta Test Event Code (Optional)
               </label>
               <Input
@@ -140,119 +151,180 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 type="text"
                 defaultValue={initialSettings.metaTestEventCode}
                 placeholder="TEST12345"
+                className="bg-white font-mono"
               />
-              <p className="text-[11px] text-vl-dark-500">
-                Temporary code from Meta Events Manager to verify live diagnostics.
+              <p className="text-[11px] text-neutral-500">
+                Temporary diagnostic code from Meta Events Manager to verify live events.
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* CARD 2: GOOGLE & TIKTOK ANALYTICS */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-vl-cyan-500/10 text-vl-cyan-600 dark:bg-vl-cyan-500/20 dark:text-vl-cyan-400">
-                <Activity className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Google Tag Manager & Multi-Pixel</CardTitle>
-                <CardDescription className="text-xs">
-                  GTM container, GA4 measurement ID, and supplementary ad network tags.
-                </CardDescription>
-              </div>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="metaCapiAccessToken"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Conversions API (CAPI) Server Token
+            </label>
+            <Input
+              id="metaCapiAccessToken"
+              name="metaCapiAccessToken"
+              type="password"
+              defaultValue={maskedToken}
+              placeholder="EAAB..."
+              className="bg-white font-mono"
+            />
+            <p className="text-[11px] text-neutral-500">
+              Authorizes direct server-to-server purchase event tracking (leaves unchanged if
+              masked).
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 2: GOOGLE & TIKTOK ANALYTICS ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Activity className="text-vl-cyan-600 size-4.5" />
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="googleTagManagerId" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Google Tag Manager ID
-                </label>
-                <Input
-                  id="googleTagManagerId"
-                  name="googleTagManagerId"
-                  type="text"
-                  defaultValue={initialSettings.googleTagManagerId}
-                  placeholder="GTM-XXXXXXX"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="googleAnalyticsId" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Google Analytics 4 (GA4) ID
-                </label>
-                <Input
-                  id="googleAnalyticsId"
-                  name="googleAnalyticsId"
-                  type="text"
-                  defaultValue={initialSettings.googleAnalyticsId}
-                  placeholder="G-XXXXXXXXXX"
-                />
-              </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Google Tag Manager & Multi-Pixel
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                GTM container, GA4 measurement ID, and supplementary ad network tags
+              </CardDescription>
             </div>
+          </div>
+        </CardHeader>
 
-            <div className="space-y-2">
-              <label htmlFor="tiktokPixelId" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                TikTok Pixel ID
+        <CardContent className="space-y-5 p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="googleTagManagerId"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Google Tag Manager ID
               </label>
               <Input
-                id="tiktokPixelId"
-                name="tiktokPixelId"
+                id="googleTagManagerId"
+                name="googleTagManagerId"
                 type="text"
-                defaultValue={initialSettings.tiktokPixelId}
-                placeholder="e.g. C5A1B2C3D4E5"
+                defaultValue={initialSettings.googleTagManagerId}
+                placeholder="GTM-XXXXXXX"
+                className="bg-white font-mono"
               />
             </div>
 
-            <div className="pt-2 border-t border-vl-dark-900/10 dark:border-vl-dark-800">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="trackEcommerceEvents"
-                  value="true"
-                  defaultChecked={initialSettings.trackEcommerceEvents}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Track Enhanced E-Commerce Milestones
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Fires ViewContent, AddToCart, InitiateCheckout, and Purchase events across active tracking containers.
-                  </p>
-                </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="googleAnalyticsId"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Google Analytics 4 (GA4) ID
               </label>
+              <Input
+                id="googleAnalyticsId"
+                name="googleAnalyticsId"
+                type="text"
+                defaultValue={initialSettings.googleAnalyticsId}
+                placeholder="G-XXXXXXXXXX"
+                className="bg-white font-mono"
+              />
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* CARD 3: ADMIN SESSION & ACCESS GOVERNANCE */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400">
-                <Lock className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Admin Session & Access Governance</CardTitle>
-                <CardDescription className="text-xs">
-                  Inactivity logout thresholds and high-security access controls for admin users.
-                </CardDescription>
-              </div>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="tiktokPixelId"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              TikTok Pixel ID
+            </label>
+            <Input
+              id="tiktokPixelId"
+              name="tiktokPixelId"
+              type="text"
+              defaultValue={initialSettings.tiktokPixelId}
+              placeholder="e.g. C5A1B2C3D4E5"
+              className="bg-white font-mono"
+            />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Track Enhanced E-Commerce Milestones
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Fires ViewContent, AddToCart, InitiateCheckout, and Purchase events across active
+                tracking containers.
+              </p>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="adminSessionTimeoutMinutes" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300 flex items-center gap-1.5">
-                <Clock className="size-3.5 text-vl-dark-400" />
-                Admin Inactivity Session Timeout
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="trackEcommerceEvents"
+                value={trackEcommerce ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={trackEcommerce}
+                onClick={() => setTrackEcommerce(!trackEcommerce)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  trackEcommerce ? "bg-vl-cyan-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    trackEcommerce ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 3: ADMIN ACCESS & SECURITY GOVERNANCE ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Shield className="size-4.5 text-purple-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Admin Session & Perimeter Governance
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Inactivity session timeouts, mandatory 2FA, and static IP allowlists
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-5 p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="adminSessionTimeoutMinutes"
+                className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                <Clock className="size-3.5 text-neutral-400" />
+                Inactivity Session Timeout
               </label>
               <select
                 id="adminSessionTimeoutMinutes"
                 name="adminSessionTimeoutMinutes"
                 defaultValue={initialSettings.adminSessionTimeoutMinutes}
-                className="w-full rounded-md border border-vl-dark-900/20 bg-vl-white px-3 py-2 text-xs text-vl-dark-900 shadow-sm focus:border-vl-cyan-500 focus:outline-none focus:ring-1 focus:ring-vl-cyan-500 dark:border-vl-dark-700 dark:bg-vl-dark-800 dark:text-vl-white"
+                className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
               >
                 <option value="15">15 Minutes (High Security)</option>
                 <option value="30">30 Minutes</option>
@@ -261,100 +333,24 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 <option value="240">4 Hours</option>
                 <option value="480">8 Hours (Full Shift)</option>
               </select>
-              <p className="text-[11px] text-vl-dark-500">
-                Automatically terminates idle dashboard sessions to safeguard inventory and sensitive customer data.
+              <p className="text-[11px] text-neutral-500">
+                Automatically terminates idle dashboard sessions to safeguard inventory and
+                sensitive data.
               </p>
               {state.fieldErrors?.adminSessionTimeoutMinutes && (
-                <p className="text-xs text-red-500">{state.fieldErrors.adminSessionTimeoutMinutes[0]}</p>
+                <p className="text-[11px] font-semibold text-rose-600">
+                  {state.fieldErrors.adminSessionTimeoutMinutes[0]}
+                </p>
               )}
             </div>
 
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="enforceAdmin2FA"
-                  value="true"
-                  defaultChecked={initialSettings.enforceAdmin2FA}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                      Enforce Mandatory Two-Factor (2FA / OTP)
-                    </span>
-                    <Badge variant="outline" className="text-[10px] text-purple-600 border-purple-200">
-                      Recommended
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Requires SMS or authenticator OTP verification for all staff accounts with ADMIN permissions.
-                  </p>
-                </div>
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 4: PERIMETER IP ALLOWLIST & SECURITY ALERTS */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-                <Shield className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">IP Allowlist & Breach Notifications</CardTitle>
-                <CardDescription className="text-xs">
-                  Network perimeter restrictions and automated security alert routing.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="adminIpAllowlist" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Admin IP Address Allowlist
-                </label>
-                <span className="text-[10px] text-vl-dark-500">Leave blank for unrestricted access</span>
-              </div>
-              <Input
-                id="adminIpAllowlist"
-                name="adminIpAllowlist"
-                type="text"
-                defaultValue={initialSettings.adminIpAllowlist.join(", ")}
-                placeholder="103.145.12.10, 192.168.1.1"
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Comma-separated static public IPs permitted to access `/admin`.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="notifyFailedAdminLogin"
-                  value="true"
-                  defaultChecked={initialSettings.notifyFailedAdminLogin}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Notify on Failed Admin Login Attempts
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Dispatches an emergency alert when consecutive failed login attempts occur on admin accounts.
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="securityContactEmail" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300 flex items-center gap-1.5">
-                <Mail className="size-3.5 text-vl-dark-400" />
-                Security Alerts Notification Email
+            <div className="space-y-1.5">
+              <label
+                htmlFor="securityContactEmail"
+                className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                <Mail className="size-3.5 text-neutral-400" />
+                Security Breach Notification Email
               </label>
               <Input
                 id="securityContactEmail"
@@ -362,21 +358,130 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 type="email"
                 defaultValue={initialSettings.securityContactEmail}
                 placeholder="security@vibelock.com"
+                className="bg-white font-mono"
               />
+              <p className="text-[11px] text-neutral-500">
+                Destination for urgent security notifications and consecutive failed login alerts.
+              </p>
               {state.fieldErrors?.securityContactEmail && (
-                <p className="text-xs text-red-500">{state.fieldErrors.securityContactEmail[0]}</p>
+                <p className="text-[11px] font-semibold text-rose-600">
+                  {state.fieldErrors.securityContactEmail[0]}
+                </p>
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      {/* Floating Save Actions Bar */}
-      <div className="flex items-center justify-between rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-        <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-          Tracking pixels and security controls update in real-time across both storefront and administrative routes.
-        </p>
-        <SubmitButton />
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-neutral-900">
+                  Enforce Mandatory Two-Factor (2FA / OTP)
+                </span>
+                <Badge
+                  variant="outline"
+                  className="border-purple-200 bg-purple-50 text-[10px] text-purple-700"
+                >
+                  Recommended
+                </Badge>
+              </div>
+              <p className="mt-0.5 text-[11px] text-neutral-500">
+                Requires SMS or authenticator OTP verification for all staff accounts with ADMIN
+                permissions.
+              </p>
+            </div>
+            <div className="flex items-center">
+              <input type="hidden" name="enforceAdmin2FA" value={enforce2FA ? "true" : "false"} />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enforce2FA}
+                onClick={() => setEnforce2FA(!enforce2FA)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  enforce2FA ? "bg-purple-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    enforce2FA ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="adminIpAllowlist"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Admin Static IP Address Allowlist
+              </label>
+              <span className="text-[10px] text-neutral-400">
+                Leave blank for unrestricted access
+              </span>
+            </div>
+            <Input
+              id="adminIpAllowlist"
+              name="adminIpAllowlist"
+              type="text"
+              defaultValue={initialSettings.adminIpAllowlist.join(", ")}
+              placeholder="103.145.12.10, 192.168.1.1"
+              className="bg-white font-mono"
+            />
+            <p className="text-[11px] text-neutral-500">
+              Comma-separated list of static public IP addresses permitted to access `/admin`.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Notify on Consecutive Failed Admin Login Attempts
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Dispatches an emergency alert when repeated failed logins occur on admin accounts.
+              </p>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="notifyFailedAdminLogin"
+                value={notifyFailedLogin ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={notifyFailedLogin}
+                onClick={() => setNotifyFailedLogin(!notifyFailedLogin)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  notifyFailedLogin ? "bg-amber-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    notifyFailedLogin ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+        <div className="text-xs text-neutral-500">
+          <span>Security controls and tracking IDs take effect across both storefront and </span>
+          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+        </div>
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

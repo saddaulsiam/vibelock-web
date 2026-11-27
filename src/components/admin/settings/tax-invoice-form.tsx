@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { TaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 import {
@@ -15,13 +15,12 @@ import {
   AlertTriangle,
   Building2,
   CheckCircle2,
-  FileText,
-  HelpCircle,
   Loader2,
   Percent,
   Receipt,
   Save,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const initialState: TaxInvoiceActionState = { error: null };
 
@@ -38,7 +37,7 @@ function SubmitButton() {
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
           <span>Saving Tax Settings...</span>
         </>
       ) : (
@@ -54,365 +53,465 @@ function SubmitButton() {
 export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoiceSettings }) {
   const [state, formAction] = useActionState(updateTaxInvoiceSettingsAction, initialState);
 
+  const [enableTax, setEnableTax] = useState(initialSettings.enableTax);
+  const [applyShippingTax, setApplyShippingTax] = useState(initialSettings.applyTaxToShipping);
+  const [mushak63, setMushak63] = useState(initialSettings.enableMushak63Format);
+  const [digitalSeal, setDigitalSeal] = useState(initialSettings.showDigitalSeal);
+
   return (
-    <form action={formAction} className="space-y-8">
-      {/* Status Alerts */}
+    <form action={formAction} className="space-y-6">
+      {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/90 p-4 text-red-900 shadow-sm dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-          <AlertTriangle className="size-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.error}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
+          <div>
+            <h4 className="font-bold">Failed to update tax settings</h4>
+            <p className="mt-0.5 text-xs text-rose-700">{state.error}</p>
           </div>
         </div>
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-emerald-900 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
-          <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.message}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+          <div>
+            <h4 className="font-bold">Tax & invoice configuration updated</h4>
+            <p className="mt-0.5 text-xs text-emerald-700">{state.message}</p>
           </div>
         </div>
       )}
 
-      {/* Grid: 2 columns */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* CARD 1: VAT & TAX CALCULATION RULES */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                <Percent className="size-5" />
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          Tax & Invoicing Compliance
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Value Added Tax rates, 13-digit NBR BIN identity, and Mushak 6.3 digital format
+        </p>
+      </div>
+
+      {/* ── SECTION 1: VAT & TAX CALCULATION RULES ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <Percent className="size-4.5 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-base font-semibold">VAT & Tax Calculation Rules</CardTitle>
-                <CardDescription className="text-xs">
-                  Configure Bangladesh NBR Value Added Tax rates and price display modes.
+                <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                  VAT & Tax Calculation Rules
+                </CardTitle>
+                <CardDescription className="text-xs text-neutral-500">
+                  Bangladesh NBR Value Added Tax rates and storefront pricing display modes
                 </CardDescription>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {/* Enable Tax Master Switch */}
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="enableTax"
-                  value="true"
-                  defaultChecked={initialSettings.enableTax}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Enable VAT / Tax Collection
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    When active, tax amounts are computed on checkout orders and printed on customer invoices.
-                  </p>
-                </div>
-              </label>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="vatRatePercent" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Standard VAT Rate (%)
-                </label>
-                <div className="relative">
-                  <Input
-                    id="vatRatePercent"
-                    name="vatRatePercent"
-                    type="number"
-                    step="0.1"
-                    min={0}
-                    max={30}
-                    defaultValue={initialSettings.vatRatePercent}
-                    className="pr-8"
-                    required
-                  />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-vl-dark-400">
-                    %
-                  </span>
-                </div>
-                <p className="text-[11px] text-vl-dark-500">
-                  Common rates: 5% (Apparel/Retail), 7.5%, or 15% standard.
-                </p>
-                {state.fieldErrors?.vatRatePercent && (
-                  <p className="text-xs text-red-500">{state.fieldErrors.vatRatePercent[0]}</p>
+            {/* Modern Switch */}
+            <div className="flex items-center">
+              <input type="hidden" name="enableTax" value={enableTax ? "true" : "false"} />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enableTax}
+                onClick={() => setEnableTax(!enableTax)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  enableTax ? "bg-emerald-600" : "bg-neutral-300"
                 )}
-              </div>
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    enableTax ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </CardHeader>
 
-              <div className="space-y-2">
-                <label htmlFor="taxCalculationMode" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Pricing Tax Mode
-                </label>
-                <select
-                  id="taxCalculationMode"
-                  name="taxCalculationMode"
-                  defaultValue={initialSettings.taxCalculationMode}
-                  className="w-full rounded-md border border-vl-dark-900/20 bg-vl-white px-3 py-2 text-xs text-vl-dark-900 shadow-sm focus:border-vl-cyan-500 focus:outline-none focus:ring-1 focus:ring-vl-cyan-500 dark:border-vl-dark-700 dark:bg-vl-dark-800 dark:text-vl-white"
+        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+          {/* Rate Percent */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="vatRatePercent"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Standard VAT Rate (%) <span className="text-rose-500">*</span>
+              </label>
+              <Badge
+                variant="outline"
+                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
+              >
+                NBR Rate
+              </Badge>
+            </div>
+            <Input
+              id="vatRatePercent"
+              name="vatRatePercent"
+              type="number"
+              step="0.1"
+              min={0}
+              max={30}
+              defaultValue={initialSettings.vatRatePercent}
+              disabled={!enableTax}
+              className="bg-white font-mono"
+              required
+            />
+            <p className="text-[11px] text-neutral-500">
+              Standard consumer rates: 5% (Apparel/Retail), 7.5%, or 15% standard rate.
+            </p>
+            {state.fieldErrors?.vatRatePercent && (
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.vatRatePercent[0]}
+              </p>
+            )}
+          </div>
+
+          {/* Pricing Tax Mode */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="taxCalculationMode"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Pricing Tax Mode
+            </label>
+            <select
+              id="taxCalculationMode"
+              name="taxCalculationMode"
+              defaultValue={initialSettings.taxCalculationMode}
+              disabled={!enableTax}
+              className="w-full rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-900 shadow-2xs focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+            >
+              <option value="INCLUSIVE">INCLUSIVE (Product prices already include VAT)</option>
+              <option value="EXCLUSIVE">EXCLUSIVE (VAT added on top at checkout)</option>
+            </select>
+            <p className="text-[11px] text-neutral-500">
+              INCLUSIVE is standard consumer retail in Bangladesh.
+            </p>
+          </div>
+
+          {/* Apply Tax to Shipping */}
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Apply VAT to Courier Delivery Charges
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Calculates VAT over shipping fees in addition to the product subtotal.
+              </p>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="applyTaxToShipping"
+                value={applyShippingTax ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                disabled={!enableTax}
+                aria-checked={applyShippingTax}
+                onClick={() => setApplyShippingTax(!applyShippingTax)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  applyShippingTax ? "bg-emerald-600" : "bg-neutral-300",
+                  !enableTax && "cursor-not-allowed opacity-50"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    applyShippingTax ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 2: NBR REGISTRATION & TAX IDENTITY ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Building2 className="text-vl-cyan-600 size-4.5" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                NBR Registration & Tax Identity
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Official Business Identification Number (BIN) and registered tax circle
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <label
+              htmlFor="registeredBusinessName"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Registered Legal Business Name <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              id="registeredBusinessName"
+              name="registeredBusinessName"
+              type="text"
+              defaultValue={initialSettings.registeredBusinessName}
+              className="bg-white"
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="binNumber"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              NBR BIN (Business Identification No.)
+            </label>
+            <Input
+              id="binNumber"
+              name="binNumber"
+              type="text"
+              defaultValue={initialSettings.binNumber}
+              placeholder="001234567-0101"
+              className="bg-white font-mono"
+            />
+            <p className="text-[11px] text-neutral-500">
+              Printed prominently on official tax invoices.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="taxCircle"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Tax Circle
+            </label>
+            <Input
+              id="taxCircle"
+              name="taxCircle"
+              type="text"
+              defaultValue={initialSettings.taxCircle}
+              placeholder="Circle-15 (Uttara)"
+              className="bg-white"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="taxZone"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Taxes Zone / Commissionerate
+            </label>
+            <Input
+              id="taxZone"
+              name="taxZone"
+              type="text"
+              defaultValue={initialSettings.taxZone}
+              placeholder="Taxes Zone-08, Dhaka"
+              className="bg-white"
+            />
+          </div>
+
+          <div className="space-y-1.5 sm:col-span-2">
+            <label
+              htmlFor="registeredOfficeAddress"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Registered Legal Business Address <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              id="registeredOfficeAddress"
+              name="registeredOfficeAddress"
+              type="text"
+              defaultValue={initialSettings.registeredOfficeAddress}
+              className="bg-white"
+              required
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 3: MUSHAK 6.3 & INVOICE FORMATTING ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Receipt className="size-4.5 text-purple-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Mushak 6.3 & Invoice Layout
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Bangladesh standard tax invoice numbering, digital seal, and statutory declarations
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6 p-6">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-neutral-900">
+                  Mushak 6.3 (মূসক-৬.৩) Compliance Format
+                </span>
+                <Badge
+                  variant="outline"
+                  className="border-purple-200 bg-purple-50 text-[10px] text-purple-700"
                 >
-                  <option value="INCLUSIVE">INCLUSIVE (Prices include VAT)</option>
-                  <option value="EXCLUSIVE">EXCLUSIVE (VAT added on checkout)</option>
-                </select>
-                <p className="text-[11px] text-vl-dark-500">
-                  INCLUSIVE is standard consumer retail in Bangladesh.
-                </p>
+                  NBR Standard
+                </Badge>
               </div>
+              <p className="mt-0.5 text-[11px] text-neutral-500">
+                Generates official tax invoice format with itemized subtotal, VAT rate, and
+                statutory declarations.
+              </p>
             </div>
-
-            <div className="pt-2">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="applyTaxToShipping"
-                  value="true"
-                  defaultChecked={initialSettings.applyTaxToShipping}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="enableMushak63Format"
+                value={mushak63 ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={mushak63}
+                onClick={() => setMushak63(!mushak63)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  mushak63 ? "bg-purple-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    mushak63 ? "translate-x-5" : "translate-x-0"
+                  )}
                 />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Apply Tax to Courier Delivery Charges
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    If checked, VAT percentage is also calculated over shipping fees in addition to product subtotal.
-                  </p>
-                </div>
-              </label>
+              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* CARD 2: NBR REGISTRATION & MUSHAK 6.3 LEGAL ENTITY */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-vl-cyan-500/10 text-vl-cyan-600 dark:bg-vl-cyan-500/20 dark:text-vl-cyan-400">
-                <Building2 className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">NBR Registration & Tax Identity</CardTitle>
-                <CardDescription className="text-xs">
-                  Official Business Identification Number (BIN) and legal tax jurisdiction info.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="registeredBusinessName" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Registered Legal Business Name
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="invoicePrefix"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Invoice Number Prefix <span className="text-rose-500">*</span>
               </label>
               <Input
-                id="registeredBusinessName"
-                name="registeredBusinessName"
+                id="invoicePrefix"
+                name="invoicePrefix"
                 type="text"
-                defaultValue={initialSettings.registeredBusinessName}
+                defaultValue={initialSettings.invoicePrefix}
+                className="bg-white font-mono"
                 required
               />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="binNumber" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  NBR BIN (Business Identification No.)
-                </label>
-                <Input
-                  id="binNumber"
-                  name="binNumber"
-                  type="text"
-                  defaultValue={initialSettings.binNumber}
-                  placeholder="001234567-0101"
-                />
-                <p className="text-[11px] text-vl-dark-500">Printed prominently on Mushak 6.3 invoices.</p>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="taxCircle" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Tax Circle
-                </label>
-                <Input
-                  id="taxCircle"
-                  name="taxCircle"
-                  type="text"
-                  defaultValue={initialSettings.taxCircle}
-                  placeholder="Circle-15 (Uttara)"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="taxZone" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Taxes Zone / Commissionerate
-              </label>
-              <Input
-                id="taxZone"
-                name="taxZone"
-                type="text"
-                defaultValue={initialSettings.taxZone}
-                placeholder="Taxes Zone-08, Dhaka"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="registeredOfficeAddress" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Registered Legal Business Address
-              </label>
-              <Input
-                id="registeredOfficeAddress"
-                name="registeredOfficeAddress"
-                type="text"
-                defaultValue={initialSettings.registeredOfficeAddress}
-                required
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 3: MUSHAK 6.3 & INVOICE FORMATTING */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400">
-                <Receipt className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Mushak 6.3 & Invoice Layout</CardTitle>
-                <CardDescription className="text-xs">
-                  Bangladesh standard tax invoice numbering, headers, and digital compliance formatting.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="enableMushak63Format"
-                  value="true"
-                  defaultChecked={initialSettings.enableMushak63Format}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                      Mushak 6.3 (মূসক-৬.৩) Compliance Layout
-                    </span>
-                    <Badge variant="outline" className="text-[10px] text-purple-600 border-purple-200">
-                      NBR Standard
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Generates official tax invoice format with itemized subtotal, VAT rate, and statutory declarations.
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="invoicePrefix" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Invoice Number Prefix
-                </label>
-                <Input
-                  id="invoicePrefix"
-                  name="invoicePrefix"
-                  type="text"
-                  defaultValue={initialSettings.invoicePrefix}
-                  required
-                />
-                <p className="text-[11px] text-vl-dark-500">
-                  Preview: {initialSettings.invoicePrefix}2026-0042
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="customerCareContact" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Billing & Customer Care Hotline
-                </label>
-                <Input
-                  id="customerCareContact"
-                  name="customerCareContact"
-                  type="text"
-                  defaultValue={initialSettings.customerCareContact}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-vl-dark-900/10 dark:border-vl-dark-800">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="showDigitalSeal"
-                  value="true"
-                  defaultChecked={initialSettings.showDigitalSeal}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Display Verified Digital Merchant Stamp / Seal
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Renders an authenticated digital verification mark on printed customer PDF invoices.
-                  </p>
-                </div>
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 4: STATUTORY DECLARATION & FOOTER NOTES */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-                <FileText className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Statutory Notes & Legal Terms</CardTitle>
-                <CardDescription className="text-xs">
-                  Custom legal terms, SRO exemptions, or customer instructions printed at the bottom of each invoice.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="invoiceFooterNote" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Invoice Footer Notice & Statutory Declaration
-              </label>
-              <textarea
-                id="invoiceFooterNote"
-                name="invoiceFooterNote"
-                rows={4}
-                defaultValue={initialSettings.invoiceFooterNote}
-                className="w-full rounded-md border border-vl-dark-900/20 bg-vl-white p-3 text-xs text-vl-dark-900 shadow-sm focus:border-vl-cyan-500 focus:outline-none focus:ring-1 focus:ring-vl-cyan-500 dark:border-vl-dark-700 dark:bg-vl-dark-800 dark:text-vl-white font-mono"
-                required
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Statutory exemption references (e.g. SRO 186/2019 for digital invoice electronic signatures).
+              <p className="text-[11px] text-neutral-500">
+                Preview:{" "}
+                <code className="font-mono font-bold text-neutral-800">
+                  {initialSettings.invoicePrefix}2026-0042
+                </code>
               </p>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-lg bg-vl-dark-900/[0.04] p-3 text-xs text-vl-dark-600 dark:bg-vl-dark-800/60 dark:text-vl-dark-300">
-              <HelpCircle className="size-4 shrink-0 text-vl-cyan-600 mt-0.5" />
-              <span>
-                Invoices generated through VibeLock calculate tax snapshots atomically at time of checkout, ensuring tax audits and monthly NBR VAT return filings reflect exact historical billing records.
-              </span>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="customerCareContact"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Billing & Customer Care Hotline <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                id="customerCareContact"
+                name="customerCareContact"
+                type="text"
+                defaultValue={initialSettings.customerCareContact}
+                className="bg-white font-mono"
+                required
+              />
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
 
-      {/* Floating Save Actions Bar */}
-      <div className="flex items-center justify-between rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-        <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-          Tax and VAT modifications apply to all subsequent orders immediately upon saving.
-        </p>
-        <SubmitButton />
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Display Verified Digital Merchant Stamp / Seal
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Renders an authenticated digital verification mark on printed customer PDF invoices.
+              </p>
+            </div>
+            <div className="flex items-center">
+              <input type="hidden" name="showDigitalSeal" value={digitalSeal ? "true" : "false"} />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={digitalSeal}
+                onClick={() => setDigitalSeal(!digitalSeal)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  digitalSeal ? "bg-purple-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    digitalSeal ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="invoiceFooterNote"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Invoice Footer Notice & Statutory Declaration <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="invoiceFooterNote"
+              name="invoiceFooterNote"
+              rows={3}
+              defaultValue={initialSettings.invoiceFooterNote}
+              className="w-full rounded-md border border-neutral-200 bg-white p-3 font-mono text-xs text-neutral-900 shadow-2xs focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
+              required
+            />
+            <p className="text-[11px] text-neutral-500">
+              Statutory declaration printed at the bottom of customer invoices (e.g. SRO 186/2019
+              reference).
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+        <div className="text-xs text-neutral-500">
+          <span>Tax rates and Mushak 6.3 formatting apply to all future orders via </span>
+          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+        </div>
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

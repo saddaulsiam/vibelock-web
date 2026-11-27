@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { InventoryReturnSettings } from "@/lib/settings/inventory-return-settings";
 import {
@@ -15,14 +15,13 @@ import {
   AlertTriangle,
   Boxes,
   CheckCircle2,
-  HelpCircle,
   Loader2,
   Mail,
   RotateCcw,
   Save,
   ShieldCheck,
-  Warehouse,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const initialState: InventoryReturnActionState = { error: null };
 
@@ -39,7 +38,7 @@ function SubmitButton() {
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
           <span>Saving Policies...</span>
         </>
       ) : (
@@ -52,115 +51,175 @@ function SubmitButton() {
   );
 }
 
-export function InventoryReturnForm({ initialSettings }: { initialSettings: InventoryReturnSettings }) {
+export function InventoryReturnForm({
+  initialSettings,
+}: {
+  initialSettings: InventoryReturnSettings;
+}) {
   const [state, formAction] = useActionState(updateInventoryReturnSettingsAction, initialState);
 
+  // Local switch states
+  const [notifyLowStock, setNotifyLowStock] = useState(initialSettings.notifyLowStockEmail);
+  const [backorders, setBackorders] = useState(initialSettings.allowBackorders);
+  const [autoHide, setAutoHide] = useState(initialSettings.autoHideOutOfStock);
+  const [requirePhoto, setRequirePhoto] = useState(initialSettings.requirePhotoProofOnDefect);
+  const [partialReturns, setPartialReturns] = useState(initialSettings.allowPartialReturns);
+  const [deductShipping, setDeductShipping] = useState(initialSettings.deductShippingFeeFromRefund);
+  const [autoRestock, setAutoRestock] = useState(initialSettings.autoRestockCompletedReturns);
+
   return (
-    <form action={formAction} className="space-y-8">
-      {/* Status Messages */}
+    <form action={formAction} className="space-y-6">
+      {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50/90 p-4 text-red-900 shadow-sm dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
-          <AlertTriangle className="size-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.error}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
+          <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
+          <div>
+            <h4 className="font-bold">Failed to update inventory policies</h4>
+            <p className="mt-0.5 text-xs text-rose-700">{state.error}</p>
           </div>
         </div>
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-emerald-900 shadow-sm dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-200">
-          <CheckCircle2 className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-          <div className="text-sm font-medium">
-            <p>{state.message}</p>
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
+          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+          <div>
+            <h4 className="font-bold">Policy configuration updated</h4>
+            <p className="mt-0.5 text-xs text-emerald-700">{state.message}</p>
           </div>
         </div>
       )}
 
-      {/* Grid: 2 columns for policy management */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        {/* CARD 1: INVENTORY INTELLIGENCE & ALERT THRESHOLDS */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-                <Boxes className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Inventory Thresholds & Alerts</CardTitle>
-                <CardDescription className="text-xs">
-                  Trigger automatic stock warning badges and email alerts for warehouse restockers.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label htmlFor="lowStockThreshold" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Low Stock Warning (Units)
-                </label>
-                <Input
-                  id="lowStockThreshold"
-                  name="lowStockThreshold"
-                  type="number"
-                  min={1}
-                  max={500}
-                  defaultValue={initialSettings.lowStockThreshold}
-                  required
-                />
-                <p className="text-[11px] text-vl-dark-500">
-                  Variants at or below this count show a yellow &ldquo;Low Stock&rdquo; badge.
-                </p>
-                {state.fieldErrors?.lowStockThreshold && (
-                  <p className="text-xs text-red-500">{state.fieldErrors.lowStockThreshold[0]}</p>
-                )}
-              </div>
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          Inventory & Return Policies
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Low stock alerts, customer return windows, delivery charge deductions, and restocking
+        </p>
+      </div>
 
-              <div className="space-y-2">
-                <label htmlFor="criticalStockThreshold" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Critical Outage Level (Units)
-                </label>
-                <Input
-                  id="criticalStockThreshold"
-                  name="criticalStockThreshold"
-                  type="number"
-                  min={0}
-                  max={100}
-                  defaultValue={initialSettings.criticalStockThreshold}
-                  required
-                />
-                <p className="text-[11px] text-vl-dark-500">
-                  Emergency threshold triggering high-priority restock attention.
-                </p>
-                {state.fieldErrors?.criticalStockThreshold && (
-                  <p className="text-xs text-red-500">{state.fieldErrors.criticalStockThreshold[0]}</p>
-                )}
-              </div>
+      {/* ── SECTION 1: INVENTORY INTELLIGENCE & ALERT THRESHOLDS ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Boxes className="size-4.5 text-amber-600" />
             </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Inventory Thresholds & Restock Alerts
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Automatic stock warning badges and email alert dispatch for warehouse replenishments
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
 
-            {/* Email notification toggle */}
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40 space-y-4">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="notifyLowStockEmail"
-                  value="true"
-                  defaultChecked={initialSettings.notifyLowStockEmail}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Send Restock Email Alert
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Dispatches an automated email digest whenever items breach low stock thresholds.
-                  </p>
-                </div>
+        <CardContent className="space-y-6 p-6">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                htmlFor="lowStockThreshold"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Low Stock Warning (Units) <span className="text-rose-500">*</span>
               </label>
+              <Input
+                id="lowStockThreshold"
+                name="lowStockThreshold"
+                type="number"
+                min={1}
+                max={500}
+                defaultValue={initialSettings.lowStockThreshold}
+                className="bg-white font-mono"
+                required
+              />
+              <p className="text-[11px] text-neutral-500">
+                Variants at or below this count show a yellow &ldquo;Low Stock&rdquo; badge.
+              </p>
+              {state.fieldErrors?.lowStockThreshold && (
+                <p className="text-[11px] font-semibold text-rose-600">
+                  {state.fieldErrors.lowStockThreshold[0]}
+                </p>
+              )}
+            </div>
 
-              <div className="space-y-2 pt-2 border-t border-vl-dark-900/10 dark:border-vl-dark-800">
-                <label htmlFor="lowStockNotificationEmail" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300 flex items-center gap-1.5">
-                  <Mail className="size-3.5 text-vl-dark-400" />
+            <div className="space-y-1.5">
+              <label
+                htmlFor="criticalStockThreshold"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Critical Outage Level (Units) <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                id="criticalStockThreshold"
+                name="criticalStockThreshold"
+                type="number"
+                min={0}
+                max={100}
+                defaultValue={initialSettings.criticalStockThreshold}
+                className="bg-white font-mono"
+                required
+              />
+              <p className="text-[11px] text-neutral-500">
+                Emergency threshold triggering urgent warehouse replenishment notice.
+              </p>
+              {state.fieldErrors?.criticalStockThreshold && (
+                <p className="text-[11px] font-semibold text-rose-600">
+                  {state.fieldErrors.criticalStockThreshold[0]}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email Alert Settings */}
+          <div className="space-y-4 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold tracking-wide text-neutral-900 uppercase">
+                  Automated Restock Email Alert
+                </span>
+                <p className="mt-0.5 text-[11px] text-neutral-500">
+                  Dispatches an automated email digest whenever inventory breaches low stock
+                  thresholds.
+                </p>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="hidden"
+                  name="notifyLowStockEmail"
+                  value={notifyLowStock ? "true" : "false"}
+                />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={notifyLowStock}
+                  onClick={() => setNotifyLowStock(!notifyLowStock)}
+                  className={cn(
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                    notifyLowStock ? "bg-amber-600" : "bg-neutral-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                      notifyLowStock ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {notifyLowStock && (
+              <div className="animate-in fade-in space-y-1.5 border-t border-neutral-200/60 pt-3">
+                <label
+                  htmlFor="lowStockNotificationEmail"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700"
+                >
+                  <Mail className="size-3.5 text-neutral-400" />
                   Alert Recipient Email
                 </label>
                 <Input
@@ -169,283 +228,381 @@ export function InventoryReturnForm({ initialSettings }: { initialSettings: Inve
                   type="email"
                   defaultValue={initialSettings.lowStockNotificationEmail}
                   placeholder="inventory@vibelock.com"
+                  className="bg-white font-mono"
                 />
               </div>
-            </div>
+            )}
+          </div>
 
-            {/* Storefront visibility */}
-            <div className="space-y-3 pt-2">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="allowBackorders"
-                  value="true"
-                  defaultChecked={initialSettings.allowBackorders}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Allow Backorders / Overselling
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Permits customers to complete checkout even when inventory level reaches zero.
-                  </p>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="autoHideOutOfStock"
-                  value="true"
-                  defaultChecked={initialSettings.autoHideOutOfStock}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Auto-Hide Out-of-Stock Products
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Removes sold-out items from catalog browsing and search grids automatically.
-                  </p>
-                </div>
-              </label>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 2: CUSTOMER RETURN POLICY GOVERNANCE */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-400">
-                <RotateCcw className="size-5" />
-              </div>
+          {/* Storefront visibility */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
               <div>
-                <CardTitle className="text-base font-semibold">Return Window & Eligibility</CardTitle>
-                <CardDescription className="text-xs">
-                  Define customer eligibility periods and restrictions for post-delivery return requests.
-                </CardDescription>
+                <span className="text-xs font-semibold text-neutral-900">Allow Backorders</span>
+                <p className="text-[11px] text-neutral-500">
+                  Permits checkout even when inventory level reaches zero.
+                </p>
+              </div>
+              <div className="flex items-center">
+                <input type="hidden" name="allowBackorders" value={backorders ? "true" : "false"} />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={backorders}
+                  onClick={() => setBackorders(!backorders)}
+                  className={cn(
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                    backorders ? "bg-vl-cyan-600" : "bg-neutral-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                      backorders ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
               </div>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="returnWindowDays" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                  Return Window (Days After Delivery)
-                </label>
-                <Badge variant="outline" className="text-[10px] text-vl-dark-500">
-                  Set to 0 to disable returns
-                </Badge>
-              </div>
-              <Input
-                id="returnWindowDays"
-                name="returnWindowDays"
-                type="number"
-                min={0}
-                max={90}
-                defaultValue={initialSettings.returnWindowDays}
-                required
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Standard Bangladesh e-commerce window is 7 days. Customers cannot request returns after this window expires.
-              </p>
-              {state.fieldErrors?.returnWindowDays && (
-                <p className="text-xs text-red-500">{state.fieldErrors.returnWindowDays[0]}</p>
-              )}
-            </div>
 
-            <div className="space-y-3 pt-2 border-t border-vl-dark-900/10 dark:border-vl-dark-800">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="requirePhotoProofOnDefect"
-                  value="true"
-                  defaultChecked={initialSettings.requirePhotoProofOnDefect}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Require Photo Proof for Defective/Wrong Items
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Enforces at least one uploaded photograph before the customer can submit the return form.
-                  </p>
-                </div>
-              </label>
-
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="allowPartialReturns"
-                  value="true"
-                  defaultChecked={initialSettings.allowPartialReturns}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Allow Partial Order Returns
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Customers can select specific line items from a multi-item parcel rather than returning the entire order.
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            {/* Non-returnable categories */}
-            <div className="space-y-2 pt-2 border-t border-vl-dark-900/10 dark:border-vl-dark-800">
-              <label htmlFor="nonReturnableCategories" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Non-Returnable Product Categories
-              </label>
-              <Input
-                id="nonReturnableCategories"
-                name="nonReturnableCategories"
-                type="text"
-                defaultValue={initialSettings.nonReturnableCategories.join(", ")}
-                placeholder="Underwear, Swimwear, Clearance, Socks"
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Comma-separated list of product categories that are strictly final-sale for hygiene or clearance reasons.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 3: RETURN FEES & DEDUCTIONS */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400">
-                <ShieldCheck className="size-5" />
-              </div>
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
               <div>
-                <CardTitle className="text-base font-semibold">Refund Deductions & Logistics Charges</CardTitle>
-                <CardDescription className="text-xs">
-                  Configure merchant protection rules for shipping charge recovery on customer change-of-mind.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="deductShippingFeeFromRefund"
-                  value="true"
-                  defaultChecked={initialSettings.deductShippingFeeFromRefund}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
-                />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Deduct Courier Delivery Fee From Refund
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    When approved, original delivery cost is subtracted from the refund amount to prevent merchant loss on return shipping.
-                  </p>
-                </div>
-              </label>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="returnProcessingFee" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Flat Restocking / Return Fee (BDT)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-vl-dark-400">
-                  ৳
+                <span className="text-xs font-semibold text-neutral-900">
+                  Auto-Hide Sold-Out Items
                 </span>
-                <Input
-                  id="returnProcessingFee"
-                  name="returnProcessingFee"
-                  type="number"
-                  min={0}
-                  max={5000}
-                  defaultValue={initialSettings.returnProcessingFee}
-                  className="pl-8"
-                  required
-                />
+                <p className="text-[11px] text-neutral-500">
+                  Removes out-of-stock items from catalog browsing automatically.
+                </p>
               </div>
-              <p className="text-[11px] text-vl-dark-500">
-                Additional administrative processing fee deducted from refund (set 0 for no fee).
-              </p>
-              {state.fieldErrors?.returnProcessingFee && (
-                <p className="text-xs text-red-500">{state.fieldErrors.returnProcessingFee[0]}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* CARD 4: WAREHOUSE RESTOCKING GOVERNANCE */}
-        <Card className="border-vl-dark-900/10 shadow-sm dark:border-vl-dark-800">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="flex size-9 items-center justify-center rounded-lg bg-vl-cyan-500/10 text-vl-cyan-600 dark:bg-vl-cyan-500/20 dark:text-vl-cyan-400">
-                <Warehouse className="size-5" />
-              </div>
-              <div>
-                <CardTitle className="text-base font-semibold">Restocking & Quality Grading</CardTitle>
-                <CardDescription className="text-xs">
-                  Manage inventory return destinations and quality check inspection enforcement.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="space-y-2">
-              <label htmlFor="restockLocation" className="text-xs font-semibold text-vl-dark-700 dark:text-vl-dark-300">
-                Restock Fulfillment Hub / Warehouse
-              </label>
-              <Input
-                id="restockLocation"
-                name="restockLocation"
-                type="text"
-                defaultValue={initialSettings.restockLocation}
-                required
-              />
-              <p className="text-[11px] text-vl-dark-500">
-                Physical warehouse facility where returned merchandise is inspected and restored into stock.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-              <label className="flex items-start gap-3 cursor-pointer">
+              <div className="flex items-center">
                 <input
-                  type="checkbox"
-                  name="autoRestockCompletedReturns"
-                  value="true"
-                  defaultChecked={initialSettings.autoRestockCompletedReturns}
-                  className="mt-1 size-4 rounded border-vl-dark-900/20 text-vl-cyan-600 focus:ring-vl-cyan-500"
+                  type="hidden"
+                  name="autoHideOutOfStock"
+                  value={autoHide ? "true" : "false"}
                 />
-                <div>
-                  <span className="text-sm font-medium text-vl-dark-900 dark:text-vl-white">
-                    Auto-Restock Returned Items (Bypass QC)
-                  </span>
-                  <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-                    Immediately adds returned inventory back to sellable stock. When unchecked (recommended), items require staff Quality Grading (Grade A: Resellable vs Grade B: Damaged).
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={autoHide}
+                  onClick={() => setAutoHide(!autoHide)}
+                  className={cn(
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                    autoHide ? "bg-vl-cyan-600" : "bg-neutral-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                      autoHide ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 2: CUSTOMER RETURN POLICIES ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <RotateCcw className="size-4.5 text-purple-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Customer Return Window & Conditions
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Eligibility duration, photographic proof rules, and non-returnable categories
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-6 p-6">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="returnWindowDays"
+                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+              >
+                Return Window (Days After Delivery) <span className="text-rose-500">*</span>
               </label>
+              <Badge
+                variant="outline"
+                className="border-neutral-200 bg-neutral-50 text-[10px] font-medium text-neutral-600"
+              >
+                Set 0 to disable returns
+              </Badge>
+            </div>
+            <Input
+              id="returnWindowDays"
+              name="returnWindowDays"
+              type="number"
+              min={0}
+              max={90}
+              defaultValue={initialSettings.returnWindowDays}
+              className="bg-white font-mono"
+              required
+            />
+            <p className="text-[11px] text-neutral-500">
+              Standard Bangladesh e-commerce window is 7 days. Returns cannot be requested after
+              this period.
+            </p>
+            {state.fieldErrors?.returnWindowDays && (
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.returnWindowDays[0]}
+              </p>
+            )}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+              <div>
+                <span className="text-xs font-semibold text-neutral-900">Require Photo Proof</span>
+                <p className="text-[11px] text-neutral-500">
+                  Mandates uploaded photograph for defective/wrong items.
+                </p>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="hidden"
+                  name="requirePhotoProofOnDefect"
+                  value={requirePhoto ? "true" : "false"}
+                />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={requirePhoto}
+                  onClick={() => setRequirePhoto(!requirePhoto)}
+                  className={cn(
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                    requirePhoto ? "bg-purple-600" : "bg-neutral-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                      requirePhoto ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-lg bg-vl-dark-900/[0.04] p-3 text-xs text-vl-dark-600 dark:bg-vl-dark-800/60 dark:text-vl-dark-300">
-              <HelpCircle className="size-4 shrink-0 text-vl-cyan-600 mt-0.5" />
-              <span>
-                VibeLock inventory ledger prevents negative stock discrepancies and tracks return batch history with full transaction traceability.
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+              <div>
+                <span className="text-xs font-semibold text-neutral-900">
+                  Allow Partial Order Returns
+                </span>
+                <p className="text-[11px] text-neutral-500">
+                  Shoppers can return specific items rather than the entire order.
+                </p>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="hidden"
+                  name="allowPartialReturns"
+                  value={partialReturns ? "true" : "false"}
+                />
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={partialReturns}
+                  onClick={() => setPartialReturns(!partialReturns)}
+                  className={cn(
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                    partialReturns ? "bg-purple-600" : "bg-neutral-300"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                      partialReturns ? "translate-x-5" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Non-returnable categories */}
+          <div className="space-y-1.5">
+            <label
+              htmlFor="nonReturnableCategories"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Non-Returnable Product Categories
+            </label>
+            <Input
+              id="nonReturnableCategories"
+              name="nonReturnableCategories"
+              type="text"
+              defaultValue={initialSettings.nonReturnableCategories.join(", ")}
+              placeholder="Underwear, Swimwear, Clearance, Socks"
+              className="bg-white"
+            />
+            <p className="text-[11px] text-neutral-500">
+              Comma-separated list of categories strictly designated as final-sale for hygiene
+              reasons.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 3: RETURN FEES & DEDUCTIONS ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <ShieldCheck className="size-4.5 text-emerald-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Refund Deductions & Processing Fees
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Courier fee recovery and administrative fees on customer returns
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+          {/* Deduct shipping */}
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Deduct Courier Delivery Fee From Refund
               </span>
+              <p className="text-[11px] text-neutral-500">
+                When approved, original delivery fee is subtracted from the refund amount to prevent
+                merchant loss.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="deductShippingFeeFromRefund"
+                value={deductShipping ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={deductShipping}
+                onClick={() => setDeductShipping(!deductShipping)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  deductShipping ? "bg-emerald-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    deductShipping ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
 
-      {/* Floating Save Actions Bar */}
-      <div className="flex items-center justify-between rounded-xl border border-vl-dark-900/10 bg-vl-dark-900/[0.02] p-4 dark:border-vl-dark-800 dark:bg-vl-dark-900/40">
-        <p className="text-xs text-vl-dark-500 dark:text-vl-dark-400">
-          Modifications take effect immediately across all storefront product cards, inventory badges, and return flows.
-        </p>
-        <SubmitButton />
+          <div className="space-y-1.5">
+            <label
+              htmlFor="returnProcessingFee"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Flat Restocking / Return Fee (BDT ৳)
+            </label>
+            <Input
+              id="returnProcessingFee"
+              name="returnProcessingFee"
+              type="number"
+              min={0}
+              max={5000}
+              defaultValue={initialSettings.returnProcessingFee}
+              className="bg-white font-mono"
+              required
+            />
+            <p className="text-[11px] text-neutral-500">
+              Additional processing fee deducted from refund (set 0 for no fee).
+            </p>
+            {state.fieldErrors?.returnProcessingFee && (
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.returnProcessingFee[0]}
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <label
+              htmlFor="restockLocation"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Restock Fulfillment Hub / Warehouse
+            </label>
+            <Input
+              id="restockLocation"
+              name="restockLocation"
+              type="text"
+              defaultValue={initialSettings.restockLocation}
+              className="bg-white"
+              required
+            />
+            <p className="text-[11px] text-neutral-500">
+              Warehouse destination where returned merchandise is received and graded.
+            </p>
+          </div>
+
+          {/* Auto restock */}
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Auto-Restock Returned Items (Bypass QC)
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Immediately returns inspected items into active stock without mandatory Quality
+                Grading approval.
+              </p>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="autoRestockCompletedReturns"
+                value={autoRestock ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoRestock}
+                onClick={() => setAutoRestock(!autoRestock)}
+                className={cn(
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  autoRestock ? "bg-emerald-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    autoRestock ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+        <div className="text-xs text-neutral-500">
+          <span>Inventory thresholds and return conditions are enforced atomically across </span>
+          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+        </div>
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

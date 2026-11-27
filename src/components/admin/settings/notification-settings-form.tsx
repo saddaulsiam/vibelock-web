@@ -39,7 +39,7 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="size-4 animate-spin text-white" />
-          <span>Saving Notification Channels...</span>
+          <span>Saving Channels...</span>
         </>
       ) : (
         <>
@@ -71,10 +71,10 @@ export function NotificationSettingsForm({
   const [adminEmail, setAdminEmail] = useState(initialSettings.enableAdminOrderAlertEmail);
 
   return (
-    <form action={action} className="space-y-8">
+    <form action={action} className="space-y-6">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <div>
             <h4 className="font-bold">Failed to update notification settings</h4>
@@ -84,7 +84,7 @@ export function NotificationSettingsForm({
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
           <div>
             <h4 className="font-bold">Notifications configuration updated</h4>
@@ -93,28 +93,38 @@ export function NotificationSettingsForm({
         </div>
       )}
 
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          Notification & SMS Settings
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Carrier SMS gateways, parcel milestone triggers, and VIP order manager alerts
+        </p>
+      </div>
+
       {/* ── SECTION 1: SMS GATEWAY RAIL & SENDER CONFIG ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-vl-dark-900/5 border-b pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-purple-200 bg-purple-50 text-purple-700">
-              <Smartphone className="size-4.5" />
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Smartphone className="size-4.5 text-purple-600" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
                 Bangladesh SMS Gateway Rail & API Routing
               </CardTitle>
-              <CardDescription className="text-xs">
-                Configure primary carrier provider, brand mask sender ID, and gateway credentials
+              <CardDescription className="text-xs text-neutral-500">
+                Primary carrier provider, brand mask sender ID, and API dispatch credentials
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
           {/* Provider Selection */}
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Primary SMS Gateway Provider
             </label>
             <input type="hidden" name="smsProvider" value={provider} />
@@ -130,14 +140,21 @@ export function NotificationSettingsForm({
                   type="button"
                   onClick={() => setProvider(p.id as typeof provider)}
                   className={cn(
-                    "rounded-lg border p-3 text-left text-xs font-bold transition-all",
+                    "rounded-lg border p-3 text-left text-xs transition-all",
                     provider === p.id
-                      ? "border-purple-500 bg-purple-50 text-purple-900 ring-1 ring-purple-500"
-                      : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                      ? "border-neutral-900 bg-neutral-900 text-white shadow-2xs"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                   )}
                 >
-                  <span className="block">{p.name}</span>
-                  <span className="block text-[10px] font-normal text-neutral-500">{p.sub}</span>
+                  <span className="block font-bold">{p.name}</span>
+                  <span
+                    className={cn(
+                      "block text-[10px] mt-0.5",
+                      provider === p.id ? "text-neutral-300" : "text-neutral-400"
+                    )}
+                  >
+                    {p.sub}
+                  </span>
                 </button>
               ))}
             </div>
@@ -146,12 +163,12 @@ export function NotificationSettingsForm({
           {/* Sender ID */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
                 SMS Sender ID (Masking) <span className="text-rose-500">*</span>
               </label>
               <Badge
                 variant="outline"
-                className="border-purple-300 bg-purple-50 text-[10px] text-purple-800"
+                className="border-neutral-200 bg-neutral-50 text-[10px] text-neutral-700 font-mono"
               >
                 Alphanumeric Mask
               </Badge>
@@ -168,13 +185,13 @@ export function NotificationSettingsForm({
               </p>
             )}
             <p className="text-[11px] text-neutral-500">
-              Operator-approved brand masking text displayed on recipient handsets.
+              BTRC-approved brand masking text displayed on recipient mobile handsets.
             </p>
           </div>
 
           {/* Gateway API Key */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Gateway API Key (Optional Override)
             </label>
             <Input
@@ -185,14 +202,13 @@ export function NotificationSettingsForm({
               className="bg-white font-mono"
             />
             <p className="text-[11px] text-neutral-500">
-              When omitted, uses verified <code className="text-vl-dark-900">SMS_API_KEY</code> from
-              server environment.
+              When omitted, securely uses <code className="text-neutral-900 font-mono">SMS_API_KEY</code> from environment.
             </p>
           </div>
 
           {/* Gateway API URL */}
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Gateway API Endpoint URL (Optional Override)
             </label>
             <Input
@@ -202,40 +218,40 @@ export function NotificationSettingsForm({
               className="bg-white font-mono text-xs"
             />
             <p className="text-[11px] text-neutral-500">
-              Target HTTP endpoint for transactional payload dispatch.
+              Target HTTP endpoint for transactional outbound SMS payload dispatch.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── SECTION 2: CUSTOMER TRANSACTIONAL SMS TRIGGERS ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-vl-dark-900/5 border-b pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="border-vl-cyan-200 bg-vl-cyan-50 text-vl-cyan-700 flex size-9 items-center justify-center rounded-lg border">
-              <MessageSquare className="size-4.5" />
+      {/* ── SECTION 2: CUSTOMER TRANSACTIONAL SMS LIFECYCLE ── */}
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <MessageSquare className="size-4.5 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Customer Transactional SMS Lifecycle Triggers
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                Customer SMS Lifecycle Triggers
               </CardTitle>
-              <CardDescription className="text-xs">
-                Activate or silence automated SMS notifications for key parcel lifecycle milestones
+              <CardDescription className="text-xs text-neutral-500">
+                Automated customer milestone alerts dispatched via SMS
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
           {/* Trigger 1: Order Placed */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">Order Placed Confirmation</span>
+              <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
               <p className="text-[11px] text-neutral-500">
                 Dispatches order invoice number upon checkout completion.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="notifyOnOrderPlaced"
@@ -243,9 +259,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={onOrderPlaced}
                 onClick={() => setOnOrderPlaced(!onOrderPlaced)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   onOrderPlaced ? "bg-vl-cyan-600" : "bg-neutral-300"
                 )}
               >
@@ -260,16 +278,16 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 2: Order Dispatched with Tracking */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">
-                Courier Dispatch + Tracking Link
+              <span className="text-xs font-semibold text-neutral-900">
+                Courier Dispatch & Tracking Link
               </span>
               <p className="text-[11px] text-neutral-500">
                 Includes Steadfast consignment tracking URL.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="notifyOnOrderDispatched"
@@ -277,9 +295,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={onDispatched}
                 onClick={() => setOnDispatched(!onDispatched)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   onDispatched ? "bg-vl-cyan-600" : "bg-neutral-300"
                 )}
               >
@@ -294,14 +314,14 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 3: Out for Delivery */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">Out for Delivery Alert</span>
+              <span className="text-xs font-semibold text-neutral-900">Out for Delivery Alert</span>
               <p className="text-[11px] text-neutral-500">
-                Warns customer that rider is en route to their address.
+                Warns customer that delivery rider is en route with their parcel.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="notifyOnOutForDelivery"
@@ -309,9 +329,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={onOutDelivery}
                 onClick={() => setOnOutDelivery(!onOutDelivery)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   onOutDelivery ? "bg-vl-cyan-600" : "bg-neutral-300"
                 )}
               >
@@ -326,14 +348,14 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 4: Return Approved */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">Return / Refund Approved</span>
+              <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
               <p className="text-[11px] text-neutral-500">
-                Notifies shopper when return pickup consignment is approved.
+                Notifies customer when return pickup consignment is authorized.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="notifyOnReturnApproved"
@@ -341,9 +363,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={onReturnApproved}
                 onClick={() => setOnReturnApproved(!onReturnApproved)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   onReturnApproved ? "bg-vl-cyan-600" : "bg-neutral-300"
                 )}
               >
@@ -359,26 +383,26 @@ export function NotificationSettingsForm({
         </CardContent>
       </Card>
 
-      {/* ── SECTION 3: STORE MANAGER ALERTS & HIGH-VALUE RADAR ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-vl-dark-900/5 border-b pb-4">
+      {/* ── SECTION 3: STORE MANAGER HIGH-VALUE ORDER RADAR ── */}
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-lg border border-amber-300 bg-amber-50 text-amber-700">
-                <BellRing className="size-4.5" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <BellRing className="size-4.5 text-amber-600" />
               </div>
               <div>
-                <CardTitle className="text-vl-dark-900 text-base font-bold">
-                  Store Manager Alerts & High-Value Order Radar
+                <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                  Manager SMS Alerts & High-Value Radar
                 </CardTitle>
-                <CardDescription className="text-xs">
+                <CardDescription className="text-xs text-neutral-500">
                   Instant SMS notifications sent to operations management for VIP orders
                 </CardDescription>
               </div>
             </div>
 
-            {/* Toggle Switch */}
-            <div className="flex items-center gap-2">
+            {/* Modern Switch */}
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="adminAlertsEnabled"
@@ -386,9 +410,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={adminAlerts}
                 onClick={() => setAdminAlerts(!adminAlerts)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   adminAlerts ? "bg-amber-600" : "bg-neutral-300"
                 )}
               >
@@ -403,10 +429,10 @@ export function NotificationSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
           {/* Admin Recipient Phone */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Store Manager Alert Phone <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -428,8 +454,8 @@ export function NotificationSettingsForm({
 
           {/* High-Value Threshold */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
-              High-Value Order Radar Threshold (৳) <span className="text-rose-500">*</span>
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+              High-Value Radar Threshold (৳) <span className="text-rose-500">*</span>
             </label>
             <Input
               type="number"
@@ -451,16 +477,16 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Low SMS Balance Warning Toggle */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
             <div>
-              <span className="text-xs font-bold text-neutral-800">
+              <span className="text-xs font-semibold text-neutral-800">
                 SMS Gateway Low-Credit Balance Alert
               </span>
               <p className="text-[11px] text-neutral-500">
                 Warns manager when provider balance drops below 100 credits.
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="adminAlertLowSmsBalanceWarning"
@@ -468,9 +494,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={lowBalanceWarn}
                 onClick={() => setLowBalanceWarn(!lowBalanceWarn)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   lowBalanceWarn ? "bg-amber-600" : "bg-neutral-300"
                 )}
               >
@@ -487,27 +515,27 @@ export function NotificationSettingsForm({
       </Card>
 
       {/* ── SECTION 4: EMAIL NOTIFICATION CHANNELS ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-vl-dark-900/5 border-b pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900 flex size-9 items-center justify-center rounded-lg border">
-              <Mail className="size-4.5" />
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Mail className="size-4.5 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Email Dispatch Channels & Sender Profiles
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                Email Dispatch Channels & Profiles
               </CardTitle>
-              <CardDescription className="text-xs">
+              <CardDescription className="text-xs text-neutral-500">
                 Resend transactional email triggers and recipient routing
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
           {/* Admin Notification Email */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Store Order Alert Email <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -528,7 +556,7 @@ export function NotificationSettingsForm({
 
           {/* Support Reply-To Email */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold tracking-wider text-neutral-700 uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Support Reply-To Address <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -548,14 +576,14 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Email Toggles */}
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">
+              <span className="text-xs font-semibold text-neutral-800">
                 Customer Order Confirmation Email
               </span>
               <p className="text-[11px] text-neutral-500">Send HTML receipt via Resend.</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="enableCustomerOrderEmail"
@@ -563,9 +591,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={customerEmail}
                 onClick={() => setCustomerEmail(!customerEmail)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   customerEmail ? "bg-emerald-600" : "bg-neutral-300"
                 )}
               >
@@ -579,12 +609,12 @@ export function NotificationSettingsForm({
             </div>
           </div>
 
-          <div className="border-vl-dark-900/8 flex items-center justify-between rounded-lg border bg-neutral-50/70 p-3">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="text-xs font-bold text-neutral-800">Manager Order Alert Email</span>
+              <span className="text-xs font-semibold text-neutral-800">Manager Order Alert Email</span>
               <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders.</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="enableAdminOrderAlertEmail"
@@ -592,9 +622,11 @@ export function NotificationSettingsForm({
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={adminEmail}
                 onClick={() => setAdminEmail(!adminEmail)}
                 className={cn(
-                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
                   adminEmail ? "bg-emerald-600" : "bg-neutral-300"
                 )}
               >
@@ -610,14 +642,16 @@ export function NotificationSettingsForm({
         </CardContent>
       </Card>
 
-      {/* ── SAVE ACTION FOOTER ── */}
-      <div className="border-vl-dark-900/10 flex items-center justify-between rounded-xl border bg-neutral-50 p-4 shadow-2xs">
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>SMS and notification channel updates are logged in </span>
-          <code className="text-vl-dark-900 font-mono font-semibold">AuditLog</code> with actor
+          <code className="font-mono text-neutral-900 font-semibold">AuditLog</code> with actor
           attribution.
         </div>
-        <SubmitButton />
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

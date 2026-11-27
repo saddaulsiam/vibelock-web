@@ -52,18 +52,24 @@ function SubmitButton() {
   );
 }
 
-export function GeneralSettingsForm({ initialSettings }: { initialSettings: GeneralStoreSettings }) {
+export function GeneralSettingsForm({
+  initialSettings,
+}: {
+  initialSettings: GeneralStoreSettings;
+}) {
   const [state, action] = useActionState(updateGeneralSettingsAction, initialState);
 
   // Local state for interactive killswitch toggles
-  const [maintenanceEnabled, setMaintenanceEnabled] = useState(initialSettings.maintenanceMode.enabled);
+  const [maintenanceEnabled, setMaintenanceEnabled] = useState(
+    initialSettings.maintenanceMode.enabled
+  );
   const [holidayEnabled, setHolidayEnabled] = useState(initialSettings.holidayMode.enabled);
 
   return (
-    <form action={action} className="space-y-8">
+    <form action={action} className="space-y-6">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <div>
             <h4 className="font-bold">Failed to update settings</h4>
@@ -73,7 +79,7 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
           <div>
             <h4 className="font-bold">Configuration updated</h4>
@@ -82,28 +88,38 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
         </div>
       )}
 
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          General Store Configuration
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Store identity, legal DBID, omnichannel support hotlines, and operational modes
+        </p>
+      </div>
+
       {/* ── SECTION 1: STORE IDENTITY & LEGAL REGISTRATION ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900">
-              <Store className="size-4.5" />
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Store className="text-vl-cyan-600 size-4.5" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Store Identity & Legal Compliance
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                Store Identity & Legal Registration
               </CardTitle>
-              <CardDescription className="text-xs">
-                Public storefront branding and Ministry of Commerce legal identification details
+              <CardDescription className="text-xs text-neutral-500">
+                Official store branding and Government of Bangladesh business identification details
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
           {/* Store Name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Store Public Name <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -113,14 +129,18 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white"
             />
             {state.fieldErrors?.storeName && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.storeName[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.storeName[0]}
+              </p>
             )}
-            <p className="text-[11px] text-neutral-500">Displayed in metadata, order emails, and receipts.</p>
+            <p className="text-[11px] text-neutral-500">
+              Displayed across public storefront header, emails, and receipts.
+            </p>
           </div>
 
           {/* Legal Business Name */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Legal Business Name <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -130,18 +150,27 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white"
             />
             {state.fieldErrors?.legalBusinessName && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.legalBusinessName[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.legalBusinessName[0]}
+              </p>
             )}
-            <p className="text-[11px] text-neutral-500">Printed on official invoices and legal audit declarations.</p>
+            <p className="text-[11px] text-neutral-500">
+              Registered entity printed on official tax invoices and legal disclosures.
+            </p>
           </div>
 
           {/* DBID Number */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-                DBID Number (Digital Business ID)
+              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+                Digital Business ID (DBID)
               </label>
-              <span className="text-[10px] font-mono text-neutral-400">BD MOC</span>
+              <Badge
+                variant="outline"
+                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
+              >
+                BD MoC
+              </Badge>
             </div>
             <Input
               name="dbidNumber"
@@ -149,12 +178,14 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               placeholder="e.g. 1928471928"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">Ministry of Commerce issued digital business ID.</p>
+            <p className="text-[11px] text-neutral-500">
+              Ministry of Commerce digital e-commerce identity registration.
+            </p>
           </div>
 
           {/* Trade License Number */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Trade License Number
             </label>
             <Input
@@ -163,16 +194,23 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               placeholder="e.g. TRAD/DNCC/029182/2026"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">City Corporation trade license registration.</p>
+            <p className="text-[11px] text-neutral-500">
+              City Corporation annual trade license number.
+            </p>
           </div>
 
           {/* BIN Number */}
           <div className="space-y-1.5 sm:col-span-2">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
                 Business Identification Number (BIN / e-TIN)
               </label>
-              <span className="text-[10px] font-mono text-neutral-400">NBR VAT</span>
+              <Badge
+                variant="outline"
+                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
+              >
+                NBR 13-Digit
+              </Badge>
             </div>
             <Input
               name="binNumber"
@@ -180,33 +218,35 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               placeholder="e.g. 003928172-0102"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">NBR 13-digit BIN required for VAT Mushak-6.3 compliance.</p>
+            <p className="text-[11px] text-neutral-500">
+              National Board of Revenue 13-digit BIN required for Mushak-6.3 tax invoices.
+            </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── SECTION 2: OMNICHANNEL CONTACT & SUPPORT ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900">
-              <Headphones className="size-4.5" />
+      {/* ── SECTION 2: CUSTOMER SUPPORT & LOGISTICS CONTACT ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Headphones className="text-vl-cyan-600 size-4.5" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
+              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
                 Customer Support & Warehouse Channels
               </CardTitle>
-              <CardDescription className="text-xs">
-                Real-time hotline, WhatsApp channel, and courier return hub locations
+              <CardDescription className="text-xs text-neutral-500">
+                Official contact channels and primary warehouse location for courier dispatch
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
           {/* Support Phone */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Customer Support Hotline <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -216,19 +256,26 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white font-mono"
             />
             {state.fieldErrors?.supportPhone && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.supportPhone[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.supportPhone[0]}
+              </p>
             )}
-            <p className="text-[11px] text-neutral-500">Primary phone number displayed on storefront header & footer.</p>
+            <p className="text-[11px] text-neutral-500">
+              Primary phone line displayed in website top bar and footer.
+            </p>
           </div>
 
           {/* WhatsApp Number */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
                 Official WhatsApp Number <span className="text-rose-500">*</span>
               </label>
-              <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[10px] text-emerald-800">
-                Direct wa.me
+              <Badge
+                variant="outline"
+                className="border-emerald-200 bg-emerald-50 font-mono text-[10px] text-emerald-800"
+              >
+                wa.me Direct
               </Badge>
             </div>
             <Input
@@ -238,14 +285,18 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white font-mono"
             />
             {state.fieldErrors?.whatsappNumber && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.whatsappNumber[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.whatsappNumber[0]}
+              </p>
             )}
-            <p className="text-[11px] text-neutral-500">Digits-only format used by the floating WhatsApp chat widget.</p>
+            <p className="text-[11px] text-neutral-500">
+              Numbers only with country code (e.g. 8801311333277) for floating chat.
+            </p>
           </div>
 
           {/* Support Email */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Customer Support Email <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -256,14 +307,18 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white font-mono"
             />
             {state.fieldErrors?.supportEmail && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.supportEmail[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.supportEmail[0]}
+              </p>
             )}
-            <p className="text-[11px] text-neutral-500">Reply-to destination for automated customer order emails.</p>
+            <p className="text-[11px] text-neutral-500">
+              Reply-to destination for customer transactional receipts.
+            </p>
           </div>
 
           {/* Warehouse Address */}
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Default Warehouse / Pickup Hub Address <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -273,51 +328,54 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               className="bg-white"
             />
             {state.fieldErrors?.warehouseAddress && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.warehouseAddress[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.warehouseAddress[0]}
+              </p>
             )}
             <p className="text-[11px] text-neutral-500">
-              Courier parcel pickup location transmitted to Steadfast & Pathao APIs.
+              Primary pickup address transmitted to Steadfast and Pathao logistics APIs for
+              consignment creation.
             </p>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── SECTION 3: EMERGENCY KILLSWITCHES & DISPATCH MODES ── */}
+      {/* ── SECTION 3: STORE OPERATIONAL MODES & SCHEDULES ── */}
       <div className="grid gap-6 md:grid-cols-2">
         {/* Maintenance Mode Card */}
         <Card
           className={cn(
-            "transition-all duration-200 border",
+            "overflow-hidden rounded-xl border transition-all duration-200",
             maintenanceEnabled
-              ? "border-amber-300 bg-amber-50/20 shadow-sm"
-              : "border-vl-dark-900/10 bg-white shadow-2xs"
+              ? "border-amber-300 bg-amber-50/20 shadow-2xs"
+              : "border-neutral-200/80 bg-white shadow-2xs"
           )}
         >
-          <CardHeader className="border-b border-vl-dark-900/5 pb-4">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div
                   className={cn(
                     "flex size-9 items-center justify-center rounded-lg border",
                     maintenanceEnabled
                       ? "border-amber-300 bg-amber-100 text-amber-800"
-                      : "border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900"
+                      : "border-neutral-200 bg-white text-neutral-700"
                   )}
                 >
                   <Power className="size-4.5" />
                 </div>
                 <div>
-                  <CardTitle className="text-vl-dark-900 text-base font-bold">
-                    Store Maintenance Mode
+                  <CardTitle className="text-sm font-bold text-neutral-900">
+                    Maintenance Mode
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    Temporary killswitch for server upgrades
+                  <CardDescription className="text-xs text-neutral-500">
+                    Pause storefront checkout for system updates
                   </CardDescription>
                 </div>
               </div>
 
-              {/* Toggle Switch */}
-              <div className="flex items-center gap-2">
+              {/* Modern Switch */}
+              <div className="flex items-center">
                 <input
                   type="hidden"
                   name="maintenanceMode_enabled"
@@ -325,9 +383,11 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
                 />
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={maintenanceEnabled}
                   onClick={() => setMaintenanceEnabled(!maintenanceEnabled)}
                   className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
                     maintenanceEnabled ? "bg-amber-500" : "bg-neutral-300"
                   )}
                 >
@@ -342,13 +402,14 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 p-5 text-xs">
-            <p className="text-neutral-600 leading-relaxed">
-              When active, customer checkout is paused and visitors see a clean maintenance page.
+          <CardContent className="space-y-4 p-6 text-xs">
+            <p className="leading-relaxed text-neutral-600">
+              When enabled, customer checkout is temporarily paused and visitors see a polite
+              maintenance notice.
             </p>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Maintenance Notice Title
               </label>
               <Input
@@ -359,7 +420,7 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Notice Message for Shoppers
               </label>
               <Input
@@ -369,14 +430,10 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-vl-dark-900/8 bg-neutral-50 p-2.5">
-              <span className="font-medium text-neutral-600">Admin Bypass Allowed</span>
-              <input
-                type="hidden"
-                name="maintenanceMode_allowAdminBypass"
-                value="true"
-              />
-              <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50 px-3 py-2">
+              <span className="text-[11px] font-medium text-neutral-600">Admin Access</span>
+              <input type="hidden" name="maintenanceMode_allowAdminBypass" value="true" />
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
                 <ShieldCheck className="size-3.5" />
                 Active for Logged-In Admins
               </span>
@@ -387,37 +444,37 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
         {/* Holiday / Vacation Mode Card */}
         <Card
           className={cn(
-            "transition-all duration-200 border",
+            "overflow-hidden rounded-xl border transition-all duration-200",
             holidayEnabled
-              ? "border-vl-cyan-300 bg-vl-cyan-50/20 shadow-sm"
-              : "border-vl-dark-900/10 bg-white shadow-2xs"
+              ? "border-vl-cyan-300 bg-vl-cyan-50/20 shadow-2xs"
+              : "border-neutral-200/80 bg-white shadow-2xs"
           )}
         >
-          <CardHeader className="border-b border-vl-dark-900/5 pb-4">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div
                   className={cn(
                     "flex size-9 items-center justify-center rounded-lg border",
                     holidayEnabled
                       ? "border-vl-cyan-300 bg-vl-cyan-100 text-vl-cyan-800"
-                      : "border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900"
+                      : "border-neutral-200 bg-white text-neutral-700"
                   )}
                 >
                   <Calendar className="size-4.5" />
                 </div>
                 <div>
-                  <CardTitle className="text-vl-dark-900 text-base font-bold">
+                  <CardTitle className="text-sm font-bold text-neutral-900">
                     Eid & Holiday Notice Mode
                   </CardTitle>
-                  <CardDescription className="text-xs">
-                    Checkout stays open with delay banner
+                  <CardDescription className="text-xs text-neutral-500">
+                    Keep checkout open with courier delay disclaimer
                   </CardDescription>
                 </div>
               </div>
 
-              {/* Toggle Switch */}
-              <div className="flex items-center gap-2">
+              {/* Modern Switch */}
+              <div className="flex items-center">
                 <input
                   type="hidden"
                   name="holidayMode_enabled"
@@ -425,9 +482,11 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
                 />
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={holidayEnabled}
                   onClick={() => setHolidayEnabled(!holidayEnabled)}
                   className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
                     holidayEnabled ? "bg-vl-cyan-600" : "bg-neutral-300"
                   )}
                 >
@@ -442,13 +501,14 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 p-5 text-xs">
-            <p className="text-neutral-600 leading-relaxed">
-              Allows customers to continue placing orders while warning them of delayed courier dispatch.
+          <CardContent className="space-y-4 p-6 text-xs">
+            <p className="leading-relaxed text-neutral-600">
+              Allows customers to continue placing orders while warning them of delayed holiday
+              courier dispatch.
             </p>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Storefront Banner Announcement
               </label>
               <Input
@@ -459,7 +519,7 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
             </div>
 
             <div className="space-y-1.5">
-              <label className="font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Expected Dispatch Date (Optional)
               </label>
               <Input
@@ -470,9 +530,9 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-vl-dark-900/8 bg-neutral-50 p-2.5">
-              <span className="font-medium text-neutral-600">Checkout Behavior</span>
-              <span className="font-semibold text-vl-dark-900">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50 px-3 py-2">
+              <span className="text-[11px] font-medium text-neutral-600">Checkout State</span>
+              <span className="text-[11px] font-semibold text-neutral-900">
                 Orders Accepted Normally
               </span>
             </div>
@@ -480,38 +540,46 @@ export function GeneralSettingsForm({ initialSettings }: { initialSettings: Gene
         </Card>
       </div>
 
-      {/* ── SECTION 4: LOCALIZATION & PLATFORM DEFAULTS ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardContent className="grid gap-4 p-5 sm:grid-cols-2 text-xs">
-          <div className="flex items-center justify-between rounded-lg border border-vl-dark-900/8 bg-neutral-50/80 p-3">
+      {/* ── SECTION 4: PLATFORM LOCALIZATION STANDARDS ── */}
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
+        <CardContent className="grid gap-4 p-6 text-xs sm:grid-cols-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="font-bold text-neutral-700 uppercase tracking-wider">Platform Currency</span>
-              <p className="text-[11px] text-neutral-500">Locked to canonical Bangladesh Taka.</p>
+              <span className="text-[11px] font-semibold tracking-wide text-neutral-800 uppercase">
+                Platform Currency
+              </span>
+              <p className="mt-0.5 text-[11px] text-neutral-500">Fixed canonical store currency.</p>
             </div>
-            <code className="rounded bg-white px-2.5 py-1 font-mono font-bold text-vl-dark-900 border">
+            <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
               BDT (৳)
             </code>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-vl-dark-900/8 bg-neutral-50/80 p-3">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <span className="font-bold text-neutral-700 uppercase tracking-wider">Platform Timezone</span>
-              <p className="text-[11px] text-neutral-500">Dhaka Standard Time for ledger transactions.</p>
+              <span className="text-[11px] font-semibold tracking-wide text-neutral-800 uppercase">
+                Platform Timezone
+              </span>
+              <p className="mt-0.5 text-[11px] text-neutral-500">
+                Standard time for order transaction ledgers.
+              </p>
             </div>
-            <code className="rounded bg-white px-2.5 py-1 font-mono font-bold text-vl-dark-900 border">
+            <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
               Asia/Dhaka (UTC+6)
             </code>
           </div>
         </CardContent>
       </Card>
 
-      {/* ── SAVE ACTION FOOTER ── */}
-      <div className="flex items-center justify-between rounded-xl border border-vl-dark-900/10 bg-neutral-50 p-4 shadow-2xs">
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>All updates are tracked atomically with admin attribution in </span>
-          <code className="font-mono text-vl-dark-900 font-semibold">AuditLog</code>.
+          <span>Updates execute in an atomic transaction with actor logging in </span>
+          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
         </div>
-        <SubmitButton />
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );

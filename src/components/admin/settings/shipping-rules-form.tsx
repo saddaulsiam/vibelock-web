@@ -60,10 +60,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
   const [autoConsign, setAutoConsign] = useState(initialSettings.autoCreateConsignment);
 
   return (
-    <form action={action} className="space-y-8">
+    <form action={action} className="space-y-6">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
-        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/80 p-4 text-sm text-rose-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-rose-600" />
           <div>
             <h4 className="font-bold">Failed to update shipping rules</h4>
@@ -73,7 +73,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
       )}
 
       {state.message && (
-        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-900 shadow-2xs">
+        <div className="flex items-start gap-3 rounded-xl border border-emerald-200 bg-emerald-50/90 p-4 text-sm text-emerald-900 shadow-2xs">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
           <div>
             <h4 className="font-bold">Shipping rules updated successfully</h4>
@@ -82,26 +82,36 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
         </div>
       )}
 
+      {/* ── SECTION HEADER ── */}
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+          Shipping & Logistics Configuration
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Free delivery incentive rules, primary courier carrier selection, and dispatch warehouse
+        </p>
+      </div>
+
       {/* ── SECTION 1: FREE SHIPPING INCENTIVE ENGINE ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex size-9 items-center justify-center rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-700">
-                <Sparkles className="size-4.5" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <Sparkles className="size-4.5 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-vl-dark-900 text-base font-bold">
-                  Free Shipping Incentive Engine
+                <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                  Free Shipping Promotion Engine
                 </CardTitle>
-                <CardDescription className="text-xs">
-                  Automated cart delivery fee waivers to boost Average Order Value (AOV)
+                <CardDescription className="text-xs text-neutral-500">
+                  Automated delivery fee waivers to boost Average Order Value (AOV)
                 </CardDescription>
               </div>
             </div>
 
-            {/* Toggle Switch */}
-            <div className="flex items-center gap-2">
+            {/* Modern Switch */}
+            <div className="flex items-center">
               <input
                 type="hidden"
                 name="enableFreeShipping"
@@ -109,6 +119,8 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
               />
               <button
                 type="button"
+                role="switch"
+                aria-checked={freeShippingEnabled}
                 onClick={() => setFreeShippingEnabled(!freeShippingEnabled)}
                 className={cn(
                   "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
@@ -126,14 +138,14 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
           {/* Threshold Input */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
                 Free Shipping Cart Threshold (৳) <span className="text-rose-500">*</span>
               </label>
-              <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-[10px] text-emerald-800">
+              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-800 font-medium">
                 AOV Accelerator
               </Badge>
             </div>
@@ -158,24 +170,24 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
 
           {/* Scope Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Applicability Geographic Scope
             </label>
             <input type="hidden" name="freeShippingScope" value={scope} />
-            <div className="grid grid-cols-2 gap-2 pt-0.5">
+            <div className="grid grid-cols-2 gap-2.5 pt-0.5">
               <button
                 type="button"
                 disabled={!freeShippingEnabled}
                 onClick={() => setScope("NATIONWIDE")}
                 className={cn(
-                  "rounded-lg border p-2.5 text-xs font-bold transition-all text-left",
+                  "rounded-lg border p-3 text-xs font-semibold transition-all text-left",
                   scope === "NATIONWIDE"
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500"
+                    ? "border-emerald-600 bg-emerald-50/80 text-emerald-950 ring-1 ring-emerald-600"
                     : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
                 )}
               >
-                <span>Nationwide BD</span>
-                <span className="block text-[10px] font-normal text-neutral-500">Inside + Outside Dhaka</span>
+                <span className="block font-bold">Nationwide BD</span>
+                <span className="block text-[11px] font-normal text-neutral-500">All 64 districts</span>
               </button>
 
               <button
@@ -183,21 +195,21 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                 disabled={!freeShippingEnabled}
                 onClick={() => setScope("INSIDE_DHAKA_ONLY")}
                 className={cn(
-                  "rounded-lg border p-2.5 text-xs font-bold transition-all text-left",
+                  "rounded-lg border p-3 text-xs font-semibold transition-all text-left",
                   scope === "INSIDE_DHAKA_ONLY"
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-900 ring-1 ring-emerald-500"
+                    ? "border-emerald-600 bg-emerald-50/80 text-emerald-950 ring-1 ring-emerald-600"
                     : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
                 )}
               >
-                <span>Dhaka Metro Only</span>
-                <span className="block text-[10px] font-normal text-neutral-500">Excludes Outside Dhaka</span>
+                <span className="block font-bold">Dhaka Metro Only</span>
+                <span className="block text-[11px] font-normal text-neutral-500">Excludes Outside Dhaka</span>
               </button>
             </div>
           </div>
 
           {/* Banner Text */}
           <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Customer Banner Announcement
             </label>
             <Input
@@ -214,190 +226,55 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
         </CardContent>
       </Card>
 
-      {/* ── SECTION 2: DEFAULT COURIER PICKUP & FULFILLMENT HUB ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900">
-              <Building2 className="size-4.5" />
+      {/* ── SECTION 2: COURIER ROUTING & CONSIGNMENT AUTOMATION ── */}
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Truck className="size-4.5 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Default Fulfillment Hub & Courier Dispatch Contacts
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                Courier Priority & API Consignment
               </CardTitle>
-              <CardDescription className="text-xs">
-                Transmitted in Steadfast & Pathao courier consignment payload for parcel pickup
+              <CardDescription className="text-xs text-neutral-500">
+                Logistics provider routing and automated API tracking number booking
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-2">
-          {/* Hub Name */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Pickup Hub Identifier <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              name="pickupHubName"
-              defaultValue={initialSettings.pickupHubName}
-              placeholder="e.g. VibeLock Central Fulfillment Hub"
-              className="bg-white"
-            />
-            {state.fieldErrors?.pickupHubName && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.pickupHubName[0]}</p>
-            )}
-          </div>
-
-          {/* Contact Person */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Dispatch Contact Person <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              name="contactPerson"
-              defaultValue={initialSettings.contactPerson}
-              placeholder="e.g. Warehouse Operations Lead"
-              className="bg-white"
-            />
-            {state.fieldErrors?.contactPerson && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.contactPerson[0]}</p>
-            )}
-          </div>
-
-          {/* Contact Phone */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Dispatch Phone Number <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              name="contactPhone"
-              defaultValue={initialSettings.contactPhone}
-              placeholder="e.g. 8801311333277"
-              className="bg-white font-mono"
-            />
-            {state.fieldErrors?.contactPhone && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.contactPhone[0]}</p>
-            )}
-          </div>
-
-          {/* Pickup Address */}
-          <div className="space-y-1.5 sm:col-span-2">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Pickup & Return Address <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              name="pickupAddress"
-              defaultValue={initialSettings.pickupAddress}
-              placeholder="House 12, Road 4, Sector 3, Uttara, Dhaka-1230"
-              className="bg-white"
-            />
-            {state.fieldErrors?.pickupAddress && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.pickupAddress[0]}</p>
-            )}
-            <p className="text-[11px] text-neutral-500">
-              Address where courier riders arrive for consignment pickup and returned parcel delivery.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── SECTION 3: ESTIMATED DELIVERY TIMELINES (SLA PROMISES) ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900">
-              <Clock className="size-4.5" />
-            </div>
-            <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Storefront Delivery SLA Promises
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Estimated transit timeline badges displayed to shoppers during checkout
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="grid gap-5 p-5 sm:grid-cols-3">
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Inside Dhaka SLA
-            </label>
-            <Input
-              name="insideDhakaSla"
-              defaultValue={initialSettings.insideDhakaSla}
-              placeholder="24–48 Hours"
-              className="bg-white"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Outside Dhaka SLA
-            </label>
-            <Input
-              name="outsideDhakaSla"
-              defaultValue={initialSettings.outsideDhakaSla}
-              placeholder="3–5 Business Days"
-              className="bg-white"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
-              Express / Metro SLA
-            </label>
-            <Input
-              name="expressDhakaSla"
-              defaultValue={initialSettings.expressDhakaSla}
-              placeholder="Same-Day / 24 Hours"
-              className="bg-white"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── SECTION 4: COURIER ROUTING & AUTOMATION ── */}
-      <Card className="border-vl-dark-900/10 bg-white shadow-2xs">
-        <CardHeader className="border-b border-vl-dark-900/5 pb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-vl-dark-900/10 bg-vl-white-200 text-vl-dark-900">
-              <Truck className="size-4.5" />
-            </div>
-            <div>
-              <CardTitle className="text-vl-dark-900 text-base font-bold">
-                Courier Priority & Consignment Automation
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Logistics provider routing and automatic API booking settings
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="grid gap-6 p-5 sm:grid-cols-2">
+        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
           {/* Courier Selector */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Primary Courier Rail
             </label>
             <input type="hidden" name="primaryCourier" value={courier} />
-            <div className="grid grid-cols-3 gap-2 pt-0.5">
+            <div className="grid grid-cols-3 gap-2.5 pt-0.5">
               {(["STEADFAST", "PATHAO", "MANUAL"] as const).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCourier(c)}
                   className={cn(
-                    "rounded-lg border p-2.5 text-xs font-bold transition-all text-center",
+                    "rounded-lg border p-3 text-xs font-semibold transition-all text-center",
                     courier === c
-                      ? "border-vl-cyan-500 bg-vl-cyan-50 text-vl-dark-900 ring-1 ring-vl-cyan-500"
-                      : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
+                      ? "border-neutral-900 bg-neutral-900 text-white shadow-2xs"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
                   )}
                 >
-                  {c === "STEADFAST" ? "Steadfast" : c === "PATHAO" ? "Pathao" : "Manual"}
+                  <span className="block font-bold">
+                    {c === "STEADFAST" ? "Steadfast" : c === "PATHAO" ? "Pathao" : "Manual"}
+                  </span>
+                  <span
+                    className={cn(
+                      "block text-[10px] mt-0.5",
+                      courier === c ? "text-neutral-300" : "text-neutral-400"
+                    )}
+                  >
+                    {c === "STEADFAST" ? "Fast API" : c === "PATHAO" ? "Logistics" : "Offline"}
+                  </span>
                 </button>
               ))}
             </div>
@@ -409,10 +286,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           {/* Auto Consignment Toggle */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-neutral-700 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
                 Auto-Create Consignment on Order
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center">
                 <input
                   type="hidden"
                   name="autoCreateConsignment"
@@ -420,6 +297,8 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                 />
                 <button
                   type="button"
+                  role="switch"
+                  aria-checked={autoConsign}
                   onClick={() => setAutoConsign(!autoConsign)}
                   className={cn(
                     "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
@@ -435,7 +314,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                 </button>
               </div>
             </div>
-            <div className="rounded-lg border border-vl-dark-900/8 bg-neutral-50/70 p-3 text-xs">
+            <div className="rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 text-xs">
               <p className="font-semibold text-neutral-800">
                 {autoConsign ? "Instant API Booking Active" : "Manual Dispatch Approval (Recommended)"}
               </p>
@@ -449,13 +328,160 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
         </CardContent>
       </Card>
 
-      {/* ── SAVE ACTION FOOTER ── */}
-      <div className="flex items-center justify-between rounded-xl border border-vl-dark-900/10 bg-neutral-50 p-4 shadow-2xs">
+      {/* ── SECTION 3: STOREFRONT SLA PROMISES ── */}
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Clock className="size-4.5 text-vl-cyan-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                Storefront Delivery SLA Promises
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Estimated transit timeline badges displayed to shoppers during checkout
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Inside Dhaka SLA
+            </label>
+            <Input
+              name="insideDhakaSla"
+              defaultValue={initialSettings.insideDhakaSla}
+              placeholder="24–48 Hours"
+              className="bg-white"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Outside Dhaka SLA
+            </label>
+            <Input
+              name="outsideDhakaSla"
+              defaultValue={initialSettings.outsideDhakaSla}
+              placeholder="3–5 Business Days"
+              className="bg-white"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Express / Metro SLA
+            </label>
+            <Input
+              name="expressDhakaSla"
+              defaultValue={initialSettings.expressDhakaSla}
+              placeholder="Same-Day / 24 Hours"
+              className="bg-white"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── SECTION 4: DEFAULT FULFILLMENT HUB & PICKUP CONTACTS ── */}
+      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Building2 className="size-4.5 text-vl-cyan-600" />
+            </div>
+            <div>
+              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                Default Fulfillment Hub & Pickup Contacts
+              </CardTitle>
+              <CardDescription className="text-xs text-neutral-500">
+                Origin contact information sent in courier API payloads for parcel collection
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+          {/* Hub Name */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Pickup Hub Identifier <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              name="pickupHubName"
+              defaultValue={initialSettings.pickupHubName}
+              placeholder="e.g. VibeLock Central Fulfillment Hub"
+              className="bg-white"
+            />
+            {state.fieldErrors?.pickupHubName && (
+              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.pickupHubName[0]}</p>
+            )}
+          </div>
+
+          {/* Contact Person */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Dispatch Contact Person <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              name="contactPerson"
+              defaultValue={initialSettings.contactPerson}
+              placeholder="e.g. Warehouse Operations Lead"
+              className="bg-white"
+            />
+            {state.fieldErrors?.contactPerson && (
+              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.contactPerson[0]}</p>
+            )}
+          </div>
+
+          {/* Contact Phone */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Dispatch Phone Number <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              name="contactPhone"
+              defaultValue={initialSettings.contactPhone}
+              placeholder="e.g. 8801311333277"
+              className="bg-white font-mono"
+            />
+            {state.fieldErrors?.contactPhone && (
+              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.contactPhone[0]}</p>
+            )}
+          </div>
+
+          {/* Pickup Address */}
+          <div className="space-y-1.5 sm:col-span-2">
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Pickup & Return Address <span className="text-rose-500">*</span>
+            </label>
+            <Input
+              name="pickupAddress"
+              defaultValue={initialSettings.pickupAddress}
+              placeholder="House 12, Road 4, Sector 3, Uttara, Dhaka-1230"
+              className="bg-white"
+            />
+            {state.fieldErrors?.pickupAddress && (
+              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.pickupAddress[0]}</p>
+            )}
+            <p className="text-[11px] text-neutral-500">
+              Warehouse address where courier riders arrive for parcel pickups and return shipments.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>Shipping and delivery policy modifications are recorded in </span>
-          <code className="font-mono text-vl-dark-900 font-semibold">AuditLog</code> with actor attribution.
+          <span>Shipping and delivery policies sync in real-time across checkout and </span>
+          <code className="font-mono text-neutral-900 font-semibold">AuditLog</code>.
         </div>
-        <SubmitButton />
+        <div className="flex items-center justify-end">
+          <SubmitButton />
+        </div>
       </div>
     </form>
   );
