@@ -129,6 +129,10 @@ async function handleCallback(req: NextRequest) {
       (typeof payload.trx_status === "string" && payload.trx_status.trim().toLowerCase()) ||
       (typeof payload.payment_status === "string" && payload.payment_status.trim().toLowerCase()) ||
       "";
+    const gatewayErrorMessage =
+      typeof payload.message === "string" && payload.message.trim()
+        ? payload.message.trim()
+        : undefined;
     hasCancelSignal =
       rawCallbackStatus === "cancel" ||
       rawCallbackStatus === "canceled" ||
@@ -146,6 +150,8 @@ async function handleCallback(req: NextRequest) {
         orderNumber: correlatedOrderNumber,
         invoiceNumber,
         gateway: "PAYSTATION",
+        rawCallbackStatus: rawCallbackStatus || undefined,
+        gatewayMessage: gatewayErrorMessage,
         hasCancelSignal,
         hasPayload: Object.keys(payload).length > 0,
       })
@@ -238,6 +244,7 @@ async function handleCallback(req: NextRequest) {
         isUnverified: result.verification.isUnverified ?? false,
         isRetryable: result.verification.isRetryable ?? false,
         paymentState,
+        gatewayMessage: gatewayErrorMessage,
         redirectDestination: redirectUrl.pathname + redirectUrl.search,
       })
     );

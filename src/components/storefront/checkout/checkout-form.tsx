@@ -15,7 +15,6 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
-import { isDhakaCity } from "@/lib/shipping/pricing";
 import {
   Check,
   ImageOff,
@@ -163,9 +162,6 @@ export function CheckoutForm({
   const isSubmitting = useRef(false);
   const idempotencyKey = useRef(crypto.randomUUID());
 
-  // Dynamic COD Advance fee calculation from Store Policies
-  const isAdvanceRequired = Boolean(checkoutPolicies?.requireCodAdvanceDeliveryCharge);
-
   const paymentOptions =
     availablePaymentMethods !== undefined
       ? availablePaymentMethods
@@ -197,14 +193,6 @@ export function CheckoutForm({
   const [shippingStreet, setShippingStreet] = useState("");
   const [shippingCity, setShippingCity] = useState(""); // District
   const [paymentMethod, setPaymentMethod] = useState<string>(initialPayment);
-
-  // Dynamic COD Advance fee determination based on District
-  const isDhaka = isDhakaCity(shippingCity);
-  const advanceAmount = isDhaka
-    ? (checkoutPolicies?.codAdvanceInsideDhaka ?? 100)
-    : (checkoutPolicies?.codAdvanceOutsideDhaka ?? 150);
-  const isAutomatedGatewayAdvance =
-    isAdvanceRequired && checkoutPolicies?.codAdvanceCollectionMode === "AUTOMATED_GATEWAY";
 
   // Optional toggles (hidden by default to avoid clutter)
   const [showNote, setShowNote] = useState(false);
@@ -879,15 +867,7 @@ export function CheckoutForm({
                         </div>
                         <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
                           {method.value === "COD"
-                            ? isAdvanceRequired
-                              ? isAutomatedGatewayAdvance
-                                ? shippingCity.trim()
-                                  ? `Pay ৳${advanceAmount} advance online via PayStation/MFS to confirm (${isDhaka ? "Inside Dhaka" : "Outside Dhaka"}). Remaining balance paid on delivery.`
-                                  : `Online advance payment via PayStation/MFS required (৳${checkoutPolicies?.codAdvanceInsideDhaka ?? 100} Dhaka / ৳${checkoutPolicies?.codAdvanceOutsideDhaka ?? 150} Outside). Remaining balance paid on delivery.`
-                                : shippingCity.trim()
-                                  ? `Pay with cash upon arrival. Advance courier fee of ৳${advanceAmount} applies for ${isDhaka ? "Inside Dhaka" : "Outside Dhaka"}.`
-                                  : `Pay with cash upon arrival. Advance courier fee applies (৳${checkoutPolicies?.codAdvanceInsideDhaka ?? 100} Inside Dhaka / ৳${checkoutPolicies?.codAdvanceOutsideDhaka ?? 150} Outside Dhaka).`
-                              : (checkoutPolicies?.codOrderNotice || method.detail)
+                            ? checkoutPolicies?.codOrderNotice || method.detail
                             : method.detail}
                         </p>
                       </div>
@@ -895,16 +875,8 @@ export function CheckoutForm({
                       {/* Trailing badges / payment icons — vertically centered in the card */}
                       <div className="flex shrink-0 items-center self-center">
                         {method.value === "COD" && (
-                          <Badge
-                            variant={isAdvanceRequired ? "secondary" : "info"}
-                            size="sm"
-                            className={
-                              isAdvanceRequired
-                                ? "border-amber-200 bg-amber-50 font-semibold text-amber-700"
-                                : "font-semibold"
-                            }
-                          >
-                            {isAdvanceRequired ? "Advance Fee Req" : "Popular in BD"}
+                          <Badge variant="info" size="sm" className="font-semibold">
+                            Popular in BD
                           </Badge>
                         )}
                         {method.value === "BKASH" && (
@@ -1079,20 +1051,6 @@ export function CheckoutForm({
                 )}
               </dd>
             </div>
-            {paymentMethod === "COD" && isAdvanceRequired && (
-              <div className="mt-2 space-y-1.5 rounded-lg border border-amber-200/80 bg-amber-50/70 p-2.5">
-                <div className="flex items-center justify-between gap-3 text-xs text-amber-900">
-                  <dt className="font-semibold">Advance Courier Fee to Confirm</dt>
-                  <dd className="font-bold">{formatPrice(advanceAmount)}</dd>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-xs text-amber-800/80">
-                  <dt>Payable Cash on Doorstep Delivery</dt>
-                  <dd className="font-bold text-neutral-900">
-                    {grandTotal !== null ? formatPrice(Math.max(0, grandTotal - advanceAmount)) : "—"}
-                  </dd>
-                </div>
-              </div>
-            )}
           </dl>
 
           {/* Total */}
@@ -1132,9 +1090,7 @@ export function CheckoutForm({
                 : !shippingCity
                   ? "Select District"
                   : paymentMethod === "COD"
-                    ? isAutomatedGatewayAdvance
-                      ? `Pay ৳${advanceAmount} Advance (Confirm Order)`
-                      : "Place Order (Cash on Delivery)"
+                    ? "Place Order (Cash on Delivery)"
                     : paymentMethod === "ONLINE" || paymentMethod === "PAYSTATION"
                       ? "Pay with (PayStation)"
                       : paymentMethod === "BKASH"
@@ -1148,31 +1104,8 @@ export function CheckoutForm({
             </p>
           ) : paymentMethod === "COD" ? (
             <p className="text-muted-foreground text-compact mt-2.5 text-center">
-              {isAdvanceRequired ? (
-                isAutomatedGatewayAdvance ? (
-                  shippingCity.trim() ? (
-                    <span className="font-semibold text-amber-700">
-                      Pay ৳{advanceAmount} advance online via PayStation ({isDhaka ? "Inside Dhaka" : "Outside Dhaka"}) to confirm order. Remaining ৳{grandTotal !== null ? Math.max(0, grandTotal - advanceAmount).toLocaleString("en-BD") : 0} is collected on delivery.
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-amber-700">
-                      Select district to pay courier advance online via PayStation (৳{checkoutPolicies?.codAdvanceInsideDhaka ?? 100} Inside Dhaka / ৳{checkoutPolicies?.codAdvanceOutsideDhaka ?? 150} Outside Dhaka). Balance collected on delivery.
-                    </span>
-                  )
-                ) : (
-                  shippingCity.trim() ? (
-                    <span className="font-semibold text-amber-700">
-                      ৳{advanceAmount} advance courier payment needed to confirm Cash on Delivery ({isDhaka ? "Inside Dhaka" : "Outside Dhaka"})
-                    </span>
-                  ) : (
-                    <span className="font-semibold text-amber-700">
-                      Advance courier payment required for COD (৳{checkoutPolicies?.codAdvanceInsideDhaka ?? 100} Inside Dhaka / ৳{checkoutPolicies?.codAdvanceOutsideDhaka ?? 150} Outside Dhaka)
-                    </span>
-                  )
-                )
-              ) : (
-                checkoutPolicies?.codOrderNotice || "Pay with cash when your package arrives at your doorstep."
-              )}
+              {checkoutPolicies?.codOrderNotice ||
+                "Pay with cash when your package arrives at your doorstep."}
             </p>
           ) : (
             <p className="text-muted-foreground text-compact mt-2.5 text-center">

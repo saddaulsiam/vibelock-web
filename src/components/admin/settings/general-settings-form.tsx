@@ -88,11 +88,30 @@ export function GeneralSettingsForm({
   const [maintenanceState, maintenanceAction] = useActionState(updateGeneralSettingsAction, initialState);
   const [holidayState, holidayAction] = useActionState(updateGeneralSettingsAction, initialState);
 
-  // Local state for interactive killswitch toggles
+  // Local state for interactive killswitch toggles & controlled Base UI inputs
   const [maintenanceEnabled, setMaintenanceEnabled] = useState(
     initialSettings.maintenanceMode.enabled
   );
   const [holidayEnabled, setHolidayEnabled] = useState(initialSettings.holidayMode.enabled);
+  const [formValues, setFormValues] = useState(() => ({
+    storeName: initialSettings.storeName ?? "",
+    legalBusinessName: initialSettings.legalBusinessName ?? "",
+    dbidNumber: initialSettings.dbidNumber ?? "",
+    tradeLicenseNumber: initialSettings.tradeLicenseNumber ?? "",
+    binNumber: initialSettings.binNumber ?? "",
+    supportPhone: initialSettings.supportPhone ?? "",
+    whatsappNumber: initialSettings.whatsappNumber ?? "",
+    supportEmail: initialSettings.supportEmail ?? "",
+    warehouseAddress: initialSettings.warehouseAddress ?? "",
+    maintenanceNoticeTitle: initialSettings.maintenanceMode.noticeTitle ?? "",
+    maintenanceNoticeMessage: initialSettings.maintenanceMode.noticeMessage ?? "",
+    holidayBannerText: initialSettings.holidayMode.bannerText ?? "",
+    holidayExpectedDispatchDate: initialSettings.holidayMode.expectedDispatchDate ?? "",
+  }));
+
+  const updateField = (key: keyof typeof formValues, value: string) => {
+    setFormValues((prev) => ({ ...prev, [key]: value }));
+  };
 
   return (
     <div className="space-y-4">
@@ -125,7 +144,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="storeName"
-              defaultValue={initialSettings.storeName}
+              value={formValues.storeName}
+              onChange={(e) => updateField("storeName", e.target.value)}
               placeholder="Store name"
               className="bg-white"
             />
@@ -143,7 +163,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="legalBusinessName"
-              defaultValue={initialSettings.legalBusinessName}
+              value={formValues.legalBusinessName}
+              onChange={(e) => updateField("legalBusinessName", e.target.value)}
               placeholder="Registered legal company name"
               className="bg-white"
             />
@@ -161,7 +182,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="dbidNumber"
-              defaultValue={initialSettings.dbidNumber}
+              value={formValues.dbidNumber}
+              onChange={(e) => updateField("dbidNumber", e.target.value)}
               placeholder="Ministry of Commerce DBID"
               className="bg-white font-mono"
             />
@@ -174,7 +196,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="tradeLicenseNumber"
-              defaultValue={initialSettings.tradeLicenseNumber}
+              value={formValues.tradeLicenseNumber}
+              onChange={(e) => updateField("tradeLicenseNumber", e.target.value)}
               placeholder="City Corporation trade license number"
               className="bg-white font-mono"
             />
@@ -187,7 +210,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="binNumber"
-              defaultValue={initialSettings.binNumber}
+              value={formValues.binNumber}
+              onChange={(e) => updateField("binNumber", e.target.value)}
               placeholder="13-digit BIN / TIN"
               className="bg-white font-mono"
             />
@@ -232,7 +256,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="supportPhone"
-              defaultValue={initialSettings.supportPhone}
+              value={formValues.supportPhone}
+              onChange={(e) => updateField("supportPhone", e.target.value)}
               placeholder="01XXXXXXXXX"
               className="bg-white font-mono"
             />
@@ -250,7 +275,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="whatsappNumber"
-              defaultValue={initialSettings.whatsappNumber}
+              value={formValues.whatsappNumber}
+              onChange={(e) => updateField("whatsappNumber", e.target.value)}
               placeholder="8801XXXXXXXXX"
               className="bg-white font-mono"
             />
@@ -269,7 +295,8 @@ export function GeneralSettingsForm({
             <Input
               type="email"
               name="supportEmail"
-              defaultValue={initialSettings.supportEmail}
+              value={formValues.supportEmail}
+              onChange={(e) => updateField("supportEmail", e.target.value)}
               placeholder="support@domain.com"
               className="bg-white font-mono"
             />
@@ -287,7 +314,8 @@ export function GeneralSettingsForm({
             </label>
             <Input
               name="warehouseAddress"
-              defaultValue={initialSettings.warehouseAddress}
+              value={formValues.warehouseAddress}
+              onChange={(e) => updateField("warehouseAddress", e.target.value)}
               placeholder="Warehouse address for rider pickups and returns"
               className="bg-white"
             />
@@ -366,7 +394,8 @@ export function GeneralSettingsForm({
               </label>
               <Input
                 name="maintenanceMode_noticeTitle"
-                defaultValue={initialSettings.maintenanceMode.noticeTitle}
+                value={formValues.maintenanceNoticeTitle}
+                onChange={(e) => updateField("maintenanceNoticeTitle", e.target.value)}
                 placeholder="Store Under Scheduled Maintenance"
                 className="bg-white text-xs"
               />
@@ -378,7 +407,8 @@ export function GeneralSettingsForm({
               </label>
               <Input
                 name="maintenanceMode_noticeMessage"
-                defaultValue={initialSettings.maintenanceMode.noticeMessage}
+                value={formValues.maintenanceNoticeMessage}
+                onChange={(e) => updateField("maintenanceNoticeMessage", e.target.value)}
                 placeholder="We will be back online shortly."
                 className="bg-white text-xs"
               />
@@ -444,7 +474,8 @@ export function GeneralSettingsForm({
               </label>
               <Input
                 name="holidayMode_bannerText"
-                defaultValue={initialSettings.holidayMode.bannerText}
+                value={formValues.holidayBannerText}
+                onChange={(e) => updateField("holidayBannerText", e.target.value)}
                 placeholder="Holiday notice: Deliveries will resume right after the holidays."
                 className="bg-white text-xs"
               />
@@ -456,7 +487,8 @@ export function GeneralSettingsForm({
               </label>
               <Input
                 name="holidayMode_expectedDispatchDate"
-                defaultValue={initialSettings.holidayMode.expectedDispatchDate}
+                value={formValues.holidayExpectedDispatchDate}
+                onChange={(e) => updateField("holidayExpectedDispatchDate", e.target.value)}
                 placeholder="15 April 2026"
                 className="bg-white text-xs"
               />

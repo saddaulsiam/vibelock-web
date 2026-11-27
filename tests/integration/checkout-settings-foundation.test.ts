@@ -165,8 +165,6 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
       expect(res.settings.maxCodOrderValue).toBe(10000);
       expect(res.settings.minOrderValue).toBe(0);
       expect(res.settings.onlineReservationTtlMinutes).toBe(15);
-      expect(res.settings.codAdvanceCollectionMode).toBe("MANUAL_VERIFICATION");
-      expect(res.settings.codAdvancePaymentNumber).toBe("01311333277");
       expect(res.isPersisted).toBe(false);
       expect(res.hasStore).toBe(true);
     });
@@ -293,12 +291,6 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
       const updatedSettings: CheckoutSettings = {
         ...existingSettings,
         maxCodOrderValue: 12000,
-        requireCodAdvanceDeliveryCharge: true,
-        codAdvanceInsideDhaka: 120,
-        codAdvanceOutsideDhaka: 180,
-        codAdvanceCollectionMode: "AUTOMATED_GATEWAY",
-        codAdvancePaymentNumber: "01711223344",
-        codAdvanceInstructions: "Pay advance online via bKash.",
         onlineReservationTtlMinutes: 10,
       };
 
@@ -362,9 +354,6 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
       const formData = new FormData();
       formData.set("minOrderValue", "300");
       formData.set("maxCodOrderValue", "15000");
-      formData.set("requireCodAdvanceDeliveryCharge", "true");
-      formData.set("codAdvanceInsideDhaka", "100");
-      formData.set("codAdvanceOutsideDhaka", "150");
       formData.set("onlineReservationTtlMinutes", "15");
       formData.set("enforceFirstTimeCodOtp", "true");
       formData.set("allowGuestCheckout", "true");
