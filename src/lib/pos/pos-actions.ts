@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma/client";
 import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { InventoryService } from "@/lib/inventory/service";
+import { getActiveShiftRecord } from "./pos-shift-actions";
 import { revalidatePath } from "next/cache";
 import {
   generatePosOrderNumber,
@@ -52,7 +53,15 @@ export async function createPosOrderAction(
       attempt++;
       try {
         receipt = await prisma.$transaction(async (tx) => {
-      // 3. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
+      // 3a. Enforce active register shift on server when auditLog delegate is available
+      if (typeof tx.auditLog?.findFirst === "function") {
+        const activeShift = await getActiveShiftRecord(tx, cashier.id);
+        if (!activeShift) {
+          throw new Error("No active register shift open. Please open a shift before checkout.");
+        }
+      }
+
+      // 3b. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
       const variantIds = Array.from(new Set(input.items.map((i) => i.variantId))).sort();
       if (variantIds.length > 0) {
         await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
@@ -135,16 +144,49 @@ export async function createPosOrderAction(
         });
       }
 
-      // 7. Calculate discounts and totals
-      const discount = Math.min(subtotal, Math.max(0, Number(input.discount) || 0));
-      const total = Math.max(0, subtotal - discount);
+      // 7. Calculate discounts and totals with role-based cap
+      const rawDiscount = Number(input.discount) || 0;
+      if (!Number.isFinite(rawDiscount) || rawDiscount < 0) {
+        throw new Error("Invalid discount amount.");
+      }
+
+      if (cashier.role === "STAFF" && subtotal > 0) {
+        const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+        if (rawDiscount > maxStaffDiscount + 0.01) {
+          throw new Error(
+            `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(2)}). Manager or Admin approval required.`
+          );
+        }
+      }
+
+      const discount = Math.min(subtotal, rawDiscount);
+      const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+
+      // Pro-rate order-level discount across order items so snapshots & returns stay consistent
+      if (discount > 0 && subtotal > 0 && orderItemsData.length > 0) {
+        let allocatedDiscount = 0;
+        for (let idx = 0; idx < orderItemsData.length; idx++) {
+          const item = orderItemsData[idx];
+          const isLast = idx === orderItemsData.length - 1;
+          const itemDiscount = isLast
+            ? Math.round((discount - allocatedDiscount) * 100) / 100
+            : Math.round(((item.lineSubtotal / subtotal) * discount) * 100) / 100;
+          allocatedDiscount += itemDiscount;
+          item.appliedDiscount = itemDiscount;
+          item.discountAmount = itemDiscount;
+          item.lineTotal = Math.max(0, Math.round((item.lineSubtotal - itemDiscount) * 100) / 100);
+        }
+      }
 
       // Support Split Payments (Multiple Tenders)
       const isSplit =
         input.paymentMethod === "SPLIT" ||
         (Array.isArray(input.splitPayments) && input.splitPayments.length > 0);
 
-      let effectiveAmountPaid = Number(input.amountPaid) || 0;
+      let effectiveAmountPaid = Number(input.amountPaid);
+      if (!Number.isFinite(effectiveAmountPaid)) {
+        effectiveAmountPaid = 0;
+      }
       let changeDue = 0;
       let receiptSplits: PosPaymentSplitDetail[] | undefined = undefined;
 
@@ -153,27 +195,47 @@ export async function createPosOrderAction(
           throw new Error("Split payment selected but no payment tenders were provided.");
         }
 
+        for (const split of input.splitPayments) {
+          const amt = Number(split.amount);
+          if (!Number.isFinite(amt) || amt <= 0) {
+            throw new Error(`Invalid split payment amount for ${split.method}.`);
+          }
+          if (split.tenderAmount !== undefined) {
+            const tender = Number(split.tenderAmount);
+            if (!Number.isFinite(tender) || tender < amt) {
+              throw new Error(
+                `Tender amount (৳${Number.isFinite(tender) ? tender.toFixed(2) : "0.00"}) cannot be less than allocated amount (৳${amt.toFixed(2)}) for ${split.method}.`
+              );
+            }
+          }
+        }
+
         const totalSplitAllocated = input.splitPayments.reduce(
           (sum, s) => sum + Number(s.amount),
           0
         );
-        if (totalSplitAllocated < total) {
+        if (totalSplitAllocated < total - 0.01) {
           throw new Error(
             `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
           );
         }
+        if (totalSplitAllocated > total + 0.01) {
+          throw new Error(
+            `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) exceeds total amount (৳${total.toFixed(2)}).`
+          );
+        }
+
+        const cashSplits = input.splitPayments.filter((s) => s.method === "CASH");
+        if (cashSplits.length > 1) {
+          throw new Error("Only one CASH tender entry is allowed per split payment.");
+        }
 
         // Calculate cash change if customer handed more than the cash portion
-        const cashSplit = input.splitPayments.find((s) => s.method === "CASH");
+        const cashSplit = cashSplits[0];
         if (cashSplit) {
           const cashTender = Number(cashSplit.tenderAmount ?? cashSplit.amount);
           const cashPortion = Number(cashSplit.amount);
-          if (cashTender < cashPortion) {
-            throw new Error(
-              `Cash tender (৳${cashTender.toFixed(2)}) is less than allocated cash amount (৳${cashPortion.toFixed(2)}).`
-            );
-          }
-          changeDue = Math.max(0, cashTender - cashPortion);
+          changeDue = Math.max(0, Math.round((cashTender - cashPortion) * 100) / 100);
         }
 
         effectiveAmountPaid = input.splitPayments.reduce(
@@ -188,22 +250,39 @@ export async function createPosOrderAction(
             method: s.method,
             amount: sAmount,
             tenderAmount: sTender,
-            changeDue: s.method === "CASH" ? Math.max(0, sTender - sAmount) : 0,
+            changeDue:
+              s.method === "CASH" ? Math.max(0, Math.round((sTender - sAmount) * 100) / 100) : 0,
             reference: s.reference || undefined,
           };
         });
       } else {
-        if (effectiveAmountPaid < total) {
+        if (effectiveAmountPaid < total - 0.01) {
           throw new Error(
             `Amount paid (৳${effectiveAmountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
           );
         }
-        changeDue = Math.max(0, effectiveAmountPaid - total);
+        changeDue = Math.max(0, Math.round((effectiveAmountPaid - total) * 100) / 100);
       }
 
-      // 8. Generate order identifiers
+      // 8. Generate order identifiers (with client-provided idempotency key when available)
+      const trimmedClientKey = input.clientRequestId?.trim();
+      const idempotencyKey = trimmedClientKey
+        ? `pos-${trimmedClientKey}`
+        : `pos-${crypto.randomBytes(12).toString("hex")}`;
+
+      if (trimmedClientKey && typeof tx.order?.findUnique === "function") {
+        const existingOrder = await tx.order.findUnique({
+          where: { checkoutIdempotencyKey: idempotencyKey },
+          select: { id: true, orderNumber: true },
+        });
+        if (existingOrder) {
+          throw new Error(
+            `Duplicate checkout request detected. Order ${existingOrder.orderNumber} was already completed.`
+          );
+        }
+      }
+
       candidateOrderNumber = generatePosOrderNumber();
-      const idempotencyKey = `pos-${crypto.randomBytes(12).toString("hex")}`;
 
       const customerName = input.customerName?.trim() || "Walk-in Customer";
       const customerPhone = input.customerPhone?.trim() || "N/A";

@@ -18,7 +18,7 @@ export async function lookupPosCustomerByPhoneAction(
   rawPhone: string
 ): Promise<PosActionResult<PosCustomerProfile | null>> {
   try {
-    await requireRole("STAFF");
+    await requireRole("STAFF", { throw: true });
 
     if (!rawPhone || typeof rawPhone !== "string") {
       return { success: true, data: null };

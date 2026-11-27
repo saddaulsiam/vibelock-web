@@ -75,6 +75,7 @@ export interface PosCreateOrderInput {
   discount?: number;
   notes?: string;
   splitPayments?: PosPaymentSplitInput[];
+  clientRequestId?: string;
 }
 
 export interface PosReceiptItem {

@@ -60,7 +60,8 @@ function PosPaymentModalContent({
   const splitTotalAllocated = splitCash + splitBanglaQr + splitCard;
   const splitRemaining = Math.max(0, grandTotal - splitTotalAllocated);
   const splitCashChange = Math.max(0, splitCashTender - splitCash);
-  const isSplitShortage = splitTotalAllocated < grandTotal;
+  const isSplitShortage = splitTotalAllocated < grandTotal - 0.01;
+  const isSplitOverAllocated = splitTotalAllocated > grandTotal + 0.01;
   const isSplitCashTenderShortage = splitCash > 0 && splitCashTender < splitCash;
 
   // Quick denomination suggestions for Cash
@@ -110,7 +111,7 @@ function PosPaymentModalContent({
     }
 
     if (method === "SPLIT") {
-      if (isSplitShortage || isSplitCashTenderShortage) {
+      if (isSplitShortage || isSplitOverAllocated || isSplitCashTenderShortage) {
         return;
       }
       const splits: PosPaymentSplitInput[] = [];
@@ -147,7 +148,8 @@ function PosPaymentModalContent({
   const isSubmitDisabled =
     isSubmitting ||
     (method === "CASH" && isShortage) ||
-    (method === "SPLIT" && (isSplitShortage || isSplitCashTenderShortage));
+    (method === "SPLIT" &&
+      (isSplitShortage || isSplitOverAllocated || isSplitCashTenderShortage));
 
   return (
     <DialogContent className="border-vl-white-400 max-h-[92vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
@@ -537,6 +539,16 @@ function PosPaymentModalContent({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {method === "SPLIT" && isSplitOverAllocated && (
+          <div className="flex items-center space-x-2 rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs font-medium text-red-700">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+            <span>
+              Split allocation (৳{splitTotalAllocated.toFixed(0)}) exceeds total payable (৳
+              {grandTotal.toFixed(0)}). Please adjust portions to match exactly.
+            </span>
           </div>
         )}
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import {
   Trash2,
@@ -40,6 +40,7 @@ interface PosCartPanelProps {
   onOpenPaymentModal: () => void;
   onParkCart?: () => void;
   isOnline?: boolean;
+  cashierRole?: string;
   onCloseMobile?: () => void;
 }
 
@@ -57,12 +58,17 @@ export function PosCartPanel({
   onOpenPaymentModal,
   onParkCart,
   isOnline = true,
+  cashierRole = "STAFF",
   onCloseMobile,
 }: PosCartPanelProps) {
   // Customer Profile & Loyalty state
   const [customerProfile, setCustomerProfile] = useState<PosCustomerProfile | null>(null);
   const [isLookingUp, startLookup] = useTransition();
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const customerNameRef = useRef(customerName);
+  useEffect(() => {
+    customerNameRef.current = customerName;
+  }, [customerName]);
 
   // Debounced auto-lookup customer by phone
   useEffect(() => {
@@ -82,7 +88,8 @@ export function PosCartPanel({
           if (res.success && res.data) {
             const profile = res.data;
             setCustomerProfile(profile);
-            if (!customerName.trim() || customerName.trim() === "Walk-in Customer") {
+            const currentName = customerNameRef.current.trim();
+            if (!currentName || currentName === "Walk-in Customer") {
               setCustomerName(profile.name);
               toast.success(`Customer recognized: ${profile.name} (${profile.tier} Member)`);
             }
@@ -102,7 +109,7 @@ export function PosCartPanel({
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [customerPhone, customerName, setCustomerName]);
+  }, [customerPhone, setCustomerName]);
 
   const getTierBadgeStyle = (tier: string) => {
     switch (tier) {
@@ -121,6 +128,9 @@ export function PosCartPanel({
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const effectiveDiscount = Math.min(subtotal, Math.max(0, discount));
+  const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+  const isStaffDiscountExceeded =
+    cashierRole === "STAFF" && subtotal > 0 && effectiveDiscount > maxStaffDiscount + 0.01;
   const grandTotal = Math.max(0, subtotal - effectiveDiscount);
 
   const applyPercentDiscount = (percent: number) => {
@@ -461,6 +471,12 @@ export function PosCartPanel({
               </div>
             </div>
           </div>
+          {isStaffDiscountExceeded && (
+            <p className="text-[11px] font-medium text-amber-700">
+              Staff discount capped at 10% (৳{maxStaffDiscount.toFixed(0)}). Manager or Admin
+              approval required.
+            </p>
+          )}
         </div>
 
         {/* Totals Breakdown */}
@@ -496,7 +512,7 @@ export function PosCartPanel({
         {/* Checkout Button */}
         <Button
           type="button"
-          disabled={cartItems.length === 0}
+          disabled={cartItems.length === 0 || isStaffDiscountExceeded}
           onClick={onOpenPaymentModal}
           className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline

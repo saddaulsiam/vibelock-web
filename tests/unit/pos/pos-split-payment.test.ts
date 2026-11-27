@@ -277,4 +277,44 @@ describe("POS System - Split Payment Settlement (createPosOrderAction)", () => {
       "Total allocated across split payment methods (৳1000.00) is less than total amount (৳1500.00)"
     );
   });
+
+  test("rejects when total split allocation exceeds order total", async () => {
+    const mockVariants = [
+      {
+        id: "var-1",
+        sku: "VL-TEE-BLK-M",
+        size: "M",
+        color: "Black",
+        sellingPrice: 1000,
+        discountPrice: null,
+        costPrice: 400,
+        product: { id: "prod-1", name: "Graphic Tee", status: "PUBLISHED" },
+      },
+    ];
+
+    const mockTx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      productVariant: {
+        findMany: vi.fn().mockResolvedValue(mockVariants),
+      },
+    };
+
+    vi.mocked(InventoryService.calculateAvailableQuantity).mockResolvedValue(10);
+    vi.mocked(prisma.$transaction).mockImplementation(async (callback: unknown) => {
+      return (callback as (tx: typeof mockTx) => Promise<unknown>)(mockTx);
+    });
+
+    const result = await createPosOrderAction({
+      items: [{ variantId: "var-1", quantity: 1 }],
+      paymentMethod: "SPLIT",
+      amountPaid: 1200,
+      splitPayments: [
+        { method: "CASH", amount: 600 },
+        { method: "CARD", amount: 600 },
+      ],
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("exceeds total amount");
+  });
 });

@@ -59,6 +59,9 @@ export function PosReturnModal({
   const [selectedItems, setSelectedItems] = useState<PosReturnSelectedItem[]>([]);
   const [resolution, setResolution] = useState<"REFUND_CASH" | "EXCHANGE">("REFUND_CASH");
   const [exchangeItems, setExchangeItems] = useState<PosExchangeReplacementItem[]>([]);
+  const [exchangePaymentMethod, setExchangePaymentMethod] = useState<
+    "CASH" | "BANGLA_QR" | "CARD"
+  >("CASH");
   const [returnNotes, setReturnNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -188,6 +191,8 @@ export function PosReturnModal({
         returnedItems: selectedItems,
         resolution,
         exchangeItems: resolution === "EXCHANGE" ? exchangeItems : undefined,
+        exchangePaymentMethod:
+          resolution === "EXCHANGE" && netDifference > 0 ? exchangePaymentMethod : undefined,
         notes: returnNotes,
       });
 
@@ -576,6 +581,28 @@ export function PosReturnModal({
                     </span>
                   </div>
                 </div>
+
+                {/* Exchange Charge Payment Method */}
+                {resolution === "EXCHANGE" && netDifference > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-vl-grey text-[10px] font-bold tracking-wider uppercase">
+                      Customer Payment Method for Difference
+                    </Label>
+                    <NativeSelect
+                      value={exchangePaymentMethod}
+                      onChange={(e) =>
+                        setExchangePaymentMethod(
+                          e.target.value as "CASH" | "BANGLA_QR" | "CARD"
+                        )
+                      }
+                      size="default"
+                    >
+                      <option value="CASH">Cash Counter</option>
+                      <option value="BANGLA_QR">Bangla QR</option>
+                      <option value="CARD">Card (POS Machine)</option>
+                    </NativeSelect>
+                  </div>
+                )}
 
                 {/* Notes Input */}
                 <div>

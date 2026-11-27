@@ -15,6 +15,7 @@ import type {
   PosReceiptData,
 } from "@/lib/pos/pos-types";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -87,7 +88,9 @@ export function PosView({
   initialShift,
 }: PosViewProps) {
   // Real-time Internet Connectivity Guard
+  const router = useRouter();
   const isOnline = usePosOnlineStatus();
+  const clientRequestIdRef = useRef<string | null>(null);
 
   // Cart State
   const [cartItems, setCartItems] = useState<PosCartItem[]>([]);
@@ -210,6 +213,7 @@ export function PosView({
 
   // Clear Cart
   const handleClearCart = useCallback(() => {
+    clientRequestIdRef.current = null;
     setCartItems([]);
     setDiscount(0);
   }, []);
@@ -295,6 +299,9 @@ export function PosView({
       return;
     }
 
+    if (!clientRequestIdRef.current) {
+      clientRequestIdRef.current = crypto.randomUUID();
+    }
     setIsPaymentOpen(true);
   }, [cartItems.length, shift, isOnline]);
 
@@ -326,6 +333,7 @@ export function PosView({
         discount: effectiveDiscount,
         notes,
         splitPayments,
+        clientRequestId: clientRequestIdRef.current || undefined,
       });
 
       if (!result.success || !result.data) {
@@ -333,11 +341,13 @@ export function PosView({
         return;
       }
 
-      // Success
+      // Success: clear idempotency key and refresh catalog stock
+      clientRequestIdRef.current = null;
       setReceiptData(result.data);
       setIsPaymentOpen(false);
       setIsReceiptOpen(true);
       toast.success(`Order ${result.data.orderNumber} completed successfully!`);
+      router.refresh();
 
       // Update shift drawer sales stats in real time (supporting Split Tenders)
       const completedOrder = result.data;
@@ -408,6 +418,7 @@ export function PosView({
   const handleReturnFinished = (receipt: PosReturnReceiptData) => {
     setReturnReceiptData(receipt);
     setIsReturnReceiptOpen(true);
+    router.refresh();
 
     // If cash was refunded from drawer, update drawer in real time
     if (receipt.netAction === "REFUND_TO_CUSTOMER" && shift && shift.isOpen) {
@@ -533,6 +544,7 @@ export function PosView({
             onOpenPaymentModal={handleOpenPayment}
             onParkCart={handleParkCart}
             isOnline={isOnline}
+            cashierRole={cashierRole}
           />
         </aside>
 
@@ -563,6 +575,7 @@ export function PosView({
                 }}
                 onParkCart={handleParkCart}
                 isOnline={isOnline}
+                cashierRole={cashierRole}
                 onCloseMobile={() => setIsMobileCartOpen(false)}
               />
             </div>
