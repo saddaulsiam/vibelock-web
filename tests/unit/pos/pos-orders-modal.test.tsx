@@ -48,13 +48,13 @@ describe("POS Orders History & Reprint", () => {
   });
 
   describe("PosHeader Orders Action", () => {
-    test("renders Orders [F5] button when onOpenOrdersModal handler provided", () => {
+    test("renders Orders [Alt+O] button when onOpenOrdersModal handler provided", () => {
       const html = renderToStaticMarkup(
         <PosHeader cashierName="Saddam Hossain" cashierRole="STAFF" onOpenOrdersModal={vi.fn()} />
       );
 
       expect(html).toContain("Orders");
-      expect(html).toContain("F5");
+      expect(html).toContain("Alt+O");
     });
   });
 });

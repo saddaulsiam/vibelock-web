@@ -35,7 +35,7 @@ describe("POS Parked / Held Carts", () => {
 
       expect(html).toContain("Parked Sales / Held Carts");
       expect(html).toContain("No Carts on Hold");
-      expect(html).toContain("Press [F4] or click");
+      expect(html).toContain("Press [Alt+H] or click");
     });
 
     test("renders list of held carts with customer name, items count, and total amount", () => {
@@ -104,7 +104,7 @@ describe("POS Parked / Held Carts", () => {
   });
 
   describe("PosCartPanel Hold Action", () => {
-    test("renders Hold [F4] button when cart has items and onParkCart handler provided", () => {
+    test("renders Hold [Alt+H] button when cart has items and onParkCart handler provided", () => {
       const sampleItems: PosCartItem[] = [
         {
           variantId: "v-1",
@@ -136,7 +136,7 @@ describe("POS Parked / Held Carts", () => {
       );
 
       expect(html).toContain("Hold");
-      expect(html).toContain("F4");
+      expect(html).toContain("Alt+H");
     });
   });
 });

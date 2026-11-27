@@ -180,12 +180,12 @@ export function PosHeader({
             size="sm"
             onClick={onOpenReturnModal}
             className="text-vl-white/80 hover:text-vl-white hidden h-9 space-x-1.5 rounded-xl px-2.5 text-xs transition-all hover:bg-white/10 lg:inline-flex xl:px-3"
-            title="In-Store Returns & Exchanges [F3]"
+            title="In-Store Returns & Exchanges [Alt+R]"
           >
             <RotateCcw className="text-vl-cyan h-3.5 w-3.5" />
             <span className="font-heading text-xs font-black">Returns</span>
             <span className="text-vl-cyan hidden rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] xl:inline">
-              F3
+              Alt+R
             </span>
           </Button>
         )}
@@ -202,7 +202,7 @@ export function PosHeader({
                 ? "bg-vl-cyan-100 text-vl-cyan hover:bg-vl-cyan-100 border-vl-cyan-200 border shadow-xs hover:text-white"
                 : "text-vl-white/70 hover:text-vl-white hover:bg-white/10"
             }`}
-            title="View Parked Sales"
+            title="View Parked Sales [Alt+P]"
           >
             <PauseCircle className="text-vl-cyan h-3.5 w-3.5" />
             <span className="font-heading text-xs font-black">Parked</span>
@@ -211,6 +211,9 @@ export function PosHeader({
                 {parkedCount}
               </Badge>
             )}
+            <span className="text-vl-cyan hidden rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] xl:inline">
+              Alt+P
+            </span>
           </Button>
         )}
 
@@ -222,12 +225,12 @@ export function PosHeader({
             size="sm"
             onClick={onOpenOrdersModal}
             className="text-vl-white/80 hover:text-vl-white hidden h-9 space-x-1.5 rounded-xl px-2.5 text-xs transition-all hover:bg-white/10 lg:inline-flex xl:px-3"
-            title="Today's Sales & Invoices [F5]"
+            title="Today's Sales & Invoices [Alt+O]"
           >
             <Receipt className="text-vl-cyan h-3.5 w-3.5" />
             <span className="font-heading text-xs font-black">Orders</span>
             <span className="text-vl-cyan hidden rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-[10px] xl:inline">
-              F5
+              Alt+O
             </span>
           </Button>
         )}
@@ -242,7 +245,7 @@ export function PosHeader({
                 variant="outline"
                 onClick={onOpenShiftModal}
                 className="bg-vl-dark-900 hover:bg-vl-dark-800 flex items-center space-x-1 rounded-xl border-white/10 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 sm:space-x-1.5 sm:px-3"
-                title="Click to view Cash Drawer & Shift details"
+                title="Click to view Cash Drawer & Shift details [Alt+D]"
               >
                 <Banknote className="h-3.5 w-3.5" />
                 <span className="hidden font-bold sm:inline">
@@ -351,7 +354,7 @@ export function PosHeader({
               >
                 <RotateCcw className="text-vl-cyan h-3.5 w-3.5" />
                 <span>In-Store Returns</span>
-                <span className="text-vl-grey ml-auto font-mono text-[10px]">[F3]</span>
+                <span className="text-vl-grey ml-auto font-mono text-[10px]">[Alt+R]</span>
               </DropdownMenuItem>
             )}
 
@@ -377,7 +380,7 @@ export function PosHeader({
               >
                 <Receipt className="text-vl-cyan h-3.5 w-3.5" />
                 <span>Today&apos;s Orders</span>
-                <span className="text-vl-grey ml-auto font-mono text-[10px]">[F5]</span>
+                <span className="text-vl-grey ml-auto font-mono text-[10px]">[Alt+O]</span>
               </DropdownMenuItem>
             )}
 

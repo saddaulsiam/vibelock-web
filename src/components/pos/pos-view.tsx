@@ -282,7 +282,7 @@ export function PosView({
   const handleOpenPayment = useCallback(() => {
     if (!isOnline) {
       toast.error(
-        "Counter is currently offline. Cannot settle payment without server connection. You can hold this cart [F4] until connection restores.",
+        "Counter is currently offline. Cannot settle payment without server connection. You can hold this cart [Alt+H] until connection restores.",
         { duration: 6000 }
       );
       return;
@@ -299,11 +299,19 @@ export function PosView({
       return;
     }
 
+    const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+    if (cashierRole === "STAFF" && subtotal > 0 && effectiveDiscount > maxStaffDiscount + 0.01) {
+      toast.error(
+        `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(0)}). Manager or Admin approval required.`
+      );
+      return;
+    }
+
     if (!clientRequestIdRef.current) {
       clientRequestIdRef.current = crypto.randomUUID();
     }
     setIsPaymentOpen(true);
-  }, [cartItems.length, shift, isOnline]);
+  }, [cartItems.length, shift, isOnline, subtotal, cashierRole, effectiveDiscount]);
 
   // Execute Payment & Order Creation
   const handleConfirmPayment = async (
@@ -434,36 +442,56 @@ export function PosView({
     }
   };
 
-  // Global Keyboard Shortcuts (F2: Scanner, F3: Returns, F4: Hold/Park, F9: Payment, Esc: Close)
+  // Global Keyboard Shortcuts (F2: Scanner, F9: Payment, Alt+H: Hold, Alt+P: Parked, Alt+R: Returns, Alt+O: Orders, Alt+D: Drawer/Shift, Alt+X: Clear, Esc: Close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isAnyModalOpen =
+        isPaymentOpen ||
+        isReceiptOpen ||
+        isShiftModalOpen ||
+        isReturnModalOpen ||
+        isParkedModalOpen ||
+        isOrdersModalOpen ||
+        isZReportOpen ||
+        isReturnReceiptOpen;
+
+      if (isAnyModalOpen) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
       if (e.key === "F2") {
         e.preventDefault();
         scannerRef.current?.focus();
-      } else if (e.key === "F3") {
-        e.preventDefault();
-        setIsReturnModalOpen(true);
-      } else if (e.key === "F4") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "h") {
         e.preventDefault();
         if (cartItems.length > 0) {
           handleParkCart();
-        } else if (parkedCarts.length > 0) {
-          setIsParkedModalOpen(true);
         }
-      } else if (e.key === "F5") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "p") {
+        e.preventDefault();
+        setIsParkedModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "r") {
+        e.preventDefault();
+        setIsReturnModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "o") {
         e.preventDefault();
         setIsOrdersModalOpen(true);
-      } else if (e.key === "F9") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "d") {
         e.preventDefault();
-        if (
-          cartItems.length > 0 &&
-          !isPaymentOpen &&
-          !isReceiptOpen &&
-          !isShiftModalOpen &&
-          !isReturnModalOpen &&
-          !isParkedModalOpen &&
-          !isOrdersModalOpen
-        ) {
+        setIsShiftModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "x") {
+        e.preventDefault();
+        if (cartItems.length > 0) {
+          handleClearCart();
+        }
+      } else if (
+        e.key === "F9" ||
+        (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "Enter")
+      ) {
+        e.preventDefault();
+        if (cartItems.length > 0) {
           handleOpenPayment();
         }
       }
@@ -473,15 +501,17 @@ export function PosView({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     cartItems.length,
-    parkedCarts.length,
     isPaymentOpen,
     isReceiptOpen,
     isShiftModalOpen,
     isReturnModalOpen,
     isParkedModalOpen,
     isOrdersModalOpen,
+    isZReportOpen,
+    isReturnReceiptOpen,
     handleOpenPayment,
     handleParkCart,
+    handleClearCart,
   ]);
 
   return (

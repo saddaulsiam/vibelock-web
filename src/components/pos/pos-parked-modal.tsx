@@ -77,7 +77,7 @@ export function PosParkedModal({
               </div>
               <p className="font-heading text-vl-black text-xs font-bold">No Carts on Hold</p>
               <p className="text-vl-grey mt-1 text-[11px]">
-                Press [F4] or click &quot;Hold Cart&quot; on the active cart to park a
+                Press [Alt+H] or click &quot;Hold Cart&quot; on the active cart to park a
                 customer&apos;s sale.
               </p>
             </div>

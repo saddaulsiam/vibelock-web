@@ -173,12 +173,12 @@ export function PosCartPanel({
                 size="sm"
                 onClick={onParkCart}
                 className="text-vl-cyan hover:bg-vl-cyan-100 flex h-7 items-center space-x-1 px-2 text-xs hover:text-white"
-                title="Hold / Suspend this cart [F4]"
+                title="Hold / Suspend this cart [Alt+H]"
               >
                 <PauseCircle className="h-3.5 w-3.5" />
                 <span>Hold</span>
                 <span className="text-vl-white/70 hidden rounded bg-white/10 px-1 font-mono text-[10px] sm:inline">
-                  F4
+                  Alt+H
                 </span>
               </Button>
             )}
@@ -188,6 +188,7 @@ export function PosCartPanel({
               variant="ghost"
               size="sm"
               onClick={onClearCart}
+              title="Clear current cart [Alt+X]"
               className="text-vl-white/60 h-7 px-2 text-xs hover:bg-white/10 hover:text-red-400"
             >
               Clear
@@ -514,6 +515,7 @@ export function PosCartPanel({
           type="button"
           disabled={cartItems.length === 0 || isStaffDiscountExceeded}
           onClick={onOpenPaymentModal}
+          title="Open Payment & Settlement [F9 or Alt+Enter]"
           className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
             !isOnline
               ? "border-vl-border text-vl-grey bg-vl-dark-700 cursor-not-allowed border"
