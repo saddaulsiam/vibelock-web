@@ -9,7 +9,7 @@ import {
 } from "@/lib/admin/settings/tax-invoice-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
   Building2,
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: TaxInvoiceActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -31,18 +31,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 shadow-2xs font-semibold"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
-          <span>Saving Tax Settings...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" aria-hidden="true" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" aria-hidden="true" />
-          <span>Save Tax & Invoice Configuration</span>
+          <Save className="size-3.5" aria-hidden="true" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -209,6 +209,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Configure Bangladesh VAT rate, inclusive/exclusive pricing, and delivery tax rules.
+          </p>
+          <SectionSubmitButton label="Save Tax Rules" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: NBR REGISTRATION & TAX IDENTITY ── */}
@@ -317,6 +324,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Official NBR Business Identification Number (BIN) and registered office details.
+          </p>
+          <SectionSubmitButton label="Save Tax Identity" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: MUSHAK 6.3 & INVOICE FORMATTING ── */}
@@ -460,17 +474,14 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
         </CardContent>
-      </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Tax rates and invoice layout changes apply to all future orders and receipts.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Mushak 6.3 layout settings, invoice prefix, digital verification seal, and footer declarations.
+          </p>
+          <SectionSubmitButton label="Save Invoice Layout" />
+        </CardFooter>
+      </Card>
     </form>
   );
 }

@@ -9,7 +9,14 @@ import {
 import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertTriangle,
   Banknote,
@@ -24,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: CheckoutSettingsActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -32,18 +39,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" />
-          <span>Saving Policies...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" />
-          <span>Save Checkout Policies</span>
+          <Save className="size-3.5" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -54,7 +61,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
   const [state, action] = useActionState(updateCheckoutSettingsAction, initialState);
 
   // Local state for switches
-  const [requireAdvance, setRequireAdvance] = useState(initialSettings.requireCodAdvanceDeliveryCharge);
+  const [requireAdvance, setRequireAdvance] = useState(
+    initialSettings.requireCodAdvanceDeliveryCharge
+  );
   const [enforceOtp, setEnforceOtp] = useState(initialSettings.enforceFirstTimeCodOtp);
   const [allowGuest, setAllowGuest] = useState(initialSettings.allowGuestCheckout);
   const [ttlMinutes, setTtlMinutes] = useState(initialSettings.onlineReservationTtlMinutes);
@@ -83,7 +92,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
       )}
 
       {/* ── SECTION 1: COD RISK & FRAUD GOVERNANCE ── */}
-      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
@@ -103,7 +112,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
         <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Max COD Order Ceiling */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Maximum COD Order Ceiling (৳) <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -115,7 +124,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
               className="bg-white font-mono"
             />
             {state.fieldErrors?.maxCodOrderValue && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.maxCodOrderValue[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.maxCodOrderValue[0]}
+              </p>
             )}
           </div>
 
@@ -141,7 +152,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                 aria-checked={enforceOtp}
                 onClick={() => setEnforceOtp(!enforceOtp)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
                   enforceOtp ? "bg-vl-cyan-600" : "bg-neutral-300"
                 )}
               >
@@ -163,11 +174,12 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   <Banknote className="size-3.5 text-emerald-600" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-semibold text-neutral-900 tracking-wide uppercase">
+                  <h4 className="text-xs font-semibold tracking-wide text-neutral-900 uppercase">
                     Require Upfront Delivery Fee for COD
                   </h4>
                   <p className="text-[11px] text-neutral-500">
-                    Charges courier fee upfront via online payment to confirm cash on delivery orders
+                    Charges courier fee upfront via online payment to confirm cash on delivery
+                    orders
                   </p>
                 </div>
               </div>
@@ -184,7 +196,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   aria-checked={requireAdvance}
                   onClick={() => setRequireAdvance(!requireAdvance)}
                   className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                    "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
                     requireAdvance ? "bg-emerald-600" : "bg-neutral-300"
                   )}
                 >
@@ -199,7 +211,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
             </div>
 
             {requireAdvance && (
-              <div className="grid gap-3 pt-2.5 sm:grid-cols-2 border-t border-neutral-200/60 animate-in fade-in">
+              <div className="animate-in fade-in grid gap-3 border-t border-neutral-200/60 pt-2.5 sm:grid-cols-2">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">
                     Advance Fee Inside Dhaka (৳)
@@ -233,7 +245,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
 
           {/* COD Notice Text */}
           <div className="space-y-1 sm:col-span-2">
-            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Storefront COD Verification Notice
             </label>
             <Input
@@ -244,14 +256,21 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-500">
+            Configure maximum COD order limits and advance delivery charge rules.
+          </p>
+          <SectionSubmitButton label="Save COD Rules" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: BASKET LIMITS & GUEST CHECKOUT ── */}
-      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <ShoppingBag className="size-4 text-vl-cyan-600" />
+              <ShoppingBag className="text-vl-cyan-600 size-4" />
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-neutral-900">
@@ -267,7 +286,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
         <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Minimum Order Value */}
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Minimum Checkout Order Value (৳)
             </label>
             <Input
@@ -280,7 +299,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
               className="bg-white font-mono"
             />
             {state.fieldErrors?.minOrderValue && (
-              <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.minOrderValue[0]}</p>
+              <p className="text-[11px] font-semibold text-rose-600">
+                {state.fieldErrors.minOrderValue[0]}
+              </p>
             )}
           </div>
 
@@ -304,7 +325,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                 aria-checked={allowGuest}
                 onClick={() => setAllowGuest(!allowGuest)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                  "focus-visible:ring-vl-cyan-500 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2",
                   allowGuest ? "bg-emerald-600" : "bg-neutral-300"
                 )}
               >
@@ -318,14 +339,21 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-500">
+            Set minimum checkout thresholds and customer authentication requirements.
+          </p>
+          <SectionSubmitButton label="Save Order Limits" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: INVENTORY RESERVATION HOLD TTL ── */}
-      <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+      <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center gap-2.5">
             <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Hourglass className="size-4 text-vl-cyan-600" />
+              <Hourglass className="text-vl-cyan-600 size-4" />
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-neutral-900">
@@ -340,7 +368,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
 
         <CardContent className="p-5">
           <div className="max-w-md space-y-1">
-            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Reservation Duration (Minutes) <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -360,17 +388,14 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
             )}
           </div>
         </CardContent>
-      </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Checkout rules apply immediately to new customer checkout sessions.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
+        <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-500">
+            Controls temporary inventory reservation hold time for digital payment gateways.
+          </p>
+          <SectionSubmitButton label="Save Stock Hold" />
+        </CardFooter>
+      </Card>
     </form>
   );
 }

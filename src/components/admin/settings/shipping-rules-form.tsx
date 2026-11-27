@@ -9,7 +9,7 @@ import {
 import type { ShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
   Building2,
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: ShippingRulesActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -32,18 +32,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 shadow-2xs font-semibold"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" />
-          <span>Saving Logistics Rules...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" />
-          <span>Save Shipping Configuration</span>
+          <Save className="size-3.5" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -202,6 +202,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Automated delivery fee waiver threshold and cart banner announcements.
+          </p>
+          <SectionSubmitButton label="Save Promotion" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: COURIER ROUTING & CONSIGNMENT AUTOMATION ── */}
@@ -294,6 +301,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Primary carrier routing and automatic consignment booking settings.
+          </p>
+          <SectionSubmitButton label="Save Routing" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: STOREFRONT SLA PROMISES ── */}
@@ -351,6 +365,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Estimated transit time promises shown on storefront product and checkout pages.
+          </p>
+          <SectionSubmitButton label="Save SLAs" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 4: DEFAULT FULFILLMENT HUB & PICKUP CONTACTS ── */}
@@ -436,17 +457,14 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             )}
           </div>
         </CardContent>
-      </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Shipping and delivery policies sync in real-time across checkout and fulfillment.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Origin warehouse address transmitted in courier consignment creation APIs.
+          </p>
+          <SectionSubmitButton label="Save Hub Contacts" />
+        </CardFooter>
+      </Card>
     </form>
   );
 }

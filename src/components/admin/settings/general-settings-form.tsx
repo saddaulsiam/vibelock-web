@@ -9,7 +9,14 @@ import {
 import type { GeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   AlertTriangle,
   Calendar,
@@ -24,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: GeneralSettingsActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -32,18 +39,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" />
-          <span>Saving Changes...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" />
-          <span>Save Configuration</span>
+          <Save className="size-3.5" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -180,6 +187,13 @@ export function GeneralSettingsForm({
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-500">
+            Store identity and legal registrations apply across invoices and public storefront.
+          </p>
+          <SectionSubmitButton label="Save Identity" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: CUSTOMER SUPPORT & LOGISTICS CONTACT ── */}
@@ -274,6 +288,13 @@ export function GeneralSettingsForm({
             )}
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-neutral-500">
+            Support contact channels and primary warehouse location for courier dispatch.
+          </p>
+          <SectionSubmitButton label="Save Contact Details" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: STORE OPERATIONAL MODES & SCHEDULES ── */}
@@ -364,6 +385,10 @@ export function GeneralSettingsForm({
               />
             </div>
           </CardContent>
+
+          <CardFooter className="flex items-center justify-end border-t border-neutral-100 bg-neutral-50/50 px-4 py-2.5">
+            <SectionSubmitButton label="Save Mode" />
+          </CardFooter>
         </Card>
 
         {/* Holiday / Vacation Mode Card */}
@@ -451,6 +476,10 @@ export function GeneralSettingsForm({
               />
             </div>
           </CardContent>
+
+          <CardFooter className="flex items-center justify-end border-t border-neutral-100 bg-neutral-50/50 px-4 py-2.5">
+            <SectionSubmitButton label="Save Notice" />
+          </CardFooter>
         </Card>
       </div>
 
@@ -458,34 +487,20 @@ export function GeneralSettingsForm({
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
         <CardContent className="grid gap-3 p-3.5 text-xs sm:grid-cols-2">
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
-            <span className="font-semibold text-neutral-800">
-              Platform Currency
-            </span>
+            <span className="font-semibold text-neutral-800">Platform Currency</span>
             <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
               BDT (৳)
             </code>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
-            <span className="font-semibold text-neutral-800">
-              Platform Timezone
-            </span>
+            <span className="font-semibold text-neutral-800">Platform Timezone</span>
             <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
               Asia/Dhaka (UTC+6)
             </code>
           </div>
         </CardContent>
       </Card>
-
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Updates take effect immediately across public storefront and administrative channels.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
     </form>
   );
 }

@@ -9,7 +9,7 @@ import {
 } from "@/lib/admin/settings/security-pixel-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Activity,
   AlertTriangle,
@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: SecurityPixelActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -33,18 +33,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 shadow-2xs font-semibold"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
-          <span>Saving Controls...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" aria-hidden="true" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" aria-hidden="true" />
-          <span>Save Security & Tracking Config</span>
+          <Save className="size-3.5" aria-hidden="true" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -159,6 +159,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Meta Pixel browser tracking, Conversions API (CAPI) server token, and test events.
+          </p>
+          <SectionSubmitButton label="Save Meta Config" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: GOOGLE & TIKTOK ANALYTICS ── */}
@@ -268,6 +275,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Google Tag Manager container, GA4 measurement stream, and TikTok pixel tags.
+          </p>
+          <SectionSubmitButton label="Save Analytics Tags" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: ADMIN ACCESS & SECURITY GOVERNANCE ── */}
@@ -422,17 +436,14 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
         </CardContent>
-      </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Security controls and tracking configuration updates take effect immediately.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Admin session timeout duration, mandatory two-factor auth, and static IP whitelist perimeter.
+          </p>
+          <SectionSubmitButton label="Save Security Governance" />
+        </CardFooter>
+      </Card>
     </form>
   );
 }

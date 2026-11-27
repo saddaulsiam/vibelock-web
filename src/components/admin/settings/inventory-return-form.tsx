@@ -9,7 +9,7 @@ import {
 } from "@/lib/admin/settings/inventory-return-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
   Boxes,
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: InventoryReturnActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -32,18 +32,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 shadow-2xs font-semibold"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" aria-hidden="true" />
-          <span>Saving Policies...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" aria-hidden="true" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" aria-hidden="true" />
-          <span>Save Policy Configuration</span>
+          <Save className="size-3.5" aria-hidden="true" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -283,6 +283,13 @@ export function InventoryReturnForm({
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Low stock triggers, email alerts, backorder policy, and product auto-hiding.
+          </p>
+          <SectionSubmitButton label="Save Inventory Rules" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: CUSTOMER RETURN POLICIES ── */}
@@ -417,6 +424,13 @@ export function InventoryReturnForm({
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Return window eligibility, photo proof verification, and restricted categories.
+          </p>
+          <SectionSubmitButton label="Save Return Rules" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: RETURN FEES & DEDUCTIONS ── */}
@@ -553,18 +567,14 @@ export function InventoryReturnForm({
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Restocking fees, courier fee deductions, and warehouse return routing.
+          </p>
+          <SectionSubmitButton label="Save Processing Rules" />
+        </CardFooter>
       </Card>
-
-      {/* ── BOTTOM ACTION FOOTER ── */}
-      <div className="flex flex-col gap-3 rounded-xl border border-neutral-200/80 bg-white p-3.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:px-4">
-        <div className="text-xs text-neutral-500">
-          Inventory thresholds and return conditions are saved and applied to customer claims.
-        </div>
-
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
     </form>
   );
 }

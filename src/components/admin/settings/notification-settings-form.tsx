@@ -9,7 +9,7 @@ import {
 import type { NotificationSettings } from "@/lib/settings/notification-settings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertTriangle,
   BellRing,
@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 const initialState: NotificationActionState = { error: null };
 
-function SubmitButton() {
+function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
   const { pending } = useFormStatus();
 
   return (
@@ -32,18 +32,18 @@ function SubmitButton() {
       type="submit"
       disabled={pending}
       variant="primary"
-      size="default"
-      className="gap-2 px-6 shadow-sm"
+      size="sm"
+      className="gap-2 px-4 shadow-2xs font-semibold"
     >
       {pending ? (
         <>
-          <Loader2 className="size-4 animate-spin text-white" />
-          <span>Saving Channels...</span>
+          <Loader2 className="size-3.5 animate-spin text-white" />
+          <span>Saving...</span>
         </>
       ) : (
         <>
-          <Save className="size-4" />
-          <span>Save Notification Settings</span>
+          <Save className="size-3.5" />
+          <span>{label}</span>
         </>
       )}
     </Button>
@@ -194,6 +194,13 @@ export function NotificationSettingsForm({
             />
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Primary SMS provider gateway routing, sender ID, and API credentials.
+          </p>
+          <SectionSubmitButton label="Save SMS Gateway" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 2: CUSTOMER TRANSACTIONAL SMS LIFECYCLE ── */}
@@ -333,6 +340,13 @@ export function NotificationSettingsForm({
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Automated SMS notifications sent to customers across delivery milestones.
+          </p>
+          <SectionSubmitButton label="Save SMS Triggers" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 3: STORE MANAGER HIGH-VALUE ORDER RADAR ── */}
@@ -458,6 +472,13 @@ export function NotificationSettingsForm({
             </div>
           </div>
         </CardContent>
+
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Emergency SMS alerts for VIP high-value orders and low SMS credit balance.
+          </p>
+          <SectionSubmitButton label="Save Manager Alerts" />
+        </CardFooter>
       </Card>
 
       {/* ── SECTION 4: EMAIL NOTIFICATION CHANNELS ── */}
@@ -582,17 +603,14 @@ export function NotificationSettingsForm({
             </div>
           </div>
         </CardContent>
-      </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
-        <div className="text-xs text-neutral-500">
-          <span>Notification and messaging channel updates take effect immediately.</span>
-        </div>
-        <div className="flex items-center justify-end">
-          <SubmitButton />
-        </div>
-      </div>
+        <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <p className="text-xs text-neutral-500">
+            Store order alert inbox and customer transactional email receipts via Resend.
+          </p>
+          <SectionSubmitButton label="Save Email Settings" />
+        </CardFooter>
+      </Card>
     </form>
   );
 }
