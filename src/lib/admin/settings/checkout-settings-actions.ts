@@ -24,24 +24,6 @@ export async function updateCheckoutSettingsAction(
   const raw = {
     minOrderValue: formData.has("minOrderValue") ? formData.get("minOrderValue") : current.minOrderValue,
     maxCodOrderValue: formData.has("maxCodOrderValue") ? formData.get("maxCodOrderValue") : current.maxCodOrderValue,
-    requireCodAdvanceDeliveryCharge: formData.has("requireCodAdvanceDeliveryCharge")
-      ? formData.get("requireCodAdvanceDeliveryCharge") === "true"
-      : current.requireCodAdvanceDeliveryCharge,
-    codAdvanceInsideDhaka: formData.has("codAdvanceInsideDhaka")
-      ? formData.get("codAdvanceInsideDhaka")
-      : current.codAdvanceInsideDhaka,
-    codAdvanceOutsideDhaka: formData.has("codAdvanceOutsideDhaka")
-      ? formData.get("codAdvanceOutsideDhaka")
-      : current.codAdvanceOutsideDhaka,
-    codAdvanceCollectionMode: formData.has("codAdvanceCollectionMode")
-      ? (formData.get("codAdvanceCollectionMode") as "MANUAL_VERIFICATION" | "AUTOMATED_GATEWAY")
-      : current.codAdvanceCollectionMode,
-    codAdvancePaymentNumber: formData.has("codAdvancePaymentNumber")
-      ? formData.get("codAdvancePaymentNumber")?.toString()?.trim() || ""
-      : current.codAdvancePaymentNumber,
-    codAdvanceInstructions: formData.has("codAdvanceInstructions")
-      ? formData.get("codAdvanceInstructions")?.toString()?.trim() || ""
-      : current.codAdvanceInstructions,
     onlineReservationTtlMinutes: formData.has("onlineReservationTtlMinutes")
       ? formData.get("onlineReservationTtlMinutes")
       : current.onlineReservationTtlMinutes,

@@ -183,9 +183,13 @@ export function printCustomerInvoice(order: PrintableOrder): void {
   const calloutBox = isCOD
     ? `
       <div class="callout-box cod">
-        <div class="callout-title">Tk 300 advance payment confirms this order.</div>
+        <div class="callout-title">${
+          order.shippingCost > 0
+            ? `Please pay Tk ${order.shippingCost.toLocaleString("en-BD")} advance to confirm your order.`
+            : "We will call you to confirm your order."
+        }</div>
         <div class="callout-text">
-          Our team will call/WhatsApp you at ${getDisplayPhoneNumber("international")} to arrange it before shipping.
+          Our team will call or message you on WhatsApp (${getDisplayPhoneNumber("international")}) before shipping.
         </div>
       </div>
     `
@@ -220,8 +224,8 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             background: #ffffff !important;
             color: #101114 !important;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            font-size: 12px;
-            line-height: 1.45;
+            font-size: 13.5px;
+            line-height: 1.5;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
@@ -241,23 +245,22 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           .brand-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 0;
           }
-          .brand-logo-circle {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #101114;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #00D9FF;
+          .brand-logo-img {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            object-fit: contain;
+            display: block;
+            flex-shrink: 0;
           }
-          .brand-logo-text {
-            color: #ffffff;
-            font-size: 8px;
-            font-weight: 900;
-            letter-spacing: 0.5px;
+          .brand-wordmark-img {
+            height: 64px;
+            width: auto;
+            margin-left: -5px;
+            object-fit: contain;
+            display: block;
           }
           .brand-name {
             font-size: 24px;
@@ -267,7 +270,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             line-height: 1.1;
           }
           .brand-tagline {
-            font-size: 11px;
+            font-size: 12px;
             color: #6b7280;
             margin-top: 3px;
           }
@@ -277,19 +280,19 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           }
           .receipt-pill-title {
             color: #00bcd4;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 800;
             letter-spacing: 0.12em;
             text-transform: uppercase;
           }
           .order-number {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 800;
             color: #101114;
             margin-top: 2px;
           }
           .order-timestamp {
-            font-size: 11px;
+            font-size: 12px;
             color: #6b7280;
             margin-top: 2px;
           }
@@ -310,7 +313,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             margin-bottom: 24px;
           }
           .meta-col-title {
-            font-size: 10px;
+            font-size: 11.5px;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
@@ -318,21 +321,21 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             margin-bottom: 6px;
           }
           .customer-name {
-            font-size: 14px;
+            font-size: 15.5px;
             font-weight: 800;
             color: #101114;
             text-transform: uppercase;
           }
           .customer-phone {
-            font-size: 12px;
+            font-size: 13.5px;
             font-weight: 600;
             color: #374151;
             margin-top: 2px;
           }
           .addr-line {
-            font-size: 11.5px;
+            font-size: 13px;
             color: #4b5563;
-            margin-top: 1.5px;
+            margin-top: 2px;
           }
 
           .meta-info-table {
@@ -340,8 +343,8 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             border-collapse: collapse;
           }
           .meta-info-table td {
-            padding: 2.5px 0;
-            font-size: 12px;
+            padding: 3px 0;
+            font-size: 13.5px;
           }
           .meta-label {
             color: #6b7280;
@@ -364,8 +367,8 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             border-bottom: 1px solid #bbf7d0;
           }
           .items-table th {
-            padding: 9px 12px;
-            font-size: 10.5px;
+            padding: 10px 12px;
+            font-size: 11.5px;
             font-weight: 800;
             letter-spacing: 0.08em;
             color: #101114;
@@ -375,18 +378,19 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             padding: 12px;
             border-bottom: 1px solid #f3f4f6;
             vertical-align: middle;
+            font-size: 13.5px;
           }
           .col-item {
             text-align: left;
             width: 44%;
           }
           .item-name {
-            font-size: 12.5px;
+            font-size: 14px;
             font-weight: 600;
             color: #101114;
           }
           .item-sku {
-            font-size: 10.5px;
+            font-size: 11.5px;
             color: #6b7280;
             margin-top: 2px;
             font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -395,7 +399,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             text-align: left;
             width: 16%;
             color: #4b5563;
-            font-size: 12px;
+            font-size: 13.5px;
           }
           .col-qty {
             text-align: center;
@@ -422,12 +426,12 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             margin-top: 16px;
           }
           .summary-table {
-            width: 290px;
+            width: 310px;
             border-collapse: collapse;
           }
           .summary-table td {
-            padding: 4px 0;
-            font-size: 12px;
+            padding: 4.5px 0;
+            font-size: 13.5px;
           }
           .summary-table .amount {
             text-align: right;
@@ -436,7 +440,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           }
           .summary-table .total-line td {
             padding-top: 10px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 800;
             border-top: 2px solid #101114;
             color: #101114;
@@ -445,7 +449,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           /* Advance Payment Callout Box */
           .callout-box {
             margin-top: 26px;
-            padding: 13px 18px;
+            padding: 14px 18px;
             border-radius: 4px;
           }
           .callout-box.cod {
@@ -453,29 +457,29 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             border-left: 4px solid #F59E0B;
           }
           .callout-box.cod .callout-title {
-            font-size: 12px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #B45309;
           }
           .callout-box.cod .callout-text {
-            font-size: 11px;
+            font-size: 12.5px;
             color: #92400E;
-            margin-top: 2.5px;
-            line-height: 1.4;
+            margin-top: 3px;
+            line-height: 1.45;
           }
           .callout-box.paid {
             background: #F0FDF4 !important;
             border-left: 4px solid #10B981;
           }
           .callout-box.paid .callout-title {
-            font-size: 12px;
+            font-size: 13.5px;
             font-weight: 700;
             color: #047857;
           }
           .callout-box.paid .callout-text {
-            font-size: 11px;
+            font-size: 12.5px;
             color: #065F46;
-            margin-top: 2.5px;
+            margin-top: 3px;
           }
 
           /* Footer Policies & Locations */
@@ -488,7 +492,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             gap: 14px;
           }
           .footer-block-title {
-            font-size: 10.5px;
+            font-size: 11.5px;
             font-weight: 800;
             color: #6b7280;
             letter-spacing: 0.08em;
@@ -496,7 +500,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             margin-bottom: 4px;
           }
           .footer-block-body {
-            font-size: 10.5px;
+            font-size: 12px;
             color: #4b5563;
             line-height: 1.5;
           }
@@ -507,7 +511,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           /* Generation Note */
           .generation-note {
             margin-top: 22px;
-            font-size: 9.5px;
+            font-size: 11px;
             color: #9ca3af;
             text-align: center;
             border-top: 1px dashed #e5e7eb;
@@ -520,16 +524,24 @@ export function printCustomerInvoice(order: PrintableOrder): void {
           <!-- 1. Brand Header -->
           <div class="header-row">
             <div class="brand-left">
-              <div class="brand-logo-circle">
-                <span class="brand-logo-text">VIBELOCK</span>
-              </div>
+              <img
+                src="${typeof window !== "undefined" ? window.location.origin : ""}/logo/icon/vibelock_icon_dark.svg"
+                alt="VibeLock"
+                class="brand-logo-img"
+              />
               <div>
-                <h1 class="brand-name">${escapeHtml(order.taxInvoiceConfig?.registeredBusinessName || "VIBELOCK BD")}</h1>
-                <p class="brand-tagline">${escapeHtml(
+                ${
+                  order.taxInvoiceConfig?.registeredBusinessName
+                    ? `<h1 class="brand-name">${escapeHtml(order.taxInvoiceConfig.registeredBusinessName)}</h1>`
+                    : `<img src="${typeof window !== "undefined" ? window.location.origin : ""}/logo/workmark/vibelock_wordmark_black_transparent.svg" alt="VibeLock" class="brand-wordmark-img" />`
+                }
+                ${
                   order.taxInvoiceConfig?.binNumber
-                    ? `BIN: ${order.taxInvoiceConfig.binNumber}${order.taxInvoiceConfig.taxCircle ? ` · ${order.taxInvoiceConfig.taxCircle}` : ""}`
-                    : "Premium Streetwear · Bangladesh"
-                )}</p>
+                    ? `<p class="brand-tagline">${escapeHtml(
+                        `BIN: ${order.taxInvoiceConfig.binNumber}${order.taxInvoiceConfig.taxCircle ? ` · ${order.taxInvoiceConfig.taxCircle}` : ""}`
+                      )}</p>`
+                    : ""
+                }
               </div>
             </div>
 
@@ -640,7 +652,7 @@ export function printCustomerInvoice(order: PrintableOrder): void {
             <div>
               <div class="footer-block-title">SUPPORT &amp; RETURNS</div>
               <p class="footer-block-body">
-                WhatsApp us at <strong>${getDisplayPhoneNumber("international")}</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.com/policies/terms-of-service
+                WhatsApp us at <strong>${getDisplayPhoneNumber("international")}</strong> for order support, sizing help, or an exchange/return within 72 hours of delivery. Full terms: vibelock.bd/policies/terms-of-service
               </p>
             </div>
 
@@ -668,8 +680,8 @@ export function printCustomerInvoice(order: PrintableOrder): void {
   doc.write(html);
   doc.close();
 
-  // Brief tick to ensure DOM parsing and fonts load before opening print window
-  setTimeout(() => {
+  // Wait for logo images (and fonts) inside the iframe before opening print dialog
+  const triggerPrint = () => {
     try {
       iframe.contentWindow?.focus();
       iframe.contentWindow?.print();
@@ -682,5 +694,28 @@ export function printCustomerInvoice(order: PrintableOrder): void {
         iframe.parentNode.removeChild(iframe);
       }
     }, 1500);
-  }, 250);
+  };
+
+  const imgs = Array.from(doc.images || []);
+  if (imgs.length === 0 || imgs.every((img) => img.complete)) {
+    setTimeout(triggerPrint, 250);
+  } else {
+    let printed = false;
+    const done = () => {
+      if (printed) return;
+      printed = true;
+      setTimeout(triggerPrint, 100);
+    };
+    Promise.all(
+      imgs.map(
+        (img) =>
+          new Promise<void>((resolve) => {
+            if (img.complete) return resolve();
+            img.addEventListener("load", () => resolve(), { once: true });
+            img.addEventListener("error", () => resolve(), { once: true });
+          })
+      )
+    ).then(done);
+    setTimeout(done, 1500);
+  }
 }

@@ -143,9 +143,6 @@ export async function getStorefrontPaymentMethods(
       if (checkoutPolicies.codOrderNotice) {
         codDetail = checkoutPolicies.codOrderNotice;
       }
-      if (checkoutPolicies.requireCodAdvanceDeliveryCharge) {
-        codDetail += ` (Advance delivery charge: ৳${checkoutPolicies.codAdvanceInsideDhaka} Dhaka / ৳${checkoutPolicies.codAdvanceOutsideDhaka} Outside)`;
-      }
     } catch {
       // Fallback gracefully
     }
