@@ -10,7 +10,6 @@ import type { ShippingRulesSettings } from "@/lib/settings/shipping-rules-settin
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   Building2,
@@ -85,10 +84,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
       {/* ── SECTION HEADER ── */}
       <div className="border-b border-neutral-200/80 pb-4">
         <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Shipping & Logistics Configuration
+          Shipping & Delivery Rules
         </h3>
         <p className="text-xs text-neutral-500">
-          Free delivery incentive rules, primary courier carrier selection, and dispatch warehouse
+          Configure free delivery thresholds, courier integrations, and warehouse dispatch locations
         </p>
       </div>
 
@@ -102,10 +101,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
               </div>
               <div>
                 <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                  Free Shipping Promotion Engine
+                  Free Shipping Promotion
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
-                  Automated delivery fee waivers to boost Average Order Value (AOV)
+                  Automated delivery fee waiver based on cart subtotal
                 </CardDescription>
               </div>
             </div>
@@ -141,14 +140,9 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
         <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
           {/* Threshold Input */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
-                Free Shipping Cart Threshold (৳) <span className="text-rose-500">*</span>
-              </label>
-              <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-800 font-medium">
-                AOV Accelerator
-              </Badge>
-            </div>
+            <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+              Free Shipping Cart Threshold (৳) <span className="text-rose-500">*</span>
+            </label>
             <Input
               type="number"
               name="freeShippingThreshold"
@@ -163,15 +157,12 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                 {state.fieldErrors.freeShippingThreshold[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Orders with product subtotal equal to or exceeding this amount receive free delivery.
-            </p>
           </div>
 
           {/* Scope Selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
-              Applicability Geographic Scope
+              Applicability Scope
             </label>
             <input type="hidden" name="freeShippingScope" value={scope} />
             <div className="grid grid-cols-2 gap-2.5 pt-0.5">
@@ -216,12 +207,9 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
               name="freeShippingBannerText"
               defaultValue={initialSettings.freeShippingBannerText}
               disabled={!freeShippingEnabled}
-              placeholder="e.g. Free standard delivery on all nationwide orders above ৳2,500!"
+              placeholder="Free standard delivery on all nationwide orders above ৳2,500!"
               className="bg-white text-xs"
             />
-            <p className="text-[11px] text-neutral-500">
-              Promotional notification shown on the top announcement bar and cart progress drawer.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -235,10 +223,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Courier Priority & API Consignment
+                Courier Provider & Automation
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Logistics provider routing and automated API tracking number booking
+                Logistics provider routing and consignment generation rules
               </CardDescription>
             </div>
           </div>
@@ -248,7 +236,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           {/* Courier Selector */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
-              Primary Courier Rail
+              Primary Courier
             </label>
             <input type="hidden" name="primaryCourier" value={courier} />
             <div className="grid grid-cols-3 gap-2.5 pt-0.5">
@@ -273,56 +261,46 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                       courier === c ? "text-neutral-300" : "text-neutral-400"
                     )}
                   >
-                    {c === "STEADFAST" ? "Fast API" : c === "PATHAO" ? "Logistics" : "Offline"}
+                    {c === "STEADFAST" ? "Courier API" : c === "PATHAO" ? "Courier API" : "Offline"}
                   </span>
                 </button>
               ))}
             </div>
-            <p className="text-[11px] text-neutral-500">
-              Default carrier used for automated API tracking number generation.
-            </p>
           </div>
 
           {/* Auto Consignment Toggle */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div>
+              <span className="text-xs font-semibold text-neutral-900">
                 Auto-Create Consignment on Order
-              </label>
-              <div className="flex items-center">
-                <input
-                  type="hidden"
-                  name="autoCreateConsignment"
-                  value={autoConsign ? "true" : "false"}
-                />
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={autoConsign}
-                  onClick={() => setAutoConsign(!autoConsign)}
-                  className={cn(
-                    "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
-                    autoConsign ? "bg-vl-cyan-600" : "bg-neutral-300"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
-                      autoConsign ? "translate-x-5" : "translate-x-0"
-                    )}
-                  />
-                </button>
-              </div>
+              </span>
+              <p className="text-[11px] text-neutral-500">
+                Automatically book tracking numbers with the courier upon order confirmation
+              </p>
             </div>
-            <div className="rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 text-xs">
-              <p className="font-semibold text-neutral-800">
-                {autoConsign ? "Instant API Booking Active" : "Manual Dispatch Approval (Recommended)"}
-              </p>
-              <p className="mt-0.5 text-[11px] text-neutral-500">
-                {autoConsign
-                  ? "Orders instantly book a consignment parcel with Steadfast upon customer confirmation."
-                  : "Warehouse team verifies order details before generating parcel tracking consignment."}
-              </p>
+            <div className="flex items-center">
+              <input
+                type="hidden"
+                name="autoCreateConsignment"
+                value={autoConsign ? "true" : "false"}
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={autoConsign}
+                onClick={() => setAutoConsign(!autoConsign)}
+                className={cn(
+                  "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-vl-cyan-500",
+                  autoConsign ? "bg-vl-cyan-600" : "bg-neutral-300"
+                )}
+              >
+                <span
+                  className={cn(
+                    "pointer-events-none inline-block size-5 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                    autoConsign ? "translate-x-5" : "translate-x-0"
+                  )}
+                />
+              </button>
             </div>
           </div>
         </CardContent>
@@ -337,10 +315,10 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Storefront Delivery SLA Promises
+                Estimated Delivery Timelines (SLA)
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Estimated transit timeline badges displayed to shoppers during checkout
+                Estimated transit time badges displayed to shoppers during checkout
               </CardDescription>
             </div>
           </div>
@@ -394,7 +372,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Default Fulfillment Hub & Pickup Contacts
+                Fulfillment Hub & Dispatch Contacts
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
                 Origin contact information sent in courier API payloads for parcel collection
@@ -412,7 +390,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             <Input
               name="pickupHubName"
               defaultValue={initialSettings.pickupHubName}
-              placeholder="e.g. VibeLock Central Fulfillment Hub"
+              placeholder="Main Warehouse"
               className="bg-white"
             />
             {state.fieldErrors?.pickupHubName && (
@@ -428,7 +406,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             <Input
               name="contactPerson"
               defaultValue={initialSettings.contactPerson}
-              placeholder="e.g. Warehouse Operations Lead"
+              placeholder="Contact person name"
               className="bg-white"
             />
             {state.fieldErrors?.contactPerson && (
@@ -444,7 +422,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             <Input
               name="contactPhone"
               defaultValue={initialSettings.contactPhone}
-              placeholder="e.g. 8801311333277"
+              placeholder="01XXXXXXXXX"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.contactPhone && (
@@ -460,15 +438,12 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             <Input
               name="pickupAddress"
               defaultValue={initialSettings.pickupAddress}
-              placeholder="House 12, Road 4, Sector 3, Uttara, Dhaka-1230"
+              placeholder="Warehouse address for rider pickups and returns"
               className="bg-white"
             />
             {state.fieldErrors?.pickupAddress && (
               <p className="text-[11px] font-semibold text-rose-600">{state.fieldErrors.pickupAddress[0]}</p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Warehouse address where courier riders arrive for parcel pickups and return shipments.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -476,8 +451,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>Shipping and delivery policies sync in real-time across checkout and </span>
-          <code className="font-mono text-neutral-900 font-semibold">AuditLog</code>.
+          <span>Shipping and delivery policies sync in real-time across checkout and fulfillment.</span>
         </div>
         <div className="flex items-center justify-end">
           <SubmitButton />

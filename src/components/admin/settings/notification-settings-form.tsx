@@ -10,7 +10,6 @@ import type { NotificationSettings } from "@/lib/settings/notification-settings"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   BellRing,
@@ -96,10 +95,10 @@ export function NotificationSettingsForm({
       {/* ── SECTION HEADER ── */}
       <div className="border-b border-neutral-200/80 pb-4">
         <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Notification & SMS Settings
+          Notifications & SMS Settings
         </h3>
         <p className="text-xs text-neutral-500">
-          Carrier SMS gateways, parcel milestone triggers, and VIP order manager alerts
+          Manage SMS carrier gateways, automated parcel milestones, and manager email alerts
         </p>
       </div>
 
@@ -112,10 +111,10 @@ export function NotificationSettingsForm({
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Bangladesh SMS Gateway Rail & API Routing
+                SMS Gateway Provider & Credentials
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Primary carrier provider, brand mask sender ID, and API dispatch credentials
+                Primary carrier provider, sender ID, and API dispatch credentials
               </CardDescription>
             </div>
           </div>
@@ -162,21 +161,13 @@ export function NotificationSettingsForm({
 
           {/* Sender ID */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-                SMS Sender ID (Masking) <span className="text-rose-500">*</span>
-              </label>
-              <Badge
-                variant="outline"
-                className="border-neutral-200 bg-neutral-50 text-[10px] text-neutral-700 font-mono"
-              >
-                Alphanumeric Mask
-              </Badge>
-            </div>
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+              SMS Sender ID (Masking) <span className="text-rose-500">*</span>
+            </label>
             <Input
               name="senderId"
               defaultValue={initialSettings.senderId}
-              placeholder="e.g. VibeLock"
+              placeholder="Brand Sender ID"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.senderId && (
@@ -184,9 +175,6 @@ export function NotificationSettingsForm({
                 {state.fieldErrors.senderId[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              BTRC-approved brand masking text displayed on recipient mobile handsets.
-            </p>
           </div>
 
           {/* Gateway API Key */}
@@ -198,12 +186,9 @@ export function NotificationSettingsForm({
               type="password"
               name="smsApiKey"
               defaultValue={initialSettings.smsApiKey}
-              placeholder="•••••••••••••••• (Leave blank to use .env)"
+              placeholder="Leave blank to use environment secret"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              When omitted, securely uses <code className="text-neutral-900 font-mono">SMS_API_KEY</code> from environment.
-            </p>
           </div>
 
           {/* Gateway API URL */}
@@ -214,12 +199,9 @@ export function NotificationSettingsForm({
             <Input
               name="smsApiUrl"
               defaultValue={initialSettings.smsApiUrl}
-              placeholder="https://api.bulksmsbd.com/api/sms/send (Leave blank to use .env)"
+              placeholder="https://api.gateway.com/send (Leave blank to use environment default)"
               className="bg-white font-mono text-xs"
             />
-            <p className="text-[11px] text-neutral-500">
-              Target HTTP endpoint for transactional outbound SMS payload dispatch.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -233,10 +215,10 @@ export function NotificationSettingsForm({
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Customer SMS Lifecycle Triggers
+                Customer SMS Notifications
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Automated customer milestone alerts dispatched via SMS
+                Automated order milestone SMS alerts dispatched to shoppers
               </CardDescription>
             </div>
           </div>
@@ -245,12 +227,7 @@ export function NotificationSettingsForm({
         <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
           {/* Trigger 1: Order Placed */}
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
-              <p className="text-[11px] text-neutral-500">
-                Dispatches order invoice number upon checkout completion.
-              </p>
-            </div>
+            <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
             <div className="flex items-center">
               <input
                 type="hidden"
@@ -279,14 +256,9 @@ export function NotificationSettingsForm({
 
           {/* Trigger 2: Order Dispatched with Tracking */}
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-xs font-semibold text-neutral-900">
-                Courier Dispatch & Tracking Link
-              </span>
-              <p className="text-[11px] text-neutral-500">
-                Includes Steadfast consignment tracking URL.
-              </p>
-            </div>
+            <span className="text-xs font-semibold text-neutral-900">
+              Courier Dispatch & Tracking Link
+            </span>
             <div className="flex items-center">
               <input
                 type="hidden"
@@ -315,12 +287,7 @@ export function NotificationSettingsForm({
 
           {/* Trigger 3: Out for Delivery */}
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-xs font-semibold text-neutral-900">Out for Delivery Alert</span>
-              <p className="text-[11px] text-neutral-500">
-                Warns customer that delivery rider is en route with their parcel.
-              </p>
-            </div>
+            <span className="text-xs font-semibold text-neutral-900">Out for Delivery Alert</span>
             <div className="flex items-center">
               <input
                 type="hidden"
@@ -349,12 +316,7 @@ export function NotificationSettingsForm({
 
           {/* Trigger 4: Return Approved */}
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
-              <p className="text-[11px] text-neutral-500">
-                Notifies customer when return pickup consignment is authorized.
-              </p>
-            </div>
+            <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
             <div className="flex items-center">
               <input
                 type="hidden"
@@ -393,10 +355,10 @@ export function NotificationSettingsForm({
               </div>
               <div>
                 <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                  Manager SMS Alerts & High-Value Radar
+                  Manager SMS Alerts & High-Value Orders
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
-                  Instant SMS notifications sent to operations management for VIP orders
+                  Direct SMS alerts sent to operations management for VIP orders
                 </CardDescription>
               </div>
             </div>
@@ -433,13 +395,13 @@ export function NotificationSettingsForm({
           {/* Admin Recipient Phone */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Store Manager Alert Phone <span className="text-rose-500">*</span>
+              Manager Alert Phone Number <span className="text-rose-500">*</span>
             </label>
             <Input
               name="adminAlertRecipientPhone"
               defaultValue={initialSettings.adminAlertRecipientPhone}
               disabled={!adminAlerts}
-              placeholder="e.g. 8801311333277"
+              placeholder="01XXXXXXXXX"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.adminAlertRecipientPhone && (
@@ -447,15 +409,12 @@ export function NotificationSettingsForm({
                 {state.fieldErrors.adminAlertRecipientPhone[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Receives SMS alerts when orders exceeding the threshold are placed.
-            </p>
           </div>
 
           {/* High-Value Threshold */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              High-Value Radar Threshold (৳) <span className="text-rose-500">*</span>
+              High-Value Order Threshold (৳) <span className="text-rose-500">*</span>
             </label>
             <Input
               type="number"
@@ -471,9 +430,6 @@ export function NotificationSettingsForm({
                 {state.fieldErrors.adminAlertHighValueThreshold[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Orders equal to or above this value trigger instant priority dispatch alerts.
-            </p>
           </div>
 
           {/* Low SMS Balance Warning Toggle */}
@@ -483,7 +439,7 @@ export function NotificationSettingsForm({
                 SMS Gateway Low-Credit Balance Alert
               </span>
               <p className="text-[11px] text-neutral-500">
-                Warns manager when provider balance drops below 100 credits.
+                Alerts manager when provider credit balance drops below 100 SMS
               </p>
             </div>
             <div className="flex items-center">
@@ -523,10 +479,10 @@ export function NotificationSettingsForm({
             </div>
             <div>
               <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
-                Email Dispatch Channels & Profiles
+                Email Dispatch Channels
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Resend transactional email triggers and recipient routing
+                Transactional email notification recipients and sender profile
               </CardDescription>
             </div>
           </div>
@@ -542,6 +498,7 @@ export function NotificationSettingsForm({
               type="email"
               name="adminNotificationEmail"
               defaultValue={initialSettings.adminNotificationEmail}
+              placeholder="orders@domain.com"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.adminNotificationEmail && (
@@ -549,20 +506,18 @@ export function NotificationSettingsForm({
                 {state.fieldErrors.adminNotificationEmail[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Destination inbox for internal new-order notifications.
-            </p>
           </div>
 
           {/* Support Reply-To Email */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Support Reply-To Address <span className="text-rose-500">*</span>
+              Support Reply-To Email <span className="text-rose-500">*</span>
             </label>
             <Input
               type="email"
               name="supportReplyToEmail"
               defaultValue={initialSettings.supportReplyToEmail}
+              placeholder="support@domain.com"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.supportReplyToEmail && (
@@ -570,9 +525,6 @@ export function NotificationSettingsForm({
                 {state.fieldErrors.supportReplyToEmail[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Set as the Reply-To header in customer order receipts.
-            </p>
           </div>
 
           {/* Email Toggles */}
@@ -581,7 +533,7 @@ export function NotificationSettingsForm({
               <span className="text-xs font-semibold text-neutral-800">
                 Customer Order Confirmation Email
               </span>
-              <p className="text-[11px] text-neutral-500">Send HTML receipt via Resend.</p>
+              <p className="text-[11px] text-neutral-500">Send HTML receipt to customer</p>
             </div>
             <div className="flex items-center">
               <input
@@ -612,7 +564,7 @@ export function NotificationSettingsForm({
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
               <span className="text-xs font-semibold text-neutral-800">Manager Order Alert Email</span>
-              <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders.</p>
+              <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders</p>
             </div>
             <div className="flex items-center">
               <input
@@ -645,9 +597,7 @@ export function NotificationSettingsForm({
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>SMS and notification channel updates are logged in </span>
-          <code className="font-mono text-neutral-900 font-semibold">AuditLog</code> with actor
-          attribution.
+          <span>Notification and messaging channel updates take effect immediately.</span>
         </div>
         <div className="flex items-center justify-end">
           <SubmitButton />

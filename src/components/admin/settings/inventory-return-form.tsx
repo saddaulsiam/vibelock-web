@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   Boxes,
@@ -92,11 +91,11 @@ export function InventoryReturnForm({
 
       {/* ── SECTION HEADER ── */}
       <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
+        <h3 className="text-base font-bold tracking-tight text-neutral-900">
           Inventory & Return Policies
         </h3>
         <p className="text-xs text-neutral-500">
-          Low stock alerts, customer return windows, delivery charge deductions, and restocking
+          Configure stock threshold warnings, customer return windows, and restocking workflows
         </p>
       </div>
 
@@ -112,7 +111,7 @@ export function InventoryReturnForm({
                 Inventory Thresholds & Restock Alerts
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Automatic stock warning badges and email alert dispatch for warehouse replenishments
+                Stock warning levels and automatic restock email notifications
               </CardDescription>
             </div>
           </div>
@@ -137,9 +136,6 @@ export function InventoryReturnForm({
                 className="bg-white font-mono"
                 required
               />
-              <p className="text-[11px] text-neutral-500">
-                Variants at or below this count show a yellow &ldquo;Low Stock&rdquo; badge.
-              </p>
               {state.fieldErrors?.lowStockThreshold && (
                 <p className="text-[11px] font-semibold text-rose-600">
                   {state.fieldErrors.lowStockThreshold[0]}
@@ -164,9 +160,6 @@ export function InventoryReturnForm({
                 className="bg-white font-mono"
                 required
               />
-              <p className="text-[11px] text-neutral-500">
-                Emergency threshold triggering urgent warehouse replenishment notice.
-              </p>
               {state.fieldErrors?.criticalStockThreshold && (
                 <p className="text-[11px] font-semibold text-rose-600">
                   {state.fieldErrors.criticalStockThreshold[0]}
@@ -183,8 +176,7 @@ export function InventoryReturnForm({
                   Automated Restock Email Alert
                 </span>
                 <p className="mt-0.5 text-[11px] text-neutral-500">
-                  Dispatches an automated email digest whenever inventory breaches low stock
-                  thresholds.
+                  Dispatches an email alert whenever variant inventory breaches threshold
                 </p>
               </div>
               <div className="flex items-center">
@@ -227,7 +219,7 @@ export function InventoryReturnForm({
                   name="lowStockNotificationEmail"
                   type="email"
                   defaultValue={initialSettings.lowStockNotificationEmail}
-                  placeholder="inventory@vibelock.com"
+                  placeholder="inventory@domain.com"
                   className="bg-white font-mono"
                 />
               </div>
@@ -240,7 +232,7 @@ export function InventoryReturnForm({
               <div>
                 <span className="text-xs font-semibold text-neutral-900">Allow Backorders</span>
                 <p className="text-[11px] text-neutral-500">
-                  Permits checkout even when inventory level reaches zero.
+                  Allow purchases even when inventory reaches zero
                 </p>
               </div>
               <div className="flex items-center">
@@ -271,7 +263,7 @@ export function InventoryReturnForm({
                   Auto-Hide Sold-Out Items
                 </span>
                 <p className="text-[11px] text-neutral-500">
-                  Removes out-of-stock items from catalog browsing automatically.
+                  Hide out-of-stock products from catalog browsing
                 </p>
               </div>
               <div className="flex items-center">
@@ -315,7 +307,7 @@ export function InventoryReturnForm({
                 Customer Return Window & Conditions
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Eligibility duration, photographic proof rules, and non-returnable categories
+                Return window duration, photo verification, and non-returnable categories
               </CardDescription>
             </div>
           </div>
@@ -323,20 +315,12 @@ export function InventoryReturnForm({
 
         <CardContent className="space-y-6 p-6">
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="returnWindowDays"
-                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
-              >
-                Return Window (Days After Delivery) <span className="text-rose-500">*</span>
-              </label>
-              <Badge
-                variant="outline"
-                className="border-neutral-200 bg-neutral-50 text-[10px] font-medium text-neutral-600"
-              >
-                Set 0 to disable returns
-              </Badge>
-            </div>
+            <label
+              htmlFor="returnWindowDays"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Return Window (Days After Delivery) <span className="text-rose-500">*</span>
+            </label>
             <Input
               id="returnWindowDays"
               name="returnWindowDays"
@@ -344,13 +328,10 @@ export function InventoryReturnForm({
               min={0}
               max={90}
               defaultValue={initialSettings.returnWindowDays}
+              placeholder="0 to disable returns"
               className="bg-white font-mono"
               required
             />
-            <p className="text-[11px] text-neutral-500">
-              Standard Bangladesh e-commerce window is 7 days. Returns cannot be requested after
-              this period.
-            </p>
             {state.fieldErrors?.returnWindowDays && (
               <p className="text-[11px] font-semibold text-rose-600">
                 {state.fieldErrors.returnWindowDays[0]}
@@ -363,7 +344,7 @@ export function InventoryReturnForm({
               <div>
                 <span className="text-xs font-semibold text-neutral-900">Require Photo Proof</span>
                 <p className="text-[11px] text-neutral-500">
-                  Mandates uploaded photograph for defective/wrong items.
+                  Require customer photo upload for return requests
                 </p>
               </div>
               <div className="flex items-center">
@@ -398,7 +379,7 @@ export function InventoryReturnForm({
                   Allow Partial Order Returns
                 </span>
                 <p className="text-[11px] text-neutral-500">
-                  Shoppers can return specific items rather than the entire order.
+                  Allow returning single items from multi-item orders
                 </p>
               </div>
               <div className="flex items-center">
@@ -434,20 +415,16 @@ export function InventoryReturnForm({
               htmlFor="nonReturnableCategories"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
             >
-              Non-Returnable Product Categories
+              Non-Returnable Categories (Comma-separated)
             </label>
             <Input
               id="nonReturnableCategories"
               name="nonReturnableCategories"
               type="text"
               defaultValue={initialSettings.nonReturnableCategories.join(", ")}
-              placeholder="Underwear, Swimwear, Clearance, Socks"
+              placeholder="Underwear, Swimwear, Socks"
               className="bg-white"
             />
-            <p className="text-[11px] text-neutral-500">
-              Comma-separated list of categories strictly designated as final-sale for hygiene
-              reasons.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -461,10 +438,10 @@ export function InventoryReturnForm({
             </div>
             <div>
               <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
-                Refund Deductions & Processing Fees
+                Refund Deductions & Processing
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Courier fee recovery and administrative fees on customer returns
+                Delivery fee recovery and restocking fees on customer returns
               </CardDescription>
             </div>
           </div>
@@ -478,8 +455,7 @@ export function InventoryReturnForm({
                 Deduct Courier Delivery Fee From Refund
               </span>
               <p className="text-[11px] text-neutral-500">
-                When approved, original delivery fee is subtracted from the refund amount to prevent
-                merchant loss.
+                Subtract outbound courier shipping charge from final customer refund
               </p>
             </div>
             <div className="flex items-center">
@@ -513,7 +489,7 @@ export function InventoryReturnForm({
               htmlFor="returnProcessingFee"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
             >
-              Flat Restocking / Return Fee (BDT ৳)
+              Flat Restocking Fee (BDT ৳)
             </label>
             <Input
               id="returnProcessingFee"
@@ -522,12 +498,10 @@ export function InventoryReturnForm({
               min={0}
               max={5000}
               defaultValue={initialSettings.returnProcessingFee}
+              placeholder="0 (no fee)"
               className="bg-white font-mono"
               required
             />
-            <p className="text-[11px] text-neutral-500">
-              Additional processing fee deducted from refund (set 0 for no fee).
-            </p>
             {state.fieldErrors?.returnProcessingFee && (
               <p className="text-[11px] font-semibold text-rose-600">
                 {state.fieldErrors.returnProcessingFee[0]}
@@ -547,23 +521,20 @@ export function InventoryReturnForm({
               name="restockLocation"
               type="text"
               defaultValue={initialSettings.restockLocation}
+              placeholder="Main Warehouse"
               className="bg-white"
               required
             />
-            <p className="text-[11px] text-neutral-500">
-              Warehouse destination where returned merchandise is received and graded.
-            </p>
           </div>
 
           {/* Auto restock */}
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
-                Auto-Restock Returned Items (Bypass QC)
+                Auto-Restock Returned Items
               </span>
               <p className="text-[11px] text-neutral-500">
-                Immediately returns inspected items into active stock without mandatory Quality
-                Grading approval.
+                Automatically restore returned items into active inventory without manual QC
               </p>
             </div>
             <div className="flex items-center">
@@ -594,12 +565,12 @@ export function InventoryReturnForm({
         </CardContent>
       </Card>
 
-      {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      {/* ── BOTTOM ACTION FOOTER ── */}
+      <div className="flex flex-col gap-3 rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
         <div className="text-xs text-neutral-500">
-          <span>Inventory thresholds and return conditions are enforced atomically across </span>
-          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+          Inventory thresholds and return conditions are saved and applied to customer claims.
         </div>
+
         <div className="flex items-center justify-end">
           <SubmitButton />
         </div>

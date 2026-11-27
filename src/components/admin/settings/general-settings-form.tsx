@@ -10,7 +10,6 @@ import type { GeneralStoreSettings } from "@/lib/settings/store-settings-service
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   Calendar,
@@ -19,7 +18,6 @@ import {
   Loader2,
   Power,
   Save,
-  ShieldCheck,
   Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -91,10 +89,10 @@ export function GeneralSettingsForm({
       {/* ── SECTION HEADER ── */}
       <div className="border-b border-neutral-200/80 pb-4">
         <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          General Store Configuration
+          General Store Settings
         </h3>
         <p className="text-xs text-neutral-500">
-          Store identity, legal DBID, omnichannel support hotlines, and operational modes
+          Configure store identity, legal registrations, and customer support channels
         </p>
       </div>
 
@@ -110,7 +108,7 @@ export function GeneralSettingsForm({
                 Store Identity & Legal Registration
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Official store branding and Government of Bangladesh business identification details
+                Official store branding and business identification details
               </CardDescription>
             </div>
           </div>
@@ -120,12 +118,12 @@ export function GeneralSettingsForm({
           {/* Store Name */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Store Public Name <span className="text-rose-500">*</span>
+              Store Name <span className="text-rose-500">*</span>
             </label>
             <Input
               name="storeName"
               defaultValue={initialSettings.storeName}
-              placeholder="e.g. VibeLock"
+              placeholder="Store name"
               className="bg-white"
             />
             {state.fieldErrors?.storeName && (
@@ -133,9 +131,6 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.storeName[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Displayed across public storefront header, emails, and receipts.
-            </p>
           </div>
 
           {/* Legal Business Name */}
@@ -146,7 +141,7 @@ export function GeneralSettingsForm({
             <Input
               name="legalBusinessName"
               defaultValue={initialSettings.legalBusinessName}
-              placeholder="e.g. VibeLock Apparel Ltd."
+              placeholder="Registered legal company name"
               className="bg-white"
             />
             {state.fieldErrors?.legalBusinessName && (
@@ -154,33 +149,19 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.legalBusinessName[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Registered entity printed on official tax invoices and legal disclosures.
-            </p>
           </div>
 
           {/* DBID Number */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-                Digital Business ID (DBID)
-              </label>
-              <Badge
-                variant="outline"
-                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
-              >
-                BD MoC
-              </Badge>
-            </div>
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+              Digital Business ID (DBID)
+            </label>
             <Input
               name="dbidNumber"
               defaultValue={initialSettings.dbidNumber}
-              placeholder="e.g. 1928471928"
+              placeholder="Ministry of Commerce DBID"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              Ministry of Commerce digital e-commerce identity registration.
-            </p>
           </div>
 
           {/* Trade License Number */}
@@ -191,36 +172,22 @@ export function GeneralSettingsForm({
             <Input
               name="tradeLicenseNumber"
               defaultValue={initialSettings.tradeLicenseNumber}
-              placeholder="e.g. TRAD/DNCC/029182/2026"
+              placeholder="City Corporation trade license number"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              City Corporation annual trade license number.
-            </p>
           </div>
 
           {/* BIN Number */}
           <div className="space-y-1.5 sm:col-span-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-                Business Identification Number (BIN / e-TIN)
-              </label>
-              <Badge
-                variant="outline"
-                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
-              >
-                NBR 13-Digit
-              </Badge>
-            </div>
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+              Business Identification Number (BIN / TIN)
+            </label>
             <Input
               name="binNumber"
               defaultValue={initialSettings.binNumber}
-              placeholder="e.g. 003928172-0102"
+              placeholder="13-digit BIN / TIN"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              National Board of Revenue 13-digit BIN required for Mushak-6.3 tax invoices.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -237,7 +204,7 @@ export function GeneralSettingsForm({
                 Customer Support & Warehouse Channels
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Official contact channels and primary warehouse location for courier dispatch
+                Contact channels and primary warehouse location for courier dispatch
               </CardDescription>
             </div>
           </div>
@@ -247,12 +214,12 @@ export function GeneralSettingsForm({
           {/* Support Phone */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Customer Support Hotline <span className="text-rose-500">*</span>
+              Customer Support Phone <span className="text-rose-500">*</span>
             </label>
             <Input
               name="supportPhone"
               defaultValue={initialSettings.supportPhone}
-              placeholder="e.g. 8801311333277"
+              placeholder="01XXXXXXXXX"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.supportPhone && (
@@ -260,28 +227,17 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.supportPhone[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Primary phone line displayed in website top bar and footer.
-            </p>
           </div>
 
           {/* WhatsApp Number */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-                Official WhatsApp Number <span className="text-rose-500">*</span>
-              </label>
-              <Badge
-                variant="outline"
-                className="border-emerald-200 bg-emerald-50 font-mono text-[10px] text-emerald-800"
-              >
-                wa.me Direct
-              </Badge>
-            </div>
+            <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
+              WhatsApp Support Number <span className="text-rose-500">*</span>
+            </label>
             <Input
               name="whatsappNumber"
               defaultValue={initialSettings.whatsappNumber}
-              placeholder="e.g. 8801311333277"
+              placeholder="8801XXXXXXXXX"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.whatsappNumber && (
@@ -289,21 +245,18 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.whatsappNumber[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Numbers only with country code (e.g. 8801311333277) for floating chat.
-            </p>
           </div>
 
           {/* Support Email */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Customer Support Email <span className="text-rose-500">*</span>
+              Support Email <span className="text-rose-500">*</span>
             </label>
             <Input
               type="email"
               name="supportEmail"
               defaultValue={initialSettings.supportEmail}
-              placeholder="support@vibelock.com"
+              placeholder="support@domain.com"
               className="bg-white font-mono"
             />
             {state.fieldErrors?.supportEmail && (
@@ -311,20 +264,17 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.supportEmail[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Reply-to destination for customer transactional receipts.
-            </p>
           </div>
 
           {/* Warehouse Address */}
           <div className="space-y-1.5 sm:col-span-2">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
-              Default Warehouse / Pickup Hub Address <span className="text-rose-500">*</span>
+              Warehouse / Pickup Address <span className="text-rose-500">*</span>
             </label>
             <Input
               name="warehouseAddress"
               defaultValue={initialSettings.warehouseAddress}
-              placeholder="House 12, Road 4, Sector 3, Uttara, Dhaka-1230"
+              placeholder="Warehouse address for rider pickups and returns"
               className="bg-white"
             />
             {state.fieldErrors?.warehouseAddress && (
@@ -332,10 +282,6 @@ export function GeneralSettingsForm({
                 {state.fieldErrors.warehouseAddress[0]}
               </p>
             )}
-            <p className="text-[11px] text-neutral-500">
-              Primary pickup address transmitted to Steadfast and Pathao logistics APIs for
-              consignment creation.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -369,7 +315,7 @@ export function GeneralSettingsForm({
                     Maintenance Mode
                   </CardTitle>
                   <CardDescription className="text-xs text-neutral-500">
-                    Pause storefront checkout for system updates
+                    Temporarily pause storefront checkout for system updates
                   </CardDescription>
                 </div>
               </div>
@@ -381,6 +327,7 @@ export function GeneralSettingsForm({
                   name="maintenanceMode_enabled"
                   value={maintenanceEnabled ? "true" : "false"}
                 />
+                <input type="hidden" name="maintenanceMode_allowAdminBypass" value="true" />
                 <button
                   type="button"
                   role="switch"
@@ -403,18 +350,14 @@ export function GeneralSettingsForm({
           </CardHeader>
 
           <CardContent className="space-y-4 p-6 text-xs">
-            <p className="leading-relaxed text-neutral-600">
-              When enabled, customer checkout is temporarily paused and visitors see a polite
-              maintenance notice.
-            </p>
-
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
-                Maintenance Notice Title
+                Notice Title
               </label>
               <Input
                 name="maintenanceMode_noticeTitle"
                 defaultValue={initialSettings.maintenanceMode.noticeTitle}
+                placeholder="Store Under Scheduled Maintenance"
                 className="bg-white text-xs"
               />
             </div>
@@ -426,17 +369,9 @@ export function GeneralSettingsForm({
               <Input
                 name="maintenanceMode_noticeMessage"
                 defaultValue={initialSettings.maintenanceMode.noticeMessage}
+                placeholder="We will be back online shortly."
                 className="bg-white text-xs"
               />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50 px-3 py-2">
-              <span className="text-[11px] font-medium text-neutral-600">Admin Access</span>
-              <input type="hidden" name="maintenanceMode_allowAdminBypass" value="true" />
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                <ShieldCheck className="size-3.5" />
-                Active for Logged-In Admins
-              </span>
             </div>
           </CardContent>
         </Card>
@@ -465,10 +400,10 @@ export function GeneralSettingsForm({
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-neutral-900">
-                    Eid & Holiday Notice Mode
+                    Holiday Notice Mode
                   </CardTitle>
                   <CardDescription className="text-xs text-neutral-500">
-                    Keep checkout open with courier delay disclaimer
+                    Accept orders while notifying shoppers of holiday courier delays
                   </CardDescription>
                 </div>
               </div>
@@ -502,18 +437,14 @@ export function GeneralSettingsForm({
           </CardHeader>
 
           <CardContent className="space-y-4 p-6 text-xs">
-            <p className="leading-relaxed text-neutral-600">
-              Allows customers to continue placing orders while warning them of delayed holiday
-              courier dispatch.
-            </p>
-
             <div className="space-y-1.5">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
-                Storefront Banner Announcement
+                Banner Announcement Message
               </label>
               <Input
                 name="holidayMode_bannerText"
                 defaultValue={initialSettings.holidayMode.bannerText}
+                placeholder="Holiday notice: Deliveries will resume right after the holidays."
                 className="bg-white text-xs"
               />
             </div>
@@ -525,45 +456,30 @@ export function GeneralSettingsForm({
               <Input
                 name="holidayMode_expectedDispatchDate"
                 defaultValue={initialSettings.holidayMode.expectedDispatchDate}
-                placeholder="e.g. 15 April 2026"
+                placeholder="15 April 2026"
                 className="bg-white text-xs"
               />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50 px-3 py-2">
-              <span className="text-[11px] font-medium text-neutral-600">Checkout State</span>
-              <span className="text-[11px] font-semibold text-neutral-900">
-                Orders Accepted Normally
-              </span>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* ── SECTION 4: PLATFORM LOCALIZATION STANDARDS ── */}
+      {/* ── SECTION 4: PLATFORM STANDARDS ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardContent className="grid gap-4 p-6 text-xs sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-[11px] font-semibold tracking-wide text-neutral-800 uppercase">
-                Platform Currency
-              </span>
-              <p className="mt-0.5 text-[11px] text-neutral-500">Fixed canonical store currency.</p>
-            </div>
+        <CardContent className="grid gap-4 p-5 text-xs sm:grid-cols-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
+            <span className="font-semibold text-neutral-800">
+              Platform Currency
+            </span>
             <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
               BDT (৳)
             </code>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
-            <div>
-              <span className="text-[11px] font-semibold tracking-wide text-neutral-800 uppercase">
-                Platform Timezone
-              </span>
-              <p className="mt-0.5 text-[11px] text-neutral-500">
-                Standard time for order transaction ledgers.
-              </p>
-            </div>
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
+            <span className="font-semibold text-neutral-800">
+              Platform Timezone
+            </span>
             <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
               Asia/Dhaka (UTC+6)
             </code>
@@ -574,8 +490,7 @@ export function GeneralSettingsForm({
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>Updates execute in an atomic transaction with actor logging in </span>
-          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+          <span>Updates take effect immediately across public storefront and administrative channels.</span>
         </div>
         <div className="flex items-center justify-end">
           <SubmitButton />

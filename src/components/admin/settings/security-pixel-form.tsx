@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Activity,
   AlertTriangle,
@@ -130,12 +129,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 name="metaPixelId"
                 type="text"
                 defaultValue={initialSettings.metaPixelId}
-                placeholder="e.g. 123456789012345"
+                placeholder="Pixel ID"
                 className="bg-white font-mono"
               />
-              <p className="text-[11px] text-neutral-500">
-                Injected into storefront layout for standard browser event capture.
-              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -150,12 +146,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 name="metaTestEventCode"
                 type="text"
                 defaultValue={initialSettings.metaTestEventCode}
-                placeholder="TEST12345"
+                placeholder="Test event code"
                 className="bg-white font-mono"
               />
-              <p className="text-[11px] text-neutral-500">
-                Temporary diagnostic code from Meta Events Manager to verify live events.
-              </p>
             </div>
           </div>
 
@@ -171,13 +164,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               name="metaCapiAccessToken"
               type="password"
               defaultValue={maskedToken}
-              placeholder="EAAB..."
+              placeholder="Access token"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              Authorizes direct server-to-server purchase event tracking (leaves unchanged if
-              masked).
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -249,7 +238,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               name="tiktokPixelId"
               type="text"
               defaultValue={initialSettings.tiktokPixelId}
-              placeholder="e.g. C5A1B2C3D4E5"
+              placeholder="Pixel ID"
               className="bg-white font-mono"
             />
           </div>
@@ -260,8 +249,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 Track Enhanced E-Commerce Milestones
               </span>
               <p className="text-[11px] text-neutral-500">
-                Fires ViewContent, AddToCart, InitiateCheckout, and Purchase events across active
-                tracking containers.
+                Capture ViewContent, AddToCart, and Purchase events across active tracking containers
               </p>
             </div>
             <div className="flex items-center">
@@ -333,10 +321,6 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 <option value="240">4 Hours</option>
                 <option value="480">8 Hours (Full Shift)</option>
               </select>
-              <p className="text-[11px] text-neutral-500">
-                Automatically terminates idle dashboard sessions to safeguard inventory and
-                sensitive data.
-              </p>
               {state.fieldErrors?.adminSessionTimeoutMinutes && (
                 <p className="text-[11px] font-semibold text-rose-600">
                   {state.fieldErrors.adminSessionTimeoutMinutes[0]}
@@ -357,12 +341,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                 name="securityContactEmail"
                 type="email"
                 defaultValue={initialSettings.securityContactEmail}
-                placeholder="security@vibelock.com"
+                placeholder="security@domain.com"
                 className="bg-white font-mono"
               />
-              <p className="text-[11px] text-neutral-500">
-                Destination for urgent security notifications and consecutive failed login alerts.
-              </p>
               {state.fieldErrors?.securityContactEmail && (
                 <p className="text-[11px] font-semibold text-rose-600">
                   {state.fieldErrors.securityContactEmail[0]}
@@ -373,20 +354,11 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
 
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-neutral-900">
-                  Enforce Mandatory Two-Factor (2FA / OTP)
-                </span>
-                <Badge
-                  variant="outline"
-                  className="border-purple-200 bg-purple-50 text-[10px] text-purple-700"
-                >
-                  Recommended
-                </Badge>
-              </div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Enforce Mandatory Two-Factor (2FA / OTP)
+              </span>
               <p className="mt-0.5 text-[11px] text-neutral-500">
-                Requires SMS or authenticator OTP verification for all staff accounts with ADMIN
-                permissions.
+                Require OTP verification for staff accounts with admin access
               </p>
             </div>
             <div className="flex items-center">
@@ -412,28 +384,20 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
           </div>
 
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="adminIpAllowlist"
-                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
-              >
-                Admin Static IP Address Allowlist
-              </label>
-              <span className="text-[10px] text-neutral-400">
-                Leave blank for unrestricted access
-              </span>
-            </div>
+            <label
+              htmlFor="adminIpAllowlist"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Admin Static IP Address Allowlist
+            </label>
             <Input
               id="adminIpAllowlist"
               name="adminIpAllowlist"
               type="text"
               defaultValue={initialSettings.adminIpAllowlist.join(", ")}
-              placeholder="103.145.12.10, 192.168.1.1"
+              placeholder="Leave blank for unrestricted access"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              Comma-separated list of static public IP addresses permitted to access `/admin`.
-            </p>
           </div>
 
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
@@ -441,9 +405,6 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               <span className="text-xs font-semibold text-neutral-900">
                 Notify on Consecutive Failed Admin Login Attempts
               </span>
-              <p className="text-[11px] text-neutral-500">
-                Dispatches an emergency alert when repeated failed logins occur on admin accounts.
-              </p>
             </div>
             <div className="flex items-center">
               <input
@@ -476,8 +437,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>Security controls and tracking IDs take effect across both storefront and </span>
-          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+          <span>Security controls and tracking configuration updates take effect immediately.</span>
         </div>
         <div className="flex items-center justify-end">
           <SubmitButton />

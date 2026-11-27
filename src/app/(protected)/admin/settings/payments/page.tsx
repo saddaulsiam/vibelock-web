@@ -11,9 +11,7 @@ import {
   Banknote,
   Clock,
   CreditCard,
-  Lock,
   Smartphone,
-  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -93,20 +91,13 @@ export default async function AdminPaymentSettingsPage() {
   return (
     <div className="space-y-6">
       {/* ── TOP SECTION CONTEXT ── */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-200/80 pb-4">
-        <div>
-          <h3 className="text-base font-bold tracking-tight text-neutral-900">
-            Configured Payment Channels
-          </h3>
-          <p className="text-xs text-neutral-500">
-            Control customer checkout availability, payment gateway routing, and settlement ledger modes
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="border-neutral-200 bg-neutral-50 text-neutral-600 text-xs font-mono">
-            SERVER_GATE: createOrderAction
-          </Badge>
-        </div>
+      <div className="border-b border-neutral-200/80 pb-4">
+        <h3 className="text-base font-bold tracking-tight text-neutral-900">
+          Payment Methods
+        </h3>
+        <p className="text-xs text-neutral-500">
+          Enable or disable payment gateways and settlement channels for customer checkout
+        </p>
       </div>
 
       {/* ── PAYMENT METHOD CARDS (3-COLUMN RESPONSIVE GRID) ── */}
@@ -140,10 +131,6 @@ export default async function AdminPaymentSettingsPage() {
                         </CardTitle>
                         <CardDescription className="flex items-center gap-1.5 text-xs text-neutral-500">
                           <span>{visual.railLabel}</span>
-                          <span>·</span>
-                          <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[10px] font-semibold text-neutral-700">
-                            {method.code}
-                          </code>
                         </CardDescription>
                       </div>
                     </div>
@@ -152,78 +139,32 @@ export default async function AdminPaymentSettingsPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-4 p-5 text-sm">
-                  <p className="text-xs leading-relaxed text-neutral-600 min-h-8">
+                  <p className="text-xs leading-relaxed text-neutral-600 min-h-10">
                     {method.description}
                   </p>
 
-                  {/* Technical Configuration Specs */}
-                  <div className="space-y-2 rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-500">Checkout State:</span>
+                  {method.environmentMode && (
+                    <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 px-3 py-2 text-xs">
+                      <span className="font-medium text-neutral-500">Environment</span>
                       <span
                         className={cn(
-                          "font-bold",
-                          method.isEnabled ? "text-emerald-700" : "text-neutral-500"
+                          "rounded border px-2 py-0.5 font-mono text-[11px] font-bold uppercase",
+                          method.environmentMode === "production"
+                            ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                            : "border-amber-300 bg-amber-50 text-amber-800"
                         )}
                       >
-                        {method.isEnabled ? "Available in Checkout" : "Disabled"}
+                        {method.environmentMode}
                       </span>
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-500">Protocol / Rail:</span>
-                      <span className="font-semibold text-neutral-800">{visual.protocol}</span>
-                    </div>
-
-                    {method.environmentMode && (
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-neutral-500">Environment Mode:</span>
-                        <span
-                          className={cn(
-                            "rounded border px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase",
-                            method.environmentMode === "production"
-                              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
-                              : method.environmentMode === "sandbox"
-                                ? "border-amber-300 bg-amber-50 text-amber-800"
-                                : "border-neutral-300 bg-neutral-100 text-neutral-600"
-                          )}
-                        >
-                          {method.environmentMode}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-neutral-500">Credential Guard:</span>
-                      <span className="inline-flex items-center gap-1 font-semibold text-emerald-700">
-                        <Lock className="size-3" />
-                        Server-Only Gated
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Order Lifecycle Impact Callout */}
-                  <div
-                    className={cn(
-                      "rounded-r-lg border-l-2 bg-neutral-50 p-3 text-xs",
-                      visual.accentBorder
-                    )}
-                  >
-                    <p className="flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-neutral-500 uppercase">
-                      <Zap className="size-3 text-neutral-600" />
-                      Order Lifecycle & Ledger Impact
-                    </p>
-                    <p className="mt-1 leading-relaxed text-neutral-700 text-[11px]">
-                      {method.checkoutImpact}
-                    </p>
-                  </div>
+                  )}
                 </CardContent>
               </div>
 
               {/* Card Action Control Footer */}
               <div className="border-t border-neutral-200/80 bg-neutral-50/50 p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-neutral-600">Admin Control</span>
+                  <span className="text-xs font-semibold text-neutral-700">Checkout Status</span>
                   {canToggle ? (
                     <TogglePaymentMethodForm
                       code={method.code as "COD" | "BKASH" | "PAYSTATION"}

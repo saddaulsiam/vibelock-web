@@ -16,7 +16,7 @@ export default async function AdminSettingsLayout({ children }: { children: Reac
         badgeVariant="emerald"
         description="Configure store policies, legal DBID, payment gateways, courier rules, and security controls."
       >
-        <div className="hidden sm:flex items-center gap-2 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 shadow-2xs text-xs text-neutral-600">
+        <div className="hidden items-center gap-2 rounded-lg border border-neutral-200/80 bg-white px-3 py-1.5 text-xs text-neutral-600 shadow-2xs sm:flex">
           <ShieldCheck className="size-4 text-emerald-600" />
           <span className="font-medium">Audit Log Enforced</span>
         </div>
@@ -29,4 +29,3 @@ export default async function AdminSettingsLayout({ children }: { children: Reac
     </div>
   );
 }
-

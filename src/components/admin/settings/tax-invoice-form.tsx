@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertTriangle,
   Building2,
@@ -87,7 +86,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           Tax & Invoicing Compliance
         </h3>
         <p className="text-xs text-neutral-500">
-          Value Added Tax rates, 13-digit NBR BIN identity, and Mushak 6.3 digital format
+          Configure VAT calculation rates, NBR registration details, and Mushak-6.3 invoice formatting
         </p>
       </div>
 
@@ -104,7 +103,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                   VAT & Tax Calculation Rules
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
-                  Bangladesh NBR Value Added Tax rates and storefront pricing display modes
+                  Value Added Tax rates and price calculation modes
                 </CardDescription>
               </div>
             </div>
@@ -136,20 +135,12 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
         <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
           {/* Rate Percent */}
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label
-                htmlFor="vatRatePercent"
-                className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
-              >
-                Standard VAT Rate (%) <span className="text-rose-500">*</span>
-              </label>
-              <Badge
-                variant="outline"
-                className="border-neutral-200 bg-neutral-50 font-mono text-[10px] text-neutral-600"
-              >
-                NBR Rate
-              </Badge>
-            </div>
+            <label
+              htmlFor="vatRatePercent"
+              className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
+            >
+              Standard VAT Rate (%) <span className="text-rose-500">*</span>
+            </label>
             <Input
               id="vatRatePercent"
               name="vatRatePercent"
@@ -159,12 +150,10 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               max={30}
               defaultValue={initialSettings.vatRatePercent}
               disabled={!enableTax}
+              placeholder="5 or 7.5"
               className="bg-white font-mono"
               required
             />
-            <p className="text-[11px] text-neutral-500">
-              Standard consumer rates: 5% (Apparel/Retail), 7.5%, or 15% standard rate.
-            </p>
             {state.fieldErrors?.vatRatePercent && (
               <p className="text-[11px] font-semibold text-rose-600">
                 {state.fieldErrors.vatRatePercent[0]}
@@ -190,9 +179,6 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               <option value="INCLUSIVE">INCLUSIVE (Product prices already include VAT)</option>
               <option value="EXCLUSIVE">EXCLUSIVE (VAT added on top at checkout)</option>
             </select>
-            <p className="text-[11px] text-neutral-500">
-              INCLUSIVE is standard consumer retail in Bangladesh.
-            </p>
           </div>
 
           {/* Apply Tax to Shipping */}
@@ -202,7 +188,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 Apply VAT to Courier Delivery Charges
               </span>
               <p className="text-[11px] text-neutral-500">
-                Calculates VAT over shipping fees in addition to the product subtotal.
+                Calculate VAT on shipping fees in addition to product subtotal
               </p>
             </div>
             <div className="flex items-center">
@@ -247,7 +233,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 NBR Registration & Tax Identity
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Official Business Identification Number (BIN) and registered tax circle
+                Business Identification Number (BIN) and registered tax circle
               </CardDescription>
             </div>
           </div>
@@ -266,6 +252,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="registeredBusinessName"
               type="text"
               defaultValue={initialSettings.registeredBusinessName}
+              placeholder="Registered legal company name"
               className="bg-white"
               required
             />
@@ -283,12 +270,9 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="binNumber"
               type="text"
               defaultValue={initialSettings.binNumber}
-              placeholder="001234567-0101"
+              placeholder="13-digit BIN"
               className="bg-white font-mono"
             />
-            <p className="text-[11px] text-neutral-500">
-              Printed prominently on official tax invoices.
-            </p>
           </div>
 
           <div className="space-y-1.5">
@@ -303,7 +287,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="taxCircle"
               type="text"
               defaultValue={initialSettings.taxCircle}
-              placeholder="Circle-15 (Uttara)"
+              placeholder="Tax Circle name"
               className="bg-white"
             />
           </div>
@@ -320,7 +304,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="taxZone"
               type="text"
               defaultValue={initialSettings.taxZone}
-              placeholder="Taxes Zone-08, Dhaka"
+              placeholder="Taxes Zone / Commissionerate"
               className="bg-white"
             />
           </div>
@@ -337,6 +321,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="registeredOfficeAddress"
               type="text"
               defaultValue={initialSettings.registeredOfficeAddress}
+              placeholder="Registered business address"
               className="bg-white"
               required
             />
@@ -356,7 +341,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 Mushak 6.3 & Invoice Layout
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
-                Bangladesh standard tax invoice numbering, digital seal, and statutory declarations
+                Official invoice numbering, customer care hotline, and footer declarations
               </CardDescription>
             </div>
           </div>
@@ -365,20 +350,11 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
         <CardContent className="space-y-6 p-6">
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-neutral-900">
-                  Mushak 6.3 (মূসক-৬.৩) Compliance Format
-                </span>
-                <Badge
-                  variant="outline"
-                  className="border-purple-200 bg-purple-50 text-[10px] text-purple-700"
-                >
-                  NBR Standard
-                </Badge>
-              </div>
+              <span className="text-xs font-semibold text-neutral-900">
+                Mushak 6.3 (মূসক-৬.৩) Compliance Format
+              </span>
               <p className="mt-0.5 text-[11px] text-neutral-500">
-                Generates official tax invoice format with itemized subtotal, VAT rate, and
-                statutory declarations.
+                Generates official tax invoice format with itemized subtotal and VAT rate
               </p>
             </div>
             <div className="flex items-center">
@@ -420,15 +396,10 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 name="invoicePrefix"
                 type="text"
                 defaultValue={initialSettings.invoicePrefix}
+                placeholder="VL-INV-"
                 className="bg-white font-mono"
                 required
               />
-              <p className="text-[11px] text-neutral-500">
-                Preview:{" "}
-                <code className="font-mono font-bold text-neutral-800">
-                  {initialSettings.invoicePrefix}2026-0042
-                </code>
-              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -443,6 +414,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
                 name="customerCareContact"
                 type="text"
                 defaultValue={initialSettings.customerCareContact}
+                placeholder="01XXXXXXXXX"
                 className="bg-white font-mono"
                 required
               />
@@ -452,10 +424,10 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
-                Display Verified Digital Merchant Stamp / Seal
+                Display Verified Digital Stamp / Seal
               </span>
               <p className="text-[11px] text-neutral-500">
-                Renders an authenticated digital verification mark on printed customer PDF invoices.
+                Renders a digital verification seal on printed customer PDF invoices
               </p>
             </div>
             <div className="flex items-center">
@@ -492,13 +464,10 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               name="invoiceFooterNote"
               rows={3}
               defaultValue={initialSettings.invoiceFooterNote}
+              placeholder="Notice or statutory text printed at the bottom of customer invoices"
               className="w-full rounded-md border border-neutral-200 bg-white p-3 font-mono text-xs text-neutral-900 shadow-2xs focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 focus:outline-none"
               required
             />
-            <p className="text-[11px] text-neutral-500">
-              Statutory declaration printed at the bottom of customer invoices (e.g. SRO 186/2019
-              reference).
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -506,8 +475,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
-          <span>Tax rates and Mushak 6.3 formatting apply to all future orders via </span>
-          <code className="font-mono font-semibold text-neutral-900">AuditLog</code>.
+          <span>Tax rates and invoice layout changes apply to all future orders and receipts.</span>
         </div>
         <div className="flex items-center justify-end">
           <SubmitButton />
