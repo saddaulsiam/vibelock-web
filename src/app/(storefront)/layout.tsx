@@ -45,11 +45,16 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const isBypassingMaintenance =
     generalSettings.maintenanceMode.enabled && generalSettings.maintenanceMode.allowAdminBypass;
 
-  const hasAnnouncement = Boolean(
+  const announcement =
     isBypassingMaintenance ||
-      (generalSettings.holidayMode.enabled && generalSettings.holidayMode.bannerText) ||
-      (shippingSettings.enableFreeShipping && shippingSettings.freeShippingBannerText)
-  );
+    (generalSettings.holidayMode.enabled && generalSettings.holidayMode.bannerText) ||
+    (shippingSettings.enableFreeShipping && shippingSettings.freeShippingBannerText) ? (
+      <AnnouncementBar
+        maintenanceBypass={isBypassingMaintenance}
+        holidayBanner={generalSettings.holidayMode.enabled ? generalSettings.holidayMode.bannerText : null}
+        shippingBanner={shippingSettings.enableFreeShipping ? shippingSettings.freeShippingBannerText : null}
+      />
+    ) : null;
 
   return (
     <div className="relative flex min-h-screen min-w-0 flex-col">
@@ -67,13 +72,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
         aria-hidden="true"
       />
 
-      <AnnouncementBar
-        maintenanceBypass={isBypassingMaintenance}
-        holidayBanner={generalSettings.holidayMode.enabled ? generalSettings.holidayMode.bannerText : null}
-        shippingBanner={shippingSettings.enableFreeShipping ? shippingSettings.freeShippingBannerText : null}
-      />
-
-      <Header hasAnnouncement={hasAnnouncement} />
+      <Header announcement={announcement} />
       <main className="relative z-10 flex min-w-0 flex-1 flex-col">{children}</main>
       <Footer />
       {/* <WhatsAppFloatingButton /> */}
