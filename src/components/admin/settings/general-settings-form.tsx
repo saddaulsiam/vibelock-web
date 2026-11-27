@@ -64,7 +64,7 @@ export function GeneralSettingsForm({
   const [holidayEnabled, setHolidayEnabled] = useState(initialSettings.holidayMode.enabled);
 
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -86,25 +86,15 @@ export function GeneralSettingsForm({
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          General Store Settings
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Configure store identity, legal registrations, and customer support channels
-        </p>
-      </div>
-
       {/* ── SECTION 1: STORE IDENTITY & LEGAL REGISTRATION ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Store className="text-vl-cyan-600 size-4.5" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Store className="text-vl-cyan-600 size-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Store Identity & Legal Registration
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -114,9 +104,9 @@ export function GeneralSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Store Name */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Store Name <span className="text-rose-500">*</span>
             </label>
@@ -134,7 +124,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* Legal Business Name */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Legal Business Name <span className="text-rose-500">*</span>
             </label>
@@ -152,7 +142,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* DBID Number */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Digital Business ID (DBID)
             </label>
@@ -165,7 +155,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* Trade License Number */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Trade License Number
             </label>
@@ -178,7 +168,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* BIN Number */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Business Identification Number (BIN / TIN)
             </label>
@@ -194,13 +184,13 @@ export function GeneralSettingsForm({
 
       {/* ── SECTION 2: CUSTOMER SUPPORT & LOGISTICS CONTACT ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Headphones className="text-vl-cyan-600 size-4.5" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Headphones className="text-vl-cyan-600 size-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Customer Support & Warehouse Channels
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -210,9 +200,9 @@ export function GeneralSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Support Phone */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Customer Support Phone <span className="text-rose-500">*</span>
             </label>
@@ -230,7 +220,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* WhatsApp Number */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               WhatsApp Support Number <span className="text-rose-500">*</span>
             </label>
@@ -248,7 +238,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* Support Email */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Support Email <span className="text-rose-500">*</span>
             </label>
@@ -267,7 +257,7 @@ export function GeneralSettingsForm({
           </div>
 
           {/* Warehouse Address */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Warehouse / Pickup Address <span className="text-rose-500">*</span>
             </label>
@@ -287,7 +277,7 @@ export function GeneralSettingsForm({
       </Card>
 
       {/* ── SECTION 3: STORE OPERATIONAL MODES & SCHEDULES ── */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Maintenance Mode Card */}
         <Card
           className={cn(
@@ -297,25 +287,25 @@ export function GeneralSettingsForm({
               : "border-neutral-200/80 bg-white shadow-2xs"
           )}
         >
-          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div
                   className={cn(
-                    "flex size-9 items-center justify-center rounded-lg border",
+                    "flex size-8 items-center justify-center rounded-lg border",
                     maintenanceEnabled
                       ? "border-amber-300 bg-amber-100 text-amber-800"
                       : "border-neutral-200 bg-white text-neutral-700"
                   )}
                 >
-                  <Power className="size-4.5" />
+                  <Power className="size-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-neutral-900">
                     Maintenance Mode
                   </CardTitle>
                   <CardDescription className="text-xs text-neutral-500">
-                    Temporarily pause storefront checkout for system updates
+                    Temporarily pause storefront checkout
                   </CardDescription>
                 </div>
               </div>
@@ -349,8 +339,8 @@ export function GeneralSettingsForm({
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 p-6 text-xs">
-            <div className="space-y-1.5">
+          <CardContent className="space-y-3 p-4 text-xs">
+            <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Notice Title
               </label>
@@ -362,7 +352,7 @@ export function GeneralSettingsForm({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Notice Message for Shoppers
               </label>
@@ -385,25 +375,25 @@ export function GeneralSettingsForm({
               : "border-neutral-200/80 bg-white shadow-2xs"
           )}
         >
-          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+          <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div
                   className={cn(
-                    "flex size-9 items-center justify-center rounded-lg border",
+                    "flex size-8 items-center justify-center rounded-lg border",
                     holidayEnabled
                       ? "border-vl-cyan-300 bg-vl-cyan-100 text-vl-cyan-800"
                       : "border-neutral-200 bg-white text-neutral-700"
                   )}
                 >
-                  <Calendar className="size-4.5" />
+                  <Calendar className="size-4" />
                 </div>
                 <div>
                   <CardTitle className="text-sm font-bold text-neutral-900">
                     Holiday Notice Mode
                   </CardTitle>
                   <CardDescription className="text-xs text-neutral-500">
-                    Accept orders while notifying shoppers of holiday courier delays
+                    Accept orders while warning of holiday delays
                   </CardDescription>
                 </div>
               </div>
@@ -436,8 +426,8 @@ export function GeneralSettingsForm({
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-4 p-6 text-xs">
-            <div className="space-y-1.5">
+          <CardContent className="space-y-3 p-4 text-xs">
+            <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Banner Announcement Message
               </label>
@@ -449,7 +439,7 @@ export function GeneralSettingsForm({
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label className="text-[11px] font-semibold tracking-wide text-neutral-700 uppercase">
                 Expected Dispatch Date (Optional)
               </label>
@@ -466,21 +456,21 @@ export function GeneralSettingsForm({
 
       {/* ── SECTION 4: PLATFORM STANDARDS ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardContent className="grid gap-4 p-5 text-xs sm:grid-cols-2">
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
+        <CardContent className="grid gap-3 p-3.5 text-xs sm:grid-cols-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
             <span className="font-semibold text-neutral-800">
               Platform Currency
             </span>
-            <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
+            <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
               BDT (৳)
             </code>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-2.5">
             <span className="font-semibold text-neutral-800">
               Platform Timezone
             </span>
-            <code className="rounded border border-neutral-200 bg-white px-2.5 py-1 font-mono font-bold text-neutral-900 shadow-2xs">
+            <code className="rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono font-bold text-neutral-900 shadow-2xs">
               Asia/Dhaka (UTC+6)
             </code>
           </div>
@@ -488,7 +478,7 @@ export function GeneralSettingsForm({
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Updates take effect immediately across public storefront and administrative channels.</span>
         </div>

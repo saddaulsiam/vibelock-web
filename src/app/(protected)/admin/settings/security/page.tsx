@@ -10,9 +10,5 @@ export default async function AdminSecuritySettingsPage() {
 
   const { settings } = await getSecurityPixelSettings();
 
-  return (
-    <div className="space-y-6">
-      <SecurityPixelForm initialSettings={settings} />
-    </div>
-  );
+  return <SecurityPixelForm initialSettings={settings} />;
 }

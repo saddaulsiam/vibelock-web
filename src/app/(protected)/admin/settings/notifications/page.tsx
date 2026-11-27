@@ -10,9 +10,5 @@ export default async function AdminNotificationSettingsPage() {
 
   const { settings } = await getNotificationSettings();
 
-  return (
-    <div className="space-y-6">
-      <NotificationSettingsForm initialSettings={settings} />
-    </div>
-  );
+  return <NotificationSettingsForm initialSettings={settings} />;
 }

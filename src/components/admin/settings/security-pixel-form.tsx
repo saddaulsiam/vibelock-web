@@ -65,7 +65,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
     : "";
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -87,25 +87,15 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Security Controls & Tracking Pixels
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Ad attribution pixels (Meta, GA4, TikTok), admin session timeouts, and IP perimeters
-        </p>
-      </div>
-
       {/* ── SECTION 1: META (FACEBOOK) PIXEL & CONVERSIONS API (CAPI) ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Globe className="size-4.5 text-blue-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Globe className="size-4 text-blue-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Meta Pixel & Conversions API (CAPI)
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -115,9 +105,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-5 p-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
               <label
                 htmlFor="metaPixelId"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -134,7 +124,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label
                 htmlFor="metaTestEventCode"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -152,7 +142,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="metaCapiAccessToken"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -173,13 +163,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
 
       {/* ── SECTION 2: GOOGLE & TIKTOK ANALYTICS ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Activity className="text-vl-cyan-600 size-4.5" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Activity className="text-vl-cyan-600 size-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Google Tag Manager & Multi-Pixel
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -189,9 +179,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-5 p-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
               <label
                 htmlFor="googleTagManagerId"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -208,7 +198,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label
                 htmlFor="googleAnalyticsId"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -226,7 +216,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="tiktokPixelId"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -243,7 +233,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Track Enhanced E-Commerce Milestones
@@ -282,13 +272,13 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
 
       {/* ── SECTION 3: ADMIN ACCESS & SECURITY GOVERNANCE ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Shield className="size-4.5 text-purple-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Shield className="size-4 text-purple-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Admin Session & Perimeter Governance
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -298,9 +288,9 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-5 p-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
               <label
                 htmlFor="adminSessionTimeoutMinutes"
                 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -328,7 +318,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
               )}
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label
                 htmlFor="securityContactEmail"
                 className="flex items-center gap-1.5 text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -352,7 +342,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Enforce Mandatory Two-Factor (2FA / OTP)
@@ -383,7 +373,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="adminIpAllowlist"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -400,7 +390,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             />
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Notify on Consecutive Failed Admin Login Attempts
@@ -435,7 +425,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Security controls and tracking configuration updates take effect immediately.</span>
         </div>

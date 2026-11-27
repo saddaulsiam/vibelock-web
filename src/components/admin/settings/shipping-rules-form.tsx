@@ -59,7 +59,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
   const [autoConsign, setAutoConsign] = useState(initialSettings.autoCreateConsignment);
 
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -81,26 +81,16 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Shipping & Delivery Rules
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Configure free delivery thresholds, courier integrations, and warehouse dispatch locations
-        </p>
-      </div>
-
       {/* ── SECTION 1: FREE SHIPPING INCENTIVE ENGINE ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-                <Sparkles className="size-4.5 text-emerald-600" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <Sparkles className="size-4 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                <CardTitle className="text-sm font-bold text-neutral-900">
                   Free Shipping Promotion
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
@@ -137,9 +127,9 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Threshold Input */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Free Shipping Cart Threshold (৳) <span className="text-rose-500">*</span>
             </label>
@@ -160,18 +150,18 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Scope Selector */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Applicability Scope
             </label>
             <input type="hidden" name="freeShippingScope" value={scope} />
-            <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+            <div className="grid grid-cols-2 gap-2 pt-0.5">
               <button
                 type="button"
                 disabled={!freeShippingEnabled}
                 onClick={() => setScope("NATIONWIDE")}
                 className={cn(
-                  "rounded-lg border p-3 text-xs font-semibold transition-all text-left",
+                  "rounded-lg border p-2.5 text-xs font-semibold transition-all text-left",
                   scope === "NATIONWIDE"
                     ? "border-emerald-600 bg-emerald-50/80 text-emerald-950 ring-1 ring-emerald-600"
                     : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
@@ -186,7 +176,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
                 disabled={!freeShippingEnabled}
                 onClick={() => setScope("INSIDE_DHAKA_ONLY")}
                 className={cn(
-                  "rounded-lg border p-3 text-xs font-semibold transition-all text-left",
+                  "rounded-lg border p-2.5 text-xs font-semibold transition-all text-left",
                   scope === "INSIDE_DHAKA_ONLY"
                     ? "border-emerald-600 bg-emerald-50/80 text-emerald-950 ring-1 ring-emerald-600"
                     : "border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50"
@@ -199,7 +189,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Banner Text */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Customer Banner Announcement
             </label>
@@ -216,13 +206,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
 
       {/* ── SECTION 2: COURIER ROUTING & CONSIGNMENT AUTOMATION ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Truck className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Truck className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Courier Provider & Automation
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -232,21 +222,21 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Courier Selector */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Primary Courier
             </label>
             <input type="hidden" name="primaryCourier" value={courier} />
-            <div className="grid grid-cols-3 gap-2.5 pt-0.5">
+            <div className="grid grid-cols-3 gap-2 pt-0.5">
               {(["STEADFAST", "PATHAO", "MANUAL"] as const).map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCourier(c)}
                   className={cn(
-                    "rounded-lg border p-3 text-xs font-semibold transition-all text-center",
+                    "rounded-lg border p-2.5 text-xs font-semibold transition-all text-center",
                     courier === c
                       ? "border-neutral-900 bg-neutral-900 text-white shadow-2xs"
                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
@@ -269,7 +259,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Auto Consignment Toggle */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Auto-Create Consignment on Order
@@ -308,13 +298,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
 
       {/* ── SECTION 3: STOREFRONT SLA PROMISES ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Clock className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Clock className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Estimated Delivery Timelines (SLA)
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -324,8 +314,8 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-3">
-          <div className="space-y-1.5">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-3">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Inside Dhaka SLA
             </label>
@@ -337,7 +327,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Outside Dhaka SLA
             </label>
@@ -349,7 +339,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Express / Metro SLA
             </label>
@@ -365,13 +355,13 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
 
       {/* ── SECTION 4: DEFAULT FULFILLMENT HUB & PICKUP CONTACTS ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Building2 className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Building2 className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Fulfillment Hub & Dispatch Contacts
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -381,9 +371,9 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Hub Name */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Pickup Hub Identifier <span className="text-rose-500">*</span>
             </label>
@@ -399,7 +389,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Contact Person */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Dispatch Contact Person <span className="text-rose-500">*</span>
             </label>
@@ -415,7 +405,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Contact Phone */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Dispatch Phone Number <span className="text-rose-500">*</span>
             </label>
@@ -431,7 +421,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
           </div>
 
           {/* Pickup Address */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Pickup & Return Address <span className="text-rose-500">*</span>
             </label>
@@ -449,7 +439,7 @@ export function ShippingRulesForm({ initialSettings }: { initialSettings: Shippi
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Shipping and delivery policies sync in real-time across checkout and fulfillment.</span>
         </div>

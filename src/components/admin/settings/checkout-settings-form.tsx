@@ -60,7 +60,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
   const [ttlMinutes, setTtlMinutes] = useState(initialSettings.onlineReservationTtlMinutes);
 
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -82,25 +82,15 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Checkout & COD Rules
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Configure cash on delivery restrictions, customer verification, and stock hold timing
-        </p>
-      </div>
-
       {/* ── SECTION 1: COD RISK & FRAUD GOVERNANCE ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <ShieldAlert className="size-4.5 text-amber-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <ShieldAlert className="size-4 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Cash on Delivery (COD) Rules
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -110,9 +100,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Max COD Order Ceiling */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Maximum COD Order Ceiling (৳) <span className="text-rose-500">*</span>
             </label>
@@ -130,7 +120,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
 
           {/* First-Time Buyer OTP Verification */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Verify First-Time Buyers via Phone OTP
@@ -166,11 +156,11 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
 
           {/* Upfront Delivery Charge for COD Orders */}
-          <div className="space-y-4 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4 sm:col-span-2">
+          <div className="space-y-3 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-3.5 sm:col-span-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700">
-                  <Banknote className="size-4 text-emerald-600" />
+                <div className="flex size-7.5 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700">
+                  <Banknote className="size-3.5 text-emerald-600" />
                 </div>
                 <div>
                   <h4 className="text-xs font-semibold text-neutral-900 tracking-wide uppercase">
@@ -209,8 +199,8 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
             </div>
 
             {requireAdvance && (
-              <div className="grid gap-4 pt-3 sm:grid-cols-2 border-t border-neutral-200/60 animate-in fade-in">
-                <div className="space-y-1.5">
+              <div className="grid gap-3 pt-2.5 sm:grid-cols-2 border-t border-neutral-200/60 animate-in fade-in">
+                <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">
                     Advance Fee Inside Dhaka (৳)
                   </label>
@@ -224,7 +214,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
                   />
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-1">
                   <label className="text-xs font-semibold text-neutral-700">
                     Advance Fee Outside Dhaka (৳)
                   </label>
@@ -242,7 +232,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
 
           {/* COD Notice Text */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Storefront COD Verification Notice
             </label>
@@ -258,13 +248,13 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
 
       {/* ── SECTION 2: BASKET LIMITS & GUEST CHECKOUT ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <ShoppingBag className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <ShoppingBag className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Order Value & Guest Checkout
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -274,9 +264,9 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Minimum Order Value */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Minimum Checkout Order Value (৳)
             </label>
@@ -295,7 +285,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
 
           {/* Allow Guest Checkout */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">Allow Guest Checkout</span>
               <p className="text-[11px] text-neutral-500">
@@ -332,13 +322,13 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
 
       {/* ── SECTION 3: INVENTORY RESERVATION HOLD TTL ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Hourglass className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Hourglass className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Online Payment Stock Hold Duration
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -348,8 +338,8 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
           </div>
         </CardHeader>
 
-        <CardContent className="p-6">
-          <div className="max-w-md space-y-1.5">
+        <CardContent className="p-5">
+          <div className="max-w-md space-y-1">
             <label className="text-xs font-semibold text-neutral-700 tracking-wide uppercase">
               Reservation Duration (Minutes) <span className="text-rose-500">*</span>
             </label>
@@ -373,7 +363,7 @@ export function CheckoutSettingsForm({ initialSettings }: { initialSettings: Che
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Checkout rules apply immediately to new customer checkout sessions.</span>
         </div>

@@ -10,9 +10,5 @@ export default async function AdminShippingRulesPage() {
 
   const { settings } = await getShippingRulesSettings();
 
-  return (
-    <div className="space-y-6">
-      <ShippingRulesForm initialSettings={settings} />
-    </div>
-  );
+  return <ShippingRulesForm initialSettings={settings} />;
 }

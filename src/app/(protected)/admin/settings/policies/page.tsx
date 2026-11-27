@@ -10,9 +10,5 @@ export default async function AdminInventoryPoliciesSettingsPage() {
 
   const { settings } = await getInventoryReturnSettings();
 
-  return (
-    <div className="space-y-6">
-      <InventoryReturnForm initialSettings={settings} />
-    </div>
-  );
+  return <InventoryReturnForm initialSettings={settings} />;
 }

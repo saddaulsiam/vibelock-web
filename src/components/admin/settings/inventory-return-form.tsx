@@ -67,7 +67,7 @@ export function InventoryReturnForm({
   const [autoRestock, setAutoRestock] = useState(initialSettings.autoRestockCompletedReturns);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -89,25 +89,15 @@ export function InventoryReturnForm({
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold tracking-tight text-neutral-900">
-          Inventory & Return Policies
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Configure stock threshold warnings, customer return windows, and restocking workflows
-        </p>
-      </div>
-
       {/* ── SECTION 1: INVENTORY INTELLIGENCE & ALERT THRESHOLDS ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Boxes className="size-4.5 text-amber-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Boxes className="size-4 text-amber-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Inventory Thresholds & Restock Alerts
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -117,9 +107,9 @@ export function InventoryReturnForm({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 p-6">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
               <label
                 htmlFor="lowStockThreshold"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -143,7 +133,7 @@ export function InventoryReturnForm({
               )}
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label
                 htmlFor="criticalStockThreshold"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -169,7 +159,7 @@ export function InventoryReturnForm({
           </div>
 
           {/* Email Alert Settings */}
-          <div className="space-y-4 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-4">
+          <div className="space-y-3 rounded-xl border border-neutral-200/80 bg-neutral-50/50 p-3.5">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-xs font-semibold tracking-wide text-neutral-900 uppercase">
@@ -206,7 +196,7 @@ export function InventoryReturnForm({
             </div>
 
             {notifyLowStock && (
-              <div className="animate-in fade-in space-y-1.5 border-t border-neutral-200/60 pt-3">
+              <div className="animate-in fade-in space-y-1 border-t border-neutral-200/60 pt-2.5">
                 <label
                   htmlFor="lowStockNotificationEmail"
                   className="flex items-center gap-1.5 text-xs font-semibold text-neutral-700"
@@ -228,7 +218,7 @@ export function InventoryReturnForm({
 
           {/* Storefront visibility */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <div>
                 <span className="text-xs font-semibold text-neutral-900">Allow Backorders</span>
                 <p className="text-[11px] text-neutral-500">
@@ -257,7 +247,7 @@ export function InventoryReturnForm({
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <div>
                 <span className="text-xs font-semibold text-neutral-900">
                   Auto-Hide Sold-Out Items
@@ -297,13 +287,13 @@ export function InventoryReturnForm({
 
       {/* ── SECTION 2: CUSTOMER RETURN POLICIES ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <RotateCcw className="size-4.5 text-purple-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <RotateCcw className="size-4 text-purple-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Customer Return Window & Conditions
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -313,8 +303,8 @@ export function InventoryReturnForm({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 p-6">
-          <div className="space-y-1.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="space-y-1">
             <label
               htmlFor="returnWindowDays"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -340,7 +330,7 @@ export function InventoryReturnForm({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <div>
                 <span className="text-xs font-semibold text-neutral-900">Require Photo Proof</span>
                 <p className="text-[11px] text-neutral-500">
@@ -373,7 +363,7 @@ export function InventoryReturnForm({
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+            <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <div>
                 <span className="text-xs font-semibold text-neutral-900">
                   Allow Partial Order Returns
@@ -410,7 +400,7 @@ export function InventoryReturnForm({
           </div>
 
           {/* Non-returnable categories */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="nonReturnableCategories"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -431,13 +421,13 @@ export function InventoryReturnForm({
 
       {/* ── SECTION 3: RETURN FEES & DEDUCTIONS ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <ShieldCheck className="size-4.5 text-emerald-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <ShieldCheck className="size-4 text-emerald-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Refund Deductions & Processing
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -447,9 +437,9 @@ export function InventoryReturnForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Deduct shipping */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 sm:col-span-2">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Deduct Courier Delivery Fee From Refund
@@ -484,7 +474,7 @@ export function InventoryReturnForm({
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="returnProcessingFee"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -509,7 +499,7 @@ export function InventoryReturnForm({
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="restockLocation"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -528,7 +518,7 @@ export function InventoryReturnForm({
           </div>
 
           {/* Auto restock */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 sm:col-span-2">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Auto-Restock Returned Items
@@ -566,7 +556,7 @@ export function InventoryReturnForm({
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER ── */}
-      <div className="flex flex-col gap-3 rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-xl border border-neutral-200/80 bg-white p-3.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <div className="text-xs text-neutral-500">
           Inventory thresholds and return conditions are saved and applied to customer claims.
         </div>

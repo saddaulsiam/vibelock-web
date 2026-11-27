@@ -89,19 +89,9 @@ export default async function AdminPaymentSettingsPage() {
   const overview = await getPaymentSettingsOverview();
 
   return (
-    <div className="space-y-6">
-      {/* ── TOP SECTION CONTEXT ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold tracking-tight text-neutral-900">
-          Payment Methods
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Enable or disable payment gateways and settlement channels for customer checkout
-        </p>
-      </div>
-
+    <div className="space-y-4">
       {/* ── PAYMENT METHOD CARDS (3-COLUMN RESPONSIVE GRID) ── */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-3">
         {overview.methods.map((method) => {
           const visual = getMethodVisualConfig(method.code);
           const Icon = visual.icon;
@@ -114,19 +104,19 @@ export default async function AdminPaymentSettingsPage() {
               className="border-neutral-200/80 bg-white shadow-2xs rounded-xl flex flex-col justify-between overflow-hidden transition-all duration-200 hover:shadow-md"
             >
               <div>
-                <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-5 pb-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4">
+                  <div className="flex items-start justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
                       <div
                         className={cn(
-                          "flex size-11 shrink-0 items-center justify-center rounded-xl border shadow-2xs",
+                          "flex size-9 shrink-0 items-center justify-center rounded-lg border shadow-2xs",
                           visual.avatarBg
                         )}
                       >
-                        <Icon className="size-5.5" />
+                        <Icon className="size-4.5" />
                       </div>
                       <div>
-                        <CardTitle className="text-base font-bold tracking-tight text-neutral-900">
+                        <CardTitle className="text-sm font-bold tracking-tight text-neutral-900">
                           {method.name}
                         </CardTitle>
                         <CardDescription className="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -138,17 +128,17 @@ export default async function AdminPaymentSettingsPage() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4 p-5 text-sm">
-                  <p className="text-xs leading-relaxed text-neutral-600 min-h-10">
+                <CardContent className="space-y-3 p-4 text-sm">
+                  <p className="text-xs leading-relaxed text-neutral-600">
                     {method.description}
                   </p>
 
                   {method.environmentMode && (
-                    <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 px-3 py-2 text-xs">
+                    <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 px-3 py-1.5 text-xs">
                       <span className="font-medium text-neutral-500">Environment</span>
                       <span
                         className={cn(
-                          "rounded border px-2 py-0.5 font-mono text-[11px] font-bold uppercase",
+                          "rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase",
                           method.environmentMode === "production"
                             ? "border-emerald-300 bg-emerald-50 text-emerald-800"
                             : "border-amber-300 bg-amber-50 text-amber-800"
@@ -162,7 +152,7 @@ export default async function AdminPaymentSettingsPage() {
               </div>
 
               {/* Card Action Control Footer */}
-              <div className="border-t border-neutral-200/80 bg-neutral-50/50 p-4">
+              <div className="border-t border-neutral-200/80 bg-neutral-50/50 p-3.5">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-neutral-700">Checkout Status</span>
                   {canToggle ? (

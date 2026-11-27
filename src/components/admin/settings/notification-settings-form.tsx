@@ -70,7 +70,7 @@ export function NotificationSettingsForm({
   const [adminEmail, setAdminEmail] = useState(initialSettings.enableAdminOrderAlertEmail);
 
   return (
-    <form action={action} className="space-y-6">
+    <form action={action} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -92,25 +92,15 @@ export function NotificationSettingsForm({
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Notifications & SMS Settings
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Manage SMS carrier gateways, automated parcel milestones, and manager email alerts
-        </p>
-      </div>
-
       {/* ── SECTION 1: SMS GATEWAY RAIL & SENDER CONFIG ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Smartphone className="size-4.5 text-purple-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Smartphone className="size-4 text-purple-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 SMS Gateway Provider & Credentials
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -120,14 +110,14 @@ export function NotificationSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Provider Selection */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Primary SMS Gateway Provider
             </label>
             <input type="hidden" name="smsProvider" value={provider} />
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[
                 { id: "BULKSMSBD", name: "BulkSMSBD", sub: "REST API v2" },
                 { id: "GREENWEB", name: "Greenweb BD", sub: "HTTP Gateway" },
@@ -139,7 +129,7 @@ export function NotificationSettingsForm({
                   type="button"
                   onClick={() => setProvider(p.id as typeof provider)}
                   className={cn(
-                    "rounded-lg border p-3 text-left text-xs transition-all",
+                    "rounded-lg border p-2.5 text-left text-xs transition-all",
                     provider === p.id
                       ? "border-neutral-900 bg-neutral-900 text-white shadow-2xs"
                       : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50"
@@ -160,7 +150,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Sender ID */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               SMS Sender ID (Masking) <span className="text-rose-500">*</span>
             </label>
@@ -178,7 +168,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Gateway API Key */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Gateway API Key (Optional Override)
             </label>
@@ -192,7 +182,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Gateway API URL */}
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Gateway API Endpoint URL (Optional Override)
             </label>
@@ -208,13 +198,13 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 2: CUSTOMER TRANSACTIONAL SMS LIFECYCLE ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <MessageSquare className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <MessageSquare className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Customer SMS Notifications
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -224,9 +214,9 @@ export function NotificationSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-4 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
           {/* Trigger 1: Order Placed */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
             <div className="flex items-center">
               <input
@@ -255,7 +245,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 2: Order Dispatched with Tracking */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <span className="text-xs font-semibold text-neutral-900">
               Courier Dispatch & Tracking Link
             </span>
@@ -286,7 +276,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 3: Out for Delivery */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <span className="text-xs font-semibold text-neutral-900">Out for Delivery Alert</span>
             <div className="flex items-center">
               <input
@@ -315,7 +305,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Trigger 4: Return Approved */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
             <div className="flex items-center">
               <input
@@ -347,14 +337,14 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 3: STORE MANAGER HIGH-VALUE ORDER RADAR ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-                <BellRing className="size-4.5 text-amber-600" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <BellRing className="size-4 text-amber-600" />
               </div>
               <div>
-                <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+                <CardTitle className="text-sm font-bold text-neutral-900">
                   Manager SMS Alerts & High-Value Orders
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
@@ -391,9 +381,9 @@ export function NotificationSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Admin Recipient Phone */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Manager Alert Phone Number <span className="text-rose-500">*</span>
             </label>
@@ -412,7 +402,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* High-Value Threshold */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               High-Value Order Threshold (৳) <span className="text-rose-500">*</span>
             </label>
@@ -433,7 +423,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Low SMS Balance Warning Toggle */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 sm:col-span-2">
             <div>
               <span className="text-xs font-semibold text-neutral-800">
                 SMS Gateway Low-Credit Balance Alert
@@ -472,13 +462,13 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 4: EMAIL NOTIFICATION CHANNELS ── */}
       <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Mail className="size-4.5 text-vl-cyan-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Mail className="size-4 text-vl-cyan-600" />
             </div>
             <div>
-              <CardTitle className="text-sm sm:text-base font-bold text-neutral-900">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Email Dispatch Channels
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -488,9 +478,9 @@ export function NotificationSettingsForm({
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Admin Notification Email */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Store Order Alert Email <span className="text-rose-500">*</span>
             </label>
@@ -509,7 +499,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Support Reply-To Email */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">
               Support Reply-To Email <span className="text-rose-500">*</span>
             </label>
@@ -528,7 +518,7 @@ export function NotificationSettingsForm({
           </div>
 
           {/* Email Toggles */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-800">
                 Customer Order Confirmation Email
@@ -561,7 +551,7 @@ export function NotificationSettingsForm({
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-800">Manager Order Alert Email</span>
               <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders</p>
@@ -595,7 +585,7 @@ export function NotificationSettingsForm({
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Notification and messaging channel updates take effect immediately.</span>
         </div>

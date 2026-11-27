@@ -8,7 +8,7 @@ export default async function AdminSettingsLayout({ children }: { children: Reac
   await requireRole("ADMIN");
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6 pb-12">
+    <div className="mx-auto max-w-6xl space-y-4 pb-8">
       <AdminPageHeader
         eyebrow="Operations / Store Infrastructure"
         title="Store Settings"

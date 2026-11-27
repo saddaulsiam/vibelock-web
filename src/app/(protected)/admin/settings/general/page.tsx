@@ -10,9 +10,5 @@ export default async function AdminGeneralSettingsPage() {
 
   const { settings } = await getGeneralStoreSettings();
 
-  return (
-    <div className="space-y-6">
-      <GeneralSettingsForm initialSettings={settings} />
-    </div>
-  );
+  return <GeneralSettingsForm initialSettings={settings} />;
 }

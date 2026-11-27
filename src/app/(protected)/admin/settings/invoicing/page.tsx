@@ -10,9 +10,5 @@ export default async function AdminTaxInvoicingSettingsPage() {
 
   const { settings } = await getTaxInvoiceSettings();
 
-  return (
-    <div className="space-y-6">
-      <TaxInvoiceForm initialSettings={settings} />
-    </div>
-  );
+  return <TaxInvoiceForm initialSettings={settings} />;
 }

@@ -58,7 +58,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
   const [digitalSeal, setDigitalSeal] = useState(initialSettings.showDigitalSeal);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-4">
       {/* ── ALERTS (ERROR & SUCCESS) ── */}
       {state.error && (
         <div className="flex items-start gap-3 rounded-xl border border-rose-200 bg-rose-50/90 p-4 text-sm text-rose-900 shadow-2xs">
@@ -80,26 +80,16 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div className="border-b border-neutral-200/80 pb-4">
-        <h3 className="text-base font-bold text-neutral-900 tracking-tight">
-          Tax & Invoicing Compliance
-        </h3>
-        <p className="text-xs text-neutral-500">
-          Configure VAT calculation rates, NBR registration details, and Mushak-6.3 invoice formatting
-        </p>
-      </div>
-
       {/* ── SECTION 1: VAT & TAX CALCULATION RULES ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-                <Percent className="size-4.5 text-emerald-600" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+                <Percent className="size-4 text-emerald-600" />
               </div>
               <div>
-                <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+                <CardTitle className="text-sm font-bold text-neutral-900">
                   VAT & Tax Calculation Rules
                 </CardTitle>
                 <CardDescription className="text-xs text-neutral-500">
@@ -132,9 +122,9 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
           {/* Rate Percent */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="vatRatePercent"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -162,7 +152,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           </div>
 
           {/* Pricing Tax Mode */}
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="taxCalculationMode"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -182,7 +172,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           </div>
 
           {/* Apply Tax to Shipping */}
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5 sm:col-span-2">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3 sm:col-span-2">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Apply VAT to Courier Delivery Charges
@@ -223,13 +213,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
 
       {/* ── SECTION 2: NBR REGISTRATION & TAX IDENTITY ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Building2 className="text-vl-cyan-600 size-4.5" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Building2 className="text-vl-cyan-600 size-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 NBR Registration & Tax Identity
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -239,8 +229,8 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-5 p-6 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
+        <CardContent className="grid gap-4 p-5 sm:grid-cols-2">
+          <div className="space-y-1 sm:col-span-2">
             <label
               htmlFor="registeredBusinessName"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -258,7 +248,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="binNumber"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -275,7 +265,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="taxCircle"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -292,7 +282,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="taxZone"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -309,7 +299,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             />
           </div>
 
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-2">
             <label
               htmlFor="registeredOfficeAddress"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -331,13 +321,13 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
 
       {/* ── SECTION 3: MUSHAK 6.3 & INVOICE FORMATTING ── */}
       <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
-        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-              <Receipt className="size-4.5 text-purple-600" />
+        <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
+              <Receipt className="size-4 text-purple-600" />
             </div>
             <div>
-              <CardTitle className="text-sm font-bold text-neutral-900 sm:text-base">
+              <CardTitle className="text-sm font-bold text-neutral-900">
                 Mushak 6.3 & Invoice Layout
               </CardTitle>
               <CardDescription className="text-xs text-neutral-500">
@@ -347,8 +337,8 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6 p-6">
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+        <CardContent className="space-y-4 p-5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Mushak 6.3 (মূসক-৬.৩) Compliance Format
@@ -383,8 +373,8 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
               <label
                 htmlFor="invoicePrefix"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -402,7 +392,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
               />
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <label
                 htmlFor="customerCareContact"
                 className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -421,7 +411,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </div>
 
-          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3.5">
+          <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
             <div>
               <span className="text-xs font-semibold text-neutral-900">
                 Display Verified Digital Stamp / Seal
@@ -452,7 +442,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
             </div>
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <label
               htmlFor="invoiceFooterNote"
               className="text-xs font-semibold tracking-wide text-neutral-700 uppercase"
@@ -473,7 +463,7 @@ export function TaxInvoiceForm({ initialSettings }: { initialSettings: TaxInvoic
       </Card>
 
       {/* ── BOTTOM ACTION FOOTER (NATURAL FLOW, NO FLOATING) ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-4 shadow-2xs">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between rounded-xl border border-neutral-200/80 bg-white p-3.5 sm:px-4 shadow-2xs">
         <div className="text-xs text-neutral-500">
           <span>Tax rates and invoice layout changes apply to all future orders and receipts.</span>
         </div>

@@ -10,9 +10,5 @@ export default async function AdminCheckoutSettingsPage() {
 
   const { settings } = await getCheckoutSettings();
 
-  return (
-    <div className="space-y-6">
-      <CheckoutSettingsForm initialSettings={settings} />
-    </div>
-  );
+  return <CheckoutSettingsForm initialSettings={settings} />;
 }
