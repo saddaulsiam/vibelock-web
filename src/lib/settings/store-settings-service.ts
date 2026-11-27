@@ -22,11 +22,16 @@ export const STORE_SETTING_KEYS = {
 
 export const MaintenanceModeSchema = z.object({
   enabled: z.boolean().default(false),
-  noticeTitle: z.string().min(1, "Notice title is required").default("Store Under Scheduled Maintenance"),
+  noticeTitle: z
+    .string()
+    .min(1, "Notice title is required")
+    .default("Store Under Scheduled Maintenance"),
   noticeMessage: z
     .string()
     .min(1, "Notice message is required")
-    .default("We are upgrading our infrastructure to serve you better. We will be back online shortly."),
+    .default(
+      "We are upgrading our infrastructure to serve you better. We will be back online shortly."
+    ),
   allowAdminBypass: z.boolean().default(true),
 });
 
@@ -35,13 +40,18 @@ export const HolidayModeSchema = z.object({
   bannerText: z
     .string()
     .min(1, "Banner announcement is required")
-    .default("Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays."),
+    .default(
+      "Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays."
+    ),
   expectedDispatchDate: z.string().optional().default(""),
 });
 
 export const GeneralStoreSettingsSchema = z.object({
   storeName: z.string().min(1, "Store name is required").default("VibeLock"),
-  legalBusinessName: z.string().min(1, "Legal business name is required").default("VibeLock Apparel Ltd."),
+  legalBusinessName: z
+    .string()
+    .min(1, "Legal business name is required")
+    .default("VibeLock Apparel Ltd."),
   dbidNumber: z.string().optional().default(""),
   tradeLicenseNumber: z.string().optional().default(""),
   binNumber: z.string().optional().default(""),
@@ -57,12 +67,14 @@ export const GeneralStoreSettingsSchema = z.object({
   maintenanceMode: MaintenanceModeSchema.default({
     enabled: false,
     noticeTitle: "Store Under Scheduled Maintenance",
-    noticeMessage: "We are upgrading our infrastructure to serve you better. We will be back online shortly.",
+    noticeMessage:
+      "We are upgrading our infrastructure to serve you better. We will be back online shortly.",
     allowAdminBypass: true,
   }),
   holidayMode: HolidayModeSchema.default({
     enabled: false,
-    bannerText: "Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays.",
+    bannerText:
+      "Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays.",
     expectedDispatchDate: "",
   }),
 });
@@ -88,12 +100,14 @@ export function getDefaultGeneralStoreSettings(): GeneralStoreSettings {
     maintenanceMode: {
       enabled: false,
       noticeTitle: "Store Under Scheduled Maintenance",
-      noticeMessage: "We are upgrading our infrastructure to serve you better. We will be back online shortly.",
+      noticeMessage:
+        "We are upgrading our infrastructure to serve you better. We will be back online shortly.",
       allowAdminBypass: true,
     },
     holidayMode: {
       enabled: false,
-      bannerText: "Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays.",
+      bannerText:
+        "Holiday Notice: Deliveries will be temporarily paused and resume right after the holidays.",
       expectedDispatchDate: "",
     },
   };
@@ -130,7 +144,10 @@ export async function getStoreSetting<T>(
 
     const parsed = schema.safeParse(record.value);
     if (!parsed.success) {
-      console.warn(`[StoreSettings] Corrupted JSON payload for key ${key}, falling back to defaults:`, parsed.error);
+      console.warn(
+        `[StoreSettings] Corrupted JSON payload for key ${key}, falling back to defaults:`,
+        parsed.error
+      );
       return { data: fallback, isPersisted: false, hasStore: true };
     }
 
@@ -214,6 +231,13 @@ export async function updateStoreSetting<T>(
 
     return { success: true, data: validatedData };
   } catch (err: unknown) {
+    if (isTableMissingError(err)) {
+      const message =
+        "The database table 'StoreSetting' has not been created yet. Please apply pending migrations (run 'npm run db:migrate:deploy').";
+      console.error(`[StoreSettings] Missing table for ${key}:`, message);
+      return { success: false, error: message };
+    }
+
     const message = err instanceof Error ? err.message : "Database update failed";
     console.error(`[StoreSettings] Failed to persist setting ${key}:`, message);
     return { success: false, error: message };
@@ -229,7 +253,11 @@ export async function getGeneralStoreSettings(): Promise<{
   hasStore: boolean;
 }> {
   const fallback = getDefaultGeneralStoreSettings();
-  const res = await getStoreSetting(STORE_SETTING_KEYS.GENERAL, GeneralStoreSettingsSchema, fallback);
+  const res = await getStoreSetting(
+    STORE_SETTING_KEYS.GENERAL,
+    GeneralStoreSettingsSchema,
+    fallback
+  );
   return {
     settings: res.data,
     isPersisted: res.isPersisted,

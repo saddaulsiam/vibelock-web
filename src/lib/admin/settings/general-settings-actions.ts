@@ -109,6 +109,6 @@ export async function updateGeneralSettingsAction(
 
   return {
     error: null,
-    message: "Store identity, legal compliance, and emergency settings updated successfully.",
+    message: "Settings updated successfully.",
   };
 }
