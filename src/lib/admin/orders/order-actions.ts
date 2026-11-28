@@ -16,6 +16,7 @@ import {
   checkOnlinePaymentFulfillmentEligibility,
   type PaymentFulfillmentCheckTarget,
 } from "@/lib/payment/fulfillment";
+import { reconcileCancelledOrderLoyalty } from "@/lib/orders/loyalty-reconciliation";
 
 let isPaymentCaptureTableAvailable: boolean | null = null;
 
@@ -148,6 +149,7 @@ export async function updateOrderStatusAction(
         await inventoryService.cancelOrderInventory(id, tx);
         const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
         await releaseOrderCoupon(id, tx);
+        await reconcileCancelledOrderLoyalty(order, tx);
         await tx.orderHistory.create({
           data: {
             orderId: id,
@@ -192,6 +194,10 @@ export async function updateOrderStatusAction(
         where: { id },
         data: { status },
       });
+
+      if (status === "RETURNED") {
+        await reconcileCancelledOrderLoyalty(order, tx, "returned");
+      }
 
       await tx.orderHistory.create({
         data: {
@@ -295,6 +301,10 @@ export async function updateOrderPaymentStatusAction(
         where: { id },
         data: { paymentStatus },
       });
+
+      if (paymentStatus === "REFUNDED") {
+        await reconcileCancelledOrderLoyalty(order, tx, "refunded");
+      }
 
       // We use the OrderHistory table to track both order and payment status changes
       // as there isn't a separate PaymentHistory table.
@@ -422,6 +432,7 @@ export async function quickUpdateOrderStatusAction(input: {
         await inventoryService.cancelOrderInventory(orderId, tx);
         const { releaseOrderCoupon } = await import("@/lib/checkout/coupons");
         await releaseOrderCoupon(orderId, tx);
+        await reconcileCancelledOrderLoyalty(order, tx);
         await tx.orderHistory.create({
           data: {
             orderId,
@@ -466,6 +477,10 @@ export async function quickUpdateOrderStatusAction(input: {
         where: { id: orderId },
         data: { status },
       });
+
+      if (status === "RETURNED") {
+        await reconcileCancelledOrderLoyalty(order, tx, "returned");
+      }
 
       await tx.orderHistory.create({
         data: {

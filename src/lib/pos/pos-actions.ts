@@ -498,13 +498,17 @@ export async function createPosOrderAction(
           (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
 
         if (loyaltyEnabled) {
-          const earnedPointsThisOrder = Math.floor(total / Math.max(1, spendAmountPerPoint));
-
-          // Fetch pre-existing account to compute exact balances without double-counting
+          // Fetch pre-existing account to compute exact balances and tier multiplier without double-counting
           const existingAccount = await tx.loyaltyAccount.findUnique({
             where: { phone: normalizedPhone },
-            select: { id: true, points: true, lifetimePoints: true, lifetimeSpend: true },
+            select: { id: true, points: true, lifetimePoints: true, lifetimeSpend: true, tier: true },
           });
+
+          const currentTier = existingAccount?.tier ?? "BRONZE";
+          const { calculateTierEarnedPoints, determineLoyaltyTier } = await import(
+            "@/lib/settings/loyalty-settings"
+          );
+          const earnedPointsThisOrder = calculateTierEarnedPoints(total, currentTier, spendAmountPerPoint);
 
           const previousPoints = existingAccount?.points ?? 0;
           const balanceAfterEarn = previousPoints + earnedPointsThisOrder;
@@ -513,10 +517,11 @@ export async function createPosOrderAction(
           const newLifetimeSpend =
             (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
 
-          let newTier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
-          if (newLifetimeSpend >= platinumThreshold) newTier = "PLATINUM";
-          else if (newLifetimeSpend >= goldThreshold) newTier = "GOLD";
-          else if (newLifetimeSpend >= silverThreshold) newTier = "SILVER";
+          const newTier = determineLoyaltyTier(newLifetimeSpend, {
+            platinumThreshold,
+            goldThreshold,
+            silverThreshold,
+          });
 
           // Upsert LoyaltyAccount — link to userId if we can find the registered user
           const linkedUser = await tx.user.findFirst({

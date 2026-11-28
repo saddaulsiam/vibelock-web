@@ -19,6 +19,7 @@ import {
   CustomerAbandonedCartCard,
   CustomerBackButton,
   CustomerDetailHeaderActions,
+  CustomerLoyaltyCard,
   CustomerPreferencesCard,
   CustomerReviewsCard,
   CustomerRiskWidget,
@@ -87,6 +88,7 @@ export default async function AdminCustomerDetailsPage({
     codBlockReason,
     isAccountSuspended,
     suspensionReason,
+    loyalty,
     summary,
     totalOrderPages,
   } = result;
@@ -227,6 +229,13 @@ export default async function AdminCustomerDetailsPage({
           <p className="mt-1 text-[11px] text-amber-600">Returned or refunded</p>
         </div>
       </div>
+
+      {/* 2.5 Customer Loyalty & Rewards Ledger */}
+      <CustomerLoyaltyCard
+        customerId={customer.id}
+        customerName={customer.name}
+        loyalty={loyalty}
+      />
 
       {/* 3. Customer Shopping Preferences & Size Insights */}
       <CustomerPreferencesCard preferences={preferences} />

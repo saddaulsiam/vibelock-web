@@ -7,6 +7,7 @@ import { getCustomerRiskProfile, type CombinedCustomerRiskProfile } from "./cust
 import type {
   AdminCustomerDetailOrder,
   AdminCustomerDetailResult,
+  AdminCustomerLoyaltyInfo,
   AdminCustomerReviewItem,
   AdminCustomerStaffNote,
 } from "./customer-query-types";
@@ -148,8 +149,8 @@ export async function getAdminCustomerById(
     ordersRaw,
   });
 
-  // Fetch Audit Logs, Cart, and Reviews in parallel
-  const [allAuditLogs, cartData, reviewData] = await Promise.all([
+  // Fetch Audit Logs, Cart, Reviews, and Loyalty Account in parallel
+  const [allAuditLogs, cartData, reviewData, loyaltyData] = await Promise.all([
     prisma.auditLog.findMany({
       where: {
         entityType: "Customer",
@@ -206,6 +207,26 @@ export async function getAdminCustomerById(
       },
       orderBy: { createdAt: "desc" },
       take: 20,
+    }),
+    prisma.loyaltyAccount.findFirst({
+      where: {
+        OR: [
+          { userId: customer.id },
+          ...(customer.phone ? [{ phone: customer.phone }] : []),
+          ...(resolvedPhone ? [{ phone: resolvedPhone }] : []),
+        ],
+      },
+      include: {
+        transactions: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          include: {
+            order: {
+              select: { orderNumber: true },
+            },
+          },
+        },
+      },
     }),
   ]);
 
@@ -282,6 +303,25 @@ export async function getAdminCustomerById(
     allAuditLogs,
   });
 
+  const loyalty: AdminCustomerLoyaltyInfo | null = loyaltyData
+    ? {
+        id: loyaltyData.id,
+        points: loyaltyData.points,
+        lifetimePoints: loyaltyData.lifetimePoints,
+        lifetimeSpend: Number(loyaltyData.lifetimeSpend),
+        tier: loyaltyData.tier,
+        recentTransactions: loyaltyData.transactions.map((t) => ({
+          id: t.id,
+          type: t.type,
+          points: t.points,
+          balanceAfter: t.balanceAfter,
+          reason: t.reason,
+          createdAt: t.createdAt,
+          orderNumber: t.order?.orderNumber ?? null,
+        })),
+      }
+    : null;
+
   return {
     customer: {
       ...customer,
@@ -299,6 +339,7 @@ export async function getAdminCustomerById(
     codBlockReason,
     isAccountSuspended,
     suspensionReason,
+    loyalty,
     summary: {
       totalOrders: orderCount,
       paidOrders: paidSummary._count,

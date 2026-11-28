@@ -1,7 +1,46 @@
 import "server-only";
 
 import { z } from "zod";
+import type { LoyaltyTier } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+
+export const TIER_MULTIPLIERS: Record<LoyaltyTier, number> = {
+  BRONZE: 1.0,
+  SILVER: 1.25,
+  GOLD: 1.5,
+  PLATINUM: 2.0,
+};
+
+/**
+ * Calculates points earned on an order spend, taking VIP tier multiplier into account.
+ */
+export function calculateTierEarnedPoints(
+  spendBDT: number,
+  tier: LoyaltyTier = "BRONZE",
+  spendAmountPerPoint = 100
+): number {
+  if (spendBDT <= 0 || spendAmountPerPoint <= 0) return 0;
+  const basePoints = Math.floor(spendBDT / spendAmountPerPoint);
+  const multiplier = TIER_MULTIPLIERS[tier] ?? 1.0;
+  return Math.floor(basePoints * multiplier);
+}
+
+/**
+ * Authoritatively determines customer's VIP tier from their lifetime spend.
+ */
+export function determineLoyaltyTier(
+  lifetimeSpend: number,
+  thresholds: {
+    silverThreshold: number;
+    goldThreshold: number;
+    platinumThreshold: number;
+  }
+): LoyaltyTier {
+  if (lifetimeSpend >= thresholds.platinumThreshold) return "PLATINUM";
+  if (lifetimeSpend >= thresholds.goldThreshold) return "GOLD";
+  if (lifetimeSpend >= thresholds.silverThreshold) return "SILVER";
+  return "BRONZE";
+}
 
 export const LoyaltyProgramSettingsSchema = z.object({
   enabled: z.boolean().default(true),
@@ -179,3 +218,67 @@ export async function updateLoyaltySettings(
     };
   }
 }
+
+export interface StorefrontLoyaltyInfo {
+  enabled: boolean;
+  enableOnline: boolean;
+  points: number;
+  tier: LoyaltyTier;
+  pointRedemptionValue: number;
+  minPointsToRedeem: number;
+  maxCartDiscountPercentage: number;
+  tierMultiplier: number;
+  isRedemptionEligible: boolean;
+}
+
+/**
+ * Retrieves storefront customer's loyalty standing and rules for checkout.
+ */
+export async function getStorefrontLoyaltyInfo(
+  userId?: string | null,
+  phone?: string | null
+): Promise<StorefrontLoyaltyInfo | null> {
+  if (!userId && !phone) return null;
+
+  try {
+    const { settings } = await getLoyaltySettings();
+    if (!settings.enabled || !settings.enableOnline) {
+      return null;
+    }
+
+    const account = await prisma.loyaltyAccount.findFirst({
+      where: userId
+        ? {
+            OR: [
+              { userId },
+              ...(phone ? [{ phone, userId: null }] : []),
+            ],
+          }
+        : { phone: phone! },
+      select: {
+        points: true,
+        tier: true,
+      },
+    });
+
+    const points = account?.points ?? 0;
+    const tier = account?.tier ?? "BRONZE";
+    const isRedemptionEligible = points >= settings.minPointsToRedeem && points > 0;
+
+    return {
+      enabled: settings.enabled,
+      enableOnline: settings.enableOnline,
+      points,
+      tier,
+      pointRedemptionValue: settings.pointRedemptionValue,
+      minPointsToRedeem: settings.minPointsToRedeem,
+      maxCartDiscountPercentage: settings.maxCartDiscountPercentage,
+      tierMultiplier: TIER_MULTIPLIERS[tier] ?? 1.0,
+      isRedemptionEligible,
+    };
+  } catch (err) {
+    console.warn("[Loyalty] Failed to query storefront loyalty info:", err);
+    return null;
+  }
+}
+

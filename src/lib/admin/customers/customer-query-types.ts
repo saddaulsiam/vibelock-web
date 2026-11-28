@@ -147,6 +147,7 @@ export interface AdminCustomerDetailResult {
   codBlockReason?: string | null;
   isAccountSuspended: boolean;
   suspensionReason?: string | null;
+  loyalty: AdminCustomerLoyaltyInfo | null;
   summary: {
     totalOrders: number;
     paidOrders: number;
@@ -157,4 +158,21 @@ export interface AdminCustomerDetailResult {
   };
   totalOrderPages: number;
   page: number;
+}
+
+export interface AdminCustomerLoyaltyInfo {
+  id: string;
+  points: number;
+  lifetimePoints: number;
+  lifetimeSpend: number;
+  tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM";
+  recentTransactions: Array<{
+    id: string;
+    type: "EARNED" | "REDEEMED" | "EXPIRED" | "ADJUSTED" | "REFUNDED";
+    points: number;
+    balanceAfter: number;
+    reason: string | null;
+    createdAt: Date;
+    orderNumber?: string | null;
+  }>;
 }

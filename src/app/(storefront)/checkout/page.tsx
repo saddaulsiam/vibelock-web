@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getCart } from "@/lib/cart/queries";
 import { getStorefrontPaymentMethods } from "@/lib/settings/payment-settings";
 import { getCheckoutSettings } from "@/lib/settings/checkout-settings";
+import { getStorefrontLoyaltyInfo } from "@/lib/settings/loyalty-settings";
 import { CheckoutForm } from "@/components/storefront/checkout/checkout-form";
 import { MetaInitiateCheckout } from "@/components/storefront/analytics/meta-initiate-checkout";
 import { Container } from "@/components/shared/container";
@@ -42,9 +43,10 @@ export default async function CheckoutPage() {
     redirect("/cart?error=unavailable-items");
   }
 
-  const [paymentMethods, { settings: checkoutPolicies }] = await Promise.all([
+  const [paymentMethods, { settings: checkoutPolicies }, loyaltyInfo] = await Promise.all([
     getStorefrontPaymentMethods(cart.subtotal),
     getCheckoutSettings(),
+    getStorefrontLoyaltyInfo(user.id, user.phone),
   ]);
 
   const isBelowMinimum = cart.subtotal < checkoutPolicies.minOrderValue;
@@ -104,6 +106,7 @@ export default async function CheckoutPage() {
           defaultPhone={user.phone || ""}
           availablePaymentMethods={paymentMethods}
           checkoutPolicies={checkoutPolicies}
+          loyaltyInfo={loyaltyInfo}
         />
       </Container>
     </Section>
