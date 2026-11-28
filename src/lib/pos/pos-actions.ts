@@ -511,8 +511,10 @@ export async function createPosOrderAction(
           const earnedPointsThisOrder = calculateTierEarnedPoints(total, currentTier, spendAmountPerPoint);
 
           const previousPoints = existingAccount?.points ?? 0;
-          const balanceAfterEarn = previousPoints + earnedPointsThisOrder;
-          const finalPoints = Math.max(0, balanceAfterEarn - loyaltyRedeemed);
+          // Ledger order: REDEEM first, then EARN — gives coherent running balance.
+          // e.g. prev=200, redeem=50, earn=10 → afterRedeem=150 → afterEarn=160 (final)
+          const balanceAfterRedeem = Math.max(0, previousPoints - loyaltyRedeemed);
+          const finalPoints = balanceAfterRedeem + earnedPointsThisOrder;
           const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPointsThisOrder;
           const newLifetimeSpend =
             (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
@@ -548,21 +550,7 @@ export async function createPosOrderAction(
             },
           });
 
-          // Record EARNED transaction
-          if (earnedPointsThisOrder > 0) {
-            await tx.loyaltyTransaction.create({
-              data: {
-                loyaltyAccountId: account.id,
-                orderId: newOrder.id,
-                type: "EARNED",
-                points: earnedPointsThisOrder,
-                balanceAfter: balanceAfterEarn,
-                reason: `POS Sale - ${newOrder.orderNumber}`,
-              },
-            });
-          }
-
-          // Record REDEEMED transaction
+          // Record REDEEMED transaction FIRST (ledger order: redeem before earn)
           if (loyaltyRedeemed > 0) {
             await tx.loyaltyTransaction.create({
               data: {
@@ -570,8 +558,22 @@ export async function createPosOrderAction(
                 orderId: newOrder.id,
                 type: "REDEEMED",
                 points: -loyaltyRedeemed,
-                balanceAfter: finalPoints,
+                balanceAfter: balanceAfterRedeem,
                 reason: `POS Redemption - ৳${(loyaltyRedeemed * pointRedemptionValue).toFixed(2)} discount on ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // Record EARNED transaction SECOND (balance after both redeem + earn = finalPoints)
+          if (earnedPointsThisOrder > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                loyaltyAccountId: account.id,
+                orderId: newOrder.id,
+                type: "EARNED",
+                points: earnedPointsThisOrder,
+                balanceAfter: finalPoints,
+                reason: `POS Sale - ${newOrder.orderNumber}`,
               },
             });
           }
