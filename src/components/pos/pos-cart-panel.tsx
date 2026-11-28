@@ -159,7 +159,7 @@ export function PosCartPanel({
           <h3 className="font-heading text-vl-white text-sm font-black tracking-wider">
             Current Sale
           </h3>
-          <Badge className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan h-5 px-1.5 text-xs font-black">
+          <Badge className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan text-2xs h-4 px-1 font-black">
             {totalItemsCount}
           </Badge>
         </div>
@@ -172,7 +172,7 @@ export function PosCartPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onParkCart}
-                className="text-vl-cyan hover:bg-vl-cyan-100 flex h-7 items-center space-x-1 px-2 text-xs hover:text-white"
+                className="text-vl-cyan hover:bg-vl-white/10 hover:text-cyan flex h-7 items-center space-x-1 px-2 text-xs"
                 title="Hold / Suspend this cart [Alt+H]"
               >
                 <PauseCircle className="h-3.5 w-3.5" />
@@ -216,8 +216,28 @@ export function PosCartPanel({
             />
           </div>
           <div>
-            <Label className="text-vl-grey mb-1 flex items-center text-[10px] font-bold tracking-wider uppercase">
-              <User className="text-vl-grey mr-1 h-3 w-3" /> Customer Name
+            <Label className="text-vl-grey mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider uppercase">
+              <span className="flex items-center">
+                <User className="text-vl-grey mr-1 h-3 w-3" /> Customer Name
+              </span>
+              {(customerPhone || customerName) && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="2xs"
+                  onClick={() => {
+                    setCustomerPhone("");
+                    setCustomerName("");
+                    setCustomerProfile(null);
+                    setHasSearched(false);
+                  }}
+                  aria-label="Clear customer details"
+                  title="Clear customer details"
+                  className="text-vl-grey hover:text-destructive text-[10px] font-semibold normal-case"
+                >
+                  Reset
+                </Button>
+              )}
             </Label>
             <Input
               type="text"
@@ -368,17 +388,18 @@ export function PosCartPanel({
                     </p>
                   </div>
 
-                  {/* Quantity Controls & Line Total */}
-                  <div className="flex items-center space-x-1">
+                  {/* Quantity Controls & Line Total (Touch-friendly icon-sm + aria-label) */}
+                  <div className="flex items-center space-x-1.5">
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="outline"
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
                       className="text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       title="Decrease quantity"
+                      aria-label={`Decrease quantity of ${item.productName}`}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
 
                     <span className="text-vl-black w-6 text-center font-mono text-xs font-black">
@@ -387,13 +408,13 @@ export function PosCartPanel({
 
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="outline"
                       disabled={isAtMaxStock}
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
                       className={
                         isAtMaxStock
-                          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
+                          ? "border-vl-white-400 bg-vl-white-200 text-vl-dark-300 cursor-not-allowed"
                           : "text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       }
                       title={
@@ -401,8 +422,9 @@ export function PosCartPanel({
                           ? `Max available stock reached (${item.maxStock})`
                           : "Increase quantity"
                       }
+                      aria-label={`Increase quantity of ${item.productName}`}
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
 
                     {/* Line Total */}
@@ -413,13 +435,14 @@ export function PosCartPanel({
                     {/* Remove Button */}
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       onClick={() => onRemoveItem(item.variantId)}
-                      className="ml-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                      className="text-vl-dark-300 ml-0.5 hover:bg-red-50 hover:text-red-500"
                       title="Remove item"
+                      aria-label={`Remove ${item.productName} from cart`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>

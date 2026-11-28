@@ -16,6 +16,7 @@ import {
   Receipt,
   WifiOff,
   MoreVertical,
+  Keyboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -147,7 +148,7 @@ export function PosHeader({
         {/* Network Connectivity Status Indicator (Offline visible everywhere; Online on lg+) */}
         {isOnline === false ? (
           <div
-            className="flex animate-pulse items-center space-x-1.5 rounded-xl border border-red-700/60 bg-red-950/80 px-2 py-1 font-mono text-xs text-red-300 shadow-2xs select-none sm:px-2.5 sm:py-1.5"
+            className="flex animate-pulse items-center space-x-1.5 rounded-lg border border-red-700/60 bg-red-950/80 px-2 py-1 font-mono text-xs text-red-300 shadow-2xs select-none sm:px-2.5 sm:py-1.5"
             title="Counter is operating offline. Server checkout is locked."
           >
             <WifiOff className="h-3.5 w-3.5 text-red-400" />
@@ -155,7 +156,7 @@ export function PosHeader({
           </div>
         ) : (
           <div
-            className="text-vl-cyan bg-vl-dark-900 hidden items-center space-x-1.5 rounded-xl border border-white/10 px-2.5 py-1.5 font-mono text-xs shadow-2xs select-none lg:flex xl:space-x-2 xl:px-3"
+            className="text-vl-cyan hidden items-center space-x-1.5 px-2.5 py-1.5 font-mono text-xs select-none lg:flex xl:space-x-2 xl:px-3"
             title="Counter is connected online."
           >
             <span className="relative flex h-2 w-2">
@@ -167,7 +168,7 @@ export function PosHeader({
         )}
 
         {/* Real-time Clock (Desktop xl+) */}
-        <div className="text-vl-white bg-vl-dark-900 hidden items-center space-x-2 rounded-xl border border-white/10 px-3 py-1.5 font-mono text-xs shadow-2xs xl:flex">
+        <div className="text-vl-white hidden items-center space-x-2 px-3 py-1.5 font-mono text-xs xl:flex">
           <Clock className="text-vl-cyan h-3.5 w-3.5" />
           <span className="font-semibold tracking-wider">{time || "00:00:00"}</span>
         </div>
@@ -197,17 +198,13 @@ export function PosHeader({
             variant="ghost"
             size="sm"
             onClick={onOpenParkedModal}
-            className={`hidden h-9 space-x-1.5 rounded-xl px-2.5 text-xs transition-all lg:inline-flex xl:px-3 ${
-              (parkedCount || 0) > 0
-                ? "bg-vl-cyan-100 text-vl-cyan hover:bg-vl-cyan-100 border-vl-cyan-200 border shadow-xs hover:text-white"
-                : "text-vl-white/70 hover:text-vl-white hover:bg-white/10"
-            }`}
+            className="text-vl-white/80 hover:text-vl-white hidden h-9 space-x-1.5 rounded-xl px-2.5 text-xs transition-all hover:bg-white/10 lg:inline-flex xl:px-3"
             title="View Parked Sales [Alt+P]"
           >
             <PauseCircle className="text-vl-cyan h-3.5 w-3.5" />
             <span className="font-heading text-xs font-black">Parked</span>
             {(parkedCount || 0) > 0 && (
-              <Badge className="bg-vl-cyan text-vl-black hover:bg-vl-cyan h-4.5 rounded-md px-1.5 py-0 text-[10px] font-black">
+              <Badge className="bg-vl-cyan text-vl-black hover:bg-vl-cyan-600 h-4 rounded-full px-1 text-[10px] font-black">
                 {parkedCount}
               </Badge>
             )}
@@ -242,13 +239,13 @@ export function PosHeader({
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="ghost"
                 onClick={onOpenShiftModal}
-                className="bg-vl-dark-900 hover:bg-vl-dark-800 flex items-center space-x-1 rounded-xl border-white/10 px-2 py-1.5 font-mono text-xs text-emerald-400 shadow-2xs hover:border-emerald-500/50 sm:space-x-1.5 sm:px-3"
+                className="flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-mono text-xs text-emerald-400 shadow-2xs transition-all hover:bg-emerald-500/25 hover:text-emerald-400 sm:px-3"
                 title="Click to view Cash Drawer & Shift details [Alt+D]"
               >
-                <Banknote className="h-3.5 w-3.5" />
-                <span className="hidden font-bold sm:inline">
+                <Banknote className="h-3.5 w-3.5 text-emerald-400" aria-hidden="true" />
+                <span className="hidden font-bold capitalize sm:inline">
                   Drawer: ৳{shift.expectedCash.toFixed(0)}
                 </span>
                 <span className="font-bold sm:hidden">৳{shift.expectedCash.toFixed(0)}</span>
@@ -259,10 +256,10 @@ export function PosHeader({
                 size="sm"
                 variant="brand"
                 onClick={onOpenShiftModal}
-                className="font-heading flex animate-pulse items-center space-x-1 rounded-xl px-2 py-1.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] sm:space-x-1.5 sm:px-3"
-                title="Register Shift is Closed. Click to Open Register."
+                className="font-heading flex h-9 animate-pulse items-center gap-1.5 rounded-xl px-2.5 text-xs font-black shadow-[0_0_12px_rgba(0,217,255,0.25)] sm:px-3"
+                title="Register Shift is Closed. Click to Open Register [Alt+D]"
               >
-                <Lock className="h-3.5 w-3.5" />
+                <Lock className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="hidden sm:inline">Open Register</span>
                 <span className="text-[11px] sm:hidden">Open</span>
               </Button>
@@ -289,6 +286,45 @@ export function PosHeader({
             </div>
           </div>
         </Link>
+
+        {/* Keyboard Shortcuts Cheat-Sheet Popover (Desktop lg+) */}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            className="text-vl-white/70 hover:text-vl-white hidden h-9 w-9 items-center justify-center rounded-xl transition-all outline-none hover:bg-white/10 lg:inline-flex"
+            title="Keyboard Shortcuts"
+            aria-label="View POS Keyboard Shortcuts"
+          >
+            <Keyboard className="h-4 w-4" aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            className="bg-vl-dark-900 w-64 rounded-xl border border-white/20 p-2.5 text-white shadow-2xl"
+          >
+            <div className="mb-2 border-b border-white/10 pb-1.5 text-[11px] font-bold tracking-wider text-slate-300 uppercase">
+              POS Keyboard Shortcuts
+            </div>
+            <div className="space-y-1.5 text-xs">
+              {[
+                { label: "Focus Scanner / Search", keys: "F2" },
+                { label: "Payment & Settlement", keys: "F9 / Alt+Enter" },
+                { label: "Hold / Park Cart", keys: "Alt+H" },
+                { label: "Open Parked Sales", keys: "Alt+P" },
+                { label: "Returns & Exchanges", keys: "Alt+R" },
+                { label: "Today's Orders", keys: "Alt+O" },
+                { label: "Shift & Cash Drawer", keys: "Alt+D" },
+                { label: "Clear Current Cart", keys: "Alt+X" },
+                { label: "Close Open Modal", keys: "Esc" },
+              ].map((item) => (
+                <div key={item.keys} className="flex items-center justify-between gap-2">
+                  <span className="text-vl-white/80 text-[11px]">{item.label}</span>
+                  <kbd className="bg-vl-dark-800 text-vl-cyan rounded border border-white/15 px-1.5 py-0.5 font-mono text-[10px] font-bold">
+                    {item.keys}
+                  </kbd>
+                </div>
+              ))}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         {/* Fullscreen Button (Desktop lg+) */}
         <Button
@@ -366,7 +402,7 @@ export function PosHeader({
                 <PauseCircle className="text-vl-cyan h-3.5 w-3.5" />
                 <span>Parked Sales</span>
                 {(parkedCount || 0) > 0 && (
-                  <Badge className="bg-vl-cyan text-vl-black ml-auto h-4.5 px-1.5 py-0 text-[10px] font-black">
+                  <Badge className="bg-vl-cyan text-vl-black ml-auto h-4 px-1 text-[10px] font-black">
                     {parkedCount}
                   </Badge>
                 )}

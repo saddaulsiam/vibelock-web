@@ -256,7 +256,7 @@ export function PosProductGrid({
             <span
               className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                 selectedCategory === "all"
-                  ? "bg-vl-cyan-100 text-vl-cyan"
+                  ? "bg-vl-cyan-100 text-vl-cyan-800"
                   : "text-vl-black/70 bg-vl-white-200"
               }`}
             >
@@ -425,7 +425,7 @@ export function PosProductGrid({
                       {/* Content */}
                       <div className="p-3">
                         <h4
-                          className="font-heading text-vl-black group-hover:text-vl-cyan line-clamp-1 text-xs leading-snug font-bold transition-colors"
+                          className="font-heading text-vl-black group-hover:text-vl-cyan-700 line-clamp-1 text-xs leading-snug font-bold transition-colors"
                           title={prod.name}
                         >
                           {prod.name}

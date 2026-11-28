@@ -9,6 +9,7 @@ import {
   ArrowRightLeft,
   Banknote,
   Trash2,
+  Check,
 } from "lucide-react";
 import {
   Dialog,
@@ -318,13 +319,23 @@ export function PosReturnModal({
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3">
-                          <input
-                            type="checkbox"
+                          <Button
+                            type="button"
+                            role="checkbox"
+                            aria-checked={isSelected}
+                            aria-label={`Select ${item.productName} (${item.sku}) for return`}
                             disabled={!isReturnable}
-                            checked={isSelected}
-                            onChange={() => handleToggleItemSelection(item.orderItemId)}
-                            className="text-vl-black accent-vl-black focus:ring-vl-cyan border-vl-white-500 mt-0.5 h-4 w-4 rounded"
-                          />
+                            size="icon-xs"
+                            variant={isSelected ? "primary" : "outline"}
+                            onClick={() => handleToggleItemSelection(item.orderItemId)}
+                            className={`mt-0.5 shrink-0 rounded-md ${
+                              isSelected
+                                ? "bg-vl-black border-vl-black text-vl-cyan"
+                                : "border-vl-white-500 bg-white text-transparent"
+                            }`}
+                          >
+                            <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Button>
                           <div>
                             <p className="leading-snug font-semibold text-slate-900">
                               {item.productName}
