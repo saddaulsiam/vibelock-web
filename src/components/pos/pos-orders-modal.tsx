@@ -112,19 +112,19 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-full border-vl-white-400 flex max-h-[90vh] flex-col rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="max-full border-vl-white-500 rounded-brand flex max-h-[90vh] flex-col border bg-white p-6 shadow-xl sm:max-w-xl md:max-w-2xl">
         {/* Header */}
-        <DialogHeader className="border-vl-white-200 flex-shrink-0 border-b pb-3">
+        <DialogHeader className="border-vl-white-400 flex-shrink-0 border-b pb-3">
           <div className="flex items-center justify-between">
-            <div className="text-vl-black flex items-center space-x-2">
-              <div className="border-vl-cyan-200 bg-vl-black text-vl-cyan rounded-xl border p-2 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
+            <div className="text-vl-dark-900 flex items-center space-x-2.5">
+              <div className="border-vl-white-500 bg-vl-white-200 text-vl-dark-900 rounded-brand border p-2">
                 <Receipt className="h-5 w-5" />
               </div>
               <div>
-                <DialogTitle className="font-heading text-vl-black text-lg font-black tracking-tight">
+                <DialogTitle className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight">
                   Today&apos;s Counter Sales &amp; Invoices
                 </DialogTitle>
-                <DialogDescription className="text-vl-grey text-xs">
+                <DialogDescription className="text-vl-dark-400 text-xs">
                   Real-time sales history for today&apos;s counter register. Instant receipt
                   reprint.
                 </DialogDescription>
@@ -137,10 +137,10 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
               size="sm"
               onClick={() => fetchOrders(searchQuery)}
               disabled={isPending}
-              className="text-vl-black hover:border-vl-cyan border-vl-white-500 hover:bg-vl-white-100 flex h-9 items-center space-x-1.5 rounded-xl text-xs font-bold"
+              className="text-vl-dark-900 hover:border-vl-dark-900 border-vl-white-500 hover:bg-vl-white-100 rounded-brand flex h-9 items-center space-x-1.5 text-xs font-semibold"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 ${isPending ? "text-vl-cyan animate-spin" : ""}`}
+                className={`h-3.5 w-3.5 ${isPending ? "text-vl-dark-900 animate-spin" : ""}`}
               />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
@@ -149,35 +149,35 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
 
         {/* Stats Summary Bar */}
         <div className="my-3 grid flex-shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
-          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
-            <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
+          <div className="border-vl-white-500 bg-vl-white-100 rounded-brand border p-2.5">
+            <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Total Orders
             </span>
-            <span className="font-heading text-vl-black font-mono text-lg font-black">
+            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
               {stats.totalOrders}
             </span>
           </div>
-          <div className="border-vl-border bg-vl-black text-vl-white rounded-xl border p-2.5 shadow-xs">
-            <span className="font-heading text-vl-grey block text-[10px] font-black tracking-widest uppercase">
+          <div className="border-vl-white-500 bg-vl-white-200 rounded-brand border p-2.5">
+            <span className="font-heading text-vl-dark-500 block text-[10px] font-bold tracking-wider uppercase">
               Total Sales
             </span>
-            <span className="font-heading text-vl-cyan font-mono text-lg font-black">
+            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
               ৳{stats.totalRevenue.toLocaleString()}
             </span>
           </div>
-          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
-            <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
+          <div className="border-vl-white-500 bg-vl-white-100 rounded-brand border p-2.5">
+            <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Cash Tender
             </span>
-            <span className="font-heading font-mono text-lg font-black text-emerald-600">
+            <span className="font-heading font-mono text-lg font-black text-emerald-600 tabular-nums">
               ৳{stats.cashTotal.toLocaleString()}
             </span>
           </div>
-          <div className="border-vl-white-400 bg-vl-white-100 rounded-xl border p-2.5 shadow-2xs">
-            <span className="text-vl-grey block text-[10px] font-bold tracking-wider uppercase">
+          <div className="border-vl-white-500 bg-vl-white-100 rounded-brand border p-2.5">
+            <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Digital (Bangla QR/Card)
             </span>
-            <span className="font-heading text-vl-black font-mono text-lg font-black">
+            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
               ৳{stats.digitalTotal.toLocaleString()}
             </span>
           </div>
@@ -186,12 +186,12 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
         {/* Search Toolbar */}
         <form onSubmit={handleSearchSubmit} className="mb-3 flex flex-shrink-0 gap-2">
           <div className="relative flex-1">
-            <Search className="absolute top-2.5 left-3 h-4 w-4 text-slate-400" />
+            <Search className="text-vl-dark-400 absolute top-2.5 left-3 h-4 w-4" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Invoice # (e.g. VL-POS-...), customer phone or name..."
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-9 rounded-xl pl-9 text-xs transition-all focus-visible:bg-white focus-visible:ring"
+              className="focus-visible:border-vl-dark-900 focus-visible:ring-vl-cyan/30 border-vl-white-500 bg-vl-white-100 rounded-brand h-9 pl-9 text-xs transition-colors focus-visible:bg-white focus-visible:ring-2"
             />
           </div>
           <Button

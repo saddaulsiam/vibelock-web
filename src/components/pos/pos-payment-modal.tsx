@@ -152,28 +152,28 @@ function PosPaymentModalContent({
       (isSplitShortage || isSplitOverAllocated || isSplitCashTenderShortage));
 
   return (
-    <DialogContent className="border-vl-white-400 max-h-[92vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
-      <DialogHeader className="border-vl-white-200 border-b pb-3">
+    <DialogContent className="border-vl-white-500 rounded-brand max-h-[92vh] w-full overflow-y-auto border bg-white p-6 shadow-xl sm:max-w-xl">
+      <DialogHeader className="border-vl-white-400 border-b pb-3">
         <div className="flex items-center justify-between">
-          <DialogTitle className="font-heading text-vl-black text-xl font-black tracking-tight">
+          <DialogTitle className="font-heading text-vl-dark-900 text-xl font-bold tracking-tight">
             Counter Payment & Settlement
           </DialogTitle>
         </div>
-        <DialogDescription className="text-vl-grey text-xs">
+        <DialogDescription className="text-vl-dark-400 text-xs">
           Select customer tender method or split across multiple payments.
         </DialogDescription>
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="space-y-4 pt-2">
         {/* Total Amount Callout */}
-        <div className="border-vl-border bg-vl-black text-vl-white flex items-center justify-between rounded-xl border p-4 shadow-xs">
+        <div className="border-vl-white-500 bg-vl-white-200 rounded-brand flex items-center justify-between border p-4">
           <div>
-            <span className="font-heading text-vl-grey block text-[10px] font-black tracking-widest uppercase">
+            <span className="font-heading text-vl-dark-500 block text-[10px] font-bold tracking-wider uppercase">
               Total Payable
             </span>
-            <p className="text-vl-white/60 text-[10px]">Final counter bill</p>
+            <p className="text-vl-dark-400 text-[10px]">Final counter bill</p>
           </div>
-          <span className="font-heading text-vl-cyan font-mono text-3xl font-black tracking-tight">
+          <span className="font-heading text-vl-dark-900 font-mono text-3xl font-black tracking-tight tabular-nums">
             ৳{grandTotal.toFixed(0)}
           </span>
         </div>
@@ -187,10 +187,10 @@ function PosPaymentModalContent({
               setMethod("CASH");
               setTenderAmount(grandTotal);
             }}
-            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`rounded-brand flex h-auto flex-col items-center justify-center space-y-1.5 border p-3 transition-colors duration-150 ${
               method === "CASH"
-                ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
+                ? "border-vl-dark-900 bg-vl-dark-900 text-vl-white-50 font-heading font-bold"
+                : "text-vl-dark-900/80 hover:border-vl-dark-400 border-vl-white-500 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <Banknote className="h-5 w-5 text-emerald-500" />
@@ -204,10 +204,10 @@ function PosPaymentModalContent({
               setMethod("BANGLA_QR");
               setTenderAmount(grandTotal);
             }}
-            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`rounded-brand flex h-auto flex-col items-center justify-center space-y-1.5 border p-3 transition-colors duration-150 ${
               method === "BANGLA_QR"
-                ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
+                ? "border-vl-dark-900 bg-vl-dark-900 text-vl-white-50 font-heading font-bold"
+                : "text-vl-dark-900/80 hover:border-vl-dark-400 border-vl-white-500 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <QrCode className="h-5 w-5 text-teal-600" />
@@ -221,10 +221,10 @@ function PosPaymentModalContent({
               setMethod("CARD");
               setTenderAmount(grandTotal);
             }}
-            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`rounded-brand flex h-auto flex-col items-center justify-center space-y-1.5 border p-3 transition-colors duration-150 ${
               method === "CARD"
-                ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
+                ? "border-vl-dark-900 bg-vl-dark-900 text-vl-white-50 font-heading font-bold"
+                : "text-vl-dark-900/80 hover:border-vl-dark-400 border-vl-white-500 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
             <CreditCard className="h-5 w-5 text-blue-500" />
@@ -240,13 +240,15 @@ function PosPaymentModalContent({
                 splitEvenlyCashBanglaQr();
               }
             }}
-            className={`flex h-auto flex-col items-center justify-center space-y-1.5 rounded-xl border p-3 transition-all duration-150 ${
+            className={`rounded-brand flex h-auto flex-col items-center justify-center space-y-1.5 border p-3 transition-colors duration-150 ${
               method === "SPLIT"
-                ? "border-vl-cyan bg-vl-black text-vl-cyan font-heading border-2 font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 border-vl-white-400 bg-vl-white-100 border font-medium hover:bg-white"
+                ? "border-vl-dark-900 bg-vl-dark-900 text-vl-white-50 font-heading font-bold"
+                : "text-vl-dark-900/80 hover:border-vl-dark-400 border-vl-white-500 bg-vl-white-100 font-medium hover:bg-white"
             }`}
           >
-            <Layers className="text-vl-cyan h-5 w-5" />
+            <Layers
+              className={`h-5 w-5 ${method === "SPLIT" ? "text-vl-cyan" : "text-vl-dark-600"}`}
+            />
             <span className="text-xs">Split</span>
           </Button>
         </div>
@@ -559,7 +561,7 @@ function PosPaymentModalContent({
             variant="outline"
             disabled={isSubmitting}
             onClick={onClose}
-            className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-12 w-1/3 rounded-xl border text-xs font-bold"
+            className="text-vl-dark-700 border-vl-white-500 hover:bg-vl-white-200 rounded-brand h-12 w-1/3 border text-xs font-bold"
           >
             Cancel [Esc]
           </Button>
@@ -567,7 +569,7 @@ function PosPaymentModalContent({
           <Button
             type="submit"
             disabled={isSubmitDisabled}
-            className="bg-vl-cyan text-vl-black font-heading hover:bg-vl-cyan-400 flex h-12 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all hover:shadow-[0_0_32px_rgba(0,217,255,0.5)] active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
+            className="bg-vl-cyan text-vl-dark-900 font-heading hover:bg-vl-cyan-400 rounded-brand flex h-12 w-2/3 items-center justify-center space-x-2 text-xs font-black tracking-wider transition-colors active:scale-[0.99] disabled:opacity-50"
           >
             {isSubmitting ? (
               <>

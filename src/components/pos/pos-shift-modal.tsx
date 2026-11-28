@@ -169,15 +169,15 @@ export function PosShiftModal({
   if (!shift || !shift.isOpen) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-        <DialogContent className="border-vl-white-400 max-w-xl rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
-          <DialogHeader className="border-vl-white-200 border-b pb-3">
-            <div className="text-vl-cyan flex items-center space-x-2">
+        <DialogContent className="border-vl-white-500 rounded-brand max-w-xl border bg-white p-6 shadow-xl sm:max-w-xl md:max-w-2xl">
+          <DialogHeader className="border-vl-white-400 border-b pb-3">
+            <div className="text-vl-dark-900 flex items-center space-x-2">
               <Lock className="h-5 w-5" />
-              <DialogTitle className="font-heading text-vl-black text-lg font-black tracking-tight">
+              <DialogTitle className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight">
                 Open Register Shift
               </DialogTitle>
             </div>
-            <DialogDescription className="text-vl-grey text-xs">
+            <DialogDescription className="text-vl-dark-400 text-xs">
               Enter starting cash float to unlock POS counter and track drawer transactions.
             </DialogDescription>
           </DialogHeader>
@@ -244,7 +244,7 @@ export function PosShiftModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan-400 flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all active:scale-[0.99]"
+                className="bg-vl-cyan font-heading text-vl-dark-900 hover:bg-vl-cyan-400 rounded-brand flex h-11 w-2/3 items-center justify-center space-x-2 text-xs font-black tracking-wider transition-colors active:scale-[0.99]"
               >
                 {isSubmitting ? (
                   <>
@@ -296,18 +296,20 @@ export function PosShiftModal({
         {activeTab === "SUMMARY" && (
           <div className="space-y-4 pt-2">
             {/* Live Drawer Total Big Callout */}
-            <div className="border-vl-border bg-vl-black text-vl-white flex items-center justify-between rounded-xl border p-4 shadow-xs">
+            <div className="border-vl-white-500 bg-vl-white-200 rounded-brand flex items-center justify-between border p-4">
               <div>
-                <span className="font-heading text-vl-grey block text-[10px] font-black tracking-widest uppercase">
+                <span className="font-heading text-vl-dark-500 block text-[10px] font-bold tracking-wider uppercase">
                   Expected Cash in Drawer:
                 </span>
-                <span className="font-heading text-vl-cyan font-mono text-3xl font-black">
+                <span className="font-heading text-vl-dark-900 font-mono text-3xl font-black tabular-nums">
                   ৳{shift.expectedCash.toFixed(0)}
                 </span>
               </div>
-              <div className="text-vl-white/80 text-right text-xs">
-                <span className="block font-semibold">Total: ৳{shift.totalSales.toFixed(0)}</span>
-                <span className="text-vl-grey font-mono text-[10px]">
+              <div className="text-vl-dark-700 text-right text-xs">
+                <span className="block font-semibold tabular-nums">
+                  Total: ৳{shift.totalSales.toFixed(0)}
+                </span>
+                <span className="text-vl-dark-400 font-mono text-[10px]">
                   {shift.ordersCount} Orders
                 </span>
               </div>

@@ -1,33 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import {
-  Maximize2,
-  Minimize2,
-  Clock,
-  UserCheck,
-  ShoppingBag,
-  ShoppingCart,
-  Banknote,
-  Lock,
-  RotateCcw,
-  PauseCircle,
-  Receipt,
-  WifiOff,
-  MoreVertical,
-  Keyboard,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { PosShiftSummary } from "@/lib/pos/pos-shift-types";
+import {
+  Banknote,
+  Clock,
+  Keyboard,
+  Lock,
+  Maximize2,
+  Minimize2,
+  MoreVertical,
+  PauseCircle,
+  Receipt,
+  RotateCcw,
+  ShoppingBag,
+  ShoppingCart,
+  User,
+  UserCheck,
+  WifiOff,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface PosHeaderProps {
   cashierName: string;
@@ -270,11 +271,11 @@ export function PosHeader({
         {/* Cashier Badge (Desktop lg+) */}
         <Link href="/admin">
           <div
-            className="bg-vl-dark-900 hidden items-center space-x-2 rounded-xl border border-white/10 px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
+            className="bg-vl-dark-900 hover:bg-vl-white/10 hidden items-center space-x-2 rounded-xl border border-white/10 px-2.5 py-1.5 shadow-2xs lg:flex xl:px-3"
             title="Back To Dashboard"
           >
-            <div className="bg-vl-cyan-100 text-vl-cyan flex h-5 w-5 items-center justify-center rounded-full">
-              <UserCheck className="h-3 w-3" />
+            <div className="bg-vl-cyan/20 text-vl-cyan flex size-6 items-center justify-center rounded-full">
+              <User className="size-3.5" />
             </div>
             <div className="text-left text-xs leading-none">
               <span className="font-heading text-vl-white inline-block max-w-22.5 truncate font-black xl:max-w-30">

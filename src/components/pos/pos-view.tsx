@@ -486,10 +486,7 @@ export function PosView({
         if (cartItems.length > 0) {
           handleClearCart();
         }
-      } else if (
-        e.key === "F9" ||
-        (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "Enter")
-      ) {
+      } else if (e.key === "F9" || (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "Enter")) {
         e.preventDefault();
         if (cartItems.length > 0) {
           handleOpenPayment();
@@ -536,7 +533,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-vl-white-500 border-b bg-white p-2.5 shadow-2xs sm:p-3">
+          <div className="bg-white p-2.5 shadow-2xs sm:p-3">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}

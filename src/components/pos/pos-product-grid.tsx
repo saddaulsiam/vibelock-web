@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import Image from "next/image";
-import { Package, Plus, Layers } from "lucide-react";
+import { InfiniteScroll } from "@/components/admin/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PosVariantPickerModal } from "./pos-variant-picker-modal";
-import { InfiniteScroll } from "@/components/admin/shared";
 import type { PosCategory, PosProductSummary, PosProductVariant } from "@/lib/pos/pos-types";
+import { Layers, Package, Plus } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PosVariantPickerModal } from "./pos-variant-picker-modal";
 
 interface PosProductGridProps {
   products: PosProductSummary[];
@@ -234,80 +234,69 @@ export function PosProductGrid({
   }, [filteredProducts, visibleCount]);
 
   return (
-    <div className="border-vl-white-500 bg-vl-white-300 flex h-full flex-col border-r">
-      {/* Categories Bar (Scrollbar hidden, horizontal mouse wheel scrollable) */}
-      <div className="border-vl-white-500 border-b bg-white px-3 py-2.5 shadow-2xs">
+    <div className="bg-vl-white-300 flex h-full flex-col">
+      {/* Categories Bar (Scrollbar hidden, horizontal mouse wheel scrollable with right-edge fade) */}
+      <div className="relative bg-white px-3 pb-2.5">
         <div
           ref={categoryScrollRef}
-          className="no-scrollbar flex [scrollbar-width:none] items-center space-x-2 overflow-x-auto px-1 pt-0.5 pb-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+          className="no-scrollbar flex scrollbar-none items-center space-x-2 overflow-x-auto px-1 pt-0.5 pr-10 pb-0.5 [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           <Button
             type="button"
             size="sm"
             variant={selectedCategory === "all" ? "primary" : "outline"}
             onClick={() => setSelectedCategory("all")}
-            className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
-              selectedCategory === "all"
-                ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
-            }`}
           >
             <span>All Items</span>
             <span
               className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                 selectedCategory === "all"
-                  ? "bg-vl-cyan-100 text-vl-cyan-800"
-                  : "text-vl-black/70 bg-vl-white-200"
+                  ? "text-vl-white-50 bg-white/15"
+                  : "text-vl-dark-600 bg-vl-white-200"
               }`}
             >
               {products.length}
             </span>
           </Button>
-          {categories.map((cat) => {
-            const count = categoryCounts[cat.id] ?? 0;
-            const isSelected = selectedCategory === cat.id;
-            return (
-              <Button
-                key={cat.id}
-                type="button"
-                size="sm"
-                variant={isSelected ? "primary" : "outline"}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
-                  isSelected
-                    ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                    : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
-                }`}
-              >
-                <span>{cat.name}</span>
-                <span
-                  className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
-                    isSelected ? "bg-vl-cyan-100 text-vl-cyan" : "text-vl-black/70 bg-vl-white-200"
-                  }`}
+          {[...categories]
+            .sort((a, b) => (categoryCounts[b.id] ?? 0) - (categoryCounts[a.id] ?? 0))
+            .map((cat) => {
+              const count = categoryCounts[cat.id] ?? 0;
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <Button
+                  key={cat.id}
+                  type="button"
+                  size="sm"
+                  variant={isSelected ? "primary" : "outline"}
+                  onClick={() => setSelectedCategory(cat.id)}
                 >
-                  {count}
-                </span>
-              </Button>
-            );
-          })}
+                  <span>{cat.name}</span>
+                  <span
+                    className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                      isSelected
+                        ? "text-vl-white-50 bg-white/15"
+                        : "text-vl-dark-600 bg-vl-white-200"
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </Button>
+              );
+            })}
           {uncategorizedCount > 0 && (
             <Button
               type="button"
               size="sm"
               variant={selectedCategory === "uncategorized" ? "primary" : "outline"}
               onClick={() => setSelectedCategory("uncategorized")}
-              className={`rounded-full px-3.5 py-1.5 text-xs whitespace-nowrap transition-all duration-150 ${
-                selectedCategory === "uncategorized"
-                  ? "border-vl-cyan bg-vl-black font-heading text-vl-cyan border font-black shadow-[0_0_15px_rgba(0,217,255,0.25)]"
-                  : "text-vl-black/80 hover:border-vl-cyan-300 hover:text-vl-black border-vl-white-400 bg-white font-medium shadow-2xs"
-              }`}
             >
               <span>Uncategorized</span>
               <span
                 className={`ml-1.5 rounded-full px-1.5 py-0.5 font-mono text-[10px] font-bold ${
                   selectedCategory === "uncategorized"
-                    ? "bg-vl-cyan-100 text-vl-cyan"
-                    : "text-vl-black/70 bg-vl-white-200"
+                    ? "text-vl-white-50 bg-white/15"
+                    : "text-vl-dark-600 bg-vl-white-200"
                 }`}
               >
                 {uncategorizedCount}
@@ -315,6 +304,10 @@ export function PosProductGrid({
             </Button>
           )}
         </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute top-0 right-0 bottom-0 w-10 bg-linear-to-l from-white to-transparent"
+        />
       </div>
 
       {/* Product Cards Scroll Area */}
@@ -332,13 +325,12 @@ export function PosProductGrid({
             </p>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="destructive"
+              size="xs"
               onClick={() => {
                 onClearSearch?.();
                 setSelectedCategory("all");
               }}
-              className="hover:border-vl-cyan border-vl-white-500 h-8 rounded-lg text-xs font-semibold hover:bg-white"
             >
               Reset Filters
             </Button>
@@ -362,15 +354,19 @@ export function PosProductGrid({
                         setActivePickerProduct(prod);
                       }
                     }}
-                    className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white shadow-2xs transition-all duration-200 ${
+                    className={`group rounded-brand relative flex flex-col justify-between overflow-hidden border bg-white transition-colors duration-150 ${
                       isOutOfStock
-                        ? "border-vl-white-400 bg-vl-white-100 cursor-not-allowed opacity-60"
-                        : "hover:border-vl-cyan border-vl-white-400 cursor-pointer hover:shadow-[0_8px_24px_rgba(0,217,255,0.14)] active:scale-[0.99]"
+                        ? "border-vl-white-400 bg-vl-white-100 cursor-not-allowed"
+                        : "hover:border-vl-dark-900 border-vl-white-500 cursor-pointer active:scale-[0.99]"
                     }`}
                   >
                     <div>
                       {/* Image / Thumbnail with smooth zoom on hover */}
-                      <div className="bg-vl-white-200 relative h-36 w-full overflow-hidden sm:h-40">
+                      <div
+                        className={`bg-vl-white-200 relative h-36 w-full overflow-hidden sm:h-40 ${
+                          isOutOfStock ? "opacity-50 grayscale" : ""
+                        }`}
+                      >
                         {prod.imageUrl ? (
                           <Image
                             src={prod.imageUrl}
@@ -380,43 +376,34 @@ export function PosProductGrid({
                             className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
                           />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-slate-300">
-                            <Package className="h-9 w-9 stroke-1 text-slate-300" />
+                          <div className="text-vl-dark-300 flex h-full w-full items-center justify-center">
+                            <Package className="text-vl-dark-300 h-9 w-9 stroke-1" />
                           </div>
                         )}
 
-                        {/* Floating Category Pill */}
-                        {prod.categoryNames && prod.categoryNames.length > 0 && (
-                          <div className="absolute top-2 left-2 z-10">
-                            <span className="inline-block max-w-[110px] truncate rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 shadow-2xs backdrop-blur-xs">
-                              {prod.categoryNames[0]}
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Floating Glassmorphic Stock Badge */}
+                        {/* Minimal Stock Status Badge */}
                         <div className="absolute top-2 right-2 z-10">
                           {isNoVariants ? (
                             <Badge
                               variant="secondary"
-                              className="rounded-full border border-slate-300 bg-white/95 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-600 shadow-xs backdrop-blur-md"
+                              className="border-vl-white-500 text-vl-dark-600 rounded-brand border bg-white/95 px-2 py-0.5 font-mono text-[10px] font-semibold"
                             >
                               No Variants
                             </Badge>
                           ) : isOutOfStock ? (
                             <Badge
                               variant="destructive"
-                              className="rounded-full px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs"
+                              className="rounded-brand px-2 py-0.5 font-mono text-[10px] font-semibold"
                             >
                               Out of Stock
                             </Badge>
                           ) : prod.totalAvailableStock <= 3 ? (
-                            <Badge className="border-vl-cyan-300 bg-vl-black/90 text-vl-cyan rounded-full border px-2 py-0.5 font-mono text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.25)] backdrop-blur-md">
+                            <Badge className="bg-vl-dark-900 text-vl-cyan rounded-brand border border-white/15 px-2 py-0.5 font-mono text-[10px] font-semibold">
                               Low: {prod.totalAvailableStock} left
                             </Badge>
                           ) : (
-                            <Badge className="bg-vl-black/85 text-vl-white rounded-full border border-white/20 px-2 py-0.5 font-mono text-[10px] font-bold shadow-xs backdrop-blur-md">
-                              Stock: {prod.totalAvailableStock}
+                            <Badge className="border-vl-white-500 text-vl-dark-700 rounded-brand border bg-white/95 px-2 py-0.5 font-mono text-[10px] font-semibold">
+                              {prod.totalAvailableStock} in stock
                             </Badge>
                           )}
                         </div>
@@ -425,7 +412,11 @@ export function PosProductGrid({
                       {/* Content */}
                       <div className="p-3">
                         <h4
-                          className="font-heading text-vl-black group-hover:text-vl-cyan-700 line-clamp-1 text-xs leading-snug font-bold transition-colors"
+                          className={`font-heading line-clamp-1 text-xs leading-snug font-bold transition-colors ${
+                            isOutOfStock
+                              ? "text-vl-dark-500"
+                              : "text-vl-dark-900 group-hover:underline group-hover:underline-offset-2"
+                          }`}
                           title={prod.name}
                         >
                           {prod.name}
@@ -434,14 +425,18 @@ export function PosProductGrid({
                         <div className="mt-1 flex items-baseline justify-between">
                           <div className="flex items-baseline space-x-1.5">
                             {isNoVariants ? (
-                              <span className="text-vl-grey text-xs font-medium">Unpriced</span>
+                              <span className="text-vl-dark-400 text-xs font-medium">Unpriced</span>
                             ) : (
                               <>
-                                <span className="font-heading text-vl-black text-base font-black tracking-tight">
+                                <span
+                                  className={`font-heading text-base font-black tracking-tight tabular-nums ${
+                                    isOutOfStock ? "text-vl-dark-500" : "text-vl-dark-900"
+                                  }`}
+                                >
                                   ৳{prod.minPrice.toFixed(0)}
                                 </span>
                                 {prod.maxPrice > prod.minPrice && (
-                                  <span className="text-vl-grey text-[11px] font-normal">
+                                  <span className="text-vl-dark-400 text-[11px] font-normal tabular-nums">
                                     - ৳{prod.maxPrice.toFixed(0)}
                                   </span>
                                 )}
@@ -449,7 +444,7 @@ export function PosProductGrid({
                             )}
                           </div>
                           {!isNoVariants && !isSingleVariant && (
-                            <span className="text-vl-grey font-mono text-[10px] font-medium">
+                            <span className="text-vl-dark-400 font-mono text-[10px] font-medium">
                               {prod.variants.length} vars
                             </span>
                           )}
@@ -457,10 +452,10 @@ export function PosProductGrid({
                       </div>
                     </div>
 
-                    {/* Uniform Action Row (Refined Boutique POS Outline Design) */}
+                    {/* Uniform Action Row */}
                     <div className="p-3 pt-0">
                       {isNoVariants ? (
-                        <div className="border-vl-white-500 bg-vl-white-100 flex h-9.5 w-full items-center justify-center rounded-xl border border-dashed text-xs font-medium text-slate-400">
+                        <div className="border-vl-white-500 bg-vl-white-100 text-vl-dark-400 rounded-brand flex h-9 w-full items-center justify-center border border-dashed text-xs font-medium">
                           No Variants
                         </div>
                       ) : isSingleVariant ? (
@@ -473,9 +468,12 @@ export function PosProductGrid({
                             e.stopPropagation();
                             onAddVariant(prod.variants[0], prod);
                           }}
-                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black border-vl-white-500 relative flex h-9.5 w-full items-center justify-center gap-1.5 rounded-xl border bg-white text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
+                          className="group/btn font-heading text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-200 border-vl-white-500 rounded-brand disabled:border-vl-white-400 disabled:bg-vl-white-200 disabled:text-vl-dark-400 relative flex h-9 w-full items-center justify-center gap-1.5 border bg-white text-xs font-semibold normal-case transition-colors active:scale-[0.98] disabled:cursor-not-allowed"
                         >
-                          <Plus className="group-hover/btn:text-vl-black h-3.5 w-3.5 text-slate-500 transition-transform duration-200 group-hover/btn:rotate-90" />
+                          <Plus
+                            className="text-vl-dark-500 group-hover/btn:text-vl-dark-900 h-3.5 w-3.5 transition-transform duration-150 group-hover/btn:rotate-90"
+                            aria-hidden="true"
+                          />
                           <span>Add to Cart</span>
                         </Button>
                       ) : (
@@ -488,13 +486,16 @@ export function PosProductGrid({
                             e.stopPropagation();
                             setActivePickerProduct(prod);
                           }}
-                          className="group/btn font-heading text-vl-black hover:border-vl-cyan hover:bg-vl-cyan-50 hover:text-vl-black border-vl-white-500 relative flex h-9.5 w-full items-center justify-between rounded-xl border bg-white px-3 text-xs font-bold shadow-2xs transition-all duration-200 hover:shadow-[0_2px_12px_rgba(0,217,255,0.2)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-300"
+                          className="group/btn font-heading text-vl-dark-900 hover:border-vl-dark-900 hover:bg-vl-white-200 border-vl-white-500 rounded-brand disabled:border-vl-white-400 disabled:bg-vl-white-200 disabled:text-vl-dark-400 relative flex h-9 w-full items-center justify-between border bg-white px-3 text-xs font-semibold normal-case transition-colors active:scale-[0.98] disabled:cursor-not-allowed"
                         >
                           <span className="flex items-center gap-1.5">
-                            <Layers className="group-hover/btn:text-vl-black h-3.5 w-3.5 text-slate-500 transition-colors" />
+                            <Layers
+                              className="text-vl-dark-500 group-hover/btn:text-vl-dark-900 h-3.5 w-3.5 transition-colors"
+                              aria-hidden="true"
+                            />
                             <span>Select Variant:</span>
                           </span>
-                          <span className="group-hover/btn:bg-vl-cyan-100 group-hover/btn:text-vl-black bg-vl-white-200 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold text-slate-700 transition-colors">
+                          <span className="bg-vl-white-200 text-vl-dark-700 rounded px-1.5 py-0.5 font-mono text-[10px] font-bold">
                             {prod.variants.length}
                           </span>
                         </Button>

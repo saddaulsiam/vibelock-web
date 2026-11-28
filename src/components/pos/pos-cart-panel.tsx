@@ -370,14 +370,17 @@ export function PosCartPanel({
                     <p className="font-heading text-vl-black truncate text-xs leading-snug font-bold">
                       {item.productName}
                     </p>
-                    <div className="mt-0.5 flex items-center space-x-1.5">
-                      <span className="text-vl-grey font-mono text-[10px] font-medium">
+                    <div className="mt-0.5 flex min-w-0 items-center space-x-1.5">
+                      <span
+                        className="text-vl-grey min-w-0 truncate font-mono text-[10px] font-medium"
+                        title={item.sku}
+                      >
                         {item.sku}
                       </span>
                       {variantDesc && (
                         <Badge
                           variant="outline"
-                          className="text-vl-black border-vl-white-500 bg-white px-1.5 py-0 text-[9px] font-medium"
+                          className="text-vl-black border-vl-white-500 shrink-0 bg-white px-1.5 py-0 text-[9px] font-medium"
                         >
                           {variantDesc}
                         </Badge>
@@ -505,28 +508,34 @@ export function PosCartPanel({
 
         {/* Totals Breakdown */}
         <div className="border-vl-white-400 space-y-2 border-t pt-2 text-xs">
-          <div className="text-vl-grey flex justify-between font-medium">
-            <span>Subtotal ({totalItemsCount} items):</span>
-            <span className="text-vl-black font-mono font-semibold">৳{subtotal.toFixed(0)}</span>
+          <div className="text-vl-dark-500 flex justify-between font-medium">
+            <span>
+              Subtotal ({totalItemsCount} {totalItemsCount === 1 ? "item" : "items"}):
+            </span>
+            <span className="text-vl-dark-900 font-mono font-semibold tabular-nums">
+              ৳{subtotal.toFixed(0)}
+            </span>
           </div>
 
           {effectiveDiscount > 0 && (
             <div className="flex justify-between font-medium text-emerald-600">
-              <span>Counter Discount:</span>
-              <span className="font-mono font-semibold">- ৳{effectiveDiscount.toFixed(0)}</span>
+              <span>Counter discount:</span>
+              <span className="font-mono font-semibold tabular-nums">
+                - ৳{effectiveDiscount.toFixed(0)}
+              </span>
             </div>
           )}
 
-          {/* Net Payable Box */}
-          <div className="border-vl-border bg-vl-black text-vl-white rounded-xl border p-3 shadow-xs">
+          {/* Net Payable Box (Unified Light Surface + High-Contrast Tabular Total) */}
+          <div className="border-vl-white-500 bg-vl-white-200 rounded-brand border p-3">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="font-heading text-vl-grey text-xs font-bold tracking-widest uppercase">
+                <span className="font-heading text-vl-dark-700 text-xs font-bold tracking-wider uppercase">
                   Net Payable
                 </span>
-                <p className="text-vl-white/60 text-[10px]">Tax inclusive</p>
+                <p className="text-vl-dark-400 text-[10px]">Tax inclusive</p>
               </div>
-              <span className="font-heading text-vl-cyan text-3xl font-black tracking-tight">
+              <span className="font-heading text-vl-dark-900 font-mono text-3xl font-black tracking-tight tabular-nums">
                 ৳{grandTotal.toFixed(0)}
               </span>
             </div>
@@ -539,10 +548,12 @@ export function PosCartPanel({
           disabled={cartItems.length === 0 || isStaffDiscountExceeded}
           onClick={onOpenPaymentModal}
           title="Open Payment & Settlement [F9 or Alt+Enter]"
-          className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
+          className={`font-heading rounded-brand flex h-12 w-full items-center justify-center space-x-2 text-sm font-black tracking-widest transition-colors active:scale-[0.99] ${
             !isOnline
-              ? "border-vl-border text-vl-grey bg-vl-dark-700 cursor-not-allowed border"
-              : "bg-vl-cyan text-vl-black hover:bg-vl-cyan-400 shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
+              ? "border-vl-white-500 bg-vl-white-400 text-vl-dark-400 cursor-not-allowed border"
+              : cartItems.length === 0 || isStaffDiscountExceeded
+                ? "bg-vl-white-400 text-vl-dark-400 cursor-not-allowed opacity-100"
+                : "bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400"
           }`}
         >
           <span>
@@ -550,7 +561,13 @@ export function PosCartPanel({
               ? `OFFLINE (LOCKED) ৳${grandTotal.toFixed(0)}`
               : `CHARGE ৳${grandTotal.toFixed(0)}`}
           </span>
-          <span className="text-vl-black rounded bg-black/20 px-2 py-0.5 font-mono text-[11px] font-bold">
+          <span
+            className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold ${
+              cartItems.length === 0 || isStaffDiscountExceeded || !isOnline
+                ? "bg-vl-dark-900/10 text-vl-dark-500"
+                : "bg-vl-dark-900/15 text-vl-dark-900"
+            }`}
+          >
             [F9]
           </span>
         </Button>

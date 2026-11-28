@@ -220,17 +220,17 @@ export function PosReturnModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-      <DialogContent className="border-vl-white-400 max-h-[90vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
+      <DialogContent className="border-vl-white-500 rounded-brand max-h-[90vh] w-full overflow-y-auto border bg-white p-6 shadow-xl sm:max-w-xl">
         <DialogHeader className="border-vl-white-400 border-b pb-3">
           <div className="flex items-center space-x-2.5">
-            <div className="bg-vl-black text-vl-cyan flex h-8 w-8 items-center justify-center rounded-xl shadow-2xs">
+            <div className="border-vl-white-500 bg-vl-white-200 text-vl-dark-900 rounded-brand flex h-8 w-8 items-center justify-center border">
               <RotateCcw className="h-4 w-4" />
             </div>
-            <DialogTitle className="font-heading text-lg font-black tracking-wide text-slate-900">
+            <DialogTitle className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight">
               In-Store Returns &amp; Exchanges
             </DialogTitle>
           </div>
-          <DialogDescription className="text-vl-grey text-xs">
+          <DialogDescription className="text-vl-dark-400 text-xs">
             Look up original physical cash memo or order number to process returns, exchanges, and
             restock.
           </DialogDescription>
@@ -560,22 +560,24 @@ export function PosReturnModal({
                 )}
 
                 {/* Financial Summary Callout */}
-                <div className="border-vl-border bg-vl-black text-vl-white space-y-1.5 rounded-xl border p-4 font-mono shadow-xs">
-                  <div className="text-vl-grey flex justify-between text-xs">
+                <div className="border-vl-white-500 bg-vl-white-200 rounded-brand space-y-1.5 border p-4 font-mono">
+                  <div className="text-vl-dark-500 flex justify-between text-xs">
                     <span>Return Item Value:</span>
-                    <span className="text-vl-white font-bold">৳{totalReturnValue.toFixed(0)}</span>
+                    <span className="text-vl-dark-900 font-bold tabular-nums">
+                      ৳{totalReturnValue.toFixed(0)}
+                    </span>
                   </div>
 
                   {resolution === "EXCHANGE" && (
-                    <div className="text-vl-grey flex justify-between text-xs">
+                    <div className="text-vl-dark-500 flex justify-between text-xs">
                       <span>Replacement Item Value:</span>
-                      <span className="text-vl-white font-bold">
+                      <span className="text-vl-dark-900 font-bold tabular-nums">
                         ৳{totalExchangeValue.toFixed(0)}
                       </span>
                     </div>
                   )}
 
-                  <div className="font-heading flex items-baseline justify-between border-t border-white/10 pt-2 text-sm font-black">
+                  <div className="font-heading border-vl-white-400 text-vl-dark-900 flex items-baseline justify-between border-t pt-2 text-sm font-black">
                     <span className="tracking-wide">
                       {netDifference > 0
                         ? "CUSTOMER TO PAY:"
@@ -584,8 +586,8 @@ export function PosReturnModal({
                           : "EVEN SWAP:"}
                     </span>
                     <span
-                      className={`font-heading text-xl font-black ${
-                        netDifference < 0 ? "text-amber-400" : "text-vl-cyan"
+                      className={`font-heading text-xl font-black tabular-nums ${
+                        netDifference < 0 ? "text-amber-600" : "text-vl-dark-900"
                       }`}
                     >
                       {netDifference === 0 ? "৳0.00" : `৳${Math.abs(netDifference).toFixed(0)}`}
