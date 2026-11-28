@@ -1,6 +1,13 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock Radix Dialog for renderToStaticMarkup SSR testing
 vi.mock("@/components/ui/dialog", () => ({
   Dialog: ({ children, open }: { children?: React.ReactNode; open?: boolean }) =>

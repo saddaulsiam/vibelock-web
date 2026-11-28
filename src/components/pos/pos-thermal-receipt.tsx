@@ -119,6 +119,20 @@ export function PosThermalReceipt({ receipt, isOpen, onNewSale }: PosThermalRece
               </div>
             )}
 
+            {typeof receipt.loyaltyPointsRedeemed === "number" &&
+              receipt.loyaltyPointsRedeemed > 0 && (
+                <div className="flex items-center justify-between text-slate-700">
+                  <span className="shrink-0">Loyalty Points:</span>
+                  <span className="shrink-0 text-right font-mono">
+                    {receipt.loyaltyPointsRedeemed} pts (-৳
+                    {typeof receipt.loyaltyDiscountAmount === "number"
+                      ? receipt.loyaltyDiscountAmount.toFixed(0)
+                      : receipt.loyaltyPointsRedeemed}
+                    )
+                  </span>
+                </div>
+              )}
+
             <div className="flex items-center justify-between pt-0.5 text-sm font-bold">
               <span className="shrink-0">TOTAL DUE:</span>
               <span className="shrink-0 text-right font-mono text-base font-black">

@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { InventoryService } from "@/lib/inventory/service";
 import { getActiveShiftRecord } from "./pos-shift-actions";
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { revalidatePath } from "next/cache";
 import {
   generatePosOrderNumber,
@@ -150,9 +151,81 @@ export async function createPosOrderAction(
         throw new Error("Invalid discount amount.");
       }
 
+      const loyaltyRedeemed = Number(input.loyaltyPointsRedeemed) || 0;
+      if (loyaltyRedeemed < 0 || !Number.isFinite(loyaltyRedeemed)) {
+        throw new Error("Invalid loyalty points amount.");
+      }
+
+      let activePointRedemptionValue = 1;
+
+      if (loyaltyRedeemed > 0) {
+        if (!input.customerPhone?.trim()) {
+          throw new Error("Customer phone number is required to redeem loyalty points.");
+        }
+
+        // Fetch loyalty settings to enforce active rules and channel policies
+        const loyaltyConfig =
+          typeof tx.loyaltySetting?.findFirst === "function"
+            ? await tx.loyaltySetting.findFirst()
+            : null;
+
+        if (loyaltyConfig) {
+          if (!loyaltyConfig.enabled || !loyaltyConfig.enableInPos) {
+            throw new Error("Loyalty point redemption is currently disabled for POS sales.");
+          }
+          if (
+            loyaltyConfig.minPointsToRedeem > 0 &&
+            loyaltyRedeemed < loyaltyConfig.minPointsToRedeem
+          ) {
+            throw new Error(
+              `Minimum of ${loyaltyConfig.minPointsToRedeem} points required for redemption.`
+            );
+          }
+          activePointRedemptionValue = Number(loyaltyConfig.pointRedemptionValue);
+
+          const expectedDiscount =
+            Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100;
+          if (expectedDiscount > rawDiscount + 0.01) {
+            throw new Error(
+              "Loyalty points redemption value cannot exceed total applied discount."
+            );
+          }
+
+          const maxAllowedDiscountPct = loyaltyConfig.maxCartDiscountPercentage ?? 100;
+          const maxAllowedDiscount = Math.round((subtotal * maxAllowedDiscountPct) / 100);
+          if (expectedDiscount > maxAllowedDiscount + 0.01) {
+            throw new Error(
+              `Loyalty discount exceeds maximum allowed ${maxAllowedDiscountPct}% of cart subtotal.`
+            );
+          }
+        } else {
+          if (loyaltyRedeemed > rawDiscount) {
+            throw new Error("Loyalty points redeemed cannot exceed total applied discount.");
+          }
+        }
+
+        // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger (O(1))
+        if (typeof tx.loyaltyAccount?.findFirst === "function") {
+          const normalized = normalizeBdPhoneNumber(input.customerPhone.trim());
+          const searchSuffix = normalized.slice(-10);
+          const account = await tx.loyaltyAccount.findFirst({
+            where: { phone: { endsWith: searchSuffix } },
+            select: { points: true },
+          });
+          const availablePoints = account?.points ?? 0;
+          if (loyaltyRedeemed > availablePoints) {
+            throw new Error(
+              `Cannot redeem ${loyaltyRedeemed} loyalty points. Customer only has ${availablePoints} available points.`
+            );
+          }
+        }
+      }
+
       if (cashier.role === "STAFF" && subtotal > 0) {
         const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
-        if (rawDiscount > maxStaffDiscount + 0.01) {
+        // Staff discount cap applies to arbitrary counter discounts (loyalty redemption is earned by customer)
+        const counterDiscountExcludingLoyalty = Math.max(0, rawDiscount - loyaltyRedeemed);
+        if (counterDiscountExcludingLoyalty > maxStaffDiscount + 0.01) {
           throw new Error(
             `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(2)}). Manager or Admin approval required.`
           );
@@ -354,6 +427,7 @@ export async function createPosOrderAction(
                 cashierName: cashier.name || cashier.email,
                 paymentMethod: split.method,
                 reference: split.reference || null,
+                loyaltyPointsRedeemed: i === 0 ? loyaltyRedeemed : 0,
               },
             },
           });
@@ -376,6 +450,7 @@ export async function createPosOrderAction(
               cashierId: cashier.id,
               cashierName: cashier.name || cashier.email,
               paymentMethod: input.paymentMethod,
+              loyaltyPointsRedeemed: loyaltyRedeemed,
             },
           },
         });
@@ -393,6 +468,108 @@ export async function createPosOrderAction(
             notes: `POS Counter Sale - ${newOrder.orderNumber}`,
           },
         });
+      }
+
+      // 12. Loyalty Ledger — Earn & Redeem points atomically
+      if (customerPhone && customerPhone !== "N/A") {
+        const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+        const loyaltyConfig =
+          typeof tx.loyaltySetting?.findFirst === "function"
+            ? await tx.loyaltySetting.findFirst()
+            : null;
+        const spendAmountPerPoint = loyaltyConfig?.spendAmountPerPoint ?? 100;
+        const pointRedemptionValue = loyaltyConfig
+          ? Number(loyaltyConfig.pointRedemptionValue)
+          : activePointRedemptionValue;
+        const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+        const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+        const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
+        const loyaltyEnabled =
+          (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
+
+        if (loyaltyEnabled) {
+          const earnedPointsThisOrder = Math.floor(total / Math.max(1, spendAmountPerPoint));
+
+          // Fetch pre-existing account to compute exact balances without double-counting
+          const existingAccount = await tx.loyaltyAccount.findUnique({
+            where: { phone: normalizedPhone },
+            select: { id: true, points: true, lifetimePoints: true, lifetimeSpend: true },
+          });
+
+          const previousPoints = existingAccount?.points ?? 0;
+          const balanceAfterEarn = previousPoints + earnedPointsThisOrder;
+          const finalPoints = Math.max(0, balanceAfterEarn - loyaltyRedeemed);
+          const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPointsThisOrder;
+          const newLifetimeSpend =
+            (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
+
+          let newTier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
+          if (newLifetimeSpend >= platinumThreshold) newTier = "PLATINUM";
+          else if (newLifetimeSpend >= goldThreshold) newTier = "GOLD";
+          else if (newLifetimeSpend >= silverThreshold) newTier = "SILVER";
+
+          // Upsert LoyaltyAccount — link to userId if we can find the registered user
+          const linkedUser = await tx.user.findFirst({
+            where: { phone: { endsWith: normalizedPhone.slice(-10) } },
+            select: { id: true },
+          });
+
+          const account = await tx.loyaltyAccount.upsert({
+            where: { phone: normalizedPhone },
+            create: {
+              phone: normalizedPhone,
+              userId: linkedUser?.id ?? null,
+              points: finalPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
+            },
+            update: {
+              points: finalPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
+              ...(linkedUser?.id ? { userId: linkedUser.id } : {}),
+            },
+          });
+
+          // Record EARNED transaction
+          if (earnedPointsThisOrder > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                loyaltyAccountId: account.id,
+                orderId: newOrder.id,
+                type: "EARNED",
+                points: earnedPointsThisOrder,
+                balanceAfter: balanceAfterEarn,
+                reason: `POS Sale - ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // Record REDEEMED transaction
+          if (loyaltyRedeemed > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                loyaltyAccountId: account.id,
+                orderId: newOrder.id,
+                type: "REDEEMED",
+                points: -loyaltyRedeemed,
+                balanceAfter: finalPoints,
+                reason: `POS Redemption - ৳${(loyaltyRedeemed * pointRedemptionValue).toFixed(2)} discount on ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // Update Order with loyalty tracking fields
+          await tx.order.update({
+            where: { id: newOrder.id },
+            data: {
+              loyaltyPointsEarned: earnedPointsThisOrder,
+              loyaltyPointsRedeemed: loyaltyRedeemed,
+            },
+          });
+        }
       }
 
       // 12. Create Order History snapshot
@@ -415,6 +592,7 @@ export async function createPosOrderAction(
             orderNumber: newOrder.orderNumber,
             total,
             discount,
+            loyaltyPointsRedeemed: loyaltyRedeemed,
             paymentMethod: input.paymentMethod,
             amountPaid: effectiveAmountPaid,
             changeDue,
@@ -439,6 +617,11 @@ export async function createPosOrderAction(
         paymentMethod: input.paymentMethod,
         amountPaid: effectiveAmountPaid,
         changeDue,
+        loyaltyPointsRedeemed: loyaltyRedeemed > 0 ? loyaltyRedeemed : undefined,
+        loyaltyDiscountAmount:
+          loyaltyRedeemed > 0
+            ? Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100
+            : undefined,
         notes: input.notes?.trim() || null,
         splits: receiptSplits,
       };

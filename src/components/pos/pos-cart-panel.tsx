@@ -34,6 +34,8 @@ interface PosCartPanelProps {
   setCustomerName: (val: string) => void;
   discount: number;
   setDiscount: (val: number) => void;
+  loyaltyPointsRedeemed?: number;
+  setLoyaltyPointsRedeemed?: (val: number) => void;
   onUpdateQuantity: (variantId: string, quantity: number) => void;
   onRemoveItem: (variantId: string) => void;
   onClearCart: () => void;
@@ -52,6 +54,8 @@ export function PosCartPanel({
   setCustomerName,
   discount,
   setDiscount,
+  loyaltyPointsRedeemed = 0,
+  setLoyaltyPointsRedeemed,
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
@@ -231,6 +235,7 @@ export function PosCartPanel({
                     setCustomerName("");
                     setCustomerProfile(null);
                     setHasSearched(false);
+                    setLoyaltyPointsRedeemed?.(0);
                   }}
                   aria-label="Clear customer details"
                   title="Clear customer details"
@@ -252,11 +257,11 @@ export function PosCartPanel({
 
         {/* Customer Recognized Loyalty Banner */}
         {customerProfile ? (
-          <div className="animate-in fade-in-50 border-vl-cyan-200 bg-vl-black text-vl-white space-y-1.5 rounded-md border p-2.5 shadow-xs duration-200">
+          <div className="animate-in fade-in-50 border-vl-white-500 bg-vl-white-100 text-vl-dark-900 rounded-brand space-y-1.5 border p-2.5 shadow-xs duration-200">
             <div className="flex items-center justify-between">
               <div className="flex min-w-0 items-center space-x-1.5">
-                <Crown className="text-vl-cyan h-3.5 w-3.5 flex-shrink-0" />
-                <span className="text-vl-white truncate text-[11px] font-bold">
+                <Crown className="text-vl-dark-900 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="text-vl-dark-900 truncate text-[11px] font-bold">
                   {customerProfile.name}
                 </span>
                 <Badge
@@ -265,7 +270,7 @@ export function PosCartPanel({
                   {customerProfile.tier}
                 </Badge>
               </div>
-              <span className="text-vl-grey flex-shrink-0 font-mono text-[10px]">
+              <span className="text-vl-dark-400 shrink-0 font-mono text-[10px]">
                 {customerProfile.ordersCount}{" "}
                 {customerProfile.ordersCount === 1 ? "order" : "orders"} &middot; ৳
                 {customerProfile.totalSpent.toLocaleString()} LTV
@@ -273,26 +278,27 @@ export function PosCartPanel({
             </div>
 
             {/* Points & Redemption */}
-            <div className="border-vl-border flex items-center justify-between border-t pt-1.5 text-[11px]">
-              <span className="text-vl-white/80">
+            <div className="border-vl-white-400 flex items-center justify-between border-t pt-1.5 text-[11px]">
+              <span className="text-vl-dark-700">
                 Points:{" "}
-                <strong className="text-vl-cyan font-mono">
+                <strong className="text-vl-dark-900 font-mono">
                   {customerProfile.loyaltyPoints} pts
                 </strong>
                 {customerProfile.pointsDiscountValue > 0 &&
                   ` (৳${customerProfile.pointsDiscountValue})`}
               </span>
-              {customerProfile.pointsDiscountValue > 0 &&
-                (discount === customerProfile.pointsDiscountValue ? (
+              {customerProfile.pointsDiscountValue > 0 ? (
+                loyaltyPointsRedeemed > 0 || discount === customerProfile.pointsDiscountValue ? (
                   <Button
                     type="button"
                     size="xs"
                     variant="outline"
                     onClick={() => {
                       setDiscount(0);
+                      setLoyaltyPointsRedeemed?.(0);
                       toast.info("Loyalty discount removed.");
                     }}
-                    className="h-6 border-emerald-400 bg-emerald-500/20 px-2 text-[10px] font-bold text-emerald-300 hover:bg-red-500/20 hover:text-red-300"
+                    className="border-vl-white-500 hover:bg-vl-white-200 rounded-brand h-6 px-2 text-[10px] font-bold text-red-600 hover:text-red-700"
                   >
                     Points Applied ✓ (Remove)
                   </Button>
@@ -303,15 +309,22 @@ export function PosCartPanel({
                     variant="brand"
                     onClick={() => {
                       setDiscount(customerProfile.pointsDiscountValue);
+                      setLoyaltyPointsRedeemed?.(customerProfile.loyaltyPoints);
                       toast.success(
                         `Applied ৳${customerProfile.pointsDiscountValue} loyalty discount!`
                       );
                     }}
-                    className="h-6 px-2 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)]"
+                    className="rounded-brand h-6 px-2 text-[10px] font-bold"
                   >
                     Redeem (-৳{customerProfile.pointsDiscountValue})
                   </Button>
-                ))}
+                )
+              ) : customerProfile.minPointsToRedeem &&
+                customerProfile.loyaltyPoints < customerProfile.minPointsToRedeem ? (
+                <span className="text-vl-dark-400 font-mono text-[10px]">
+                  Min. {customerProfile.minPointsToRedeem} pts to redeem
+                </span>
+              ) : null}
             </div>
           </div>
         ) : (

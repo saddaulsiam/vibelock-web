@@ -13,6 +13,7 @@ import {
   Shield,
   ShieldAlert,
   SlidersHorizontal,
+  Sparkles,
   Truck,
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,6 +54,11 @@ const SETTINGS_TABS = [
     href: "/admin/settings/security",
     label: "Security & Pixels",
     icon: Shield,
+  },
+  {
+    href: "/admin/settings/loyalty",
+    label: "Loyalty Program",
+    icon: Sparkles,
   },
   {
     href: "/admin/settings/payments",

@@ -23,6 +23,12 @@ vi.mock("@/lib/prisma/client", () => {
       order: {
         findMany: vi.fn(),
       },
+      loyaltyAccount: {
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
+      loyaltySetting: {
+        findFirst: vi.fn().mockResolvedValue(null),
+      },
     },
     Prisma: {},
   };
@@ -31,6 +37,9 @@ vi.mock("@/lib/prisma/client", () => {
 describe("POS System - lookupPosCustomerByPhoneAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Reset loyalty mocks to safe defaults for each test
+    vi.mocked(prisma.loyaltyAccount.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.loyaltySetting.findFirst).mockResolvedValue(null);
   });
 
   test("returns null when phone number has fewer than 11 digits", async () => {
@@ -120,6 +129,52 @@ describe("POS System - lookupPosCustomerByPhoneAction", () => {
     expect(profile.totalSpent).toBe(3500);
     expect(profile.tier).toBe("BRONZE"); // < 5000 -> BRONZE
     expect(profile.loyaltyPoints).toBe(35);
+  });
+
+  test("deducts previously redeemed loyalty points from customer balance via LoyaltyAccount ledger", async () => {
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.order.findMany).mockResolvedValue([
+      {
+        id: "ord-10",
+        orderNumber: "VL-POS-201",
+        customerName: "Imran Hossain",
+        customerPhone: "01999887766",
+        total: 10000,
+        salesChannel: "POS",
+        createdAt: new Date("2026-11-01T12:00:00Z"),
+        items: [{ quantity: 2 }],
+      },
+      {
+        id: "ord-11",
+        orderNumber: "VL-POS-202",
+        customerName: "Imran Hossain",
+        customerPhone: "01999887766",
+        total: 5000,
+        salesChannel: "POS",
+        createdAt: new Date("2026-11-15T15:00:00Z"),
+        items: [{ quantity: 1 }],
+      },
+    ] as unknown as Awaited<ReturnType<typeof prisma.order.findMany>>);
+
+    // LoyaltyAccount has the accurate net balance (earned 150 - redeemed 55 = 95 remaining)
+    vi.mocked(prisma.loyaltyAccount.findFirst).mockResolvedValue({
+      points: 95,
+      lifetimeSpend: 15000,
+      tier: "SILVER",
+    } as unknown as Awaited<ReturnType<typeof prisma.loyaltyAccount.findFirst>>);
+
+    const result = await lookupPosCustomerByPhoneAction("01999887766");
+
+    expect(result.success).toBe(true);
+    expect(result.data).toBeDefined();
+
+    const profile = result.data!;
+    // Total spent: 10000 + 5000 = 15000
+    // LoyaltyAccount.points = 95 (ledger tracks it accurately)
+    expect(profile.totalSpent).toBe(15000);
+    expect(profile.loyaltyPoints).toBe(95);
+    expect(profile.pointsDiscountValue).toBe(95);
+    expect(profile.tier).toBe("SILVER");
   });
 
   test("handles authorization failure securely", async () => {

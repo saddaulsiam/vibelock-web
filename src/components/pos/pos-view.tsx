@@ -97,6 +97,7 @@ export function PosView({
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+  const [loyaltyPointsRedeemed, setLoyaltyPointsRedeemed] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isMobileCartOpen, setIsMobileCartOpen] = useState<boolean>(false);
 
@@ -216,6 +217,7 @@ export function PosView({
     clientRequestIdRef.current = null;
     setCartItems([]);
     setDiscount(0);
+    setLoyaltyPointsRedeemed(0);
   }, []);
 
   // Compute Grand Total
@@ -254,6 +256,7 @@ export function PosView({
     setCustomerPhone("");
     setCustomerName("");
     setDiscount(0);
+    setLoyaltyPointsRedeemed(0);
 
     toast.success(`Cart held successfully (${label}). Ready for next customer!`);
   }, [cartItems, customerName, customerPhone, effectiveDiscount, grandTotal, parkedCarts]);
@@ -268,6 +271,7 @@ export function PosView({
     // Remove from parked
     saveParkedCarts(parkedCarts.filter((c) => c.id !== cart.id));
     setIsParkedModalOpen(false);
+    setLoyaltyPointsRedeemed(0);
 
     toast.success(`Resumed held cart: ${cart.label}`);
   };
@@ -339,6 +343,7 @@ export function PosView({
         paymentMethod,
         amountPaid,
         discount: effectiveDiscount,
+        loyaltyPointsRedeemed: loyaltyPointsRedeemed > 0 ? loyaltyPointsRedeemed : undefined,
         notes,
         splitPayments,
         clientRequestId: clientRequestIdRef.current || undefined,
@@ -351,6 +356,7 @@ export function PosView({
 
       // Success: clear idempotency key and refresh catalog stock
       clientRequestIdRef.current = null;
+      setLoyaltyPointsRedeemed(0);
       setReceiptData(result.data);
       setIsPaymentOpen(false);
       setIsReceiptOpen(true);
@@ -455,7 +461,7 @@ export function PosView({
         isZReportOpen ||
         isReturnReceiptOpen;
 
-      if (isAnyModalOpen) {
+      if (isAnyModalOpen || !e.key) {
         return;
       }
 
@@ -565,6 +571,8 @@ export function PosView({
             setCustomerName={setCustomerName}
             discount={discount}
             setDiscount={setDiscount}
+            loyaltyPointsRedeemed={loyaltyPointsRedeemed}
+            setLoyaltyPointsRedeemed={setLoyaltyPointsRedeemed}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
@@ -593,6 +601,8 @@ export function PosView({
                 setCustomerName={setCustomerName}
                 discount={discount}
                 setDiscount={setDiscount}
+                loyaltyPointsRedeemed={loyaltyPointsRedeemed}
+                setLoyaltyPointsRedeemed={setLoyaltyPointsRedeemed}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
                 onClearCart={handleClearCart}
@@ -662,6 +672,7 @@ export function PosView({
       <PosOrdersModal
         isOpen={isOrdersModalOpen}
         onClose={() => setIsOrdersModalOpen(false)}
+        cashierRole={cashierRole}
         onReprintReceipt={(receipt) => {
           setReceiptData(receipt);
           setIsReceiptOpen(true);

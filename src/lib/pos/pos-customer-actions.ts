@@ -33,7 +33,7 @@ export async function lookupPosCustomerByPhoneAction(
     // Match last 10 digits to handle local 01... vs +8801... variations safely
     const searchSuffix = normalized.slice(-10);
 
-    const [matchedUser, pastOrders] = await Promise.all([
+    const [matchedUser, pastOrders, loyaltyAccount, loyaltyConfig] = await Promise.all([
       prisma.user.findFirst({
         where: {
           phone: {
@@ -76,14 +76,30 @@ export async function lookupPosCustomerByPhoneAction(
           },
         },
       }),
+      // Fetch loyalty account directly from the ledger table (O(1), no aggregation)
+      prisma.loyaltyAccount.findFirst({
+        where: { phone: { endsWith: searchSuffix } },
+        select: { points: true, lifetimeSpend: true, tier: true },
+      }),
+      // Load live loyalty config from LoyaltySetting table
+      prisma.loyaltySetting.findFirst(),
     ]);
 
-    // If no past orders and no registered user, customer is completely new
-    if (!matchedUser && pastOrders.length === 0) {
+    // If no past orders and no registered user and no loyalty account, customer is completely new
+    if (!matchedUser && pastOrders.length === 0 && !loyaltyAccount) {
       return { success: true, data: null };
     }
 
-    // Aggregate lifetime financial data
+    // Resolve loyalty config (use DB row or fall back to hardcoded defaults)
+    const spendAmountPerPoint = loyaltyConfig?.spendAmountPerPoint ?? 100;
+    const pointRedemptionValue = loyaltyConfig ? Number(loyaltyConfig.pointRedemptionValue) : 1;
+    const minPointsToRedeem = loyaltyConfig?.minPointsToRedeem ?? 0;
+    const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+    const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+    const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
+    const isLoyaltyActive = (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
+
+    // Aggregate lifetime financial data from order history
     const totalSpent = pastOrders.reduce((sum, ord) => sum + Number(ord.total), 0);
     const ordersCount = pastOrders.length;
     const lastVisitedAt = pastOrders[0]?.createdAt ? pastOrders[0].createdAt.toISOString() : null;
@@ -95,19 +111,35 @@ export async function lookupPosCustomerByPhoneAction(
         ?.customerName ||
       "Valued Shopper";
 
-    // Tier determination
-    let tier: PosCustomerTier = "BRONZE";
-    if (totalSpent >= 50000) {
-      tier = "PLATINUM";
-    } else if (totalSpent >= 20000) {
-      tier = "GOLD";
-    } else if (totalSpent >= 5000) {
-      tier = "SILVER";
+    // Loyalty points: use LoyaltyAccount balance if available (accurate ledger),
+    // otherwise fall back to computing from order spend history (new customers without an account yet)
+    let loyaltyPoints: number;
+    if (loyaltyAccount) {
+      loyaltyPoints = loyaltyAccount.points;
+    } else {
+      const spendPerPoint = Math.max(1, spendAmountPerPoint);
+      const earnedPoints = isLoyaltyActive ? Math.floor(totalSpent / spendPerPoint) : 0;
+      loyaltyPoints = Math.max(0, earnedPoints);
     }
+    const isRedemptionEligible =
+      isLoyaltyActive && loyaltyPoints >= minPointsToRedeem && loyaltyPoints > 0;
+    const pointsDiscountValue = isRedemptionEligible
+      ? Math.floor(loyaltyPoints * pointRedemptionValue)
+      : 0;
 
-    // Loyalty points: 1 point per ৳100 spent (৳1 discount per point)
-    const loyaltyPoints = Math.floor(totalSpent / 100);
-    const pointsDiscountValue = loyaltyPoints;
+    // Tier: use LoyaltyAccount tier if available, otherwise derive from spend
+    let tier: PosCustomerTier;
+    if (loyaltyAccount) {
+      tier = loyaltyAccount.tier as PosCustomerTier;
+    } else if (totalSpent >= platinumThreshold) {
+      tier = "PLATINUM";
+    } else if (totalSpent >= goldThreshold) {
+      tier = "GOLD";
+    } else if (totalSpent >= silverThreshold) {
+      tier = "SILVER";
+    } else {
+      tier = "BRONZE";
+    }
 
     const recentOrders: PosCustomerRecentOrder[] = pastOrders.slice(0, 5).map((o) => ({
       orderNumber: o.orderNumber,
@@ -128,6 +160,8 @@ export async function lookupPosCustomerByPhoneAction(
       tier,
       loyaltyPoints,
       pointsDiscountValue,
+      minPointsToRedeem,
+      isRedemptionEligible,
       recentOrders,
     };
 

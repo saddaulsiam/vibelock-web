@@ -74,23 +74,25 @@ export async function getPosTodayOrdersAction(
       const subtotalVal = Number(o.subtotal);
       const discountVal = Number(o.discount);
 
-      totalRevenue += totalVal;
-      if (o.payments.length > 0) {
-        for (const p of o.payments) {
-          const pAmt =
-            p.amount !== undefined && p.amount !== null
-              ? Number(p.amount)
-              : isSplitOrder
-                ? 0
-                : totalVal;
-          if ((p.gateway || "").toUpperCase() === "CASH") {
-            cashTotal += pAmt;
-          } else {
-            digitalTotal += pAmt;
+      if (o.status !== "CANCELLED") {
+        totalRevenue += totalVal;
+        if (o.payments.length > 0) {
+          for (const p of o.payments) {
+            const pAmt =
+              p.amount !== undefined && p.amount !== null
+                ? Number(p.amount)
+                : isSplitOrder
+                  ? 0
+                  : totalVal;
+            if ((p.gateway || "").toUpperCase() === "CASH") {
+              cashTotal += pAmt;
+            } else {
+              digitalTotal += pAmt;
+            }
           }
+        } else {
+          cashTotal += totalVal;
         }
-      } else {
-        cashTotal += totalVal;
       }
 
       const payload = primaryPayment?.gatewayPayload as Record<string, unknown> | null;
