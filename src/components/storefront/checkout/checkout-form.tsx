@@ -15,12 +15,14 @@ import {
 } from "@/lib/checkout/actions";
 import { checkoutSchema } from "@/lib/checkout/validation";
 import type { CheckoutSettings } from "@/lib/settings/checkout-settings";
+import type { StorefrontLoyaltyInfo } from "@/lib/settings/loyalty-settings";
 import {
   Check,
   ImageOff,
   LoaderCircle,
   MessageSquare,
   ShieldCheck,
+  Sparkles,
   Tag,
   X,
 } from "lucide-react";
@@ -40,6 +42,7 @@ interface CheckoutFormProps {
     detail: string;
   }>;
   checkoutPolicies?: CheckoutSettings;
+  loyaltyInfo?: StorefrontLoyaltyInfo | null;
 }
 
 function formatPrice(amount: number) {
@@ -156,11 +159,13 @@ export function CheckoutForm({
   defaultPhone = "",
   availablePaymentMethods,
   checkoutPolicies,
+  loyaltyInfo,
 }: CheckoutFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isSubmitting = useRef(false);
   const idempotencyKey = useRef(crypto.randomUUID());
+  const [redeemLoyalty, setRedeemLoyalty] = useState(false);
 
   const paymentOptions =
     availablePaymentMethods !== undefined
@@ -364,6 +369,7 @@ export function CheckoutForm({
       paymentMethod: paymentMethod as "COD" | "ONLINE" | "BKASH" | "PAYSTATION",
       shippingMethodId: selectedShippingMethodId,
       couponCode: appliedCoupon?.code || undefined,
+      redeemLoyaltyPoints: redeemLoyalty && loyaltyInfo?.isRedemptionEligible ? pointsToRedeem : 0,
     };
 
     const parsed = checkoutSchema.safeParse(submissionData);
@@ -428,7 +434,26 @@ export function CheckoutForm({
   const subtotalBeforeDiscount = cart.subtotal + discountTotal;
   const selectedMethod = shippingMethods.find((m) => m.id === selectedShippingMethodId);
   const shippingCost = selectedMethod ? selectedMethod.cost : 0;
-  const itemsTotal = Math.max(0, cart.subtotal - (appliedCoupon?.discountAmount ?? 0));
+
+  const couponDiscountAmount = appliedCoupon?.discountAmount ?? 0;
+  const subtotalAfterCoupon = Math.max(0, cart.subtotal - couponDiscountAmount);
+  const maxLoyaltyDiscount = loyaltyInfo
+    ? (subtotalAfterCoupon * loyaltyInfo.maxCartDiscountPercentage) / 100
+    : 0;
+  const potentialLoyaltyDiscount = loyaltyInfo
+    ? Math.min(loyaltyInfo.points * loyaltyInfo.pointRedemptionValue, maxLoyaltyDiscount, subtotalAfterCoupon)
+    : 0;
+  const pointsToRedeem =
+    loyaltyInfo && potentialLoyaltyDiscount > 0
+      ? Math.min(
+          loyaltyInfo.points,
+          Math.ceil(potentialLoyaltyDiscount / Math.max(0.01, loyaltyInfo.pointRedemptionValue))
+        )
+      : 0;
+  const effectiveLoyaltyDiscount =
+    redeemLoyalty && loyaltyInfo?.isRedemptionEligible ? potentialLoyaltyDiscount : 0;
+
+  const itemsTotal = Math.max(0, cart.subtotal - couponDiscountAmount - effectiveLoyaltyDiscount);
   const grandTotal = selectedMethod ? itemsTotal + shippingCost : null;
 
   return (
@@ -1012,6 +1037,61 @@ export function CheckoutForm({
             )}
           </div>
 
+          {/* Loyalty Points Redemption Box */}
+          {loyaltyInfo && loyaltyInfo.enabled && loyaltyInfo.enableOnline && loyaltyInfo.points > 0 && (
+            <div className="border-border border-t py-3.5">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="size-3.5 text-vl-cyan-600" aria-hidden="true" />
+                  <span className="text-muted-foreground text-compact font-bold tracking-[0.14em] uppercase">
+                    VibeLock Rewards
+                  </span>
+                </div>
+                <Badge
+                  variant="outline"
+                  className="font-mono text-2xs uppercase tracking-wider border-vl-cyan-500/30 text-vl-cyan-700 bg-vl-cyan-50/50"
+                >
+                  {loyaltyInfo.tier}
+                </Badge>
+              </div>
+
+              {loyaltyInfo.isRedemptionEligible ? (
+                <div className="flex items-center justify-between gap-3 rounded-xs border border-vl-cyan-200 bg-vl-cyan-50/30 p-2.5">
+                  <div className="min-w-0">
+                    <p className="text-vl-black text-xs font-semibold">
+                      {loyaltyInfo.points} Points Available
+                    </p>
+                    <p className="text-muted-foreground text-compact">
+                      Redeem {pointsToRedeem} pts for {formatPrice(potentialLoyaltyDiscount)} off
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={redeemLoyalty ? "secondary" : "brand"}
+                    onClick={() => {
+                      const next = !redeemLoyalty;
+                      setRedeemLoyalty(next);
+                      if (next) {
+                        toast.success(`Applied ${pointsToRedeem} loyalty points!`);
+                      } else {
+                        toast.info("Loyalty points removed.");
+                      }
+                    }}
+                    disabled={isPending}
+                    className="h-8 px-3 text-xs"
+                  >
+                    {redeemLoyalty ? "Remove" : "Redeem"}
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-2xs">
+                  You have {loyaltyInfo.points} pts. (Min. {loyaltyInfo.minPointsToRedeem} pts needed to redeem).
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Pricing Breakdown */}
           <dl className="border-border space-y-2.5 border-t py-3.5 text-xs">
             <div className="flex items-center justify-between gap-3">
@@ -1031,6 +1111,17 @@ export function CheckoutForm({
                 </dt>
                 <dd className="font-bold text-emerald-600">
                   −{formatPrice(appliedCoupon.discountAmount)}
+                </dd>
+              </div>
+            )}
+            {effectiveLoyaltyDiscount > 0 && (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-muted-foreground flex items-center gap-1.5">
+                  <Sparkles className="size-3 text-vl-cyan-600" aria-hidden="true" />
+                  <span>Loyalty Discount ({pointsToRedeem} pts)</span>
+                </dt>
+                <dd className="font-bold text-vl-cyan-600">
+                  −{formatPrice(effectiveLoyaltyDiscount)}
                 </dd>
               </div>
             )}

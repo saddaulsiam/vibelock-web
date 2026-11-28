@@ -8,16 +8,25 @@ export async function getAccountOverview() {
   const user = await requireUser();
   const now = new Date();
 
-  const [profile, orderCount, returnCount, addresses, recentOrders, totalSpentAgg, activeCoupons] =
+  const [profile, orderCount, returnCount, addresses, recentOrders, totalSpentAgg, activeCoupons, loyaltyAccount] =
     await Promise.all([
       prisma.user.findUnique({
         where: { id: user.id },
         select: {
           name: true,
           email: true,
+          phone: true,
           createdAt: true,
           emailVerified: true,
           image: true,
+          loyaltyAccount: {
+            select: {
+              points: true,
+              lifetimePoints: true,
+              lifetimeSpend: true,
+              tier: true,
+            },
+          },
         },
       }),
       prisma.order.count({ where: { userId: user.id } }),
@@ -79,6 +88,20 @@ export async function getAccountOverview() {
           endDate: true,
         },
       }),
+      prisma.loyaltyAccount.findFirst({
+        where: {
+          OR: [
+            { userId: user.id },
+            ...(user.phone ? [{ phone: user.phone }] : []),
+          ],
+        },
+        select: {
+          points: true,
+          lifetimePoints: true,
+          lifetimeSpend: true,
+          tier: true,
+        },
+      }),
     ]);
 
   const userReturnRequests = await prisma.returnRequest.findMany({
@@ -129,6 +152,15 @@ export async function getAccountOverview() {
       createdAt: profile?.createdAt ?? new Date(),
       emailVerified: profile?.emailVerified ?? null,
       image: profile?.image ?? null,
+    },
+    loyalty: {
+      points: loyaltyAccount?.points ?? profile?.loyaltyAccount?.points ?? 0,
+      tier: (loyaltyAccount?.tier ??
+        profile?.loyaltyAccount?.tier ??
+        "BRONZE") as "BRONZE" | "SILVER" | "GOLD" | "PLATINUM",
+      lifetimeSpend: Number(
+        loyaltyAccount?.lifetimeSpend ?? profile?.loyaltyAccount?.lifetimeSpend ?? 0
+      ),
     },
     orderCount,
     returnCount,

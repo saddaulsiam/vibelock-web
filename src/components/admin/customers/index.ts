@@ -4,6 +4,7 @@ export * from "./customer-back-button";
 export * from "./customer-create-modal";
 export * from "./customer-detail-header-actions";
 export * from "./customer-edit-modal";
+export * from "./customer-loyalty-card";
 export * from "./customer-preferences-card";
 export * from "./customer-reviews-card";
 export * from "./customer-risk-widget";

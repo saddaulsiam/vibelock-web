@@ -252,6 +252,22 @@ describe("POS In-Store Returns & Exchanges", () => {
             items: [{ id: "ret-item-2", orderItemId: "item-1" }],
           }),
         },
+        productVariant: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: "var-hoodie",
+              sku: "VL-HOOD-BLK-L",
+              size: "L",
+              color: "Black",
+              sellingPrice: 2200,
+              discountPrice: null,
+              product: { name: "Fleece Hoodie", status: "PUBLISHED" },
+            },
+          ]),
+        },
+        payment: {
+          create: vi.fn().mockResolvedValue({ id: "pay-exch-1" }),
+        },
         inventoryTransaction: {
           create: vi.fn().mockResolvedValue({ id: "inv-tx-rep" }),
         },
@@ -315,6 +331,162 @@ describe("POS In-Store Returns & Exchanges", () => {
           }),
         })
       );
+
+      // Verify exchange charge payment recorded
+      expect(mockTx.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            orderId: "ord-1",
+            amount: 1000,
+            status: "SUCCESS",
+            gateway: "CASH",
+          }),
+        })
+      );
+    });
+
+    test("pro-rates refund value on discounted orders and ignores tampered exchange price", async () => {
+      const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([]),
+        order: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "ord-disc",
+            orderNumber: "VL-POS-DISC",
+            createdAt: new Date(),
+            subtotal: 1000,
+            total: 700, // 300 order-level discount
+            customerName: "Rahim",
+            customerPhone: "01712345678",
+            items: [
+              {
+                id: "item-1",
+                productName: "Oversized Tee",
+                sku: "VL-TEE-BLK-M",
+                size: "M",
+                color: "Black",
+                unitPrice: 1000,
+                lineTotal: 1000,
+                quantity: 1,
+              },
+            ],
+          }),
+        },
+        returnRequest: {
+          create: vi.fn().mockResolvedValue({
+            id: "ret-req-3",
+            items: [{ id: "ret-item-3", orderItemId: "item-1" }],
+          }),
+        },
+        productVariant: {
+          findMany: vi.fn().mockResolvedValue([
+            {
+              id: "var-jacket",
+              sku: "VL-JKT-BLK-L",
+              size: "L",
+              color: "Black",
+              sellingPrice: 5000,
+              discountPrice: null,
+              product: { name: "Winter Jacket", status: "PUBLISHED" },
+            },
+          ]),
+        },
+        payment: {
+          create: vi.fn().mockResolvedValue({ id: "pay-exch-2" }),
+        },
+        inventoryTransaction: {
+          create: vi.fn().mockResolvedValue({ id: "inv-tx-rep" }),
+        },
+        auditLog: {
+          create: vi.fn().mockResolvedValue({ id: "audit-3" }),
+        },
+      };
+
+      (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementation(
+        async (cb: (tx: unknown) => Promise<unknown>) => {
+          return await cb(mockTx);
+        }
+      );
+
+      (InventoryService.calculateAvailableQuantity as ReturnType<typeof vi.fn>).mockResolvedValue(
+        3
+      );
+
+      const res = await processPosReturnAction({
+        orderId: "ord-disc",
+        returnedItems: [
+          {
+            orderItemId: "item-1",
+            quantity: 1,
+            reason: "SIZE_MISMATCH",
+            condition: "RESELLABLE",
+          },
+        ],
+        resolution: "EXCHANGE",
+        exchangePaymentMethod: "CARD",
+        exchangeItems: [
+          {
+            variantId: "var-jacket",
+            productName: "Winter Jacket",
+            sku: "VL-JKT-BLK-L",
+            size: "L",
+            color: "Black",
+            unitPrice: 500, // Tampered client price; DB is 5000
+            quantity: 1,
+          },
+        ],
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.data!.totalReturnValue).toBe(700); // Pro-rated, not 1000
+      expect(res.data!.totalExchangeValue).toBe(5000); // DB-authoritative, not 500
+      expect(res.data!.netDifference).toBe(4300);
+      expect(mockTx.payment.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            amount: 4300,
+            gateway: "CARD",
+          }),
+        })
+      );
+    });
+
+    test("rejects return past 7-day window for STAFF", async () => {
+      const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
+      const mockTx = {
+        $queryRaw: vi.fn().mockResolvedValue([]),
+        order: {
+          findUnique: vi.fn().mockResolvedValue({
+            id: "ord-old",
+            orderNumber: "VL-POS-OLD",
+            createdAt: tenDaysAgo,
+            subtotal: 1000,
+            total: 1000,
+            items: [],
+          }),
+        },
+      };
+
+      (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementation(
+        async (cb: (tx: unknown) => Promise<unknown>) => {
+          return await cb(mockTx);
+        }
+      );
+
+      const res = await processPosReturnAction({
+        orderId: "ord-old",
+        returnedItems: [
+          {
+            orderItemId: "item-1",
+            quantity: 1,
+            reason: "OTHER",
+            condition: "RESELLABLE",
+          },
+        ],
+        resolution: "REFUND_CASH",
+      });
+
+      expect(res.success).toBe(false);
+      expect(res.error).toContain("Return window (7 days) has expired");
     });
   });
 });

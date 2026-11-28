@@ -71,26 +71,40 @@ export async function getPosCatalog(options?: {
         categories: {
           select: { id: true, name: true, slug: true, parentId: true },
         },
-        variants: {
-          include: {
-            inventoryTransactions: { select: { quantity: true } },
-            inventoryReservations: {
+        variants: true,
+      },
+    });
+
+    const allVariantIds = products.flatMap((p) => p.variants.map((v) => v.id));
+
+    const [txSums, resSums] =
+      allVariantIds.length > 0
+        ? await Promise.all([
+            prisma.inventoryTransaction.groupBy({
+              by: ["variantId"],
+              where: { variantId: { in: allVariantIds } },
+              _sum: { quantity: true },
+            }),
+            prisma.inventoryReservation.groupBy({
+              by: ["variantId"],
               where: {
+                variantId: { in: allVariantIds },
                 status: "RESERVED",
                 expiresAt: { gt: now },
               },
-              select: { quantity: true },
-            },
-          },
-        },
-      },
-    });
+              _sum: { quantity: true },
+            }),
+          ])
+        : [[], []];
+
+    const stockMap = new Map(txSums.map((t) => [t.variantId, t._sum.quantity ?? 0]));
+    const reservedMap = new Map(resSums.map((r) => [r.variantId, r._sum.quantity ?? 0]));
 
     return products.map((prod) => {
       const primaryImage = prod.images[0]?.url ?? null;
       const variants: PosProductVariant[] = prod.variants.map((v) => {
-        const totalStock = v.inventoryTransactions.reduce((sum, tx) => sum + tx.quantity, 0);
-        const reservedStock = v.inventoryReservations.reduce((sum, r) => sum + r.quantity, 0);
+        const totalStock = stockMap.get(v.id) ?? 0;
+        const reservedStock = reservedMap.get(v.id) ?? 0;
         const availableStock = Math.max(0, totalStock - reservedStock);
 
         const sellingPrice = Number(v.sellingPrice);

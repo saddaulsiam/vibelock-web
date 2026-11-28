@@ -18,6 +18,8 @@ export interface PosCustomerProfile {
   lastVisitedAt?: string | null;
   tier: PosCustomerTier;
   loyaltyPoints: number; // 1 point per ৳100 spent
-  pointsDiscountValue: number; // ৳1 per point
+  pointsDiscountValue: number; // In BDT
+  minPointsToRedeem?: number;
+  isRedemptionEligible?: boolean;
   recentOrders: PosCustomerRecentOrder[];
 }

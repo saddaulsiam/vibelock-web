@@ -135,6 +135,7 @@ model User {
   cart      Cart?
   reviews   Review[]
   auditLogs AuditLog[]
+  loyaltyAccount LoyaltyAccount?
 
   passwordResetTokens PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
@@ -422,6 +423,11 @@ model Order {
   returns               ReturnRequest[]
   inventoryReservations InventoryReservation[]
   shipment              Shipment?
+  loyaltyTransactions   LoyaltyTransaction[]
+
+  // Loyalty Program Ledger Snapshots
+  loyaltyPointsEarned   Int           @default(0)
+  loyaltyPointsRedeemed Int           @default(0)
 
   @@index([userId])
   @@index([status])
@@ -697,4 +703,72 @@ model NewsletterSubscriber {
 
   @@index([email])
 }
+
+enum LoyaltyTier {
+  BRONZE
+  SILVER
+  GOLD
+  PLATINUM
+}
+
+enum LoyaltyTransactionType {
+  EARNED
+  REDEEMED
+  EXPIRED
+  ADJUSTED
+  REFUNDED
+}
+
+model LoyaltyAccount {
+  id             String               @id @default(uuid())
+  phone          String               @unique
+  userId         String?              @unique
+  user           User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  points         Int                  @default(0)
+  lifetimePoints Int                  @default(0)
+  lifetimeSpend  Decimal              @default(0) @db.Decimal(12, 2)
+  tier           LoyaltyTier          @default(BRONZE)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  transactions   LoyaltyTransaction[]
+
+  @@index([phone])
+  @@index([userId])
+  @@index([tier])
+}
+
+model LoyaltyTransaction {
+  id               String                 @id @default(uuid())
+  loyaltyAccountId String
+  loyaltyAccount   LoyaltyAccount         @relation(fields: [loyaltyAccountId], references: [id], onDelete: Cascade)
+  orderId          String?
+  order            Order?                 @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  type             LoyaltyTransactionType
+  points           Int
+  balanceAfter     Int
+  reason           String?
+  createdAt        DateTime               @default(now())
+
+  @@index([loyaltyAccountId])
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+model LoyaltySetting {
+  id                        String   @id @default(uuid())
+  enabled                   Boolean  @default(true)
+  spendAmountPerPoint       Int      @default(100)
+  pointRedemptionValue      Decimal  @default(1.00) @db.Decimal(10, 2)
+  minPointsToRedeem         Int      @default(0)
+  maxCartDiscountPercentage Int      @default(100)
+  silverThreshold           Decimal  @default(5000.00) @db.Decimal(12, 2)
+  goldThreshold             Decimal  @default(20000.00) @db.Decimal(12, 2)
+  platinumThreshold         Decimal  @default(50000.00) @db.Decimal(12, 2)
+  enableInPos               Boolean  @default(true)
+  enableOnline              Boolean  @default(true)
+  updatedBy                 String?
+  updatedAt                 DateTime @updatedAt
+}
+
 

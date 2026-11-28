@@ -17,6 +17,7 @@ export const checkoutSchema = z.object({
   }),
   couponCode: z.string().trim().max(50).optional().nullable(),
   shippingMethodId: z.string().uuid().optional().nullable(),
+  redeemLoyaltyPoints: z.coerce.number().int().min(0).optional().default(0),
 });
 
 export type CheckoutFormValues = z.infer<typeof checkoutSchema>;

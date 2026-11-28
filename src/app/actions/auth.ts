@@ -68,6 +68,23 @@ export async function registerAction(data: RegisterInput) {
       },
     });
 
+    // Auto-link pre-existing guest/walk-in LoyaltyAccount to this new user
+    if (normalizedPhone && typeof prisma.loyaltyAccount?.updateMany === "function") {
+      try {
+        await prisma.loyaltyAccount.updateMany({
+          where: {
+            phone: { endsWith: normalizedPhone.slice(-10) },
+            userId: null,
+          },
+          data: {
+            userId: user.id,
+          },
+        });
+      } catch (linkErr) {
+        console.warn("Failed to auto-link loyalty account on registration:", linkErr);
+      }
+    }
+
     const rawToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 12); // 12 hours

@@ -40,17 +40,17 @@ export function PosParkedModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="border-vl-white-400 max-h-[85vh] w-full overflow-y-auto rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl">
-        <DialogHeader className="border-vl-white-200 border-b pb-3">
-          <div className="text-vl-black flex items-center space-x-2">
-            <div className="border-vl-cyan-200 bg-vl-black text-vl-cyan rounded-xl border p-2 shadow-[0_0_12px_rgba(0,217,255,0.25)]">
+      <DialogContent className="border-vl-white-500 rounded-brand max-h-[85vh] w-full overflow-y-auto border bg-white p-6 shadow-xl sm:max-w-xl">
+        <DialogHeader className="border-vl-white-400 border-b pb-3">
+          <div className="text-vl-dark-900 flex items-center space-x-2.5">
+            <div className="border-vl-white-500 bg-vl-white-200 text-vl-dark-900 rounded-brand border p-2">
               <PauseCircle className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="font-heading text-vl-black text-lg font-black tracking-tight">
+              <DialogTitle className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight">
                 Parked Sales / Held Carts
               </DialogTitle>
-              <DialogDescription className="text-vl-grey text-xs">
+              <DialogDescription className="text-vl-dark-400 text-xs">
                 Restore a suspended sale to the counter or discard carts whose customers didn&apos;t
                 return.
               </DialogDescription>
@@ -59,7 +59,7 @@ export function PosParkedModal({
         </DialogHeader>
 
         {currentCartHasItems && (
-          <div className="flex items-start space-x-2 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+          <div className="rounded-brand flex items-start space-x-2 border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             <p className="text-[11px] leading-relaxed">
               <strong>Notice:</strong> Your counter currently has items. Resuming a parked cart will
@@ -71,13 +71,13 @@ export function PosParkedModal({
         {/* List of Parked Carts */}
         <div className="space-y-3 pt-1">
           {parkedCarts.length === 0 ? (
-            <div className="flex h-48 flex-col items-center justify-center text-center text-slate-400">
-              <div className="border-vl-white-400 bg-vl-white-100 mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border">
-                <PauseCircle className="h-7 w-7 stroke-1 text-slate-400" />
+            <div className="text-vl-dark-400 flex h-48 flex-col items-center justify-center text-center">
+              <div className="border-vl-white-400 bg-vl-white-100 rounded-brand mb-3 flex h-14 w-14 items-center justify-center border">
+                <PauseCircle className="text-vl-dark-300 h-7 w-7 stroke-1" />
               </div>
-              <p className="font-heading text-vl-black text-xs font-bold">No Carts on Hold</p>
-              <p className="text-vl-grey mt-1 text-[11px]">
-                Press [F4] or click &quot;Hold Cart&quot; on the active cart to park a
+              <p className="font-heading text-vl-dark-900 text-xs font-bold">No Carts on Hold</p>
+              <p className="text-vl-dark-400 mt-1 text-[11px]">
+                Press [Alt+H] or click &quot;Hold Cart&quot; on the active cart to park a
                 customer&apos;s sale.
               </p>
             </div>
@@ -93,7 +93,7 @@ export function PosParkedModal({
               return (
                 <div
                   key={cart.id}
-                  className="hover:border-vl-cyan border-vl-white-400 bg-vl-white-100 space-y-2.5 rounded-xl border p-3.5 text-xs transition-all duration-150 hover:bg-white hover:shadow-2xs"
+                  className="hover:border-vl-dark-900 border-vl-white-500 bg-vl-white-100 rounded-brand space-y-2.5 border p-3.5 text-xs transition-colors duration-150 hover:bg-white"
                 >
                   {/* Card Header */}
                   <div className="flex items-start justify-between">

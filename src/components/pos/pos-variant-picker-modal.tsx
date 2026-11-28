@@ -29,10 +29,10 @@ export function PosVariantPickerModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="border-vl-white-500 max-w-xl gap-0 overflow-hidden rounded-2xl border bg-white p-0 shadow-2xl sm:max-w-xl md:max-w-2xl">
+      <DialogContent className="border-vl-white-500 rounded-brand max-w-xl gap-0 overflow-hidden border bg-white p-0 shadow-xl sm:max-w-xl md:max-w-2xl">
         {/* Header Preview */}
         <div className="border-vl-white-400 bg-vl-white-100 flex items-center gap-3.5 border-b p-4 sm:p-5">
-          <div className="border-vl-white-400 relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border bg-white shadow-2xs sm:h-20 sm:w-20">
+          <div className="border-vl-white-500 rounded-brand relative h-16 w-16 flex-shrink-0 overflow-hidden border bg-white sm:h-20 sm:w-20">
             {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
@@ -42,32 +42,32 @@ export function PosVariantPickerModal({
                 className="object-cover"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-slate-300">
-                <Package className="h-8 w-8 stroke-1 text-slate-300" />
+              <div className="text-vl-dark-300 flex h-full w-full items-center justify-center">
+                <Package className="text-vl-dark-300 h-8 w-8 stroke-1" />
               </div>
             )}
           </div>
           <div className="min-w-0 flex-1 pr-6">
             <DialogHeader className="space-y-0.5 text-left">
-              <DialogTitle className="font-heading text-vl-black line-clamp-1 text-base font-bold sm:text-lg">
+              <DialogTitle className="font-heading text-vl-dark-900 line-clamp-1 text-base font-bold sm:text-lg">
                 {product.name}
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
+              <DialogDescription className="text-vl-dark-400 text-xs">
                 Tap a variant below to add to POS ticket
               </DialogDescription>
             </DialogHeader>
             <div className="mt-1.5 flex items-center gap-2">
-              <span className="font-heading text-vl-black text-sm font-black sm:text-base">
+              <span className="font-heading text-vl-dark-900 text-sm font-black tabular-nums sm:text-base">
                 ৳{product.minPrice.toFixed(0)}
                 {product.maxPrice > product.minPrice && (
-                  <span className="text-vl-grey text-xs font-normal sm:text-sm">
+                  <span className="text-vl-dark-400 text-xs font-normal sm:text-sm">
                     {" "}
                     - ৳{product.maxPrice.toFixed(0)}
                   </span>
                 )}
               </span>
-              <span className="text-slate-300">•</span>
-              <span className="font-mono text-xs font-medium text-slate-600">
+              <span className="text-vl-dark-200">•</span>
+              <span className="text-vl-dark-500 font-mono text-xs font-medium">
                 Total Stock: {product.totalAvailableStock}
               </span>
             </div>
@@ -91,23 +91,23 @@ export function PosVariantPickerModal({
                     onSelectVariant(v, product);
                     onClose();
                   }}
-                  className={`group relative flex h-auto flex-col justify-between rounded-xl border p-3.5 text-left transition-all ${
+                  className={`group rounded-brand relative flex h-auto flex-col justify-between border p-3.5 text-left transition-colors ${
                     vOutOfStock
-                      ? "cursor-not-allowed border-slate-200 bg-slate-50 opacity-50"
-                      : "hover:border-vl-cyan hover:bg-vl-cyan-50 border-vl-white-400 bg-white hover:shadow-xs active:scale-[0.98]"
+                      ? "border-vl-white-400 bg-vl-white-100 cursor-not-allowed opacity-60"
+                      : "hover:border-vl-dark-900 hover:bg-vl-white-100 border-vl-white-500 bg-white active:scale-[0.98]"
                   }`}
                 >
                   <div className="flex w-full items-start justify-between gap-1">
-                    <span className="font-heading text-vl-black group-hover:text-vl-cyan truncate text-xs font-bold">
+                    <span className="font-heading text-vl-dark-900 truncate text-xs font-bold">
                       {label}
                     </span>
-                    <span className="font-heading text-vl-black shrink-0 text-xs font-black">
+                    <span className="font-heading text-vl-dark-900 shrink-0 text-xs font-black tabular-nums">
                       ৳{v.effectivePrice.toFixed(0)}
                     </span>
                   </div>
 
                   <div className="mt-2.5 flex w-full items-center justify-between text-[11px]">
-                    <span className="max-w-[100px] truncate font-mono text-[10px] text-slate-400">
+                    <span className="text-vl-dark-400 max-w-[100px] truncate font-mono text-[10px]">
                       {v.sku}
                     </span>
                     {vOutOfStock ? (

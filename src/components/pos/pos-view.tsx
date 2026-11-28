@@ -15,6 +15,7 @@ import type {
   PosReceiptData,
 } from "@/lib/pos/pos-types";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -87,13 +88,16 @@ export function PosView({
   initialShift,
 }: PosViewProps) {
   // Real-time Internet Connectivity Guard
+  const router = useRouter();
   const isOnline = usePosOnlineStatus();
+  const clientRequestIdRef = useRef<string | null>(null);
 
   // Cart State
   const [cartItems, setCartItems] = useState<PosCartItem[]>([]);
   const [customerPhone, setCustomerPhone] = useState<string>("");
   const [customerName, setCustomerName] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+  const [loyaltyPointsRedeemed, setLoyaltyPointsRedeemed] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isMobileCartOpen, setIsMobileCartOpen] = useState<boolean>(false);
 
@@ -210,8 +214,10 @@ export function PosView({
 
   // Clear Cart
   const handleClearCart = useCallback(() => {
+    clientRequestIdRef.current = null;
     setCartItems([]);
     setDiscount(0);
+    setLoyaltyPointsRedeemed(0);
   }, []);
 
   // Compute Grand Total
@@ -250,6 +256,7 @@ export function PosView({
     setCustomerPhone("");
     setCustomerName("");
     setDiscount(0);
+    setLoyaltyPointsRedeemed(0);
 
     toast.success(`Cart held successfully (${label}). Ready for next customer!`);
   }, [cartItems, customerName, customerPhone, effectiveDiscount, grandTotal, parkedCarts]);
@@ -264,6 +271,7 @@ export function PosView({
     // Remove from parked
     saveParkedCarts(parkedCarts.filter((c) => c.id !== cart.id));
     setIsParkedModalOpen(false);
+    setLoyaltyPointsRedeemed(0);
 
     toast.success(`Resumed held cart: ${cart.label}`);
   };
@@ -278,7 +286,7 @@ export function PosView({
   const handleOpenPayment = useCallback(() => {
     if (!isOnline) {
       toast.error(
-        "Counter is currently offline. Cannot settle payment without server connection. You can hold this cart [F4] until connection restores.",
+        "Counter is currently offline. Cannot settle payment without server connection. You can hold this cart [Alt+H] until connection restores.",
         { duration: 6000 }
       );
       return;
@@ -295,8 +303,19 @@ export function PosView({
       return;
     }
 
+    const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+    if (cashierRole === "STAFF" && subtotal > 0 && effectiveDiscount > maxStaffDiscount + 0.01) {
+      toast.error(
+        `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(0)}). Manager or Admin approval required.`
+      );
+      return;
+    }
+
+    if (!clientRequestIdRef.current) {
+      clientRequestIdRef.current = crypto.randomUUID();
+    }
     setIsPaymentOpen(true);
-  }, [cartItems.length, shift, isOnline]);
+  }, [cartItems.length, shift, isOnline, subtotal, cashierRole, effectiveDiscount]);
 
   // Execute Payment & Order Creation
   const handleConfirmPayment = async (
@@ -324,8 +343,10 @@ export function PosView({
         paymentMethod,
         amountPaid,
         discount: effectiveDiscount,
+        loyaltyPointsRedeemed: loyaltyPointsRedeemed > 0 ? loyaltyPointsRedeemed : undefined,
         notes,
         splitPayments,
+        clientRequestId: clientRequestIdRef.current || undefined,
       });
 
       if (!result.success || !result.data) {
@@ -333,11 +354,14 @@ export function PosView({
         return;
       }
 
-      // Success
+      // Success: clear idempotency key and refresh catalog stock
+      clientRequestIdRef.current = null;
+      setLoyaltyPointsRedeemed(0);
       setReceiptData(result.data);
       setIsPaymentOpen(false);
       setIsReceiptOpen(true);
       toast.success(`Order ${result.data.orderNumber} completed successfully!`);
+      router.refresh();
 
       // Update shift drawer sales stats in real time (supporting Split Tenders)
       const completedOrder = result.data;
@@ -408,6 +432,7 @@ export function PosView({
   const handleReturnFinished = (receipt: PosReturnReceiptData) => {
     setReturnReceiptData(receipt);
     setIsReturnReceiptOpen(true);
+    router.refresh();
 
     // If cash was refunded from drawer, update drawer in real time
     if (receipt.netAction === "REFUND_TO_CUSTOMER" && shift && shift.isOpen) {
@@ -423,36 +448,53 @@ export function PosView({
     }
   };
 
-  // Global Keyboard Shortcuts (F2: Scanner, F3: Returns, F4: Hold/Park, F9: Payment, Esc: Close)
+  // Global Keyboard Shortcuts (F2: Scanner, F9: Payment, Alt+H: Hold, Alt+P: Parked, Alt+R: Returns, Alt+O: Orders, Alt+D: Drawer/Shift, Alt+X: Clear, Esc: Close)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const isAnyModalOpen =
+        isPaymentOpen ||
+        isReceiptOpen ||
+        isShiftModalOpen ||
+        isReturnModalOpen ||
+        isParkedModalOpen ||
+        isOrdersModalOpen ||
+        isZReportOpen ||
+        isReturnReceiptOpen;
+
+      if (isAnyModalOpen || !e.key) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
       if (e.key === "F2") {
         e.preventDefault();
         scannerRef.current?.focus();
-      } else if (e.key === "F3") {
-        e.preventDefault();
-        setIsReturnModalOpen(true);
-      } else if (e.key === "F4") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "h") {
         e.preventDefault();
         if (cartItems.length > 0) {
           handleParkCart();
-        } else if (parkedCarts.length > 0) {
-          setIsParkedModalOpen(true);
         }
-      } else if (e.key === "F5") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "p") {
+        e.preventDefault();
+        setIsParkedModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "r") {
+        e.preventDefault();
+        setIsReturnModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "o") {
         e.preventDefault();
         setIsOrdersModalOpen(true);
-      } else if (e.key === "F9") {
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "d") {
         e.preventDefault();
-        if (
-          cartItems.length > 0 &&
-          !isPaymentOpen &&
-          !isReceiptOpen &&
-          !isShiftModalOpen &&
-          !isReturnModalOpen &&
-          !isParkedModalOpen &&
-          !isOrdersModalOpen
-        ) {
+        setIsShiftModalOpen(true);
+      } else if (e.altKey && !e.ctrlKey && !e.metaKey && key === "x") {
+        e.preventDefault();
+        if (cartItems.length > 0) {
+          handleClearCart();
+        }
+      } else if (e.key === "F9" || (e.altKey && !e.ctrlKey && !e.metaKey && e.key === "Enter")) {
+        e.preventDefault();
+        if (cartItems.length > 0) {
           handleOpenPayment();
         }
       }
@@ -462,15 +504,17 @@ export function PosView({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     cartItems.length,
-    parkedCarts.length,
     isPaymentOpen,
     isReceiptOpen,
     isShiftModalOpen,
     isReturnModalOpen,
     isParkedModalOpen,
     isOrdersModalOpen,
+    isZReportOpen,
+    isReturnReceiptOpen,
     handleOpenPayment,
     handleParkCart,
+    handleClearCart,
   ]);
 
   return (
@@ -495,7 +539,7 @@ export function PosView({
         {/* Left Section: Scanner + Catalog Grid (Full width on mobile/tablet, 60-65% on desktop lg+) */}
         <section className="flex min-w-0 flex-1 flex-col">
           {/* Quick Barcode Scanner Bar */}
-          <div className="border-vl-white-500 border-b bg-white p-2.5 shadow-2xs sm:p-3">
+          <div className="bg-white p-2.5 shadow-2xs sm:p-3">
             <PosProductScanner
               onAddVariant={handleAddVariant}
               scannerRef={scannerRef}
@@ -527,12 +571,15 @@ export function PosView({
             setCustomerName={setCustomerName}
             discount={discount}
             setDiscount={setDiscount}
+            loyaltyPointsRedeemed={loyaltyPointsRedeemed}
+            setLoyaltyPointsRedeemed={setLoyaltyPointsRedeemed}
             onUpdateQuantity={handleUpdateQuantity}
             onRemoveItem={handleRemoveItem}
             onClearCart={handleClearCart}
             onOpenPaymentModal={handleOpenPayment}
             onParkCart={handleParkCart}
             isOnline={isOnline}
+            cashierRole={cashierRole}
           />
         </aside>
 
@@ -554,6 +601,8 @@ export function PosView({
                 setCustomerName={setCustomerName}
                 discount={discount}
                 setDiscount={setDiscount}
+                loyaltyPointsRedeemed={loyaltyPointsRedeemed}
+                setLoyaltyPointsRedeemed={setLoyaltyPointsRedeemed}
                 onUpdateQuantity={handleUpdateQuantity}
                 onRemoveItem={handleRemoveItem}
                 onClearCart={handleClearCart}
@@ -563,6 +612,7 @@ export function PosView({
                 }}
                 onParkCart={handleParkCart}
                 isOnline={isOnline}
+                cashierRole={cashierRole}
                 onCloseMobile={() => setIsMobileCartOpen(false)}
               />
             </div>
@@ -622,6 +672,7 @@ export function PosView({
       <PosOrdersModal
         isOpen={isOrdersModalOpen}
         onClose={() => setIsOrdersModalOpen(false)}
+        cashierRole={cashierRole}
         onReprintReceipt={(receipt) => {
           setReceiptData(receipt);
           setIsReceiptOpen(true);

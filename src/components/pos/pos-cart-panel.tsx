@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import {
   Trash2,
@@ -34,12 +34,15 @@ interface PosCartPanelProps {
   setCustomerName: (val: string) => void;
   discount: number;
   setDiscount: (val: number) => void;
+  loyaltyPointsRedeemed?: number;
+  setLoyaltyPointsRedeemed?: (val: number) => void;
   onUpdateQuantity: (variantId: string, quantity: number) => void;
   onRemoveItem: (variantId: string) => void;
   onClearCart: () => void;
   onOpenPaymentModal: () => void;
   onParkCart?: () => void;
   isOnline?: boolean;
+  cashierRole?: string;
   onCloseMobile?: () => void;
 }
 
@@ -51,18 +54,25 @@ export function PosCartPanel({
   setCustomerName,
   discount,
   setDiscount,
+  loyaltyPointsRedeemed = 0,
+  setLoyaltyPointsRedeemed,
   onUpdateQuantity,
   onRemoveItem,
   onClearCart,
   onOpenPaymentModal,
   onParkCart,
   isOnline = true,
+  cashierRole = "STAFF",
   onCloseMobile,
 }: PosCartPanelProps) {
   // Customer Profile & Loyalty state
   const [customerProfile, setCustomerProfile] = useState<PosCustomerProfile | null>(null);
   const [isLookingUp, startLookup] = useTransition();
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const customerNameRef = useRef(customerName);
+  useEffect(() => {
+    customerNameRef.current = customerName;
+  }, [customerName]);
 
   // Debounced auto-lookup customer by phone
   useEffect(() => {
@@ -82,7 +92,8 @@ export function PosCartPanel({
           if (res.success && res.data) {
             const profile = res.data;
             setCustomerProfile(profile);
-            if (!customerName.trim() || customerName.trim() === "Walk-in Customer") {
+            const currentName = customerNameRef.current.trim();
+            if (!currentName || currentName === "Walk-in Customer") {
               setCustomerName(profile.name);
               toast.success(`Customer recognized: ${profile.name} (${profile.tier} Member)`);
             }
@@ -102,7 +113,7 @@ export function PosCartPanel({
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [customerPhone, customerName, setCustomerName]);
+  }, [customerPhone, setCustomerName]);
 
   const getTierBadgeStyle = (tier: string) => {
     switch (tier) {
@@ -121,6 +132,9 @@ export function PosCartPanel({
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const effectiveDiscount = Math.min(subtotal, Math.max(0, discount));
+  const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+  const isStaffDiscountExceeded =
+    cashierRole === "STAFF" && subtotal > 0 && effectiveDiscount > maxStaffDiscount + 0.01;
   const grandTotal = Math.max(0, subtotal - effectiveDiscount);
 
   const applyPercentDiscount = (percent: number) => {
@@ -131,7 +145,7 @@ export function PosCartPanel({
   return (
     <div className="border-vl-white-500 flex h-full flex-col border-l bg-white">
       {/* Cart Header */}
-      <div className="bg-vl-black text-vl-white border-vl-border flex items-center justify-between border-b p-3">
+      <div className="bg-vl-white-200 text-vl-white-900 border-vl-white-500 flex items-center justify-between border-b p-3">
         <div className="flex items-center space-x-2">
           {onCloseMobile && (
             <Button
@@ -139,17 +153,18 @@ export function PosCartPanel({
               variant="ghost"
               size="icon"
               onClick={onCloseMobile}
-              className="text-vl-white/80 -ml-1 h-7 w-7 rounded-lg hover:bg-white/10 hover:text-white lg:hidden"
+              className="text-vl-white-800 hover:bg-vl-white-400 hover:text-vl-white-900 rounded-brand -ml-1 h-7 w-7 lg:hidden"
               title="Close ticket and return to catalog"
+              aria-label="Close ticket and return to catalog"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
-          <ShoppingCart className="text-vl-cyan h-5 w-5" />
-          <h3 className="font-heading text-vl-white text-sm font-black tracking-wider">
+          <ShoppingCart className="text-vl-white-900 h-4 w-4" aria-hidden="true" />
+          <h3 className="font-heading text-vl-white-900 text-sm font-black tracking-wider">
             Current Sale
           </h3>
-          <Badge className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan h-5 px-1.5 text-xs font-black">
+          <Badge className="bg-vl-white-400 text-vl-white-900 hover:bg-vl-white-400 font-heading text-2xs h-5 px-1.5 font-black">
             {totalItemsCount}
           </Badge>
         </div>
@@ -162,13 +177,13 @@ export function PosCartPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onParkCart}
-                className="text-vl-cyan hover:bg-vl-cyan-100 flex h-7 items-center space-x-1 px-2 text-xs hover:text-white"
-                title="Hold / Suspend this cart [F4]"
+                className="text-vl-white-900 hover:bg-vl-white-400 hover:text-vl-white-900 rounded-brand flex h-7 items-center space-x-1 px-2 text-xs font-semibold"
+                title="Hold / Suspend this cart [Alt+H]"
               >
-                <PauseCircle className="h-3.5 w-3.5" />
+                <PauseCircle className="text-vl-white-800 h-3.5 w-3.5" aria-hidden="true" />
                 <span>Hold</span>
-                <span className="text-vl-white/70 hidden rounded bg-white/10 px-1 font-mono text-[10px] sm:inline">
-                  F4
+                <span className="bg-vl-white-400 text-vl-white-800 hidden rounded px-1 font-mono text-[10px] sm:inline">
+                  Alt+H
                 </span>
               </Button>
             )}
@@ -178,7 +193,8 @@ export function PosCartPanel({
               variant="ghost"
               size="sm"
               onClick={onClearCart}
-              className="text-vl-white/60 h-7 px-2 text-xs hover:bg-white/10 hover:text-red-400"
+              title="Clear current cart [Alt+X]"
+              className="text-vl-white-800 hover:bg-vl-white-400 rounded-brand h-7 px-2 text-xs hover:text-red-600"
             >
               Clear
             </Button>
@@ -197,7 +213,7 @@ export function PosCartPanel({
               {isLookingUp && <Loader2 className="text-vl-cyan h-3 w-3 animate-spin" />}
             </Label>
             <Input
-              type="tel"
+              type="number"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="017XXXXXXXX"
@@ -205,8 +221,29 @@ export function PosCartPanel({
             />
           </div>
           <div>
-            <Label className="text-vl-grey mb-1 flex items-center text-[10px] font-bold tracking-wider uppercase">
-              <User className="text-vl-grey mr-1 h-3 w-3" /> Customer Name
+            <Label className="text-vl-grey mb-1 flex items-center justify-between text-[10px] font-bold tracking-wider uppercase">
+              <span className="flex items-center">
+                <User className="text-vl-grey mr-1 h-3 w-3" /> Customer Name
+              </span>
+              {(customerPhone || customerName) && (
+                <Button
+                  type="button"
+                  variant="link"
+                  size="2xs"
+                  onClick={() => {
+                    setCustomerPhone("");
+                    setCustomerName("");
+                    setCustomerProfile(null);
+                    setHasSearched(false);
+                    setLoyaltyPointsRedeemed?.(0);
+                  }}
+                  aria-label="Clear customer details"
+                  title="Clear customer details"
+                  className="text-vl-grey hover:text-destructive text-[10px] font-semibold normal-case"
+                >
+                  Reset
+                </Button>
+              )}
             </Label>
             <Input
               type="text"
@@ -220,11 +257,11 @@ export function PosCartPanel({
 
         {/* Customer Recognized Loyalty Banner */}
         {customerProfile ? (
-          <div className="animate-in fade-in-50 border-vl-cyan-200 bg-vl-black text-vl-white space-y-1.5 rounded-md border p-2.5 shadow-xs duration-200">
+          <div className="animate-in fade-in-50 border-vl-white-500 bg-vl-white-100 text-vl-dark-900 rounded-brand space-y-1.5 border p-2.5 shadow-xs duration-200">
             <div className="flex items-center justify-between">
               <div className="flex min-w-0 items-center space-x-1.5">
-                <Crown className="text-vl-cyan h-3.5 w-3.5 flex-shrink-0" />
-                <span className="text-vl-white truncate text-[11px] font-bold">
+                <Crown className="text-vl-dark-900 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="text-vl-dark-900 truncate text-[11px] font-bold">
                   {customerProfile.name}
                 </span>
                 <Badge
@@ -233,7 +270,7 @@ export function PosCartPanel({
                   {customerProfile.tier}
                 </Badge>
               </div>
-              <span className="text-vl-grey flex-shrink-0 font-mono text-[10px]">
+              <span className="text-vl-dark-400 shrink-0 font-mono text-[10px]">
                 {customerProfile.ordersCount}{" "}
                 {customerProfile.ordersCount === 1 ? "order" : "orders"} &middot; ৳
                 {customerProfile.totalSpent.toLocaleString()} LTV
@@ -241,26 +278,27 @@ export function PosCartPanel({
             </div>
 
             {/* Points & Redemption */}
-            <div className="border-vl-border flex items-center justify-between border-t pt-1.5 text-[11px]">
-              <span className="text-vl-white/80">
+            <div className="border-vl-white-400 flex items-center justify-between border-t pt-1.5 text-[11px]">
+              <span className="text-vl-dark-700">
                 Points:{" "}
-                <strong className="text-vl-cyan font-mono">
+                <strong className="text-vl-dark-900 font-mono">
                   {customerProfile.loyaltyPoints} pts
                 </strong>
                 {customerProfile.pointsDiscountValue > 0 &&
                   ` (৳${customerProfile.pointsDiscountValue})`}
               </span>
-              {customerProfile.pointsDiscountValue > 0 &&
-                (discount === customerProfile.pointsDiscountValue ? (
+              {customerProfile.pointsDiscountValue > 0 ? (
+                loyaltyPointsRedeemed > 0 || discount === customerProfile.pointsDiscountValue ? (
                   <Button
                     type="button"
                     size="xs"
                     variant="outline"
                     onClick={() => {
                       setDiscount(0);
+                      setLoyaltyPointsRedeemed?.(0);
                       toast.info("Loyalty discount removed.");
                     }}
-                    className="h-6 border-emerald-400 bg-emerald-500/20 px-2 text-[10px] font-bold text-emerald-300 hover:bg-red-500/20 hover:text-red-300"
+                    className="border-vl-white-500 hover:bg-vl-white-200 rounded-brand h-6 px-2 text-[10px] font-bold text-red-600 hover:text-red-700"
                   >
                     Points Applied ✓ (Remove)
                   </Button>
@@ -271,15 +309,22 @@ export function PosCartPanel({
                     variant="brand"
                     onClick={() => {
                       setDiscount(customerProfile.pointsDiscountValue);
+                      setLoyaltyPointsRedeemed?.(customerProfile.loyaltyPoints);
                       toast.success(
                         `Applied ৳${customerProfile.pointsDiscountValue} loyalty discount!`
                       );
                     }}
-                    className="h-6 px-2 text-[10px] font-bold shadow-[0_0_10px_rgba(0,217,255,0.3)]"
+                    className="rounded-brand h-6 px-2 text-[10px] font-bold"
                   >
                     Redeem (-৳{customerProfile.pointsDiscountValue})
                   </Button>
-                ))}
+                )
+              ) : customerProfile.minPointsToRedeem &&
+                customerProfile.loyaltyPoints < customerProfile.minPointsToRedeem ? (
+                <span className="text-vl-dark-400 font-mono text-[10px]">
+                  Min. {customerProfile.minPointsToRedeem} pts to redeem
+                </span>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -339,14 +384,17 @@ export function PosCartPanel({
                     <p className="font-heading text-vl-black truncate text-xs leading-snug font-bold">
                       {item.productName}
                     </p>
-                    <div className="mt-0.5 flex items-center space-x-1.5">
-                      <span className="text-vl-grey font-mono text-[10px] font-medium">
+                    <div className="mt-0.5 flex min-w-0 items-center space-x-1.5">
+                      <span
+                        className="text-vl-grey min-w-0 truncate font-mono text-[10px] font-medium"
+                        title={item.sku}
+                      >
                         {item.sku}
                       </span>
                       {variantDesc && (
                         <Badge
                           variant="outline"
-                          className="text-vl-black border-vl-white-500 bg-white px-1.5 py-0 text-[9px] font-medium"
+                          className="text-vl-black border-vl-white-500 shrink-0 bg-white px-1.5 py-0 text-[9px] font-medium"
                         >
                           {variantDesc}
                         </Badge>
@@ -357,17 +405,18 @@ export function PosCartPanel({
                     </p>
                   </div>
 
-                  {/* Quantity Controls & Line Total */}
-                  <div className="flex items-center space-x-1">
+                  {/* Quantity Controls & Line Total (Touch-friendly icon-sm + aria-label) */}
+                  <div className="flex items-center space-x-1.5">
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="outline"
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity - 1)}
                       className="text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       title="Decrease quantity"
+                      aria-label={`Decrease quantity of ${item.productName}`}
                     >
-                      <Minus className="h-3 w-3" />
+                      <Minus className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
 
                     <span className="text-vl-black w-6 text-center font-mono text-xs font-black">
@@ -376,13 +425,13 @@ export function PosCartPanel({
 
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="outline"
                       disabled={isAtMaxStock}
                       onClick={() => onUpdateQuantity(item.variantId, item.quantity + 1)}
                       className={
                         isAtMaxStock
-                          ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-300"
+                          ? "border-vl-white-400 bg-vl-white-200 text-vl-dark-300 cursor-not-allowed"
                           : "text-vl-black border-vl-white-500 hover:bg-vl-white-200 bg-white"
                       }
                       title={
@@ -390,8 +439,9 @@ export function PosCartPanel({
                           ? `Max available stock reached (${item.maxStock})`
                           : "Increase quantity"
                       }
+                      aria-label={`Increase quantity of ${item.productName}`}
                     >
-                      <Plus className="h-3 w-3" />
+                      <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
 
                     {/* Line Total */}
@@ -402,13 +452,14 @@ export function PosCartPanel({
                     {/* Remove Button */}
                     <Button
                       type="button"
-                      size="icon-xs"
+                      size="icon-sm"
                       variant="ghost"
                       onClick={() => onRemoveItem(item.variantId)}
-                      className="ml-1 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                      className="text-vl-dark-300 ml-0.5 hover:bg-red-50 hover:text-red-500"
                       title="Remove item"
+                      aria-label={`Remove ${item.productName} from cart`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                   </div>
                 </div>
@@ -461,32 +512,44 @@ export function PosCartPanel({
               </div>
             </div>
           </div>
+          {isStaffDiscountExceeded && (
+            <p className="text-[11px] font-medium text-amber-700">
+              Staff discount capped at 10% (৳{maxStaffDiscount.toFixed(0)}). Manager or Admin
+              approval required.
+            </p>
+          )}
         </div>
 
         {/* Totals Breakdown */}
         <div className="border-vl-white-400 space-y-2 border-t pt-2 text-xs">
-          <div className="text-vl-grey flex justify-between font-medium">
-            <span>Subtotal ({totalItemsCount} items):</span>
-            <span className="text-vl-black font-mono font-semibold">৳{subtotal.toFixed(0)}</span>
+          <div className="text-vl-dark-500 flex justify-between font-medium">
+            <span>
+              Subtotal ({totalItemsCount} {totalItemsCount === 1 ? "item" : "items"}):
+            </span>
+            <span className="text-vl-dark-900 font-mono font-semibold tabular-nums">
+              ৳{subtotal.toFixed(0)}
+            </span>
           </div>
 
           {effectiveDiscount > 0 && (
             <div className="flex justify-between font-medium text-emerald-600">
-              <span>Counter Discount:</span>
-              <span className="font-mono font-semibold">- ৳{effectiveDiscount.toFixed(0)}</span>
+              <span>Counter discount:</span>
+              <span className="font-mono font-semibold tabular-nums">
+                - ৳{effectiveDiscount.toFixed(0)}
+              </span>
             </div>
           )}
 
-          {/* Net Payable Box */}
-          <div className="border-vl-border bg-vl-black text-vl-white rounded-xl border p-3 shadow-xs">
+          {/* Net Payable Box (Unified Light Surface + High-Contrast Tabular Total) */}
+          <div className="border-vl-white-500 bg-vl-white-200 rounded-brand border p-3">
             <div className="flex items-baseline justify-between">
               <div>
-                <span className="font-heading text-vl-grey text-xs font-bold tracking-widest uppercase">
+                <span className="font-heading text-vl-dark-700 text-xs font-bold tracking-wider uppercase">
                   Net Payable
                 </span>
-                <p className="text-vl-white/60 text-[10px]">Tax inclusive</p>
+                <p className="text-vl-dark-400 text-[10px]">Tax inclusive</p>
               </div>
-              <span className="font-heading text-vl-cyan text-3xl font-black tracking-tight">
+              <span className="font-heading text-vl-dark-900 font-mono text-3xl font-black tracking-tight tabular-nums">
                 ৳{grandTotal.toFixed(0)}
               </span>
             </div>
@@ -496,12 +559,15 @@ export function PosCartPanel({
         {/* Checkout Button */}
         <Button
           type="button"
-          disabled={cartItems.length === 0}
+          disabled={cartItems.length === 0 || isStaffDiscountExceeded}
           onClick={onOpenPaymentModal}
-          className={`font-heading flex h-12 w-full items-center justify-center space-x-2 rounded-xl text-sm font-black tracking-widest shadow-md transition-all active:scale-[0.99] ${
+          title="Open Payment & Settlement [F9 or Alt+Enter]"
+          className={`font-heading rounded-brand flex h-12 w-full items-center justify-center space-x-2 text-sm font-black tracking-widest transition-colors active:scale-[0.99] ${
             !isOnline
-              ? "border-vl-border text-vl-grey bg-vl-dark-700 cursor-not-allowed border"
-              : "bg-vl-cyan text-vl-black hover:bg-vl-cyan-400 shadow-[0_0_24px_rgba(0,217,255,0.35)] hover:shadow-[0_0_32px_rgba(0,217,255,0.5)]"
+              ? "border-vl-white-500 bg-vl-white-400 text-vl-dark-400 cursor-not-allowed border"
+              : cartItems.length === 0 || isStaffDiscountExceeded
+                ? "bg-vl-white-400 text-vl-dark-400 cursor-not-allowed opacity-100"
+                : "bg-vl-cyan text-vl-dark-900 hover:bg-vl-cyan-400"
           }`}
         >
           <span>
@@ -509,7 +575,13 @@ export function PosCartPanel({
               ? `OFFLINE (LOCKED) ৳${grandTotal.toFixed(0)}`
               : `CHARGE ৳${grandTotal.toFixed(0)}`}
           </span>
-          <span className="text-vl-black rounded bg-black/20 px-2 py-0.5 font-mono text-[11px] font-bold">
+          <span
+            className={`rounded px-2 py-0.5 font-mono text-[11px] font-bold ${
+              cartItems.length === 0 || isStaffDiscountExceeded || !isOnline
+                ? "bg-vl-dark-900/10 text-vl-dark-500"
+                : "bg-vl-dark-900/15 text-vl-dark-900"
+            }`}
+          >
             [F9]
           </span>
         </Button>

@@ -246,7 +246,7 @@ export async function isCustomerCodRestricted(
 }
 
 export async function createOrderAction(
-  data: z.infer<typeof checkoutSchema>,
+  data: z.input<typeof checkoutSchema>,
   idempotencyKey: string
 ) {
   const session = await auth();
@@ -310,6 +310,7 @@ export async function createOrderAction(
     shippingMethodId,
     paymentMethod,
     couponCode,
+    redeemLoyaltyPoints = 0,
   } = parsed.data;
 
   if (paymentMethod === "COD") {
@@ -699,8 +700,66 @@ export async function createOrderAction(
           shippingMethodName = `${shippingMethodName} (Free Delivery)`;
         }
 
-        const orderDiscount = appliedCoupon?.discount ?? 0;
-        const discountedSubtotal = Math.max(0, orderSubtotal - orderDiscount);
+        const couponDiscount = appliedCoupon?.discount ?? 0;
+        let loyaltyDiscountAmount = 0;
+        let actualPointsRedeemed = 0;
+        let lockedLoyaltyAccount: { id: string; points: number; phone: string } | null = null;
+
+        if (redeemLoyaltyPoints > 0 && customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
+          try {
+            const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
+            const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+            const loyaltyConfig = await tx.loyaltySetting.findFirst();
+
+            if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
+              // Security: Prioritize authenticated user's own loyalty account, or claim an unlinked walk-in account matching phone.
+              // Strictly disallow redeeming points from an account belonging to a different registered user.
+              const lockedAccounts = await tx.$queryRaw<
+                Array<{ id: string; points: number; phone: string; userId: string | null }>
+              >`
+                SELECT id, points, phone, "userId"
+                FROM "LoyaltyAccount"
+                WHERE "userId" = ${session.user.id}
+                   OR ("phone" = ${normalizedPhone} AND "userId" IS NULL)
+                FOR UPDATE
+              `;
+
+              if (lockedAccounts.length > 0) {
+                const account = lockedAccounts[0];
+                const availablePoints = account.points ?? 0;
+                const minPoints = loyaltyConfig.minPointsToRedeem ?? 0;
+
+                if (availablePoints >= redeemLoyaltyPoints && redeemLoyaltyPoints >= minPoints) {
+                  const redemptionRate = Number(loyaltyConfig.pointRedemptionValue);
+                  const subtotalAfterCoupon = Math.max(0, orderSubtotal - couponDiscount);
+                  const maxAllowedDiscount =
+                    (subtotalAfterCoupon * (loyaltyConfig.maxCartDiscountPercentage ?? 100)) / 100;
+
+                  const candidateDiscount = redeemLoyaltyPoints * redemptionRate;
+                  loyaltyDiscountAmount = Math.min(candidateDiscount, maxAllowedDiscount, subtotalAfterCoupon);
+                  actualPointsRedeemed = Math.min(
+                    redeemLoyaltyPoints,
+                    Math.ceil(loyaltyDiscountAmount / Math.max(0.01, redemptionRate))
+                  );
+                  lockedLoyaltyAccount = account;
+
+                  // Claim unlinked walk-in account for this user permanently
+                  if (!account.userId && session.user.id) {
+                    await tx.loyaltyAccount.update({
+                      where: { id: account.id },
+                      data: { userId: session.user.id },
+                    });
+                  }
+                }
+              }
+            }
+          } catch (loyaltyRedeemErr) {
+            console.warn("Failed to lock loyalty account for online redemption (non-blocking):", loyaltyRedeemErr);
+          }
+        }
+
+        const totalDiscount = couponDiscount + loyaltyDiscountAmount;
+        const discountedSubtotal = Math.max(0, orderSubtotal - totalDiscount);
 
         // Calculate dynamic tax / VAT according to store policy
         const taxEval = await calculateEffectiveTax({
@@ -752,7 +811,8 @@ export async function createOrderAction(
             taxIncluded: taxEval.taxIncluded,
             shippingCost: shippingCost,
             taxAmount: taxEval.taxAmount,
-            discount: orderDiscount,
+            discount: totalDiscount,
+            loyaltyPointsRedeemed: actualPointsRedeemed,
             total: total,
             items: {
               create: orderItemsToCreate.map((item) => {
@@ -806,6 +866,123 @@ export async function createOrderAction(
               },
             },
           });
+        }
+
+        if (actualPointsRedeemed > 0 && lockedLoyaltyAccount) {
+          const newBalance = Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed);
+          await tx.loyaltyAccount.update({
+            where: { id: lockedLoyaltyAccount.id },
+            data: { points: newBalance },
+          });
+
+          await tx.loyaltyTransaction.create({
+            data: {
+              loyaltyAccountId: lockedLoyaltyAccount.id,
+              orderId: newOrder.id,
+              type: "REDEEMED",
+              points: -actualPointsRedeemed,
+              balanceAfter: newBalance,
+              reason: `Online Order ${newOrder.orderNumber} Redemption`,
+            },
+          });
+
+          await tx.orderHistory.create({
+            data: {
+              orderId: newOrder.id,
+              status: "PENDING",
+              notes: `Loyalty points redeemed: ${actualPointsRedeemed} (-৳${loyaltyDiscountAmount.toFixed(2)})`,
+            },
+          });
+        }
+
+        // Loyalty Program: Award points on online orders if enabled for website
+        if (customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
+          try {
+            const loyaltyConfig = await tx.loyaltySetting.findFirst();
+            if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
+              const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
+              const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+
+              const existingAccount = session.user.id
+                ? await tx.loyaltyAccount.findFirst({
+                    where: {
+                      OR: [
+                        { userId: session.user.id },
+                        { phone: normalizedPhone, userId: null },
+                      ],
+                    },
+                  })
+                : await tx.loyaltyAccount.findUnique({
+                    where: { phone: normalizedPhone },
+                  });
+
+              const spendPerPoint = Math.max(1, loyaltyConfig.spendAmountPerPoint);
+              const currentTier = existingAccount?.tier ?? "BRONZE";
+              const { calculateTierEarnedPoints, determineLoyaltyTier } = await import(
+                "@/lib/settings/loyalty-settings"
+              );
+              const earnedPoints = calculateTierEarnedPoints(Number(total), currentTier, spendPerPoint);
+
+              if (earnedPoints > 0) {
+                // If points were redeemed on this order, start from balance after redemption
+                const prevPoints =
+                  lockedLoyaltyAccount && existingAccount && lockedLoyaltyAccount.id === existingAccount.id
+                    ? Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed)
+                    : existingAccount?.points ?? 0;
+
+                const newPoints = prevPoints + earnedPoints;
+                const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPoints;
+                const newLifetimeSpend =
+                  (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + Number(total);
+
+                const plat = Number(loyaltyConfig.platinumThreshold);
+                const gold = Number(loyaltyConfig.goldThreshold);
+                const silv = Number(loyaltyConfig.silverThreshold);
+                const newTier = determineLoyaltyTier(newLifetimeSpend, {
+                  platinumThreshold: plat,
+                  goldThreshold: gold,
+                  silverThreshold: silv,
+                });
+
+                const account = await tx.loyaltyAccount.upsert({
+                  where: { phone: existingAccount?.phone ?? normalizedPhone },
+                  create: {
+                    phone: normalizedPhone,
+                    userId: session.user.id ?? null,
+                    points: newPoints,
+                    lifetimePoints: newLifetimePoints,
+                    lifetimeSpend: newLifetimeSpend,
+                    tier: newTier,
+                  },
+                  update: {
+                    points: newPoints,
+                    lifetimePoints: newLifetimePoints,
+                    lifetimeSpend: newLifetimeSpend,
+                    tier: newTier,
+                    ...(session.user.id ? { userId: session.user.id } : {}),
+                  },
+                });
+
+                await tx.loyaltyTransaction.create({
+                  data: {
+                    loyaltyAccountId: account.id,
+                    orderId: newOrder.id,
+                    type: "EARNED",
+                    points: earnedPoints,
+                    balanceAfter: newPoints,
+                    reason: `Online Order ${newOrder.orderNumber}`,
+                  },
+                });
+
+                await tx.order.update({
+                  where: { id: newOrder.id },
+                  data: { loyaltyPointsEarned: earnedPoints },
+                });
+              }
+            }
+          } catch (loyaltyErr) {
+            console.warn("Failed to process online loyalty points (non-blocking):", loyaltyErr);
+          }
         }
 
         await InventoryService.reserveInventoryForOrder(newOrder.id, tx);

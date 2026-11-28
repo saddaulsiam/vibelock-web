@@ -308,6 +308,8 @@ describe("Order Mappers card metadata extraction", () => {
     deliveryNote: null,
     createdAt: new Date(),
     updatedAt: new Date(),
+    loyaltyPointsEarned: 0,
+    loyaltyPointsRedeemed: 0,
   };
 
   const dummyItem = {

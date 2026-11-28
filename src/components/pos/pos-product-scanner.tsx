@@ -156,9 +156,9 @@ export function PosProductScanner({
   return (
     <form onSubmit={handleScanSubmit} className="relative w-full">
       <div className="relative flex items-center">
-        <div className="pointer-events-none absolute left-3 flex items-center text-slate-400 sm:left-3.5">
-          <Barcode className="text-vl-cyan mr-1 h-4 w-4 sm:mr-1.5 sm:h-5 sm:w-5" />
-          <span className="hidden font-mono text-[11px] font-semibold text-slate-400 sm:inline">
+        <div className="text-vl-dark-400 pointer-events-none absolute left-3 flex items-center sm:left-3.5">
+          <Barcode className="text-vl-dark-600 mr-1 h-4 w-4 sm:mr-1.5 sm:h-5 sm:w-5" />
+          <span className="text-vl-dark-400 hidden font-mono text-[11px] font-semibold sm:inline">
             SCAN SKU:
           </span>
         </div>
@@ -168,8 +168,8 @@ export function PosProductScanner({
           type="text"
           value={searchTerm}
           onChange={(e) => handleInputChange(e.target.value)}
-          placeholder="Scan barcode or type SKU / product name to filter catalog [F2]..."
-          className="text-vl-black focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-11 rounded-xl border pr-20 pl-11 font-mono text-xs tracking-wide shadow-xs transition-all focus-visible:bg-white focus-visible:ring sm:h-12 sm:pr-32 sm:pl-32 sm:text-sm"
+          placeholder="Scan barcode or type SKU / product name [F2]..."
+          className="bg-vl-white-100 rounded-brand h-11 pr-20 pl-10 font-mono text-xs tracking-wide transition-colors sm:h-11 sm:pr-28 sm:pl-32 sm:text-sm"
           autoComplete="off"
           autoFocus
         />

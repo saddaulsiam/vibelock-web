@@ -260,4 +260,42 @@ describe("POS System - createPosOrderAction", () => {
     expect(mockTx.orderHistory.create).toHaveBeenCalled();
     expect(mockTx.auditLog.create).toHaveBeenCalled();
   });
+
+  test("rejects when STAFF applies discount exceeding 10% cap", async () => {
+    const mockTx = {
+      $queryRaw: vi.fn().mockResolvedValue([]),
+      productVariant: {
+        findMany: vi.fn().mockResolvedValue([
+          {
+            id: "var-1",
+            sku: "VL-TEE-BLK-M",
+            size: "M",
+            color: "Black",
+            costPrice: 600,
+            sellingPrice: 1000,
+            discountPrice: null,
+            product: { id: "prod-1", name: "Graphic Tee", status: "PUBLISHED" },
+          },
+        ]),
+      },
+    };
+
+    (prisma.$transaction as ReturnType<typeof vi.fn>).mockImplementation(
+      async (cb: (tx: unknown) => Promise<unknown>) => {
+        return await cb(mockTx);
+      }
+    );
+
+    (InventoryService.calculateAvailableQuantity as ReturnType<typeof vi.fn>).mockResolvedValue(10);
+
+    const result = await createPosOrderAction({
+      items: [{ variantId: "var-1", quantity: 1 }],
+      paymentMethod: "CASH",
+      amountPaid: 500,
+      discount: 500,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("Staff discount cannot exceed 10%");
+  });
 });

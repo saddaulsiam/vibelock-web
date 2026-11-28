@@ -1,34 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Banknote,
-  Lock,
-  ArrowDownCircle,
-  AlertTriangle,
-  CheckCircle2,
-  Loader2,
-  Receipt,
-  LogOut,
-  Info,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
 import {
+  closeRegisterShiftAction,
   openRegisterShiftAction,
   recordCashDropAction,
-  closeRegisterShiftAction,
 } from "@/lib/pos/pos-shift-actions";
+import type { PosShiftSummary, PosZReportData } from "@/lib/pos/pos-shift-types";
+import {
+  AlertTriangle,
+  ArrowDownCircle,
+  Banknote,
+  CheckCircle2,
+  Info,
+  Loader2,
+  Lock,
+  LogOut,
+  Receipt,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface PosShiftModalProps {
@@ -169,15 +169,15 @@ export function PosShiftModal({
   if (!shift || !shift.isOpen) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && !isSubmitting && onClose()}>
-        <DialogContent className="border-vl-white-400 max-w-xl rounded-2xl border bg-white p-6 shadow-2xl sm:max-w-xl md:max-w-2xl">
-          <DialogHeader className="border-vl-white-200 border-b pb-3">
-            <div className="text-vl-cyan flex items-center space-x-2">
+        <DialogContent className="border-vl-white-500 rounded-brand max-w-xl border bg-white p-6 shadow-xl sm:max-w-xl md:max-w-2xl">
+          <DialogHeader className="border-vl-white-400 border-b pb-3">
+            <div className="text-vl-dark-900 flex items-center space-x-2">
               <Lock className="h-5 w-5" />
-              <DialogTitle className="font-heading text-vl-black text-lg font-black tracking-tight">
+              <DialogTitle className="font-heading text-vl-dark-900 text-lg font-bold tracking-tight">
                 Open Register Shift
               </DialogTitle>
             </div>
-            <DialogDescription className="text-vl-grey text-xs">
+            <DialogDescription className="text-vl-dark-400 text-xs">
               Enter starting cash float to unlock POS counter and track drawer transactions.
             </DialogDescription>
           </DialogHeader>
@@ -237,15 +237,11 @@ export function PosShiftModal({
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={onClose}
-                className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-11 w-1/3 rounded-xl border text-xs font-bold"
+                className="w-1/3"
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan-400 flex h-11 w-2/3 items-center justify-center space-x-2 rounded-xl text-xs font-black tracking-wider shadow-[0_0_24px_rgba(0,217,255,0.35)] transition-all active:scale-[0.99]"
-              >
+              <Button type="submit" disabled={isSubmitting} className="w-2/3">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="text-vl-black h-4 w-4 animate-spin" />
@@ -296,18 +292,20 @@ export function PosShiftModal({
         {activeTab === "SUMMARY" && (
           <div className="space-y-4 pt-2">
             {/* Live Drawer Total Big Callout */}
-            <div className="border-vl-border bg-vl-black text-vl-white flex items-center justify-between rounded-xl border p-4 shadow-xs">
+            <div className="border-vl-white-500 bg-vl-white-200 rounded-brand flex items-center justify-between border p-4">
               <div>
-                <span className="font-heading text-vl-grey block text-[10px] font-black tracking-widest uppercase">
+                <span className="font-heading text-vl-dark-500 block text-[10px] font-bold tracking-wider uppercase">
                   Expected Cash in Drawer:
                 </span>
-                <span className="font-heading text-vl-cyan font-mono text-3xl font-black">
+                <span className="font-heading text-vl-dark-900 text-3xl font-black tabular-nums">
                   ৳{shift.expectedCash.toFixed(0)}
                 </span>
               </div>
-              <div className="text-vl-white/80 text-right text-xs">
-                <span className="block font-semibold">Total: ৳{shift.totalSales.toFixed(0)}</span>
-                <span className="text-vl-grey font-mono text-[10px]">
+              <div className="text-vl-dark-700 text-right text-xs">
+                <span className="block font-semibold tabular-nums">
+                  Total: ৳{shift.totalSales.toFixed(0)}
+                </span>
+                <span className="text-vl-dark-400 font-mono text-[10px]">
                   {shift.ordersCount} Orders
                 </span>
               </div>
@@ -343,12 +341,7 @@ export function PosShiftModal({
 
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-2 pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab("CASH_DROP")}
-                className="text-vl-black hover:border-vl-cyan border-vl-white-500 hover:bg-vl-white-100 h-11 rounded-xl text-xs font-bold"
-              >
+              <Button type="button" variant="outline" onClick={() => setActiveTab("CASH_DROP")}>
                 <ArrowDownCircle className="mr-1.5 h-4 w-4 text-amber-500" />
                 Cash Drop / Payout
               </Button>
@@ -359,7 +352,6 @@ export function PosShiftModal({
                   setCountedCash(shift.expectedCash);
                   setActiveTab("CLOSE_SHIFT");
                 }}
-                className="bg-vl-black font-heading text-vl-white hover:text-vl-cyan h-11 rounded-xl text-xs font-black tracking-wider shadow-xs hover:bg-black active:scale-[0.98]"
               >
                 <LogOut className="text-vl-cyan mr-1.5 h-4 w-4" />
                 Close Register
@@ -418,14 +410,14 @@ export function PosShiftModal({
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-11 w-1/3 rounded-xl border text-xs font-bold"
+                className="w-1/3"
               >
                 Back
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || dropAmount <= 0 || !dropReason.trim()}
-                className="bg-vl-black font-heading text-vl-white hover:text-vl-cyan h-11 w-2/3 rounded-xl text-xs font-black tracking-wider shadow-xs transition-all hover:bg-black active:scale-[0.98]"
+                className="w-2/3"
               >
                 {isSubmitting ? (
                   <Loader2 className="text-vl-cyan h-4 w-4 animate-spin" />
@@ -513,15 +505,11 @@ export function PosShiftModal({
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={() => setActiveTab("SUMMARY")}
-                className="text-vl-black border-vl-white-500 hover:bg-vl-white-100 h-11 w-1/3 rounded-xl border text-xs font-bold"
+                className="w-1/3"
               >
                 Back
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="font-heading flex h-11 w-2/3 items-center justify-center space-x-1.5 rounded-xl bg-red-600 text-xs font-black tracking-wider text-white shadow-md transition-all hover:bg-red-700 active:scale-[0.99]"
-              >
+              <Button variant="destructive" type="submit" disabled={isSubmitting} className="w-2/3">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin text-white" />

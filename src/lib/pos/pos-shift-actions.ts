@@ -13,6 +13,41 @@ import type {
 } from "./pos-shift-types";
 import type { PosActionResult } from "./pos-types";
 
+type ShiftAuditClient = Pick<typeof prisma, "auditLog">;
+
+/**
+ * Finds the active (unclosed) shift record for a cashier using either prisma or a transaction client.
+ */
+export async function getActiveShiftRecord(db: ShiftAuditClient, cashierId: string) {
+  const lastOpen = await db.auditLog.findFirst({
+    where: {
+      entityType: "PosRegisterShift",
+      action: "OPEN_SHIFT",
+      actorId: cashierId,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  if (!lastOpen) {
+    return null;
+  }
+
+  const matchingClose = await db.auditLog.findFirst({
+    where: {
+      entityType: "PosRegisterShift",
+      action: "CLOSE_SHIFT",
+      actorId: cashierId,
+      createdAt: { gte: lastOpen.createdAt },
+    },
+  });
+
+  if (matchingClose) {
+    return null;
+  }
+
+  return lastOpen;
+}
+
 /**
  * Fetches the currently active shift for the cashier, including real-time drawer calculations.
  */
@@ -20,32 +55,9 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
   try {
     const cashier = await requireRole("STAFF", { throw: true });
 
-    // 1. Find the latest OPEN_SHIFT log for this cashier
-    const lastOpen = await prisma.auditLog.findFirst({
-      where: {
-        entityType: "PosRegisterShift",
-        action: "OPEN_SHIFT",
-        actorId: cashier.id,
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const lastOpen = await getActiveShiftRecord(prisma, cashier.id);
 
     if (!lastOpen) {
-      return { success: true, data: null };
-    }
-
-    // 2. Check if a CLOSE_SHIFT log exists after or at that open log
-    const matchingClose = await prisma.auditLog.findFirst({
-      where: {
-        entityType: "PosRegisterShift",
-        action: "CLOSE_SHIFT",
-        actorId: cashier.id,
-        createdAt: { gte: lastOpen.createdAt },
-      },
-    });
-
-    if (matchingClose) {
-      // Shift is closed
       return { success: true, data: null };
     }
 
@@ -54,27 +66,44 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
     const openingFloat = Number(openMetadata.openingFloat) || 0;
     const notes = typeof openMetadata.notes === "string" ? openMetadata.notes : null;
 
-    // Fetch POS sales made by this cashier during this shift
+    // Fetch POS sales & exchange charges collected by this cashier during this shift
     const payments = await prisma.payment.findMany({
       where: {
         status: "SUCCESS",
         createdAt: { gte: lastOpen.createdAt },
-        order: {
-          salesChannel: "POS",
-          userId: cashier.id,
-        },
+        OR: [
+          {
+            order: {
+              salesChannel: "POS",
+              userId: cashier.id,
+            },
+          },
+          {
+            gatewayPayload: {
+              path: ["cashierId"],
+              equals: cashier.id,
+            },
+          },
+        ],
       },
       select: {
+        orderId: true,
         amount: true,
         gateway: true,
+        gatewayPayload: true,
       },
     });
 
     let cashSales = 0;
     let banglaQrSales = 0;
     let cardSales = 0;
+    let loyaltyPointsRedeemedTotal = 0;
+    const distinctOrderIds = new Set<string>();
 
     for (const p of payments) {
+      if (p.orderId) {
+        distinctOrderIds.add(p.orderId);
+      }
       const amt = Number(p.amount) || 0;
       if (p.gateway === "CASH") {
         cashSales += amt;
@@ -83,10 +112,14 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
       } else if (p.gateway === "CARD") {
         cardSales += amt;
       }
+      const pl = p.gatewayPayload as Record<string, unknown> | null;
+      if (typeof pl?.loyaltyPointsRedeemed === "number" && pl.loyaltyPointsRedeemed > 0) {
+        loyaltyPointsRedeemedTotal += pl.loyaltyPointsRedeemed;
+      }
     }
 
     const totalSales = cashSales + banglaQrSales + cardSales;
-    const ordersCount = payments.length;
+    const ordersCount = distinctOrderIds.size > 0 ? distinctOrderIds.size : payments.length;
 
     // Fetch cash drops / payouts recorded during this shift
     const dropLogs = await prisma.auditLog.findMany({
@@ -121,6 +154,7 @@ export async function getCurrentShiftAction(): Promise<PosActionResult<PosShiftS
       cashDrops,
       ordersCount,
       expectedCash,
+      loyaltyPointsRedeemedTotal,
       notes,
     };
 
@@ -141,32 +175,57 @@ export async function openRegisterShiftAction(
   try {
     const cashier = await requireRole("STAFF", { throw: true });
 
-    // Ensure no shift is currently open
-    const current = await getCurrentShiftAction();
-    if (current.success && current.data && current.data.isOpen) {
-      return {
-        success: false,
-        error: "A register shift is already open. Please close the active shift first.",
-      };
-    }
-
     const floatAmt = Math.max(0, Number(input.openingFloat) || 0);
     const shiftId = `VL-SHIFT-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
     const openedAt = new Date();
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: cashier.id,
-        action: "OPEN_SHIFT",
-        entityType: "PosRegisterShift",
-        entityId: shiftId,
-        metadata: {
-          openingFloat: floatAmt,
-          openedAt: openedAt.toISOString(),
-          notes: input.notes?.trim() || null,
+    if (typeof prisma.$transaction === "function") {
+      await prisma.$transaction(async (tx) => {
+        if (typeof tx.$executeRaw === "function") {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(982347201)`;
+        }
+        const existing = await getActiveShiftRecord(tx, cashier.id);
+        if (existing) {
+          throw new Error("A register shift is already open. Please close the active shift first.");
+        }
+        await tx.auditLog.create({
+          data: {
+            actorId: cashier.id,
+            action: "OPEN_SHIFT",
+            entityType: "PosRegisterShift",
+            entityId: shiftId,
+            metadata: {
+              openingFloat: floatAmt,
+              openedAt: openedAt.toISOString(),
+              notes: input.notes?.trim() || null,
+            },
+          },
+        });
+      });
+    } else {
+      // Ensure no shift is currently open
+      const current = await getCurrentShiftAction();
+      if (current.success && current.data && current.data.isOpen) {
+        return {
+          success: false,
+          error: "A register shift is already open. Please close the active shift first.",
+        };
+      }
+
+      await prisma.auditLog.create({
+        data: {
+          actorId: cashier.id,
+          action: "OPEN_SHIFT",
+          entityType: "PosRegisterShift",
+          entityId: shiftId,
+          metadata: {
+            openingFloat: floatAmt,
+            openedAt: openedAt.toISOString(),
+            notes: input.notes?.trim() || null,
+          },
         },
-      },
-    });
+      });
+    }
 
     revalidatePath("/pos");
 
@@ -280,31 +339,68 @@ export async function closeRegisterShiftAction(
     const reportId = `VL-ZREPORT-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(2).toString("hex").toUpperCase()}`;
     const closedAt = new Date().toISOString();
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: cashier.id,
-        action: "CLOSE_SHIFT",
-        entityType: "PosRegisterShift",
-        entityId: shift.shiftId,
-        metadata: {
-          reportId,
-          openingFloat: shift.openingFloat,
-          cashSales: shift.cashSales,
-          banglaQrSales: shift.banglaQrSales ?? shift.bkashSales,
-          bkashSales: shift.banglaQrSales ?? shift.bkashSales,
-          cardSales: shift.cardSales,
-          totalSales: shift.totalSales,
-          totalOrders: shift.ordersCount,
-          cashDrops: shift.cashDrops,
-          expectedCash: shift.expectedCash,
-          countedCash,
-          variance,
-          varianceStatus,
-          closedAt,
-          notes: input.notes?.trim() || null,
+    if (typeof prisma.$transaction === "function") {
+      await prisma.$transaction(async (tx) => {
+        if (typeof tx.$executeRaw === "function") {
+          await tx.$executeRaw`SELECT pg_advisory_xact_lock(982347201)`;
+        }
+        const activeShift = await getActiveShiftRecord(tx, cashier.id);
+        if (!activeShift) {
+          throw new Error("No active shift found to close.");
+        }
+        await tx.auditLog.create({
+          data: {
+            actorId: cashier.id,
+            action: "CLOSE_SHIFT",
+            entityType: "PosRegisterShift",
+            entityId: shift.shiftId,
+            metadata: {
+              reportId,
+              openingFloat: shift.openingFloat,
+              cashSales: shift.cashSales,
+              banglaQrSales: shift.banglaQrSales ?? shift.bkashSales,
+              bkashSales: shift.banglaQrSales ?? shift.bkashSales,
+              cardSales: shift.cardSales,
+              totalSales: shift.totalSales,
+              totalOrders: shift.ordersCount,
+              cashDrops: shift.cashDrops,
+              expectedCash: shift.expectedCash,
+              countedCash,
+              variance,
+              varianceStatus,
+              closedAt,
+              notes: input.notes?.trim() || null,
+            },
+          },
+        });
+      });
+    } else {
+      await prisma.auditLog.create({
+        data: {
+          actorId: cashier.id,
+          action: "CLOSE_SHIFT",
+          entityType: "PosRegisterShift",
+          entityId: shift.shiftId,
+          metadata: {
+            reportId,
+            openingFloat: shift.openingFloat,
+            cashSales: shift.cashSales,
+            banglaQrSales: shift.banglaQrSales ?? shift.bkashSales,
+            bkashSales: shift.banglaQrSales ?? shift.bkashSales,
+            cardSales: shift.cardSales,
+            totalSales: shift.totalSales,
+            totalOrders: shift.ordersCount,
+            cashDrops: shift.cashDrops,
+            expectedCash: shift.expectedCash,
+            countedCash,
+            variance,
+            varianceStatus,
+            closedAt,
+            notes: input.notes?.trim() || null,
+          },
         },
-      },
-    });
+      });
+    }
 
     revalidatePath("/pos");
 
@@ -327,6 +423,7 @@ export async function closeRegisterShiftAction(
       countedCash,
       variance,
       varianceStatus,
+      loyaltyPointsRedeemedTotal: shift.loyaltyPointsRedeemedTotal,
       closingNotes: input.notes?.trim() || null,
     };
 

@@ -6,7 +6,8 @@ import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { ReturnService } from "@/lib/returns/service";
 import { InventoryService } from "@/lib/inventory/service";
-import { getCurrentShiftAction } from "./pos-shift-actions";
+import { getActiveShiftRecord, getCurrentShiftAction } from "./pos-shift-actions";
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { revalidatePath } from "next/cache";
 import type {
   PosOrderLookupResult,
@@ -131,6 +132,25 @@ export async function processPosReturnAction(
         throw new Error("Order not found.");
       }
 
+      if (order.createdAt instanceof Date) {
+        const daysElapsed = Math.floor(
+          (Date.now() - order.createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysElapsed > 7 && cashier.role === "STAFF") {
+          throw new Error(
+            `Return window (7 days) has expired (${daysElapsed} days ago). Manager or Admin approval is required.`
+          );
+        }
+      }
+
+      // Compute effective paid ratio so order-level discounts are pro-rated on refunds
+      const orderSubtotal = Number(order.subtotal) || 0;
+      const orderTotal = Number(order.total) || 0;
+      const paidRatio =
+        orderSubtotal > 0 && orderTotal >= 0 && orderTotal < orderSubtotal
+          ? orderTotal / orderSubtotal
+          : 1;
+
       // 2. Validate returnable quantities
       const returnService = new ReturnService();
       const returnableMap = await returnService.getReturnableQuantities(order.id, tx);
@@ -146,29 +166,38 @@ export async function processPosReturnAction(
         }
 
         const maxReturnable = returnableMap[retItem.orderItemId] ?? 0;
-        if (retItem.quantity <= 0 || retItem.quantity > maxReturnable) {
+        if (retItem.quantity <= 0 || !Number.isInteger(retItem.quantity) || retItem.quantity > maxReturnable) {
           throw new Error(
             `Invalid return quantity (${retItem.quantity}) for ${itemSnapshot.sku}. Max allowed: ${maxReturnable}.`
           );
         }
 
-        const unitPrice = Number(itemSnapshot.unitPrice);
-        const lineTotal = unitPrice * retItem.quantity;
-        totalReturnValue += lineTotal;
+        const rawUnitPrice = Number(itemSnapshot.unitPrice);
+        const snapshotLineTotal =
+          itemSnapshot.lineTotal !== undefined && itemSnapshot.lineTotal !== null
+            ? Number(itemSnapshot.lineTotal)
+            : rawUnitPrice * itemSnapshot.quantity;
+        const hasItemLevelDiscount =
+          snapshotLineTotal < rawUnitPrice * itemSnapshot.quantity - 0.01;
+        const effectiveUnitPrice = hasItemLevelDiscount
+          ? Math.round((snapshotLineTotal / itemSnapshot.quantity) * 100) / 100
+          : Math.round(rawUnitPrice * paidRatio * 100) / 100;
+        const lineTotal = Math.round(effectiveUnitPrice * retItem.quantity * 100) / 100;
+        totalReturnValue = Math.round((totalReturnValue + lineTotal) * 100) / 100;
 
         returnedItemsReceipt.push({
           name: itemSnapshot.productName,
           sku: itemSnapshot.sku,
           size: itemSnapshot.size,
           color: itemSnapshot.color,
-          unitPrice,
+          unitPrice: effectiveUnitPrice,
           quantity: retItem.quantity,
           condition: retItem.condition,
           lineTotal,
         });
       }
 
-      // 3. Process exchange replacements (if any)
+      // 3. Process exchange replacements (if any) using DB-authoritative pricing
       let totalExchangeValue = 0;
       const exchangeItemsReceipt = [];
 
@@ -182,23 +211,47 @@ export async function processPosReturnAction(
           await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
         }
 
+        const dbVariants = await tx.productVariant.findMany({
+          where: { id: { in: variantIds } },
+          include: {
+            product: { select: { name: true, status: true } },
+          },
+        });
+        const dbVariantMap = new Map(dbVariants.map((v) => [v.id, v]));
+
         for (const rep of input.exchangeItems) {
+          if (!rep.quantity || rep.quantity <= 0 || !Number.isInteger(rep.quantity)) {
+            throw new Error(`Invalid replacement quantity for ${rep.sku}.`);
+          }
+
+          const dbVar = dbVariantMap.get(rep.variantId);
+          if (!dbVar) {
+            throw new Error(`Replacement product variant ${rep.variantId} not found.`);
+          }
+          if (dbVar.product.status !== "PUBLISHED") {
+            throw new Error(`Replacement product "${dbVar.product.name}" is not active for sale.`);
+          }
+
           const available = await InventoryService.calculateAvailableQuantity(tx, rep.variantId);
           if (available < rep.quantity) {
             throw new Error(
-              `Insufficient stock for replacement "${rep.productName}" (${rep.sku}). Available: ${available}, needed: ${rep.quantity}.`
+              `Insufficient stock for replacement "${dbVar.product.name}" (${dbVar.sku}). Available: ${available}, needed: ${rep.quantity}.`
             );
           }
 
-          const lineTotal = rep.unitPrice * rep.quantity;
-          totalExchangeValue += lineTotal;
+          const sellingPrice = Number(dbVar.sellingPrice);
+          const discountPrice = dbVar.discountPrice ? Number(dbVar.discountPrice) : null;
+          const authoritativeUnitPrice =
+            discountPrice !== null && discountPrice < sellingPrice ? discountPrice : sellingPrice;
+          const lineTotal = Math.round(authoritativeUnitPrice * rep.quantity * 100) / 100;
+          totalExchangeValue = Math.round((totalExchangeValue + lineTotal) * 100) / 100;
 
           exchangeItemsReceipt.push({
-            name: rep.productName,
-            sku: rep.sku,
-            size: rep.size,
-            color: rep.color,
-            unitPrice: rep.unitPrice,
+            name: dbVar.product.name,
+            sku: dbVar.sku,
+            size: dbVar.size,
+            color: dbVar.color,
+            unitPrice: authoritativeUnitPrice,
             quantity: rep.quantity,
             lineTotal,
           });
@@ -277,22 +330,155 @@ export async function processPosReturnAction(
         },
       });
 
-      // 9. If Cash was refunded, log cash drop in active shift
+      // 9. Record Payment for Exchange Charge OR Cash Drop for Refund
+      const chargeAmount = netAction === "CHARGE_CUSTOMER" ? Math.round(netDifference * 100) / 100 : 0;
+      if (chargeAmount > 0 && typeof tx.payment?.create === "function") {
+        const exchangeMethod = input.exchangePaymentMethod || "CASH";
+        await tx.payment.create({
+          data: {
+            orderId: order.id,
+            amount: chargeAmount,
+            status: "SUCCESS",
+            gateway: exchangeMethod,
+            merchantReferenceId: `POS-EXCH-${returnRequest.id}`,
+            gatewayTransactionId: `${exchangeMethod}-EXCH-${Date.now()}`,
+            gatewayPayload: {
+              returnMemoNumber,
+              cashierId: cashier.id,
+              cashierName: cashier.name || cashier.email,
+              paymentMethod: exchangeMethod,
+              exchangeCharge: true,
+            },
+          },
+        });
+      }
+
       const refundAmount = netAction === "REFUND_TO_CUSTOMER" ? Math.abs(netDifference) : 0;
       if (refundAmount > 0) {
-        const shiftRes = await getCurrentShiftAction();
-        if (shiftRes.success && shiftRes.data?.isOpen) {
+        let activeShiftId: string | null = null;
+        if (typeof tx.auditLog?.findFirst === "function") {
+          const activeShift = await getActiveShiftRecord(tx, cashier.id);
+          activeShiftId = activeShift?.entityId ?? null;
+        } else {
+          const shiftRes = await getCurrentShiftAction();
+          activeShiftId = shiftRes.success && shiftRes.data?.isOpen ? shiftRes.data.shiftId : null;
+        }
+
+        if (activeShiftId) {
           await tx.auditLog.create({
             data: {
               actorId: cashier.id,
               action: "CASH_DROP",
               entityType: "PosRegisterShift",
-              entityId: shiftRes.data.shiftId,
+              entityId: activeShiftId,
               metadata: {
                 amount: refundAmount,
                 reason: `POS Return Cash Refund - Memo ${returnMemoNumber} (Order ${order.orderNumber})`,
                 recordedAt: new Date().toISOString(),
               },
+            },
+          });
+        }
+      }
+
+      // 10. Reconcile Loyalty Points on Return/Exchange (Prevent Infinite Points Exploit)
+      if (
+        order.customerPhone &&
+        order.customerPhone !== "N/A" &&
+        typeof tx.loyaltyAccount?.findFirst === "function"
+      ) {
+        const normalizedPhone = normalizeBdPhoneNumber(order.customerPhone);
+        const searchSuffix = normalizedPhone.slice(-10);
+
+        const account = await tx.loyaltyAccount.findFirst({
+          where: { phone: { endsWith: searchSuffix } },
+        });
+
+        if (account) {
+          const originalTotal = Math.max(1, Number(order.total));
+          // In an exchange, only net cash refunded reduces customer spend; extra spend increases it
+          const netRefundAmount =
+            netAction === "REFUND_TO_CUSTOMER"
+              ? input.resolution === "EXCHANGE"
+                ? Math.abs(netDifference)
+                : totalReturnValue
+              : 0;
+          const returnedFraction = Math.min(1, netRefundAmount / originalTotal);
+
+          const earnedPointsOnOrder =
+            (order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned ?? 0;
+          const redeemedPointsOnOrder =
+            (order as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0;
+
+          const pointsToReverse = Math.round(returnedFraction * earnedPointsOnOrder);
+          const pointsToRefund =
+            netAction === "REFUND_TO_CUSTOMER"
+              ? Math.round(returnedFraction * redeemedPointsOnOrder)
+              : 0;
+
+          let currentPoints = account.points;
+
+          if (pointsToReverse > 0) {
+            currentPoints = Math.max(0, currentPoints - pointsToReverse);
+            if (typeof tx.loyaltyTransaction?.create === "function") {
+              await tx.loyaltyTransaction.create({
+                data: {
+                  loyaltyAccountId: account.id,
+                  orderId: order.id,
+                  type: "ADJUSTED",
+                  points: -pointsToReverse,
+                  balanceAfter: currentPoints,
+                  reason: `POS Return Reversal - ${order.orderNumber} (${returnMemoNumber})`,
+                },
+              });
+            }
+          }
+
+          if (pointsToRefund > 0) {
+            currentPoints += pointsToRefund;
+            if (typeof tx.loyaltyTransaction?.create === "function") {
+              await tx.loyaltyTransaction.create({
+                data: {
+                  loyaltyAccountId: account.id,
+                  orderId: order.id,
+                  type: "REFUNDED",
+                  points: pointsToRefund,
+                  balanceAfter: currentPoints,
+                  reason: `POS Return Points Refund - ${order.orderNumber} (${returnMemoNumber})`,
+                },
+              });
+            }
+          }
+
+          const netSpendChange =
+            input.resolution === "EXCHANGE"
+              ? totalExchangeValue - totalReturnValue
+              : -totalReturnValue;
+
+          const newLifetimePoints = Math.max(0, (account.lifetimePoints ?? 0) - pointsToReverse);
+          const newLifetimeSpend = Math.max(0, Number(account.lifetimeSpend ?? 0) + netSpendChange);
+
+          // Tier recalculation
+          const loyaltyConfig =
+            typeof tx.loyaltySetting?.findFirst === "function"
+              ? await tx.loyaltySetting.findFirst()
+              : null;
+          const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
+          const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+          const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+
+          let newTier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
+          if (newLifetimeSpend >= platinumThreshold) newTier = "PLATINUM";
+          else if (newLifetimeSpend >= goldThreshold) newTier = "GOLD";
+          else if (newLifetimeSpend >= silverThreshold) newTier = "SILVER";
+
+          await tx.loyaltyAccount.update({
+            where: { id: account.id },
+            data: {
+              points: currentPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
             },
           });
         }

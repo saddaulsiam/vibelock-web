@@ -171,6 +171,10 @@ export async function expireOrder(
       );
     }
 
+    // 5.5. Reconcile any redeemed loyalty points (refund back to customer)
+    const { reconcileCancelledOrderLoyalty } = await import("./loyalty-reconciliation");
+    await reconcileCancelledOrderLoyalty(order, tx, "expired");
+
     const expirationReason =
       options?.reason ||
       "Order expired due to unpaid checkout timeout. Reserved inventory and coupon released.";

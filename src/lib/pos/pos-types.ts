@@ -73,8 +73,10 @@ export interface PosCreateOrderInput {
   paymentMethod: PosPaymentMethod;
   amountPaid: number;
   discount?: number;
+  loyaltyPointsRedeemed?: number;
   notes?: string;
   splitPayments?: PosPaymentSplitInput[];
+  clientRequestId?: string;
 }
 
 export interface PosReceiptItem {
@@ -102,6 +104,8 @@ export interface PosReceiptData {
   paymentMethod: PosPaymentMethod;
   amountPaid: number;
   changeDue: number;
+  loyaltyPointsRedeemed?: number;
+  loyaltyDiscountAmount?: number;
   notes?: string | null;
   splits?: PosPaymentSplitDetail[];
 }

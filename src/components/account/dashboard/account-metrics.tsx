@@ -11,6 +11,10 @@ interface AccountMetricsProps {
   totalSpent: number;
   wishlistCount?: number;
   activeCouponsCount: number;
+  loyalty?: {
+    points: number;
+    tier: string;
+  };
 }
 
 export function AccountMetrics({
@@ -18,6 +22,7 @@ export function AccountMetrics({
   totalSpent,
   wishlistCount = 0,
   activeCouponsCount,
+  loyalty,
 }: AccountMetricsProps) {
   const rawWishlist = useSyncExternalStore(
     subscribeWishlist,
@@ -62,12 +67,18 @@ export function AccountMetrics({
       actionText: "View coupons",
       href: "/account/coupons",
     },
+    {
+      label: `VIP ${loyalty?.tier ?? "BRONZE"} Tier`,
+      value: `${(loyalty?.points ?? 0).toLocaleString()} pts`,
+      actionText: "Earned rewards",
+      href: "/account",
+    },
   ];
 
   return (
     /* Unified, Architectural Metrics Surface (No separate SaaS widget boxes) */
     <Card variant="brand" className="overflow-hidden p-0">
-      <div className="divide-vl-dark-900/6 grid grid-cols-2 divide-x divide-y sm:grid-cols-4 sm:divide-y-0">
+      <div className="divide-vl-dark-900/6 grid grid-cols-2 divide-x divide-y sm:grid-cols-3 lg:grid-cols-5 sm:divide-y-0">
         {metrics.map((metric) => (
           <div
             key={metric.label}

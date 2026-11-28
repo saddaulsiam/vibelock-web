@@ -49,6 +49,7 @@ export interface PosProcessReturnInput {
   returnedItems: PosReturnSelectedItem[];
   resolution: "REFUND_CASH" | "EXCHANGE";
   exchangeItems?: PosExchangeReplacementItem[];
+  exchangePaymentMethod?: "CASH" | "BANGLA_QR" | "CARD";
   notes?: string;
 }
 

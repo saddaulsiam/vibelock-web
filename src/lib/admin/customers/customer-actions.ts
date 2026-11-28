@@ -671,3 +671,146 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
     return { success: false, error: msg };
   }
 }
+
+export interface AdjustCustomerLoyaltyInput {
+  customerId: string;
+  pointsDelta: number;
+  reason: string;
+}
+
+export async function adjustCustomerLoyaltyPointsAction(
+  input: AdjustCustomerLoyaltyInput
+): Promise<{ success: boolean; error?: string; newBalance?: number }> {
+  const admin = await requireRole("MANAGER", { throw: true });
+
+  const { customerId, pointsDelta, reason } = input;
+
+  if (!customerId) {
+    return { success: false, error: "Customer ID is required." };
+  }
+
+  const delta = Math.trunc(pointsDelta);
+  if (!Number.isFinite(delta) || delta === 0) {
+    return { success: false, error: "Points adjustment must be a non-zero whole number." };
+  }
+
+  const trimmedReason = reason?.trim();
+  if (!trimmedReason || trimmedReason.length < 3) {
+    return {
+      success: false,
+      error: "A valid reason (minimum 3 characters) is required for audit compliance.",
+    };
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: customerId },
+        select: { id: true, name: true, phone: true },
+      });
+
+      if (!user) {
+        throw new Error("Customer not found.");
+      }
+
+      let account = await tx.loyaltyAccount.findFirst({
+        where: {
+          OR: [
+            { userId: user.id },
+            ...(user.phone ? [{ phone: user.phone }] : []),
+          ],
+        },
+      });
+
+      if (account) {
+        // Pessimistic row-level lock against concurrent admin adjustments
+        await tx.$queryRaw`SELECT id FROM "LoyaltyAccount" WHERE id = ${account.id} FOR UPDATE`;
+        const fresh = await tx.loyaltyAccount.findUnique({ where: { id: account.id } });
+        if (fresh) account = fresh;
+      }
+
+      if (!account && delta < 0) {
+        throw new Error("Cannot deduct points: customer has no loyalty account.");
+      }
+
+      const currentPoints = account?.points ?? 0;
+      const newPoints = currentPoints + delta;
+
+      if (newPoints < 0) {
+        throw new Error(`Insufficient points: customer only has ${currentPoints} points.`);
+      }
+
+      const loyaltyConfig = await tx.loyaltySetting.findFirst();
+      const plat = Number(loyaltyConfig?.platinumThreshold ?? 50000);
+      const gold = Number(loyaltyConfig?.goldThreshold ?? 20000);
+      const silv = Number(loyaltyConfig?.silverThreshold ?? 5000);
+
+      const newLifetimePoints =
+        delta > 0 ? (account?.lifetimePoints ?? 0) + delta : account?.lifetimePoints ?? 0;
+      const lifetimeSpend = Number(account?.lifetimeSpend ?? 0);
+
+      let tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";
+      if (lifetimeSpend >= plat) tier = "PLATINUM";
+      else if (lifetimeSpend >= gold) tier = "GOLD";
+      else if (lifetimeSpend >= silv) tier = "SILVER";
+
+      if (!account) {
+        const phone = user.phone || `temp-${user.id}`;
+        account = await tx.loyaltyAccount.create({
+          data: {
+            userId: user.id,
+            phone,
+            points: newPoints,
+            lifetimePoints: newLifetimePoints,
+            lifetimeSpend,
+            tier,
+          },
+        });
+      } else {
+        account = await tx.loyaltyAccount.update({
+          where: { id: account.id },
+          data: {
+            points: newPoints,
+            lifetimePoints: newLifetimePoints,
+            tier,
+            ...(user.id && !account.userId ? { userId: user.id } : {}),
+          },
+        });
+      }
+
+      await tx.loyaltyTransaction.create({
+        data: {
+          loyaltyAccountId: account.id,
+          type: "ADJUSTED",
+          points: delta,
+          balanceAfter: newPoints,
+          reason: trimmedReason,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: admin.id,
+          action: "LOYALTY_POINTS_ADJUSTED",
+          entityType: "Customer",
+          entityId: user.id,
+          metadata: {
+            pointsDelta: delta,
+            balanceAfter: newPoints,
+            reason: trimmedReason,
+            actorName: admin.name || admin.email,
+          },
+        },
+      });
+
+      return { newBalance: newPoints };
+    });
+
+    revalidatePath(`/admin/customers/${customerId}`);
+    revalidatePath("/admin/customers");
+    return { success: true, newBalance: result.newBalance };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to adjust points.";
+    return { success: false, error: msg };
+  }
+}

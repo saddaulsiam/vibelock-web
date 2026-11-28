@@ -1,6 +1,13 @@
 import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
+// Mock next/navigation
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock Radix Dialog for renderToStaticMarkup SSR testing
 vi.mock("@/components/ui/dialog", () => ({
   Dialog: ({ children, open }: { children?: React.ReactNode; open?: boolean }) =>
@@ -48,13 +55,13 @@ describe("POS Orders History & Reprint", () => {
   });
 
   describe("PosHeader Orders Action", () => {
-    test("renders Orders [F5] button when onOpenOrdersModal handler provided", () => {
+    test("renders Orders [Alt+O] button when onOpenOrdersModal handler provided", () => {
       const html = renderToStaticMarkup(
         <PosHeader cashierName="Saddam Hossain" cashierRole="STAFF" onOpenOrdersModal={vi.fn()} />
       );
 
       expect(html).toContain("Orders");
-      expect(html).toContain("F5");
+      expect(html).toContain("Alt+O");
     });
   });
 });

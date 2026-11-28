@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma/client";
 import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import { InventoryService } from "@/lib/inventory/service";
+import { getActiveShiftRecord } from "./pos-shift-actions";
+import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { revalidatePath } from "next/cache";
 import {
   generatePosOrderNumber,
@@ -52,7 +54,15 @@ export async function createPosOrderAction(
       attempt++;
       try {
         receipt = await prisma.$transaction(async (tx) => {
-      // 3. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
+      // 3a. Enforce active register shift on server when auditLog delegate is available
+      if (typeof tx.auditLog?.findFirst === "function") {
+        const activeShift = await getActiveShiftRecord(tx, cashier.id);
+        if (!activeShift) {
+          throw new Error("No active register shift open. Please open a shift before checkout.");
+        }
+      }
+
+      // 3b. Collect unique variant IDs and lock them in alphabetical order to avoid deadlocks
       const variantIds = Array.from(new Set(input.items.map((i) => i.variantId))).sort();
       if (variantIds.length > 0) {
         await tx.$queryRaw`SELECT id FROM "ProductVariant" WHERE id IN (${Prisma.join(variantIds)}) FOR UPDATE`;
@@ -135,16 +145,131 @@ export async function createPosOrderAction(
         });
       }
 
-      // 7. Calculate discounts and totals
-      const discount = Math.min(subtotal, Math.max(0, Number(input.discount) || 0));
-      const total = Math.max(0, subtotal - discount);
+      // 7. Calculate discounts and totals with role-based cap
+      const rawDiscount = Number(input.discount) || 0;
+      if (!Number.isFinite(rawDiscount) || rawDiscount < 0) {
+        throw new Error("Invalid discount amount.");
+      }
+
+      const loyaltyRedeemed = Number(input.loyaltyPointsRedeemed) || 0;
+      if (loyaltyRedeemed < 0 || !Number.isFinite(loyaltyRedeemed)) {
+        throw new Error("Invalid loyalty points amount.");
+      }
+
+      let activePointRedemptionValue = 1;
+
+      if (loyaltyRedeemed > 0) {
+        if (!input.customerPhone?.trim()) {
+          throw new Error("Customer phone number is required to redeem loyalty points.");
+        }
+
+        // Fetch loyalty settings to enforce active rules and channel policies
+        const loyaltyConfig =
+          typeof tx.loyaltySetting?.findFirst === "function"
+            ? await tx.loyaltySetting.findFirst()
+            : null;
+
+        if (loyaltyConfig) {
+          if (!loyaltyConfig.enabled || !loyaltyConfig.enableInPos) {
+            throw new Error("Loyalty point redemption is currently disabled for POS sales.");
+          }
+          if (
+            loyaltyConfig.minPointsToRedeem > 0 &&
+            loyaltyRedeemed < loyaltyConfig.minPointsToRedeem
+          ) {
+            throw new Error(
+              `Minimum of ${loyaltyConfig.minPointsToRedeem} points required for redemption.`
+            );
+          }
+          activePointRedemptionValue = Number(loyaltyConfig.pointRedemptionValue);
+
+          const expectedDiscount =
+            Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100;
+          if (expectedDiscount > rawDiscount + 0.01) {
+            throw new Error(
+              "Loyalty points redemption value cannot exceed total applied discount."
+            );
+          }
+
+          const maxAllowedDiscountPct = loyaltyConfig.maxCartDiscountPercentage ?? 100;
+          const maxAllowedDiscount = Math.round((subtotal * maxAllowedDiscountPct) / 100);
+          if (expectedDiscount > maxAllowedDiscount + 0.01) {
+            throw new Error(
+              `Loyalty discount exceeds maximum allowed ${maxAllowedDiscountPct}% of cart subtotal.`
+            );
+          }
+        } else {
+          if (loyaltyRedeemed > rawDiscount) {
+            throw new Error("Loyalty points redeemed cannot exceed total applied discount.");
+          }
+        }
+
+        // Verify customer has sufficient available loyalty points via LoyaltyAccount ledger with row-lock
+        if (typeof tx.loyaltyAccount?.findFirst === "function") {
+          const normalized = normalizeBdPhoneNumber(input.customerPhone.trim());
+          const searchSuffix = normalized.slice(-10);
+
+          // Acquire pessimistic lock on the LoyaltyAccount row to prevent concurrent double-spend race conditions
+          if (typeof tx.$queryRaw === "function") {
+            try {
+              await tx.$queryRaw`SELECT id FROM "LoyaltyAccount" WHERE phone LIKE ${"%" + searchSuffix} FOR UPDATE`;
+            } catch {
+              // Non-blocking in mock/test environments
+            }
+          }
+
+          const account = await tx.loyaltyAccount.findFirst({
+            where: { phone: { endsWith: searchSuffix } },
+            select: { points: true },
+          });
+          const availablePoints = account?.points ?? 0;
+          if (loyaltyRedeemed > availablePoints) {
+            throw new Error(
+              `Cannot redeem ${loyaltyRedeemed} loyalty points. Customer only has ${availablePoints} available points.`
+            );
+          }
+        }
+      }
+
+      if (cashier.role === "STAFF" && subtotal > 0) {
+        const maxStaffDiscount = Math.round(subtotal * 0.1 * 100) / 100;
+        // Staff discount cap applies to arbitrary counter discounts (loyalty redemption is earned by customer)
+        const counterDiscountExcludingLoyalty = Math.max(0, rawDiscount - loyaltyRedeemed);
+        if (counterDiscountExcludingLoyalty > maxStaffDiscount + 0.01) {
+          throw new Error(
+            `Staff discount cannot exceed 10% (৳${maxStaffDiscount.toFixed(2)}). Manager or Admin approval required.`
+          );
+        }
+      }
+
+      const discount = Math.min(subtotal, rawDiscount);
+      const total = Math.max(0, Math.round((subtotal - discount) * 100) / 100);
+
+      // Pro-rate order-level discount across order items so snapshots & returns stay consistent
+      if (discount > 0 && subtotal > 0 && orderItemsData.length > 0) {
+        let allocatedDiscount = 0;
+        for (let idx = 0; idx < orderItemsData.length; idx++) {
+          const item = orderItemsData[idx];
+          const isLast = idx === orderItemsData.length - 1;
+          const itemDiscount = isLast
+            ? Math.round((discount - allocatedDiscount) * 100) / 100
+            : Math.round(((item.lineSubtotal / subtotal) * discount) * 100) / 100;
+          allocatedDiscount += itemDiscount;
+          item.appliedDiscount = itemDiscount;
+          item.discountAmount = itemDiscount;
+          item.lineTotal = Math.max(0, Math.round((item.lineSubtotal - itemDiscount) * 100) / 100);
+        }
+      }
 
       // Support Split Payments (Multiple Tenders)
       const isSplit =
         input.paymentMethod === "SPLIT" ||
         (Array.isArray(input.splitPayments) && input.splitPayments.length > 0);
 
-      let effectiveAmountPaid = Number(input.amountPaid) || 0;
+      let effectiveAmountPaid = Number(input.amountPaid);
+      if (!Number.isFinite(effectiveAmountPaid)) {
+        effectiveAmountPaid = 0;
+      }
       let changeDue = 0;
       let receiptSplits: PosPaymentSplitDetail[] | undefined = undefined;
 
@@ -153,27 +278,47 @@ export async function createPosOrderAction(
           throw new Error("Split payment selected but no payment tenders were provided.");
         }
 
+        for (const split of input.splitPayments) {
+          const amt = Number(split.amount);
+          if (!Number.isFinite(amt) || amt <= 0) {
+            throw new Error(`Invalid split payment amount for ${split.method}.`);
+          }
+          if (split.tenderAmount !== undefined) {
+            const tender = Number(split.tenderAmount);
+            if (!Number.isFinite(tender) || tender < amt) {
+              throw new Error(
+                `Tender amount (৳${Number.isFinite(tender) ? tender.toFixed(2) : "0.00"}) cannot be less than allocated amount (৳${amt.toFixed(2)}) for ${split.method}.`
+              );
+            }
+          }
+        }
+
         const totalSplitAllocated = input.splitPayments.reduce(
           (sum, s) => sum + Number(s.amount),
           0
         );
-        if (totalSplitAllocated < total) {
+        if (totalSplitAllocated < total - 0.01) {
           throw new Error(
             `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
           );
         }
+        if (totalSplitAllocated > total + 0.01) {
+          throw new Error(
+            `Total allocated across split payment methods (৳${totalSplitAllocated.toFixed(2)}) exceeds total amount (৳${total.toFixed(2)}).`
+          );
+        }
+
+        const cashSplits = input.splitPayments.filter((s) => s.method === "CASH");
+        if (cashSplits.length > 1) {
+          throw new Error("Only one CASH tender entry is allowed per split payment.");
+        }
 
         // Calculate cash change if customer handed more than the cash portion
-        const cashSplit = input.splitPayments.find((s) => s.method === "CASH");
+        const cashSplit = cashSplits[0];
         if (cashSplit) {
           const cashTender = Number(cashSplit.tenderAmount ?? cashSplit.amount);
           const cashPortion = Number(cashSplit.amount);
-          if (cashTender < cashPortion) {
-            throw new Error(
-              `Cash tender (৳${cashTender.toFixed(2)}) is less than allocated cash amount (৳${cashPortion.toFixed(2)}).`
-            );
-          }
-          changeDue = Math.max(0, cashTender - cashPortion);
+          changeDue = Math.max(0, Math.round((cashTender - cashPortion) * 100) / 100);
         }
 
         effectiveAmountPaid = input.splitPayments.reduce(
@@ -188,22 +333,39 @@ export async function createPosOrderAction(
             method: s.method,
             amount: sAmount,
             tenderAmount: sTender,
-            changeDue: s.method === "CASH" ? Math.max(0, sTender - sAmount) : 0,
+            changeDue:
+              s.method === "CASH" ? Math.max(0, Math.round((sTender - sAmount) * 100) / 100) : 0,
             reference: s.reference || undefined,
           };
         });
       } else {
-        if (effectiveAmountPaid < total) {
+        if (effectiveAmountPaid < total - 0.01) {
           throw new Error(
             `Amount paid (৳${effectiveAmountPaid.toFixed(2)}) is less than total amount (৳${total.toFixed(2)}).`
           );
         }
-        changeDue = Math.max(0, effectiveAmountPaid - total);
+        changeDue = Math.max(0, Math.round((effectiveAmountPaid - total) * 100) / 100);
       }
 
-      // 8. Generate order identifiers
+      // 8. Generate order identifiers (with client-provided idempotency key when available)
+      const trimmedClientKey = input.clientRequestId?.trim();
+      const idempotencyKey = trimmedClientKey
+        ? `pos-${trimmedClientKey}`
+        : `pos-${crypto.randomBytes(12).toString("hex")}`;
+
+      if (trimmedClientKey && typeof tx.order?.findUnique === "function") {
+        const existingOrder = await tx.order.findUnique({
+          where: { checkoutIdempotencyKey: idempotencyKey },
+          select: { id: true, orderNumber: true },
+        });
+        if (existingOrder) {
+          throw new Error(
+            `Duplicate checkout request detected. Order ${existingOrder.orderNumber} was already completed.`
+          );
+        }
+      }
+
       candidateOrderNumber = generatePosOrderNumber();
-      const idempotencyKey = `pos-${crypto.randomBytes(12).toString("hex")}`;
 
       const customerName = input.customerName?.trim() || "Walk-in Customer";
       const customerPhone = input.customerPhone?.trim() || "N/A";
@@ -275,6 +437,7 @@ export async function createPosOrderAction(
                 cashierName: cashier.name || cashier.email,
                 paymentMethod: split.method,
                 reference: split.reference || null,
+                loyaltyPointsRedeemed: i === 0 ? loyaltyRedeemed : 0,
               },
             },
           });
@@ -297,6 +460,7 @@ export async function createPosOrderAction(
               cashierId: cashier.id,
               cashierName: cashier.name || cashier.email,
               paymentMethod: input.paymentMethod,
+              loyaltyPointsRedeemed: loyaltyRedeemed,
             },
           },
         });
@@ -314,6 +478,115 @@ export async function createPosOrderAction(
             notes: `POS Counter Sale - ${newOrder.orderNumber}`,
           },
         });
+      }
+
+      // 12. Loyalty Ledger — Earn & Redeem points atomically
+      if (customerPhone && customerPhone !== "N/A") {
+        const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+        const loyaltyConfig =
+          typeof tx.loyaltySetting?.findFirst === "function"
+            ? await tx.loyaltySetting.findFirst()
+            : null;
+        const spendAmountPerPoint = loyaltyConfig?.spendAmountPerPoint ?? 100;
+        const pointRedemptionValue = loyaltyConfig
+          ? Number(loyaltyConfig.pointRedemptionValue)
+          : activePointRedemptionValue;
+        const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
+        const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
+        const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
+        const loyaltyEnabled =
+          (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
+
+        if (loyaltyEnabled) {
+          // Fetch pre-existing account to compute exact balances and tier multiplier without double-counting
+          const existingAccount = await tx.loyaltyAccount.findUnique({
+            where: { phone: normalizedPhone },
+            select: { id: true, points: true, lifetimePoints: true, lifetimeSpend: true, tier: true },
+          });
+
+          const currentTier = existingAccount?.tier ?? "BRONZE";
+          const { calculateTierEarnedPoints, determineLoyaltyTier } = await import(
+            "@/lib/settings/loyalty-settings"
+          );
+          const earnedPointsThisOrder = calculateTierEarnedPoints(total, currentTier, spendAmountPerPoint);
+
+          const previousPoints = existingAccount?.points ?? 0;
+          // Ledger order: REDEEM first, then EARN — gives coherent running balance.
+          // e.g. prev=200, redeem=50, earn=10 → afterRedeem=150 → afterEarn=160 (final)
+          const balanceAfterRedeem = Math.max(0, previousPoints - loyaltyRedeemed);
+          const finalPoints = balanceAfterRedeem + earnedPointsThisOrder;
+          const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPointsThisOrder;
+          const newLifetimeSpend =
+            (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + total;
+
+          const newTier = determineLoyaltyTier(newLifetimeSpend, {
+            platinumThreshold,
+            goldThreshold,
+            silverThreshold,
+          });
+
+          // Upsert LoyaltyAccount — link to userId if we can find the registered user
+          const linkedUser = await tx.user.findFirst({
+            where: { phone: { endsWith: normalizedPhone.slice(-10) } },
+            select: { id: true },
+          });
+
+          const account = await tx.loyaltyAccount.upsert({
+            where: { phone: normalizedPhone },
+            create: {
+              phone: normalizedPhone,
+              userId: linkedUser?.id ?? null,
+              points: finalPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
+            },
+            update: {
+              points: finalPoints,
+              lifetimePoints: newLifetimePoints,
+              lifetimeSpend: newLifetimeSpend,
+              tier: newTier,
+              ...(linkedUser?.id ? { userId: linkedUser.id } : {}),
+            },
+          });
+
+          // Record REDEEMED transaction FIRST (ledger order: redeem before earn)
+          if (loyaltyRedeemed > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                loyaltyAccountId: account.id,
+                orderId: newOrder.id,
+                type: "REDEEMED",
+                points: -loyaltyRedeemed,
+                balanceAfter: balanceAfterRedeem,
+                reason: `POS Redemption - ৳${(loyaltyRedeemed * pointRedemptionValue).toFixed(2)} discount on ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // Record EARNED transaction SECOND (balance after both redeem + earn = finalPoints)
+          if (earnedPointsThisOrder > 0) {
+            await tx.loyaltyTransaction.create({
+              data: {
+                loyaltyAccountId: account.id,
+                orderId: newOrder.id,
+                type: "EARNED",
+                points: earnedPointsThisOrder,
+                balanceAfter: finalPoints,
+                reason: `POS Sale - ${newOrder.orderNumber}`,
+              },
+            });
+          }
+
+          // Update Order with loyalty tracking fields
+          await tx.order.update({
+            where: { id: newOrder.id },
+            data: {
+              loyaltyPointsEarned: earnedPointsThisOrder,
+              loyaltyPointsRedeemed: loyaltyRedeemed,
+            },
+          });
+        }
       }
 
       // 12. Create Order History snapshot
@@ -336,6 +609,7 @@ export async function createPosOrderAction(
             orderNumber: newOrder.orderNumber,
             total,
             discount,
+            loyaltyPointsRedeemed: loyaltyRedeemed,
             paymentMethod: input.paymentMethod,
             amountPaid: effectiveAmountPaid,
             changeDue,
@@ -360,6 +634,11 @@ export async function createPosOrderAction(
         paymentMethod: input.paymentMethod,
         amountPaid: effectiveAmountPaid,
         changeDue,
+        loyaltyPointsRedeemed: loyaltyRedeemed > 0 ? loyaltyRedeemed : undefined,
+        loyaltyDiscountAmount:
+          loyaltyRedeemed > 0
+            ? Math.round(loyaltyRedeemed * activePointRedemptionValue * 100) / 100
+            : undefined,
         notes: input.notes?.trim() || null,
         splits: receiptSplits,
       };

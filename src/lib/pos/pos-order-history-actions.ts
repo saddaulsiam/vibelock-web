@@ -14,7 +14,7 @@ export async function getPosTodayOrdersAction(
   searchQuery?: string
 ): Promise<PosActionResult<{ orders: PosOrderSummaryItem[]; stats: PosTodayOrdersStats }>> {
   try {
-    await requireRole("STAFF");
+    await requireRole("STAFF", { throw: true });
 
     // Fetch orders from the start of today (or past 24 hours to cover overnight shifts)
     const todayCutoff = new Date();
@@ -43,8 +43,7 @@ export async function getPosTodayOrdersAction(
       include: {
         items: true,
         payments: {
-          take: 1,
-          orderBy: { createdAt: "desc" },
+          orderBy: { createdAt: "asc" },
         },
         user: {
           select: {
@@ -58,12 +57,16 @@ export async function getPosTodayOrdersAction(
     let totalRevenue = 0;
     let cashTotal = 0;
     let digitalTotal = 0;
+    let totalLoyaltyPointsRedeemed = 0;
+    let totalLoyaltyDiscount = 0;
 
     const formattedOrders: PosOrderSummaryItem[] = orders.map((o) => {
-      const payment = o.payments[0];
-      const gatewayStr = (payment?.gateway || "CASH").toUpperCase();
-      const paymentMethod: PosPaymentMethod =
-        gatewayStr === "BANGLA_QR" || gatewayStr === "BKASH"
+      const isSplitOrder = o.payments.length > 1;
+      const primaryPayment = o.payments[0];
+      const gatewayStr = (primaryPayment?.gateway || "CASH").toUpperCase();
+      const paymentMethod: PosPaymentMethod = isSplitOrder
+        ? "SPLIT"
+        : gatewayStr === "BANGLA_QR" || gatewayStr === "BKASH"
           ? "BANGLA_QR"
           : gatewayStr === "CARD"
             ? "CARD"
@@ -73,17 +76,72 @@ export async function getPosTodayOrdersAction(
       const subtotalVal = Number(o.subtotal);
       const discountVal = Number(o.discount);
 
-      totalRevenue += totalVal;
-      if (paymentMethod === "CASH") {
-        cashTotal += totalVal;
-      } else {
-        digitalTotal += totalVal;
+      if (o.status !== "CANCELLED") {
+        totalRevenue += totalVal;
+        const pts =
+          typeof (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed === "number"
+            ? (o as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0
+            : 0;
+        if (pts > 0) {
+          totalLoyaltyPointsRedeemed += pts;
+          totalLoyaltyDiscount += Math.min(discountVal, pts);
+        }
+
+        if (o.payments.length > 0) {
+          for (const p of o.payments) {
+            const pAmt =
+              p.amount !== undefined && p.amount !== null
+                ? Number(p.amount)
+                : isSplitOrder
+                  ? 0
+                  : totalVal;
+            if ((p.gateway || "").toUpperCase() === "CASH") {
+              cashTotal += pAmt;
+            } else {
+              digitalTotal += pAmt;
+            }
+          }
+        } else {
+          cashTotal += totalVal;
+        }
       }
 
-      const payload = payment?.gatewayPayload as Record<string, unknown> | null;
-      const amountPaid =
-        typeof payload?.tenderAmount === "number" ? payload.tenderAmount : totalVal;
-      const changeDue = typeof payload?.changeReturned === "number" ? payload.changeReturned : 0;
+      const payload = primaryPayment?.gatewayPayload as Record<string, unknown> | null;
+      const amountPaid = isSplitOrder
+        ? o.payments.reduce((sum, p) => {
+            const pLoad = p.gatewayPayload as Record<string, unknown> | null;
+            return sum + (typeof pLoad?.tenderAmount === "number" ? pLoad.tenderAmount : Number(p.amount));
+          }, 0)
+        : typeof payload?.tenderAmount === "number"
+          ? payload.tenderAmount
+          : totalVal;
+      const changeDue = isSplitOrder
+        ? o.payments.reduce((sum, p) => {
+            const pLoad = p.gatewayPayload as Record<string, unknown> | null;
+            return sum + (typeof pLoad?.changeReturned === "number" ? pLoad.changeReturned : 0);
+          }, 0)
+        : typeof payload?.changeReturned === "number"
+          ? payload.changeReturned
+          : 0;
+
+      const splits = isSplitOrder
+        ? o.payments.map((p) => {
+            const pLoad = p.gatewayPayload as Record<string, unknown> | null;
+            const g = (p.gateway || "CASH").toUpperCase();
+            const method: "CASH" | "BANGLA_QR" | "CARD" =
+              g === "BANGLA_QR" || g === "BKASH" ? "BANGLA_QR" : g === "CARD" ? "CARD" : "CASH";
+            const amt = Number(p.amount);
+            const tender = typeof pLoad?.tenderAmount === "number" ? pLoad.tenderAmount : amt;
+            const chg = typeof pLoad?.changeReturned === "number" ? pLoad.changeReturned : 0;
+            return {
+              method,
+              amount: amt,
+              tenderAmount: tender,
+              changeDue: chg,
+              reference: typeof pLoad?.reference === "string" ? pLoad.reference : undefined,
+            };
+          })
+        : undefined;
 
       const itemsCount = o.items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -118,6 +176,7 @@ export async function getPosTodayOrdersAction(
         paymentMethod,
         amountPaid,
         changeDue,
+        splits,
       };
 
       return {
@@ -150,6 +209,8 @@ export async function getPosTodayOrdersAction(
           totalRevenue,
           cashTotal,
           digitalTotal,
+          totalLoyaltyPointsRedeemed,
+          totalLoyaltyDiscount,
         },
       },
     };
