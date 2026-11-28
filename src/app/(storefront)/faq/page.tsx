@@ -101,7 +101,7 @@ export default function FAQPage() {
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── Hero Header ── */}
-      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-20">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-size-[36px_36px]"

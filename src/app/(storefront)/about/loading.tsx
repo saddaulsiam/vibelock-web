@@ -9,7 +9,7 @@ export default function AboutLoading() {
       className="bg-vl-white-300 text-vl-dark-900 flex flex-col"
     >
       {/* ── 1. Brutalist Hero Manifesto Skeleton ── */}
-      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-24">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-24">
         <Container className="relative z-10">
           <div className="max-w-3xl space-y-4">
             {/* Category / Manifesto Tag */}

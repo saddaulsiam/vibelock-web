@@ -23,7 +23,7 @@ export default function AboutPage() {
   return (
     <div className="bg-vl-white-300 text-vl-dark-900 flex flex-col">
       {/* ── 1. Brutalist Hero Manifesto Section ── */}
-      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-24">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-24">
         {/* Subtle Cyberpunk Grid Background */}
         <div
           aria-hidden="true"

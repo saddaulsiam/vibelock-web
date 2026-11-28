@@ -9,7 +9,7 @@ export default function TermsLoading() {
       className="bg-vl-white-300 text-vl-dark-900 flex flex-col"
     >
       {/* ── 1. Hero Header Skeleton ── */}
-      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-24 pb-16 sm:pt-28 sm:pb-20">
+      <section className="bg-vl-dark-900 text-vl-white-300 relative overflow-hidden border-b border-white/10 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-20">
         <Container className="relative z-10">
           <div className="max-w-2xl space-y-4">
             <div className="flex items-center gap-2">

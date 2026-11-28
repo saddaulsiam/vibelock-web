@@ -1,4 +1,3 @@
-import * as React from "react";
 import { AlertTriangle, Calendar, Truck } from "lucide-react";
 
 export interface AnnouncementBarProps {
@@ -46,7 +45,7 @@ export function AnnouncementBar({
         aria-label="Announcement"
         className="bg-vl-black flex h-8 w-full items-center justify-center border-b border-white/10 px-4 text-center sm:h-8.5"
       >
-        <p className="text-compact text-vl-white flex items-center justify-center gap-2 font-bold tracking-wider uppercase sm:text-xs">
+        <p className="text-compact text-vl-white flex items-center justify-center gap-2 font-medium tracking-wider capitalize sm:text-xs">
           <Truck className="text-vl-cyan size-3.5 shrink-0" aria-hidden="true" />
           <span>{shippingBanner}</span>
         </p>

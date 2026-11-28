@@ -7,7 +7,7 @@ export default function CheckoutLoading() {
     <Section
       role="status"
       aria-label="Loading checkout"
-      className="relative z-10 min-h-screen bg-white pt-20 pb-12 sm:pt-24 sm:pb-16 lg:pt-28 xl:pt-32"
+      className="relative z-10 min-h-screen bg-white pt-[calc(5rem+var(--vl-announcement-h,0px))] pb-12 sm:pt-[calc(6rem+var(--vl-announcement-h,0px))] sm:pb-16 lg:pt-[calc(7rem+var(--vl-announcement-h,0px))] xl:pt-[calc(8rem+var(--vl-announcement-h,0px))]"
     >
       <Container className="max-w-6xl">
         {/* ── Clean & Minimal Top Bar Skeleton (Matching Checkout Page) ── */}
@@ -91,7 +91,7 @@ export default function CheckoutLoading() {
           </div>
 
           {/* Right Column: Order Summary Sidebar Skeleton */}
-          <aside className="min-w-0 lg:sticky lg:top-24 lg:self-start">
+          <aside className="min-w-0 lg:sticky lg:top-[calc(6rem+var(--vl-announcement-h,0px))] lg:self-start">
             <div className="border-border bg-background rounded-xs border p-5 sm:p-6">
               {/* Summary Header */}
               <div className="border-border flex items-center justify-between border-b pb-2.5">

@@ -11,7 +11,7 @@ export default function StorefrontHomeLoading() {
       {/* ── 1. Hero Section Canvas Skeleton ── */}
       <section className="bg-vl-dark-900 relative flex h-screen overflow-hidden">
         {/* Left Content Area */}
-        <div className="relative z-20 flex flex-col justify-start px-6 pt-24 sm:px-10 sm:pt-28 lg:px-14 lg:pt-32 xl:px-20">
+        <div className="relative z-20 flex flex-col justify-start px-6 pt-[calc(6rem+var(--vl-announcement-h,0px))] sm:px-10 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] lg:px-14 lg:pt-[calc(8rem+var(--vl-announcement-h,0px))] xl:px-20">
           <div className="max-w-xl space-y-4">
             {/* Headline Skeleton */}
             <div className="space-y-2">

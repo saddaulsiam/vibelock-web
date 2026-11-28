@@ -7,7 +7,7 @@ export default function OrderSuccessLoading() {
       role="status"
       aria-label="Loading order confirmation"
     >
-      <div className="relative z-10 mx-auto w-full max-w-4xl px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:px-8">
+      <div className="relative z-10 mx-auto w-full max-w-4xl px-4 pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:px-6 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] lg:px-8">
         {/* Top Navigation */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6">
           <Skeleton className="bg-vl-dark-900/10 h-4 w-36" />

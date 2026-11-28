@@ -9,6 +9,7 @@ import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { getShippingRulesSettings } from "@/lib/settings/shipping-rules-settings";
 import { resolveEffectiveTrackingPixels } from "@/lib/settings/security-pixel-settings";
 import { SlidersHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
@@ -57,7 +58,12 @@ export default async function StorefrontLayout({ children }: { children: React.R
     ) : null;
 
   return (
-    <div className="relative flex min-h-screen min-w-0 flex-col">
+    <div
+      className={cn(
+        "relative flex min-h-screen min-w-0 flex-col",
+        announcement && "[--vl-announcement-h:2rem] sm:[--vl-announcement-h:2.125rem]"
+      )}
+    >
       <MetaPixelProvider
         nonce={nonce}
         pixelId={tracking.metaPixelId}

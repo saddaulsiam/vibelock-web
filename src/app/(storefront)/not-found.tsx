@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export default function StorefrontNotFound() {
   return (
-    <Section className="bg-vl-white-300 flex min-h-[75vh] items-center justify-center pt-24 pb-16 sm:pt-28 sm:pb-20">
+    <Section className="bg-vl-white-300 flex min-h-[75vh] items-center justify-center pt-[calc(6rem+var(--vl-announcement-h,0px))] pb-16 sm:pt-[calc(7rem+var(--vl-announcement-h,0px))] sm:pb-20">
       <Container>
         <div className="border-vl-dark-900/10 mx-auto max-w-lg border bg-white px-5 py-12 text-center sm:px-10 sm:py-14">
           <div className="bg-vl-white-300 text-vl-dark-900 mx-auto mb-6 flex size-14 items-center justify-center">
