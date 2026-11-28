@@ -396,7 +396,14 @@ export async function processPosReturnAction(
 
         if (account) {
           const originalTotal = Math.max(1, Number(order.total));
-          const returnedFraction = Math.min(1, totalReturnValue / originalTotal);
+          // In an exchange, only net cash refunded reduces customer spend; extra spend increases it
+          const netRefundAmount =
+            netAction === "REFUND_TO_CUSTOMER"
+              ? input.resolution === "EXCHANGE"
+                ? Math.abs(netDifference)
+                : totalReturnValue
+              : 0;
+          const returnedFraction = Math.min(1, netRefundAmount / originalTotal);
 
           const earnedPointsOnOrder =
             (order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned ?? 0;
@@ -443,8 +450,13 @@ export async function processPosReturnAction(
             }
           }
 
+          const netSpendChange =
+            input.resolution === "EXCHANGE"
+              ? totalExchangeValue - totalReturnValue
+              : -totalReturnValue;
+
           const newLifetimePoints = Math.max(0, (account.lifetimePoints ?? 0) - pointsToReverse);
-          const newLifetimeSpend = Math.max(0, Number(account.lifetimeSpend ?? 0) - totalReturnValue);
+          const newLifetimeSpend = Math.max(0, Number(account.lifetimeSpend ?? 0) + netSpendChange);
 
           // Tier recalculation
           const loyaltyConfig =
