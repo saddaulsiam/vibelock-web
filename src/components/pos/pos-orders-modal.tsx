@@ -114,7 +114,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-full border-vl-white-500 rounded-brand flex max-h-[90vh] flex-col border bg-white p-6 shadow-xl sm:max-w-xl md:max-w-2xl">
         {/* Header */}
-        <DialogHeader className="border-vl-white-400 flex-shrink-0 border-b pb-3">
+        <DialogHeader className="border-vl-white-400 shrink-0 border-b pb-3">
           <div className="flex items-center justify-between">
             <div className="text-vl-dark-900 flex items-center space-x-2.5">
               <div className="border-vl-white-500 bg-vl-white-200 text-vl-dark-900 rounded-brand border p-2">
@@ -148,12 +148,12 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
         </DialogHeader>
 
         {/* Stats Summary Bar */}
-        <div className="my-3 grid flex-shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="my-3 grid shrink-0 grid-cols-2 gap-2 sm:grid-cols-4">
           <div className="border-vl-white-500 bg-vl-white-100 rounded-brand border p-2.5">
             <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Total Orders
             </span>
-            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
+            <span className="font-heading text-vl-dark-900 text-lg font-black tabular-nums">
               {stats.totalOrders}
             </span>
           </div>
@@ -161,7 +161,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             <span className="font-heading text-vl-dark-500 block text-[10px] font-bold tracking-wider uppercase">
               Total Sales
             </span>
-            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
+            <span className="font-heading text-vl-dark-900 text-lg font-black tabular-nums">
               ৳{stats.totalRevenue.toLocaleString()}
             </span>
           </div>
@@ -169,7 +169,7 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Cash Tender
             </span>
-            <span className="font-heading font-mono text-lg font-black text-emerald-600 tabular-nums">
+            <span className="font-heading text-lg font-black text-emerald-600 tabular-nums">
               ৳{stats.cashTotal.toLocaleString()}
             </span>
           </div>
@@ -177,30 +177,24 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
             <span className="text-vl-dark-400 block text-[10px] font-bold tracking-wider uppercase">
               Digital (Bangla QR/Card)
             </span>
-            <span className="font-heading text-vl-dark-900 font-mono text-lg font-black tabular-nums">
+            <span className="font-heading text-vl-dark-900 text-lg font-black tabular-nums">
               ৳{stats.digitalTotal.toLocaleString()}
             </span>
           </div>
         </div>
 
         {/* Search Toolbar */}
-        <form onSubmit={handleSearchSubmit} className="mb-3 flex flex-shrink-0 gap-2">
+        <form onSubmit={handleSearchSubmit} className="mb-3 flex shrink-0 gap-2">
           <div className="relative flex-1">
             <Search className="text-vl-dark-400 absolute top-2.5 left-3 h-4 w-4" />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by Invoice # (e.g. VL-POS-...), customer phone or name..."
-              className="focus-visible:border-vl-dark-900 focus-visible:ring-vl-cyan/30 border-vl-white-500 bg-vl-white-100 rounded-brand h-9 pl-9 text-xs transition-colors focus-visible:bg-white focus-visible:ring-2"
+              className="bg-vl-white-100 pl-9"
             />
           </div>
-          <Button
-            type="submit"
-            size="sm"
-            className="bg-vl-black font-heading text-vl-white hover:text-vl-cyan h-9 rounded-xl px-4 text-xs font-black tracking-wider shadow-xs hover:bg-black active:scale-95"
-          >
-            Search
-          </Button>
+          <Button type="submit">Search</Button>
           {searchQuery && (
             <Button
               type="button"
@@ -291,11 +285,11 @@ export function PosOrdersModal({ isOpen, onClose, onReprintReceipt }: PosOrdersM
                   <Button
                     type="button"
                     size="sm"
+                    variant="outline"
                     onClick={() => {
                       onReprintReceipt(order.receiptData);
                       onClose();
                     }}
-                    className="bg-vl-black font-heading text-vl-white hover:bg-vl-cyan hover:text-vl-black flex h-8.5 items-center space-x-1.5 rounded-lg px-3.5 text-xs font-black tracking-wider shadow-xs transition-all active:scale-95"
                     title="Reprint thermal cash memo"
                   >
                     <Printer className="text-vl-cyan h-3.5 w-3.5" />

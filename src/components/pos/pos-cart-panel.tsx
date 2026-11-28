@@ -141,7 +141,7 @@ export function PosCartPanel({
   return (
     <div className="border-vl-white-500 flex h-full flex-col border-l bg-white">
       {/* Cart Header */}
-      <div className="bg-vl-black text-vl-white border-vl-border flex items-center justify-between border-b p-3">
+      <div className="bg-vl-white-200 text-vl-white-900 border-vl-white-500 flex items-center justify-between border-b p-3">
         <div className="flex items-center space-x-2">
           {onCloseMobile && (
             <Button
@@ -149,17 +149,18 @@ export function PosCartPanel({
               variant="ghost"
               size="icon"
               onClick={onCloseMobile}
-              className="text-vl-white/80 -ml-1 h-7 w-7 rounded-lg hover:bg-white/10 hover:text-white lg:hidden"
+              className="text-vl-white-800 hover:bg-vl-white-400 hover:text-vl-white-900 rounded-brand -ml-1 h-7 w-7 lg:hidden"
               title="Close ticket and return to catalog"
+              aria-label="Close ticket and return to catalog"
             >
-              <X className="h-4 w-4" />
+              <X className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
-          <ShoppingCart className="text-vl-cyan h-5 w-5" />
-          <h3 className="font-heading text-vl-white text-sm font-black tracking-wider">
+          <ShoppingCart className="text-vl-white-900 h-4 w-4" aria-hidden="true" />
+          <h3 className="font-heading text-vl-white-900 text-sm font-black tracking-wider">
             Current Sale
           </h3>
-          <Badge className="bg-vl-cyan font-heading text-vl-black hover:bg-vl-cyan text-2xs h-4 px-1 font-black">
+          <Badge className="bg-vl-white-400 text-vl-white-900 hover:bg-vl-white-400 font-heading text-2xs h-5 px-1.5 font-black">
             {totalItemsCount}
           </Badge>
         </div>
@@ -172,12 +173,12 @@ export function PosCartPanel({
                 variant="ghost"
                 size="sm"
                 onClick={onParkCart}
-                className="text-vl-cyan hover:bg-vl-white/10 hover:text-cyan flex h-7 items-center space-x-1 px-2 text-xs"
+                className="text-vl-white-900 hover:bg-vl-white-400 hover:text-vl-white-900 rounded-brand flex h-7 items-center space-x-1 px-2 text-xs font-semibold"
                 title="Hold / Suspend this cart [Alt+H]"
               >
-                <PauseCircle className="h-3.5 w-3.5" />
+                <PauseCircle className="text-vl-white-800 h-3.5 w-3.5" aria-hidden="true" />
                 <span>Hold</span>
-                <span className="text-vl-white/70 hidden rounded bg-white/10 px-1 font-mono text-[10px] sm:inline">
+                <span className="bg-vl-white-400 text-vl-white-800 hidden rounded px-1 font-mono text-[10px] sm:inline">
                   Alt+H
                 </span>
               </Button>
@@ -189,7 +190,7 @@ export function PosCartPanel({
               size="sm"
               onClick={onClearCart}
               title="Clear current cart [Alt+X]"
-              className="text-vl-white/60 h-7 px-2 text-xs hover:bg-white/10 hover:text-red-400"
+              className="text-vl-white-800 hover:bg-vl-white-400 rounded-brand h-7 px-2 text-xs hover:text-red-600"
             >
               Clear
             </Button>
@@ -208,7 +209,7 @@ export function PosCartPanel({
               {isLookingUp && <Loader2 className="text-vl-cyan h-3 w-3 animate-spin" />}
             </Label>
             <Input
-              type="tel"
+              type="number"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
               placeholder="017XXXXXXXX"

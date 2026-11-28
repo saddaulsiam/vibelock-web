@@ -60,9 +60,9 @@ export function PosReturnModal({
   const [selectedItems, setSelectedItems] = useState<PosReturnSelectedItem[]>([]);
   const [resolution, setResolution] = useState<"REFUND_CASH" | "EXCHANGE">("REFUND_CASH");
   const [exchangeItems, setExchangeItems] = useState<PosExchangeReplacementItem[]>([]);
-  const [exchangePaymentMethod, setExchangePaymentMethod] = useState<
-    "CASH" | "BANGLA_QR" | "CARD"
-  >("CASH");
+  const [exchangePaymentMethod, setExchangePaymentMethod] = useState<"CASH" | "BANGLA_QR" | "CARD">(
+    "CASH"
+  );
   const [returnNotes, setReturnNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -245,15 +245,11 @@ export function PosReturnModal({
               value={orderQuery}
               onChange={(e) => setOrderQuery(e.target.value)}
               placeholder="Scan or enter invoice / order # (e.g. VL-POS-... or VL-ORD-...)"
-              className="focus-visible:border-vl-cyan focus-visible:ring-vl-cyan-400 border-vl-white-500 bg-vl-white-100 h-11 rounded-xl pl-9 font-mono text-xs uppercase"
+              className="bg-vl-white-100 pl-9"
               autoFocus
             />
           </div>
-          <Button
-            type="submit"
-            disabled={isSearching || !orderQuery.trim()}
-            className="bg-vl-black text-vl-white hover:text-vl-cyan font-heading h-11 rounded-xl px-5 text-xs font-black shadow-xs transition-colors hover:bg-black"
-          >
+          <Button type="submit" disabled={isSearching || !orderQuery.trim()}>
             {isSearching ? <Loader2 className="text-vl-cyan h-4 w-4 animate-spin" /> : "Lookup"}
           </Button>
         </form>
@@ -604,9 +600,7 @@ export function PosReturnModal({
                     <NativeSelect
                       value={exchangePaymentMethod}
                       onChange={(e) =>
-                        setExchangePaymentMethod(
-                          e.target.value as "CASH" | "BANGLA_QR" | "CARD"
-                        )
+                        setExchangePaymentMethod(e.target.value as "CASH" | "BANGLA_QR" | "CARD")
                       }
                       size="default"
                     >
