@@ -1,9 +1,13 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { AdminTableTabs, AdminTableSearchInput } from "@/components/admin/shared";
+import {
+  AdminKpiCard,
+  AdminKpiGrid,
+  AdminPageHeader,
+  AdminTableSearchInput,
+  AdminTableTabs,
+} from "@/components/admin/shared";
 import { Boxes, Package } from "lucide-react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 describe("Admin Reusable UI Components", () => {
   test("renders AdminPageHeader with title, eyebrow, and badge", () => {

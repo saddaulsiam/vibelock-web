@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
 import fs from "fs";
-import path from "path";
 import { NextRequest } from "next/server";
+import path from "path";
+import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/config/env", () => ({
   env: {
@@ -12,8 +12,8 @@ vi.mock("@/lib/config/env", () => ({
 }));
 
 import nextConfig from "../../../next.config";
-import { proxy } from "../../../src/proxy";
 import { maskEmail } from "../../../src/lib/email/client";
+import { proxy } from "../../../src/proxy";
 
 describe("Phase 7: Infrastructure & Secrets Security", () => {
   // =========================================================================

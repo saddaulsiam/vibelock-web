@@ -1,9 +1,9 @@
 import { Container } from "@/components/shared/container";
+import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
+import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { ChevronRight, ExternalLink, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
-import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
 import { Newsletter } from "../home/newsletter";
 import { FooterWatermark } from "./footer-watermark";
 

@@ -1,9 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { Download, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { DiscountType } from "@prisma/client";
 import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
@@ -13,7 +9,11 @@ import {
   AdminTableTabs,
   type AdminTableTabItem,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import type { CouponFilter } from "@/lib/admin/coupons/coupon-shared";
+import type { DiscountType } from "@prisma/client";
+import { Download, Plus } from "lucide-react";
+import * as React from "react";
 import { couponColumnOptions, type CouponColumnKey } from "./coupon-table-types";
 
 export interface AdminCouponsToolbarProps {

@@ -1,6 +1,3 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { Prisma } from "@prisma/client";
 import {
   AdminCouponsTable,
   CouponCreateModal,
@@ -8,6 +5,9 @@ import {
   CouponForm,
 } from "@/components/admin/coupons";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons";
+import { Prisma } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

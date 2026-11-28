@@ -1,18 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { Check, CheckCircle2, PackageCheck, ShoppingBag, Shirt } from "lucide-react";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Check, CheckCircle2, PackageCheck, Shirt, ShoppingBag } from "lucide-react";
+import * as React from "react";
 
 interface OrderItemData {
   id: string;

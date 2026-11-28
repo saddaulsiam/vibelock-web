@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles, Zap, MapPin } from "lucide-react";
 import { Container } from "@/components/shared/container";
-import { SITE_URL } from "@/lib/seo/site";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
+import { SITE_URL } from "@/lib/seo/site";
+import { ArrowRight, CheckCircle2, MapPin, ShieldCheck, Sparkles, Zap } from "lucide-react";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "About Us — The Modern Streetwear Manifesto",

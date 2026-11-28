@@ -1,6 +1,6 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { InfiniteScroll } from "@/components/admin/shared";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 describe("InfiniteScroll Component Unit Tests", () => {
   test("renders nothing if totalCount is 0", () => {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, beforeEach, vi, afterEach } from "vitest";
 import { NextRequest } from "next/server";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
@@ -117,17 +117,17 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import { PaymentService } from "@/lib/payment/service";
 import {
   GET as paystationCallbackGet,
   POST as paystationCallbackPost,
 } from "@/app/api/payments/paystation/callback/route";
 import { POST as paystationIpnPost } from "@/app/api/payments/paystation/ipn/route";
+import { retryOrderPaymentAction } from "@/lib/orders/actions";
+import { PaymentService } from "@/lib/payment/service";
 import {
   isPaymentMethodEnabled,
   updatePaymentMethodSetting,
 } from "@/lib/settings/payment-settings";
-import { retryOrderPaymentAction } from "@/lib/orders/actions";
 
 describe("PayStation Hosted Checkout Integration Tests", () => {
   let paymentService: PaymentService;
@@ -953,7 +953,14 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     });
 
     test("1b. recognizes cancel, canceled, cancelled, and aborted variants and marks payment CANCELLED", async () => {
-      const cancelVariants = ["cancel", "canceled", "cancelled", "aborted", "Canceled", "Cancelled"];
+      const cancelVariants = [
+        "cancel",
+        "canceled",
+        "cancelled",
+        "aborted",
+        "Canceled",
+        "Cancelled",
+      ];
       for (const variant of cancelVariants) {
         mockPrisma.payment.updateMany.mockClear();
         mockPrisma.payment.findUnique.mockResolvedValueOnce({
@@ -1338,7 +1345,9 @@ describe("PayStation Hosted Checkout Integration Tests", () => {
     });
 
     test("falls back safely to null gatewayTransactionId when P2002 unique constraint is thrown by Prisma", async () => {
-      const p2002Error: any = new Error("Unique constraint failed on the fields: (`gatewayTransactionId`)");
+      const p2002Error: any = new Error(
+        "Unique constraint failed on the fields: (`gatewayTransactionId`)"
+      );
       p2002Error.code = "P2002";
 
       mockPrisma.payment.updateMany

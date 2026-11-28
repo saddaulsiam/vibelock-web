@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
+import { useEffect, useRef } from "react";
 
 interface MetaInitiateCheckoutProps {
   cartId: string;

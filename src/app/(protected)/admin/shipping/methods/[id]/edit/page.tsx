@@ -1,10 +1,10 @@
+import { AdminPageHeader } from "@/components/admin/shared";
+import { ShippingMethodForm } from "@/components/admin/shipping";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { getAdminShippingMethod, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import { ShippingMethodForm } from "@/components/admin/shipping";
-import { getAdminShippingMethod, getAdminShippingZonesForForm } from "@/lib/admin/shipping";
 
 export default async function EditShippingMethodPage({
   params,

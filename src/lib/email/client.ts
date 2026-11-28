@@ -1,9 +1,9 @@
 import "server-only";
 
-import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
+import { env } from "@/lib/config/env";
+import { hashSecurityIdentifier, logSecurityAlert } from "@/lib/monitoring/security-logger";
 import { Resend } from "resend";
-import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
 
 let resendClient: Resend | null = null;
 
@@ -26,7 +26,10 @@ export async function sendPasswordResetEmail(email: string, rawToken: string): P
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping password reset email for:", maskEmail(email));
+    console.warn(
+      "⚠️ Email provider not configured. Skipping password reset email for:",
+      maskEmail(email)
+    );
     return true; // Pretend it succeeded in dev/test to allow local token usage manually
   }
 
@@ -80,7 +83,10 @@ export async function sendEmailVerificationEmail(
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping verification email for:", maskEmail(email));
+    console.warn(
+      "⚠️ Email provider not configured. Skipping verification email for:",
+      maskEmail(email)
+    );
     return true; // Pretend it succeeded in dev/test to allow local token usage manually
   }
 
@@ -129,7 +135,10 @@ export async function sendNewsletterWelcomeEmail(email: string): Promise<boolean
       );
       return false;
     }
-    console.warn("⚠️ Email provider not configured. Skipping newsletter welcome email for:", maskEmail(email));
+    console.warn(
+      "⚠️ Email provider not configured. Skipping newsletter welcome email for:",
+      maskEmail(email)
+    );
     return true;
   }
 

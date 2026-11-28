@@ -1,9 +1,9 @@
-import "server-only";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma/client";
-import { mapOrderSummary, mapOrderDetail } from "./mappers";
-import { OrderSummary, OrderDetail, OrderConfirmation } from "./types";
 import { extractCardMetadata } from "@/lib/payment/format";
+import prisma from "@/lib/prisma/client";
+import "server-only";
+import { mapOrderDetail, mapOrderSummary } from "./mappers";
+import { OrderConfirmation, OrderDetail, OrderSummary } from "./types";
 
 export async function getCustomerOrders(
   page = 1,
@@ -221,11 +221,7 @@ export async function getCustomerOrderConfirmation(
 
   const hasUnresolvedOnlinePayment =
     order.paymentMethod === "ONLINE" &&
-    Boolean(
-      order.payments?.some(
-        (p) => p.status === "INITIATED" || p.status === "PENDING"
-      )
-    );
+    Boolean(order.payments?.some((p) => p.status === "INITIATED" || p.status === "PENDING"));
 
   const canCancelOrder =
     order.status === "PENDING" &&

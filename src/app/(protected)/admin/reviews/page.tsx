@@ -1,7 +1,7 @@
-import type { Metadata } from "next";
+import { AdminReviewsTable } from "@/components/admin/reviews/admin-reviews-table";
 import { requireRole } from "@/lib/auth/authorization";
 import { getAdminReviews } from "@/lib/reviews/queries";
-import { AdminReviewsTable } from "@/components/admin/reviews/admin-reviews-table";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Product Reviews Moderation | VibeLock Admin",

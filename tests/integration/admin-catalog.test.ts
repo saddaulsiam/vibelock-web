@@ -1,14 +1,14 @@
-import { expect, test, describe, vi } from "vitest";
-import prisma from "../../src/lib/prisma/client";
+import { Prisma } from "@prisma/client";
+import { describe, expect, test, vi } from "vitest";
 import {
-  saveCategoryAction,
   deleteCategoryAction,
+  deleteProductAction,
+  saveCategoryAction,
   saveProductAction,
   toggleProductPublishedAction,
-  deleteProductAction,
 } from "../../src/lib/admin/catalog";
-import { createTestProduct, createTestCategory } from "../factories";
-import { Prisma } from "@prisma/client";
+import prisma from "../../src/lib/prisma/client";
+import { createTestCategory, createTestProduct } from "../factories";
 
 const mockSession = { user: { id: "admin-test-id", role: "ADMIN", email: "admin@test.com" } };
 vi.mock("../../src/auth", () => ({

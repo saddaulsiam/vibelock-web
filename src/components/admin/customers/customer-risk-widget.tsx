@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { toggleCustomerCodBlockAction } from "@/lib/admin/customers/customer-actions";
 import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers/customer-risk";
 import {
@@ -16,7 +17,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 
 interface CustomerRiskWidgetProps {
   initialProfile: CombinedCustomerRiskProfile | null;

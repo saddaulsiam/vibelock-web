@@ -1,7 +1,7 @@
-import * as React from "react";
 import { Input as InputPrimitive } from "@base-ui/react/input";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import * as React from "react";
 
 const inputVariants = cva(
   [

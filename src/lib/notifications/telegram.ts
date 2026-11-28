@@ -1,7 +1,7 @@
 import "server-only";
 
-import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
+import { env } from "@/lib/config/env";
 
 export interface TelegramOrderItem {
   productName: string;
@@ -121,7 +121,9 @@ export async function sendTelegramOrderNotification(
   const timeoutId = setTimeout(() => controller.abort(), 7000);
 
   try {
-    console.log(`[TelegramNotification] Dispatching order alert for #${payload.orderNumber} to Telegram...`);
+    console.log(
+      `[TelegramNotification] Dispatching order alert for #${payload.orderNumber} to Telegram...`
+    );
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: {
@@ -145,7 +147,9 @@ export async function sendTelegramOrderNotification(
       return false;
     }
 
-    console.log(`[TelegramNotification] Successfully delivered order #${payload.orderNumber} to Telegram!`);
+    console.log(
+      `[TelegramNotification] Successfully delivered order #${payload.orderNumber} to Telegram!`
+    );
     return true;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {

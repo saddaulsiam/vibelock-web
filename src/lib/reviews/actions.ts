@@ -1,9 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import prisma from "@/lib/prisma/client";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
+import { revalidatePath } from "next/cache";
 
 export interface SubmitReviewInput {
   productId: string;

@@ -1,8 +1,8 @@
 "use client";
 
 import { logoutAction } from "@/app/actions/auth";
-import { accountNavItems } from "@/lib/account/nav";
 import { Button } from "@/components/ui/button";
+import { accountNavItems } from "@/lib/account/nav";
 import { LogOut, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";

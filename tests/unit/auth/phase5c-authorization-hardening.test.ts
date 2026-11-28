@@ -1,17 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import { Role } from "@prisma/client";
 import { AuthRequiredError, ForbiddenError } from "@/lib/auth/authorization";
+import { Role } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Hoisted mock state and test fixtures
 // ---------------------------------------------------------------------------
-const {
-  mockState,
-  mockPrisma,
-  mockTx,
-  mockRedirect,
-} = vi.hoisted(() => {
+const { mockState, mockPrisma, mockTx, mockRedirect } = vi.hoisted(() => {
   const mockState = {
     currentUser: null as { id: string; name?: string; email?: string; role: Role } | null,
   };
@@ -232,30 +227,30 @@ vi.mock("bcryptjs", () => ({
 // ---------------------------------------------------------------------------
 // Imports of subjects under test
 // ---------------------------------------------------------------------------
-import { cancelOrderAction, reorderItemsAction } from "@/lib/orders/actions";
-import { getCustomerOrder, getCustomerOrderConfirmation } from "@/lib/orders/queries";
-import { updateAddressAction, deleteAddressAction } from "@/lib/account/actions";
-import { getCustomerReturnById } from "@/lib/account/queries";
-import { createReturnRequestAction } from "@/lib/returns/actions";
-import { deleteReviewAction } from "@/lib/reviews/actions";
+import { registerAction } from "@/app/actions/auth";
 import { revokeSessionAction } from "@/app/actions/session";
-import { createOrderAction } from "@/lib/checkout/actions";
-import {
-  createAdminUserAction,
-  updateAdminUserRoleAction,
-} from "@/lib/admin/users/admin-user-actions";
-import { togglePaymentMethodAction } from "@/lib/admin/payments/payment-settings-actions";
+import { deleteAddressAction, updateAddressAction } from "@/lib/account/actions";
+import { getCustomerReturnById } from "@/lib/account/queries";
+import { saveCategoryAction } from "@/lib/admin/catalog/category-actions";
 import {
   adminGenerateCustomerPasswordResetLinkAction,
   deleteAdminCustomerAction,
 } from "@/lib/admin/customers/customer-actions";
 import { adjustInventoryAction } from "@/lib/admin/inventory/inventory-actions";
-import { saveCategoryAction } from "@/lib/admin/catalog/category-actions";
 import { updateOrderStatusAction } from "@/lib/admin/orders/order-actions";
-import { initiateReturnRefundAction } from "@/lib/admin/returns/return-actions";
-import { adminCreateShipmentAction } from "@/lib/shipping/actions";
+import { togglePaymentMethodAction } from "@/lib/admin/payments/payment-settings-actions";
 import { getAdminReconciliation } from "@/lib/admin/reports/reconciliation-queries";
-import { registerAction } from "@/app/actions/auth";
+import { initiateReturnRefundAction } from "@/lib/admin/returns/return-actions";
+import {
+  createAdminUserAction,
+  updateAdminUserRoleAction,
+} from "@/lib/admin/users/admin-user-actions";
+import { createOrderAction } from "@/lib/checkout/actions";
+import { cancelOrderAction, reorderItemsAction } from "@/lib/orders/actions";
+import { getCustomerOrder, getCustomerOrderConfirmation } from "@/lib/orders/queries";
+import { createReturnRequestAction } from "@/lib/returns/actions";
+import { deleteReviewAction } from "@/lib/reviews/actions";
+import { adminCreateShipmentAction } from "@/lib/shipping/actions";
 
 // ---------------------------------------------------------------------------
 // Test Users Fixtures (Valid UUIDv4 format)
@@ -563,9 +558,7 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
     test("unauthenticated adminCreateShipmentAction redirects to /login", async () => {
       mockState.currentUser = null;
 
-      await expect(adminCreateShipmentAction("order-1")).rejects.toThrow(
-        "NEXT_REDIRECT:/login"
-      );
+      await expect(adminCreateShipmentAction("order-1")).rejects.toThrow("NEXT_REDIRECT:/login");
     });
 
     test("unauthenticated createAdminUserAction redirects to /login", async () => {
@@ -595,9 +588,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("id", "ord-1");
       formData.set("status", "CONFIRMED");
 
-      await expect(
-        updateOrderStatusAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(updateOrderStatusAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("CUSTOMER cannot create shipment (STAFF minimum)", async () => {
@@ -611,9 +604,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("name", "Test Category");
       formData.set("slug", "test-category");
 
-      await expect(
-        saveCategoryAction({ error: null }, formData)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(saveCategoryAction({ error: null }, formData)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("CUSTOMER cannot initiate return refund (MANAGER minimum)", async () => {
@@ -622,9 +615,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("amount", "1500");
       formData.set("reason", "Customer dissatisfaction");
 
-      await expect(
-        initiateReturnRefundAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(initiateReturnRefundAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("CUSTOMER cannot create admin user (ADMIN minimum)", async () => {
@@ -653,9 +646,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("quantity", "100");
       formData.set("reason", "Malicious inventory addition");
 
-      await expect(
-        adjustInventoryAction({ error: null }, formData)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adjustInventoryAction({ error: null }, formData)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("CUSTOMER cannot toggle payment gateway method (ADMIN minimum)", async () => {
@@ -663,15 +656,15 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("code", "BKASH");
       formData.set("enabled", "true");
 
-      await expect(
-        togglePaymentMethodAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(togglePaymentMethodAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("CUSTOMER cannot generate raw password reset links (ADMIN minimum)", async () => {
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_B.id)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_B.id)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("CUSTOMER cannot delete customer accounts (ADMIN minimum)", async () => {
@@ -694,9 +687,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("name", "Test Category");
       formData.set("slug", "test-category");
 
-      await expect(
-        saveCategoryAction({ error: null }, formData)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(saveCategoryAction({ error: null }, formData)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("STAFF cannot initiate return refunds (MANAGER minimum)", async () => {
@@ -705,9 +698,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("amount", "1500");
       formData.set("reason", "Damaged item returned");
 
-      await expect(
-        initiateReturnRefundAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(initiateReturnRefundAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("STAFF cannot create admin user accounts (ADMIN minimum)", async () => {
@@ -736,9 +729,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("quantity", "50");
       formData.set("reason", "Unauthorized staff adjustment");
 
-      await expect(
-        adjustInventoryAction({ error: null }, formData)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adjustInventoryAction({ error: null }, formData)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("STAFF cannot toggle payment methods (ADMIN minimum)", async () => {
@@ -746,15 +739,15 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("code", "COD");
       formData.set("enabled", "false");
 
-      await expect(
-        togglePaymentMethodAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(togglePaymentMethodAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("STAFF cannot generate customer password reset link (ADMIN minimum)", async () => {
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_A.id)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_A.id)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("STAFF cannot delete customer accounts (ADMIN minimum)", async () => {
@@ -798,9 +791,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("quantity", "20");
       formData.set("reason", "Manager stock adjustment");
 
-      await expect(
-        adjustInventoryAction({ error: null }, formData)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adjustInventoryAction({ error: null }, formData)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("MANAGER cannot toggle payment gateway configuration (ADMIN minimum)", async () => {
@@ -808,15 +801,15 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       formData.set("code", "SSLCOMMERZ");
       formData.set("enabled", "true");
 
-      await expect(
-        togglePaymentMethodAction({ error: null }, formData)
-      ).rejects.toThrow(ForbiddenError);
+      await expect(togglePaymentMethodAction({ error: null }, formData)).rejects.toThrow(
+        ForbiddenError
+      );
     });
 
     test("MANAGER cannot generate raw customer password reset link (ADMIN minimum)", async () => {
-      await expect(
-        adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_A.id)
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(adminGenerateCustomerPasswordResetLinkAction(CUSTOMER_A.id)).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
 
     test("MANAGER cannot permanently delete customer accounts (ADMIN minimum)", async () => {
@@ -826,9 +819,9 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
     });
 
     test("MANAGER cannot access admin reconciliation queries (ADMIN minimum)", async () => {
-      await expect(
-        getAdminReconciliation({ range: "30d" })
-      ).rejects.toThrow("NEXT_REDIRECT:/unauthorized");
+      await expect(getAdminReconciliation({ range: "30d" })).rejects.toThrow(
+        "NEXT_REDIRECT:/unauthorized"
+      );
     });
   });
 
@@ -959,9 +952,7 @@ describe("Phase 5C: Authorization & Access Control Hardening", () => {
       // Mock 2 ADMINs in the database
       mockPrisma.user.count.mockResolvedValue(2);
 
-      mockTx.$queryRaw.mockResolvedValue([
-        { id: ADMIN_USER.id, role: "ADMIN" },
-      ]);
+      mockTx.$queryRaw.mockResolvedValue([{ id: ADMIN_USER.id, role: "ADMIN" }]);
       mockTx.user.update.mockResolvedValue({ id: ADMIN_USER.id, role: "MANAGER" });
       mockTx.session.deleteMany.mockResolvedValue({ count: 1 });
       mockTx.passwordResetToken.deleteMany.mockResolvedValue({ count: 0 });

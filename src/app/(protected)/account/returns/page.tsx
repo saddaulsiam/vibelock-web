@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, RotateCcw, ShoppingBag } from "lucide-react";
-import { getCustomerReturns } from "@/lib/account/queries";
 import { ReturnsInfiniteList } from "@/components/account/returns/returns-infinite-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getCustomerReturns } from "@/lib/account/queries";
+import { ArrowRight, RotateCcw, ShoppingBag } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Returns & Exchanges | VibeLock",

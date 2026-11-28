@@ -1,14 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
-import crypto from "crypto";
-import { GET as searchGet } from "@/app/api/search/route";
-import { POST as steadfastWebhookPost } from "@/app/api/shipping/webhook/steadfast/route";
+import { GET as inventoryIntelligenceExportGet } from "@/app/api/admin/inventory-intelligence/export/route";
 import { GET as inventoryExportGet } from "@/app/api/admin/inventory/export/route";
 import { GET as reportsExportGet } from "@/app/api/admin/reports/export/route";
-import { GET as inventoryIntelligenceExportGet } from "@/app/api/admin/inventory-intelligence/export/route";
-import { resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
+import { GET as searchGet } from "@/app/api/search/route";
+import { POST as steadfastWebhookPost } from "@/app/api/shipping/webhook/steadfast/route";
 import { AuthRequiredError, ForbiddenError } from "@/lib/auth/authorization";
 import { PaymentService } from "@/lib/payment/service";
+import { resetRateLimitMemoryStore } from "@/lib/security/rate-limit";
+import crypto from "crypto";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Hoisted mock state
 const {
@@ -616,7 +616,9 @@ describe("Phase 6: API & Input Security Hardening", () => {
 
       expect(res.status).toBe(200);
       expect(res.headers.get("content-type")).toContain("text/csv");
-      expect(res.headers.get("content-disposition")).toContain("vibelock-inventory-intelligence-30d-");
+      expect(res.headers.get("content-disposition")).toContain(
+        "vibelock-inventory-intelligence-30d-"
+      );
       expect(mockGetAdminInventoryIntelligenceForExport).toHaveBeenCalledWith({
         window: "30d",
         status: "healthy",
@@ -648,13 +650,12 @@ describe("Phase 6: API & Input Security Hardening", () => {
       const service = new PaymentService();
       const oversizedRef = "TXN-" + "A".repeat(130);
 
-      await expect(
-        service.verifyCallback("SSLCOMMERZ", { tran_id: oversizedRef })
-      ).rejects.toThrow("Invalid transaction reference");
+      await expect(service.verifyCallback("BKASH", { paymentID: oversizedRef })).rejects.toThrow(
+        "Invalid transaction reference"
+      );
 
       // Verify no database lookup occurred
       expect(mockFindUniquePayment).not.toHaveBeenCalled();
     });
   });
 });
-

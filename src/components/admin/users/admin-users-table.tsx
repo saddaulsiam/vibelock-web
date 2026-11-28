@@ -1,38 +1,17 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { Role } from "@prisma/client";
-import type { AdminUserListItem, AdminUserStats } from "@/lib/admin/users/admin-user-queries";
 import {
-  createAdminUserAction,
-  lookupUserByEmailForPromotionAction,
-  promoteExistingUserAction,
-  updateAdminUserRoleAction,
-  type PromotionUserPreview,
-} from "@/lib/admin/users/admin-user-actions";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import {
+  AdminTableColumnVisibility,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabItem,
   AdminTableTabs,
-} from "@/components/admin/shared";
-import { InfiniteScroll } from "@/components/admin/shared";
-import {
-  AdminTableColumnVisibility,
+  InfiniteScroll,
   useAdminTableColumns,
   type ColumnOption,
 } from "@/components/admin/shared";
-import { exportToCsv } from "@/lib/admin/shared";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -42,10 +21,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { ADMIN_TABLE_CLASSES, exportToCsv } from "@/lib/admin/shared";
+import {
+  createAdminUserAction,
+  lookupUserByEmailForPromotionAction,
+  promoteExistingUserAction,
+  updateAdminUserRoleAction,
+  type PromotionUserPreview,
+} from "@/lib/admin/users/admin-user-actions";
+import type { AdminUserListItem, AdminUserStats } from "@/lib/admin/users/admin-user-queries";
+import { Role } from "@prisma/client";
 import {
   CheckCircle2,
   Download,
@@ -59,6 +54,8 @@ import {
   UserCheck,
   UserPlus,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 export type UserColumnKey = "member" | "contact" | "role" | "date";
 
@@ -424,96 +421,96 @@ export function AdminUsersTable({ initialUsers, currentAdminId }: AdminUsersTabl
 
               {dialogMode === "create" ? (
                 <form onSubmit={handleCreateUser} className="space-y-3.5 pt-1">
-                {createError && (
-                  <div className="rounded-md border border-red-200 bg-red-50 p-2.5 text-xs text-red-700">
-                    {createError}
+                  {createError && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-2.5 text-xs text-red-700">
+                      {createError}
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="text"
+                      required
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      placeholder="e.g. Tanvir Ahmed"
+                      size="default"
+                    />
                   </div>
-                )}
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">
-                    Full Name <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="text"
-                    required
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Tanvir Ahmed"
-                    size="default"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="email"
+                      required
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="admin@vibelock.bd"
+                      size="default"
+                    />
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="email"
-                    required
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="admin@vibelock.bd"
-                    size="default"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">Phone Number</label>
+                    <Input
+                      type="tel"
+                      value={newPhone}
+                      onChange={(e) => setNewPhone(e.target.value)}
+                      placeholder="017XXXXXXXX"
+                      size="default"
+                    />
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">Phone Number</label>
-                  <Input
-                    type="tel"
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
-                    placeholder="017XXXXXXXX"
-                    size="default"
-                  />
-                </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">
+                      Role Permission <span className="text-red-500">*</span>
+                    </label>
+                    <NativeSelect
+                      value={newRole}
+                      onChange={(e) => setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")}
+                      size="default"
+                    >
+                      <option value="STAFF">STAFF — Fulfillment & Customer Support</option>
+                      <option value="MANAGER">MANAGER — Catalog, Inventory & Orders</option>
+                      <option value="ADMIN">ADMIN — Full System Access & Settings</option>
+                    </NativeSelect>
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">
-                    Role Permission <span className="text-red-500">*</span>
-                  </label>
-                  <NativeSelect
-                    value={newRole}
-                    onChange={(e) => setNewRole(e.target.value as "ADMIN" | "MANAGER" | "STAFF")}
-                    size="default"
-                  >
-                    <option value="STAFF">STAFF — Fulfillment & Customer Support</option>
-                    <option value="MANAGER">MANAGER — Catalog, Inventory & Orders</option>
-                    <option value="ADMIN">ADMIN — Full System Access & Settings</option>
-                  </NativeSelect>
-                </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-neutral-700">
+                      Initial Password <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimum 6 characters"
+                      size="default"
+                    />
+                  </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-neutral-700">
-                    Initial Password <span className="text-red-500">*</span>
-                  </label>
-                  <Input
-                    type="password"
-                    required
-                    minLength={6}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 6 characters"
-                    size="default"
-                  />
-                </div>
-
-                <DialogFooter className="pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="default"
-                    onClick={() => setIsDialogOpen(false)}
-                    disabled={isPending}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="primary" size="default" loading={isPending}>
-                    Create Account
-                  </Button>
-                </DialogFooter>
-              </form>
+                  <DialogFooter className="pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="default"
+                      onClick={() => setIsDialogOpen(false)}
+                      disabled={isPending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="primary" size="default" loading={isPending}>
+                      Create Account
+                    </Button>
+                  </DialogFooter>
+                </form>
               ) : (
                 <div className="space-y-3.5 pt-1">
                   <form onSubmit={handleLookupUser} className="space-y-1.5">

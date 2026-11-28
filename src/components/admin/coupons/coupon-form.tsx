@@ -1,13 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import type { DiscountType } from "@prisma/client";
-import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";
-import { Tag, Sparkles, AlertCircle, CheckCircle2, Dices, Calendar, Layers } from "lucide-react";
+import { saveCouponAction, type CouponActionState } from "@/lib/admin/coupons/coupon-actions";
+import type { DiscountType } from "@prisma/client";
+import { AlertCircle, Calendar, CheckCircle2, Dices, Layers, Sparkles, Tag } from "lucide-react";
+import { useActionState, useState } from "react";
 
 const initialState: CouponActionState = { error: null };
 

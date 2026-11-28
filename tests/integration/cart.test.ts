@@ -1,9 +1,9 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
-import prisma from "../../src/lib/prisma/client";
-import { createTestProduct, createTestVariant, createTestInventory } from "../factories";
-import { createTestUser } from "../factories/user";
-import { getOrCreateCartId, addToCart, updateCartItemQuantity } from "../../src/lib/cart/mutations";
 import { Prisma } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
+import { addToCart, getOrCreateCartId, updateCartItemQuantity } from "../../src/lib/cart/mutations";
+import prisma from "../../src/lib/prisma/client";
+import { createTestInventory, createTestProduct, createTestVariant } from "../factories";
+import { createTestUser } from "../factories/user";
 
 const mockCookies = new Map();
 let mockSession: unknown = null;

@@ -1,15 +1,14 @@
-import Link from "next/link";
-import { AlertTriangle, Boxes, Clock, Coins, Flame, Info, TrendingDown } from "lucide-react";
+import { AdminInventoryIntelligenceTable } from "@/components/admin/inventory/admin-inventory-intelligence-table";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminInventoryIntelligence,
-  type InventoryIntelligenceWindow,
-  type InventoryIntelligenceStatusFilter,
   type InventoryIntelligenceSort,
+  type InventoryIntelligenceStatusFilter,
   type InventoryIntelligenceSummary,
+  type InventoryIntelligenceWindow,
 } from "@/lib/admin/inventory";
-import { AdminInventoryIntelligenceTable } from "@/components/admin/inventory/admin-inventory-intelligence-table";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
+import { AlertTriangle, Boxes, Clock, Coins, Flame, Info, TrendingDown } from "lucide-react";
+import Link from "next/link";
 
 function valueOf(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;

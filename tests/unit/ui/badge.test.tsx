@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import type { ComponentProps } from "react";
 import { Badge } from "@/components/ui/badge";
+import type { ComponentProps } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 type BadgeVariant = NonNullable<ComponentProps<typeof Badge>["variant"]>;
 type BadgeSize = NonNullable<ComponentProps<typeof Badge>["size"]>;

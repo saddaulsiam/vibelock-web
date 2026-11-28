@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
+import { ProfileHub } from "@/components/account/profile";
+import { getNotificationPreferences } from "@/lib/account/notification-actions";
+import { getCustomerAddresses } from "@/lib/account/queries";
 import { requireUser } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { ProfileHub } from "@/components/account/profile";
-import { getCustomerAddresses } from "@/lib/account/queries";
-import { getNotificationPreferences } from "@/lib/account/notification-actions";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Profile & Account Settings | VibeLock",

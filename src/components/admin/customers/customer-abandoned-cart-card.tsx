@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import type { AdminCustomerAbandonedCart } from "@/lib/admin/customers/customer-queries";
 import {
   Clock,
@@ -14,8 +16,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 interface CustomerAbandonedCartCardProps {
   cart: AdminCustomerAbandonedCart;

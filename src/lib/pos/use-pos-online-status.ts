@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
 function getOnlineSnapshot(): boolean {

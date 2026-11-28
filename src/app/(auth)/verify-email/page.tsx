@@ -1,5 +1,5 @@
 import { verifyEmailAction } from "@/app/actions/verification";
-import { CheckCircle2, XCircle, ArrowRight, RefreshCw, Mail } from "lucide-react";
+import { ArrowRight, CheckCircle2, Mail, RefreshCw, XCircle } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 

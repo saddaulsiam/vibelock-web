@@ -1,8 +1,8 @@
 import "server-only";
 
-import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export const DEAD_STOCK_GRACE_DAYS = 14;
 export const SLOW_MOVING_DAYS_OF_SUPPLY = 180;

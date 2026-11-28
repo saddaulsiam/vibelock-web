@@ -1,19 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { formatPaymentGatewayLabel } from "@/components/shared/payment-gateway-badge";
+import { mapOrderDetail, mapOrderSummary } from "@/lib/orders/mappers";
 import {
+  extractCardMetadata,
   formatSslcommerzChannel,
   getHumanGatewayName,
-  extractCardMetadata,
 } from "@/lib/payment/format";
-import { formatPaymentGatewayLabel } from "@/components/shared/payment-gateway-badge";
-import { mapOrderSummary, mapOrderDetail } from "@/lib/orders/mappers";
 import {
   Order,
   OrderItem,
-  PaymentStatus,
   OrderStatus,
   PaymentMethod,
+  PaymentStatus,
   SalesChannel,
 } from "@prisma/client";
+import { describe, expect, it } from "vitest";
 
 describe("formatSslcommerzChannel", () => {
   describe("Card brand priority", () => {

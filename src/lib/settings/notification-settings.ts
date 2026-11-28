@@ -1,7 +1,7 @@
 import "server-only";
 
 import { z } from "zod";
-import { getStoreSetting, updateStoreSetting, STORE_SETTING_KEYS } from "./store-settings-service";
+import { getStoreSetting, STORE_SETTING_KEYS, updateStoreSetting } from "./store-settings-service";
 
 export const NotificationSettingsSchema = z.object({
   smsProvider: z.enum(["BULKSMSBD", "GREENWEB", "REVE", "CUSTOM"]).default("BULKSMSBD"),
@@ -13,7 +13,10 @@ export const NotificationSettingsSchema = z.object({
   notifyOnOutForDelivery: z.boolean().default(true),
   notifyOnReturnApproved: z.boolean().default(true),
   adminAlertsEnabled: z.boolean().default(true),
-  adminAlertRecipientPhone: z.string().min(1, "Admin alert phone is required").default("8801311333277"),
+  adminAlertRecipientPhone: z
+    .string()
+    .min(1, "Admin alert phone is required")
+    .default("8801311333277"),
   adminAlertHighValueThreshold: z.coerce
     .number()
     .min(1000, "High-value threshold must be at least ৳1,000")
@@ -21,8 +24,14 @@ export const NotificationSettingsSchema = z.object({
   adminAlertLowSmsBalanceWarning: z.boolean().default(true),
   enableCustomerOrderEmail: z.boolean().default(true),
   enableAdminOrderAlertEmail: z.boolean().default(true),
-  adminNotificationEmail: z.string().email("Valid admin email is required").default("orders@vibelock.com"),
-  supportReplyToEmail: z.string().email("Valid reply-to email is required").default("support@vibelock.com"),
+  adminNotificationEmail: z
+    .string()
+    .email("Valid admin email is required")
+    .default("orders@vibelock.com"),
+  supportReplyToEmail: z
+    .string()
+    .email("Valid reply-to email is required")
+    .default("support@vibelock.com"),
 });
 
 export type NotificationSettings = z.output<typeof NotificationSettingsSchema>;
@@ -60,7 +69,11 @@ export async function getNotificationSettings(): Promise<{
   hasStore: boolean;
 }> {
   const fallback = getDefaultNotificationSettings();
-  const res = await getStoreSetting(STORE_SETTING_KEYS.NOTIFICATIONS, NotificationSettingsSchema, fallback);
+  const res = await getStoreSetting(
+    STORE_SETTING_KEYS.NOTIFICATIONS,
+    NotificationSettingsSchema,
+    fallback
+  );
   return {
     settings: res.data,
     isPersisted: res.isPersisted,

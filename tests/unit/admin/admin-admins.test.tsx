@@ -1,7 +1,7 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { AdminUsersTable } from "@/components/admin/users";
 import { AdminUserListItem, AdminUserStats } from "@/lib/admin/users";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

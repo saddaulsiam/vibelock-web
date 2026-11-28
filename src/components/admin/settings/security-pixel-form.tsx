@@ -1,16 +1,21 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
-import type { SecurityPixelSettings } from "@/lib/settings/security-pixel-settings";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   updateSecurityPixelSettingsAction,
   type SecurityPixelActionState,
 } from "@/lib/admin/settings/security-pixel-actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import type { SecurityPixelSettings } from "@/lib/settings/security-pixel-settings";
 import {
   Activity,
   AlertTriangle,
@@ -22,6 +27,8 @@ import {
   Save,
   Shield,
 } from "lucide-react";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: SecurityPixelActionState = { error: null };
 
@@ -34,7 +41,7 @@ function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
       disabled={pending}
       variant="primary"
       size="sm"
-      className="gap-2 px-4 shadow-2xs font-semibold"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
@@ -73,7 +80,10 @@ function SectionAlert({ error, message }: { error?: string | null; message?: str
 
 export function SecurityPixelForm({ initialSettings }: { initialSettings: SecurityPixelSettings }) {
   const [metaState, metaAction] = useActionState(updateSecurityPixelSettingsAction, initialState);
-  const [analyticsState, analyticsAction] = useActionState(updateSecurityPixelSettingsAction, initialState);
+  const [analyticsState, analyticsAction] = useActionState(
+    updateSecurityPixelSettingsAction,
+    initialState
+  );
   const [securityGovernanceState, securityGovernanceAction] = useActionState(
     updateSecurityPixelSettingsAction,
     initialState
@@ -167,7 +177,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Meta Pixel browser tracking, Conversions API (CAPI) server token, and test events.
             </p>
@@ -257,7 +267,8 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
                   Track Enhanced E-Commerce Milestones
                 </span>
                 <p className="text-[11px] text-neutral-500">
-                  Capture ViewContent, AddToCart, and Purchase events across active tracking containers
+                  Capture ViewContent, AddToCart, and Purchase events across active tracking
+                  containers
                 </p>
               </div>
               <Switch
@@ -270,7 +281,7 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Google Tag Manager container, GA4 measurement stream, and TikTok pixel tags.
             </p>
@@ -298,7 +309,10 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </CardHeader>
 
-          <SectionAlert error={securityGovernanceState.error} message={securityGovernanceState.message} />
+          <SectionAlert
+            error={securityGovernanceState.error}
+            message={securityGovernanceState.message}
+          />
 
           <CardContent className="space-y-4 p-5">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -405,9 +419,10 @@ export function SecurityPixelForm({ initialSettings }: { initialSettings: Securi
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
-              Admin session timeout duration, mandatory two-factor auth, and static IP whitelist perimeter.
+              Admin session timeout duration, mandatory two-factor auth, and static IP whitelist
+              perimeter.
             </p>
             <SectionSubmitButton label="Save Security Governance" />
           </CardFooter>

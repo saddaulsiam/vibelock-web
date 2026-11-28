@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { Eye, Globe, ImageOff, Layers } from "lucide-react";
+import Image from "next/image";
 
 export interface CategoryFormPreviewProps {
   name: string;
@@ -36,7 +36,7 @@ export function CategoryFormPreview({
 
       <div className="bg-vl-white-100 flex flex-col items-center justify-center p-4 sm:p-5">
         {/* Category Card Canvas matching storefront featured-categories.tsx */}
-        <div className="group border-vl-dark-900/15 relative flex aspect-3/4 w-full max-w-60 flex-col justify-end overflow-hidden rounded-sm border bg-vl-dark-900 text-white shadow-md transition-all hover:shadow-lg">
+        <div className="group border-vl-dark-900/15 bg-vl-dark-900 relative flex aspect-3/4 w-full max-w-60 flex-col justify-end overflow-hidden rounded-sm border text-white shadow-md transition-all hover:shadow-lg">
           {/* Category Image or Fallback */}
           {imageUrl ? (
             <Image
@@ -49,7 +49,7 @@ export function CategoryFormPreview({
             />
           ) : (
             <div className="from-vl-dark-900 via-vl-dark-800 to-vl-dark-700 absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-b p-4 text-center">
-              <div className="border-white/10 flex size-10 items-center justify-center rounded-full border bg-white/10 text-white/60">
+              <div className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/60">
                 <ImageOff className="size-5" />
               </div>
               <span className="font-mono text-[11px] font-bold tracking-wider text-white/70 uppercase">
@@ -80,7 +80,7 @@ export function CategoryFormPreview({
               {isActive ? "Active" : "Draft"}
             </span>
 
-            <span className="border-white/15 inline-flex items-center gap-1 rounded-full border bg-black/60 px-2 py-0.5 font-mono text-[9px] font-semibold text-white/90 backdrop-blur-xs">
+            <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-black/60 px-2 py-0.5 font-mono text-[9px] font-semibold text-white/90 backdrop-blur-xs">
               #{sortOrder}
             </span>
           </div>

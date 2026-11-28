@@ -1,5 +1,5 @@
+import { DollarSign, MapPin, Truck } from "lucide-react";
 import Link from "next/link";
-import { Truck, MapPin, DollarSign } from "lucide-react";
 
 export function ShippingSubNav({ activeTab }: { activeTab: "shipments" | "zones" | "methods" }) {
   const tabs = [

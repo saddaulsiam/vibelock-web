@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import prisma from "@/lib/prisma/client";
-import { authConfig } from "@/auth";
+import { deleteAccountAction } from "@/app/actions/account-deletion";
+import { changePasswordAction, resetPasswordAction } from "@/app/actions/account-security";
+import { logoutAction } from "@/app/actions/auth";
 import {
   getActiveSessionsAction,
-  revokeSessionAction,
   revokeAllOtherSessionsAction,
   revokeAllSessionsAction,
+  revokeSessionAction,
 } from "@/app/actions/session";
-import { changePasswordAction, resetPasswordAction } from "@/app/actions/account-security";
-import { deleteAccountAction } from "@/app/actions/account-deletion";
-import { logoutAction } from "@/app/actions/auth";
+import { authConfig } from "@/auth";
 import { updateAdminUserRoleAction } from "@/lib/admin/users/admin-user-actions";
+import prisma from "@/lib/prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Hoist mocks
 const { mockCompare, mockHash, mockAuth, mockRequireUser, mockRequireRole } = vi.hoisted(() => ({
@@ -69,6 +69,9 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(prisma.auditLog, "findFirst").mockResolvedValue(null);
+    vi.spyOn(prisma.auditLog, "create").mockResolvedValue({} as any);
+    vi.spyOn(prisma, "$executeRaw").mockResolvedValue(1);
   });
 
   describe("1. Session Creation on Sign-in", () => {
@@ -504,7 +507,9 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
       const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
         return Promise.all(fns);
       });
-      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 2 });
+      const deleteSessionsSpy = vi
+        .spyOn(prisma.session, "deleteMany")
+        .mockResolvedValue({ count: 2 });
       vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
 
       const result = await changePasswordAction({
@@ -536,7 +541,9 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
         if (typeof fns === "function") return fns(prisma);
         return Promise.all(fns);
       });
-      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 2 });
+      const deleteSessionsSpy = vi
+        .spyOn(prisma.session, "deleteMany")
+        .mockResolvedValue({ count: 2 });
       vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
       vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 0 });
 
@@ -662,7 +669,9 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
         passwordHash: "valid-hash",
       } as any);
 
-      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 3 });
+      const deleteSessionsSpy = vi
+        .spyOn(prisma.session, "deleteMany")
+        .mockResolvedValue({ count: 3 });
       const deleteUserSpy = vi.spyOn(prisma.user, "delete").mockResolvedValue({} as any);
 
       const txMock: any = {
@@ -695,14 +704,20 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
     test("updateAdminUserRoleAction deletes all sessions and reset tokens when user role is modified", async () => {
       mockRequireRole.mockResolvedValue({ id: "admin-root", role: "ADMIN" });
 
-      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" }]);
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([
+        { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" },
+      ]);
 
       const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
         if (typeof fns === "function") return fns(prisma);
         return Promise.all(fns);
       });
-      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 2 });
-      const deleteResetTokensSpy = vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 1 });
+      const deleteSessionsSpy = vi
+        .spyOn(prisma.session, "deleteMany")
+        .mockResolvedValue({ count: 2 });
+      const deleteResetTokensSpy = vi
+        .spyOn(prisma.passwordResetToken, "deleteMany")
+        .mockResolvedValue({ count: 1 });
       vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
 
       const result = await updateAdminUserRoleAction({
@@ -723,14 +738,20 @@ describe("Phase 4C: Session-Backed JWT & Reliable Session Revocation (V-01)", ()
     test("updateAdminUserRoleAction does not delete sessions or reset tokens if role is unchanged", async () => {
       mockRequireRole.mockResolvedValue({ id: "admin-root", role: "ADMIN" });
 
-      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([{ id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" }]);
+      vi.spyOn(prisma, "$queryRaw").mockResolvedValue([
+        { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d", role: "STAFF" },
+      ]);
 
       const txSpy = vi.spyOn(prisma, "$transaction").mockImplementation(async (fns: any) => {
         if (typeof fns === "function") return fns(prisma);
         return Promise.all(fns);
       });
-      const deleteSessionsSpy = vi.spyOn(prisma.session, "deleteMany").mockResolvedValue({ count: 0 });
-      const deleteResetTokensSpy = vi.spyOn(prisma.passwordResetToken, "deleteMany").mockResolvedValue({ count: 0 });
+      const deleteSessionsSpy = vi
+        .spyOn(prisma.session, "deleteMany")
+        .mockResolvedValue({ count: 0 });
+      const deleteResetTokensSpy = vi
+        .spyOn(prisma.passwordResetToken, "deleteMany")
+        .mockResolvedValue({ count: 0 });
       const updateUserSpy = vi.spyOn(prisma.user, "update").mockResolvedValue({} as any);
 
       const result = await updateAdminUserRoleAction({

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import type { NotificationPreferences } from "@/lib/account/notification-types";
-import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
-import { toast } from "sonner";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, PackageCheck, Flame, RefreshCw, Tag, Check } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
+import type { NotificationPreferences } from "@/lib/account/notification-types";
+import { Bell, Check, Flame, PackageCheck, RefreshCw, Tag } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface NotificationPreferencesCardProps {
   initialPreferences: NotificationPreferences;

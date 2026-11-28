@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Check, Copy, Edit, MessageCircle, Power, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
+import { Check, Copy, Edit, MessageCircle, Power, Trash2 } from "lucide-react";
 import { formatCurrency, getValidityNote } from "./coupon-table-utils";
 
 export interface AdminCouponsMobileCardProps {

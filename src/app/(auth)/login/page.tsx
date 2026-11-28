@@ -1,30 +1,30 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
 import {
+  googleSignInAction,
   loginAction,
   sendPhoneOtpAction,
   verifyPhoneOtpAction,
-  googleSignInAction,
 } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { SubmitButton } from "@/components/shared/submit-button";
 import {
-  Mail,
-  Lock,
+  AlertCircle,
   ArrowRight,
-  RefreshCw,
+  ChevronLeft,
   Eye,
   EyeOff,
-  AlertCircle,
-  ChevronLeft,
+  Lock,
+  Mail,
+  RefreshCw,
   ShieldCheck,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 function LoginForm() {
   const router = useRouter();

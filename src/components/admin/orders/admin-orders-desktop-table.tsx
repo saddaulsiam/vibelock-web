@@ -1,8 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { Package, RotateCcw } from "lucide-react";
-import type { OrderStatus } from "@prisma/client";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,10 +9,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import type { AdminOrderItem } from "@/lib/admin/orders/order-queries";
-import type { OrderColumnKey } from "./order-table-types";
+import type { OrderStatus } from "@prisma/client";
+import { Package, RotateCcw } from "lucide-react";
 import { AdminOrdersDesktopRow } from "./admin-orders-desktop-row";
+import type { OrderColumnKey } from "./order-table-types";
 
 export interface AdminOrdersDesktopTableProps {
   loadedOrders: AdminOrderItem[];

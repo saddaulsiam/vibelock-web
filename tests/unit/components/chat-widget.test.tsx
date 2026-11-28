@@ -1,7 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import React from "react";
 import fs from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock @ai-sdk/react useChat hook
 vi.mock("@ai-sdk/react", () => ({

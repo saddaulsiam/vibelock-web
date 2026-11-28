@@ -1,9 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import { VariantSelector } from "@/components/storefront/product/variant-selector";
 import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
+import { VariantSelector } from "@/components/storefront/product/variant-selector";
 import { mapVariant } from "@/lib/catalog/mappers";
 import { Prisma } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
 
 // Mock dependent components
 vi.mock("@/components/storefront/product/add-to-cart-button", () => ({

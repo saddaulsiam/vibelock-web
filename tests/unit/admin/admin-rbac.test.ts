@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { filterNavGroupsByRole, navGroups } from "@/components/admin/shared/admin-navigation";
 import { ROLE_HIERARCHY, hasRequiredRole } from "@/lib/auth/roles";
-import { navGroups, filterNavGroupsByRole } from "@/components/admin/shared/admin-navigation";
+import { describe, expect, it } from "vitest";
 
 describe("Unified RBAC Hierarchy & Permissions", () => {
   it("enforces the correct numerical hierarchy order", () => {

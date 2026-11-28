@@ -1,10 +1,10 @@
-import { SITE_URL } from "@/lib/seo/site";
+import { Toaster } from "@/components/ui/sonner";
 import { getOrganizationJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { SITE_URL } from "@/lib/seo/site";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import { connection } from "next/server";
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const inter = Inter({

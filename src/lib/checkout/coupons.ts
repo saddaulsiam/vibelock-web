@@ -1,5 +1,5 @@
-import { DiscountType, Prisma } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import { DiscountType, Prisma } from "@prisma/client";
 
 export class CouponError extends Error {
   constructor(message: string) {
@@ -146,10 +146,7 @@ export async function validateCustomerCouponEligibility(
       const userReturnRequests = await dbAny.returnRequest.findMany({
         where: {
           order: {
-            OR: [
-              { userId },
-              ...(userEmail ? [{ customerEmail: userEmail }] : []),
-            ],
+            OR: [{ userId }, ...(userEmail ? [{ customerEmail: userEmail }] : [])],
           },
         },
         select: { id: true },
@@ -171,7 +168,7 @@ export async function validateCustomerCouponEligibility(
       });
 
       let isOwner = false;
-      for (const log of (userCreditAuditLogs as Array<{ metadata: unknown }>)) {
+      for (const log of userCreditAuditLogs as Array<{ metadata: unknown }>) {
         const meta = (log.metadata as Record<string, unknown> | null) || {};
         if (
           typeof meta.couponCode === "string" &&
@@ -235,7 +232,12 @@ export async function validateCustomerCouponEligibility(
 export async function releaseOrderCoupon(
   orderId: string,
   tx: Prisma.TransactionClient
-): Promise<{ success: boolean; releasedCoupon?: string; reason?: string; alreadyReleased?: boolean }> {
+): Promise<{
+  success: boolean;
+  releasedCoupon?: string;
+  reason?: string;
+  alreadyReleased?: boolean;
+}> {
   // 1. Fail-closed: Row-lock the Order first to serialize cancellation and release
   await tx.$queryRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
 
@@ -400,9 +402,7 @@ export async function releaseOrderCoupon(
 
   const newUsageCount = Math.max(0, originalUsageCount - 1);
   const wasExhausted =
-    !originalIsActive &&
-    originalUsageLimit !== null &&
-    originalUsageCount >= originalUsageLimit;
+    !originalIsActive && originalUsageLimit !== null && originalUsageCount >= originalUsageLimit;
   const shouldReactivate = wasExhausted && newUsageCount < originalUsageLimit;
 
   // 5. Decrement usage count and reactivate only if it was deactivated due to exhaustion

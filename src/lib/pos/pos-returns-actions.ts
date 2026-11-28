@@ -1,13 +1,12 @@
 "use server";
 
-import crypto from "crypto";
-import prisma from "@/lib/prisma/client";
-import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
-import { ReturnService } from "@/lib/returns/service";
 import { InventoryService } from "@/lib/inventory/service";
-import { getActiveShiftRecord, getCurrentShiftAction } from "./pos-shift-actions";
+import prisma from "@/lib/prisma/client";
+import { ReturnService } from "@/lib/returns/service";
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
+import { Prisma } from "@prisma/client";
+import crypto from "crypto";
 import { revalidatePath } from "next/cache";
 import type {
   PosOrderLookupResult,
@@ -15,6 +14,7 @@ import type {
   PosReturnReceiptData,
   PosReturnableItem,
 } from "./pos-returns-types";
+import { getActiveShiftRecord, getCurrentShiftAction } from "./pos-shift-actions";
 import type { PosActionResult } from "./pos-types";
 
 /**
@@ -166,7 +166,11 @@ export async function processPosReturnAction(
         }
 
         const maxReturnable = returnableMap[retItem.orderItemId] ?? 0;
-        if (retItem.quantity <= 0 || !Number.isInteger(retItem.quantity) || retItem.quantity > maxReturnable) {
+        if (
+          retItem.quantity <= 0 ||
+          !Number.isInteger(retItem.quantity) ||
+          retItem.quantity > maxReturnable
+        ) {
           throw new Error(
             `Invalid return quantity (${retItem.quantity}) for ${itemSnapshot.sku}. Max allowed: ${maxReturnable}.`
           );
@@ -331,7 +335,8 @@ export async function processPosReturnAction(
       });
 
       // 9. Record Payment for Exchange Charge OR Cash Drop for Refund
-      const chargeAmount = netAction === "CHARGE_CUSTOMER" ? Math.round(netDifference * 100) / 100 : 0;
+      const chargeAmount =
+        netAction === "CHARGE_CUSTOMER" ? Math.round(netDifference * 100) / 100 : 0;
       if (chargeAmount > 0 && typeof tx.payment?.create === "function") {
         const exchangeMethod = input.exchangePaymentMethod || "CASH";
         await tx.payment.create({

@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
@@ -171,6 +171,7 @@ export {
   Dialog,
   DialogClose,
   DialogContent,
+  dialogContentVariants,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -178,5 +179,4 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-  dialogContentVariants,
 };

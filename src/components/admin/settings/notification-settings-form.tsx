@@ -1,16 +1,22 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   updateNotificationSettingsAction,
   type NotificationActionState,
 } from "@/lib/admin/settings/notification-actions";
 import type { NotificationSettings } from "@/lib/settings/notification-settings";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import {
   AlertTriangle,
   BellRing,
@@ -21,7 +27,8 @@ import {
   Save,
   Smartphone,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 const initialState: NotificationActionState = { error: null };
 
@@ -34,7 +41,7 @@ function SectionSubmitButton({ label = "Save Changes" }: { label?: string }) {
       disabled={pending}
       variant="primary"
       size="sm"
-      className="gap-2 px-4 shadow-2xs font-semibold"
+      className="gap-2 px-4 font-semibold shadow-2xs"
     >
       {pending ? (
         <>
@@ -76,9 +83,18 @@ export function NotificationSettingsForm({
 }: {
   initialSettings: NotificationSettings;
 }) {
-  const [gatewayState, gatewayAction] = useActionState(updateNotificationSettingsAction, initialState);
-  const [smsTriggersState, smsTriggersAction] = useActionState(updateNotificationSettingsAction, initialState);
-  const [managerAlertsState, managerAlertsAction] = useActionState(updateNotificationSettingsAction, initialState);
+  const [gatewayState, gatewayAction] = useActionState(
+    updateNotificationSettingsAction,
+    initialState
+  );
+  const [smsTriggersState, smsTriggersAction] = useActionState(
+    updateNotificationSettingsAction,
+    initialState
+  );
+  const [managerAlertsState, managerAlertsAction] = useActionState(
+    updateNotificationSettingsAction,
+    initialState
+  );
   const [emailState, emailAction] = useActionState(updateNotificationSettingsAction, initialState);
 
   const [provider, setProvider] = useState(initialSettings.smsProvider);
@@ -97,7 +113,7 @@ export function NotificationSettingsForm({
     <div className="space-y-4">
       {/* ── SECTION 1: SMS GATEWAY RAIL & SENDER CONFIG ── */}
       <form action={gatewayAction}>
-        <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
           <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center gap-2.5">
               <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
@@ -144,7 +160,7 @@ export function NotificationSettingsForm({
                     <span className="block font-bold">{p.name}</span>
                     <span
                       className={cn(
-                        "block text-[10px] mt-0.5",
+                        "mt-0.5 block text-[10px]",
                         provider === p.id ? "text-neutral-300" : "text-neutral-400"
                       )}
                     >
@@ -201,7 +217,7 @@ export function NotificationSettingsForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Primary SMS provider gateway routing, sender ID, and API credentials.
             </p>
@@ -212,11 +228,11 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 2: CUSTOMER TRANSACTIONAL SMS LIFECYCLE ── */}
       <form action={smsTriggersAction}>
-        <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
           <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center gap-2.5">
               <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-                <MessageSquare className="size-4 text-vl-cyan-600" />
+                <MessageSquare className="text-vl-cyan-600 size-4" />
               </div>
               <div>
                 <CardTitle className="text-sm font-bold text-neutral-900">
@@ -234,7 +250,9 @@ export function NotificationSettingsForm({
           <CardContent className="grid gap-3 p-4 sm:grid-cols-2">
             {/* Trigger 1: Order Placed */}
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
-              <span className="text-xs font-semibold text-neutral-900">Order Placed Confirmation</span>
+              <span className="text-xs font-semibold text-neutral-900">
+                Order Placed Confirmation
+              </span>
               <Switch
                 name="notifyOnOrderPlaced"
                 checked={onOrderPlaced}
@@ -272,7 +290,9 @@ export function NotificationSettingsForm({
 
             {/* Trigger 4: Return Approved */}
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
-              <span className="text-xs font-semibold text-neutral-900">Return / Refund Approved</span>
+              <span className="text-xs font-semibold text-neutral-900">
+                Return / Refund Approved
+              </span>
               <Switch
                 name="notifyOnReturnApproved"
                 checked={onReturnApproved}
@@ -283,7 +303,7 @@ export function NotificationSettingsForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Automated SMS notifications sent to customers across delivery milestones.
             </p>
@@ -294,7 +314,7 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 3: STORE MANAGER HIGH-VALUE ORDER RADAR ── */}
       <form action={managerAlertsAction}>
-        <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
           <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -385,7 +405,7 @@ export function NotificationSettingsForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Emergency SMS alerts for VIP high-value orders and low SMS credit balance.
             </p>
@@ -396,11 +416,11 @@ export function NotificationSettingsForm({
 
       {/* ── SECTION 4: EMAIL NOTIFICATION CHANNELS ── */}
       <form action={emailAction}>
-        <Card className="border-neutral-200/80 bg-white shadow-2xs rounded-xl overflow-hidden">
+        <Card className="overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs">
           <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 px-5 py-3.5">
             <div className="flex items-center gap-2.5">
               <div className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-800 shadow-2xs">
-                <Mail className="size-4 text-vl-cyan-600" />
+                <Mail className="text-vl-cyan-600 size-4" />
               </div>
               <div>
                 <CardTitle className="text-sm font-bold text-neutral-900">
@@ -473,7 +493,9 @@ export function NotificationSettingsForm({
 
             <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 p-3">
               <div>
-                <span className="text-xs font-semibold text-neutral-800">Manager Order Alert Email</span>
+                <span className="text-xs font-semibold text-neutral-800">
+                  Manager Order Alert Email
+                </span>
                 <p className="text-[11px] text-neutral-500">Alert store staff on incoming orders</p>
               </div>
               <Switch
@@ -486,7 +508,7 @@ export function NotificationSettingsForm({
             </div>
           </CardContent>
 
-          <CardFooter className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-neutral-100 bg-neutral-50/50 px-5 py-3">
+          <CardFooter className="flex flex-col gap-2 border-t border-neutral-100 bg-neutral-50/50 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-neutral-500">
               Store order alert inbox and customer transactional email receipts via Resend.
             </p>

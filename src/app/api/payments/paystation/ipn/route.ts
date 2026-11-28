@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { PaymentService } from "@/lib/payment/service";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_IPN_PAYLOAD_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
 

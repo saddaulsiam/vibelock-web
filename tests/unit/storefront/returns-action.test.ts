@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { createReturnRequestAction, ReturnRequestSchema } from "@/lib/returns/actions";
 import prisma from "@/lib/prisma/client";
+import { createReturnRequestAction, ReturnRequestSchema } from "@/lib/returns/actions";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/auth", () => ({
   auth: vi.fn().mockResolvedValue({
@@ -11,6 +11,9 @@ vi.mock("@/auth", () => ({
 vi.mock("@/lib/prisma/client", () => ({
   default: {
     $transaction: vi.fn(),
+    storeSetting: {
+      findUnique: vi.fn().mockResolvedValue(null),
+    },
   },
 }));
 
@@ -120,7 +123,10 @@ describe("Customer Returns Action Validation", () => {
   });
 
   it("accepts 5 images (maximum bound)", async () => {
-    const images = Array.from({ length: 5 }, (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`);
+    const images = Array.from(
+      { length: 5 },
+      (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`
+    );
 
     const res = await createReturnRequestAction({
       orderNumber: "ORD-12345",
@@ -135,7 +141,10 @@ describe("Customer Returns Action Validation", () => {
 
   it("rejects 6 images before Zod parsing (exceeding maximum bound)", async () => {
     const parseSpy = vi.spyOn(ReturnRequestSchema, "safeParse");
-    const images = Array.from({ length: 6 }, (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`);
+    const images = Array.from(
+      { length: 6 },
+      (_, i) => `https://res.cloudinary.com/vibelock/proof-${i}.jpg`
+    );
 
     const res = await createReturnRequestAction({
       orderNumber: "ORD-12345",

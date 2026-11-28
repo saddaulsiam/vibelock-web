@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { Input, inputVariants } from "@/components/ui/input";
 import { Textarea, textareaVariants } from "@/components/ui/textarea";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("Centralized Input and Textarea Primitives", () => {
   describe("Input Variants", () => {

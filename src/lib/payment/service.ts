@@ -1,21 +1,17 @@
-import { randomUUID } from "crypto";
+import { recordAuditLog } from "@/lib/audit";
+import { hashSecurityIdentifier, logSecurityAlert } from "@/lib/monitoring/security-logger";
 import prisma from "@/lib/prisma/client";
+import { Order, PaymentStatus, Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { isBkashGateway, isPaystationGateway, normalizePaymentGateway } from "./constants";
+import { BkashProvider } from "./providers/bkash/client";
+import { PaystationProvider } from "./providers/paystation/client";
 import {
   CaptureReconciliationStatus,
   PaymentInitiationResponse,
   PaymentProvider,
   VerifiedCaptureCandidate,
 } from "./types";
-import { BkashProvider } from "./providers/bkash/client";
-import { PaystationProvider } from "./providers/paystation/client";
-import { Order, PaymentStatus, Prisma } from "@prisma/client";
-import {
-  isBkashGateway,
-  isPaystationGateway,
-  normalizePaymentGateway,
-} from "./constants";
-import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
-import { recordAuditLog } from "@/lib/audit";
 
 const FORBIDDEN_METADATA_KEYS = new Set([
   "store_passwd",
@@ -361,9 +357,7 @@ export class PaymentService {
         data: {
           orderId: currentOrder.id,
           amount:
-            options?.customAmount !== undefined
-              ? options.customAmount
-              : Number(currentOrder.total),
+            options?.customAmount !== undefined ? options.customAmount : Number(currentOrder.total),
           status: "PENDING",
           gateway: normalizedGateway,
         },
@@ -376,9 +370,7 @@ export class PaymentService {
           orderId: currentOrder.id,
           orderNumber: currentOrder.orderNumber,
           amount:
-            options?.customAmount !== undefined
-              ? options.customAmount
-              : Number(currentOrder.total),
+            options?.customAmount !== undefined ? options.customAmount : Number(currentOrder.total),
           customerName: currentOrder.customerName || "Customer",
           customerEmail: currentOrder.customerEmail,
           customerPhone: currentOrder.customerPhone || "00000000000",
@@ -1854,7 +1846,10 @@ export class PaymentService {
             total: fullOrder.total?.toString() ?? "0",
             paymentMethod: fullOrder.paymentMethod,
             paymentStatus: "PAID",
-            gatewayTransactionId: verification.providerTransactionId ?? (payment as { gatewayTransactionId?: string | null }).gatewayTransactionId ?? null,
+            gatewayTransactionId:
+              verification.providerTransactionId ??
+              (payment as { gatewayTransactionId?: string | null }).gatewayTransactionId ??
+              null,
             customerName: fullOrder.customerName ?? undefined,
             customerPhone: (order as { customerPhone?: string | null }).customerPhone ?? undefined,
             customerEmail: fullOrder.customerEmail,

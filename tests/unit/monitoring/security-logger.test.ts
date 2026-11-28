@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import crypto from "node:crypto";
 import * as Sentry from "@sentry/nextjs";
+import crypto from "node:crypto";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const TEST_AUTH_SECRET = "mock-secret-for-testing-at-least-32-chars-long";
 
@@ -19,11 +19,11 @@ vi.mock("@sentry/nextjs", () => ({
 }));
 
 import {
-  logSecurityAlert,
+  APPROVED_SECURITY_EVENTS,
   hashSecurityIdentifier,
+  logSecurityAlert,
   maskIpAddress,
   sanitizeSecurityMetadata,
-  APPROVED_SECURITY_EVENTS,
   type SecurityEventName,
 } from "@/lib/monitoring/security-logger";
 
@@ -247,7 +247,9 @@ describe("Security Event Logger (SEC-12-04 & HMAC Pseudonymization)", () => {
         });
       }).not.toThrow();
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("SECURITY_LOGGER_DISPATCH_ERROR"));
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("SECURITY_LOGGER_DISPATCH_ERROR")
+      );
       warnSpy.mockRestore();
     });
   });

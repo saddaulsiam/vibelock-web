@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getInventoryReturnSettings,
   InventoryReturnSettingsSchema,
   updateInventoryReturnSettings,
-  getInventoryReturnSettings,
 } from "@/lib/settings/inventory-return-settings";
 import { revalidatePath } from "next/cache";
 
@@ -22,7 +22,7 @@ export async function updateInventoryReturnSettingsAction(
   const { settings: current } = await getInventoryReturnSettings();
 
   const rawCategories = formData.has("nonReturnableCategories")
-    ? (formData.get("nonReturnableCategories")?.toString()?.trim() || "")
+    ? formData.get("nonReturnableCategories")?.toString()?.trim() || ""
     : current.nonReturnableCategories.join(", ");
   const categoriesList = rawCategories
     .split(",")
@@ -30,7 +30,9 @@ export async function updateInventoryReturnSettingsAction(
     .filter(Boolean);
 
   const raw = {
-    lowStockThreshold: formData.has("lowStockThreshold") ? formData.get("lowStockThreshold") : current.lowStockThreshold,
+    lowStockThreshold: formData.has("lowStockThreshold")
+      ? formData.get("lowStockThreshold")
+      : current.lowStockThreshold,
     criticalStockThreshold: formData.has("criticalStockThreshold")
       ? formData.get("criticalStockThreshold")
       : current.criticalStockThreshold,

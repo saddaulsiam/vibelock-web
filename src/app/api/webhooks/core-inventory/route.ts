@@ -1,8 +1,8 @@
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
+import { revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { revalidateTag } from "next/cache";
 import { z } from "zod";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
 
 const MAX_TIMESTAMP_DRIFT_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_WEBHOOK_PAYLOAD_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB limit for inventory webhook events
@@ -106,8 +106,10 @@ export async function POST(req: NextRequest) {
   }
 
   // Defensive check: reject oversized tag collections before expensive validation
-  const rawData = payload && typeof payload === "object" ? (payload as Record<string, unknown>).data : undefined;
-  const rawTags = rawData && typeof rawData === "object" ? (rawData as Record<string, unknown>).tags : undefined;
+  const rawData =
+    payload && typeof payload === "object" ? (payload as Record<string, unknown>).data : undefined;
+  const rawTags =
+    rawData && typeof rawData === "object" ? (rawData as Record<string, unknown>).tags : undefined;
   if (Array.isArray(rawTags) && rawTags.length > 50) {
     return NextResponse.json({ error: "Invalid payload schema" }, { status: 400 });
   }

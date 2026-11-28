@@ -25,11 +25,7 @@ export const DEFAULT_ALLOWED_IMAGE_MIMES = [
   "image/avif",
 ];
 
-export const AVATAR_ALLOWED_IMAGE_MIMES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
+export const AVATAR_ALLOWED_IMAGE_MIMES = ["image/jpeg", "image/png", "image/webp"];
 
 export const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
@@ -90,10 +86,7 @@ export function detectImageMimeFromBuffer(buffer: Uint8Array | Buffer): string |
   // AVIF: ftyp (bytes 4-7) + avif/avis/mif1 (bytes 8-11)
   if (buffer.length >= 12) {
     const isFtyp =
-      buffer[4] === 0x66 &&
-      buffer[5] === 0x74 &&
-      buffer[6] === 0x79 &&
-      buffer[7] === 0x70;
+      buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70;
     if (isFtyp) {
       const brand = String.fromCharCode(buffer[8], buffer[9], buffer[10], buffer[11]);
       if (brand === "avif" || brand === "avis" || brand === "mif1") {
@@ -184,7 +177,8 @@ export async function validateImageFile(
   if (!detectedMime) {
     return {
       valid: false,
-      error: "Corrupted or invalid image file. Binary signature did not match any supported image format.",
+      error:
+        "Corrupted or invalid image file. Binary signature did not match any supported image format.",
     };
   }
 

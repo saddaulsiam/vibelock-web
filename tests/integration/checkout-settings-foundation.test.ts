@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -76,17 +76,17 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
-import {
-  getCheckoutSettings,
-  updateCheckoutSettings,
-  getDefaultCheckoutSettings,
-  validateOrderCheckoutPolicies,
-  getEffectiveReservationTtlSeconds,
-  type CheckoutSettings,
-} from "../../src/lib/settings/checkout-settings";
-import { updateCheckoutSettingsAction } from "../../src/lib/admin/settings/checkout-settings-actions";
 import AdminCheckoutSettingsPage from "../../src/app/(protected)/admin/settings/checkout/page";
 import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
+import { updateCheckoutSettingsAction } from "../../src/lib/admin/settings/checkout-settings-actions";
+import {
+  getCheckoutSettings,
+  getDefaultCheckoutSettings,
+  getEffectiveReservationTtlSeconds,
+  updateCheckoutSettings,
+  validateOrderCheckoutPolicies,
+  type CheckoutSettings,
+} from "../../src/lib/settings/checkout-settings";
 
 describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
   beforeEach(() => {
@@ -361,7 +361,9 @@ describe("Phase 2: VibeLock Checkout Policies & COD Risk Governance", () => {
 
       const res = await updateCheckoutSettingsAction({ error: null }, formData);
       expect(res.error).toBeNull();
-      expect(res.message).toContain("Checkout policies, COD fraud ceilings, and inventory reservation TTL updated");
+      expect(res.message).toContain(
+        "Checkout policies, COD fraud ceilings, and inventory reservation TTL updated"
+      );
     });
   });
 });

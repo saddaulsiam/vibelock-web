@@ -1,4 +1,4 @@
-import { ShipmentStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { PaymentMethod, PaymentStatus, ShipmentStatus } from "@prisma/client";
 
 export type ShipmentFilter = "all" | "in_transit" | "delivered" | "returned" | "pending";
 

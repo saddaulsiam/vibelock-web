@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { ShippingService } from "@/lib/shipping/service";
 import { CaptureReconciliationStatus } from "@/lib/payment/types";
+import { ShippingService } from "@/lib/shipping/service";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock Prisma
 const { mockPrisma } = vi.hoisted(() => {
@@ -1047,14 +1047,18 @@ describe("ShippingService: Lock Acquisition Ordering & Concurrency Invariance (D
         {
           id: "pay-lock-01",
           status: "SUCCESS",
-          captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+          captures: [
+            { isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED },
+          ],
         },
       ])
       .mockResolvedValueOnce([
         {
           id: "pay-lock-01",
           status: "SUCCESS",
-          captures: [{ isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED }],
+          captures: [
+            { isPrimary: true, reconciliationStatus: CaptureReconciliationStatus.SETTLED },
+          ],
         },
       ]);
 

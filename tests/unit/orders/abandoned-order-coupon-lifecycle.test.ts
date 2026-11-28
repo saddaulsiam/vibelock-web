@@ -1,18 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { expireOrder, cleanupExpiredOrders } from "@/lib/orders/expiration";
+import { GET, POST } from "@/app/api/cron/orders/cleanup/route";
 import { releaseOrderCoupon } from "@/lib/checkout/coupons";
+import { cleanupExpiredOrders, expireOrder } from "@/lib/orders/expiration";
 import { PaymentService } from "@/lib/payment/service";
 import { Prisma } from "@prisma/client";
-import { GET, POST } from "@/app/api/cron/orders/cleanup/route";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const {
-  mockAuth,
-  mockPrisma,
-  mockCancelOrderInventory,
-  lastUpdatedOrders,
-} = vi.hoisted(() => {
+const { mockAuth, mockPrisma, mockCancelOrderInventory, lastUpdatedOrders } = vi.hoisted(() => {
   const updatedOrders = new Map<string, any>();
   const mockP: any = {
     order: {
@@ -585,7 +580,13 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
           .fn()
           .mockResolvedValueOnce([]) // order lock
           .mockResolvedValueOnce([
-            { id: "c-paid-cancel", code: "PAID_CANCEL10", usageCount: 2, usageLimit: 10, isActive: true },
+            {
+              id: "c-paid-cancel",
+              code: "PAID_CANCEL10",
+              usageCount: 2,
+              usageLimit: 10,
+              isActive: true,
+            },
           ]), // coupon lock
         order: {
           findUnique: vi.fn(async () => ({
@@ -650,9 +651,7 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
       mockPrisma.$queryRaw.mockImplementation(async (strings: any) => {
         const queryText = Array.isArray(strings) ? strings.join(" ") : String(strings || "");
         if (queryText.includes("Coupon")) {
-          return [
-            { id: "c-10", code: "DISC10", usageCount: 2, usageLimit: 10, isActive: true },
-          ];
+          return [{ id: "c-10", code: "DISC10", usageCount: 2, usageLimit: 10, isActive: true }];
         }
         return [];
       });
@@ -881,9 +880,7 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
 
   describe("8. Fail-Closed Locking & Transaction Integrity", () => {
     it("aborts and throws when Order row-lock fails (never proceeds without lock)", async () => {
-      mockPrisma.$queryRaw.mockRejectedValueOnce(
-        new Error("deadlock detected on Order row lock")
-      );
+      mockPrisma.$queryRaw.mockRejectedValueOnce(new Error("deadlock detected on Order row lock"));
 
       await expect(expireOrder(sampleOrderId)).rejects.toThrow(
         "deadlock detected on Order row lock"
@@ -1061,7 +1058,13 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
           .fn()
           .mockResolvedValueOnce([]) // Order lock
           .mockResolvedValueOnce([
-            { id: "c-by-id", code: "VALID_ID_COUPON", usageCount: 4, usageLimit: 10, isActive: true },
+            {
+              id: "c-by-id",
+              code: "VALID_ID_COUPON",
+              usageCount: 4,
+              usageLimit: 10,
+              isActive: true,
+            },
           ]),
         order: {
           findUnique: vi.fn(async () => ({
@@ -1193,7 +1196,13 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
           .fn()
           .mockResolvedValueOnce([]) // Order lock
           .mockResolvedValueOnce([
-            { id: "c-fail-audit", code: "FAIL_AUDIT", usageCount: 5, usageLimit: 10, isActive: true },
+            {
+              id: "c-fail-audit",
+              code: "FAIL_AUDIT",
+              usageCount: 5,
+              usageLimit: 10,
+              isActive: true,
+            },
           ]),
         order: {
           findUnique: vi.fn(async () => ({
@@ -1328,49 +1337,59 @@ describe("Phase 12.4.3: Abandoned Order & Coupon Lifecycle", () => {
       const recordedAuditLogs: any[] = [];
       const recordedHistory: any[] = [];
 
-      const createTx = () => ({
-        $queryRaw: vi
-          .fn()
-          .mockResolvedValueOnce([]) // Order lock
-          .mockResolvedValueOnce([
-            { id: "c-repeat", code: "REPEAT10", usageCount: currentUsage, usageLimit: 10, isActive: true },
-          ]),
-        order: {
-          findUnique: vi.fn(async () => ({
-            id: sampleOrderId,
-            status: "CANCELLED",
-            paymentStatus: "CANCELLED",
-            userId: sampleUserId,
-          })),
-        },
-        auditLog: {
-          findFirst: vi.fn(async ({ where }: any) => {
-            if (where.action === "COUPON_REDEEMED") {
-              return { action: "COUPON_REDEEMED", metadata: { couponCode: "REPEAT10", couponId: "c-repeat" } };
-            }
-            if (where.action === "COUPON_RELEASED") {
-              return recordedAuditLogs.find((l) => l.action === "COUPON_RELEASED") || null;
-            }
-            return null;
-          }),
-          create: vi.fn(async ({ data }: any) => {
-            recordedAuditLogs.push(data);
-          }),
-        },
-        orderHistory: {
-          findFirst: vi.fn(async () => {
-            return recordedHistory[0] || null;
-          }),
-          create: vi.fn(async ({ data }: any) => {
-            recordedHistory.push(data);
-          }),
-        },
-        coupon: {
-          update: vi.fn(async ({ data }: any) => {
-            currentUsage = data.usageCount;
-          }),
-        },
-      } as any);
+      const createTx = () =>
+        ({
+          $queryRaw: vi
+            .fn()
+            .mockResolvedValueOnce([]) // Order lock
+            .mockResolvedValueOnce([
+              {
+                id: "c-repeat",
+                code: "REPEAT10",
+                usageCount: currentUsage,
+                usageLimit: 10,
+                isActive: true,
+              },
+            ]),
+          order: {
+            findUnique: vi.fn(async () => ({
+              id: sampleOrderId,
+              status: "CANCELLED",
+              paymentStatus: "CANCELLED",
+              userId: sampleUserId,
+            })),
+          },
+          auditLog: {
+            findFirst: vi.fn(async ({ where }: any) => {
+              if (where.action === "COUPON_REDEEMED") {
+                return {
+                  action: "COUPON_REDEEMED",
+                  metadata: { couponCode: "REPEAT10", couponId: "c-repeat" },
+                };
+              }
+              if (where.action === "COUPON_RELEASED") {
+                return recordedAuditLogs.find((l) => l.action === "COUPON_RELEASED") || null;
+              }
+              return null;
+            }),
+            create: vi.fn(async ({ data }: any) => {
+              recordedAuditLogs.push(data);
+            }),
+          },
+          orderHistory: {
+            findFirst: vi.fn(async () => {
+              return recordedHistory[0] || null;
+            }),
+            create: vi.fn(async ({ data }: any) => {
+              recordedHistory.push(data);
+            }),
+          },
+          coupon: {
+            update: vi.fn(async ({ data }: any) => {
+              currentUsage = data.usageCount;
+            }),
+          },
+        }) as any;
 
       // Run 1: First release succeeds and decrements count
       const res1 = await releaseOrderCoupon(sampleOrderId, createTx());

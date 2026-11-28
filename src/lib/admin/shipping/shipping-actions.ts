@@ -1,15 +1,14 @@
 "use server";
 
-import { Prisma, ShipmentStatus } from "@prisma/client";
-import { updateTag } from "next/cache";
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { recordAuditLog } from "@/lib/audit";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
-import { recordAuditLog } from "@/lib/audit";
-import { ShippingService } from "@/lib/shipping/service";
 import { adminCreateShipmentAction } from "@/lib/shipping/actions";
 import { getShippingProvider } from "@/lib/shipping/provider";
+import { ShippingService } from "@/lib/shipping/service";
+import { Prisma, ShipmentStatus } from "@prisma/client";
+import { revalidatePath, updateTag } from "next/cache";
+import { z } from "zod";
 import { getAdminShipments } from "./shipping-queries";
 import { type ShipmentFilter } from "./shipping-shared";
 
@@ -271,7 +270,9 @@ export async function refreshShipmentStatusAction(
     }
     // External courier API synchronization cannot be rolled back atomically via database transaction;
     // if audit logging fails after external status sync, the provider sync remains recorded in shipment history.
-    const synced = await new ShippingService(provider).syncShipmentStatus(shipment.providerShipmentId);
+    const synced = await new ShippingService(provider).syncShipmentStatus(
+      shipment.providerShipmentId
+    );
     await recordAuditLog({
       actorId: admin?.id,
       action: "SHIPMENT_STATUS_SYNCED",

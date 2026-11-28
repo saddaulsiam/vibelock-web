@@ -1,13 +1,13 @@
-import { NextRequest } from "next/server";
-import { createGoogleGenerativeAI, google as defaultGoogle } from "@ai-sdk/google";
-import { streamText, convertToModelMessages, isStepCount, tool, type UIMessage } from "ai";
-import { z } from "zod";
 import { auth } from "@/auth";
+import { recommendSize } from "@/lib/catalog/sizing";
+import { getWhatsAppUrl } from "@/lib/config/contact";
 import prisma from "@/lib/prisma/client";
 import { checkRateLimit, getIp } from "@/lib/security/rate-limit";
-import { getWhatsAppUrl } from "@/lib/config/contact";
-import { recommendSize } from "@/lib/catalog/sizing";
 import { getEligibleShippingMethods, isDhakaCity } from "@/lib/shipping/pricing";
+import { createGoogleGenerativeAI, google as defaultGoogle } from "@ai-sdk/google";
+import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from "ai";
+import { NextRequest } from "next/server";
+import { z } from "zod";
 
 export const maxDuration = 30;
 

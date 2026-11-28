@@ -1,10 +1,10 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { InventoryService } from "@/lib/inventory/service";
 import {
   lookupPosOrderForReturnAction,
   processPosReturnAction,
 } from "@/lib/pos/pos-returns-actions";
 import prisma from "@/lib/prisma/client";
-import { InventoryService } from "@/lib/inventory/service";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock auth
 vi.mock("@/lib/auth/authorization", () => ({

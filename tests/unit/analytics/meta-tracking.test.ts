@@ -1,13 +1,13 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import {
-  hashSha256,
-  normalizeEmail,
-  normalizePhone,
-  normalizeName,
-  normalizeCity,
-  buildMetaUserData,
-} from "@/lib/analytics/meta-utils";
 import { sendMetaCapiEvent } from "@/lib/analytics/meta-capi";
+import {
+  buildMetaUserData,
+  hashSha256,
+  normalizeCity,
+  normalizeEmail,
+  normalizeName,
+  normalizePhone,
+} from "@/lib/analytics/meta-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 describe("Meta Pixel & Conversions API (CAPI) Tracking", () => {
   describe("meta-utils normalization & hashing", () => {
@@ -18,9 +18,7 @@ describe("Meta Pixel & Conversions API (CAPI) Tracking", () => {
       expect(hash).toHaveLength(64); // SHA-256 produces 64 hex characters
 
       // Known SHA-256 for 'test@vibelock.bd'
-      expect(hash).toBe(
-        "1cca183755817e737ca9baf27a66f53379e8fea524f8e9f70e1339195ff19d2f"
-      );
+      expect(hash).toBe("1cca183755817e737ca9baf27a66f53379e8fea524f8e9f70e1339195ff19d2f");
 
       // Returns null for empty or null
       expect(hashSha256(null)).toBeNull();

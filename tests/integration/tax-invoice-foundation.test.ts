@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -67,14 +67,14 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import {
-  TaxInvoiceSettingsSchema,
-  DEFAULT_TAX_INVOICE_SETTINGS,
-  getTaxInvoiceSettings,
-  calculateEffectiveTax,
-  formatMushakInvoiceNumber,
-} from "@/lib/settings/tax-invoice-settings";
 import { updateTaxInvoiceSettingsAction } from "@/lib/admin/settings/tax-invoice-actions";
+import {
+  calculateEffectiveTax,
+  DEFAULT_TAX_INVOICE_SETTINGS,
+  formatMushakInvoiceNumber,
+  getTaxInvoiceSettings,
+  TaxInvoiceSettingsSchema,
+} from "@/lib/settings/tax-invoice-settings";
 
 describe("Phase 6: VibeLock Tax, VAT & Invoicing Compliance Engine", () => {
   beforeEach(() => {
@@ -88,9 +88,11 @@ describe("Phase 6: VibeLock Tax, VAT & Invoicing Compliance Engine", () => {
       },
     };
 
-    mockPrisma.$transaction.mockImplementation(async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
-      return callback(mockPrisma);
-    });
+    mockPrisma.$transaction.mockImplementation(
+      async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
+        return callback(mockPrisma);
+      }
+    );
   });
 
   describe("1. Zod Schema Validation & Boundary Rules", () => {
@@ -188,7 +190,9 @@ describe("Phase 6: VibeLock Tax, VAT & Invoicing Compliance Engine", () => {
         new Error("Connection terminated unexpectedly by database host")
       );
 
-      await expect(getTaxInvoiceSettings()).rejects.toThrow("Database error while fetching store setting");
+      await expect(getTaxInvoiceSettings()).rejects.toThrow(
+        "Database error while fetching store setting"
+      );
     });
   });
 
@@ -288,9 +292,7 @@ describe("Phase 6: VibeLock Tax, VAT & Invoicing Compliance Engine", () => {
       const formData = new FormData();
       formData.set("vatRatePercent", "5");
 
-      await expect(
-        updateTaxInvoiceSettingsAction({ error: null }, formData)
-      ).rejects.toThrow();
+      await expect(updateTaxInvoiceSettingsAction({ error: null }, formData)).rejects.toThrow();
     });
 
     test("successfully updates settings and writes an immutable audit log", async () => {
@@ -318,14 +320,19 @@ describe("Phase 6: VibeLock Tax, VAT & Invoicing Compliance Engine", () => {
       formData.set("registeredOfficeAddress", "Plot 14, Block C, Banani, Dhaka-1213");
       formData.set("enableMushak63Format", "true");
       formData.set("invoicePrefix", "VL-TAX-");
-      formData.set("invoiceFooterNote", "Compliant computer-generated Mushak 6.3 invoice under SRO 186/2019.");
+      formData.set(
+        "invoiceFooterNote",
+        "Compliant computer-generated Mushak 6.3 invoice under SRO 186/2019."
+      );
       formData.set("customerCareContact", "+880 1311-333277");
       formData.set("showDigitalSeal", "true");
 
       const result = await updateTaxInvoiceSettingsAction({ error: null }, formData);
 
       expect(result.error).toBeNull();
-      expect(result.message).toContain("VAT calculation rules, NBR BIN information, and Mushak 6.3 invoice settings updated");
+      expect(result.message).toContain(
+        "VAT calculation rules, NBR BIN information, and Mushak 6.3 invoice settings updated"
+      );
 
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(
         expect.objectContaining({

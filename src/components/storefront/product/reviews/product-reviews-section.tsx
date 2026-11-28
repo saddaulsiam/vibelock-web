@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ProductReviewsSummary } from "./product-reviews-summary";
-import { ProductReviewModal } from "./product-review-modal";
-import { ProductReviewList } from "./product-review-list";
-import type { ReviewItem, ReviewSummary, UserReviewEligibility } from "@/lib/reviews/types";
-import { Star, PenLine, Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { ReviewItem, ReviewSummary, UserReviewEligibility } from "@/lib/reviews/types";
+import { Lock, PenLine, Star } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { ProductReviewList } from "./product-review-list";
+import { ProductReviewModal } from "./product-review-modal";
+import { ProductReviewsSummary } from "./product-reviews-summary";
 
 interface ProductReviewsSectionProps {
   productId: string;

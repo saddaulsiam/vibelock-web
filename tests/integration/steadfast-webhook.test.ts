@@ -1,8 +1,8 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
-import crypto from "crypto";
-import prisma from "@/lib/prisma/client";
 import { POST as steadfastWebhook } from "@/app/api/shipping/webhook/steadfast/route";
+import prisma from "@/lib/prisma/client";
+import crypto from "crypto";
+import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const TEST_SECRET = "test-steadfast-secret-key-12345";
 
@@ -85,9 +85,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     expect(data.message).toContain("ping acknowledged");
   });
 
-  test(
-    "processes documented Steadfast delivery status update: updates shipment and order status, but keeps COD payment PENDING for remittance reconciliation",
-    async () => {
+  test("processes documented Steadfast delivery status update: updates shipment and order status, but keeps COD payment PENDING for remittance reconciliation", async () => {
     // 1. Create a test order and shipment
     const orderNumber = `TEST-STED-${Date.now()}`;
     const testCid = `CID-${Date.now()}`;
@@ -171,9 +169,7 @@ describe("Steadfast Courier Webhook (/api/shipping/webhook/steadfast)", () => {
     await prisma.order.delete({ where: { id: order.id } });
   }, 20000);
 
-  test(
-    "never marks COD payment SUCCESS on a CANCELLED order",
-    async () => {
+  test("never marks COD payment SUCCESS on a CANCELLED order", async () => {
     const orderNumber = `TEST-CANCEL-${Date.now()}`;
     const testCid = `CID-CAN-${Date.now()}`;
 

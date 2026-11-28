@@ -1,9 +1,10 @@
-import { defineConfig } from "vitest/config";
 import path from "path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
     globals: true,
+    setupFiles: ["./tests/setup-env.ts"],
     server: {
       deps: {
         inline: ["next-auth"],

@@ -2,9 +2,9 @@
 
 import { requireRole } from "@/lib/auth/authorization";
 import {
+  getShippingRulesSettings,
   ShippingRulesSettingsSchema,
   updateShippingRulesSettings,
-  getShippingRulesSettings,
 } from "@/lib/settings/shipping-rules-settings";
 import { revalidatePath } from "next/cache";
 
@@ -92,6 +92,7 @@ export async function updateShippingRulesAction(
 
   return {
     error: null,
-    message: "Free shipping rules, courier dispatch hub, and delivery SLA promises updated successfully.",
+    message:
+      "Free shipping rules, courier dispatch hub, and delivery SLA promises updated successfully.",
   };
 }

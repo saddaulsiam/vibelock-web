@@ -1,5 +1,10 @@
-import Link from "next/link";
-import Form from "next/form";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select-native";
+import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
+import { requireRole } from "@/lib/auth/authorization";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -13,13 +18,8 @@ import {
   Truck,
   XCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select-native";
-import { requireRole } from "@/lib/auth/authorization";
-import { getAdminReconciliation, ReconciliationClassification } from "@/lib/admin/reports";
+import Form from "next/form";
+import Link from "next/link";
 
 function money(value: number | null | undefined): string {
   if (value === null || value === undefined) return "Unavailable";
@@ -416,9 +416,9 @@ export default async function AdminReconciliationPage({
           bank transfers.
         </p>
         <p className="leading-relaxed">
-          <strong>Gateway MDR &amp; Operating Expenses:</strong> Online gateway card/MFS processing fees
-          (2%–2.5%) and business operating expenses are unavailable in the current schema. Operating
-          profit and net bank payout cannot be calculated authoritatively.
+          <strong>Gateway MDR &amp; Operating Expenses:</strong> Online gateway card/MFS processing
+          fees (2%–2.5%) and business operating expenses are unavailable in the current schema.
+          Operating profit and net bank payout cannot be calculated authoritatively.
         </p>
       </section>
 

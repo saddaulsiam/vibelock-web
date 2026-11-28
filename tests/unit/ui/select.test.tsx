@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { selectTriggerVariants } from "@/components/ui/select";
 import { NativeSelect } from "@/components/ui/select-native";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 describe("Unified Global Select Component", () => {
   describe("SelectTrigger Variants", () => {

@@ -1,10 +1,10 @@
-import { Product, ProductImage, ProductVariant, Category } from "@prisma/client";
+import { Category, Product, ProductImage, ProductVariant } from "@prisma/client";
 import {
-  ProductSummary,
-  ProductDetail,
-  ProductVariantSummary,
   CategorySummary,
+  ProductDetail,
   ProductImageSummary,
+  ProductSummary,
+  ProductVariantSummary,
 } from "./types";
 
 type PrismaVariantWithInventory = ProductVariant & {
@@ -100,8 +100,11 @@ export function mapProductSummary(product: PrismaProductWithIncludes): ProductSu
 
   const badgeLabel = (product as unknown as { badgeLabel?: string | null }).badgeLabel ?? null;
   const badgeVariant =
-    (product as unknown as { badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null })
-      .badgeVariant ?? null;
+    (
+      product as unknown as {
+        badgeVariant?: "default" | "sale" | "new" | "featured" | "hot" | null;
+      }
+    ).badgeVariant ?? null;
   const badge = badgeLabel
     ? {
         label: badgeLabel,

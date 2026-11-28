@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { PaymentService } from "@/lib/payment/service";
-import { publicEnv } from "@/lib/config/public-env";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
-import prisma from "@/lib/prisma/client";
 import { auth } from "@/auth";
+import { publicEnv } from "@/lib/config/public-env";
+import { PaymentService } from "@/lib/payment/service";
+import prisma from "@/lib/prisma/client";
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_CALLBACK_PAYLOAD_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB
 
@@ -173,7 +173,10 @@ async function handleCallback(req: NextRequest) {
       throw new Error("Missing transaction reference");
     }
 
-    console.log("🔄 [PayStation Callback: Step 2] Calling PaymentService.verifyCallback for invoice:", invoiceNumber);
+    console.log(
+      "🔄 [PayStation Callback: Step 2] Calling PaymentService.verifyCallback for invoice:",
+      invoiceNumber
+    );
     const paymentService = new PaymentService();
     // Server-to-server verification is triggered by verifyCallback -> PaystationProvider.verifyPayment
     const result = await paymentService.verifyCallback("PAYSTATION", payload);
@@ -252,7 +255,10 @@ async function handleCallback(req: NextRequest) {
     return NextResponse.redirect(redirectUrl, 303);
   } catch (err: unknown) {
     const error = err as Error;
-    console.error("[PayStation Callback Error] Payment callback processing failed:", error?.message);
+    console.error(
+      "[PayStation Callback Error] Payment callback processing failed:",
+      error?.message
+    );
 
     const isJsonClient = req.headers.get("accept")?.includes("application/json");
     if (isJsonClient) {

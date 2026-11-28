@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import type { MegaMenuSubCategory } from "./mega-menu-data";
 
 interface CategoryMegaMenuProps {

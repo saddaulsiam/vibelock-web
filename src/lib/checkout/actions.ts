@@ -1,32 +1,32 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma/client";
-import { checkoutSchema } from "./validation";
 import { getCart } from "@/lib/cart/queries";
-import crypto from "crypto";
-import {
-  CouponError,
-  calculateCouponDiscount,
-  validateCouponRules,
-  getEligibleSubtotal,
-  validateCustomerCouponEligibility,
-  type CartItemCategoryInfo,
-} from "./coupons";
-import type { DiscountType, Prisma } from "@prisma/client";
-import * as shippingPricing from "@/lib/shipping/pricing";
 import { InventoryService } from "@/lib/inventory/service";
-import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
-import { validateOrderCheckoutPolicies } from "@/lib/settings/checkout-settings";
-import { calculateEffectiveShippingFee } from "@/lib/settings/shipping-rules-settings";
-import { calculateEffectiveTax } from "@/lib/settings/tax-invoice-settings";
 import {
   generateWebsiteOrderNumber,
   isOrderNumberCollision,
   MAX_ORDER_NUMBER_COLLISION_RETRIES,
 } from "@/lib/orders/order-number";
+import prisma from "@/lib/prisma/client";
+import { validateOrderCheckoutPolicies } from "@/lib/settings/checkout-settings";
+import { isPaymentMethodEnabled } from "@/lib/settings/payment-settings";
+import { calculateEffectiveShippingFee } from "@/lib/settings/shipping-rules-settings";
+import { calculateEffectiveTax } from "@/lib/settings/tax-invoice-settings";
+import * as shippingPricing from "@/lib/shipping/pricing";
+import type { DiscountType, Prisma } from "@prisma/client";
+import crypto from "crypto";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import {
+  calculateCouponDiscount,
+  CouponError,
+  getEligibleSubtotal,
+  validateCouponRules,
+  validateCustomerCouponEligibility,
+  type CartItemCategoryInfo,
+} from "./coupons";
+import { checkoutSchema } from "./validation";
 
 export async function validateCouponAction(code: string) {
   const session = await auth();
@@ -278,9 +278,8 @@ export async function createOrderAction(
   });
   if (existingOrder) {
     if (existingOrder.userId !== session.user.id) {
-      const { logSecurityAlert, hashSecurityIdentifier } = await import(
-        "@/lib/monitoring/security-logger"
-      );
+      const { logSecurityAlert, hashSecurityIdentifier } =
+        await import("@/lib/monitoring/security-logger");
       logSecurityAlert("PAYMENT_TAMPERING_DETECTED", {
         endpoint: "createOrderAction",
         reason: "idempotency_ownership_mismatch",
@@ -423,182 +422,185 @@ export async function createOrderAction(
 
       try {
         orderResult = await prisma.$transaction(
-      async (tx) => {
-        // SEC-9-06: 1. Acquire exclusive row lock on the customer User record FIRST.
-        // Serializes ALL checkout methods (COD, ONLINE, BKASH, PAYSTATION) against concurrent
-        // account deletion and profile mutations, strictly adhering to the User -> Cart -> Order lock hierarchy.
-        let lockedCustomer: { id: string; codBlocked: boolean } | null = null;
-        try {
-          lockedCustomer = await lockCustomerUser(session.user.id, tx);
-        } catch (err: unknown) {
-          if (
-            err instanceof Error &&
-            (err.message === "CUSTOMER_NOT_FOUND" || err.message === "NON_CUSTOMER_ACCOUNT")
-          ) {
-            throw err;
-          }
-          // Graceful fallback for mocked test environments without raw query support
-          const dbUser = await tx.user.findUnique({
-            where: { id: session.user.id },
-            select: { id: true, codBlocked: true, role: true },
-          });
-          if (!dbUser) {
-            throw new Error("CUSTOMER_NOT_FOUND");
-          }
-          if (dbUser.role !== "CUSTOMER") {
-            throw new Error("NON_CUSTOMER_ACCOUNT");
-          }
-          lockedCustomer = { id: dbUser.id, codBlocked: Boolean(dbUser.codBlocked) };
-        }
+          async (tx) => {
+            // SEC-9-06: 1. Acquire exclusive row lock on the customer User record FIRST.
+            // Serializes ALL checkout methods (COD, ONLINE, BKASH, PAYSTATION) against concurrent
+            // account deletion and profile mutations, strictly adhering to the User -> Cart -> Order lock hierarchy.
+            let lockedCustomer: { id: string; codBlocked: boolean } | null = null;
+            try {
+              lockedCustomer = await lockCustomerUser(session.user.id, tx);
+            } catch (err: unknown) {
+              if (
+                err instanceof Error &&
+                (err.message === "CUSTOMER_NOT_FOUND" || err.message === "NON_CUSTOMER_ACCOUNT")
+              ) {
+                throw err;
+              }
+              // Graceful fallback for mocked test environments without raw query support
+              const dbUser = await tx.user.findUnique({
+                where: { id: session.user.id },
+                select: { id: true, codBlocked: true, role: true },
+              });
+              if (!dbUser) {
+                throw new Error("CUSTOMER_NOT_FOUND");
+              }
+              if (dbUser.role !== "CUSTOMER") {
+                throw new Error("NON_CUSTOMER_ACCOUNT");
+              }
+              lockedCustomer = { id: dbUser.id, codBlocked: Boolean(dbUser.codBlocked) };
+            }
 
-        // Authoritative in-transaction COD restriction check using the acquired User lock
-        if (paymentMethod === "COD" && lockedCustomer.codBlocked) {
-          throw new Error("COD_RESTRICTED");
-        }
+            // Authoritative in-transaction COD restriction check using the acquired User lock
+            if (paymentMethod === "COD" && lockedCustomer.codBlocked) {
+              throw new Error("COD_RESTRICTED");
+            }
 
-        // SEC-8-03: 2. Acquire cart row lock BEFORE reading cart items to prevent concurrent checkout race conditions
-        // Find the user's cart ID without loading its items
-        const cartHeader = await tx.cart.findUnique({
-          where: { userId: session.user.id },
-          select: { id: true },
-        });
+            // SEC-8-03: 2. Acquire cart row lock BEFORE reading cart items to prevent concurrent checkout race conditions
+            // Find the user's cart ID without loading its items
+            const cartHeader = await tx.cart.findUnique({
+              where: { userId: session.user.id },
+              select: { id: true },
+            });
 
-        if (!cartHeader) {
-          throw new Error("Empty cart");
-        }
+            if (!cartHeader) {
+              throw new Error("Empty cart");
+            }
 
-        // Acquire SELECT ... FOR UPDATE on that cart row
-        try {
-          await tx.$queryRaw`SELECT id FROM "Cart" WHERE id = ${cartHeader.id} FOR UPDATE`;
-        } catch {
-          // Graceful fallback for mocked test environments without raw queries
-        }
+            // Acquire SELECT ... FOR UPDATE on that cart row
+            try {
+              await tx.$queryRaw`SELECT id FROM "Cart" WHERE id = ${cartHeader.id} FOR UPDATE`;
+            } catch {
+              // Graceful fallback for mocked test environments without raw queries
+            }
 
-        // 3. After acquiring the lock, fetch the cart and its items fresh from PostgreSQL
-        const dbCart = await tx.cart.findUnique({
-          where: { id: cartHeader.id },
-          include: {
-            items: {
-              orderBy: { createdAt: "asc" },
+            // 3. After acquiring the lock, fetch the cart and its items fresh from PostgreSQL
+            const dbCart = await tx.cart.findUnique({
+              where: { id: cartHeader.id },
               include: {
-                variant: {
+                items: {
+                  orderBy: { createdAt: "asc" },
                   include: {
-                    product: {
+                    variant: {
                       include: {
-                        categories: { select: { id: true, name: true } },
-                      },
-                    },
-                    inventoryTransactions: true,
-                    inventoryReservations: {
-                      where: {
-                        expiresAt: { gt: new Date() },
-                        status: "RESERVED",
+                        product: {
+                          include: {
+                            categories: { select: { id: true, name: true } },
+                          },
+                        },
+                        inventoryTransactions: true,
+                        inventoryReservations: {
+                          where: {
+                            expiresAt: { gt: new Date() },
+                            status: "RESERVED",
+                          },
+                        },
                       },
                     },
                   },
                 },
               },
-            },
-          },
-        });
+            });
 
-        // 4. Reject missing or empty carts (e.g. if emptied by concurrent transaction while waiting for lock)
-        if (!dbCart || dbCart.items.length === 0) {
-          throw new Error("Empty cart");
-        }
+            // 4. Reject missing or empty carts (e.g. if emptied by concurrent transaction while waiting for lock)
+            if (!dbCart || dbCart.items.length === 0) {
+              throw new Error("Empty cart");
+            }
 
-        // Maintain cart updatedAt mutation under row lock
-        try {
-          await tx.cart.update({
-            where: { id: dbCart.id },
-            data: { updatedAt: new Date() },
-          });
-        } catch {
-          // Graceful fallback for mocked test environments
-        }
+            // Maintain cart updatedAt mutation under row lock
+            try {
+              await tx.cart.update({
+                where: { id: dbCart.id },
+                data: { updatedAt: new Date() },
+              });
+            } catch {
+              // Graceful fallback for mocked test environments
+            }
 
-        let orderSubtotal = 0;
+            let orderSubtotal = 0;
 
-        const orderItemsToCreate = dbCart.items.map((item) => {
-          const variant = item.variant;
-          if (!variant || !variant.product || variant.product.status !== "PUBLISHED") {
-            throw new Error("Item unavailable");
-          }
+            const orderItemsToCreate = dbCart.items.map((item) => {
+              const variant = item.variant;
+              if (!variant || !variant.product || variant.product.status !== "PUBLISHED") {
+                throw new Error("Item unavailable");
+              }
 
-          if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) {
-            throw new Error("Invalid cart item quantity");
-          }
+              if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10) {
+                throw new Error("Invalid cart item quantity");
+              }
 
-          // Re-calculate inventory strictly
-          const totalTx = variant.inventoryTransactions.reduce((acc, tx) => acc + tx.quantity, 0);
-          const totalRes = variant.inventoryReservations.reduce(
-            (acc, res) => acc + res.quantity,
-            0
-          );
-          const available = totalTx - totalRes;
+              // Re-calculate inventory strictly
+              const totalTx = variant.inventoryTransactions.reduce(
+                (acc, tx) => acc + tx.quantity,
+                0
+              );
+              const totalRes = variant.inventoryReservations.reduce(
+                (acc, res) => acc + res.quantity,
+                0
+              );
+              const available = totalTx - totalRes;
 
-          if (available < item.quantity) {
-            throw new Error("Insufficient stock");
-          }
+              if (available < item.quantity) {
+                throw new Error("Insufficient stock");
+              }
 
-          // Re-calculate prices strictly
-          const sellingPrice = Number(variant.sellingPrice);
-          const discountPrice = variant.discountPrice ? Number(variant.discountPrice) : null;
-          const effectivePrice =
-            discountPrice && discountPrice < sellingPrice ? discountPrice : sellingPrice;
+              // Re-calculate prices strictly
+              const sellingPrice = Number(variant.sellingPrice);
+              const discountPrice = variant.discountPrice ? Number(variant.discountPrice) : null;
+              const effectivePrice =
+                discountPrice && discountPrice < sellingPrice ? discountPrice : sellingPrice;
 
-          if (effectivePrice <= 0 || isNaN(effectivePrice)) {
-            throw new Error("Invalid product price");
-          }
+              if (effectivePrice <= 0 || isNaN(effectivePrice)) {
+                throw new Error("Invalid product price");
+              }
 
-          const lineTotal = effectivePrice * item.quantity;
-          orderSubtotal += lineTotal;
+              const lineTotal = effectivePrice * item.quantity;
+              orderSubtotal += lineTotal;
 
-          return {
-            productName: variant.product.name,
-            sku: variant.sku,
-            size: variant.size,
-            color: variant.color,
-            quantity: item.quantity,
-            unitPrice: effectivePrice,
-            costPrice: variant.costPrice, // Historical reporting
-            appliedDiscount: sellingPrice - effectivePrice,
-            taxRate: 0, // No tax in phase 3
-            taxIncluded: false,
-            lineSubtotal: lineTotal,
-            discountAmount: (sellingPrice - effectivePrice) * item.quantity,
-            taxAmount: 0,
-            lineTotal: lineTotal,
-            variantId: variant.id,
-            productId: variant.productId,
-          };
-        });
+              return {
+                productName: variant.product.name,
+                sku: variant.sku,
+                size: variant.size,
+                color: variant.color,
+                quantity: item.quantity,
+                unitPrice: effectivePrice,
+                costPrice: variant.costPrice, // Historical reporting
+                appliedDiscount: sellingPrice - effectivePrice,
+                taxRate: 0, // No tax in phase 3
+                taxIncluded: false,
+                lineSubtotal: lineTotal,
+                discountAmount: (sellingPrice - effectivePrice) * item.quantity,
+                taxAmount: 0,
+                lineTotal: lineTotal,
+                variantId: variant.id,
+                productId: variant.productId,
+              };
+            });
 
-        capturedOrderItems = orderItemsToCreate;
+            capturedOrderItems = orderItemsToCreate;
 
-        let appliedCoupon: {
-          id: string;
-          code: string;
-          discount: number;
-        } | null = null;
-
-        if (couponCode && couponCode.trim()) {
-          const normalizedCode = couponCode.trim().toUpperCase();
-
-          const lockedCoupons = await tx.$queryRaw<
-            Array<{
+            let appliedCoupon: {
               id: string;
               code: string;
-              discountType: DiscountType;
-              discountValue: import("@prisma/client").Prisma.Decimal;
-              minOrderValue: import("@prisma/client").Prisma.Decimal | null;
-              usageLimit: number | null;
-              usageCount: number;
-              isActive: boolean;
-              startDate: Date | null;
-              endDate: Date | null;
-            }>
-          >`
+              discount: number;
+            } | null = null;
+
+            if (couponCode && couponCode.trim()) {
+              const normalizedCode = couponCode.trim().toUpperCase();
+
+              const lockedCoupons = await tx.$queryRaw<
+                Array<{
+                  id: string;
+                  code: string;
+                  discountType: DiscountType;
+                  discountValue: import("@prisma/client").Prisma.Decimal;
+                  minOrderValue: import("@prisma/client").Prisma.Decimal | null;
+                  usageLimit: number | null;
+                  usageCount: number;
+                  isActive: boolean;
+                  startDate: Date | null;
+                  endDate: Date | null;
+                }>
+              >`
           SELECT "id", "code", "discountType", "discountValue", "minOrderValue",
                  "usageLimit", "usageCount", "isActive", "startDate", "endDate"
           FROM "Coupon"
@@ -606,117 +608,126 @@ export async function createOrderAction(
           FOR UPDATE
         `;
 
-          if (lockedCoupons.length === 0) {
-            throw new CouponError("Invalid coupon code.");
-          }
+              if (lockedCoupons.length === 0) {
+                throw new CouponError("Invalid coupon code.");
+              }
 
-          const coupon = lockedCoupons[0];
+              const coupon = lockedCoupons[0];
 
-          // Enforce per-user coupon redemption limit
-          await validateCustomerCouponEligibility(session.user.id, coupon.code, tx);
+              // Enforce per-user coupon redemption limit
+              await validateCustomerCouponEligibility(session.user.id, coupon.code, tx);
 
-          // Fetch category targeting for this coupon
-          const couponCategories = await tx.category.findMany({
-            where: { coupons: { some: { id: coupon.id } } },
-            select: { id: true, name: true },
-          });
+              // Fetch category targeting for this coupon
+              const couponCategories = await tx.category.findMany({
+                where: { coupons: { some: { id: coupon.id } } },
+                select: { id: true, name: true },
+              });
 
-          const couponWithCategories = {
-            ...coupon,
-            categories: couponCategories,
-          };
+              const couponWithCategories = {
+                ...coupon,
+                categories: couponCategories,
+              };
 
-          const orderItemCategories: CartItemCategoryInfo[] = dbCart.items.map((item) => ({
-            price: Number(item.variant.discountPrice ?? item.variant.sellingPrice),
-            quantity: item.quantity,
-            categoryIds: item.variant.product.categories.map((c) => c.id),
-          }));
+              const orderItemCategories: CartItemCategoryInfo[] = dbCart.items.map((item) => ({
+                price: Number(item.variant.discountPrice ?? item.variant.sellingPrice),
+                quantity: item.quantity,
+                categoryIds: item.variant.product.categories.map((c) => c.id),
+              }));
 
-          const { eligibleSubtotal, hasEligibleItems } = getEligibleSubtotal(
-            couponWithCategories,
-            orderItemCategories
-          );
+              const { eligibleSubtotal, hasEligibleItems } = getEligibleSubtotal(
+                couponWithCategories,
+                orderItemCategories
+              );
 
-          validateCouponRules(couponWithCategories, orderSubtotal, new Date(), {
-            hasEligibleItems,
-          });
-          const discountAmount = calculateCouponDiscount(couponWithCategories, eligibleSubtotal);
+              validateCouponRules(couponWithCategories, orderSubtotal, new Date(), {
+                hasEligibleItems,
+              });
+              const discountAmount = calculateCouponDiscount(
+                couponWithCategories,
+                eligibleSubtotal
+              );
 
-          const willExhaust =
-            coupon.usageLimit !== null && coupon.usageCount + 1 >= coupon.usageLimit;
+              const willExhaust =
+                coupon.usageLimit !== null && coupon.usageCount + 1 >= coupon.usageLimit;
 
-          await tx.coupon.update({
-            where: { id: coupon.id },
-            data: {
-              usageCount: {
-                increment: 1,
-              },
-              ...(willExhaust ? { isActive: false } : {}),
-            },
-          });
+              await tx.coupon.update({
+                where: { id: coupon.id },
+                data: {
+                  usageCount: {
+                    increment: 1,
+                  },
+                  ...(willExhaust ? { isActive: false } : {}),
+                },
+              });
 
-          appliedCoupon = {
-            id: coupon.id,
-            code: coupon.code,
-            discount: discountAmount,
-          };
-        }
+              appliedCoupon = {
+                id: coupon.id,
+                code: coupon.code,
+                discount: discountAmount,
+              };
+            }
 
-        let shippingCost: number;
-        let shippingMethodName = "Standard Delivery";
-        let resolvedShippingMethodId: string | null = null;
+            let shippingCost: number;
+            let shippingMethodName = "Standard Delivery";
+            let resolvedShippingMethodId: string | null = null;
 
-        const isMockedShipping =
-          typeof shippingPricing.calculateShippingCharge === "function" &&
-          Boolean((shippingPricing.calculateShippingCharge as unknown as { mock?: unknown }).mock);
+            const isMockedShipping =
+              typeof shippingPricing.calculateShippingCharge === "function" &&
+              Boolean(
+                (shippingPricing.calculateShippingCharge as unknown as { mock?: unknown }).mock
+              );
 
-        if (shippingMethodId || !isMockedShipping) {
-          const resolvedShipping = await shippingPricing.resolveShippingMethod(
-            {
-              country: shippingCountry,
+            if (shippingMethodId || !isMockedShipping) {
+              const resolvedShipping = await shippingPricing.resolveShippingMethod(
+                {
+                  country: shippingCountry,
+                  city: shippingCity,
+                  state: shippingState,
+                },
+                shippingMethodId,
+                tx
+              );
+              shippingCost = Number(resolvedShipping.cost);
+              shippingMethodName = resolvedShipping.name;
+              resolvedShippingMethodId = resolvedShipping.id;
+            } else {
+              // Fallback for isolated legacy test mock (e.g. payment.test.ts)
+              shippingCost = Number(shippingPricing.calculateShippingCharge(shippingCity));
+            }
+
+            // Apply dynamic free shipping threshold incentive
+            const freeShippingEval = await calculateEffectiveShippingFee({
+              subtotal: orderSubtotal,
               city: shippingCity,
               state: shippingState,
-            },
-            shippingMethodId,
-            tx
-          );
-          shippingCost = Number(resolvedShipping.cost);
-          shippingMethodName = resolvedShipping.name;
-          resolvedShippingMethodId = resolvedShipping.id;
-        } else {
-          // Fallback for isolated legacy test mock (e.g. payment.test.ts)
-          shippingCost = Number(shippingPricing.calculateShippingCharge(shippingCity));
-        }
+              standardCost: shippingCost,
+            });
+            if (freeShippingEval.isFree) {
+              shippingCost = 0;
+              shippingMethodName = `${shippingMethodName} (Free Delivery)`;
+            }
 
-        // Apply dynamic free shipping threshold incentive
-        const freeShippingEval = await calculateEffectiveShippingFee({
-          subtotal: orderSubtotal,
-          city: shippingCity,
-          state: shippingState,
-          standardCost: shippingCost,
-        });
-        if (freeShippingEval.isFree) {
-          shippingCost = 0;
-          shippingMethodName = `${shippingMethodName} (Free Delivery)`;
-        }
+            const couponDiscount = appliedCoupon?.discount ?? 0;
+            let loyaltyDiscountAmount = 0;
+            let actualPointsRedeemed = 0;
+            let lockedLoyaltyAccount: { id: string; points: number; phone: string } | null = null;
 
-        const couponDiscount = appliedCoupon?.discount ?? 0;
-        let loyaltyDiscountAmount = 0;
-        let actualPointsRedeemed = 0;
-        let lockedLoyaltyAccount: { id: string; points: number; phone: string } | null = null;
+            if (
+              redeemLoyaltyPoints > 0 &&
+              customerPhone &&
+              typeof tx.loyaltySetting?.findFirst === "function"
+            ) {
+              try {
+                const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
+                const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+                const loyaltyConfig = await tx.loyaltySetting.findFirst();
 
-        if (redeemLoyaltyPoints > 0 && customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
-          try {
-            const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
-            const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
-            const loyaltyConfig = await tx.loyaltySetting.findFirst();
-
-            if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
-              // Security: Prioritize authenticated user's own loyalty account, or claim an unlinked walk-in account matching phone.
-              // Strictly disallow redeeming points from an account belonging to a different registered user.
-              const lockedAccounts = await tx.$queryRaw<
-                Array<{ id: string; points: number; phone: string; userId: string | null }>
-              >`
+                if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
+                  // Security: Prioritize authenticated user's own loyalty account, or claim an unlinked walk-in account matching phone.
+                  // Strictly disallow redeeming points from an account belonging to a different registered user.
+                  const lockedAccounts = await tx.$queryRaw<
+                    Array<{ id: string; points: number; phone: string; userId: string | null }>
+                  >`
                 SELECT id, points, phone, "userId"
                 FROM "LoyaltyAccount"
                 WHERE "userId" = ${session.user.id}
@@ -724,286 +735,304 @@ export async function createOrderAction(
                 FOR UPDATE
               `;
 
-              if (lockedAccounts.length > 0) {
-                const account = lockedAccounts[0];
-                const availablePoints = account.points ?? 0;
-                const minPoints = loyaltyConfig.minPointsToRedeem ?? 0;
+                  if (lockedAccounts.length > 0) {
+                    const account = lockedAccounts[0];
+                    const availablePoints = account.points ?? 0;
+                    const minPoints = loyaltyConfig.minPointsToRedeem ?? 0;
 
-                if (availablePoints >= redeemLoyaltyPoints && redeemLoyaltyPoints >= minPoints) {
-                  const redemptionRate = Number(loyaltyConfig.pointRedemptionValue);
-                  const subtotalAfterCoupon = Math.max(0, orderSubtotal - couponDiscount);
-                  const maxAllowedDiscount =
-                    (subtotalAfterCoupon * (loyaltyConfig.maxCartDiscountPercentage ?? 100)) / 100;
+                    if (
+                      availablePoints >= redeemLoyaltyPoints &&
+                      redeemLoyaltyPoints >= minPoints
+                    ) {
+                      const redemptionRate = Number(loyaltyConfig.pointRedemptionValue);
+                      const subtotalAfterCoupon = Math.max(0, orderSubtotal - couponDiscount);
+                      const maxAllowedDiscount =
+                        (subtotalAfterCoupon * (loyaltyConfig.maxCartDiscountPercentage ?? 100)) /
+                        100;
 
-                  const candidateDiscount = redeemLoyaltyPoints * redemptionRate;
-                  loyaltyDiscountAmount = Math.min(candidateDiscount, maxAllowedDiscount, subtotalAfterCoupon);
-                  actualPointsRedeemed = Math.min(
-                    redeemLoyaltyPoints,
-                    Math.ceil(loyaltyDiscountAmount / Math.max(0.01, redemptionRate))
+                      const candidateDiscount = redeemLoyaltyPoints * redemptionRate;
+                      loyaltyDiscountAmount = Math.min(
+                        candidateDiscount,
+                        maxAllowedDiscount,
+                        subtotalAfterCoupon
+                      );
+                      actualPointsRedeemed = Math.min(
+                        redeemLoyaltyPoints,
+                        Math.ceil(loyaltyDiscountAmount / Math.max(0.01, redemptionRate))
+                      );
+                      lockedLoyaltyAccount = account;
+
+                      // Claim unlinked walk-in account for this user permanently
+                      if (!account.userId && session.user.id) {
+                        await tx.loyaltyAccount.update({
+                          where: { id: account.id },
+                          data: { userId: session.user.id },
+                        });
+                      }
+                    }
+                  }
+                }
+              } catch (loyaltyRedeemErr) {
+                console.warn(
+                  "Failed to lock loyalty account for online redemption (non-blocking):",
+                  loyaltyRedeemErr
+                );
+              }
+            }
+
+            const totalDiscount = couponDiscount + loyaltyDiscountAmount;
+            const discountedSubtotal = Math.max(0, orderSubtotal - totalDiscount);
+
+            // Calculate dynamic tax / VAT according to store policy
+            const taxEval = await calculateEffectiveTax({
+              subtotal: discountedSubtotal,
+              shippingCost,
+            });
+
+            const total = taxEval.finalTotal;
+
+            // Authoritative checkout policy enforcement (Min order value & Max COD ceiling)
+            const policyCheck = await validateOrderCheckoutPolicies({
+              total,
+              paymentMethod:
+                paymentMethod === "COD"
+                  ? "COD"
+                  : paymentMethod === "BKASH"
+                    ? "BKASH"
+                    : paymentMethod === "PAYSTATION"
+                      ? "PAYSTATION"
+                      : "ONLINE",
+            });
+            if (!policyCheck.valid) {
+              throw new Error(`CHECKOUT_POLICY: ${policyCheck.error}`);
+            }
+
+            // Create Order
+            const newOrder = await tx.order.create({
+              data: {
+                checkoutIdempotencyKey: trimmedIdempotencyKey,
+                orderNumber,
+                userId: session.user.id,
+                status: "PENDING",
+                paymentStatus: "PENDING",
+                paymentMethod: paymentMethod === "COD" ? "COD" : "ONLINE",
+                salesChannel: "WEBSITE",
+                customerName,
+                customerEmail,
+                customerPhone,
+                shippingStreet,
+                shippingCity,
+                shippingState,
+                shippingZip,
+                shippingCountry,
+                deliveryNote: deliveryNote?.trim() || null,
+                shippingMethodName: shippingMethodName,
+                shippingMethodId: resolvedShippingMethodId,
+                subtotal: orderSubtotal,
+                taxRate: taxEval.taxRate,
+                taxIncluded: taxEval.taxIncluded,
+                shippingCost: shippingCost,
+                taxAmount: taxEval.taxAmount,
+                discount: totalDiscount,
+                loyaltyPointsRedeemed: actualPointsRedeemed,
+                total: total,
+                items: {
+                  create: orderItemsToCreate.map((item) => {
+                    let itemTaxAmount = 0;
+                    if (taxEval.taxRate > 0) {
+                      itemTaxAmount = taxEval.taxIncluded
+                        ? Math.round(
+                            (item.lineTotal - item.lineTotal / (1 + taxEval.taxRate / 100)) * 100
+                          ) / 100
+                        : Math.round(item.lineTotal * (taxEval.taxRate / 100) * 100) / 100;
+                    }
+                    return {
+                      productName: item.productName,
+                      sku: item.sku,
+                      size: item.size,
+                      color: item.color,
+                      quantity: item.quantity,
+                      unitPrice: item.unitPrice,
+                      costPrice: item.costPrice,
+                      appliedDiscount: item.appliedDiscount,
+                      taxRate: taxEval.taxRate,
+                      taxIncluded: taxEval.taxIncluded,
+                      lineSubtotal: item.lineSubtotal,
+                      discountAmount: item.discountAmount,
+                      taxAmount: itemTaxAmount,
+                      lineTotal: item.lineTotal,
+                    };
+                  }),
+                },
+              },
+            });
+
+            if (appliedCoupon) {
+              await tx.orderHistory.create({
+                data: {
+                  orderId: newOrder.id,
+                  status: "PENDING",
+                  notes: `Order created. Coupon applied: ${appliedCoupon.code} (Discount: ${appliedCoupon.discount.toFixed(2)} BDT)`,
+                },
+              });
+
+              await tx.auditLog.create({
+                data: {
+                  actorId: session.user.id,
+                  action: "COUPON_REDEEMED",
+                  entityType: "Order",
+                  entityId: newOrder.id,
+                  metadata: {
+                    couponCode: appliedCoupon.code,
+                    couponId: appliedCoupon.id,
+                    discountAmount: appliedCoupon.discount,
+                    orderNumber: newOrder.orderNumber,
+                  },
+                },
+              });
+            }
+
+            if (actualPointsRedeemed > 0 && lockedLoyaltyAccount) {
+              const newBalance = Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed);
+              await tx.loyaltyAccount.update({
+                where: { id: lockedLoyaltyAccount.id },
+                data: { points: newBalance },
+              });
+
+              await tx.loyaltyTransaction.create({
+                data: {
+                  loyaltyAccountId: lockedLoyaltyAccount.id,
+                  orderId: newOrder.id,
+                  type: "REDEEMED",
+                  points: -actualPointsRedeemed,
+                  balanceAfter: newBalance,
+                  reason: `Online Order ${newOrder.orderNumber} Redemption`,
+                },
+              });
+
+              await tx.orderHistory.create({
+                data: {
+                  orderId: newOrder.id,
+                  status: "PENDING",
+                  notes: `Loyalty points redeemed: ${actualPointsRedeemed} (-৳${loyaltyDiscountAmount.toFixed(2)})`,
+                },
+              });
+            }
+
+            // Loyalty Program: Award points on online orders if enabled for website
+            if (customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
+              try {
+                const loyaltyConfig = await tx.loyaltySetting.findFirst();
+                if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
+                  const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
+                  const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
+
+                  const existingAccount = session.user.id
+                    ? await tx.loyaltyAccount.findFirst({
+                        where: {
+                          OR: [
+                            { userId: session.user.id },
+                            { phone: normalizedPhone, userId: null },
+                          ],
+                        },
+                      })
+                    : await tx.loyaltyAccount.findUnique({
+                        where: { phone: normalizedPhone },
+                      });
+
+                  const spendPerPoint = Math.max(1, loyaltyConfig.spendAmountPerPoint);
+                  const currentTier = existingAccount?.tier ?? "BRONZE";
+                  const { calculateTierEarnedPoints, determineLoyaltyTier } =
+                    await import("@/lib/settings/loyalty-settings");
+                  const earnedPoints = calculateTierEarnedPoints(
+                    Number(total),
+                    currentTier,
+                    spendPerPoint
                   );
-                  lockedLoyaltyAccount = account;
 
-                  // Claim unlinked walk-in account for this user permanently
-                  if (!account.userId && session.user.id) {
-                    await tx.loyaltyAccount.update({
-                      where: { id: account.id },
-                      data: { userId: session.user.id },
+                  if (earnedPoints > 0) {
+                    // If points were redeemed on this order, start from balance after redemption
+                    const prevPoints =
+                      lockedLoyaltyAccount &&
+                      existingAccount &&
+                      lockedLoyaltyAccount.id === existingAccount.id
+                        ? Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed)
+                        : (existingAccount?.points ?? 0);
+
+                    const newPoints = prevPoints + earnedPoints;
+                    const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPoints;
+                    const newLifetimeSpend =
+                      (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + Number(total);
+
+                    const plat = Number(loyaltyConfig.platinumThreshold);
+                    const gold = Number(loyaltyConfig.goldThreshold);
+                    const silv = Number(loyaltyConfig.silverThreshold);
+                    const newTier = determineLoyaltyTier(newLifetimeSpend, {
+                      platinumThreshold: plat,
+                      goldThreshold: gold,
+                      silverThreshold: silv,
+                    });
+
+                    const account = await tx.loyaltyAccount.upsert({
+                      where: { phone: existingAccount?.phone ?? normalizedPhone },
+                      create: {
+                        phone: normalizedPhone,
+                        userId: session.user.id ?? null,
+                        points: newPoints,
+                        lifetimePoints: newLifetimePoints,
+                        lifetimeSpend: newLifetimeSpend,
+                        tier: newTier,
+                      },
+                      update: {
+                        points: newPoints,
+                        lifetimePoints: newLifetimePoints,
+                        lifetimeSpend: newLifetimeSpend,
+                        tier: newTier,
+                        ...(session.user.id ? { userId: session.user.id } : {}),
+                      },
+                    });
+
+                    await tx.loyaltyTransaction.create({
+                      data: {
+                        loyaltyAccountId: account.id,
+                        orderId: newOrder.id,
+                        type: "EARNED",
+                        points: earnedPoints,
+                        balanceAfter: newPoints,
+                        reason: `Online Order ${newOrder.orderNumber}`,
+                      },
+                    });
+
+                    await tx.order.update({
+                      where: { id: newOrder.id },
+                      data: { loyaltyPointsEarned: earnedPoints },
                     });
                   }
                 }
+              } catch (loyaltyErr) {
+                console.warn("Failed to process online loyalty points (non-blocking):", loyaltyErr);
               }
             }
-          } catch (loyaltyRedeemErr) {
-            console.warn("Failed to lock loyalty account for online redemption (non-blocking):", loyaltyRedeemErr);
-          }
-        }
 
-        const totalDiscount = couponDiscount + loyaltyDiscountAmount;
-        const discountedSubtotal = Math.max(0, orderSubtotal - totalDiscount);
+            await InventoryService.reserveInventoryForOrder(newOrder.id, tx);
 
-        // Calculate dynamic tax / VAT according to store policy
-        const taxEval = await calculateEffectiveTax({
-          subtotal: discountedSubtotal,
-          shippingCost,
-        });
+            if (paymentMethod === "COD") {
+              await InventoryService.consumeReservation(newOrder.id, tx);
+            }
 
-        const total = taxEval.finalTotal;
+            // Clear the Cart only after authoritative order and inventory work succeeds.
+            await tx.cartItem.deleteMany({
+              where: { cartId: dbCart.id },
+            });
+            // Assuming we keep the cart instance alive but empty for the user.
 
-        // Authoritative checkout policy enforcement (Min order value & Max COD ceiling)
-        const policyCheck = await validateOrderCheckoutPolicies({
-          total,
-          paymentMethod:
-            paymentMethod === "COD"
-              ? "COD"
-              : paymentMethod === "BKASH"
-                ? "BKASH"
-                : paymentMethod === "PAYSTATION"
-                  ? "PAYSTATION"
-                  : "ONLINE",
-        });
-        if (!policyCheck.valid) {
-          throw new Error(`CHECKOUT_POLICY: ${policyCheck.error}`);
-        }
-
-        // Create Order
-        const newOrder = await tx.order.create({
-          data: {
-            checkoutIdempotencyKey: trimmedIdempotencyKey,
-            orderNumber,
-            userId: session.user.id,
-            status: "PENDING",
-            paymentStatus: "PENDING",
-            paymentMethod: paymentMethod === "COD" ? "COD" : "ONLINE",
-            salesChannel: "WEBSITE",
-            customerName,
-            customerEmail,
-            customerPhone,
-            shippingStreet,
-            shippingCity,
-            shippingState,
-            shippingZip,
-            shippingCountry,
-            deliveryNote: deliveryNote?.trim() || null,
-            shippingMethodName: shippingMethodName,
-            shippingMethodId: resolvedShippingMethodId,
-            subtotal: orderSubtotal,
-            taxRate: taxEval.taxRate,
-            taxIncluded: taxEval.taxIncluded,
-            shippingCost: shippingCost,
-            taxAmount: taxEval.taxAmount,
-            discount: totalDiscount,
-            loyaltyPointsRedeemed: actualPointsRedeemed,
-            total: total,
-            items: {
-              create: orderItemsToCreate.map((item) => {
-                let itemTaxAmount = 0;
-                if (taxEval.taxRate > 0) {
-                  itemTaxAmount = taxEval.taxIncluded
-                    ? Math.round((item.lineTotal - item.lineTotal / (1 + taxEval.taxRate / 100)) * 100) / 100
-                    : Math.round((item.lineTotal * (taxEval.taxRate / 100)) * 100) / 100;
-                }
-                return {
-                  productName: item.productName,
-                  sku: item.sku,
-                  size: item.size,
-                  color: item.color,
-                  quantity: item.quantity,
-                  unitPrice: item.unitPrice,
-                  costPrice: item.costPrice,
-                  appliedDiscount: item.appliedDiscount,
-                  taxRate: taxEval.taxRate,
-                  taxIncluded: taxEval.taxIncluded,
-                  lineSubtotal: item.lineSubtotal,
-                  discountAmount: item.discountAmount,
-                  taxAmount: itemTaxAmount,
-                  lineTotal: item.lineTotal,
-                };
-              }),
-            },
+            return newOrder;
           },
-        });
-
-        if (appliedCoupon) {
-          await tx.orderHistory.create({
-            data: {
-              orderId: newOrder.id,
-              status: "PENDING",
-              notes: `Order created. Coupon applied: ${appliedCoupon.code} (Discount: ${appliedCoupon.discount.toFixed(2)} BDT)`,
-            },
-          });
-
-          await tx.auditLog.create({
-            data: {
-              actorId: session.user.id,
-              action: "COUPON_REDEEMED",
-              entityType: "Order",
-              entityId: newOrder.id,
-              metadata: {
-                couponCode: appliedCoupon.code,
-                couponId: appliedCoupon.id,
-                discountAmount: appliedCoupon.discount,
-                orderNumber: newOrder.orderNumber,
-              },
-            },
-          });
-        }
-
-        if (actualPointsRedeemed > 0 && lockedLoyaltyAccount) {
-          const newBalance = Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed);
-          await tx.loyaltyAccount.update({
-            where: { id: lockedLoyaltyAccount.id },
-            data: { points: newBalance },
-          });
-
-          await tx.loyaltyTransaction.create({
-            data: {
-              loyaltyAccountId: lockedLoyaltyAccount.id,
-              orderId: newOrder.id,
-              type: "REDEEMED",
-              points: -actualPointsRedeemed,
-              balanceAfter: newBalance,
-              reason: `Online Order ${newOrder.orderNumber} Redemption`,
-            },
-          });
-
-          await tx.orderHistory.create({
-            data: {
-              orderId: newOrder.id,
-              status: "PENDING",
-              notes: `Loyalty points redeemed: ${actualPointsRedeemed} (-৳${loyaltyDiscountAmount.toFixed(2)})`,
-            },
-          });
-        }
-
-        // Loyalty Program: Award points on online orders if enabled for website
-        if (customerPhone && typeof tx.loyaltySetting?.findFirst === "function") {
-          try {
-            const loyaltyConfig = await tx.loyaltySetting.findFirst();
-            if (loyaltyConfig?.enabled && loyaltyConfig?.enableOnline) {
-              const { normalizeBdPhoneNumber } = await import("@/lib/validations/auth");
-              const normalizedPhone = normalizeBdPhoneNumber(customerPhone);
-
-              const existingAccount = session.user.id
-                ? await tx.loyaltyAccount.findFirst({
-                    where: {
-                      OR: [
-                        { userId: session.user.id },
-                        { phone: normalizedPhone, userId: null },
-                      ],
-                    },
-                  })
-                : await tx.loyaltyAccount.findUnique({
-                    where: { phone: normalizedPhone },
-                  });
-
-              const spendPerPoint = Math.max(1, loyaltyConfig.spendAmountPerPoint);
-              const currentTier = existingAccount?.tier ?? "BRONZE";
-              const { calculateTierEarnedPoints, determineLoyaltyTier } = await import(
-                "@/lib/settings/loyalty-settings"
-              );
-              const earnedPoints = calculateTierEarnedPoints(Number(total), currentTier, spendPerPoint);
-
-              if (earnedPoints > 0) {
-                // If points were redeemed on this order, start from balance after redemption
-                const prevPoints =
-                  lockedLoyaltyAccount && existingAccount && lockedLoyaltyAccount.id === existingAccount.id
-                    ? Math.max(0, lockedLoyaltyAccount.points - actualPointsRedeemed)
-                    : existingAccount?.points ?? 0;
-
-                const newPoints = prevPoints + earnedPoints;
-                const newLifetimePoints = (existingAccount?.lifetimePoints ?? 0) + earnedPoints;
-                const newLifetimeSpend =
-                  (existingAccount ? Number(existingAccount.lifetimeSpend) : 0) + Number(total);
-
-                const plat = Number(loyaltyConfig.platinumThreshold);
-                const gold = Number(loyaltyConfig.goldThreshold);
-                const silv = Number(loyaltyConfig.silverThreshold);
-                const newTier = determineLoyaltyTier(newLifetimeSpend, {
-                  platinumThreshold: plat,
-                  goldThreshold: gold,
-                  silverThreshold: silv,
-                });
-
-                const account = await tx.loyaltyAccount.upsert({
-                  where: { phone: existingAccount?.phone ?? normalizedPhone },
-                  create: {
-                    phone: normalizedPhone,
-                    userId: session.user.id ?? null,
-                    points: newPoints,
-                    lifetimePoints: newLifetimePoints,
-                    lifetimeSpend: newLifetimeSpend,
-                    tier: newTier,
-                  },
-                  update: {
-                    points: newPoints,
-                    lifetimePoints: newLifetimePoints,
-                    lifetimeSpend: newLifetimeSpend,
-                    tier: newTier,
-                    ...(session.user.id ? { userId: session.user.id } : {}),
-                  },
-                });
-
-                await tx.loyaltyTransaction.create({
-                  data: {
-                    loyaltyAccountId: account.id,
-                    orderId: newOrder.id,
-                    type: "EARNED",
-                    points: earnedPoints,
-                    balanceAfter: newPoints,
-                    reason: `Online Order ${newOrder.orderNumber}`,
-                  },
-                });
-
-                await tx.order.update({
-                  where: { id: newOrder.id },
-                  data: { loyaltyPointsEarned: earnedPoints },
-                });
-              }
-            }
-          } catch (loyaltyErr) {
-            console.warn("Failed to process online loyalty points (non-blocking):", loyaltyErr);
+          {
+            maxWait: 5000,
+            timeout: 15000,
           }
-        }
-
-        await InventoryService.reserveInventoryForOrder(newOrder.id, tx);
-
-        if (paymentMethod === "COD") {
-          await InventoryService.consumeReservation(newOrder.id, tx);
-        }
-
-        // Clear the Cart only after authoritative order and inventory work succeeds.
-        await tx.cartItem.deleteMany({
-          where: { cartId: dbCart.id },
-        });
-        // Assuming we keep the cart instance alive but empty for the user.
-
-        return newOrder;
-      },
-      {
-        maxWait: 5000,
-        timeout: 15000,
-      }
-    );
+        );
         break; // Transaction committed successfully
       } catch (txError) {
         if (isOrderNumberCollision(txError) && attempt < MAX_ORDER_NUMBER_COLLISION_RETRIES) {
@@ -1081,7 +1110,8 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
+            error:
+              initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }
@@ -1104,7 +1134,8 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
+            error:
+              initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }
@@ -1127,7 +1158,8 @@ export async function createOrderAction(
           return {
             success: true,
             orderNumber: finalOrderNumber,
-            error: initiation.error || "Payment initiation failed. You can retry from your orders page.",
+            error:
+              initiation.error || "Payment initiation failed. You can retry from your orders page.",
           };
         }
       }
@@ -1294,9 +1326,8 @@ export async function createOrderAction(
 
     if (errorCategory === "PRISMA_DATABASE_ERROR" || errorCategory === "ORDER_CREATION_FAILED") {
       try {
-        const { logSecurityAlert, hashSecurityIdentifier } = await import(
-          "@/lib/monitoring/security-logger"
-        );
+        const { logSecurityAlert, hashSecurityIdentifier } =
+          await import("@/lib/monitoring/security-logger");
         logSecurityAlert("CHECKOUT_ORDER_CREATION_FAILED", {
           endpoint: "createOrderAction",
           orderHash: hashSecurityIdentifier(orderNumber),

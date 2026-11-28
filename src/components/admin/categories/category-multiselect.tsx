@@ -1,9 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { Check, ChevronDown, FolderTree, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Check, ChevronDown, FolderTree, Search, X } from "lucide-react";
+import * as React from "react";
 
 export interface CategoryOption {
   id: string;

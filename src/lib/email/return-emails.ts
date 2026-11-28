@@ -1,10 +1,10 @@
 import "server-only";
 
-import { env } from "@/lib/config/env";
 import { appConfig } from "@/lib/config/app";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
-import { Resend } from "resend";
+import { env } from "@/lib/config/env";
 import { sendSmsNotification } from "@/lib/sms/client";
+import { Resend } from "resend";
 
 let resendClient: Resend | null = null;
 if (env.RESEND_API_KEY) {

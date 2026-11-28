@@ -1,6 +1,6 @@
-import { expect, test, describe } from "vitest";
-import prisma from "../../src/lib/prisma/client";
+import { describe, expect, test } from "vitest";
 import { InventoryService } from "../../src/lib/inventory/service";
+import prisma from "../../src/lib/prisma/client";
 
 describe("Inventory Concurrency Tests", () => {
   const ts = Date.now().toString();

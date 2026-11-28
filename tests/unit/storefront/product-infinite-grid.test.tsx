@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { ProductInfiniteGrid } from "@/components/storefront/catalog/product-infinite-grid";
-import { ProductStatus } from "@prisma/client";
 import type { ProductSummary } from "@/lib/catalog/types";
+import { ProductStatus } from "@prisma/client";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
 
 const mockProducts: ProductSummary[] = [
   {

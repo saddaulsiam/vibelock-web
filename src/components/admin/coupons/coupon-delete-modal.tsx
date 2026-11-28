@@ -1,12 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { useTransition, useState } from "react";
-import { useRouter } from "next/navigation";
-import { AlertTriangle, X, Loader2, PauseCircle, Trash2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteCouponAction, toggleCouponStatusAction } from "@/lib/admin/coupons/coupon-actions";
 import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
+import { AlertTriangle, Loader2, PauseCircle, ShieldCheck, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 
 interface CouponDeleteModalProps {
   coupon: AdminCouponListItem | null;

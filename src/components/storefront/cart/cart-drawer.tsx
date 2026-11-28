@@ -1,9 +1,11 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { fetchCartAction, removeCartItemAction, updateCartItemAction } from "@/lib/cart/actions";
+import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   ImageOff,
@@ -15,12 +17,10 @@ import {
   Truck,
   X,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 import { toast } from "sonner";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { fetchCartAction, removeCartItemAction, updateCartItemAction } from "@/lib/cart/actions";
-import type { CartDTO, CartItemDTO } from "@/lib/cart/types";
-import { cn } from "@/lib/utils";
 
 interface CartSheetProps {
   initialCart: CartDTO | null;

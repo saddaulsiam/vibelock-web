@@ -8,101 +8,106 @@ export async function getAccountOverview() {
   const user = await requireUser();
   const now = new Date();
 
-  const [profile, orderCount, returnCount, addresses, recentOrders, totalSpentAgg, activeCoupons, loyaltyAccount] =
-    await Promise.all([
-      prisma.user.findUnique({
-        where: { id: user.id },
-        select: {
-          name: true,
-          email: true,
-          phone: true,
-          createdAt: true,
-          emailVerified: true,
-          image: true,
-          loyaltyAccount: {
-            select: {
-              points: true,
-              lifetimePoints: true,
-              lifetimeSpend: true,
-              tier: true,
-            },
+  const [
+    profile,
+    orderCount,
+    returnCount,
+    addresses,
+    recentOrders,
+    totalSpentAgg,
+    activeCoupons,
+    loyaltyAccount,
+  ] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        name: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        emailVerified: true,
+        image: true,
+        loyaltyAccount: {
+          select: {
+            points: true,
+            lifetimePoints: true,
+            lifetimeSpend: true,
+            tier: true,
           },
         },
-      }),
-      prisma.order.count({ where: { userId: user.id } }),
-      prisma.returnRequest.count({ where: { order: { userId: user.id } } }),
-      prisma.address.findMany({
-        where: { userId: user.id },
-        orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
-        take: 2,
-      }),
-      prisma.order.findMany({
-        where: { userId: user.id },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-        take: 5,
-        select: {
-          id: true,
-          orderNumber: true,
-          createdAt: true,
-          status: true,
-          paymentStatus: true,
-          total: true,
-          items: {
-            select: {
-              id: true,
-              productName: true,
-              quantity: true,
-              sku: true,
-              unitPrice: true,
-            },
+      },
+    }),
+    prisma.order.count({ where: { userId: user.id } }),
+    prisma.returnRequest.count({ where: { order: { userId: user.id } } }),
+    prisma.address.findMany({
+      where: { userId: user.id },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      take: 2,
+    }),
+    prisma.order.findMany({
+      where: { userId: user.id },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 5,
+      select: {
+        id: true,
+        orderNumber: true,
+        createdAt: true,
+        status: true,
+        paymentStatus: true,
+        total: true,
+        items: {
+          select: {
+            id: true,
+            productName: true,
+            quantity: true,
+            sku: true,
+            unitPrice: true,
           },
         },
-      }),
-      prisma.order.aggregate({
-        where: {
-          userId: user.id,
-          status: { notIn: ["CANCELLED"] },
-        },
-        _sum: {
-          total: true,
-        },
-      }),
-      prisma.coupon.findMany({
-        where: {
-          isActive: true,
-          OR: [
-            { startDate: null, endDate: null },
-            { startDate: { lte: now }, endDate: null },
-            { startDate: null, endDate: { gte: now } },
-            { startDate: { lte: now }, endDate: { gte: now } },
-          ],
-        },
-        select: {
-          id: true,
-          code: true,
-          discountType: true,
-          discountValue: true,
-          minOrderValue: true,
-          usageLimit: true,
-          usageCount: true,
-          endDate: true,
-        },
-      }),
-      prisma.loyaltyAccount.findFirst({
-        where: {
-          OR: [
-            { userId: user.id },
-            ...(user.phone ? [{ phone: user.phone }] : []),
-          ],
-        },
-        select: {
-          points: true,
-          lifetimePoints: true,
-          lifetimeSpend: true,
-          tier: true,
-        },
-      }),
-    ]);
+      },
+    }),
+    prisma.order.aggregate({
+      where: {
+        userId: user.id,
+        status: { notIn: ["CANCELLED"] },
+      },
+      _sum: {
+        total: true,
+      },
+    }),
+    prisma.coupon.findMany({
+      where: {
+        isActive: true,
+        OR: [
+          { startDate: null, endDate: null },
+          { startDate: { lte: now }, endDate: null },
+          { startDate: null, endDate: { gte: now } },
+          { startDate: { lte: now }, endDate: { gte: now } },
+        ],
+      },
+      select: {
+        id: true,
+        code: true,
+        discountType: true,
+        discountValue: true,
+        minOrderValue: true,
+        usageLimit: true,
+        usageCount: true,
+        endDate: true,
+      },
+    }),
+    prisma.loyaltyAccount.findFirst({
+      where: {
+        OR: [{ userId: user.id }, ...(user.phone ? [{ phone: user.phone }] : [])],
+      },
+      select: {
+        points: true,
+        lifetimePoints: true,
+        lifetimeSpend: true,
+        tier: true,
+      },
+    }),
+  ]);
 
   const userReturnRequests = await prisma.returnRequest.findMany({
     where: {
@@ -155,9 +160,8 @@ export async function getAccountOverview() {
     },
     loyalty: {
       points: loyaltyAccount?.points ?? profile?.loyaltyAccount?.points ?? 0,
-      tier: (loyaltyAccount?.tier ??
-        profile?.loyaltyAccount?.tier ??
-        "BRONZE") as "BRONZE" | "SILVER" | "GOLD" | "PLATINUM",
+      tier: (loyaltyAccount?.tier ?? profile?.loyaltyAccount?.tier ?? "BRONZE") as
+        "BRONZE" | "SILVER" | "GOLD" | "PLATINUM",
       lifetimeSpend: Number(
         loyaltyAccount?.lifetimeSpend ?? profile?.loyaltyAccount?.lifetimeSpend ?? 0
       ),

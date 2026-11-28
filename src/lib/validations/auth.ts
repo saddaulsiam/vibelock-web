@@ -55,10 +55,9 @@ export const registerSchema = z
     phone: z
       .string()
       .optional()
-      .refine(
-        (val) => !val || !val.trim() || isValidBdPhoneNumber(val),
-        { message: "Please enter a valid 11-digit Bangladeshi mobile number." }
-      ),
+      .refine((val) => !val || !val.trim() || isValidBdPhoneNumber(val), {
+        message: "Please enter a valid 11-digit Bangladeshi mobile number.",
+      }),
     password: z.string().min(8, "Password must be at least 8 characters."),
     confirmPassword: z.string(),
   })

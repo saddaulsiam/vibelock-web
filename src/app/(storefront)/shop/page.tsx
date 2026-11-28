@@ -27,7 +27,8 @@ function getClearSearchHref(params: ReturnType<typeof parseDiscoverySearchParams
 
 export const metadata: Metadata = {
   title: "Shop All Streetwear Collections",
-  description: "Browse VibeLock's latest everyday streetwear drops, heavyweight tees, hoodies, and essentials.",
+  description:
+    "Browse VibeLock's latest everyday streetwear drops, heavyweight tees, hoodies, and essentials.",
   alternates: { canonical: `${SITE_URL}/shop` },
 };
 

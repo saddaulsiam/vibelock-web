@@ -1,5 +1,3 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
   AdminCustomersTable,
   CustomerAbandonedCartCard,
@@ -14,13 +12,15 @@ import {
   CustomerTimelineCard,
 } from "@/components/admin/customers";
 import type {
+  AdminCustomerAbandonedCart,
   AdminCustomerListItem,
   AdminCustomerPreferences,
-  AdminCustomerAbandonedCart,
   AdminCustomerReviewItem,
   AdminCustomerTimelineEvent,
+  CombinedCustomerRiskProfile,
 } from "@/lib/admin/customers";
-import type { CombinedCustomerRiskProfile } from "@/lib/admin/customers";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

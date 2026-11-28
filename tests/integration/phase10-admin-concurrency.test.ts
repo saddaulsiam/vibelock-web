@@ -1,7 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import path from "path";
-import fs from "fs";
 import { PrismaClient, Role } from "@prisma/client";
+import fs from "fs";
+import path from "path";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 
 // Resolve dedicated isolated test database URL directly from .env.test
 let testDbUrl = "";
@@ -11,7 +11,10 @@ if (fs.existsSync(envPath)) {
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("DATABASE_URL=")) {
-      testDbUrl = trimmed.slice("DATABASE_URL=".length).trim().replace(/^['"]|['"]$/g, "");
+      testDbUrl = trimmed
+        .slice("DATABASE_URL=".length)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       break;
     }
   }
@@ -99,12 +102,16 @@ describe("Phase 10: PostgreSQL Concurrency & Sole Admin Serialization", () => {
   afterAll(async () => {
     try {
       if (createdUserIds.length > 0) {
-        await isolatedPrisma.auditLog.deleteMany({
-          where: { entityId: { in: createdUserIds } },
-        }).catch(() => {});
-        await isolatedPrisma.user.deleteMany({
-          where: { id: { in: createdUserIds } },
-        }).catch(() => {});
+        await isolatedPrisma.auditLog
+          .deleteMany({
+            where: { entityId: { in: createdUserIds } },
+          })
+          .catch(() => {});
+        await isolatedPrisma.user
+          .deleteMany({
+            where: { id: { in: createdUserIds } },
+          })
+          .catch(() => {});
       }
     } finally {
       await prismaConn1.$disconnect();

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   AlertTriangle,
   ArrowRight,
@@ -9,6 +8,7 @@ import {
   Truck,
   Warehouse,
 } from "lucide-react";
+import Link from "next/link";
 import { formatBdt } from "./dashboard-financial-kpis";
 
 function formatShortBdt(val: number) {
@@ -76,7 +76,7 @@ export function DashboardActionRadar({
             <h3 className="text-vl-dark-900 font-heading text-xs font-bold tracking-wider uppercase">
               Operational Attention Radar
             </h3>
-            <span className="border-amber-300 bg-amber-50 text-amber-900 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-bold text-amber-900 uppercase shadow-2xs">
               <span className="size-1.5 animate-pulse rounded-full bg-amber-500" />
               Live Radar
             </span>
@@ -89,7 +89,7 @@ export function DashboardActionRadar({
             href="/admin/orders?status=PENDING"
             className={`group flex items-center justify-between rounded border p-3 transition-all ${
               pendingOrdersCount > 0
-                ? "border-amber-300 bg-amber-50/60 hover:border-amber-500 hover:bg-amber-100/50 shadow-2xs ring-1 ring-amber-300/30"
+                ? "border-amber-300 bg-amber-50/60 shadow-2xs ring-1 ring-amber-300/30 hover:border-amber-500 hover:bg-amber-100/50"
                 : "border-vl-dark-900/10 hover:border-vl-dark-900/30"
             }`}
           >
@@ -100,7 +100,7 @@ export function DashboardActionRadar({
                   Orders Awaiting Confirmation
                 </span>
                 {pendingOrdersCount > 0 && (
-                  <span className="border-amber-400 bg-amber-200 text-amber-950 rounded px-1 font-mono text-[8px] font-extrabold uppercase">
+                  <span className="rounded border-amber-400 bg-amber-200 px-1 font-mono text-[8px] font-extrabold text-amber-950 uppercase">
                     Action Needed
                   </span>
                 )}
@@ -110,7 +110,9 @@ export function DashboardActionRadar({
               </p>
             </div>
             <div className="flex items-center gap-1.5 text-right font-mono">
-              <span className={`text-lg font-black ${pendingOrdersCount > 0 ? "text-amber-950" : "text-vl-dark-900"}`}>
+              <span
+                className={`text-lg font-black ${pendingOrdersCount > 0 ? "text-amber-950" : "text-vl-dark-900"}`}
+              >
                 {pendingOrdersCount.toLocaleString("en-BD")}
               </span>
               <ArrowRight className="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
@@ -120,7 +122,7 @@ export function DashboardActionRadar({
           {/* Action 2: Critical Stockouts */}
           <Link
             href="/admin/inventory?stockStatus=out_of_stock"
-            className="border-vl-dark-900/10 hover:border-red-500 hover:bg-red-50/40 group flex items-center justify-between rounded border p-3 transition-all"
+            className="border-vl-dark-900/10 group flex items-center justify-between rounded border p-3 transition-all hover:border-red-500 hover:bg-red-50/40"
           >
             <div className="space-y-0.5">
               <span className="text-vl-dark-900 flex items-center gap-1.5 text-xs font-bold">
@@ -132,7 +134,7 @@ export function DashboardActionRadar({
               </p>
             </div>
             <div className="flex items-center gap-1.5 text-right font-mono">
-              <span className="text-red-700 text-lg font-black">
+              <span className="text-lg font-black text-red-700">
                 {outOfStockVariantCount.toLocaleString("en-BD")}
               </span>
               <ArrowRight className="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
@@ -142,7 +144,7 @@ export function DashboardActionRadar({
           {/* Action 3: Low Stock Warning */}
           <Link
             href="/admin/inventory?stockStatus=low_stock"
-            className="border-vl-dark-900/10 hover:border-amber-400 hover:bg-amber-50/30 group flex items-center justify-between rounded border p-3 transition-all"
+            className="border-vl-dark-900/10 group flex items-center justify-between rounded border p-3 transition-all hover:border-amber-400 hover:bg-amber-50/30"
           >
             <div className="space-y-0.5">
               <span className="text-vl-dark-900 flex items-center gap-1.5 text-xs font-bold">
@@ -154,7 +156,7 @@ export function DashboardActionRadar({
               </p>
             </div>
             <div className="flex items-center gap-1.5 text-right font-mono">
-              <span className="text-amber-800 text-lg font-black">
+              <span className="text-lg font-black text-amber-800">
                 {lowStockVariantCount.toLocaleString("en-BD")}
               </span>
               <ArrowRight className="text-muted-foreground size-3 transition-transform group-hover:translate-x-0.5" />
@@ -164,7 +166,7 @@ export function DashboardActionRadar({
           {/* Action 4: Return Requests with Clear Metrics */}
           <Link
             href="/admin/returns"
-            className="border-vl-dark-900/10 hover:border-blue-400 hover:bg-blue-50/30 group flex items-center justify-between rounded border p-3 transition-all"
+            className="border-vl-dark-900/10 group flex items-center justify-between rounded border p-3 transition-all hover:border-blue-400 hover:bg-blue-50/30"
           >
             <div className="space-y-0.5">
               <span className="text-vl-dark-900 flex items-center gap-1.5 text-xs font-bold">
@@ -304,7 +306,7 @@ export function DashboardActionRadar({
                 {paymentStatuses.map((st) => (
                   <span
                     key={st.status}
-                    className="border-neutral-200 bg-neutral-100 text-neutral-800 inline-flex items-center gap-1 rounded border px-2 py-0.5"
+                    className="inline-flex items-center gap-1 rounded border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-neutral-800"
                   >
                     <span>{st.status}:</span>
                     <strong>{st.count}</strong>
@@ -374,19 +376,21 @@ export function DashboardActionRadar({
               Logistics &amp; Courier Sync
             </span>
           </div>
-          <span className="border-emerald-200 bg-emerald-50 text-emerald-800 rounded px-1.5 py-0.5 font-mono text-[9px] font-bold">
+          <span className="rounded border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-bold text-emerald-800">
             Live Dispatch
           </span>
         </div>
 
         {/* Actionable COD Cash Settlement Telemetry */}
         {codSales > 0 && (
-          <div className="border-emerald-200 bg-emerald-50/70 rounded border p-2.5 text-xs">
+          <div className="rounded border border-emerald-200 bg-emerald-50/70 p-2.5 text-xs">
             <div className="flex items-center justify-between font-mono">
-              <span className="text-emerald-900 font-bold text-[11px]">COD Payout Pipeline</span>
-              <span className="text-emerald-800 font-extrabold text-[12px]">{formatBdt(codSales)}</span>
+              <span className="text-[11px] font-bold text-emerald-900">COD Payout Pipeline</span>
+              <span className="text-[12px] font-extrabold text-emerald-800">
+                {formatBdt(codSales)}
+              </span>
             </div>
-            <p className="text-emerald-800/80 mt-0.5 text-[10px]">
+            <p className="mt-0.5 text-[10px] text-emerald-800/80">
               Cash collected across 64 districts awaiting courier remittance.
             </p>
           </div>
@@ -395,23 +399,21 @@ export function DashboardActionRadar({
         <div className="space-y-1.5 text-xs">
           <div className="flex items-center justify-between rounded bg-neutral-50 px-2.5 py-1.5">
             <span className="font-semibold text-neutral-800">Steadfast Courier</span>
-            <span className="text-emerald-700 flex items-center gap-1 font-mono text-[10px] font-bold">
+            <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-700">
               <span className="size-1.5 rounded-full bg-emerald-500" />
               Webhook Active
             </span>
           </div>
           <div className="flex items-center justify-between rounded bg-neutral-50 px-2.5 py-1.5">
             <span className="font-semibold text-neutral-800">Pathao Express</span>
-            <span className="text-emerald-700 flex items-center gap-1 font-mono text-[10px] font-bold">
+            <span className="flex items-center gap-1 font-mono text-[10px] font-bold text-emerald-700">
               <span className="size-1.5 rounded-full bg-emerald-500" />
               Inside Dhaka Ready
             </span>
           </div>
           <div className="flex items-center justify-between rounded bg-neutral-50 px-2.5 py-1.5">
             <span className="font-semibold text-neutral-800">National COD Dispatch</span>
-            <span className="text-neutral-600 font-mono text-[10px]">
-              64 Districts Coverage
-            </span>
+            <span className="font-mono text-[10px] text-neutral-600">64 Districts Coverage</span>
           </div>
         </div>
         <div className="flex items-center justify-between border-t border-neutral-100 pt-2 text-xs font-semibold">

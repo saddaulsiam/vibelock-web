@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Search } from "lucide-react";
-import { SearchModal } from "./search-modal";
 import type { CategorySummary } from "@/lib/catalog/types";
+import { Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import { SearchModal } from "./search-modal";
 
 interface HeaderSearchProps {
   categories?: CategorySummary[];
@@ -40,7 +40,7 @@ export function HeaderSearch({ categories = [] }: HeaderSearchProps) {
         <span className="text-vl-white/60 group-hover:text-vl-white/85 truncate text-xs transition-colors">
           Search drops...
         </span>
-        <kbd className="border-vl-white/15 bg-vl-white/10 text-vl-white/50 group-hover:border-vl-cyan/30 group-hover:text-vl-cyan inline-flex h-4.5 select-none items-center rounded border px-1.5 font-mono text-[10px] font-medium transition-colors">
+        <kbd className="border-vl-white/15 bg-vl-white/10 text-vl-white/50 group-hover:border-vl-cyan/30 group-hover:text-vl-cyan inline-flex h-4.5 items-center rounded border px-1.5 font-mono text-[10px] font-medium transition-colors select-none">
           ⌘K
         </kbd>
       </button>

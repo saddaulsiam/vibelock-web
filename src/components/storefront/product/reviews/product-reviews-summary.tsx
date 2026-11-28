@@ -1,8 +1,8 @@
 "use client";
 
-import { StarRating } from "./star-rating";
 import type { ReviewSummary } from "@/lib/reviews/types";
 import { Filter } from "lucide-react";
+import { StarRating } from "./star-rating";
 
 interface ProductReviewsSummaryProps {
   summary: ReviewSummary;

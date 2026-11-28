@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import {
-  Phone,
-  Mail,
-  MapPin,
-  Clock,
-  ExternalLink,
-  PackageSearch,
-  RotateCcw,
-  HelpCircle,
-} from "lucide-react";
 import { Container } from "@/components/shared/container";
 import { ContactForm } from "@/components/storefront/contact/contact-form";
-import { SITE_URL } from "@/lib/seo/site";
-import { getLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { getDisplayPhoneNumber } from "@/lib/config/contact";
+import { getLocalBusinessJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { SITE_URL } from "@/lib/seo/site";
+import {
+  Clock,
+  ExternalLink,
+  HelpCircle,
+  Mail,
+  MapPin,
+  PackageSearch,
+  Phone,
+  RotateCcw,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Contact Us — Flagship Outlet & Support",

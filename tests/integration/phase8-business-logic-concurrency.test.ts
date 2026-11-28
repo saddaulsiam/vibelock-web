@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import path from "path";
-import fs from "fs";
-import { PrismaClient, Prisma, User, ProductVariant } from "@prisma/client";
 import { releaseOrderCoupon } from "@/lib/checkout/coupons";
+import { Prisma, PrismaClient, ProductVariant, User } from "@prisma/client";
+import fs from "fs";
+import path from "path";
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from "vitest";
 
 // Resolve and validate dedicated isolated test database URL
 let testDbUrl = process.env.DATABASE_URL || "";
@@ -16,7 +16,10 @@ if (!testDbUrl) {
   for (const line of content.split("\n")) {
     const trimmed = line.trim();
     if (trimmed.startsWith("DATABASE_URL=")) {
-      testDbUrl = trimmed.slice("DATABASE_URL=".length).trim().replace(/^['"]|['"]$/g, "");
+      testDbUrl = trimmed
+        .slice("DATABASE_URL=".length)
+        .trim()
+        .replace(/^['"]|['"]$/g, "");
       break;
     }
   }
@@ -98,8 +101,12 @@ describe("Phase 8 Real PostgreSQL Concurrency Verification", () => {
     pid2 = q2[0].pid;
 
     console.log(`[Phase 8 Concurrency Suite] Isolated DB: ${dbInfo[0].current_database}`);
-    console.log(`[Phase 8 Concurrency Suite] PostgreSQL Version: ${dbInfo[0].version.split(",")[0]}`);
-    console.log(`[Phase 8 Concurrency Suite] Independent Backend PIDs: Conn1=${pid1}, Conn2=${pid2}`);
+    console.log(
+      `[Phase 8 Concurrency Suite] PostgreSQL Version: ${dbInfo[0].version.split(",")[0]}`
+    );
+    console.log(
+      `[Phase 8 Concurrency Suite] Independent Backend PIDs: Conn1=${pid1}, Conn2=${pid2}`
+    );
 
     expect(pid1).toBeGreaterThan(0);
     expect(pid2).toBeGreaterThan(0);
@@ -143,7 +150,9 @@ describe("Phase 8 Real PostgreSQL Concurrency Verification", () => {
     try {
       if (createdOrderIds.length > 0) {
         await isolatedPrisma.orderItem.deleteMany({ where: { orderId: { in: createdOrderIds } } });
-        await isolatedPrisma.orderHistory.deleteMany({ where: { orderId: { in: createdOrderIds } } });
+        await isolatedPrisma.orderHistory.deleteMany({
+          where: { orderId: { in: createdOrderIds } },
+        });
         await isolatedPrisma.auditLog.deleteMany({ where: { entityId: { in: createdOrderIds } } });
         await isolatedPrisma.order.deleteMany({ where: { id: { in: createdOrderIds } } });
       }
@@ -152,7 +161,9 @@ describe("Phase 8 Real PostgreSQL Concurrency Verification", () => {
       }
       await isolatedPrisma.cartItem.deleteMany();
       await isolatedPrisma.cart.deleteMany();
-      await isolatedPrisma.inventoryTransaction.deleteMany({ where: { variantId: testVariant?.id } });
+      await isolatedPrisma.inventoryTransaction.deleteMany({
+        where: { variantId: testVariant?.id },
+      });
       await isolatedPrisma.productVariant.deleteMany({ where: { id: testVariant?.id } });
       await isolatedPrisma.product.deleteMany({ where: { name: { startsWith: "P8-Product-" } } });
       if (testUser?.id) {
@@ -485,4 +496,3 @@ describe("Phase 8 Real PostgreSQL Concurrency Verification", () => {
     expect(updatedCoupon?.isActive).toBe(false); // Preserved!
   });
 });
-

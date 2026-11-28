@@ -1,8 +1,8 @@
-import { ProductSummary } from "@/lib/catalog/types";
 import { ProductCard } from "@/components/storefront/catalog/product-card";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ProductSummary } from "@/lib/catalog/types";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface ProductGridProps {
   products: ProductSummary[];

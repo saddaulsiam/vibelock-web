@@ -1,25 +1,25 @@
 "use server";
 
+import { auth, signIn, signOut } from "@/auth";
+import { sendEmailVerificationEmail } from "@/lib/email/client";
 import prisma from "@/lib/prisma/client";
+import { checkOtpSendRateLimit, checkRateLimit } from "@/lib/security/rate-limit";
+import { sendOtp } from "@/lib/sms/client";
 import {
-  registerSchema,
   loginSchema,
+  normalizeBdPhoneNumber,
   phoneOtpRequestSchema,
   phoneOtpVerifySchema,
-  normalizeBdPhoneNumber,
-  type RegisterInput,
+  registerSchema,
   type LoginInput,
   type PhoneOtpRequestInput,
   type PhoneOtpVerifyInput,
+  type RegisterInput,
 } from "@/lib/validations/auth";
-import { signIn, signOut, auth } from "@/auth";
-import { AuthError } from "next-auth";
-import { hash } from "bcryptjs";
 import { Prisma } from "@prisma/client";
-import { checkRateLimit, checkOtpSendRateLimit } from "@/lib/security/rate-limit";
+import { hash } from "bcryptjs";
 import crypto from "crypto";
-import { sendEmailVerificationEmail } from "@/lib/email/client";
-import { sendOtp } from "@/lib/sms/client";
+import { AuthError } from "next-auth";
 import { ZodError } from "zod";
 
 export async function registerAction(data: RegisterInput) {
@@ -53,7 +53,10 @@ export async function registerAction(data: RegisterInput) {
         });
 
     if (existingUser) {
-      return { error: "An account with this email or phone number may already exist or registration failed." };
+      return {
+        error:
+          "An account with this email or phone number may already exist or registration failed.",
+      };
     }
 
     const passwordHash = await hash(parsed.password, 12);
@@ -111,7 +114,10 @@ export async function registerAction(data: RegisterInput) {
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        return { error: "An account with this email or phone number may already exist or registration failed." };
+        return {
+          error:
+            "An account with this email or phone number may already exist or registration failed.",
+        };
       }
     }
     console.error("Registration error:", error);

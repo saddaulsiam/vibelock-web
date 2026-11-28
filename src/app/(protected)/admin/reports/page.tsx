@@ -1,6 +1,3 @@
-import Link from "next/link";
-import { CreditCard, RefreshCw } from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/shared";
 import {
   ReportCharts,
   ReportExportMenu,
@@ -8,11 +5,14 @@ import {
   ReportLedgerWorkspace,
   ReportRangeFilter,
 } from "@/components/admin/reports";
+import { AdminPageHeader } from "@/components/admin/shared";
 import {
   getAdminOrderProfitability,
   getAdminProductProfitability,
   getAdminReport,
 } from "@/lib/admin/reports";
+import { CreditCard, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
 export default async function AdminReportsPage({
   searchParams,
@@ -82,7 +82,7 @@ export default async function AdminReportsPage({
   }).toString();
 
   return (
-    <div className="print-document mx-auto w-full max-w-[100rem] space-y-6 print:space-y-4 print:max-w-none print:w-full print:p-0 print:bg-white">
+    <div className="print-document mx-auto w-full max-w-[100rem] space-y-6 print:w-full print:max-w-none print:space-y-4 print:bg-white print:p-0">
       {/* ── 1. HARMONIZED ADMIN PAGE HEADER (MATCHING /admin & /admin/orders) ── */}
       <div className="print:hidden">
         <AdminPageHeader
@@ -97,7 +97,7 @@ export default async function AdminReportsPage({
               href={reconciliationHref}
               className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3.5 text-xs font-semibold text-neutral-700 shadow-2xs transition hover:bg-neutral-50 hover:text-neutral-900"
             >
-              <CreditCard className="size-3.5 text-vl-cyan" />
+              <CreditCard className="text-vl-cyan size-3.5" />
               <span>Cash Reconciliation</span>
             </Link>
 
@@ -137,25 +137,33 @@ export default async function AdminReportsPage({
       {/* ── SECTION 1: EXECUTIVE AUDIT & FINANCIAL COCKPIT (PAGE 1) ── */}
       <div className="print-break-after-page space-y-6 print:space-y-4">
         {/* ── PRINT-ONLY EXECUTIVE AUDIT HEADER ── */}
-        <div className="hidden print:block border-b-2 border-neutral-900 pb-4 mb-4">
-          <div className="flex justify-between items-start">
+        <div className="mb-4 hidden border-b-2 border-neutral-900 pb-4 print:block">
+          <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-heading font-black text-xl text-neutral-950 uppercase tracking-tight">VibeLock</span>
+                <span className="font-heading text-xl font-black tracking-tight text-neutral-950 uppercase">
+                  VibeLock
+                </span>
                 <span className="h-4 w-px bg-neutral-300" />
-                <span className="font-mono text-xs uppercase tracking-widest text-neutral-500 font-bold">Operations &amp; Analytics</span>
+                <span className="font-mono text-xs font-bold tracking-widest text-neutral-500 uppercase">
+                  Operations &amp; Analytics
+                </span>
               </div>
-              <h1 className="text-2xl font-black tracking-tight text-neutral-950 uppercase font-heading mt-1">
+              <h1 className="font-heading mt-1 text-2xl font-black tracking-tight text-neutral-950 uppercase">
                 Executive Financial Statement
               </h1>
-              <p className="text-xs text-neutral-600 mt-1">
-                Timeframe: <span className="font-bold text-neutral-900">{rangeLabel}</span> ({report.start.toLocaleDateString("en-BD")} to {report.end.toLocaleDateString("en-BD")})
+              <p className="mt-1 text-xs text-neutral-600">
+                Timeframe: <span className="font-bold text-neutral-900">{rangeLabel}</span> (
+                {report.start.toLocaleDateString("en-BD")} to{" "}
+                {report.end.toLocaleDateString("en-BD")})
               </p>
             </div>
-            <div className="text-right text-xs font-mono text-neutral-500">
+            <div className="text-right font-mono text-xs text-neutral-500">
               <p className="font-bold text-neutral-800">Confidential Financial Audit</p>
               <p>Generated: {new Date().toLocaleDateString("en-BD", { dateStyle: "long" })}</p>
-              <p className="text-[10px] text-neutral-400">Doc ID: VL-P&amp;L-{report.start.getTime().toString(36).toUpperCase()}</p>
+              <p className="text-[10px] text-neutral-400">
+                Doc ID: VL-P&amp;L-{report.start.getTime().toString(36).toUpperCase()}
+              </p>
             </div>
           </div>
         </div>
@@ -164,20 +172,28 @@ export default async function AdminReportsPage({
         <ReportFinancialHero summary={report.summary} rangeLabel={rangeLabel} />
 
         {/* ── PRINT-ONLY EXECUTIVE SIGN-OFF & AUDIT VALIDATION BLOCK (PAGE 1 FOOTER) ── */}
-        <div className="hidden print:grid grid-cols-2 gap-10 pt-10 mt-8 border-t border-neutral-300 text-xs">
+        <div className="mt-8 hidden grid-cols-2 gap-10 border-t border-neutral-300 pt-10 text-xs print:grid">
           <div className="space-y-1.5">
-            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Prepared &amp; Verified By:</p>
-            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+            <p className="font-mono text-[10px] font-bold tracking-wider text-neutral-900 uppercase">
+              Prepared &amp; Verified By:
+            </p>
+            <div className="flex h-10 items-end border-b border-neutral-400 pb-1 font-mono text-neutral-800">
               <span>Operations &amp; Finance Automated Controller</span>
             </div>
-            <p className="text-[10px] text-neutral-500">VibeLock ERP System · Reconciliation: Clean Ledger</p>
+            <p className="text-[10px] text-neutral-500">
+              VibeLock ERP System · Reconciliation: Clean Ledger
+            </p>
           </div>
           <div className="space-y-1.5">
-            <p className="font-bold text-neutral-900 uppercase tracking-wider text-[10px] font-mono">Reviewed &amp; Authorized By:</p>
-            <div className="h-10 border-b border-neutral-400 flex items-end pb-1 font-mono text-neutral-800">
+            <p className="font-mono text-[10px] font-bold tracking-wider text-neutral-900 uppercase">
+              Reviewed &amp; Authorized By:
+            </p>
+            <div className="flex h-10 items-end border-b border-neutral-400 pb-1 font-mono text-neutral-800">
               <span>Executive Management / Store Administration</span>
             </div>
-            <p className="text-[10px] text-neutral-500">Sign-off Date: {new Date().toLocaleDateString("en-BD")}</p>
+            <p className="text-[10px] text-neutral-500">
+              Sign-off Date: {new Date().toLocaleDateString("en-BD")}
+            </p>
           </div>
         </div>
       </div>

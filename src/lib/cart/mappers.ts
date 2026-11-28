@@ -1,6 +1,6 @@
-import { Cart, CartItem, ProductVariant, Product, ProductImage } from "@prisma/client";
-import { CartDTO, CartItemDTO } from "./types";
 import { mapVariant } from "@/lib/catalog/mappers";
+import { Cart, CartItem, Product, ProductImage, ProductVariant } from "@prisma/client";
+import { CartDTO, CartItemDTO } from "./types";
 
 // The full Prisma return type needed to map a cart
 export type PrismaCartWithIncludes = Cart & {

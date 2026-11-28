@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addToCart, updateCartItemQuantity, removeCartItem } from "./mutations";
+import { addToCart, removeCartItem, updateCartItemQuantity } from "./mutations";
 import { getCart } from "./queries";
 
 export async function addVariantToCartAction(variantId: string, quantity: number = 1) {

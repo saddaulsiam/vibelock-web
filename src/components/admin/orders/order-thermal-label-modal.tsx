@@ -1,8 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { Printer, X, Tag, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ExternalLink, Printer, Tag, X } from "lucide-react";
 
 interface ThermalLabelProps {
   orderNumber: string;

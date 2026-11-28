@@ -1,8 +1,8 @@
-import { Metadata } from "next";
-import { getCart } from "@/lib/cart/queries";
-import { CartPageContent } from "@/components/storefront/cart/cart-page-content";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { CartPageContent } from "@/components/storefront/cart/cart-page-content";
+import { getCart } from "@/lib/cart/queries";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Shopping Cart",

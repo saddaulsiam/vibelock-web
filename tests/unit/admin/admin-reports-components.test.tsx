@@ -1,6 +1,3 @@
-import { describe, expect, test } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
-import type { ProductProfitabilityResult } from "@/lib/admin/reports/report-queries";
 import {
   ReportCharts,
   ReportExportMenu,
@@ -8,6 +5,9 @@ import {
   ReportLedgerWorkspace,
   ReportRangeFilter,
 } from "@/components/admin/reports";
+import type { ProductProfitabilityResult } from "@/lib/admin/reports/report-queries";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test } from "vitest";
 
 describe("ReportFinancialHero component", () => {
   const summary = {

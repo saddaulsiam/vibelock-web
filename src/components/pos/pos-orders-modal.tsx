@@ -1,36 +1,36 @@
 "use client";
 
-import { useState, useEffect, useCallback, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Receipt,
-  Search,
-  Printer,
-  RefreshCw,
-  Banknote,
-  QrCode,
-  CreditCard,
-  Phone,
-  Clock,
-  AlertCircle,
-  Loader2,
-  Ban,
-  AlertTriangle,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { getPosTodayOrdersAction } from "@/lib/pos/pos-order-history-actions";
-import { voidPosOrderAction } from "@/lib/pos/pos-void-actions";
 import type { PosOrderSummaryItem, PosTodayOrdersStats } from "@/lib/pos/pos-order-history-types";
 import type { PosReceiptData } from "@/lib/pos/pos-types";
+import { voidPosOrderAction } from "@/lib/pos/pos-void-actions";
+import {
+  AlertCircle,
+  AlertTriangle,
+  Ban,
+  Banknote,
+  Clock,
+  CreditCard,
+  Loader2,
+  Phone,
+  Printer,
+  QrCode,
+  Receipt,
+  RefreshCw,
+  Search,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface PosOrdersModalProps {
@@ -355,23 +355,22 @@ export function PosOrdersModal({
                         <span>Reprint</span>
                       </Button>
 
-                      {!isCancelled &&
-                        (cashierRole === "MANAGER" || cashierRole === "ADMIN") && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setVoidConfirmOrder(order);
-                              setVoidReason("");
-                            }}
-                            title="Void sale, restock items and refund settlement"
-                            className="border-vl-white-500 rounded-brand text-red-600 hover:bg-red-50 hover:text-red-700"
-                          >
-                            <Ban className="h-3.5 w-3.5" aria-hidden="true" />
-                            <span>Void</span>
-                          </Button>
-                        )}
+                      {!isCancelled && (cashierRole === "MANAGER" || cashierRole === "ADMIN") && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setVoidConfirmOrder(order);
+                            setVoidReason("");
+                          }}
+                          title="Void sale, restock items and refund settlement"
+                          className="border-vl-white-500 rounded-brand text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>Void</span>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -383,7 +382,10 @@ export function PosOrdersModal({
 
       {/* Manager Void Confirmation Dialog */}
       {voidConfirmOrder && (
-        <Dialog open={true} onOpenChange={(open) => !open && !isVoiding && setVoidConfirmOrder(null)}>
+        <Dialog
+          open={true}
+          onOpenChange={(open) => !open && !isVoiding && setVoidConfirmOrder(null)}
+        >
           <DialogContent className="border-vl-white-500 rounded-brand max-w-md border bg-white p-6 shadow-xl">
             <DialogHeader className="border-vl-white-400 border-b pb-3">
               <div className="flex items-center space-x-2.5 text-red-600">
@@ -408,8 +410,8 @@ export function PosOrdersModal({
                   {voidConfirmOrder.orderNumber}
                 </strong>{" "}
                 as cancelled and refund <strong>৳{voidConfirmOrder.total.toLocaleString()}</strong>.
-                All <strong>{voidConfirmOrder.itemsCount}</strong> items will be immediately returned to
-                active inventory.
+                All <strong>{voidConfirmOrder.itemsCount}</strong> items will be immediately
+                returned to active inventory.
               </p>
 
               <div>

@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Calculator, ClipboardList, Truck, Warehouse } from "lucide-react";
 import {
   DashboardActionRadar,
   DashboardFulfillmentRibbon,
@@ -10,6 +8,8 @@ import {
 import { getAdminDashboardData } from "@/lib/admin/reports";
 import { requireRole } from "@/lib/auth/authorization";
 import { hasRequiredRole } from "@/lib/auth/roles";
+import { Calculator, ClipboardList, Truck, Warehouse } from "lucide-react";
+import Link from "next/link";
 
 const VALID_RANGES = new Set(["today", "yesterday", "7d", "30d", "this-month"]);
 
@@ -94,7 +94,9 @@ export default async function AdminPage({
                   </span>
                   <div>
                     <p className="text-vl-dark-900 text-sm font-semibold">Fulfill Orders</p>
-                    <p className="text-muted-foreground text-xs">Pick, pack &amp; track shipments</p>
+                    <p className="text-muted-foreground text-xs">
+                      Pick, pack &amp; track shipments
+                    </p>
                   </div>
                 </Link>
                 <Link

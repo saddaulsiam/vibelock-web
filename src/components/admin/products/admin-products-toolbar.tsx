@@ -7,11 +7,11 @@ import {
   AdminTableSearchInput,
   type ColumnOption,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import { exportAdminProductsCsvAction } from "@/lib/admin/catalog/catalog-actions";
 import type { AdminProductsResult } from "@/lib/admin/catalog/catalog-queries";
 import { AlertTriangle, Download, Layers, X } from "lucide-react";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 
 export interface AdminProductsToolbarProps {
   counts: AdminProductsResult["counts"];

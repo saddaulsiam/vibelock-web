@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, PackageOpen } from "lucide-react";
-import { getCustomerOrders } from "@/lib/orders/queries";
 import { OrdersInfiniteList } from "@/components/account/orders/orders-infinite-list";
 import { Badge } from "@/components/ui/badge";
+import { getCustomerOrders } from "@/lib/orders/queries";
+import { ArrowRight, PackageOpen } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "My Orders | VibeLock",

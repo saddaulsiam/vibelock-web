@@ -1,5 +1,5 @@
-import prisma from "../../src/lib/prisma/client";
 import { Prisma } from "@prisma/client";
+import prisma from "../../src/lib/prisma/client";
 
 export async function createTestUser(overrides: Partial<Prisma.UserUncheckedCreateInput> = {}) {
   const ts = Date.now().toString() + Math.floor(Math.random() * 1000);

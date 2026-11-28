@@ -1,15 +1,5 @@
 "use client";
 
-import * as React from "react";
-import {
-  BarChart2,
-  Layers,
-  PackageCheck,
-  PieChart,
-  Radio,
-  RotateCcw,
-  TrendingUp,
-} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -19,6 +9,16 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import {
+  BarChart2,
+  Layers,
+  PackageCheck,
+  PieChart,
+  Radio,
+  RotateCcw,
+  TrendingUp,
+} from "lucide-react";
+import * as React from "react";
 
 type TrendPoint = {
   date: Date;

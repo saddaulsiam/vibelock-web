@@ -1,19 +1,7 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
-import Link from "next/link";
 import {
-  ExternalLink,
-  Folder,
-  FolderTree,
-  Loader2,
-  Package,
-  Pencil,
-  RotateCcw,
-  Trash2,
-} from "lucide-react";
-import {
+  AdminMutationForm,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
@@ -32,7 +20,19 @@ import {
   deleteCategoryAction,
   toggleCategoryStatusAction,
 } from "@/lib/admin/catalog/catalog-actions";
-import { AdminMutationForm } from "@/components/admin/shared";
+import {
+  ExternalLink,
+  Folder,
+  FolderTree,
+  Loader2,
+  Package,
+  Pencil,
+  RotateCcw,
+  Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import * as React from "react";
 
 export type AdminCategoryListItem = {
   id: string;

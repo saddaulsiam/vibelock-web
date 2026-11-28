@@ -1,8 +1,8 @@
 import { Container } from "@/components/shared/container";
-import Link from "next/link";
-import { ArrowRight, Search } from "lucide-react";
 import { Section } from "@/components/shared/section";
 import { Button } from "@/components/ui/button";
+import { ArrowRight, Search } from "lucide-react";
+import Link from "next/link";
 
 export default function StorefrontNotFound() {
   return (

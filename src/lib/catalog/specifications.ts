@@ -3,12 +3,7 @@ export interface ProductSpecificationAttribute {
   value: string;
 }
 
-export type LifestyleCategoryPreset =
-  | "apparel"
-  | "headwear"
-  | "leather"
-  | "accessories"
-  | "custom";
+export type LifestyleCategoryPreset = "apparel" | "headwear" | "leather" | "accessories" | "custom";
 
 export interface ProductSpecifications {
   categoryPreset?: LifestyleCategoryPreset;

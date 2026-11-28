@@ -148,11 +148,7 @@ export function getHumanGatewayName(
     return "Cash on Delivery";
   }
 
-  const normalized = (
-    gateway ||
-    (method === "ONLINE" ? "SSLCOMMERZ" : method) ||
-    ""
-  )
+  const normalized = (gateway || (method === "ONLINE" ? "SSLCOMMERZ" : method) || "")
     .trim()
     .toUpperCase();
 

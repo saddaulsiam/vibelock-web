@@ -1,16 +1,16 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
-import { Heart } from "lucide-react";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 import {
-  getWishlistSnapshot,
   getWishlistServerSnapshot,
+  getWishlistSnapshot,
   subscribeWishlist,
   toggleWishlistSlug,
 } from "@/lib/wishlist";
-import { Button } from "@/components/ui/button";
 import { cn } from "cn";
+import { Heart } from "lucide-react";
+import { useSyncExternalStore } from "react";
+import { toast } from "sonner";
 
 interface ProductWishlistButtonProps {
   productSlug: string;

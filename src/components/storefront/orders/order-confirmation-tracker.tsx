@@ -1,5 +1,5 @@
-import { Check, AlertCircle } from "lucide-react";
-import { OrderStatus, PaymentStatus, PaymentMethod } from "@prisma/client";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "@prisma/client";
+import { AlertCircle, Check } from "lucide-react";
 
 interface OrderConfirmationTrackerProps {
   status: OrderStatus;

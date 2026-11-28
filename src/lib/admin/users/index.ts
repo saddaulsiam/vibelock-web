@@ -1,8 +1,8 @@
 export {
-  updateAdminUserRoleAction,
   createAdminUserAction,
   lookupUserByEmailForPromotionAction,
   promoteExistingUserAction,
+  updateAdminUserRoleAction,
   type PromotionUserPreview,
 } from "./admin-user-actions";
 export {

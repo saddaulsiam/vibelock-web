@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { parseHeightToInches, recommendSize } from "@/lib/catalog/sizing";
+import { describe, expect, it } from "vitest";
 
 describe("Catalog Sizing Utilities", () => {
   describe("parseHeightToInches", () => {
@@ -47,7 +47,7 @@ describe("Catalog Sizing Utilities", () => {
         height: "5'8\"",
       });
       expect(rec.recommendedSize).toBe("40");
-      expect(rec.chestOrWaist).toBe("42\"");
+      expect(rec.chestOrWaist).toBe('42"');
     });
   });
 });

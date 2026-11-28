@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
-import { ShipmentStatus } from "@prisma/client";
 import { env } from "@/lib/config/env";
-import { ShippingService } from "@/lib/shipping/service";
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
 import { MockCourierProvider } from "@/lib/shipping/providers/mock/client";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
+import { ShippingService } from "@/lib/shipping/service";
+import { ShipmentStatus } from "@prisma/client";
+import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
 
 const shipmentStatuses = new Set<string>(Object.values(ShipmentStatus));
 const MAX_COURIER_WEBHOOK_BYTES = MAX_REQUEST_PAYLOAD_BYTES; // 64 KB

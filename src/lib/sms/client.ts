@@ -1,6 +1,6 @@
-import "server-only";
-import crypto from "crypto";
 import prisma from "@/lib/prisma/client";
+import crypto from "crypto";
+import "server-only";
 
 /**
  * Redacts a phone number for safe logging (e.g., "+88017****1234" or "017****1234").
@@ -39,7 +39,8 @@ export async function sendOtp(
     );
     return {
       success: false,
-      error: "SMS service is temporarily unavailable. Please sign in with your phone and password or email.",
+      error:
+        "SMS service is temporarily unavailable. Please sign in with your phone and password or email.",
     };
   }
 
@@ -82,7 +83,8 @@ export async function sendOtp(
       );
       return {
         success: false,
-        error: "Failed to deliver SMS verification code. Please try again or sign in with your password.",
+        error:
+          "Failed to deliver SMS verification code. Please try again or sign in with your password.",
       };
     }
   }
@@ -185,7 +187,8 @@ export async function sendSmsNotification({
     let smsSenderId = process.env.SMS_SENDER_ID || "VibeLock";
 
     try {
-      const { resolveEffectiveSmsCredentials } = await import("@/lib/settings/notification-settings");
+      const { resolveEffectiveSmsCredentials } =
+        await import("@/lib/settings/notification-settings");
       const resolved = await resolveEffectiveSmsCredentials();
       if (resolved.isConfigured) {
         smsApiKey = resolved.apiKey;

@@ -1,28 +1,7 @@
 "use client";
 
-import * as React from "react";
-import { useState, useTransition, useMemo } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import {
-  Package,
-  Plus,
-  Trash2,
-  Search,
-  X,
-  ExternalLink,
-  Loader2,
-  CheckCircle2,
-  AlertCircle,
-  FolderPlus,
-  ArrowRight,
-  Star,
-} from "lucide-react";
-import { ProductStatus } from "@prisma/client";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { Input } from "@/components/ui/input";
 import {
   assignProductsToCategoryAction,
   removeProductFromCategoryAction,
@@ -32,6 +11,26 @@ import type {
   CategoryAssignedProduct,
   CategoryAvailableProduct,
 } from "@/lib/admin/catalog/catalog-queries";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
+import { ProductStatus } from "@prisma/client";
+import {
+  AlertCircle,
+  ArrowRight,
+  CheckCircle2,
+  ExternalLink,
+  FolderPlus,
+  Loader2,
+  Package,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo, useState, useTransition } from "react";
 
 interface CategoryProductsManagerProps {
   categoryId: string;

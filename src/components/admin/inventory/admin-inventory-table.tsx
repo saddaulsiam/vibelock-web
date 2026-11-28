@@ -2,10 +2,11 @@
 
 import {
   AdminTableColumnVisibility,
-  InfiniteScroll,
   AdminTableSearchInput,
+  InfiniteScroll,
   useAdminTableColumns,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { loadMoreAdminInventoryAction } from "@/lib/admin/inventory/inventory-actions";
 import type {
   AdminInventoryItem,

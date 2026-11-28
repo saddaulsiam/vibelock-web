@@ -1,8 +1,4 @@
-import type {
-  MetaCapiEvent,
-  MetaCapiPayload,
-  MetaCapiResponse,
-} from "./meta-types";
+import type { MetaCapiEvent, MetaCapiPayload, MetaCapiResponse } from "./meta-types";
 
 const META_GRAPH_API_VERSION = "v21.0";
 
@@ -12,20 +8,13 @@ const META_GRAPH_API_VERSION = "v21.0";
  * - Gracefully skips execution if Meta Pixel ID or CAPI Access Token is missing.
  * - Respects META_TEST_EVENT_CODE if configured in environment.
  */
-export async function sendMetaCapiEvent(
-  event: MetaCapiEvent
-): Promise<MetaCapiResponse | null> {
-  let pixelId =
-    process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.META_PIXEL_ID;
-  let accessToken =
-    process.env.META_CONVERSIONS_API_ACCESS_TOKEN ||
-    process.env.META_ACCESS_TOKEN;
+export async function sendMetaCapiEvent(event: MetaCapiEvent): Promise<MetaCapiResponse | null> {
+  let pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID || process.env.META_PIXEL_ID;
+  let accessToken = process.env.META_CONVERSIONS_API_ACCESS_TOKEN || process.env.META_ACCESS_TOKEN;
   let testEventCode = process.env.META_TEST_EVENT_CODE?.trim();
 
   try {
-    const { getSecurityPixelSettings } = await import(
-      "@/lib/settings/security-pixel-settings"
-    );
+    const { getSecurityPixelSettings } = await import("@/lib/settings/security-pixel-settings");
     const { settings: secSettings } = await getSecurityPixelSettings();
     if (secSettings.metaPixelId?.trim()) {
       pixelId = secSettings.metaPixelId.trim();
@@ -57,8 +46,7 @@ export async function sendMetaCapiEvent(
         action_source: event.action_source || "website",
         event_time: event.event_time || Math.floor(Date.now() / 1000),
         data_processing_options: event.data_processing_options || [],
-        data_processing_options_country:
-          event.data_processing_options_country ?? 0,
+        data_processing_options_country: event.data_processing_options_country ?? 0,
         data_processing_options_state: event.data_processing_options_state ?? 0,
       },
     ],

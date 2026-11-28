@@ -1,15 +1,15 @@
-import { describe, expect, it } from "vitest";
+import type { ProductDetail } from "@/lib/catalog/types";
 import {
-  serializeJsonLd,
-  toAbsoluteUrl,
-  getOrganizationJsonLd,
-  getLocalBusinessJsonLd,
   getCategoryBreadcrumbJsonLd,
+  getLocalBusinessJsonLd,
+  getOrganizationJsonLd,
   getProductBreadcrumbJsonLd,
   getProductJsonLd,
+  serializeJsonLd,
+  toAbsoluteUrl,
 } from "@/lib/seo/json-ld";
 import { ProductStatus } from "@prisma/client";
-import type { ProductDetail } from "@/lib/catalog/types";
+import { describe, expect, it } from "vitest";
 
 describe("Phase 3 SEO: JSON-LD Serialization Safety", () => {
   it("escapes '<' characters to prevent script tag injection", () => {
@@ -44,7 +44,7 @@ describe("Phase 3 SEO: Organization JSON-LD", () => {
     expect(org["@type"]).toBe("Organization");
     expect(org.name).toBe("VibeLock");
     expect(org.url).toBe("https://vibelock.bd");
-    expect(org.logo).toBe("https://vibelock.bd/logo/icon/vl_icon_square_dark.png");
+    expect(org.logo).toBe("https://vibelock.bd/logo/icon/vibelock_icon_dark.png");
 
     // Verified social links
     expect(org.sameAs).toContain("https://facebook.com/vibelock.bd");

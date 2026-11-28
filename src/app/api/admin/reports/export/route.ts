@@ -1,13 +1,19 @@
+import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/reports";
+import { AuthRequiredError, ForbiddenError, requireRole } from "@/lib/auth/authorization";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { ForbiddenError, AuthRequiredError, requireRole } from "@/lib/auth/authorization";
-import { getAdminOrderProfitability, getAdminReport } from "@/lib/admin/reports";
 
 const reportsExportQuerySchema = z.object({
   type: z.enum(["sales", "products", "orders"]).optional().default("sales"),
   range: z.enum(["7d", "30d", "90d", "12m", "all", "custom"]).optional().default("30d"),
-  from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)").optional(),
-  to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)").optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)")
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (expected YYYY-MM-DD)")
+    .optional(),
   sort: z.string().trim().max(50, "Sort parameter must not exceed 50 characters").optional(),
   search: z.string().trim().max(100, "Search parameter must not exceed 100 characters").optional(),
 });

@@ -1,18 +1,18 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
 import prisma from "@/lib/prisma/client";
+import type { Prisma } from "@prisma/client";
+import { normalizePage } from "./customer-detail-helpers";
 import type {
   AdminCustomerListItem,
   AdminCustomerSummaryKPIs,
   CustomerSegment,
   CustomerSortBy,
 } from "./customer-query-types";
-import { normalizePage } from "./customer-detail-helpers";
 
-export * from "./customer-query-types";
 export { getAdminCustomerById } from "./customer-detail-query";
+export * from "./customer-query-types";
 
 const DEFAULT_PAGE_SIZE = 20;
 const paidStatuses = ["SUCCESS", "PARTIALLY_REFUNDED", "REFUNDED"] as const;

@@ -1,27 +1,27 @@
 "use client";
 
-import { useState, Suspense } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { registerAction, googleSignInAction } from "@/app/actions/auth";
+import { googleSignInAction, registerAction } from "@/app/actions/auth";
+import { SubmitButton } from "@/components/shared/submit-button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { SubmitButton } from "@/components/shared/submit-button";
 import {
-  User,
-  Mail,
-  Lock,
-  Phone,
+  AlertCircle,
   ArrowRight,
-  RefreshCw,
+  Check,
+  CheckCircle2,
+  ChevronLeft,
   Eye,
   EyeOff,
-  AlertCircle,
-  ChevronLeft,
-  CheckCircle2,
-  Check,
+  Lock,
+  Mail,
+  Phone,
+  RefreshCw,
+  User,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Suspense, useState } from "react";
 
 function RegisterForm() {
   // Registration form state

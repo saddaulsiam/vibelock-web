@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import * as React from "react";
 
 export interface BuildFilterUrlOptions {
   /** Current URL search params string or URLSearchParams instance */

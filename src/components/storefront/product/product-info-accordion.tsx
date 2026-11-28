@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, FileText, Shirt, Truck, RotateCcw, Sparkles } from "lucide-react";
 import {
   parseProductSpecifications,
   type ProductSpecifications,
 } from "@/lib/catalog/specifications";
+import { ChevronDown, FileText, RotateCcw, Shirt, Sparkles, Truck } from "lucide-react";
+import { useState } from "react";
 
 interface ProductInfoAccordionProps {
   description: string | null;

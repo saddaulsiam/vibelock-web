@@ -1,22 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { deleteAccountAction } from "@/app/actions/account-deletion";
 import { changePasswordAction } from "@/app/actions/account-security";
 import {
   getActiveSessionsAction,
-  revokeSessionAction,
   revokeAllOtherSessionsAction,
   revokeAllSessionsAction,
+  revokeSessionAction,
   type SessionInfo,
 } from "@/app/actions/session";
-import { deleteAccountAction } from "@/app/actions/account-deletion";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Lock, Laptop, AlertTriangle, Check } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { AlertTriangle, Check, Laptop, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function AccountSecurityCard() {
   const router = useRouter();

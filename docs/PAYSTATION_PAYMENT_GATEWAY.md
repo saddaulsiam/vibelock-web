@@ -9,6 +9,7 @@ This document outlines the architecture, configuration, security practices, and 
 PayStation is a licensed Payment System Operator (PSO) in Bangladesh providing multi-channel online checkout (Cards, MFS like bKash, Nagad, Rocket, Upay, and Internet Banking).
 
 ### Architectural Model
+
 - **Checkout Flow**: Hosted Checkout redirect. When customer initiates checkout with PayStation, VibeLock issues `POST /initiate-payment` (`application/x-www-form-urlencoded`) and redirects the user to the verified secure `payment_url`.
 - **Payment Lifecycle Alignment**:
   - `Order.paymentMethod`: Stored as `ONLINE` in the database, preserving compatibility with existing database enums and analytics.
@@ -23,11 +24,11 @@ PayStation is a licensed Payment System Operator (PSO) in Bangladesh providing m
 
 All PayStation credentials are strictly server-only and validated by `src/lib/config/env.ts`. They are never leaked to client bundles.
 
-| Variable | Type | Default | Description |
-| :--- | :--- | :--- | :--- |
-| `PAYSTATION_MERCHANT_ID` | `string` | *(None)* | PayStation Merchant Identifier issued upon merchant onboarding. |
-| `PAYSTATION_PASSWORD` | `string` | *(None)* | Merchant API password used for payment initiation. |
-| `PAYSTATION_SANDBOX` | `boolean` | `true` | `true` for sandbox (`https://sandbox.paystation.com.bd`), `false` for production (`https://api.paystation.com.bd`). |
+| Variable                 | Type      | Default  | Description                                                                                                         |
+| :----------------------- | :-------- | :------- | :------------------------------------------------------------------------------------------------------------------ |
+| `PAYSTATION_MERCHANT_ID` | `string`  | _(None)_ | PayStation Merchant Identifier issued upon merchant onboarding.                                                     |
+| `PAYSTATION_PASSWORD`    | `string`  | _(None)_ | Merchant API password used for payment initiation.                                                                  |
+| `PAYSTATION_SANDBOX`     | `boolean` | `true`   | `true` for sandbox (`https://sandbox.paystation.com.bd`), `false` for production (`https://api.paystation.com.bd`). |
 
 > [!IMPORTANT]
 > **Production & Preview Deployment**:
@@ -38,10 +39,12 @@ All PayStation credentials are strictly server-only and validated by `src/lib/co
 ## 3. Endpoints & URLs
 
 ### Gateway Base URLs
+
 - **Sandbox Base**: `https://sandbox.paystation.com.bd`
 - **Production Base**: `https://api.paystation.com.bd`
 
 ### Initiation Endpoint
+
 - `POST /initiate-payment`
 - **Content-Type**: `application/x-www-form-urlencoded`
 - **Payload Parameters**:
@@ -59,12 +62,14 @@ All PayStation credentials are strictly server-only and validated by `src/lib/co
   - `reference`: VibeLock order number
 
 ### Verification Endpoint (Transaction Status v1)
+
 - `POST /transaction-status`
 - **Headers**: `merchantId: <PAYSTATION_MERCHANT_ID>`
 - **Content-Type**: `application/x-www-form-urlencoded`
 - **Body**: `invoice_number=<INVOICE_NUMBER>`
 
 ### VibeLock Public Webhook & Callback Routes
+
 - **Browser Callback URL**:
   `https://<YOUR_APP_DOMAIN>/api/payments/paystation/callback`
 - **Instant Payment Notification (IPN) Webhook URL**:

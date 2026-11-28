@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { ArrowRight, Check, ClipboardList, Copy, ExternalLink, MapPin, User } from "lucide-react";
+import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
-import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { formatBdt } from "./dashboard-financial-kpis";
 
 export interface DashboardRecentOrderItem {
@@ -78,7 +78,10 @@ export function DashboardRecentOrders({
       <div className="border-vl-dark-900/10 overflow-hidden rounded-sm border bg-white shadow-xs">
         {recentOrders.length === 0 ? (
           <div className="px-4 py-12 text-center sm:px-5">
-            <ClipboardList className="text-muted-foreground mx-auto mb-3 size-8" aria-hidden="true" />
+            <ClipboardList
+              className="text-muted-foreground mx-auto mb-3 size-8"
+              aria-hidden="true"
+            />
             <h4 className="text-vl-dark-900 text-sm font-bold">No orders recorded yet</h4>
             <p className="text-muted-foreground mt-1 text-xs">
               Orders placed on storefront or POS counter will appear here in real time.
@@ -133,7 +136,7 @@ export function DashboardRecentOrders({
                           {order.customerName}
                         </span>
                       ) : (
-                        <span className="text-muted-foreground inline-flex items-center gap-1 italic text-[11px]">
+                        <span className="text-muted-foreground inline-flex items-center gap-1 text-[11px] italic">
                           <User className="size-3 text-neutral-300" />
                           Guest
                         </span>
@@ -154,8 +157,12 @@ export function DashboardRecentOrders({
                   <div className="flex flex-wrap items-center gap-2">
                     <OrderStatusBadge status={order.status} />
                     <OrderStatusBadge status={order.paymentStatus} />
-                    <span className="text-neutral-500 font-mono text-[11px]">
-                      {order.paymentMethod === "COD" ? "Cash on Delivery" : order.paymentMethod === "BKASH" ? "bKash" : "Online"}
+                    <span className="font-mono text-[11px] text-neutral-500">
+                      {order.paymentMethod === "COD"
+                        ? "Cash on Delivery"
+                        : order.paymentMethod === "BKASH"
+                          ? "bKash"
+                          : "Online"}
                     </span>
                   </div>
 

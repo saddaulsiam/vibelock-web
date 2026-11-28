@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
-import { getDiscoveredProducts } from "@/lib/catalog/discovery";
 import { WishlistContent } from "@/components/storefront/wishlist/wishlist-content";
+import { getDiscoveredProducts } from "@/lib/catalog/discovery";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Saved Wishlist",

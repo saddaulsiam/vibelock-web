@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { addCustomerStaffNoteAction } from "@/lib/admin/customers/customer-actions";
 import type { AdminCustomerStaffNote } from "@/lib/admin/customers/customer-queries";
 import { AlertCircle, CheckCircle2, Clock, FileText, Loader2, Send, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 interface CustomerStaffNotesProps {
   customerId: string;

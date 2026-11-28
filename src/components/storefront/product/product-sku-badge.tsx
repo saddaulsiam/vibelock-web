@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Check, Copy } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ProductSkuBadgeProps {
   initialSku?: string | null;
@@ -37,11 +37,11 @@ export function ProductSkuBadge({ initialSku }: ProductSkuBadgeProps) {
   };
 
   return (
-    <div className="flex items-center gap-1 font-mono text-[10px] text-vl-dark-900/60 sm:text-[11px]">
-      <span className="text-[9px] tracking-wider text-vl-dark-900/40 uppercase sm:text-[10px]">
+    <div className="text-vl-dark-900/60 flex items-center gap-1 font-mono text-[10px] sm:text-[11px]">
+      <span className="text-vl-dark-900/40 text-[9px] tracking-wider uppercase sm:text-[10px]">
         SKU:
       </span>
-      <span className="font-semibold text-vl-dark-900">{sku}</span>
+      <span className="text-vl-dark-900 font-semibold">{sku}</span>
       <button
         type="button"
         onClick={handleCopySku}
@@ -49,11 +49,7 @@ export function ProductSkuBadge({ initialSku }: ProductSkuBadgeProps) {
         title="Copy SKU for customer support or order inquiry"
         aria-label="Copy SKU"
       >
-        {copiedSku ? (
-          <Check className="size-3 text-emerald-600" />
-        ) : (
-          <Copy className="size-3" />
-        )}
+        {copiedSku ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
       </button>
       {copiedSku && (
         <span className="font-sans text-[10px] font-bold text-emerald-600">Copied!</span>

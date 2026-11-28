@@ -1,11 +1,10 @@
-import React from "react";
-import { describe, expect, it, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import {
-  DistrictSelect,
-  BD_DIVISIONS,
   BD_DISTRICTS,
+  BD_DIVISIONS,
+  DistrictSelect,
 } from "@/components/storefront/checkout/district-select";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
 
 describe("DistrictSelect Component", () => {
   it("has exactly 64 districts across 8 divisions with alphabetical sorting", () => {
@@ -32,9 +31,7 @@ describe("DistrictSelect Component", () => {
   });
 
   it("renders trigger and hidden select with 64 districts in static markup (SSR)", () => {
-    const html = renderToStaticMarkup(
-      <DistrictSelect value="Munshiganj" onChange={vi.fn()} />
-    );
+    const html = renderToStaticMarkup(<DistrictSelect value="Munshiganj" onChange={vi.fn()} />);
 
     // Form field ID & combobox semantics
     expect(html).toContain('id="shippingCity"');
@@ -68,9 +65,7 @@ describe("DistrictSelect Component", () => {
   });
 
   it("renders error styles when error prop is true", () => {
-    const html = renderToStaticMarkup(
-      <DistrictSelect value="" onChange={vi.fn()} error={true} />
-    );
+    const html = renderToStaticMarkup(<DistrictSelect value="" onChange={vi.fn()} error={true} />);
 
     expect(html).toContain('aria-invalid="true"');
     expect(html).toContain("border-destructive");

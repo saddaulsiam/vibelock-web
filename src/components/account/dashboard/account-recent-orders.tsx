@@ -1,7 +1,7 @@
-import Link from "next/link";
-import { ArrowRight, PackageOpen } from "lucide-react";
 import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
 import { Card } from "@/components/ui/card";
+import { ArrowRight, PackageOpen } from "lucide-react";
+import Link from "next/link";
 
 interface OrderItemInfo {
   id: string;

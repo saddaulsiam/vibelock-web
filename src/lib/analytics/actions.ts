@@ -1,10 +1,10 @@
 "use server";
 
-import { headers, cookies } from "next/headers";
 import { getCustomerOrderConfirmation } from "@/lib/orders/queries";
-import { buildMetaUserData } from "./meta-utils";
-import { sendMetaCapiEvent } from "./meta-capi";
 import { SITE_URL } from "@/lib/seo/site";
+import { cookies, headers } from "next/headers";
+import { sendMetaCapiEvent } from "./meta-capi";
+import { buildMetaUserData } from "./meta-utils";
 
 /**
  * Server action to trigger Meta CAPI Purchase event with verified order details.
@@ -21,8 +21,7 @@ export async function trackCapiPurchaseAction(orderNumber: string) {
 
     const isPaid = order.paymentStatus === "SUCCESS";
     const isCod = order.paymentMethod === "COD";
-    const isCancelled =
-      order.status === "CANCELLED" || order.paymentStatus === "CANCELLED";
+    const isCancelled = order.status === "CANCELLED" || order.paymentStatus === "CANCELLED";
 
     if (isCancelled || (!isPaid && !isCod)) {
       return { success: false, reason: "order_not_confirmed" };
@@ -32,9 +31,7 @@ export async function trackCapiPurchaseAction(orderNumber: string) {
     const cookieStore = await cookies();
 
     const clientIp =
-      headerStore.get("x-forwarded-for") ||
-      headerStore.get("x-real-ip") ||
-      undefined;
+      headerStore.get("x-forwarded-for") || headerStore.get("x-real-ip") || undefined;
     const userAgent = headerStore.get("user-agent") || undefined;
     const fbp = cookieStore.get("_fbp")?.value || undefined;
     const fbc = cookieStore.get("_fbc")?.value || undefined;

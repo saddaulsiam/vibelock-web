@@ -78,11 +78,7 @@ export async function cancelOrderAction(orderNumber: string): Promise<{
       // FINANCIAL SAFEGUARD: Block customer cancellation while ANY online payment attempt is unresolved (INITIATED or PENDING)
       const hasUnresolvedOnlinePayment =
         order.paymentMethod === "ONLINE" &&
-        Boolean(
-          order.payments?.some(
-            (p) => p.status === "INITIATED" || p.status === "PENDING"
-          )
-        );
+        Boolean(order.payments?.some((p) => p.status === "INITIATED" || p.status === "PENDING"));
 
       if (hasUnresolvedOnlinePayment) {
         return {
@@ -243,7 +239,8 @@ export async function retryOrderPaymentAction(
       if (rateLimitErr instanceof Error && rateLimitErr.message === "RATE_LIMIT_EXCEEDED") {
         return {
           success: false,
-          error: "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
+          error:
+            "Payment initiation rate limit exceeded. Please wait a few minutes before retrying.",
         };
       }
       throw rateLimitErr;
@@ -281,7 +278,10 @@ export async function retryOrderPaymentAction(
       }
 
       if (order.status === "CANCELLED" || order.paymentStatus === "CANCELLED") {
-        return { success: false as const, error: "This order has been cancelled and cannot be paid." };
+        return {
+          success: false as const,
+          error: "This order has been cancelled and cannot be paid.",
+        };
       }
 
       if (
@@ -379,7 +379,9 @@ export async function retryOrderPaymentAction(
     if (!initiationResult.success || !initiationResult.redirectUrl) {
       return {
         success: false,
-        error: initiationResult.error || "Failed to initialize payment gateway session. Please try again.",
+        error:
+          initiationResult.error ||
+          "Failed to initialize payment gateway session. Please try again.",
       };
     }
 
@@ -394,7 +396,10 @@ export async function retryOrderPaymentAction(
     console.error("[retryOrderPaymentAction] Failed to retry payment:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "An unexpected error occurred while initiating payment retry.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while initiating payment retry.",
     };
   }
 }

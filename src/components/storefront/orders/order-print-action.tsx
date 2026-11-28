@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Copy, Check, Printer } from "lucide-react";
-import { printCustomerInvoice, type PrintableOrder } from "@/lib/orders/print-invoice";
 import { Button } from "@/components/ui/button";
+import { printCustomerInvoice, type PrintableOrder } from "@/lib/orders/print-invoice";
+import { Check, Copy, Printer } from "lucide-react";
+import { useState } from "react";
 
 export interface OrderPrintActionProps {
   orderNumber?: string;

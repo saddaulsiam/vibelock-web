@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import type { CartDTO } from "@/lib/cart/types";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,8 +11,7 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
-import type { CartDTO } from "@/lib/cart/types";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { CartItemCard } from "./cart-item-card";
 
 interface CartPageContentProps {

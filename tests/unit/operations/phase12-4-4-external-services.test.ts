@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import prisma from "@/lib/prisma/client";
-import { sendOtp } from "@/lib/sms/client";
 import { sendPhoneOtpAction } from "@/app/actions/auth";
 import { sendOrderConfirmationEmail } from "@/lib/email/order-emails";
 import {
-  logSecurityAlert,
-  APPROVED_SECURITY_EVENTS,
   APPROVED_METADATA_KEYS,
+  APPROVED_SECURITY_EVENTS,
+  logSecurityAlert,
 } from "@/lib/monitoring/security-logger";
+import prisma from "@/lib/prisma/client";
+import { sendOtp } from "@/lib/sms/client";
 import * as Sentry from "@sentry/nextjs";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@sentry/nextjs", () => ({
   captureMessage: vi.fn(),
@@ -69,7 +69,9 @@ describe("Phase 12.4.4: External Services & Operations", () => {
         status: 500,
       } as any);
 
-      const deleteManySpy = vi.spyOn(prisma.verificationToken, "deleteMany").mockResolvedValue({ count: 1 });
+      const deleteManySpy = vi
+        .spyOn(prisma.verificationToken, "deleteMany")
+        .mockResolvedValue({ count: 1 });
       const createSpy = vi.spyOn(prisma.verificationToken, "create").mockResolvedValue({} as any);
 
       const result = await sendOtp("01712345678");
@@ -176,7 +178,9 @@ describe("Phase 12.4.4: External Services & Operations", () => {
         status: 200,
       } as any);
 
-      const deleteManySpy = vi.spyOn(prisma.verificationToken, "deleteMany").mockResolvedValue({ count: 1 });
+      const deleteManySpy = vi
+        .spyOn(prisma.verificationToken, "deleteMany")
+        .mockResolvedValue({ count: 1 });
       const createSpy = vi.spyOn(prisma.verificationToken, "create").mockResolvedValue({} as any);
 
       const result = await sendOtp("01712345678");

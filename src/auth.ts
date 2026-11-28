@@ -1,25 +1,25 @@
-import "server-only";
-import crypto from "node:crypto";
-import NextAuth, { CredentialsSignin, type DefaultSession, type NextAuthConfig } from "next-auth";
-import "next-auth/jwt";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
+import prisma from "@/lib/prisma/client";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 import { Role } from "@prisma/client";
 import { compare } from "bcryptjs";
+import NextAuth, { CredentialsSignin, type DefaultSession, type NextAuthConfig } from "next-auth";
+import "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import crypto from "node:crypto";
+import "server-only";
 
-import { normalizeBdPhoneNumber, isValidBdPhoneNumber } from "@/lib/validations/auth";
-import { verifyOtp } from "@/lib/sms/client";
 import { isCustomerSuspended } from "@/lib/auth/suspension";
+import { hashSecurityIdentifier, logSecurityAlert } from "@/lib/monitoring/security-logger";
 import {
   checkLoginRateLimit,
-  clearLoginRateLimit,
   checkOtpRateLimit,
+  clearLoginRateLimit,
   clearOtpRateLimit,
 } from "@/lib/security/rate-limit";
-import { logSecurityAlert, hashSecurityIdentifier } from "@/lib/monitoring/security-logger";
+import { verifyOtp } from "@/lib/sms/client";
+import { isValidBdPhoneNumber, normalizeBdPhoneNumber } from "@/lib/validations/auth";
 
 export class RateLimitError extends CredentialsSignin {
   code = "rate_limit_exceeded";
@@ -132,7 +132,10 @@ export const authConfig: NextAuthConfig = {
               token.sessionToken = sessionToken;
               token.currentSessionId = sessionId;
             } catch (createError) {
-              console.error("[auth:jwt] Failed to create database session on sign-in (failing closed):", createError);
+              console.error(
+                "[auth:jwt] Failed to create database session on sign-in (failing closed):",
+                createError
+              );
               return null;
             }
           } else {
@@ -437,7 +440,10 @@ export const authConfig: NextAuthConfig = {
         try {
           await clearLoginRateLimit(normalizedIdentifier);
         } catch (err) {
-          console.warn("Failed to clear compound login rate limit on successful authentication:", err);
+          console.warn(
+            "Failed to clear compound login rate limit on successful authentication:",
+            err
+          );
         }
 
         return {

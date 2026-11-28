@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
-import { getCustomerCoupons } from "@/lib/account/queries";
 import { CouponsView } from "@/components/account/coupons/coupons-view";
+import { getCustomerCoupons } from "@/lib/account/queries";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Coupons & Vouchers | VibeLock",

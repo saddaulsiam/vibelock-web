@@ -1,26 +1,26 @@
 "use client";
 
-import * as React from "react";
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Tag,
-  Sparkles,
-  X,
-  Loader2,
-  Calendar,
-  Percent,
-  DollarSign,
-  AlertCircle,
-  Dices,
-  CheckCircle2,
-  Layers,
-} from "lucide-react";
-import { DiscountType } from "@prisma/client";
-import { saveCouponAction } from "@/lib/admin/coupons/coupon-actions";
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { saveCouponAction } from "@/lib/admin/coupons/coupon-actions";
+import { DiscountType } from "@prisma/client";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Dices,
+  DollarSign,
+  Layers,
+  Loader2,
+  Percent,
+  Sparkles,
+  Tag,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
+import { useState, useTransition } from "react";
 
 interface CouponToEditData {
   id: string;

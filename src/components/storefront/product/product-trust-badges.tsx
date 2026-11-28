@@ -1,4 +1,4 @@
-import { Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import { RotateCcw, ShieldCheck, Truck } from "lucide-react";
 
 export function ProductTrustBadges() {
   const perks = [

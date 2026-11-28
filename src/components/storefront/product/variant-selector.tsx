@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { Minus, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { ProductVariantSummary } from "@/lib/catalog/types";
+import { getWhatsAppUrl } from "@/lib/config/contact";
+import { Minus, Plus } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { AddToCartButton } from "./add-to-cart-button";
 import { BuyNowButton } from "./buy-now-button";
-import { ProductWishlistButton } from "./product-wishlist-button";
-import { ProductShareButton } from "./product-share-button";
-import { SizeGuideModal } from "./size-guide-modal";
-import { ProductTrustBadges } from "./product-trust-badges";
 import { ProductInfoAccordion } from "./product-info-accordion";
-import { getWhatsAppUrl } from "@/lib/config/contact";
-import { Button } from "@/components/ui/button";
+import { ProductShareButton } from "./product-share-button";
+import { ProductTrustBadges } from "./product-trust-badges";
+import { ProductWishlistButton } from "./product-wishlist-button";
+import { SizeGuideModal } from "./size-guide-modal";
 
 interface VariantSelectorProps {
   variants: ProductVariantSummary[];

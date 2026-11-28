@@ -1,8 +1,8 @@
 import "server-only";
 
-import { z } from "zod";
-import type { LoyaltyTier } from "@prisma/client";
 import prisma from "@/lib/prisma/client";
+import type { LoyaltyTier } from "@prisma/client";
+import { z } from "zod";
 
 export const TIER_MULTIPLIERS: Record<LoyaltyTier, number> = {
   BRONZE: 1.0,
@@ -60,10 +60,7 @@ export const LoyaltyProgramSettingsSchema = z.object({
     .default(1),
 
   // Redemption guardrails
-  minPointsToRedeem: z.coerce
-    .number()
-    .min(0, "Minimum points cannot be negative")
-    .default(0),
+  minPointsToRedeem: z.coerce.number().min(0, "Minimum points cannot be negative").default(0),
 
   maxCartDiscountPercentage: z.coerce
     .number()
@@ -140,7 +137,10 @@ export async function getLoyaltySettings(): Promise<{
     };
     return { settings, isPersisted: true };
   } catch (error) {
-    console.warn("[LoyaltySettings] Could not query LoyaltySetting table, using Strategy A defaults:", error);
+    console.warn(
+      "[LoyaltySettings] Could not query LoyaltySetting table, using Strategy A defaults:",
+      error
+    );
     return { settings: getDefaultLoyaltySettings(), isPersisted: false };
   }
 }
@@ -249,10 +249,7 @@ export async function getStorefrontLoyaltyInfo(
     const account = await prisma.loyaltyAccount.findFirst({
       where: userId
         ? {
-            OR: [
-              { userId },
-              ...(phone ? [{ phone, userId: null }] : []),
-            ],
+            OR: [{ userId }, ...(phone ? [{ phone, userId: null }] : [])],
           }
         : { phone: phone! },
       select: {
@@ -281,4 +278,3 @@ export async function getStorefrontLoyaltyInfo(
     return null;
   }
 }
-

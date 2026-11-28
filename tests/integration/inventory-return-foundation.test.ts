@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -67,16 +67,16 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-import {
-  InventoryReturnSettingsSchema,
-  DEFAULT_INVENTORY_RETURN_SETTINGS,
-  getInventoryReturnSettings,
-  getEffectiveReturnWindowDays,
-  getEffectiveLowStockThreshold,
-  isCategoryReturnable,
-  calculateReturnRefundAmount,
-} from "@/lib/settings/inventory-return-settings";
 import { updateInventoryReturnSettingsAction } from "@/lib/admin/settings/inventory-return-actions";
+import {
+  calculateReturnRefundAmount,
+  DEFAULT_INVENTORY_RETURN_SETTINGS,
+  getEffectiveLowStockThreshold,
+  getEffectiveReturnWindowDays,
+  getInventoryReturnSettings,
+  InventoryReturnSettingsSchema,
+  isCategoryReturnable,
+} from "@/lib/settings/inventory-return-settings";
 
 describe("Phase 5: VibeLock Inventory Intelligence & Return Policies Engine", () => {
   beforeEach(() => {
@@ -90,9 +90,11 @@ describe("Phase 5: VibeLock Inventory Intelligence & Return Policies Engine", ()
       },
     };
 
-    mockPrisma.$transaction.mockImplementation(async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
-      return callback(mockPrisma);
-    });
+    mockPrisma.$transaction.mockImplementation(
+      async (callback: (tx: typeof mockPrisma) => Promise<unknown>) => {
+        return callback(mockPrisma);
+      }
+    );
   });
 
   describe("1. Zod Schema Validation & Boundary Rules", () => {
@@ -195,7 +197,9 @@ describe("Phase 5: VibeLock Inventory Intelligence & Return Policies Engine", ()
         new Error("Connection terminated unexpectedly by database host")
       );
 
-      await expect(getInventoryReturnSettings()).rejects.toThrow("Database error while fetching store setting");
+      await expect(getInventoryReturnSettings()).rejects.toThrow(
+        "Database error while fetching store setting"
+      );
     });
   });
 
@@ -331,7 +335,9 @@ describe("Phase 5: VibeLock Inventory Intelligence & Return Policies Engine", ()
       const result = await updateInventoryReturnSettingsAction({ error: null }, formData);
 
       expect(result.error).toBeNull();
-      expect(result.message).toContain("Inventory threshold alerts and customer return policies updated successfully");
+      expect(result.message).toContain(
+        "Inventory threshold alerts and customer return policies updated successfully"
+      );
 
       // Verify audit log creation
       expect(mockPrisma.auditLog.create).toHaveBeenCalledWith(

@@ -1,28 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
-import prisma from "@/lib/prisma/client";
 import { authConfig } from "@/auth";
+import prisma from "@/lib/prisma/client";
 import {
-  loginSchema,
-  registerSchema,
-  phoneOtpRequestSchema,
-  phoneOtpVerifySchema,
+  checkLoginRateLimit,
+  checkRateLimit,
+  clearLoginRateLimit,
+  isDistributedRateLimitAvailable,
+  isSensitiveRateLimitEndpoint,
+  normalizeLoginIdentifier,
+  resetRateLimitMemoryStore,
+  setLimiterForTesting,
+  setRedisClientForTesting,
+} from "@/lib/security/rate-limit";
+import {
   isValidBdPhoneNumber,
   isValidEmail,
   isValidLoginIdentifier,
+  loginSchema,
   normalizeBdPhoneNumber,
+  phoneOtpRequestSchema,
+  phoneOtpVerifySchema,
+  registerSchema,
 } from "@/lib/validations/auth";
-import {
-  checkLoginRateLimit,
-  clearLoginRateLimit,
-  normalizeLoginIdentifier,
-  resetRateLimitMemoryStore,
-  checkRateLimit,
-  setLimiterForTesting,
-  setRedisClientForTesting,
-  isSensitiveRateLimitEndpoint,
-  isDistributedRateLimitAvailable,
-} from "@/lib/security/rate-limit";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockCompare, mockHeaders } = vi.hoisted(() => ({
   mockCompare: vi.fn(),
@@ -38,6 +38,10 @@ vi.mock("bcryptjs", () => ({
 
 vi.mock("next/headers", () => ({
   headers: mockHeaders,
+}));
+
+vi.mock("@/lib/auth/suspension", () => ({
+  isCustomerSuspended: vi.fn(async () => false),
 }));
 
 vi.mock("@/lib/config/env", () => ({

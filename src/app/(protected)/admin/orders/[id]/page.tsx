@@ -1,45 +1,45 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+import {
+  CreateShipmentForm,
+  generateWhatsAppUrl,
+  getOrderStatusBadge,
+  getPaymentStatusBadge,
+  getSalesChannelBadge,
+  OrderBackButton,
+  OrderCopyButton,
+  OrderCustomerRiskCard,
+  OrderLifecycleStepper,
+  OrderMobileActionBar,
+  OrderPickPackChecklist,
+  OrderPrintButton,
+  OrderSmartActions,
+  OrderStaffNotes,
+  RefreshShipmentStatusButton,
+} from "@/components/admin/orders";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { getCustomerRiskProfile } from "@/lib/admin/customers";
+import { getAdminOrderById } from "@/lib/admin/orders";
+import { extractCardMetadata } from "@/lib/payment/format";
+import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 import {
   Banknote,
   CreditCard,
+  ExternalLink,
   Mail,
   MapPin,
   MessageSquare,
   Phone,
+  Printer,
   RotateCcw,
   ShieldCheck,
   Smartphone,
   TrendingUp,
   Truck,
   User,
-  ExternalLink,
-  Printer,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  CreateShipmentForm,
-  RefreshShipmentStatusButton,
-  OrderBackButton,
-  OrderPrintButton,
-  getOrderStatusBadge,
-  getPaymentStatusBadge,
-  getSalesChannelBadge,
-  generateWhatsAppUrl,
-  OrderLifecycleStepper,
-  OrderPickPackChecklist,
-  OrderSmartActions,
-  OrderCustomerRiskCard,
-  OrderCopyButton,
-  OrderStaffNotes,
-  OrderMobileActionBar,
-} from "@/components/admin/orders";
-import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
-import { getAdminOrderById } from "@/lib/admin/orders";
-import { getCustomerRiskProfile } from "@/lib/admin/customers";
-import { extractCardMetadata } from "@/lib/payment/format";
-import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 function formatBdt(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);
@@ -111,15 +111,18 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
       <div className="hidden border-b-2 border-black pb-4 print:block">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight">{taxInvoiceSettings.registeredBusinessName}</h1>
+            <h1 className="text-2xl font-black tracking-tight">
+              {taxInvoiceSettings.registeredBusinessName}
+            </h1>
             <p className="text-xs text-neutral-600">
               {taxInvoiceSettings.enableMushak63Format
                 ? "NBR Mushak 6.3 Tax Invoice / Packing Slip"
                 : "Official Packing Slip & Order Invoice"}
             </p>
             {taxInvoiceSettings.binNumber ? (
-              <p className="mt-0.5 text-[11px] font-mono text-neutral-600">
-                BIN: {taxInvoiceSettings.binNumber} &middot; {taxInvoiceSettings.taxCircle} &middot; {taxInvoiceSettings.taxZone}
+              <p className="mt-0.5 font-mono text-[11px] text-neutral-600">
+                BIN: {taxInvoiceSettings.binNumber} &middot; {taxInvoiceSettings.taxCircle} &middot;{" "}
+                {taxInvoiceSettings.taxZone}
               </p>
             ) : null}
           </div>
@@ -818,7 +821,8 @@ export default async function AdminOrderPage({ params }: { params: Promise<{ id:
       <div className="hidden border-t-2 border-neutral-300 pt-4 text-xs text-neutral-600 print:block">
         <p className="leading-relaxed">{taxInvoiceSettings.invoiceFooterNote}</p>
         <p className="mt-1 text-[10px] text-neutral-500">
-          Customer Care: {taxInvoiceSettings.customerCareContact} &middot; Registered Office: {taxInvoiceSettings.registeredOfficeAddress}
+          Customer Care: {taxInvoiceSettings.customerCareContact} &middot; Registered Office:{" "}
+          {taxInvoiceSettings.registeredOfficeAddress}
         </p>
       </div>
 

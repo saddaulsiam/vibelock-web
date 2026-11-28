@@ -1,5 +1,5 @@
-import { describe, expect, test, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock Radix Dialog for renderToStaticMarkup SSR testing
 vi.mock("@/components/ui/dialog", () => ({
@@ -13,9 +13,9 @@ vi.mock("@/components/ui/dialog", () => ({
   DialogDescription: ({ children }: { children?: React.ReactNode }) => <p>{children}</p>,
 }));
 
-import { PosParkedModal } from "@/components/pos/pos-parked-modal";
-import { PosHeader } from "@/components/pos/pos-header";
 import { PosCartPanel } from "@/components/pos/pos-cart-panel";
+import { PosHeader } from "@/components/pos/pos-header";
+import { PosParkedModal } from "@/components/pos/pos-parked-modal";
 import type { PosParkedCart } from "@/lib/pos/pos-parked-types";
 import type { PosCartItem } from "@/lib/pos/pos-types";
 

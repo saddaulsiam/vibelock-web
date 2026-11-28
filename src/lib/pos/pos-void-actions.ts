@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
 import { revalidatePath } from "next/cache";
 import type { PosActionResult } from "./pos-types";
 
@@ -20,7 +20,9 @@ export interface PosVoidOrderInput {
  */
 export async function voidPosOrderAction(
   input: PosVoidOrderInput
-): Promise<PosActionResult<{ orderNumber: string; pointsRefunded?: number; pointsReversed?: number }>> {
+): Promise<
+  PosActionResult<{ orderNumber: string; pointsRefunded?: number; pointsReversed?: number }>
+> {
   try {
     const manager = await requireRole("MANAGER", { throw: true });
 
@@ -140,14 +142,17 @@ export async function voidPosOrderAction(
           }
         }
       }
-      if (redeemedPoints === 0 && typeof (order as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed === "number") {
+      if (
+        redeemedPoints === 0 &&
+        typeof (order as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed === "number"
+      ) {
         redeemedPoints = (order as { loyaltyPointsRedeemed?: number }).loyaltyPointsRedeemed ?? 0;
       }
       pointsRefunded = redeemedPoints;
 
       const earnedPoints =
         typeof (order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned === "number"
-          ? (order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned ?? 0
+          ? ((order as { loyaltyPointsEarned?: number }).loyaltyPointsEarned ?? 0)
           : 0;
       pointsReversed = earnedPoints;
 
@@ -197,7 +202,10 @@ export async function voidPosOrderAction(
           }
 
           const newLifetimePoints = Math.max(0, (account.lifetimePoints ?? 0) - earnedPoints);
-          const newLifetimeSpend = Math.max(0, Number(account.lifetimeSpend ?? 0) - Number(order.total));
+          const newLifetimeSpend = Math.max(
+            0,
+            Number(account.lifetimeSpend ?? 0) - Number(order.total)
+          );
 
           await tx.loyaltyAccount.update({
             where: { id: account.id },

@@ -1,7 +1,7 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
 import { requireUser } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 import { compare } from "bcryptjs";
 import { z } from "zod";

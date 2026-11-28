@@ -86,15 +86,12 @@ export function checkOnlinePaymentFulfillmentEligibility(
       const provisionalEntries = Object.values(payload.provisional as Record<string, unknown>);
       const hasActiveProvisional = provisionalEntries.some(
         (p) =>
-          p &&
-          typeof p === "object" &&
-          (p as Record<string, unknown>).reconciliationHold === true
+          p && typeof p === "object" && (p as Record<string, unknown>).reconciliationHold === true
       );
       if (hasActiveProvisional) {
         return {
           eligible: false,
-          error:
-            "Online payment has an unresolved provisional capture hold pending verification.",
+          error: "Online payment has an unresolved provisional capture hold pending verification.",
         };
       }
     }

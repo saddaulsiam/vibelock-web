@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
+import { MAX_REQUEST_PAYLOAD_BYTES, readBoundedBodyText } from "@/lib/security/request-boundary";
 import { NextRequest } from "next/server";
-import { readBoundedBodyText, MAX_REQUEST_PAYLOAD_BYTES } from "@/lib/security/request-boundary";
+import { describe, expect, test } from "vitest";
 
 describe("readBoundedBodyText Stream Boundary Ingestion Unit Tests", () => {
   test("returns empty string when req has no body (e.g. GET)", async () => {

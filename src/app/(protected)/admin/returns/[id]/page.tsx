@@ -1,46 +1,46 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  RotateCcw,
-  ChevronLeft,
-  ShoppingBag,
-  ExternalLink,
-  MessageSquare,
-  Clock,
-  Truck,
-  PackageCheck,
-  CheckCircle2,
-  XCircle,
-  User,
-  CreditCard,
-  History,
-  ShieldCheck,
-  Image as ImageIcon,
-  Gift,
-  Lock,
-} from "lucide-react";
-import { getAdminReturnById } from "@/lib/admin/returns";
-import { parseReturnReason } from "@/lib/returns/utils";
-import {
-  initiateReturnRefundAction,
-  processReturnRefundAction,
-  updateReturnStatusAction,
-  bookSteadfastReturnPickupAction,
-  issueStoreCreditRefundAction,
-} from "@/lib/admin/returns";
+import { OrderCopyButton, generateWhatsAppUrl } from "@/components/admin/orders";
 import {
   ProcessRefundForm,
   ReturnStatusForm,
-  ReturnSteadfastPickupCard,
   ReturnSteadfastHeaderAction,
+  ReturnSteadfastPickupCard,
   StoreCreditRefundForm,
 } from "@/components/admin/returns";
-import { OrderCopyButton, generateWhatsAppUrl } from "@/components/admin/orders";
+import {
+  bookSteadfastReturnPickupAction,
+  getAdminReturnById,
+  initiateReturnRefundAction,
+  issueStoreCreditRefundAction,
+  processReturnRefundAction,
+  updateReturnStatusAction,
+} from "@/lib/admin/returns";
+import { parseReturnReason } from "@/lib/returns/utils";
+import {
+  calculateReturnRefundAmount,
+  getInventoryReturnSettings,
+} from "@/lib/settings/inventory-return-settings";
 import type { ReturnRequestStatus } from "@prisma/client";
 import {
-  getInventoryReturnSettings,
-  calculateReturnRefundAmount,
-} from "@/lib/settings/inventory-return-settings";
+  CheckCircle2,
+  ChevronLeft,
+  Clock,
+  CreditCard,
+  ExternalLink,
+  Gift,
+  History,
+  Image as ImageIcon,
+  Lock,
+  MessageSquare,
+  PackageCheck,
+  RotateCcw,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  User,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 const nextStatuses: Record<string, string[]> = {
   PENDING: ["APPROVED", "REJECTED"],
@@ -770,8 +770,8 @@ export default async function AdminReturnDetailPage({
                             : ""}
                           {refundBreakdown.deductedProcessingFee > 0
                             ? ` · Processing fee (-${formatBdt(refundBreakdown.deductedProcessingFee)})`
-                            : ""}
-                          {" "}· Net recommended: {formatBdt(refundBreakdown.netRefundAmount)}
+                            : ""}{" "}
+                          · Net recommended: {formatBdt(refundBreakdown.netRefundAmount)}
                         </p>
                       </div>
                     </div>

@@ -1,10 +1,9 @@
 "use client";
 
-import * as React from "react";
-import { Check, Copy, Edit, Loader2, MessageCircle, Power, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { couponStatus, type AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
+import { Check, Copy, Edit, Loader2, MessageCircle, Power, Trash2 } from "lucide-react";
 import type { CouponColumnKey } from "./coupon-table-types";
 import { formatCurrency, formatDate, getValidityNote } from "./coupon-table-utils";
 

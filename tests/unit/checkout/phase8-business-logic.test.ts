@@ -1,19 +1,16 @@
-import { describe, test, expect, vi, beforeEach } from "vitest";
-import { Prisma } from "@prisma/client";
 import {
-  releaseOrderCoupon,
-  validateCustomerCouponEligibility,
-} from "@/lib/checkout/coupons";
+  quickUpdateOrderStatusAction,
+  updateOrderStatusAction,
+} from "@/lib/admin/orders/order-actions";
 import {
   createOrderAction,
-  validateCouponAction,
   getShippingMethodsAction,
+  validateCouponAction,
 } from "@/lib/checkout/actions";
+import { releaseOrderCoupon, validateCustomerCouponEligibility } from "@/lib/checkout/coupons";
 import { cancelOrderAction } from "@/lib/orders/actions";
-import {
-  updateOrderStatusAction,
-  quickUpdateOrderStatusAction,
-} from "@/lib/admin/orders/order-actions";
+import { Prisma } from "@prisma/client";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock auth session
 let mockSession: { user: { id: string; email?: string; role?: string } } | null = {
@@ -126,7 +123,11 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
       user: { id: "user-alice-123", email: "alice@vibelock.bd", role: "CUSTOMER" },
     };
     mockOrderFindUnique.mockResolvedValue(null);
-    mockUserFindUnique.mockResolvedValue({ id: "user-alice-123", codBlocked: false, role: "CUSTOMER" });
+    mockUserFindUnique.mockResolvedValue({
+      id: "user-alice-123",
+      codBlocked: false,
+      role: "CUSTOMER",
+    });
     mockTransaction.mockImplementation(async (callback: (tx: unknown) => unknown) => {
       const tx = {
         $queryRaw: vi.fn(async () => [{ id: "user-alice-123", codBlocked: false }]),
@@ -228,7 +229,13 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
       // Coupon was manually disabled by admin at usageCount 5 (usageLimit 10)
       const mockTx = {
         $queryRaw: vi.fn(async () => [
-          { id: "coupon-manual", code: "MANUAL_OFF", usageCount: 5, usageLimit: 10, isActive: false },
+          {
+            id: "coupon-manual",
+            code: "MANUAL_OFF",
+            usageCount: 5,
+            usageLimit: 10,
+            isActive: false,
+          },
         ]),
         auditLog: {
           findFirst: vi
@@ -323,12 +330,21 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
       const createTx = (orderId: string) =>
         ({
           $queryRaw: vi.fn(async () => [
-            { id: "coupon-1", code: "SAVE50", usageCount: couponUsage, usageLimit: 10, isActive: false },
+            {
+              id: "coupon-1",
+              code: "SAVE50",
+              usageCount: couponUsage,
+              usageLimit: 10,
+              isActive: false,
+            },
           ]),
           auditLog: {
             findFirst: vi.fn(async ({ where }: { where: { action: string; entityId: string } }) => {
               if (where.action === "COUPON_REDEEMED") {
-                return { action: "COUPON_REDEEMED", metadata: { couponCode: "SAVE50", couponId: "coupon-1" } };
+                return {
+                  action: "COUPON_REDEEMED",
+                  metadata: { couponCode: "SAVE50", couponId: "coupon-1" },
+                };
               }
               if (where.action === "COUPON_RELEASED" && releasedOrders.has(orderId)) {
                 return { action: "COUPON_RELEASED", metadata: { couponCode: "SAVE50" } };
@@ -395,18 +411,28 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
       const mockDb = {
         order: {
           // In real DB, the OR query with exact delimiters does not match "WELCOME100" when querying "WELCOME10"
-          count: vi.fn(async ({ where }: { where: { history: { some: { OR: Array<{ notes: { contains?: string; endsWith?: string } }> } } } }) => {
-            const orConditions = where.history.some.OR;
-            const matches = orConditions.some(
-              (c) =>
-                c.notes.contains === "Coupon applied: WELCOME10 (" ||
-                c.notes.endsWith === "Coupon applied: WELCOME10" ||
-                c.notes.contains === "Coupon applied: WELCOME10."
-            );
-            // Simulated existing order has "Coupon applied: WELCOME100 (Discount: 100.00 BDT)"
-            // When querying WELCOME10, it should NOT match
-            return matches ? 0 : 0;
-          }),
+          count: vi.fn(
+            async ({
+              where,
+            }: {
+              where: {
+                history: {
+                  some: { OR: Array<{ notes: { contains?: string; endsWith?: string } }> };
+                };
+              };
+            }) => {
+              const orConditions = where.history.some.OR;
+              const matches = orConditions.some(
+                (c) =>
+                  c.notes.contains === "Coupon applied: WELCOME10 (" ||
+                  c.notes.endsWith === "Coupon applied: WELCOME10" ||
+                  c.notes.contains === "Coupon applied: WELCOME10."
+              );
+              // Simulated existing order has "Coupon applied: WELCOME100 (Discount: 100.00 BDT)"
+              // When querying WELCOME10, it should NOT match
+              return matches ? 0 : 0;
+            }
+          ),
         },
       } as unknown as Prisma.TransactionClient;
 
@@ -702,7 +728,9 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
       const result = await cancelOrderAction("VL-2026-SHIPPED");
 
       expect(result.success).toBe(false);
-      expect(result.error).toBe("Orders cannot be cancelled after shipment processing has started.");
+      expect(result.error).toBe(
+        "Orders cannot be cancelled after shipment processing has started."
+      );
     });
 
     test("admin can cancel CONFIRMED order prior to shipment via quickUpdateOrderStatusAction", async () => {
@@ -761,7 +789,10 @@ describe("Phase 8: Business Logic & Abuse Prevention Hardening", () => {
               inventoryReservations: [],
               shipment: null,
             }),
-            update: vi.fn(async () => ({ id: "00000000-0000-0000-0000-000000000009", status: "CANCELLED" })),
+            update: vi.fn(async () => ({
+              id: "00000000-0000-0000-0000-000000000009",
+              status: "CANCELLED",
+            })),
           },
           orderHistory: {
             create: vi.fn(async () => ({})),

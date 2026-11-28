@@ -1,6 +1,6 @@
+import { GeneralSettingsForm } from "@/components/admin/settings/general-settings-form";
 import { requireRole } from "@/lib/auth/authorization";
 import { getGeneralStoreSettings } from "@/lib/settings/store-settings-service";
-import { GeneralSettingsForm } from "@/components/admin/settings/general-settings-form";
 
 export const dynamic = "force-dynamic";
 

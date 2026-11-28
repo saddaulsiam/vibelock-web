@@ -1,14 +1,14 @@
 "use server";
 
-import prisma from "@/lib/prisma/client";
 import { requireRole } from "@/lib/auth/authorization";
+import prisma from "@/lib/prisma/client";
 import { normalizeBdPhoneNumber } from "@/lib/validations/auth";
-import type { PosActionResult } from "./pos-types";
 import type {
   PosCustomerProfile,
-  PosCustomerTier,
   PosCustomerRecentOrder,
+  PosCustomerTier,
 } from "./pos-customer-types";
+import type { PosActionResult } from "./pos-types";
 
 /**
  * Rapid customer profile lookup by phone number for in-store POS counter.
@@ -99,7 +99,8 @@ export async function lookupPosCustomerByPhoneAction(
     const silverThreshold = loyaltyConfig ? Number(loyaltyConfig.silverThreshold) : 5000;
     const goldThreshold = loyaltyConfig ? Number(loyaltyConfig.goldThreshold) : 20000;
     const platinumThreshold = loyaltyConfig ? Number(loyaltyConfig.platinumThreshold) : 50000;
-    const isLoyaltyActive = (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
+    const isLoyaltyActive =
+      (loyaltyConfig?.enabled ?? true) && (loyaltyConfig?.enableInPos ?? true);
 
     // Aggregate lifetime financial data from order history
     const totalSpent = pastOrders.reduce((sum, ord) => sum + Number(ord.total), 0);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Hoisted mock state and functions
@@ -71,6 +71,9 @@ const {
     $executeRaw: vi.fn(async () => 1),
     $queryRaw: vi.fn(async () => []),
     $transaction: vi.fn(async (callback: any) => callback(mockTx)),
+    loyaltyAccount: {
+      findFirst: vi.fn(async () => null),
+    },
     user: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
@@ -231,18 +234,18 @@ vi.mock("@/lib/config/app", () => ({
 // ---------------------------------------------------------------------------
 // Imports of functions under test
 // ---------------------------------------------------------------------------
-import { validateCustomerCouponEligibility, CouponError } from "@/lib/checkout/coupons";
-import { getAccountOverview } from "@/lib/account/queries";
-import { maskEmail } from "@/lib/email/client";
-import { sendSmsNotification, maskPhoneNumber } from "@/lib/sms/client";
-import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
-import { sanitizeReviewerName, getProductReviews } from "@/lib/reviews/queries";
 import { deleteAccountAction } from "@/app/actions/account-deletion";
-import { deleteAdminCustomerAction } from "@/lib/admin/customers/customer-actions";
 import { subscribeNewsletterAction } from "@/app/actions/newsletter";
 import { updateProfileAction, uploadAvatarAction } from "@/lib/account/actions";
-import { submitReviewAction } from "@/lib/reviews/actions";
 import { updateNotificationPreferencesAction } from "@/lib/account/notification-actions";
+import { getAccountOverview } from "@/lib/account/queries";
+import { deleteAdminCustomerAction } from "@/lib/admin/customers/customer-actions";
+import { CouponError, validateCustomerCouponEligibility } from "@/lib/checkout/coupons";
+import { maskEmail } from "@/lib/email/client";
+import { submitReviewAction } from "@/lib/reviews/actions";
+import { getProductReviews, sanitizeReviewerName } from "@/lib/reviews/queries";
+import { SteadfastCourierProvider } from "@/lib/shipping/providers/steadfast";
+import { maskPhoneNumber, sendSmsNotification } from "@/lib/sms/client";
 
 describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
   beforeEach(() => {
@@ -267,9 +270,7 @@ describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
           findMany: vi.fn(async () => [{ id: "ret-attacker-1" }]),
         },
         auditLog: {
-          findMany: vi.fn(async () => [
-            { metadata: { couponCode: "VL-CREDIT-MYOWN-7788" } },
-          ]),
+          findMany: vi.fn(async () => [{ metadata: { couponCode: "VL-CREDIT-MYOWN-7788" } }]),
         },
       };
 
@@ -294,9 +295,7 @@ describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
           findMany: vi.fn(async () => [{ id: "ret-owner-1" }]),
         },
         auditLog: {
-          findMany: vi.fn(async () => [
-            { metadata: { couponCode: "VL-CREDIT-OWNER-1234" } },
-          ]),
+          findMany: vi.fn(async () => [{ metadata: { couponCode: "VL-CREDIT-OWNER-1234" } }]),
         },
       };
 
@@ -740,7 +739,10 @@ describe("Phase 11: Customer Privacy & Personal Data Protection", () => {
       mockCheckRateLimit.mockRejectedValueOnce(new Error("Rate limit exceeded"));
 
       const formData = new FormData();
-      formData.set("file", new File([new Uint8Array([1, 2, 3])], "avatar.jpg", { type: "image/jpeg" }));
+      formData.set(
+        "file",
+        new File([new Uint8Array([1, 2, 3])], "avatar.jpg", { type: "image/jpeg" })
+      );
 
       const result = await uploadAvatarAction(formData);
 

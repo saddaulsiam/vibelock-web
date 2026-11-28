@@ -1,6 +1,7 @@
-import Link from "next/link";
-import Image from "next/image";
-import { notFound } from "next/navigation";
+import { CategoryProductsManager } from "@/components/admin/categories";
+import { AdminKpiCard, AdminKpiGrid, AdminPageHeader } from "@/components/admin/shared";
+import { getAdminAvailableProductsForCategory, getAdminCategoryDetail } from "@/lib/admin/catalog";
+import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
 import {
   ArrowLeft,
   ExternalLink,
@@ -12,11 +13,9 @@ import {
   Plus,
   Sparkles,
 } from "lucide-react";
-import { AdminKpiCard, AdminKpiGrid } from "@/components/admin/shared";
-import { AdminPageHeader } from "@/components/admin/shared";
-import { CategoryProductsManager } from "@/components/admin/categories";
-import { ADMIN_TABLE_CLASSES } from "@/lib/admin/shared";
-import { getAdminAvailableProductsForCategory, getAdminCategoryDetail } from "@/lib/admin/catalog";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export default async function AdminCategoryDetailPage({
   params,

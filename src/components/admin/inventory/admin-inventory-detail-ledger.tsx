@@ -1,6 +1,16 @@
 "use client";
 
-import * as React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
 import {
   Check,
   Copy,
@@ -11,17 +21,7 @@ import {
   RotateCcw,
   SlidersHorizontal,
 } from "lucide-react";
-import type { AdminInventoryDetailResult } from "@/lib/admin/inventory/inventory-queries";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import * as React from "react";
 
 function formatDate(dateInput: Date | string) {
   const d = new Date(dateInput);

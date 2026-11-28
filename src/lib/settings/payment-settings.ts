@@ -1,9 +1,9 @@
 import "server-only";
 
-import prisma from "@/lib/prisma/client";
 import { env } from "@/lib/config/env";
-import { revalidatePath } from "next/cache";
+import prisma from "@/lib/prisma/client";
 import type { PaymentMethodSetting } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export type PaymentMethodCode = "COD" | "BKASH" | "PAYSTATION";
 

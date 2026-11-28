@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 interface MockSession {
   user?: {
@@ -78,17 +78,17 @@ vi.mock("next/cache", () => ({
   revalidateTag: vi.fn(),
 }));
 
+import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
+import AdminNotificationSettingsPage from "../../src/app/(protected)/admin/settings/notifications/page";
+import { updateNotificationSettingsAction } from "../../src/lib/admin/settings/notification-actions";
 import {
-  getNotificationSettings,
-  updateNotificationSettings,
   getDefaultNotificationSettings,
-  resolveEffectiveSmsCredentials,
+  getNotificationSettings,
   isSmsEventEnabled,
+  resolveEffectiveSmsCredentials,
+  updateNotificationSettings,
   type NotificationSettings,
 } from "../../src/lib/settings/notification-settings";
-import { updateNotificationSettingsAction } from "../../src/lib/admin/settings/notification-actions";
-import AdminNotificationSettingsPage from "../../src/app/(protected)/admin/settings/notifications/page";
-import AdminSettingsLayout from "../../src/app/(protected)/admin/settings/layout";
 
 describe("Phase 4: VibeLock Omnichannel SMS & Notifications Engine", () => {
   beforeEach(() => {
@@ -345,7 +345,9 @@ describe("Phase 4: VibeLock Omnichannel SMS & Notifications Engine", () => {
 
       const res = await updateNotificationSettingsAction({ error: null }, formData);
       expect(res.error).toBeNull();
-      expect(res.message).toContain("SMS gateway routing, transactional event switches, and store alerts updated");
+      expect(res.message).toContain(
+        "SMS gateway routing, transactional event switches, and store alerts updated"
+      );
     });
   });
 });

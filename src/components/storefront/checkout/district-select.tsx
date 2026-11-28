@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Check, ChevronDown, Search, X } from "lucide-react";
 import { cn } from "cn";
+import { Check, ChevronDown, Search, X } from "lucide-react";
+import * as React from "react";
 
 /**
  * 64 Districts of Bangladesh grouped by 8 Divisions (A-Z within each division).

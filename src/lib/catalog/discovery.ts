@@ -1,10 +1,10 @@
-import "server-only";
 import prisma from "@/lib/prisma/client";
-import { ProductStatus, Prisma } from "@prisma/client";
-import { DiscoverySearchParams } from "./validation";
+import { Prisma, ProductStatus } from "@prisma/client";
+import { unstable_cache } from "next/cache";
+import "server-only";
 import { mapProductSummary } from "./mappers";
 import { ProductSummary } from "./types";
-import { unstable_cache } from "next/cache";
+import { DiscoverySearchParams } from "./validation";
 
 // Max products per page
 export const PAGE_SIZE = 12;
@@ -198,7 +198,8 @@ export const getDiscoveredProducts = async (
 
       let mappedProducts = products.map(mapProductSummary);
       try {
-        const { getInventoryReturnSettings } = await import("@/lib/settings/inventory-return-settings");
+        const { getInventoryReturnSettings } =
+          await import("@/lib/settings/inventory-return-settings");
         const { settings } = await getInventoryReturnSettings();
         if (settings.autoHideOutOfStock) {
           mappedProducts = mappedProducts.filter((p) => p.available);

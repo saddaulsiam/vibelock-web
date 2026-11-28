@@ -1,19 +1,13 @@
+import { TogglePaymentMethodForm } from "@/components/admin/payments";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth/authorization";
 import {
   getPaymentSettingsOverview,
   type PaymentMethodStatus,
 } from "@/lib/settings/payment-settings";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { TogglePaymentMethodForm } from "@/components/admin/payments";
-import {
-  AlertCircle,
-  Banknote,
-  Clock,
-  CreditCard,
-  Smartphone,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertCircle, Banknote, Clock, CreditCard, Smartphone } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -101,7 +95,7 @@ export default async function AdminPaymentSettingsPage() {
           return (
             <Card
               key={method.code}
-              className="border-neutral-200/80 bg-white shadow-2xs rounded-xl flex flex-col justify-between overflow-hidden transition-all duration-200 hover:shadow-md"
+              className="flex flex-col justify-between overflow-hidden rounded-xl border-neutral-200/80 bg-white shadow-2xs transition-all duration-200 hover:shadow-md"
             >
               <div>
                 <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4">
@@ -129,9 +123,7 @@ export default async function AdminPaymentSettingsPage() {
                 </CardHeader>
 
                 <CardContent className="space-y-3 p-4 text-sm">
-                  <p className="text-xs leading-relaxed text-neutral-600">
-                    {method.description}
-                  </p>
+                  <p className="text-xs leading-relaxed text-neutral-600">{method.description}</p>
 
                   {method.environmentMode && (
                     <div className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-neutral-50/70 px-3 py-1.5 text-xs">

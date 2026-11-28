@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
@@ -21,15 +21,15 @@ vi.mock("@/lib/config/public-env", () => ({
   },
 }));
 
-import { PaystationProvider } from "@/lib/payment/providers/paystation/client";
-import { PaymentInitiationRequest } from "@/lib/payment/types";
+import { formatPaymentGatewayLabel } from "@/components/shared/payment-gateway-badge";
 import {
   PAYMENT_GATEWAY,
   isPaystationGateway,
   normalizePaymentGateway,
 } from "@/lib/payment/constants";
 import { getHumanGatewayName } from "@/lib/payment/format";
-import { formatPaymentGatewayLabel } from "@/components/shared/payment-gateway-badge";
+import { PaystationProvider } from "@/lib/payment/providers/paystation/client";
+import { PaymentInitiationRequest } from "@/lib/payment/types";
 import { isPaystationCredentialConfigured } from "@/lib/settings/payment-settings";
 
 describe("PayStation Payment Gateway Unit Tests", () => {

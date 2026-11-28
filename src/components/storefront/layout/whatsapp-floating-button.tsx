@@ -1,19 +1,19 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { getWhatsAppNumber } from "@/lib/config/contact";
 import {
-  X,
-  Send,
-  Sparkles,
   ChevronRight,
-  Ruler,
   Palette,
+  Ruler,
+  Send,
   ShoppingBag,
+  Sparkles,
+  X,
   type LucideIcon,
 } from "lucide-react";
-import { getWhatsAppNumber } from "@/lib/config/contact";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 interface QuickPrompt {
   id: string;

@@ -1,7 +1,7 @@
-import { describe, expect, test, vi, beforeEach } from "vitest";
+import { requireRole } from "@/lib/auth/authorization";
 import { lookupPosCustomerByPhoneAction } from "@/lib/pos/pos-customer-actions";
 import prisma from "@/lib/prisma/client";
-import { requireRole } from "@/lib/auth/authorization";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock auth
 vi.mock("@/lib/auth/authorization", () => ({

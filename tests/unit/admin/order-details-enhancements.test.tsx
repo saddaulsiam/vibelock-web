@@ -1,6 +1,6 @@
-import { describe, expect, test, vi } from "vitest";
-import { renderToStaticMarkup } from "react-dom/server";
 import { OrderBackButton, OrderSmartActions } from "@/components/admin/orders";
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, test, vi } from "vitest";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({

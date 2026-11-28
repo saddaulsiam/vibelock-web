@@ -1,12 +1,12 @@
 "use server";
 
+import { requireUser } from "@/lib/auth/authorization";
+import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
+import { AVATAR_ALLOWED_IMAGE_MIMES, validateImageFile } from "@/lib/media/validation";
+import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth/authorization";
-import prisma from "@/lib/prisma/client";
-import { isCloudinaryConfigured, uploadToCloudinary } from "@/lib/media/cloudinary";
-import { validateImageFile, AVATAR_ALLOWED_IMAGE_MIMES } from "@/lib/media/validation";
-import { checkRateLimit } from "@/lib/security/rate-limit";
 
 const addressSchema = z.object({
   label: z.string().trim().max(50).optional(),

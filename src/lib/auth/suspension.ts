@@ -1,5 +1,5 @@
-import "server-only";
 import prisma from "@/lib/prisma/client";
+import "server-only";
 
 /**
  * Checks whether a customer account is currently suspended based on the most recent
@@ -27,7 +27,10 @@ export async function isCustomerSuspended(userId: string): Promise<boolean> {
 
     return suspension?.action === "CUSTOMER_ACCOUNT_SUSPENDED";
   } catch (error) {
-    console.error("[isCustomerSuspended] Database error during suspension check (failing closed):", error);
+    console.error(
+      "[isCustomerSuspended] Database error during suspension check (failing closed):",
+      error
+    );
     return true; // Fail closed on database error to prevent unauthorized access
   }
 }

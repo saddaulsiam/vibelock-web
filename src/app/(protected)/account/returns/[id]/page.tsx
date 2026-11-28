@@ -1,19 +1,19 @@
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { Separator } from "@/components/ui/separator";
+import { getCustomerReturnById } from "@/lib/account/queries";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  CreditCard,
+  Package,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  AlertCircle,
-  Package,
-  CreditCard,
-  ShieldCheck,
-  Truck,
-} from "lucide-react";
-import { getCustomerReturnById } from "@/lib/account/queries";
-import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
-import { Separator } from "@/components/ui/separator";
 
 export async function generateMetadata(props: {
   params: Promise<{ id: string }>;

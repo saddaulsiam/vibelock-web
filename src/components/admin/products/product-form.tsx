@@ -2,7 +2,10 @@
 
 import { CategoryMultiSelect } from "@/components/admin/categories";
 import { AdminSaveForm } from "@/components/admin/shared";
-import { ProductBadge, type ProductBadgeProps } from "@/components/storefront/catalog/product-badge";
+import {
+  ProductBadge,
+  type ProductBadgeProps,
+} from "@/components/storefront/catalog/product-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select-native";

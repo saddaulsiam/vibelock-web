@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Container } from "@/components/shared/container";
 import { Section } from "@/components/shared/section";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export default function AccountError({
   error,

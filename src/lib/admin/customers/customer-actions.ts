@@ -1,12 +1,12 @@
 "use server";
 
-import crypto from "crypto";
-import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth/authorization";
-import prisma from "@/lib/prisma/client";
-import { checkRateLimit } from "@/lib/security/rate-limit";
 import { appConfig } from "@/lib/config/app";
 import { sendPasswordResetEmail } from "@/lib/email/client";
+import prisma from "@/lib/prisma/client";
+import { checkRateLimit } from "@/lib/security/rate-limit";
+import crypto from "crypto";
+import { revalidatePath } from "next/cache";
 import { getAdminCustomers, type CustomerSegment, type CustomerSortBy } from "./customer-queries";
 
 export async function loadMoreAdminCustomersAction(options: {
@@ -534,7 +534,9 @@ export async function adminSendCustomerPasswordResetEmailAction(
     let recipientEmail: string;
 
     await prisma.$transaction(async (tx) => {
-      const lockedUsers = await tx.$queryRaw<Array<{ id: string; email: string; name: string | null }>>`
+      const lockedUsers = await tx.$queryRaw<
+        Array<{ id: string; email: string; name: string | null }>
+      >`
         SELECT "id", "email", "name"
         FROM "User"
         WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
@@ -621,7 +623,9 @@ export async function adminGenerateCustomerPasswordResetLinkAction(
     let customerEmail: string;
 
     await prisma.$transaction(async (tx) => {
-      const lockedUsers = await tx.$queryRaw<Array<{ id: string; email: string; name: string | null }>>`
+      const lockedUsers = await tx.$queryRaw<
+        Array<{ id: string; email: string; name: string | null }>
+      >`
         SELECT "id", "email", "name"
         FROM "User"
         WHERE "id" = ${cleanId} AND "role" = 'CUSTOMER'::"Role"
@@ -715,10 +719,7 @@ export async function adjustCustomerLoyaltyPointsAction(
 
       let account = await tx.loyaltyAccount.findFirst({
         where: {
-          OR: [
-            { userId: user.id },
-            ...(user.phone ? [{ phone: user.phone }] : []),
-          ],
+          OR: [{ userId: user.id }, ...(user.phone ? [{ phone: user.phone }] : [])],
         },
       });
 
@@ -746,7 +747,7 @@ export async function adjustCustomerLoyaltyPointsAction(
       const silv = Number(loyaltyConfig?.silverThreshold ?? 5000);
 
       const newLifetimePoints =
-        delta > 0 ? (account?.lifetimePoints ?? 0) + delta : account?.lifetimePoints ?? 0;
+        delta > 0 ? (account?.lifetimePoints ?? 0) + delta : (account?.lifetimePoints ?? 0);
       const lifetimeSpend = Number(account?.lifetimeSpend ?? 0);
 
       let tier: "BRONZE" | "SILVER" | "GOLD" | "PLATINUM" = "BRONZE";

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 const { mockEnv } = vi.hoisted(() => ({
   mockEnv: {
@@ -131,7 +131,11 @@ const { mockPrisma } = vi.hoisted(() => {
       deleteMany: vi.fn(),
     },
     user: {
-      findUnique: vi.fn(async () => ({ id: "user-mock-uuid", codBlocked: false, role: "CUSTOMER" })),
+      findUnique: vi.fn(async () => ({
+        id: "user-mock-uuid",
+        codBlocked: false,
+        role: "CUSTOMER",
+      })),
     },
     $transaction: vi.fn(async (cb: (tx: any) => Promise<any>) => cb(mock)),
     $queryRaw: vi.fn(async (sql: any) => {
@@ -461,7 +465,9 @@ describe("Phase 2D — bKash Checkout Integration", () => {
     });
 
     test("ONLINE payment method initiates PayStation payment gateway", async () => {
-      mockIsPaymentMethodEnabled.mockImplementation(async (code: string) => code === "ONLINE" || code === "PAYSTATION");
+      mockIsPaymentMethodEnabled.mockImplementation(
+        async (code: string) => code === "ONLINE" || code === "PAYSTATION"
+      );
 
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,

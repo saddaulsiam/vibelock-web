@@ -6,14 +6,15 @@ import {
   ADMIN_TABLE_CLASSES,
   AdminTableColumnVisibility,
   AdminTableFilterSelect,
-  InfiniteScroll,
   AdminTableMetaBar,
   AdminTableSearchInput,
   AdminTableTabs,
+  InfiniteScroll,
   useAdminTableColumns,
   type AdminTableTabItem,
   type ColumnOption,
 } from "@/components/admin/shared";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -22,7 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { loadMoreAdminCustomersAction } from "@/lib/admin/customers/customer-actions";
 import type {
   AdminCustomerListItem,

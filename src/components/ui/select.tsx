@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
-import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
+import * as React from "react";
 
 const Select = SelectPrimitive.Root;
 
@@ -212,6 +212,6 @@ export {
   SelectScrollUpButton,
   SelectSeparator,
   SelectTrigger,
-  SelectValue,
   selectTriggerVariants,
+  SelectValue,
 };

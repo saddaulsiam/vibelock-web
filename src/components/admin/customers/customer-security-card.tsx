@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   adminGenerateCustomerPasswordResetLinkAction,
   adminSendCustomerPasswordResetEmailAction,
@@ -21,7 +22,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Button } from "@/components/ui/button";
 
 interface CustomerSecurityCardProps {
   customerId: string;

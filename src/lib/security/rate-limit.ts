@@ -1,11 +1,11 @@
-import "server-only";
 import crypto from "node:crypto";
+import "server-only";
 
+import { env } from "@/lib/config/env";
+import { isValidBdPhoneNumber, normalizeBdPhoneNumber } from "@/lib/validations/auth";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { env } from "@/lib/config/env";
 import { headers } from "next/headers";
-import { normalizeBdPhoneNumber, isValidBdPhoneNumber } from "@/lib/validations/auth";
 
 let redis: Redis | null = null;
 if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
@@ -153,33 +153,114 @@ function initLimiters() {
   limiters.clear();
   if (!redis) return;
 
-  limiters.set("login", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true }));
-  limiters.set("loginCompound", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true }));
-  limiters.set("loginIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "5 m"), analytics: true }));
-  limiters.set("register", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
-  limiters.set("forgotPassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
-  limiters.set("resetPassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true }));
-  limiters.set("changePassword", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
-  limiters.set("resendVerification", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
-  limiters.set("verifyEmail", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true }));
-  limiters.set("sessionManagement", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
-  limiters.set("accountDeletion", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true }));
-  limiters.set("search", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true }));
-  limiters.set("chat", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "1 m"), analytics: true }));
-  limiters.set("newsletter", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
-  limiters.set("profileUpdate", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
-  limiters.set("customerUpload", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true }));
-  limiters.set("submitReview", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true }));
-  limiters.set("adminUserManagement", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true }));
-  limiters.set("adminCustomerSecurity", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true }));
-  limiters.set("adminRefund", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "5 m"), analytics: true }));
-  limiters.set("adminInventory", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(100, "5 m"), analytics: true }));
-  limiters.set("otpVerifyPhone", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
-  limiters.set("otpVerifyIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "10 m"), analytics: true }));
-  limiters.set("otpSendPhone", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true }));
-  limiters.set("otpSendIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "10 m"), analytics: true }));
-  limiters.set("paymentInitiationUser", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true }));
-  limiters.set("paymentInitiationIp", new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true }));
+  limiters.set(
+    "login",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
+  );
+  limiters.set(
+    "loginCompound",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "5 m"), analytics: true })
+  );
+  limiters.set(
+    "loginIp",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "5 m"), analytics: true })
+  );
+  limiters.set(
+    "register",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "forgotPassword",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  );
+  limiters.set(
+    "resetPassword",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
+  );
+  limiters.set(
+    "changePassword",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "resendVerification",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  );
+  limiters.set(
+    "verifyEmail",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "1 h"), analytics: true })
+  );
+  limiters.set(
+    "sessionManagement",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  );
+  limiters.set(
+    "accountDeletion",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(3, "1 h"), analytics: true })
+  );
+  limiters.set(
+    "search",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(60, "1 m"), analytics: true })
+  );
+  limiters.set(
+    "chat",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "1 m"), analytics: true })
+  );
+  limiters.set(
+    "newsletter",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "profileUpdate",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  );
+  limiters.set(
+    "customerUpload",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "submitReview",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "adminUserManagement",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "adminCustomerSecurity",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
+  );
+  limiters.set(
+    "adminRefund",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(50, "5 m"), analytics: true })
+  );
+  limiters.set(
+    "adminInventory",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(100, "5 m"), analytics: true })
+  );
+  limiters.set(
+    "otpVerifyPhone",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "otpVerifyIp",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(20, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "otpSendPhone",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(5, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "otpSendIp",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(15, "10 m"), analytics: true })
+  );
+  limiters.set(
+    "paymentInitiationUser",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "15 m"), analytics: true })
+  );
+  limiters.set(
+    "paymentInitiationIp",
+    new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "15 m"), analytics: true })
+  );
 }
 
 initLimiters();
@@ -267,11 +348,7 @@ export async function getIp(
     // 1. x-real-ip (primary Vercel client IP header)
     // 2. x-vercel-forwarded-for (Vercel system header)
     // 3. x-forwarded-for (Vercel-managed client IP header)
-    const candidateHeaders = [
-      "x-real-ip",
-      "x-vercel-forwarded-for",
-      "x-forwarded-for",
-    ] as const;
+    const candidateHeaders = ["x-real-ip", "x-vercel-forwarded-for", "x-forwarded-for"] as const;
 
     for (const headerName of candidateHeaders) {
       const rawValue = headersList.get(headerName);
@@ -434,10 +511,7 @@ export function normalizeLoginIdentifier(identifier: string): string {
  *    Key: `loginCompound:${clientIp}:${normalizedIdentifier}`
  *    Ensures failed attempts from attacker IP A cannot exhaust quota for legitimate user on IP B.
  */
-export async function checkLoginRateLimit(
-  email: string,
-  explicitIp?: string
-): Promise<void> {
+export async function checkLoginRateLimit(email: string, explicitIp?: string): Promise<void> {
   const normalizedIdentifier = normalizeLoginIdentifier(email);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
 
@@ -450,7 +524,8 @@ export async function checkLoginRateLimit(
       JSON.stringify({
         event: "RATE_LIMIT_MISSING_CLIENT_IP",
         level: "warn",
-        message: "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket to prevent shared-bucket DoS.",
+        message:
+          "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket to prevent shared-bucket DoS.",
         timestamp: new Date().toISOString(),
       })
     );
@@ -469,10 +544,7 @@ export async function checkLoginRateLimit(
  * Guarantees that only the successful caller's compound counter is cleared,
  * never clearing another IP's rate-limiting state.
  */
-export async function clearLoginRateLimit(
-  email: string,
-  explicitIp?: string
-): Promise<void> {
+export async function clearLoginRateLimit(email: string, explicitIp?: string): Promise<void> {
   const normalizedIdentifier = normalizeLoginIdentifier(email);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
   const ipKey = resolvedIp && resolvedIp !== "unknown" ? resolvedIp : "no_ip";
@@ -529,17 +601,10 @@ export async function clearLoginRateLimit(
  *
  * Raw phone numbers, tokens, and the HMAC secret are never stored in rate limit identifiers, telemetry, or logs.
  */
-export function hashForRateLimit(
-  value: string,
-  options?: { raw?: boolean }
-): string {
+export function hashForRateLimit(value: string, options?: { raw?: boolean }): string {
   const secret = env.AUTH_SECRET || "vibelock-rate-limit-default-secret-salt";
   const input = options?.raw ? value : value.trim().toLowerCase();
-  return crypto
-    .createHmac("sha256", secret)
-    .update(input)
-    .digest("hex")
-    .slice(0, 16);
+  return crypto.createHmac("sha256", secret).update(input).digest("hex").slice(0, 16);
 }
 
 /**
@@ -552,10 +617,7 @@ export function hashForRateLimit(
  *    Key: `otpVerifyPhone:${phoneHash}`
  *    Ensures attackers cannot repeatedly guess the 6-digit OTP code.
  */
-export async function checkOtpRateLimit(
-  phone: string,
-  explicitIp?: string
-): Promise<void> {
+export async function checkOtpRateLimit(phone: string, explicitIp?: string): Promise<void> {
   const normalizedPhone = normalizeBdPhoneNumber(phone);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
 
@@ -567,7 +629,8 @@ export async function checkOtpRateLimit(
       JSON.stringify({
         event: "RATE_LIMIT_MISSING_CLIENT_IP",
         level: "warn",
-        message: "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket for OTP verify.",
+        message:
+          "Client IP could not be resolved from trusted proxy headers. Bypassing global IP bucket for OTP verify.",
         timestamp: new Date().toISOString(),
       })
     );
@@ -616,10 +679,7 @@ export async function clearOtpRateLimit(phone: string): Promise<void> {
  * 1. Global per-IP ceiling (otpSendIp): 15 requests / 10 minutes.
  * 2. Privacy-safe per-phone throttling (otpSendPhone): 5 requests / 10 minutes.
  */
-export async function checkOtpSendRateLimit(
-  phone: string,
-  explicitIp?: string
-): Promise<void> {
+export async function checkOtpSendRateLimit(phone: string, explicitIp?: string): Promise<void> {
   const normalizedPhone = normalizeBdPhoneNumber(phone);
   const resolvedIp = explicitIp !== undefined ? explicitIp : await getIp();
 

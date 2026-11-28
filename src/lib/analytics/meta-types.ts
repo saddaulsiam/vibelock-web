@@ -4,13 +4,7 @@
  */
 
 export type MetaPixelEventName =
-  | "PageView"
-  | "ViewContent"
-  | "AddToCart"
-  | "InitiateCheckout"
-  | "Purchase"
-  | "Search"
-  | "Contact";
+  "PageView" | "ViewContent" | "AddToCart" | "InitiateCheckout" | "Purchase" | "Search" | "Contact";
 
 export interface MetaContentItem {
   id: string;

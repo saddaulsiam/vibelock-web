@@ -1,9 +1,9 @@
 import "server-only";
 
-import { env } from "@/lib/config/env";
-import { Resend } from "resend";
-import { maskEmail } from "@/lib/email/client";
 import { getDisplayPhoneNumber, getWhatsAppUrl } from "@/lib/config/contact";
+import { env } from "@/lib/config/env";
+import { maskEmail } from "@/lib/email/client";
+import { Resend } from "resend";
 
 let resendClient: Resend | null = null;
 if (env.RESEND_API_KEY) {
@@ -30,8 +30,7 @@ export interface AbandonedCartEmailData {
   total: number;
 }
 
-const formatPrice = (amount: number) =>
-  `৳${Math.round(amount).toLocaleString("en-BD")}`;
+const formatPrice = (amount: number) => `৳${Math.round(amount).toLocaleString("en-BD")}`;
 
 function escapeHtml(str: string): string {
   return str
@@ -46,9 +45,7 @@ function escapeHtml(str: string): string {
  * Sends a high-conversion abandoned cart/checkout recovery email via Resend.
  * Styled with VibeLock brutalist streetwear identity.
  */
-export async function sendAbandonedCartEmail(
-  data: AbandonedCartEmailData
-): Promise<boolean> {
+export async function sendAbandonedCartEmail(data: AbandonedCartEmailData): Promise<boolean> {
   if (!resendClient) {
     if (process.env.NODE_ENV === "development") {
       console.info(
@@ -68,9 +65,14 @@ export async function sendAbandonedCartEmail(
         <td style="padding: 12px 0;">
           <div style="font-weight: 700; font-size: 13px; color: #FFFFFF;">${escapeHtml(item.productName)}</div>
           <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px;">
-            ${[item.size ? `Size: ${escapeHtml(item.size)}` : null, item.color ? `Color: ${escapeHtml(item.color)}` : null]
-              .filter(Boolean)
-              .join(" • ") || "Standard"}
+            ${
+              [
+                item.size ? `Size: ${escapeHtml(item.size)}` : null,
+                item.color ? `Color: ${escapeHtml(item.color)}` : null,
+              ]
+                .filter(Boolean)
+                .join(" • ") || "Standard"
+            }
           </div>
         </td>
         <td style="padding: 12px 8px; text-align: center; font-size: 12px; color: rgba(255,255,255,0.7); font-family: monospace;">

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
 import { trackCapiPurchaseAction } from "@/lib/analytics/actions";
+import { trackMetaPixelEvent } from "@/lib/analytics/meta-pixel";
+import { useEffect, useRef } from "react";
 
 interface MetaPurchaseTrackerProps {
   orderNumber: string;
@@ -15,11 +15,7 @@ interface MetaPurchaseTrackerProps {
   }>;
 }
 
-export function MetaPurchaseTracker({
-  orderNumber,
-  total,
-  items,
-}: MetaPurchaseTrackerProps) {
+export function MetaPurchaseTracker({ orderNumber, total, items }: MetaPurchaseTrackerProps) {
   const hasExecuted = useRef(false);
 
   useEffect(() => {

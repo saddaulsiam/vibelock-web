@@ -1,20 +1,3 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import {
-  ShoppingBag,
-  CheckCircle2,
-  DollarSign,
-  XCircle,
-  RotateCcw,
-  ChevronRight,
-  MapPin,
-  Sparkles,
-  UserCheck,
-  User,
-  Ban,
-  Lock,
-} from "lucide-react";
-import { getAdminCustomerById } from "@/lib/admin/customers";
 import {
   CustomerAbandonedCartCard,
   CustomerBackButton,
@@ -32,6 +15,23 @@ import {
   AdminPaymentStatusBadge,
   getSalesChannelBadge,
 } from "@/components/admin/orders/admin-order-badges";
+import { getAdminCustomerById } from "@/lib/admin/customers";
+import {
+  Ban,
+  CheckCircle2,
+  ChevronRight,
+  DollarSign,
+  Lock,
+  MapPin,
+  RotateCcw,
+  ShoppingBag,
+  Sparkles,
+  User,
+  UserCheck,
+  XCircle,
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 function currency(value: unknown): string {
   const num = typeof value === "number" ? value : Number(value || 0);

@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-import { Plus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -12,8 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { AdminCouponListItem } from "@/lib/admin/coupons/coupon-shared";
-import type { CouponColumnKey } from "./coupon-table-types";
+import { Plus, Tag } from "lucide-react";
 import { AdminCouponsDesktopRow } from "./admin-coupons-desktop-row";
+import type { CouponColumnKey } from "./coupon-table-types";
 
 export interface AdminCouponsDesktopTableProps {
   couponsList: AdminCouponListItem[];

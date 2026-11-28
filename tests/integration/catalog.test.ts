@@ -1,13 +1,13 @@
-import { expect, test, describe, beforeAll, afterAll } from "vitest";
-import prisma from "../../src/lib/prisma/client";
+import { Prisma } from "@prisma/client";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { getPublishedProducts } from "../../src/lib/catalog/queries";
+import prisma from "../../src/lib/prisma/client";
 import {
-  createTestProduct,
-  createTestVariant,
   createTestCategory,
   createTestInventory,
+  createTestProduct,
+  createTestVariant,
 } from "../factories";
-import { Prisma } from "@prisma/client";
 
 describe("Phase 3B - Catalog", () => {
   // Clean up before and after

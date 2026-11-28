@@ -1,9 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, expect, test, vi, beforeEach } from "vitest";
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { mockAuth, mockGetCustomerOrderConfirmation, mockRedirect, mockNotFound, mockCancelOrderAction } = vi.hoisted(() => {
+const {
+  mockAuth,
+  mockGetCustomerOrderConfirmation,
+  mockRedirect,
+  mockNotFound,
+  mockCancelOrderAction,
+} = vi.hoisted(() => {
   const mockRedirect = vi.fn((url: string) => {
     const err = new Error(`NEXT_REDIRECT: ${url}`);
     (err as any).digest = `NEXT_REDIRECT;replace;${url};307;`;
@@ -58,12 +64,19 @@ vi.mock("@/components/storefront/orders/order-status-badge", () => ({
 
 vi.mock("@/components/shared/payment-gateway-badge", () => ({
   PaymentGatewayBadge: ({ gateway, paymentMethod }: any) =>
-    React.createElement("span", { "data-testid": "payment-gateway-badge" }, `${gateway || paymentMethod}`),
+    React.createElement(
+      "span",
+      { "data-testid": "payment-gateway-badge" },
+      `${gateway || paymentMethod}`
+    ),
 }));
 
 vi.mock("@/components/storefront/analytics/meta-purchase-tracker", () => ({
   MetaPurchaseTracker: ({ orderNumber }: any) =>
-    React.createElement("div", { "data-testid": "meta-purchase-tracker", "data-order": orderNumber }),
+    React.createElement("div", {
+      "data-testid": "meta-purchase-tracker",
+      "data-order": orderNumber,
+    }),
 }));
 
 import OrderSuccessPage from "@/app/(storefront)/order-success/[orderNumber]/page";

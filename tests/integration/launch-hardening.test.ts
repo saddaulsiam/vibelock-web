@@ -1,21 +1,21 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
-import { isValidElement, type ReactNode } from "react";
-import crypto from "crypto";
 import { Prisma } from "@prisma/client";
-import nextConfig from "../../next.config";
-import prisma from "../../src/lib/prisma/client";
-import { createTestProduct, createTestVariant } from "../factories";
-import robots from "../../src/app/robots";
-import sitemap from "../../src/app/sitemap";
+import crypto from "crypto";
 import { NextRequest } from "next/server";
-import { metadata as rootMetadata } from "../../src/app/layout";
-import { metadata as productsMetadata } from "../../src/app/(storefront)/shop/page";
+import { isValidElement, type ReactNode } from "react";
+import { afterEach, describe, expect, test, vi } from "vitest";
+import nextConfig from "../../next.config";
 import { generateMetadata as generateCategoryMetadata } from "../../src/app/(storefront)/category/[slug]/page";
-import { proxy } from "../../src/proxy";
 import {
   default as ProductDetailPage,
   generateMetadata as generateProductMetadata,
 } from "../../src/app/(storefront)/product/[slug]/page";
+import { metadata as productsMetadata } from "../../src/app/(storefront)/shop/page";
+import { metadata as rootMetadata } from "../../src/app/layout";
+import robots from "../../src/app/robots";
+import sitemap from "../../src/app/sitemap";
+import prisma from "../../src/lib/prisma/client";
+import { proxy } from "../../src/proxy";
+import { createTestProduct, createTestVariant } from "../factories";
 
 vi.mock("../../src/auth", () => ({ auth: vi.fn() }));
 vi.mock("next/font/google", () => ({

@@ -1,14 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { getWishlistServerSnapshot, getWishlistSnapshot, subscribeWishlist } from "@/lib/wishlist";
+import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
-import { useSyncExternalStore, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  getWishlistServerSnapshot,
-  getWishlistSnapshot,
-  subscribeWishlist,
-} from "@/lib/wishlist";
+import Link from "next/link";
+import { useMemo, useSyncExternalStore } from "react";
 
 export function HeaderWishlist() {
   const rawWishlist = useSyncExternalStore(

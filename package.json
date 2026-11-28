@@ -16,6 +16,8 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "format:imports": "node scripts/organize-imports.mjs",
+    "format:imports:check": "node scripts/organize-imports.mjs --check",
     "db:validate": "prisma validate",
     "db:generate": "prisma generate",
     "db:migrate:deploy": "prisma migrate deploy"

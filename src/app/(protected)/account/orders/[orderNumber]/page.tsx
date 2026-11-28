@@ -1,8 +1,15 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import Image from "next/image";
-import { notFound } from "next/navigation";
+import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
+import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
+import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
+import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
+import { ReorderButton } from "@/components/storefront/orders/reorder-button";
+import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
+import { Button } from "@/components/ui/button";
+import { calculateDeliveryEstimate, formatOrderDateTime } from "@/lib/format";
+import { getCustomerOrder } from "@/lib/orders/queries";
+import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   Check,
@@ -11,18 +18,11 @@ import {
   MapPin,
   Package,
   Truck,
-  AlertCircle,
 } from "lucide-react";
-import { CancelOrderButton } from "@/components/storefront/orders/cancel-order-button";
-import { RetryPaymentButton } from "@/components/storefront/orders/retry-payment-button";
-import { ReorderButton } from "@/components/storefront/orders/reorder-button";
-import { OrderStatusBadge } from "@/components/storefront/orders/order-status-badge";
-import { PaymentGatewayBadge } from "@/components/shared/payment-gateway-badge";
-import { OrderPrintAction } from "@/components/storefront/orders/order-print-action";
-import { Button } from "@/components/ui/button";
-import { getCustomerOrder } from "@/lib/orders/queries";
-import { formatOrderDateTime, calculateDeliveryEstimate } from "@/lib/format";
-import { getTaxInvoiceSettings } from "@/lib/settings/tax-invoice-settings";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata(props: {
   params: Promise<{ orderNumber: string }>;
@@ -45,9 +45,7 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
   ]);
   if (!order) notFound();
 
-  const canCancel =
-    Boolean(order.canCancelOrder) &&
-    !order.shipment;
+  const canCancel = Boolean(order.canCancelOrder) && !order.shipment;
 
   const isCancelled =
     order.status === "CANCELLED" ||
@@ -380,15 +378,17 @@ export default async function OrderDetailPage(props: { params: Promise<{ orderNu
                   <span className="text-neutral-400">Status</span>
                   <OrderStatusBadge status={order.paymentStatus} />
                 </div>
-                {order.status === "PENDING" && order.paymentStatus !== "SUCCESS" && order.paymentMethod === "ONLINE" && (
-                  <p className="pt-1 text-[11px] text-neutral-500">
-                    {order.hasUnresolvedOnlinePayment
-                      ? "Payment confirmation in progress. Retry and cancellation are paused to protect against duplicate charges."
-                      : order.hasActiveReservation
-                        ? "Payment was declined or failed. Items temporarily reserved. You can retry payment."
-                        : "Payment incomplete. Inventory reservation has expired."}
-                  </p>
-                )}
+                {order.status === "PENDING" &&
+                  order.paymentStatus !== "SUCCESS" &&
+                  order.paymentMethod === "ONLINE" && (
+                    <p className="pt-1 text-[11px] text-neutral-500">
+                      {order.hasUnresolvedOnlinePayment
+                        ? "Payment confirmation in progress. Retry and cancellation are paused to protect against duplicate charges."
+                        : order.hasActiveReservation
+                          ? "Payment was declined or failed. Items temporarily reserved. You can retry payment."
+                          : "Payment incomplete. Inventory reservation has expired."}
+                    </p>
+                  )}
               </div>
             </div>
 

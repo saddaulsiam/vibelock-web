@@ -1,22 +1,22 @@
+import { Container } from "@/components/shared/container";
+import { Section } from "@/components/shared/section";
+import { MetaViewContent } from "@/components/storefront/analytics/meta-view-content";
+import { ImageGallery } from "@/components/storefront/product/image-gallery";
+import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
+import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
+import { StarRating } from "@/components/storefront/product/reviews/star-rating";
+import { VariantSelector } from "@/components/storefront/product/variant-selector";
+import { YouMayAlsoLike } from "@/components/storefront/product/you-may-also-like";
+import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/queries";
+import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
+import { getProductBreadcrumbJsonLd, getProductJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
+import { SITE_URL } from "@/lib/seo/site";
+import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
-import { Container } from "@/components/shared/container";
-import { Section } from "@/components/shared/section";
-import { ImageGallery } from "@/components/storefront/product/image-gallery";
-import { VariantSelector } from "@/components/storefront/product/variant-selector";
-import { ProductSkuBadge } from "@/components/storefront/product/product-sku-badge";
-import { ProductReviewsSection } from "@/components/storefront/product/reviews/product-reviews-section";
-import { YouMayAlsoLike } from "@/components/storefront/product/you-may-also-like";
-import { StarRating } from "@/components/storefront/product/reviews/star-rating";
-import { getProductBySlug, getRelatedProducts } from "@/lib/catalog/queries";
-import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getProductReviews, getUserReviewEligibility } from "@/lib/reviews/queries";
-import { SITE_URL } from "@/lib/seo/site";
-import { getProductJsonLd, getProductBreadcrumbJsonLd, serializeJsonLd } from "@/lib/seo/json-ld";
 import { notFound } from "next/navigation";
-import { MetaViewContent } from "@/components/storefront/analytics/meta-view-content";
 
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
